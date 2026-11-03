@@ -1,0 +1,26 @@
+.lp-lang-suggestion {
+    position: absolute;
+    z-index: 40;
+    top: calc(var(--lp-nav-height) + 56px + env(safe-area-inset-top, 0px));
+    inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100% - 32px);
+    padding: 8px 8px 8px 16px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    background: var(--lp-surface);
+    box-shadow: 0 10px 30px -16px color-mix(in oklab, var(--lp-fg) 45%, transparent);
+    font-size: .875rem;
+
+    &[dir="rtl"] {
+        padding: 8px 16px 8px 8px;
+    }
+
+    a {
+        color: var(--lp-accent);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+}

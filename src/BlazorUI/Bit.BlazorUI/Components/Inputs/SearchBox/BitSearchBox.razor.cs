@@ -690,7 +690,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (_isOpen is false) return;
+        // An outer callout cleared as it goes away along with the search box dismisses this one too, which is no
+        // toggle of the suggestions to report.
+        if (IsDisposing || _isOpen is false) return;
 
         _isOpen = false;
         _calloutChanges++;
@@ -1363,6 +1365,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task SetValueSuppressingSearch(string? value)
     {
+        // The value replaces whatever was typed, so an input event still waiting out its debounce or throttle carries
+        // text that is thrown away here, and landing after it would put that text straight back: a cleared term would
+        // reappear, and a picked suggestion would turn back into the few letters typed for it.
+        ResetInputRateLimiter();
+
         _suppressSearch = true;
         try
         {
@@ -2115,13 +2122,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.BitCalloutClearCallout(_calloutId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            // The callout still calls back through the reference until it is cleared.
+            await _dotnetObj.DisposeAfterAsync(() => _js.BitCalloutClearCallout(_calloutId));
         }
     }
 }

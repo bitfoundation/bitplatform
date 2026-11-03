@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Sumwise: invoicing and bookkeeping for freelancers in Europe</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Send an invoice in a minute, get paid by card or bank QR code, and let Sumwise match payments, file receipts and draft your VAT return. Free for 3 invoices a month.</value>
+    </data>
+    <data name="NavMonth" xml:space="preserve">
+        <value>How it works</value>
+    </data>
+    <data name="NavSavings" xml:space="preserve">
+        <value>Time saved</value>
+    </data>
+    <data name="NavSecurity" xml:space="preserve">
+        <value>Security</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>Pricing</value>
+    </data>
+    <data name="NavStart" xml:space="preserve">
+        <value>Start for free</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>Invoicing and bookkeeping for freelancers and small businesses in Europe. Made in Vienna since 2021.</value>
+    </data>
+    <data name="FooterSavings" xml:space="preserve">
+        <value>Savings calculator</value>
+    </data>
+    <data name="FooterGuarantee" xml:space="preserve">
+        <value>30-day money-back guarantee</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>Ask Sumwise</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>I'm a freelancer in Germany. Does it work for me?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Can my accountant see my books?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>How does the money-back guarantee work?</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>Invoicing and bookkeeping for freelancers</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Send the invoice. Sumwise does the books.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Write an invoice in a minute, get paid by card or bank transfer, and let Sumwise match the payment, file the receipt and prepare your VAT return. For freelancers and small businesses across the EU, the UK and Switzerland.</value>
+    </data>
+    <data name="HeroStart" xml:space="preserve">
+        <value>Start for free</value>
+    </data>
+    <data name="HeroPricing" xml:space="preserve">
+        <value>See pricing</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>Free for 3 invoices a month, no card. Paid plans from €9 a month, excl. VAT.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>An invoice from the app. Change the hours, the rate or the VAT, then send it.</value>
+    </data>
+    <data name="DemoFromTrade" xml:space="preserve">
+        <value>Illustration · Vienna</value>
+    </data>
+    <data name="DemoInvoice" xml:space="preserve">
+        <value>Invoice</value>
+    </data>
+    <data name="DemoBilledTo" xml:space="preserve">
+        <value>Billed to</value>
+    </data>
+    <data name="DemoClientCity" xml:space="preserve">
+        <value>Graz, Austria</value>
+    </data>
+    <data name="DemoIssued" xml:space="preserve">
+        <value>Issued</value>
+    </data>
+    <data name="DemoDue" xml:space="preserve">
+        <value>Due</value>
+    </data>
+    <data name="DemoDescription" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="DemoHours" xml:space="preserve">
+        <value>Hours</value>
+    </data>
+    <data name="DemoRateShort" xml:space="preserve">
+        <value>Rate</value>
+    </data>
+    <data name="DemoAmount" xml:space="preserve">
+        <value>Amount</value>
+    </data>
+    <data name="DemoItem" xml:space="preserve">
+        <value>Illustrations for the autumn catalogue</value>
+    </data>
+    <data name="DemoSubtotal" xml:space="preserve">
+        <value>Subtotal</value>
+    </data>
+    <data name="DemoVatLine" xml:space="preserve">
+        <value>VAT 20%</value>
+    </data>
+    <data name="DemoVatExempt" xml:space="preserve">
+        <value>VAT exempt, small business scheme</value>
+    </data>
+    <data name="DemoVatExemptShort" xml:space="preserve">
+        <value>No VAT (small business)</value>
+    </data>
+    <data name="DemoTotal" xml:space="preserve">
+        <value>Total</value>
+    </data>
+    <data name="DemoPayWithin" xml:space="preserve">
+        <value>Payable within 14 days</value>
+    </data>
+    <data name="DemoStamp" xml:space="preserve">
+        <value>Sent</value>
+    </data>
+    <data name="DemoInvoices" xml:space="preserve">
+        <value>Invoices</value>
+    </data>
+    <data name="DemoNewInvoice" xml:space="preserve">
+        <value>New invoice</value>
+    </data>
+    <data name="DemoRate" xml:space="preserve">
+        <value>Rate (€ per hour)</value>
+    </data>
+    <data name="DemoAddVat" xml:space="preserve">
+        <value>Add VAT (20%)</value>
+    </data>
+    <data name="DemoSend" xml:space="preserve">
+        <value>Send invoice</value>
+    </data>
+    <data name="DemoSentTitle" xml:space="preserve">
+        <value>Invoice sent</value>
+    </data>
+    <data name="DemoSentTo" xml:space="preserve">
+        <value>To</value>
+    </data>
+    <data name="DemoSentDue" xml:space="preserve">
+        <value>Due on {0}. If it's late, the client gets a friendly reminder three days later.</value>
+    </data>
+    <data name="DemoStepSent" xml:space="preserve">
+        <value>Sent just now</value>
+    </data>
+    <data name="DemoStepOpened" xml:space="preserve">
+        <value>Opened by the client</value>
+    </data>
+    <data name="DemoStepPaid" xml:space="preserve">
+        <value>Paid and matched</value>
+    </data>
+    <data name="DemoSentNote" xml:space="preserve">
+        <value>When the payment reaches your bank, Sumwise matches it to this invoice by itself.</value>
+    </data>
+    <data name="DemoAnother" xml:space="preserve">
+        <value>Start another invoice</value>
+    </data>
+    <data name="MoneyEUR" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="MoneyGBP" xml:space="preserve">
+        <value>£{0}</value>
+    </data>
+    <data name="MoneyCHF" xml:space="preserve">
+        <value>CHF {0}</value>
+    </data>
+    <data name="MoneyPLN" xml:space="preserve">
+        <value>{0} zł</value>
+    </data>
+    <data name="MoneySEK" xml:space="preserve">
+        <value>{0} kr</value>
+    </data>
+    <data name="MonthEyebrow" xml:space="preserve">
+        <value>How it works</value>
+    </data>
+    <data name="MonthTitle" xml:space="preserve">
+        <value>A month in Sumwise</value>
+    </data>
+    <data name="MonthLede" xml:space="preserve">
+        <value>The same five moments come round every month. Sumwise has done most of each one before you look.</value>
+    </data>
+    <data name="Month1When" xml:space="preserve">
+        <value>Day 1</value>
+    </data>
+    <data name="Month1Title" xml:space="preserve">
+        <value>Invoices go out</value>
+    </data>
+    <data name="Month1Body" xml:space="preserve">
+        <value>Recurring invoices send themselves at 08:00. A one-off takes a minute on your phone.</value>
+    </data>
+    <data name="Month2When" xml:space="preserve">
+        <value>Days 2 to 10</value>
+    </data>
+    <data name="Month2Title" xml:space="preserve">
+        <value>Payments match themselves</value>
+    </data>
+    <data name="Month2Body" xml:space="preserve">
+        <value>Your bank feed syncs every day, and each payment finds its invoice, even when a client pays two at once.</value>
+    </data>
+    <data name="Month3When" xml:space="preserve">
+        <value>Any day</value>
+    </data>
+    <data name="Month3Title" xml:space="preserve">
+        <value>Receipts in a photo</value>
+    </data>
+    <data name="Month3Body" xml:space="preserve">
+        <value>Photograph a receipt at the counter. Sumwise reads the date, total and VAT, and files it for you to check.</value>
+    </data>
+    <data name="Month4When" xml:space="preserve">
+        <value>End of the VAT period</value>
+    </data>
+    <data name="Month4Title" xml:space="preserve">
+        <value>A VAT draft to check</value>
+    </data>
+    <data name="Month4Body" xml:space="preserve">
+        <value>The draft return is ready, with the invoice or receipt behind every figure. You or your accountant file it.</value>
+    </data>
+    <data name="Month5When" xml:space="preserve">
+        <value>Year end</value>
+    </data>
+    <data name="Month5Title" xml:space="preserve">
+        <value>Books your accountant can open</value>
+    </data>
+    <data name="Month5Body" xml:space="preserve">
+        <value>Export the whole year in one file, or give your accountant read-only access at no cost.</value>
+    </data>
+    <data name="SavingsEyebrow" xml:space="preserve">
+        <value>The time it gives back</value>
+    </data>
+    <data name="SavingsTitle" xml:space="preserve">
+        <value>What a month of admin really costs you</value>
+    </data>
+    <data name="SavingsHoursLabel" xml:space="preserve">
+        <value>Hours a month you spend on invoices, receipts and VAT today</value>
+    </data>
+    <data name="SavingsRateLabel" xml:space="preserve">
+        <value>What an hour of your work is worth</value>
+    </data>
+    <data name="SavingsHoursValue" xml:space="preserve">
+        <value>{0} h a month</value>
+    </data>
+    <data name="SavingsRateValue" xml:space="preserve">
+        <value>€{0} an hour</value>
+    </data>
+    <data name="SavingsBasis" xml:space="preserve">
+        <value>Based on our 2026 survey of 1,120 customers, who spend 70% less time on admin after three months with Sumwise.</value>
+    </data>
+    <data name="SavingsLead" xml:space="preserve">
+        <value>With Sumwise, that comes to about</value>
+    </data>
+    <data name="SavingsHoursBack" xml:space="preserve">
+        <value>hours back every year</value>
+    </data>
+    <data name="SavingsMoneyBack" xml:space="preserve">
+        <value>of your time a year, after paying for Solo</value>
+    </data>
+    <data name="SavingsMath" xml:space="preserve">
+        <value>{0} h a month, 70% less, over 12 months: {1} h. {1} h at {2}, less {3} for Solo: {4}.</value>
+    </data>
+    <data name="FeaturesEyebrow" xml:space="preserve">
+        <value>What's in it</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>Everything a freelancer's books need, itemised</value>
+    </data>
+    <data name="FeaturesLede" xml:space="preserve">
+        <value>Every line is on every paid plan. The Free plan covers the first one, for three invoices a month.</value>
+    </data>
+    <data name="ReceiptHead" xml:space="preserve">
+        <value>Receipt 0412</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>Invoices and quotes</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>Your logo and numbering, a bank QR code that European banking apps can scan, and a card payment link on every invoice.</value>
+    </data>
+    <data name="Feature1Tag" xml:space="preserve">
+        <value>1 min</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>A bank feed that matches</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>Connects to more than 2,500 European banks through open banking, and matches each payment to its invoice.</value>
+    </data>
+    <data name="Feature2Tag" xml:space="preserve">
+        <value>daily</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>Receipts by photo</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>Reads the date, total and VAT of a receipt in about two seconds, and keeps the image with the entry.</value>
+    </data>
+    <data name="Feature3Tag" xml:space="preserve">
+        <value>2 s</value>
+    </data>
+    <data name="Feature4Title" xml:space="preserve">
+        <value>VAT, prepared</value>
+    </data>
+    <data name="Feature4Body" xml:space="preserve">
+        <value>A draft return for each VAT period, with the invoice or receipt behind every figure. You or your accountant file it.</value>
+    </data>
+    <data name="Feature4Tag" xml:space="preserve">
+        <value>each period</value>
+    </data>
+    <data name="Feature5Title" xml:space="preserve">
+        <value>Polite reminders</value>
+    </data>
+    <data name="Feature5Body" xml:space="preserve">
+        <value>A friendly reminder three days after the due date and a firmer one after fourteen. Or none, if you prefer.</value>
+    </data>
+    <data name="Feature5Tag" xml:space="preserve">
+        <value>automatic</value>
+    </data>
+    <data name="Feature6Title" xml:space="preserve">
+        <value>Your accountant, invited</value>
+    </data>
+    <data name="Feature6Body" xml:space="preserve">
+        <value>Read-only access for your accountant, free on every paid plan, with exports in the formats they already use.</value>
+    </data>
+    <data name="Feature6Tag" xml:space="preserve">
+        <value>free</value>
+    </data>
+    <data name="ReceiptTotal" xml:space="preserve">
+        <value>Admin left for you each month</value>
+    </data>
+    <data name="ReceiptTotalValue" xml:space="preserve">
+        <value>about 1 h</value>
+    </data>
+    <data name="VoicesEyebrow" xml:space="preserve">
+        <value>Freelancers on Sumwise</value>
+    </data>
+    <data name="VoicesTitle" xml:space="preserve">
+        <value>Fewer Sundays spent on paperwork</value>
+    </data>
+    <data name="Voice1Trade" xml:space="preserve">
+        <value>Translator · Porto</value>
+    </data>
+    <data name="Voice1Quote" xml:space="preserve">
+        <value>My VAT return used to take a whole Sunday. Now the draft is ready when the quarter ends, and my accountant checks it in ten minutes.</value>
+    </data>
+    <data name="Voice1Name" xml:space="preserve">
+        <value>Inês Carvalho</value>
+    </data>
+    <data name="Voice2Trade" xml:space="preserve">
+        <value>Photographer · Kraków</value>
+    </data>
+    <data name="Voice2Quote" xml:space="preserve">
+        <value>Clients pay faster since every invoice has the bank QR code. Most of them pay within a week now.</value>
+    </data>
+    <data name="Voice2Name" xml:space="preserve">
+        <value>Tomasz Wójcik</value>
+    </data>
+    <data name="Voice3Trade" xml:space="preserve">
+        <value>UX designer · Ghent</value>
+    </data>
+    <data name="Voice3Quote" xml:space="preserve">
+        <value>I photograph receipts at the counter and forget about them. At year end there was no shoebox to sort, for the first time in nine years.</value>
+    </data>
+    <data name="Voice3Name" xml:space="preserve">
+        <value>Lotte Peeters</value>
+    </data>
+    <data name="SecurityEyebrow" xml:space="preserve">
+        <value>Security</value>
+    </data>
+    <data name="SecurityTitle" xml:space="preserve">
+        <value>Security you can explain to your accountant</value>
+    </data>
+    <data name="SecurityLede" xml:space="preserve">
+        <value>Where your data lives, who can open it and how long it stays, in plain words.</value>
+    </data>
+    <data name="SecurityResidency" xml:space="preserve">
+        <value>Stored in Vienna and Frankfurt</value>
+    </data>
+    <data name="Security1Title" xml:space="preserve">
+        <value>Encrypted on the way and at rest</value>
+    </data>
+    <data name="Security1Body" xml:space="preserve">
+        <value>TLS 1.3 between your device and us, AES-256 for everything we store, and backups encrypted the same way.</value>
+    </data>
+    <data name="Security2Title" xml:space="preserve">
+        <value>It stays in the EU</value>
+    </data>
+    <data name="Security2Body" xml:space="preserve">
+        <value>Your books are stored in data centres in Vienna and Frankfurt and never leave the European Union.</value>
+    </data>
+    <data name="Security3Title" xml:space="preserve">
+        <value>Two-step sign-in</value>
+    </data>
+    <data name="Security3Body" xml:space="preserve">
+        <value>With an authenticator app or a passkey. You decide which devices stay signed in.</value>
+    </data>
+    <data name="Security4Title" xml:space="preserve">
+        <value>Kept as long as the law asks</value>
+    </data>
+    <data name="Security4Body" xml:space="preserve">
+        <value>Ten years by default, the longest any of our countries requires. Export everything whenever you like.</value>
+    </data>
+    <data name="SecuritySample" xml:space="preserve">
+        <value>Sample wording. Describe your own setup here, and only what you could show an auditor.</value>
+    </data>
+    <data name="PlansTeaserTitle" xml:space="preserve">
+        <value>Free to start, €9 when you need everything</value>
+    </data>
+    <data name="PlansTeaserBody" xml:space="preserve">
+        <value>Prices a month, without VAT. Every paid plan comes with a 30-day money-back guarantee, and you can cancel any month.</value>
+    </data>
+    <data name="PlansTeaserCta" xml:space="preserve">
+        <value>Compare the plans</value>
+    </data>
+    <data name="PlanFree" xml:space="preserve">
+        <value>Free</value>
+    </data>
+    <data name="PlanSolo" xml:space="preserve">
+        <value>Solo</value>
+    </data>
+    <data name="PlanStudio" xml:space="preserve">
+        <value>Studio</value>
+    </data>
+    <data name="PlanCompany" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="TeaserFreePrice" xml:space="preserve">
+        <value>€0</value>
+    </data>
+    <data name="TeaserFreeNote" xml:space="preserve">
+        <value>3 invoices a month</value>
+    </data>
+    <data name="TeaserSoloPrice" xml:space="preserve">
+        <value>€9</value>
+    </data>
+    <data name="TeaserSoloNote" xml:space="preserve">
+        <value>For one freelancer</value>
+    </data>
+    <data name="TeaserStudioPrice" xml:space="preserve">
+        <value>€19</value>
+    </data>
+    <data name="TeaserStudioNote" xml:space="preserve">
+        <value>Up to 3 people</value>
+    </data>
+    <data name="TeaserCompanyPrice" xml:space="preserve">
+        <value>€39</value>
+    </data>
+    <data name="TeaserCompanyNote" xml:space="preserve">
+        <value>Up to 10 people</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>Pricing | Sumwise</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>Sumwise is free for 3 invoices a month. Solo is €9, Studio €19 and Company €39 a month, shown with or without VAT for your country, with a 30-day money-back guarantee.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>Plans for one person or a small team, with or without VAT</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>Start free with three invoices a month. Paid plans are billed monthly, can be cancelled any month, and come with a 30-day money-back guarantee.</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>Plans</value>
+    </data>
+    <data name="CountryLabel" xml:space="preserve">
+        <value>Where is your business?</value>
+    </data>
+    <data name="VatToggle" xml:space="preserve">
+        <value>Show prices with VAT</value>
+    </data>
+    <data name="VatRateNote" xml:space="preserve">
+        <value>{0}: VAT {1}%, prices in {2}.</value>
+    </data>
+    <data name="CountryAT" xml:space="preserve">
+        <value>Austria</value>
+    </data>
+    <data name="CountryBE" xml:space="preserve">
+        <value>Belgium</value>
+    </data>
+    <data name="CountryFR" xml:space="preserve">
+        <value>France</value>
+    </data>
+    <data name="CountryDE" xml:space="preserve">
+        <value>Germany</value>
+    </data>
+    <data name="CountryIE" xml:space="preserve">
+        <value>Ireland</value>
+    </data>
+    <data name="CountryIT" xml:space="preserve">
+        <value>Italy</value>
+    </data>
+    <data name="CountryNL" xml:space="preserve">
+        <value>Netherlands</value>
+    </data>
+    <data name="CountryPL" xml:space="preserve">
+        <value>Poland</value>
+    </data>
+    <data name="CountryPT" xml:space="preserve">
+        <value>Portugal</value>
+    </data>
+    <data name="CountryES" xml:space="preserve">
+        <value>Spain</value>
+    </data>
+    <data name="CountrySE" xml:space="preserve">
+        <value>Sweden</value>
+    </data>
+    <data name="CountryCH" xml:space="preserve">
+        <value>Switzerland</value>
+    </data>
+    <data name="CountryGB" xml:space="preserve">
+        <value>United Kingdom</value>
+    </data>
+    <data name="CurrencyEUR" xml:space="preserve">
+        <value>euros</value>
+    </data>
+    <data name="CurrencyGBP" xml:space="preserve">
+        <value>pounds sterling</value>
+    </data>
+    <data name="CurrencyCHF" xml:space="preserve">
+        <value>Swiss francs</value>
+    </data>
+    <data name="CurrencyPLN" xml:space="preserve">
+        <value>złoty</value>
+    </data>
+    <data name="CurrencySEK" xml:space="preserve">
+        <value>Swedish kronor</value>
+    </data>
+    <data name="PlanPopular" xml:space="preserve">
+        <value>Most freelancers choose this</value>
+    </data>
+    <data name="PerMonth" xml:space="preserve">
+        <value>a month</value>
+    </data>
+    <data name="PlanFreeForever" xml:space="preserve">
+        <value>No card, and no time limit.</value>
+    </data>
+    <data name="PriceWithVat" xml:space="preserve">
+        <value>Including {0}% VAT. {1} without VAT.</value>
+    </data>
+    <data name="PriceWithoutVat" xml:space="preserve">
+        <value>Without VAT. {0} with {1}% VAT.</value>
+    </data>
+    <data name="PlanChoose" xml:space="preserve">
+        <value>Choose {0}</value>
+    </data>
+    <data name="PlanFreeSummary" xml:space="preserve">
+        <value>For trying Sumwise, or a side project with a few clients.</value>
+    </data>
+    <data name="PlanFreeFeature1" xml:space="preserve">
+        <value>3 invoices a month</value>
+    </data>
+    <data name="PlanFreeFeature2" xml:space="preserve">
+        <value>Quotes and payment reminders</value>
+    </data>
+    <data name="PlanFreeFeature3" xml:space="preserve">
+        <value>Bank QR code and card payment link</value>
+    </data>
+    <data name="PlanFreeFeature4" xml:space="preserve">
+        <value>Web and phone apps, 1 person</value>
+    </data>
+    <data name="PlanSoloSummary" xml:space="preserve">
+        <value>Everything one freelancer needs to keep the books.</value>
+    </data>
+    <data name="PlanSoloFeature1" xml:space="preserve">
+        <value>Unlimited invoices and quotes</value>
+    </data>
+    <data name="PlanSoloFeature2" xml:space="preserve">
+        <value>1 bank account, synced daily</value>
+    </data>
+    <data name="PlanSoloFeature3" xml:space="preserve">
+        <value>Receipts by photo</value>
+    </data>
+    <data name="PlanSoloFeature4" xml:space="preserve">
+        <value>A VAT return draft each period</value>
+    </data>
+    <data name="PlanSoloFeature5" xml:space="preserve">
+        <value>Free access for your accountant</value>
+    </data>
+    <data name="PlanStudioSummary" xml:space="preserve">
+        <value>For a small studio that shares the work and the paperwork.</value>
+    </data>
+    <data name="PlanStudioFeature1" xml:space="preserve">
+        <value>Everything in Solo</value>
+    </data>
+    <data name="PlanStudioFeature2" xml:space="preserve">
+        <value>Up to 3 people</value>
+    </data>
+    <data name="PlanStudioFeature3" xml:space="preserve">
+        <value>3 bank accounts</value>
+    </data>
+    <data name="PlanStudioFeature4" xml:space="preserve">
+        <value>Recurring invoices</value>
+    </data>
+    <data name="PlanStudioFeature5" xml:space="preserve">
+        <value>Invoices in any currency</value>
+    </data>
+    <data name="PlanCompanySummary" xml:space="preserve">
+        <value>For a small business with staff, several accounts and a payroll.</value>
+    </data>
+    <data name="PlanCompanyFeature1" xml:space="preserve">
+        <value>Everything in Studio</value>
+    </data>
+    <data name="PlanCompanyFeature2" xml:space="preserve">
+        <value>Up to 10 people</value>
+    </data>
+    <data name="PlanCompanyFeature3" xml:space="preserve">
+        <value>Unlimited bank accounts</value>
+    </data>
+    <data name="PlanCompanyFeature4" xml:space="preserve">
+        <value>Payroll export for your accountant</value>
+    </data>
+    <data name="PlanCompanyFeature5" xml:space="preserve">
+        <value>Phone support</value>
+    </data>
+    <data name="PricingNote" xml:space="preserve">
+        <value>We set a price for each currency, so it doesn't move with exchange rates. The VAT shown is your country's standard rate. If your business has a VAT number in an EU country other than Austria, you pay no VAT to us: the reverse charge applies.</value>
+    </data>
+    <data name="GuaranteeSealDays" xml:space="preserve">
+        <value>day money-back guarantee</value>
+    </data>
+    <data name="GuaranteeTitle" xml:space="preserve">
+        <value>30 days to change your mind</value>
+    </data>
+    <data name="GuaranteeBody" xml:space="preserve">
+        <value>If Sumwise isn't right for you, write to us within 30 days of your first payment and we refund it in full.</value>
+    </data>
+    <data name="Guarantee1" xml:space="preserve">
+        <value>No form to fill in, and no questions about why.</value>
+    </data>
+    <data name="Guarantee2" xml:space="preserve">
+        <value>The refund reaches your card or account within 5 working days.</value>
+    </data>
+    <data name="Guarantee3" xml:space="preserve">
+        <value>Your books stay yours: export them before you go.</value>
+    </data>
+    <data name="BillingEyebrow" xml:space="preserve">
+        <value>Billing</value>
+    </data>
+    <data name="BillingTitle" xml:space="preserve">
+        <value>Questions about paying</value>
+    </data>
+    <data name="BillingLede" xml:space="preserve">
+        <value>The assistant on this page answers the rest. It can tell you how Sumwise works, but it gives no tax advice.</value>
+    </data>
+    <data name="BillingFaq1Question" xml:space="preserve">
+        <value>Is the Free plan really free?</value>
+    </data>
+    <data name="BillingFaq1Answer" xml:space="preserve">
+        <value>Yes. Three invoices a month, quotes and payment reminders, with no card and no time limit. Move to a paid plan when you need more.</value>
+    </data>
+    <data name="BillingFaq2Question" xml:space="preserve">
+        <value>Do you add VAT to the price?</value>
+    </data>
+    <data name="BillingFaq2Answer" xml:space="preserve">
+        <value>Prices are shown without VAT unless you switch it on. We charge VAT at your country's standard rate. Businesses with a VAT number in another EU country pay none under the reverse charge; Austrian businesses pay 20%.</value>
+    </data>
+    <data name="BillingFaq3Question" xml:space="preserve">
+        <value>Can I change or cancel my plan?</value>
+    </data>
+    <data name="BillingFaq3Answer" xml:space="preserve">
+        <value>Any time, in Settings. An upgrade starts at once and you pay only the difference for the rest of the month. A downgrade or a cancellation takes effect at the end of the month.</value>
+    </data>
+    <data name="BillingFaq4Question" xml:space="preserve">
+        <value>How does the money-back guarantee work?</value>
+    </data>
+    <data name="BillingFaq4Answer" xml:space="preserve">
+        <value>Write to hello@sumwise.example within 30 days of your first payment. We refund the full amount to the card or account you paid with, within 5 working days.</value>
+    </data>
+    <data name="BillingFaq5Question" xml:space="preserve">
+        <value>What happens to my books if I leave?</value>
+    </data>
+    <data name="BillingFaq5Answer" xml:space="preserve">
+        <value>They're yours. Export everything as PDF and CSV at any time. After you cancel, your account stays readable for 12 months, and then we delete it.</value>
+    </data>
+    <data name="BillingFaq6Question" xml:space="preserve">
+        <value>Do I get an invoice for my subscription?</value>
+    </data>
+    <data name="BillingFaq6Answer" xml:space="preserve">
+        <value>Every month, by email and in Settings. It's made in Sumwise, of course.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Sumwise</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Sumwise was started in Vienna in 2021 by a tax accountant and a freelance developer. 31 people now work on it, for about 48,000 freelancers and small businesses.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>We make invoicing and bookkeeping software for people who would rather be doing their actual work. 31 of us, in Vienna, for about 48,000 freelancers and small businesses.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>A tax accountant and a freelancer</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Clara Weninger spent eleven years as a tax accountant in Vienna. Every spring her freelance clients arrived with the same shoebox of receipts and the same apology.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>In 2021 she started Sumwise with Jonas Petrović, a freelance developer and one of those clients. Their idea was simple: if the invoices, the payments and the receipts already sat in one place, the books would mostly write themselves, and an accountant could check instead of type.</value>
+    </data>
+    <data name="StoryQuote" xml:space="preserve">
+        <value>We don't give tax advice, and we never will. We do the typing, so that you and your accountant can do the thinking.</value>
+    </data>
+    <data name="StoryQuoteBy" xml:space="preserve">
+        <value>Clara Weninger, co-founder</value>
+    </data>
+    <data name="PromisesTitle" xml:space="preserve">
+        <value>Three things we promise</value>
+    </data>
+    <data name="Promise1Title" xml:space="preserve">
+        <value>Your books are yours</value>
+    </data>
+    <data name="Promise1Body" xml:space="preserve">
+        <value>Export everything, any time, in formats any accountant can open. Leaving us takes five minutes.</value>
+    </data>
+    <data name="Promise2Title" xml:space="preserve">
+        <value>No tax advice in disguise</value>
+    </data>
+    <data name="Promise2Body" xml:space="preserve">
+        <value>Sumwise prepares the numbers and shows where each one comes from. The decisions stay with you and your accountant.</value>
+    </data>
+    <data name="Promise3Title" xml:space="preserve">
+        <value>Prices that don't creep</value>
+    </data>
+    <data name="Promise3Body" xml:space="preserve">
+        <value>We announce any price change 60 days ahead, by email, and never change the price of a month you've already paid for.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>Some of the people behind it</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Clara Weninger</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Co-founder and CEO, former tax accountant</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Jonas Petrović</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Co-founder and CTO</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Aylin Demir</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Head of Support</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Mattias Lund</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Product Designer</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Write to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>Questions about your account, the plans or working with your accountant: a person answers within a working day.</value>
+    </data>
+    <data name="ContactHours" xml:space="preserve">
+        <value>Monday to Friday, 08:00 to 18:00 Vienna time, by email and chat. Phone support on the Company plan.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>Company details</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This page isn't in the books</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>We went through every ledger and couldn't find it. It may have moved, or the address has a typo.</value>
+    </data>
+    <data name="NotFoundStamp" xml:space="preserve">
+        <value>MISSING</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Finance software</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>Invoicing and bookkeeping for European freelancers, live on the web, iPhone, Android and Windows: an invoice you can build and send, a savings calculator and prices with or without VAT.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Invoice builder in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Savings calculator</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Prices with or without VAT</value>
+    </data>
+    <data name="DemoIncludes" xml:space="preserve">
+        <value>Payable within 14 days, with a bank QR code and a card payment link.</value>
+    </data>
+    <data name="DemoHoursUp" xml:space="preserve">
+        <value>One hour more</value>
+    </data>
+    <data name="DemoHoursDown" xml:space="preserve">
+        <value>One hour less</value>
+    </data>
+    <data name="DemoRateUp" xml:space="preserve">
+        <value>Raise the rate</value>
+    </data>
+    <data name="DemoRateDown" xml:space="preserve">
+        <value>Lower the rate</value>
+    </data>
+</root>

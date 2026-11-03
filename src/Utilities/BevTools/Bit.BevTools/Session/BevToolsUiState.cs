@@ -66,6 +66,12 @@ public sealed class BevToolsUiState
     /// <summary>The Errors panel's view (errors or groups), group filter and sorts.</summary>
     internal BevErrorsView Errors { get; } = new();
 
+    /// <summary>The log entry selected in the Logs panel.</summary>
+    public long? SelectedLogId { get; set; }
+
+    /// <summary>The Logs panel's view (entries or categories).</summary>
+    internal BevLogsView Logs { get; } = new();
+
     public string? GetQuery(string panelId) => _queries.TryGetValue(panelId, out var q) ? q : null;
 
     public void SetQuery(string panelId, string? query) => _queries[panelId] = query;
@@ -159,6 +165,18 @@ internal sealed class BevErrorsView
     public BevSortState Errors { get; } = new("last", ascending: false);
 
     public BevSortState Groups { get; } = new("occurrences", ascending: false);
+}
+
+internal sealed class BevLogsView
+{
+    /// <summary>One row per category, with its counts per level, instead of one per entry.</summary>
+    public bool ByCategory { get; set; }
+
+    /// <summary>One row per database command (Entity Framework Core's, by SQL) instead of one per entry.</summary>
+    public bool ByCommand { get; set; }
+
+    /// <summary>Only the entries of this command (its SQL, whitespace collapsed), when one was opened from the Database view.</summary>
+    public string? Command { get; set; }
 }
 
 internal sealed class BevProfilerView

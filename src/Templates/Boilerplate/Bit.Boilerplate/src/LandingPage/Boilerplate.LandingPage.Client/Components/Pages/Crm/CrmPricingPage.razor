@@ -1,0 +1,209 @@
+@attribute [Route(CrmSite.Path + "/pricing")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/pricing")]
+@layout CrmLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@R[nameof(CrmStrings.PricingPageTitle)]"
+             Description="@R[nameof(CrmStrings.PricingDescription)]"
+             Path="@($"{CrmSite.Path}/pricing")"
+             Site="CrmSite.Info" />
+
+<section class="lp-container crm-pricing-hero" aria-labelledby="crm-pricing-title">
+    <p class="crm-kicker">@R[nameof(CrmStrings.NavPricing)]</p>
+    <h1 id="crm-pricing-title">@R[nameof(CrmStrings.PricingTitle)]</h1>
+    <p class="lp-lede">@R[nameof(CrmStrings.PricingLede)]</p>
+</section>
+
+<section class="lp-container crm-plans" aria-labelledby="crm-plans-title">
+    <h2 id="crm-plans-title" class="lp-visually-hidden">@R[nameof(CrmStrings.PlansTitle)]</h2>
+
+    <div class="crm-plan-controls">
+        <BitChoiceGroup Label="@R[nameof(CrmStrings.BillingLabel)]" Items="billingItems" @bind-Value="billing" Horizontal NoCircle Class="crm-segmented">
+            <ItemTemplate Context="item">
+                <span class="crm-segment @(item.Value == billing ? "is-selected" : null)">
+                    @item.Text
+                    @if (item.Value == YearlyBilling)
+                    {
+                        <em>@R[nameof(CrmStrings.BillingSave), CrmPricing.YearlySavingPercent.ToString(CurrentCulture)]</em>
+                    }
+                </span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+        <BitChoiceGroup Label="@R[nameof(CrmStrings.CurrencyLabel)]" Items="currencyItems" @bind-Value="CurrencyKey" Horizontal NoCircle Class="crm-segmented">
+            <ItemTemplate Context="item">
+                <span class="crm-segment crm-figure @(item.Value == currencyKey ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+    </div>
+
+    <div class="crm-plan-grid">
+        @foreach (var plan in CrmPricing.Plans)
+        {
+            <article class="crm-plan @(plan.IsPopular ? "is-popular" : null) @(plan.IsEnterprise ? "is-enterprise" : null)" aria-labelledby="@($"crm-plan-{plan.Key}")">
+                <header>
+                    @if (plan.IsPopular)
+                    {
+                        <p class="crm-plan-flag">@R[nameof(CrmStrings.PlanPopular)]</p>
+                    }
+                    <h3 id="@($"crm-plan-{plan.Key}")">@R[plan.Name]</h3>
+                    <p class="crm-plan-summary">@R[plan.Summary]</p>
+                </header>
+                @if (plan.IsEnterprise)
+                {
+                    <p class="crm-plan-price crm-plan-custom">@R[nameof(CrmStrings.PlanCustom)]</p>
+                    <p class="crm-plan-billing">@R[nameof(CrmStrings.PlanEnterpriseBilling)]</p>
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" FullWidth Href="@($"mailto:{CrmSite.SalesEmail}?subject=Brightlane%20Enterprise")" IconName="@BitIconName.Mail">@R[nameof(CrmStrings.TalkToSales)]</BitButton>
+                }
+                else
+                {
+                    var price = PriceParts(IsYearly ? CrmPricing.Yearly(plan, Currency) : CrmPricing.Monthly(plan, Currency));
+                    <p class="crm-plan-price">
+                        <span class="crm-figure">@price.Prefix@price.Whole@if (price.Cents is not null)
+                            {
+                                <small>@price.Cents</small>
+                            }@price.Suffix</span>
+                        <span class="crm-plan-unit">@R[nameof(CrmStrings.PerSeatMonth)]</span>
+                    </p>
+                    <p class="crm-plan-billing">
+                        @if (IsYearly)
+                        {
+                            @R[nameof(CrmStrings.BilledYearly), YearTotal(plan)]
+                            <br />
+                            <span class="crm-plan-saving">@R[nameof(CrmStrings.YearSaving), YearSaving(plan), CrmPricing.YearlySavingPercent.ToString(CurrentCulture)]</span>
+                        }
+                        else
+                        {
+                            @R[nameof(CrmStrings.BilledMonthly)]
+                        }
+                    </p>
+                    <BitButton Variant="@(plan.IsPopular ? BitVariant.Fill : BitVariant.Outline)" Color="@(plan.IsPopular ? BitColor.Primary : BitColor.PrimaryForeground)" FullWidth Href="@CrmSite.TrialUrl">@R[nameof(CrmStrings.PlanTrial)]</BitButton>
+                }
+                <ul class="crm-plan-features">
+                    @foreach (var feature in plan.Features)
+                    {
+                        <li><BitIcon IconName="@BitIconName.CheckMark" Class="crm-plan-check" /> <span>@R[feature]</span></li>
+                    }
+                </ul>
+            </article>
+        }
+    </div>
+
+    <p class="crm-plan-note">@R[nameof(CrmStrings.CurrencyNote)]</p>
+</section>
+
+<section class="lp-section crm-trial" aria-labelledby="crm-trial-title">
+    <div class="lp-container crm-trial-grid">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.TrialEyebrow)]</p>
+            <h2 id="crm-trial-title" class="lp-title">@R[nameof(CrmStrings.TrialTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.TrialLede)]</p>
+            <BitButton Href="@CrmSite.TrialUrl" IconName="@BitIconName.Rocket">@R[nameof(CrmStrings.HeroTrial)]</BitButton>
+        </header>
+        <ol class="crm-trial-steps">
+            @foreach (var (day, title, body) in trialSteps)
+            {
+                <li>
+                    <p class="crm-trial-day crm-figure">@R[day]</p>
+                    <div>
+                        <h3>@R[title]</h3>
+                        <p>@R[body]</p>
+                    </div>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section class="lp-section crm-matrix" aria-labelledby="crm-matrix-title">
+    <div class="lp-container">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.MatrixEyebrow)]</p>
+            <h2 id="crm-matrix-title" class="lp-title">@R[nameof(CrmStrings.MatrixTitle)]</h2>
+        </header>
+
+        <BitChoiceGroup Label="@R[nameof(CrmStrings.MatrixPick)]" Items="planItems" @bind-Value="matrixPlan" Horizontal NoCircle Class="crm-segmented crm-matrix-pick">
+            <ItemTemplate Context="item">
+                <span class="crm-segment @(item.Value == matrixPlan ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <div class="crm-matrix-table" data-plan="@MatrixColumn">
+            <table>
+                <thead>
+                    <tr>
+                        <td></td>
+                        @foreach (var plan in CrmPricing.Plans)
+                        {
+                            <th scope="col" class="@(plan.IsPopular ? "is-popular" : null)">@R[plan.Name]</th>
+                        }
+                    </tr>
+                </thead>
+                @foreach (var (group, rows) in matrix)
+                {
+                    <tbody>
+                        <tr class="crm-matrix-group">
+                            <th scope="colgroup" colspan="5">@R[group]</th>
+                        </tr>
+                        @foreach (var (feature, values) in rows)
+                        {
+                            <tr>
+                                <th scope="row">@R[feature]</th>
+                                @for (var column = 0; column < values.Length; column++)
+                                {
+                                    var value = values[column];
+                                    <td class="@(CrmPricing.Plans[column].IsPopular ? "is-popular" : null)">
+                                        @if (value == Included)
+                                        {
+                                            <BitIcon IconName="@BitIconName.CheckMark" Class="crm-yes" />
+                                            <span class="lp-visually-hidden">@R[nameof(CrmStrings.MatrixIncluded)]</span>
+                                        }
+                                        else if (value == Excluded)
+                                        {
+                                            <span class="crm-no" aria-hidden="true">–</span>
+                                            <span class="lp-visually-hidden">@R[nameof(CrmStrings.MatrixExcluded)]</span>
+                                        }
+                                        else
+                                        {
+                                            @Cell(value)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                }
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="crm-ink crm-enterprise" aria-labelledby="crm-enterprise-title">
+    <div class="lp-container crm-enterprise-grid">
+        <div class="crm-enterprise-text">
+            <p class="crm-kicker crm-kicker-ink">@R[nameof(CrmStrings.PlanEnterprise)]</p>
+            <h2 id="crm-enterprise-title">@R[nameof(CrmStrings.EnterpriseTitle)]</h2>
+            <p>@R[nameof(CrmStrings.EnterpriseBody)]</p>
+            <div class="crm-enterprise-actions">
+                <BitButton Href="@($"mailto:{CrmSite.SalesEmail}?subject=Brightlane%20Enterprise")" IconName="@BitIconName.Mail" Class="crm-enterprise-sales">@R[nameof(CrmStrings.TalkToSales)]</BitButton>
+                <p dir="ltr" class="crm-enterprise-phone">@CrmSite.Info.Company.Phone</p>
+            </div>
+        </div>
+        <ul class="crm-enterprise-list">
+            @foreach (var (icon, text) in enterpriseItems)
+            {
+                <li><BitIcon IconName="@icon" Class="crm-enterprise-icon" /> <span>@R[text]</span></li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-section crm-billing" aria-labelledby="crm-billing-title">
+    <div class="lp-container crm-billing-grid">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.BillingFaqEyebrow)]</p>
+            <h2 id="crm-billing-title" class="lp-title">@R[nameof(CrmStrings.BillingFaqTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.BillingFaqLede)]</p>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>

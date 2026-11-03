@@ -1,0 +1,52 @@
+﻿@page "/showcase"
+@layout ShowcaseLayout
+@using Bit.Bmotion
+@inject IServiceProvider Services
+
+<PageTitle>Showcase - Bmotion lazy loading sample</PageTitle>
+
+<h1>Showcase</h1>
+
+<p>
+    <code>Bit.Bmotion.wasm</code> was downloaded as this page opened - or as the app started, if you arrived here. The
+    layout created Bmotion's services with <code>ConfigureBmotionServices</code>, and the buttons below animate from
+    code with the service this page takes from <code>GetBmotionService&lt;T&gt;()</code>: the app does not register
+    Bmotion's services in the browser.
+</p>
+
+@* Enters as the page opens. A page the server rendered plays the enter in CSS (BmPrerenderMode.Animate) before the
+   runtime has started, and the runtime takes it over without playing it again. *@
+<Bmotion Initial="Bm.To(opacity: 0, y: 24)"
+         Animate="Bm.To(opacity: 1, y: 0)"
+         WhileHover="Bm.To(scale: 1.1)"
+         Transition="Bm.Tween(0.8)">
+    <div id="card" class="card">Hover me</div>
+</Bmotion>
+
+@* An id of its own, as an app's element would have: left and opened again, the page renders a new element with it, which
+   starts from where it is shown rather than from where the last one was left. *@
+<div class="track">
+    <div id="ball" class="ball" @ref="_ball"></div>
+</div>
+<button id="slide" @onclick="SlideAsync">Slide the ball</button>
+
+<p>Counted up from code: <button id="count" @onclick="CountUpAsync">@_count</button></p>
+
+@code {
+    // Taken once, as an injected service would be: an app that lazy loads Bmotion cannot register it.
+    private BmotionAnimateService Motion => field ??= Services.GetBmotionService<BmotionAnimateService>();
+    private ElementReference _ball;
+    private bool _slid;
+    private int _count;
+
+    // A plain element, with no <Bmotion> around it, handed over by reference.
+    private async Task SlideAsync()
+    {
+        _slid = _slid is false;
+        await Motion.AnimateAsync(_ball, Bm.To(x: _slid ? 160 : 0), Bm.Tween(0.8));
+    }
+
+    // A number rather than an element, counted up by Bmotion's per-frame loop.
+    private Task CountUpAsync()
+        => Motion.AnimateAsync(0, 100, v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
+}

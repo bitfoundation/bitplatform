@@ -683,6 +683,16 @@
             },
             "replaces": "6030"
         },
+        "landingPagePortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 7000,
+                "high": 7300,
+                "fallback": 7030
+            },
+            "replaces": "7030"
+        },
         "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
@@ -739,6 +749,32 @@
             },
             "replaces": "use-your-web-app-url-here.com"
         },
+        "landingPageUrl": {
+            "displayName": "landing page url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-landing-page-url-here.com",
+            "description": "The landing page url. You can change its value later if needed."
+        },
+        "normalizedLandingPageUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "landingPageUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    },
+                    {
+                        "regex": "\/+$",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-landing-page-url-here.com"
+        },
         "advancedTests": {
             "displayName": "Include advanced automated tests?",
             "type": "parameter",
@@ -775,6 +811,7 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
+                        "**/*.webp",
                         "**/*.woff2",
                         "**/*.sh"
                     ],
@@ -887,6 +924,7 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/WorkbenchTests/**",
+                        "src/LandingPage/Boilerplate.LandingPage.Tests/**",
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
@@ -894,6 +932,7 @@
                         "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
+                        "src/Tests/Features/Identity/CrossTabSignOutTests.cs",
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
                         "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
@@ -1048,6 +1087,7 @@
                     "condition": "(advancedTests != true || multitenant != true)",
                     "exclude": [
                         "src/Tests/Features/Data/ConcurrencyTokenTests.cs",
+                        "src/Tests/Features/Tenants/CrossTabTenantSwitchTests.cs",
                         // The rule it pins - a tenant filtered body gets no client max-age - only exists under multitenant.
                         "src/Tests/Features/Caching/ResponseCachePolicyClientCacheTests.cs"
                     ]
@@ -1092,6 +1132,7 @@
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
                         "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
+                        "src/Tests/Features/PushNotification/AuthStatePropagationTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",

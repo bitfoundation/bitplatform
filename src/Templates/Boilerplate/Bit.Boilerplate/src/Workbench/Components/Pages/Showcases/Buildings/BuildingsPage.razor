@@ -134,18 +134,22 @@
         </section>
 
         <section class="map-pane" @onkeydown="OnMapKeyDown">
-            <BitMap @ref="map"
-                    TMapProvider="BitLeafletMapProvider"
-                    Provider="provider"
-                    Markers="markers"
-                    Clustering="clustering"
-                    OnReady="OnMapReady"
-                    OnDoubleClick="OnMapDoubleClick"
-                    OnMarkerClick="OnMarkerClick"
-                    OnMarkerDoubleClick="OnMarkerDoubleClick"
-                    OnViewChanged="OnMapViewChanged"
-                    MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
-                    Class="map" />
+            @* Only once the store is restored, since the map opens on the view it holds. *@
+            @if (isRestored)
+            {
+                <BitMap @ref="map"
+                        TMapProvider="BitLeafletMapProvider"
+                        Provider="provider"
+                        Markers="markers"
+                        Clustering="clustering"
+                        OnReady="OnMapReady"
+                        OnDoubleClick="OnMapDoubleClick"
+                        OnMarkerClick="OnMarkerClick"
+                        OnMarkerDoubleClick="OnMarkerDoubleClick"
+                        OnViewChanged="OnMapViewChanged"
+                        MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
+                        Class="map" />
+            }
             @if (canManage)
             {
                 <div class="map-hint">

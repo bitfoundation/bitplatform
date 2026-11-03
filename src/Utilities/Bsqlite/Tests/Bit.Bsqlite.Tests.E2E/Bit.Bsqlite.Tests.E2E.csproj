@@ -37,10 +37,16 @@
         <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The lazy loading harness every lazy-loadable library shares (src/Utilities/Shared/LazyLoading.md). -->
+        <Compile Include="..\..\..\Shared\Tests\E2E\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <!-- Deliberately no ProjectReference to the demo. The suite boots Bit.Bsqlite.Demo.Server from its build
          output as a separate process (Infrastructure/DemoHost.cs), so build the demo server first, in the
          configuration the tests run in. A reference would also make this project build the WebAssembly
-         client a second time, into the same obj folders, on every test build. -->
+         client a second time, into the same obj folders, on every test build. The lazy loading sample is
+         booted the same way, from its publish output. -->
 
     <ItemGroup>
         <!-- The pages the asset host serves at its root: the tests drive the library through them. -->

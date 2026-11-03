@@ -86,4 +86,6 @@ public static class Platforms
     public static string WindowsProject(string projectName) => $"src/Client/{projectName}.Client.Windows/{projectName}.Client.Windows.csproj";
 
     public static string WorkbenchProject(string projectName) => $"src/Workbench/{projectName}.Workbench.csproj";
+
+    public static string LandingPageProject(string projectName) => $"src/LandingPage/{projectName}.LandingPage.Server/{projectName}.LandingPage.Server.csproj";
 }

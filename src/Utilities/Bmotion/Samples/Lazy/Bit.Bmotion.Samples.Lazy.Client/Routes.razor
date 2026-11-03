@@ -1,0 +1,25 @@
+﻿@* The router waits for OnNavigateAsync before it renders a page, so Bit.Bmotion.wasm is there before the showcase
+   renders its animated elements. This file renders before the assembly is downloaded, so it may not use Bmotion's types
+   itself. The server prerenders it too: it registers LazyAssemblyLoader for that (its Program.cs), and does not set the
+   switch, as it loads Bmotion with the rest of the app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that animate: fetch Bmotion before they render. A second call - Program.cs fetched it for the page
+        // the visitor arrived on, or the showcase is opened again - loads nothing again.
+        if (ShowcasePages.LazyLoadsBmotion && ShowcasePages.Contains(context.Path))
+        {
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmotion.wasm"]);
+        }
+    }
+}

@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-restaurant">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="RestaurantSite.Info" Links="links">
+        <Brand><RestaurantLogo /><span>Little Copper</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#waitlist")" Size="BitSize.Small" Class="restaurant-nav-cta">@C[nameof(RestaurantStrings.NavJoin)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="RestaurantSite.Info" Tagline="@C[nameof(RestaurantStrings.FooterTagline)]">
+        <Brand><RestaurantLogo /><span>Little Copper</span></Brand>
+        <Intro>
+            <StoreBadges Site="RestaurantSite.Info" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@C[nameof(RestaurantStrings.FooterCafes)]</h2>
+                @foreach (var cafe in RestaurantCafes.All)
+                {
+                    <a href="@($"{LandingCultures.Localize($"{RestaurantSite.Path}/about", CultureInfo.CurrentUICulture)}#cafes")">@C[cafe.NameKey]</a>
+                }
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <ConsentBanner SitePath="@RestaurantSite.Path" />
+    <LanguageSuggestion />
+</div>

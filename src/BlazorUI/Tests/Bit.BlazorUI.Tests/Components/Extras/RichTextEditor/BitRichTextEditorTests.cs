@@ -2032,6 +2032,67 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.dispose");
     }
 
+    [TestMethod]
+    public async Task BitRichTextEditorDisposeShouldKeepItsDotNetReferenceUntilTheScriptIsDisposed()
+    {
+        SetupJsInterop();
+
+        // The script answers later, the way it does in a browser: until its listeners are off an edit still calls back
+        // through the reference the editor was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.dispose", _ => true);
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        var initialize = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.RichTextEditor.initialize");
+        var reference = (DotNetObjectReference<BitRichTextEditor>)initialize.Arguments[1]!;
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(editor, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldIgnoreWhatItsBridgeSendsWhileItIsBeingDisposed()
+    {
+        SetupJsInterop();
+
+        // A blur in the round trip of the disposal flushes the pending notify and then reports itself, both through
+        // the reference that is alive until the bridge is disposed - for an editor that is going away and has already
+        // let go of its form.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.dispose", _ => true);
+        string? changed = null;
+        string? bound = null;
+        var blurred = false;
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<string?>(this, v => changed = v));
+            parameters.Add(p => p.ValueChanged, EventCallback.Factory.Create<string?>(this, v => bound = v));
+            parameters.Add(p => p.OnBlur, EventCallback.Factory.Create(this, () => blurred = true));
+        });
+
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => editor._OnContentChanged("<p>typed</p>", new BitRichTextEditorContentFacts(true, false, 5, 1)));
+        await component.InvokeAsync(() => editor._OnBlurred());
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsNull(changed);
+        Assert.IsNull(bound);
+        Assert.IsFalse(blurred);
+    }
+
 
     // ---------------------------------------------------------------- options plumbing
 

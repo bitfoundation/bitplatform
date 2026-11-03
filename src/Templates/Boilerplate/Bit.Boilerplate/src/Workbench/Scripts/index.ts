@@ -1,5 +1,5 @@
 import { highlight, parseColor, runChecks } from './checks';
-import { cancelInlinePick, connectFrames, inspectAgain, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { connectFrames, inspectAgain, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
@@ -130,6 +130,18 @@ function expectNewDocument(frame: HTMLIFrameElement) {
     readyTimers.delete(frame);
     staleDocuments.set(frame, frame.contentDocument);
     frame.closest('.pane-stage')?.classList.remove('ready');
+}
+
+/** Reloads a view and shows its loading state until it reports ready again. */
+function reloadFrame(frame: HTMLIFrameElement) {
+    expectNewDocument(frame);
+
+    // A frame showing a page of another origin can't be reloaded from here, so it goes back to the view's address.
+    try {
+        frame.contentWindow?.location.reload();
+    } catch {
+        frame.contentWindow?.location.replace(shownUrls.get(frame) ?? frame.src);
+    }
 }
 
 /** The iframe of the view with this pane id. */
@@ -471,6 +483,11 @@ if (isPreview && document.body.classList.contains('wb-touch')) {
     emulateTouch();
 }
 
+// Focuses a pressed map without scrolling, as Leaflet's own focus brings back only the window's scroll, and a page scrolling in a container would jump from under the press.
+if (isPreview) {
+    document.addEventListener('mousedown', event => (event.target as Element).closest<HTMLElement>('.leaflet-container')?.focus({ preventScroll: true }), true);
+}
+
 // A store composition waits for its inner screen and passes the screen's reports on to the shell.
 if (isPreview) {
     window.addEventListener('message', event => {
@@ -547,12 +564,16 @@ host.workbench = {
         }
     },
 
-    /** Puts a view's page state back to its defaults. */
+    /** Puts a view's page state back to its defaults and reloads it, as what a page made from that state, like a filtered grid, doesn't follow a reset. */
     async resetFrame(paneId: string) {
+        const frame = findFrame(paneId);
+
         try {
-            await withTimeout(workbenchOf(findFrame(paneId))?.resetState() ?? Promise.resolve(), 4000);
+            await withTimeout(workbenchOf(frame)?.resetState() ?? Promise.resolve(), 4000);
         } catch {
         }
+
+        if (frame) reloadFrame(frame);
     },
 
     /** This preview's page state as JSON, read from the inner screen when this page is a store composition. */
@@ -587,13 +608,9 @@ host.workbench = {
         }
     },
 
-    /** Asks the shell to point at its user picker, from a view or from a page the shell renders itself on a phone. */
+    /** Asks the shell to point at its user picker. */
     askForSignInGuide() {
-        if (window.parent !== window) {
-            window.parent.postMessage({ type: 'workbench-sign-in-guide' }, location.origin);
-        } else {
-            callShell('ShowSignInGuide', null);
-        }
+        window.parent.postMessage({ type: 'workbench-sign-in-guide' }, location.origin);
     },
 
     /** Scrolls an element of the shell into sight, for a guide that points at it along with something else. */
@@ -627,8 +644,9 @@ host.workbench = {
         anchor.remove();
     },
 
+    /** Runs the checks on this preview's page, in the inner screen when there is one. */
     runChecks() {
-        return runChecks();
+        return workbenchOf(screenFrame())?.runChecks() ?? runChecks();
     },
 
     forceStates() {
@@ -652,20 +670,12 @@ host.workbench = {
 
     /** Reloads every view and shows its loading state until it reports ready again. */
     reloadFrames() {
-        document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]').forEach(frame => {
-            expectNewDocument(frame);
-
-            // A frame showing a page of another origin can't be reloaded from here, so it goes back to the view's address.
-            try {
-                frame.contentWindow?.location.reload();
-            } catch {
-                frame.contentWindow?.location.replace(shownUrls.get(frame) ?? frame.src);
-            }
-        });
+        document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]').forEach(reloadFrame);
     },
 
+    /** Flashes an element of this preview's page, in the inner screen when there is one. */
     highlight(selector: string) {
-        return highlight(selector);
+        return workbenchOf(screenFrame())?.highlight(selector) ?? highlight(selector);
     },
 
     /** Runs the accessibility and theme checks inside a view, giving up after 30 seconds. */
@@ -690,15 +700,6 @@ host.workbench = {
     /** Shows the comment pins of each view, keyed by pane id. */
     showPins(pins: Record<string, never[]>) {
         showPins(pins);
-    },
-
-    /** Waits for a click on the inline preview to start a comment there. */
-    pickInline() {
-        pickInline(anchor => callShell('BeginInlineComment', anchor));
-    },
-
-    cancelInlinePick() {
-        cancelInlinePick();
     },
 
     /** Lets the user pick the spot a flow arrow starts from on a flow screen. */

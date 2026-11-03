@@ -53,6 +53,19 @@ if (builder.Environment.IsDevelopment())
     serverWebProject.WithHttpHealthCheck("/alive");
 }
 
+var landingPageProject = builder.AddProject("landingpage", "../../LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj")
+    .WithExternalHttpEndpoints();
+
+if (builder.ExecutionContext.IsRunMode)
+{
+    landingPageProject.WithExplicitStart();
+}
+
+if (builder.Environment.IsDevelopment())
+{
+    landingPageProject.WithHttpHealthCheck("/alive");
+}
+
 //#if (api == "Standalone")
 var serverApiProject = builder.AddProject("serverapi", "../Boilerplate.Server.Api/Boilerplate.Server.Api.csproj")
     .WithExternalHttpEndpoints();
@@ -128,7 +141,7 @@ serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 
 //#if (cloudflare == true)
 // cloudflared connects straight to the projects (no reverse proxy) - possible now that RemoveWildcardEndpoints drops http2.
-builder.AddCloudflareTunnels(serverWebProject
+builder.AddCloudflareTunnels(serverWebProject, landingPageProject
     //#if (api == "Standalone")
     , serverApiProject
     //#endif
@@ -142,7 +155,7 @@ builder.ConfigureDbGate();
 //#endif
 // Publish mode only: the registry the images go to, the migrations service, health checks, restart policies, the
 // dashboards on the server's loopback and the settings the deployed server reads from the deploy job.
-builder.ConfigureDockerComposePublishing(compose, serverWebProject
+builder.ConfigureDockerComposePublishing(compose, serverWebProject, landingPageProject
     //#if (api == "Standalone")
     , serverApiProject
     //#endif
@@ -163,6 +176,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#else
     serverWebProject.WithReference(mailpit);
     //#endif
+    landingPageProject.WithReference(mailpit);
 
     var workbench = builder.AddProject("workbench", "../../Workbench/Boilerplate.Workbench.csproj")
         .WithExplicitStart();
@@ -171,6 +185,11 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     builder.AddCloudflareQuickTunnel("cloudflare-tunnel-workbench")
         .WithReference(workbench)
         .WaitFor(workbench)
+        .WithExplicitStart();
+
+    builder.AddCloudflareQuickTunnel("cloudflare-tunnel-landingpage")
+        .WithReference(landingPageProject)
+        .WaitFor(landingPageProject)
         .WithExplicitStart();
     //#endif
 

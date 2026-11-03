@@ -59,7 +59,15 @@ public partial class PreviewPane
     /// <summary>A saved state to load the page with, such as the one a comment was left on.</summary>
     [Parameter] public string? SnapshotId { get; set; }
 
-    private bool ShowFrame => Pane.Scenario.Frame && Pane.Scenario.Backdrop is null;
+    /// <summary>Makes the view the whole screen of the phone the Workbench runs on, with no header or frame around it.</summary>
+    [Parameter] public bool FullScreen { get; set; }
+
+    // The page at the phone's own size; a store composition has a size of its own, so it's scaled to fit like any other view.
+    private bool FillsScreen => FullScreen && Pane.Scenario.Backdrop is null;
+
+    private WorkbenchScenario Shown => FillsScreen ? Pane.Scenario with { Device = DevicePresets.ThisDeviceKey, Rotated = false } : Pane.Scenario;
+
+    private bool ShowFrame => FullScreen is false && Pane.Scenario.Frame && Pane.Scenario.Backdrop is null;
 
     private string SizeText
     {
@@ -78,12 +86,13 @@ public partial class PreviewPane
 
     protected override void OnParametersSet()
     {
-        device = Pane.Scenario.DevicePreset;
+        device = Shown.DevicePreset;
         deviceName = GetDeviceName(device, Localizer);
-        previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario, Pane.Id, SnapshotId);
+        previewUrl = WorkbenchUrls.Preview(Page.Key, Shown, Pane.Id, SnapshotId);
         frameUrl ??= previewUrl;
-        (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, ShowFrame);
-        (viewportWidth, viewportHeight) = device.GetViewport(Pane.Scenario.Rotated);
+        // No size for a view that fills the screen, so index.ts leaves its scale alone.
+        (frameWidth, frameHeight) = FillsScreen ? (0, 0) : DeviceFrame.GetFrameSize(device, Shown.Rotated, ShowFrame);
+        (viewportWidth, viewportHeight) = device.GetViewport(Shown.Rotated);
     }
 
     /// <summary>Sends the frame to the view's preview URL when its scenario or page has changed.</summary>

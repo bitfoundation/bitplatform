@@ -9,7 +9,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter requests" placeholder='Filter: url text, method:GET, status:failed|cancelled|pending|2xx|4xx|5xx' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <input type="text" aria-label="Filter requests" placeholder='Filter: url text, method:GET, status:failed|cancelled|pending|2xx|4xx|5xx, trace:…' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-segmented" role="group" aria-label="Show">
                 <button type="button" aria-pressed="@(View.ByEndpoint ? "false" : "true")" @onclick="() => ShowEndpoints(false)">Requests</button>
                 <button type="button" aria-pressed="@(View.ByEndpoint ? "true" : "false")" title="One row per endpoint, with ids in the path as {id}: counts, failures, p50/p95 durations, bytes" @onclick="() => ShowEndpoints(true)">Endpoints</button>
@@ -115,9 +115,17 @@
                         <dt>Response size</dt><dd>@BevFmt.Bytes(s.ResponseBytes) @(s.ContentType is null ? "" : "· " + s.ContentType)</dd>
                         <dt>Trigger</dt><dd>@if (s.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t)">@s.TriggerDescription ↗</button> } else { <span class="bev-muted">not inside a UI event (lifecycle method, timer or background work)</span> }</dd>
                         <dt>Sent from</dt><dd class="bev-mono">@if (s.CallerComponent is { } component) { @component @if (s.CallerVia is { } via) { <span class="bev-muted"> via @via</span> } } else if (s.CallerMissing is { } missing) { <span class="bev-muted" style="font-family:inherit">@missing</span> } else { <span class="bev-muted" style="font-family:inherit">not captured (CaptureHttpCallers is off)</span> }</dd>
+                        @if (s.Protocol is { } protocol)
+                        {
+                            <dt>Protocol</dt><dd>@protocol@(s.GraphQlOperation is { } operation ? " · operation " + operation : "")@(protocol == "server-sent events" ? " · the duration is to the response headers; the events stream after it" : "")</dd>
+                        }
+                        <dt>Trace</dt><dd>@if (s.TraceId is { } traceId) { <span class="bev-mono" title="The W3C trace id the request carried to the server (traceparent): what the server's spans and logs are filed under in a tracing backend">@traceId · @s.SpanId</span> <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("logs", "trace:" + traceId)'>logs in it ↗</button> } else { <span class="bev-muted">none sent (no traceparent header: the client propagates no trace)</span> }</dd>
                         <dt>Timeline</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open event ↗</button></dd>
                     </dl>
-                    <div class="bev-muted" style="margin-top:4px">Bodies are never captured. Sensitive headers and query values are redacted.</div>
+                    <div class="bev-muted" style="margin-top:4px">@(BevHttpBodies.Allowed(Session) ? "Text bodies are captured (CaptureHttpBodies) and redacted."
+                        : !Session.Options.CaptureHttpBodies ? "Bodies are not captured (CaptureHttpBodies is off)."
+                        : Session.ValueAccess != BevValueAccess.Full ? $"Bodies are not captured: CaptureHttpBodies is on, but bodies are read only at value access Full (it is {Session.ValueAccess})."
+                        : "Bodies are not captured: CaptureHttpBodies is on, but in a process that serves many users bodies are read only in Development.") Sensitive headers and query values are redacted.</div>
                 </div>
             </div>
             @if (s.RequestHeaders is { Count: > 0 })
@@ -132,6 +140,20 @@
                 <div class="bev-section">
                     <div class="bev-section-title">Response headers (@s.ResponseHeaders.Count)</div>
                     <div class="bev-section-body"><table><tbody>@foreach (var h in s.ResponseHeaders) { <tr><td class="bev-mono">@h.Key</td><td class="bev-mono">@h.Value</td></tr> }</tbody></table></div>
+                </div>
+            }
+            @if (s.RequestBody is not null || s.RequestBodyNote is not null)
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Request body <span class="bev-muted" style="font-weight:normal">redacted · CaptureHttpBodies</span></div>
+                    <div class="bev-section-body">@if (s.RequestBody is { } requestBody) { <pre class="bev-pre">@requestBody</pre> } else { <span class="bev-muted">@s.RequestBodyNote</span> }</div>
+                </div>
+            }
+            @if (s.ResponseBody is not null || s.ResponseBodyNote is not null)
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Response body <span class="bev-muted" style="font-weight:normal">redacted · CaptureHttpBodies</span></div>
+                    <div class="bev-section-body">@if (s.ResponseBody is { } responseBody) { <pre class="bev-pre">@responseBody</pre> } else { <span class="bev-muted">@s.ResponseBodyNote</span> }</div>
                 </div>
             }
             @if (_duplicates > 1)
@@ -171,9 +193,11 @@
         var filter = BevQueryFilter.Parse(Query);
         var status = filter.Token("status");
         var method = filter.Token("method");
+        var trace = filter.Token("trace");
         var matching = _all.Where(r =>
             filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error, r.Caller)
             && (method is null || r.Method.Equals(method, StringComparison.OrdinalIgnoreCase))
+            && (trace is null || (r.TraceId?.StartsWith(trace, StringComparison.OrdinalIgnoreCase) ?? false))
             && (status is null || status.ToLowerInvariant() switch
             {
                 "failed" => r.IsFailed,

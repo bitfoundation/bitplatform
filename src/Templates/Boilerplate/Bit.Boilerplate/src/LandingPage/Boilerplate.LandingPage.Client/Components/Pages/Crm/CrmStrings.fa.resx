@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Brightlane: CRM برای تیم‌های فروش B2B از 5 تا 50 نفر</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>پایپ‌لاین، ایمیل، تقویم و پیش‌بینی فروشی که همان لحظه‌ای که معامله‌ای جابه‌جا می‌شود به‌روز است. در یک بعدازظهر از روی صفحه‌گسترده‌تان راه می‌افتد و 14 روز رایگان است.</value>
+    </data>
+    <data name="NavProduct" xml:space="preserve">
+        <value>محصول</value>
+    </data>
+    <data name="NavCustomers" xml:space="preserve">
+        <value>مشتری‌ها</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>قیمت‌ها</value>
+    </data>
+    <data name="NavSpreadsheets" xml:space="preserve">
+        <value>در برابر صفحه‌گسترده</value>
+    </data>
+    <data name="NavTrial" xml:space="preserve">
+        <value>شروع آزمایش رایگان</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>CRM برای تیم‌های فروش B2B از 5 تا 50 نفر. ساخت دوبلین و لیسبون، از سال 2019.</value>
+    </data>
+    <data name="FooterHours" xml:space="preserve">
+        <value>پشتیبانی دوشنبه تا جمعه، ساعت 08:00 تا 18:00 به وقت ایرلند پاسخ می‌دهد.</value>
+    </data>
+    <data name="FooterSpreadsheets" xml:space="preserve">
+        <value>Brightlane در برابر صفحه‌گسترده</value>
+    </data>
+    <data name="FooterSecurity" xml:space="preserve">
+        <value>امنیت و حریم خصوصی</value>
+    </data>
+    <data name="FooterApps" xml:space="preserve">
+        <value>اپ‌های دسکتاپ و موبایل</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>برای 12 نفر چقدر می‌شود؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>می‌شود صفحه‌گسترده‌مان را وارد کنیم؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>داده‌های ما کجا نگه داشته می‌شود؟</value>
+    </data>
+    <data name="ChatTrial" xml:space="preserve">
+        <value>شروع آزمایش رایگان</value>
+    </data>
+    <data name="ChatPerson" xml:space="preserve">
+        <value>ترجیح می‌دهید با یک آدم حرف بزنید؟ ایمیل بزنید به</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>CRM برای تیم‌های B2B از 5 تا 50 نفر</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>معامله را جابه‌جا کنید؛ پیش‌بینی خودش به‌روز می‌شود.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Brightlane معامله‌ها، ایمیل‌ها و جلسه‌های تیمتان را روی یک بورد نگه می‌دارد و حساب پیش‌بینی را خودش انجام می‌دهد؛ پیش‌بینی‌ای که صبح دوشنبه بشود از آن دفاع کرد. صفحه‌گسترده‌تان را بعد از ناهار وارد کنید و همان عصر با آن بفروشید.</value>
+    </data>
+    <data name="HeroTrial" xml:space="preserve">
+        <value>14 روز رایگان امتحان کنید</value>
+    </data>
+    <data name="HeroPricing" xml:space="preserve">
+        <value>دیدن قیمت‌ها</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>کارت بانکی لازم نیست. هر وقت بخواهید، همه‌چیز را با CSV بیرون ببرید.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>یک پایپ‌لاین از داخل اپ. معامله را با فلش‌هایش جابه‌جا کنید، یا روی کارت بروید و کلیدهای جهت‌نما را بزنید.</value>
+    </data>
+    <data name="DemoBoardTitle" xml:space="preserve">
+        <value>پایپ‌لاین این فصل</value>
+    </data>
+    <data name="DemoOpenDeals" xml:space="preserve">
+        <value>{0} معامله‌ی باز · تیم فروش بنلوکس</value>
+    </data>
+    <data name="DemoForecast" xml:space="preserve">
+        <value>پیش‌بینی وزنی</value>
+    </data>
+    <data name="DemoTarget" xml:space="preserve">
+        <value>{0} از هدف {1} این فصل</value>
+    </data>
+    <data name="DemoMoney" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="DemoStageQualified" xml:space="preserve">
+        <value>بررسی‌شده</value>
+    </data>
+    <data name="DemoStageDemo" xml:space="preserve">
+        <value>دمو</value>
+    </data>
+    <data name="DemoStageProposal" xml:space="preserve">
+        <value>پیشنهاد قیمت</value>
+    </data>
+    <data name="DemoStageNegotiation" xml:space="preserve">
+        <value>مذاکره</value>
+    </data>
+    <data name="DemoStageWon" xml:space="preserve">
+        <value>موفق</value>
+    </data>
+    <data name="DemoProbability" xml:space="preserve">
+        <value>{0}% در پیش‌بینی حساب می‌شود</value>
+    </data>
+    <data name="DemoNext1" xml:space="preserve">
+        <value>تماس شناخت، پنجشنبه</value>
+    </data>
+    <data name="DemoNext2" xml:space="preserve">
+        <value>دمو رزرو شده، دوشنبه 14:00</value>
+    </data>
+    <data name="DemoNext3" xml:space="preserve">
+        <value>فرستادن تجربه‌ی مشتری رستورانی</value>
+    </data>
+    <data name="DemoNext4" xml:space="preserve">
+        <value>پیشنهاد دیروز دو بار باز شده</value>
+    </data>
+    <data name="DemoNext5" xml:space="preserve">
+        <value>پیگیری روز جمعه</value>
+    </data>
+    <data name="DemoNext6" xml:space="preserve">
+        <value>قرارداد پیش وکیلشان است</value>
+    </data>
+    <data name="DemoNext7" xml:space="preserve">
+        <value>امضا شده، 6 آبان</value>
+    </data>
+    <data name="DemoMoveBack" xml:space="preserve">
+        <value>برگرداندن {0} به {1}</value>
+    </data>
+    <data name="DemoMoveForward" xml:space="preserve">
+        <value>بردن {0} به {1}</value>
+    </data>
+    <data name="DemoEmptyStage" xml:space="preserve">
+        <value>هنوز معامله‌ای این‌جا نیست</value>
+    </data>
+    <data name="DemoKeyboardHint" xml:space="preserve">
+        <value>نکته: روی یک کارت بروید و با ← یا → جابه‌جایش کنید.</value>
+    </data>
+    <data name="DemoWonSoFar" xml:space="preserve">
+        <value>تا این‌جای فصل {0} قرارداد بسته شده</value>
+    </data>
+    <data name="DemoStatusMoved" xml:space="preserve">
+        <value>{0} به «{1}» رفت. پیش‌بینی: {2}.</value>
+    </data>
+    <data name="DemoStatusWon" xml:space="preserve">
+        <value>قرارداد {0} بسته شد: {1} به این فصل اضافه شد.</value>
+    </data>
+    <data name="LogosTitle" xml:space="preserve">
+        <value>1٬400 تیم فروش پایپ‌لاینشان را با Brightlane می‌چرخانند</value>
+    </data>
+    <data name="StatsTitle" xml:space="preserve">
+        <value>Brightlane به زبان عدد</value>
+    </data>
+    <data name="Stat1Value" xml:space="preserve">
+        <value>11</value>
+    </data>
+    <data name="Stat1Unit" xml:space="preserve">
+        <value>دقیقه</value>
+    </data>
+    <data name="Stat1Label" xml:space="preserve">
+        <value>میانه‌ی زمان وارد کردن صفحه‌گسترده‌ی یک تیم</value>
+    </data>
+    <data name="Stat2Value" xml:space="preserve">
+        <value>4٫6</value>
+    </data>
+    <data name="Stat2Unit" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="Stat2Label" xml:space="preserve">
+        <value>وقتی که هر فروشنده در هفته پس می‌گیرد، طبق نظرسنجی مشتری‌ها</value>
+    </data>
+    <data name="Stat3Value" xml:space="preserve">
+        <value>38</value>
+    </data>
+    <data name="Stat3Label" xml:space="preserve">
+        <value>کشوری که تیم‌های Brightlane در آن می‌فروشند</value>
+    </data>
+    <data name="Stat4Value" xml:space="preserve">
+        <value>99٫95%</value>
+    </data>
+    <data name="Stat4Label" xml:space="preserve">
+        <value>در دسترس بودن در 12 ماه گذشته</value>
+    </data>
+    <data name="StatsNote" xml:space="preserve">
+        <value>وقتِ صرفه‌جویی‌شده از نظرسنجی 312 تیم مشتری در شهریور 1405 آمده است. در دسترس بودن را یک سرویس بیرونی هر دقیقه اندازه می‌گیرد.</value>
+    </data>
+    <data name="ProductEyebrow" xml:space="preserve">
+        <value>چه چیزهایی دارد</value>
+    </data>
+    <data name="ProductTitle" xml:space="preserve">
+        <value>شش کاری که فروشنده‌ها هر روز انجام می‌دهند، هر کدام چند کلیک کوتاه‌تر</value>
+    </data>
+    <data name="ProductLede" xml:space="preserve">
+        <value>ماژولی برای خریدن و مشاوری برای راه‌اندازی لازم نیست. هر چه این‌جا می‌بینید در همه‌ی پلن‌ها هست، مگر صفحه‌ی قیمت‌ها چیز دیگری بگوید.</value>
+    </data>
+    <data name="Cap1Tag" xml:space="preserve">
+        <value>پایپ‌لاین</value>
+    </data>
+    <data name="Cap1Title" xml:space="preserve">
+        <value>بوردهایی به شکل فروش شما</value>
+    </data>
+    <data name="Cap1Body" xml:space="preserve">
+        <value>مرحله‌های خودتان، احتمال‌های خودتان و یک بورد برای هر خط محصول. معامله را بکشید یا با کیبورد جابه‌جا کنید.</value>
+    </data>
+    <data name="Cap1Detail" xml:space="preserve">
+        <value>تا 20 پایپ‌لاین در پلن Business</value>
+    </data>
+    <data name="Cap2Tag" xml:space="preserve">
+        <value>صندوق ایمیل</value>
+    </data>
+    <data name="Cap2Title" xml:space="preserve">
+        <value>ایمیل و جلسه، خودکار کنار معامله</value>
+    </data>
+    <data name="Cap2Body" xml:space="preserve">
+        <value>صندوق ایمیل و تقویم کاری‌تان را وصل کنید. هر رشته‌ی ایمیل و هر جلسه با یک مخاطب، بدون ترفند BCC، کنار معامله‌ی درستش می‌نشیند.</value>
+    </data>
+    <data name="Cap2Detail" xml:space="preserve">
+        <value>Google Workspace، Microsoft 365 یا هر سرور IMAP</value>
+    </data>
+    <data name="Cap3Tag" xml:space="preserve">
+        <value>پیش‌بینی</value>
+    </data>
+    <data name="Cap3Title" xml:space="preserve">
+        <value>پیش‌بینی‌ای که کسی مجبور نیست از نو بسازد</value>
+    </data>
+    <data name="Cap3Body" xml:space="preserve">
+        <value>بر اساس مرحله وزن می‌گیرد، فروشنده‌ی صاحب معامله تنظیمش می‌کند و هر دوشنبه ساعت 08:00 با فصل قبل مقایسه می‌شود.</value>
+    </data>
+    <data name="Cap3Detail" xml:space="preserve">
+        <value>با جابه‌جا شدن معامله‌ها به‌روز می‌شود، نه با فرمول</value>
+    </data>
+    <data name="Cap4Tag" xml:space="preserve">
+        <value>پیگیری</value>
+    </data>
+    <data name="Cap4Title" xml:space="preserve">
+        <value>هیچ کاری در ذهن کسی جا نمی‌ماند</value>
+    </data>
+    <data name="Cap4Body" xml:space="preserve">
+        <value>هر معامله یک قدم بعدی با تاریخ دارد. معامله‌های بی‌قدم بعدی بالای فهرست دوشنبه می‌آیند تا قبل از جلسه‌ی صبح تکلیفشان روشن شود.</value>
+    </data>
+    <data name="Cap4Detail" xml:space="preserve">
+        <value>یادآوری با ایمیل، موبایل و دسکتاپ</value>
+    </data>
+    <data name="Cap5Tag" xml:space="preserve">
+        <value>گزارش</value>
+    </data>
+    <data name="Cap5Title" xml:space="preserve">
+        <value>گزارش‌هایی که هیئت‌مدیره واقعاً می‌خواند</value>
+    </data>
+    <data name="Cap5Body" xml:space="preserve">
+        <value>نرخ موفقیت، طول چرخه‌ی فروش و درآمد هر فروشنده، به تفکیک فصل یا تیم، به صورت PDF یا CSV.</value>
+    </data>
+    <data name="Cap5Detail" xml:space="preserve">
+        <value>ارسال زمان‌بندی‌شده‌ی گزارش در پلن Business</value>
+    </data>
+    <data name="Cap6Tag" xml:space="preserve">
+        <value>موبایل</value>
+    </data>
+    <data name="Cap6Title" xml:space="preserve">
+        <value>جلسه را ثبت کنید، قبل از این‌که به ماشین برسید</value>
+    </data>
+    <data name="Cap6Body" xml:space="preserve">
+        <value>اپ موبایل با دو لمس یادداشت تماس را ذخیره می‌کند، در پارکینگ زیرزمین هم کار می‌کند و وقتی آنتن برگشت همگام می‌شود.</value>
+    </data>
+    <data name="Cap6Detail" xml:space="preserve">
+        <value>آیفون، آیپد و اندروید، با حالت آفلاین</value>
+    </data>
+    <data name="CaseEyebrow" xml:space="preserve">
+        <value>تجربه‌ی مشتری</value>
+    </data>
+    <data name="CaseTitle" xml:space="preserve">
+        <value>پیش‌بینی Nordvik قبلاً حدس بود. فصل پیش فقط 6% خطا داشت.</value>
+    </data>
+    <data name="CaseBody1" xml:space="preserve">
+        <value>Nordvik Industrial از یوتبوری و اسلو به کشتی‌سازی‌ها پمپ و شیر صنعتی می‌فروشد. 22 فروشنده‌اش پایپ‌لاین را در یک صفحه‌گسترده‌ی مشترک با 14 برگه نگه می‌داشتند و عصرهای جمعه صرف به‌روز کردنش می‌شد.</value>
+    </data>
+    <data name="CaseBody2" xml:space="preserve">
+        <value>در اسفند 1404 ظرف یک هفته به Brightlane آمدند و کار را با همان صفحه‌گسترده شروع کردند. شش ماه بعد، سرپرست‌های فروش جمعه‌ها را با مشتری‌ها می‌گذرانند.</value>
+    </data>
+    <data name="CaseQuote" xml:space="preserve">
+        <value>جلسه‌ی دوشنبه از بحث سر عددها به حرف زدن درباره‌ی خود معامله‌ها رسید.</value>
+    </data>
+    <data name="CaseQuoteName" xml:space="preserve">
+        <value>اینگرید سِتِر</value>
+    </data>
+    <data name="CaseQuoteRole" xml:space="preserve">
+        <value>مدیر فروش، Nordvik Industrial</value>
+    </data>
+    <data name="CaseCompany" xml:space="preserve">
+        <value>پمپ و شیر صنعتی · 22 فروشنده</value>
+    </data>
+    <data name="CaseNumber1Value" xml:space="preserve">
+        <value>±6%</value>
+    </data>
+    <data name="CaseNumber1Label" xml:space="preserve">
+        <value>خطای پیش‌بینی در فصل سوم 2026؛ پیش از این ±27% بود</value>
+    </data>
+    <data name="CaseNumber2Value" xml:space="preserve">
+        <value>5</value>
+    </data>
+    <data name="CaseNumber2Unit" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="CaseNumber2Label" xml:space="preserve">
+        <value>در هفته برای هر سرپرست فروش آزاد شد</value>
+    </data>
+    <data name="CaseNumber3Value" xml:space="preserve">
+        <value>21% ← 30%</value>
+    </data>
+    <data name="CaseNumber3Label" xml:space="preserve">
+        <value>نرخ موفقیت، فصل قبل و فصل بعد از آمدن</value>
+    </data>
+    <data name="CasePeriod" xml:space="preserve">
+        <value>عددها از گزارش‌های خود Nordvik، فصل اول و سوم 2026.</value>
+    </data>
+    <data name="CompareEyebrow" xml:space="preserve">
+        <value>انتخاب CRM</value>
+    </data>
+    <data name="CompareTitle" xml:space="preserve">
+        <value>صفحه‌گسترده، Brightlane یا یک سامانه‌ی سازمانی بزرگ؟</value>
+    </data>
+    <data name="CompareSpreadsheet" xml:space="preserve">
+        <value>صفحه‌گسترده</value>
+    </data>
+    <data name="CompareSuite" xml:space="preserve">
+        <value>سامانه‌ی سازمانی</value>
+    </data>
+    <data name="CompareRow1" xml:space="preserve">
+        <value>آماده‌ی کار</value>
+    </data>
+    <data name="CompareRow1Sheet" xml:space="preserve">
+        <value>همین امروز، ولی همه‌چیزش را خودتان می‌سازید</value>
+    </data>
+    <data name="CompareRow1Us" xml:space="preserve">
+        <value>همین عصر، با داده‌های خودتان</value>
+    </data>
+    <data name="CompareRow1Suite" xml:space="preserve">
+        <value>بعد از یک پروژه‌ی دو تا شش‌ماهه</value>
+    </data>
+    <data name="CompareRow2" xml:space="preserve">
+        <value>چه کسی به‌روزش نگه می‌دارد</value>
+    </data>
+    <data name="CompareRow2Sheet" xml:space="preserve">
+        <value>هر کس یادش بماند</value>
+    </data>
+    <data name="CompareRow2Us" xml:space="preserve">
+        <value>خود فروشنده‌ها، با دو کلیک از ایمیل یا موبایل</value>
+    </data>
+    <data name="CompareRow2Suite" xml:space="preserve">
+        <value>فروشنده‌ها، با فرم‌های طولانی</value>
+    </data>
+    <data name="CompareRow3" xml:space="preserve">
+        <value>پیش‌بینی</value>
+    </data>
+    <data name="CompareRow3Sheet" xml:space="preserve">
+        <value>فرمولی که یک نفر باید نگهش دارد</value>
+    </data>
+    <data name="CompareRow3Us" xml:space="preserve">
+        <value>وزنی، و با جابه‌جا شدن معامله‌ها به‌روز</value>
+    </data>
+    <data name="CompareRow3Suite" xml:space="preserve">
+        <value>قابل تنظیم، وقتی کسی تنظیمش کند</value>
+    </data>
+    <data name="CompareRow4" xml:space="preserve">
+        <value>سابقه‌ی ایمیل</value>
+    </data>
+    <data name="CompareRow4Sheet" xml:space="preserve">
+        <value>دستی کپی می‌شود، اگر بشود</value>
+    </data>
+    <data name="CompareRow4Us" xml:space="preserve">
+        <value>خودکار کنار معامله ثبت می‌شود</value>
+    </data>
+    <data name="CompareRow4Suite" xml:space="preserve">
+        <value>با یک افزونه</value>
+    </data>
+    <data name="CompareRow5" xml:space="preserve">
+        <value>مدیر سیستم لازم دارد؟</value>
+    </data>
+    <data name="CompareRow5Sheet" xml:space="preserve">
+        <value>نه، تا روزی که خراب شود</value>
+    </data>
+    <data name="CompareRow5Us" xml:space="preserve">
+        <value>برای تیم‌های زیر 50 نفر، نه</value>
+    </data>
+    <data name="CompareRow5Suite" xml:space="preserve">
+        <value>اغلب یک نفر تمام‌وقت</value>
+    </data>
+    <data name="CompareMore" xml:space="preserve">
+        <value>مقایسه‌ی کامل با صفحه‌گسترده را بخوانید، از جمله جاهایی که آن برنده است</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>از زبان مدیران فروش</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>تیم‌ها بی‌آن‌که کسی بگوید بازش می‌کنند</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>در چهار سال سه CRM عوض کردیم. Brightlane اولین‌شان است که فروشنده‌ها قبل از این‌که کسی بگوید بازش می‌کنند.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>پریا رامان</value>
+    </data>
+    <data name="Review1Role" xml:space="preserve">
+        <value>مدیر فروش Tessera Labs، با 14 فروشنده</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>وارد کردن صفحه‌گسترده‌ی 6٬000 ردیفی‌مان بیست دقیقه طول کشید و 340 مخاطب تکراری پیدا کرد که دو بار به آن‌ها زنگ می‌زدیم.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>ماتئوس اولیویرا</value>
+    </data>
+    <data name="Review2Role" xml:space="preserve">
+        <value>بنیان‌گذار Okapi Freight، لیسبون</value>
+    </data>
+    <data name="Review3Quote" xml:space="preserve">
+        <value>بین بازدیدهای کارگاه، پیش‌بینی را روی موبایل نگاه می‌کنم و همان عددی است که تیمم می‌بیند.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>هانا بکر</value>
+    </data>
+    <data name="Review3Role" xml:space="preserve">
+        <value>مدیر فروش Vireo Solar، فرایبورگ</value>
+    </data>
+    <data name="SecurityEyebrow" xml:space="preserve">
+        <value>امنیت و حریم خصوصی</value>
+    </data>
+    <data name="SecurityTitle" xml:space="preserve">
+        <value>داده‌هایتان کجا هستند و چه کسی می‌تواند ببیندشان</value>
+    </data>
+    <data name="SecurityLede" xml:space="preserve">
+        <value>جزئیاتی که مسئول فناوری‌تان می‌پرسد، به زبان ساده.</value>
+    </data>
+    <data name="Security1Title" xml:space="preserve">
+        <value>میزبانی در اتحادیه‌ی اروپا</value>
+    </data>
+    <data name="Security1Body" xml:space="preserve">
+        <value>داده‌ها در مراکز داده‌ی فرانکفورت و دوبلین نگه داشته می‌شوند و از اتحادیه‌ی اروپا بیرون نمی‌روند، مگر ابزاری را وصل کنید که آن‌ها را جای دیگری ببرد.</value>
+    </data>
+    <data name="Security2Title" xml:space="preserve">
+        <value>رمزگذاری‌شده و پشتیبان‌دار</value>
+    </data>
+    <data name="Security2Body" xml:space="preserve">
+        <value>TLS 1.3 در انتقال، AES-256 در ذخیره، و یک پشتیبان در روز که 35 روز نگه داشته می‌شود.</value>
+    </data>
+    <data name="Security3Title" xml:space="preserve">
+        <value>ورودی که کنترلش با شماست</value>
+    </data>
+    <data name="Security3Body" xml:space="preserve">
+        <value>ورود دومرحله‌ای در همه‌ی پلن‌ها. ورود یکپارچه با SAML و مدیریت کاربر با SCIM در پلن‌های Business و Enterprise.</value>
+    </data>
+    <data name="Security4Title" xml:space="preserve">
+        <value>GDPR، روی کاغذ</value>
+    </data>
+    <data name="Security4Body" xml:space="preserve">
+        <value>قرارداد پردازش داده‌ای که آنلاین امضا می‌شود، و فهرست عمومی همه‌ی پردازشگرهای فرعی‌ای که استفاده می‌کنیم.</value>
+    </data>
+    <data name="SealSample" xml:space="preserve">
+        <value>نمونه</value>
+    </data>
+    <data name="Seal1Name" xml:space="preserve">
+        <value>ISO/IEC 27001</value>
+    </data>
+    <data name="Seal1Detail" xml:space="preserve">
+        <value>امنیت اطلاعات</value>
+    </data>
+    <data name="Seal2Name" xml:space="preserve">
+        <value>SOC 2 Type II</value>
+    </data>
+    <data name="Seal2Detail" xml:space="preserve">
+        <value>گزارش ممیزی</value>
+    </data>
+    <data name="Seal3Name" xml:space="preserve">
+        <value>DPA مطابق GDPR</value>
+    </data>
+    <data name="Seal3Detail" xml:space="preserve">
+        <value>امضای آنلاین</value>
+    </data>
+    <data name="SealsNote" xml:space="preserve">
+        <value>این نشان‌ها جای‌نگهدارند. فقط گواهی‌هایی را نشان دهید که شرکتتان واقعاً دارد، هر کدام با پیوند به گواهی یا گزارشش.</value>
+    </data>
+    <data name="AppsEyebrow" xml:space="preserve">
+        <value>اپ‌ها</value>
+    </data>
+    <data name="AppsTitle" xml:space="preserve">
+        <value>روی میز و توی جیب</value>
+    </data>
+    <data name="AppsLede" xml:space="preserve">
+        <value>یک حساب و همان پایپ‌لاین در مرورگر، روی ویندوز و مک، و روی آیفون، آیپد و اندروید.</value>
+    </data>
+    <data name="AppsWebDetail" xml:space="preserve">
+        <value>هر مرورگر به‌روزی. چیزی برای نصب لازم نیست.</value>
+    </data>
+    <data name="AppsWindowsDetail" xml:space="preserve">
+        <value>ویندوز 10 و 11، با اعلان دسکتاپ</value>
+    </data>
+    <data name="AppsMacDetail" xml:space="preserve">
+        <value>macOS 13 یا جدیدتر، از App Store</value>
+    </data>
+    <data name="AppsIosDetail" xml:space="preserve">
+        <value>iOS 17 یا جدیدتر، با حالت آفلاین</value>
+    </data>
+    <data name="AppsAndroidDetail" xml:space="preserve">
+        <value>اندروید 10 یا جدیدتر، با حالت آفلاین</value>
+    </data>
+    <data name="CtaTitle" xml:space="preserve">
+        <value>پایپ‌لاین شما، تا عصر امروز آماده</value>
+    </data>
+    <data name="CtaBody" xml:space="preserve">
+        <value>یک دوره‌ی آزمایشی 14 روزه با همه‌ی امکانات Business شروع کنید، صفحه‌گسترده‌تان را وارد کنید و تیمتان را دعوت کنید. نه کارت بانکی لازم است، نه نصب چیزی.</value>
+    </data>
+    <data name="TalkToSales" xml:space="preserve">
+        <value>گفتگو با فروش</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>قیمت‌ها | Brightlane</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>پلن‌های Brightlane از 12 یورو برای هر کاربر در ماه با پرداخت سالانه. قیمت به یورو، دلار یا پوند، 14 روز آزمایش رایگان و مقایسه‌ی همه‌ی پلن‌ها کنار هم.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>یک قیمت برای هر کاربر. ماهانه بپردازید، یا سالانه 20% کمتر.</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>همه‌ی پلن‌ها مخاطب و معامله‌ی نامحدود، اپ‌های دسکتاپ و موبایل، و همگام‌سازی ایمیل و تقویم دارند. قبل از انتخاب، پلن Business را 14 روز رایگان امتحان کنید.</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>پلن‌ها</value>
+    </data>
+    <data name="BillingLabel" xml:space="preserve">
+        <value>دوره‌ی پرداخت</value>
+    </data>
+    <data name="BillingMonthly" xml:space="preserve">
+        <value>ماهانه</value>
+    </data>
+    <data name="BillingYearly" xml:space="preserve">
+        <value>سالانه</value>
+    </data>
+    <data name="BillingSave" xml:space="preserve">
+        <value>{0}% کمتر</value>
+    </data>
+    <data name="CurrencyLabel" xml:space="preserve">
+        <value>واحد پول</value>
+    </data>
+    <data name="CurrencyEUR" xml:space="preserve">
+        <value>یورو</value>
+    </data>
+    <data name="CurrencyUSD" xml:space="preserve">
+        <value>دلار آمریکا</value>
+    </data>
+    <data name="CurrencyGBP" xml:space="preserve">
+        <value>پوند انگلیس</value>
+    </data>
+    <data name="PriceEUR" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="PriceUSD" xml:space="preserve">
+        <value>{0} دلار</value>
+    </data>
+    <data name="PriceGBP" xml:space="preserve">
+        <value>{0} پوند</value>
+    </data>
+    <data name="PlanPopular" xml:space="preserve">
+        <value>انتخاب بیشتر تیم‌ها</value>
+    </data>
+    <data name="PlanCustom" xml:space="preserve">
+        <value>قیمت توافقی</value>
+    </data>
+    <data name="PlanEnterpriseBilling" xml:space="preserve">
+        <value>از 50 کاربر، با قرارداد سالانه و فاکتور</value>
+    </data>
+    <data name="PerSeatMonth" xml:space="preserve">
+        <value>برای هر کاربر در ماه</value>
+    </data>
+    <data name="BilledYearly" xml:space="preserve">
+        <value>{0} برای هر کاربر، یک بار در سال.</value>
+    </data>
+    <data name="YearSaving" xml:space="preserve">
+        <value>{0} صرفه‌جویی برای هر کاربر ({1}%).</value>
+    </data>
+    <data name="BilledMonthly" xml:space="preserve">
+        <value>هر ماه پرداخت می‌شود. هر وقت خواستید لغو کنید.</value>
+    </data>
+    <data name="PlanTrial" xml:space="preserve">
+        <value>شروع آزمایش رایگان</value>
+    </data>
+    <data name="CurrencyNote" xml:space="preserve">
+        <value>قیمت‌ها به یورو تعیین می‌شوند. قیمت دلاری و پوندی با نرخ ثابت (هر یورو 1٫16 دلار و 0٫84 پوند، که هر دی‌ماه بازبینی می‌شود) حساب و به نزدیک‌ترین 50 سنت یا پنی گرد می‌شود. قیمت سالانه در همه‌ی واحدها همان قیمت ماهانه با 20% کمتر است. قیمت‌ها بدون مالیات بر ارزش افزوده و مالیات فروش‌اند که هر جا لازم باشد اضافه می‌شوند.</value>
+    </data>
+    <data name="PlanStarter" xml:space="preserve">
+        <value>Starter</value>
+    </data>
+    <data name="PlanStarterSummary" xml:space="preserve">
+        <value>برای اولین تیم فروش، تا 10 نفر.</value>
+    </data>
+    <data name="PlanStarterFeature1" xml:space="preserve">
+        <value>1 پایپ‌لاین، معامله‌ی نامحدود</value>
+    </data>
+    <data name="PlanStarterFeature2" xml:space="preserve">
+        <value>همگام‌سازی ایمیل و تقویم</value>
+    </data>
+    <data name="PlanStarterFeature3" xml:space="preserve">
+        <value>پیش‌بینی وزنی</value>
+    </data>
+    <data name="PlanStarterFeature4" xml:space="preserve">
+        <value>اپ‌های دسکتاپ و موبایل</value>
+    </data>
+    <data name="PlanTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PlanTeamSummary" xml:space="preserve">
+        <value>برای تیم فروشی تا 50 نفر که بیش از یک چیز می‌فروشد.</value>
+    </data>
+    <data name="PlanTeamFeature1" xml:space="preserve">
+        <value>5 پایپ‌لاین، محصول و فهرست قیمت</value>
+    </data>
+    <data name="PlanTeamFeature2" xml:space="preserve">
+        <value>پیش‌بینی هر فروشنده، با امکان تنظیم</value>
+    </data>
+    <data name="PlanTeamFeature3" xml:space="preserve">
+        <value>20 خودکارسازی گردش کار</value>
+    </data>
+    <data name="PlanTeamFeature4" xml:space="preserve">
+        <value>قالب ایمیل و پیوند زمان‌بندی جلسه</value>
+    </data>
+    <data name="PlanBusiness" xml:space="preserve">
+        <value>Business</value>
+    </data>
+    <data name="PlanBusinessSummary" xml:space="preserve">
+        <value>برای چند تیم زیر یک حساب، تا 50 کاربر.</value>
+    </data>
+    <data name="PlanBusinessFeature1" xml:space="preserve">
+        <value>20 پایپ‌لاین، دسترسی به تفکیک تیم</value>
+    </data>
+    <data name="PlanBusinessFeature2" xml:space="preserve">
+        <value>ورود یکپارچه با SAML و SCIM</value>
+    </data>
+    <data name="PlanBusinessFeature3" xml:space="preserve">
+        <value>گزارش زمان‌بندی‌شده و محیط آزمایشی</value>
+    </data>
+    <data name="PlanBusinessFeature4" xml:space="preserve">
+        <value>پاسخ در کمتر از 4 ساعت کاری</value>
+    </data>
+    <data name="PlanEnterprise" xml:space="preserve">
+        <value>Enterprise</value>
+    </data>
+    <data name="PlanEnterpriseSummary" xml:space="preserve">
+        <value>برای 50 کاربر یا بیشتر، یا قراردادی که وکیل‌هایتان نوشته‌اند.</value>
+    </data>
+    <data name="PlanEnterpriseFeature1" xml:space="preserve">
+        <value>هر چه Business دارد</value>
+    </data>
+    <data name="PlanEnterpriseFeature2" xml:space="preserve">
+        <value>گزارش ممیزی و تعهد 99٫9% در دسترس بودن</value>
+    </data>
+    <data name="PlanEnterpriseFeature3" xml:space="preserve">
+        <value>یک مدیر موفقیت مشتری اختصاصی</value>
+    </data>
+    <data name="PlanEnterpriseFeature4" xml:space="preserve">
+        <value>پاسخ در کمتر از یک ساعت، شبانه‌روزی</value>
+    </data>
+    <data name="TrialEyebrow" xml:space="preserve">
+        <value>دوره‌ی آزمایشی رایگان</value>
+    </data>
+    <data name="TrialTitle" xml:space="preserve">
+        <value>14 روز Business، و این‌که بعدش چه می‌شود</value>
+    </data>
+    <data name="TrialLede" xml:space="preserve">
+        <value>همه‌ی تیم می‌تواند همه‌چیز را با داده‌های واقعی امتحان کند. نه کارت بانکی، نه تماس فروش، و نه غافلگیری در پایانش.</value>
+    </data>
+    <data name="Trial1Day" xml:space="preserve">
+        <value>روز 1</value>
+    </data>
+    <data name="Trial1Title" xml:space="preserve">
+        <value>همه‌ی امکانات Business، برای حداکثر 50 نفر</value>
+    </data>
+    <data name="Trial1Body" xml:space="preserve">
+        <value>صفحه‌گسترده را وارد کنید، ایمیل‌ها را وصل کنید و تیم را دعوت کنید. هیچ‌جا کارت بانکی نمی‌خواهد.</value>
+    </data>
+    <data name="Trial2Day" xml:space="preserve">
+        <value>روز 10</value>
+    </data>
+    <data name="Trial2Title" xml:space="preserve">
+        <value>یک یادآوری، همراه با کارهایی که کرده‌اید</value>
+    </data>
+    <data name="Trial2Body" xml:space="preserve">
+        <value>صاحب حساب یک ایمیل می‌گیرد: چند معامله، چند نفر و چند پایپ‌لاین راه افتاده و کدام پلن به آن‌ها می‌خورد.</value>
+    </data>
+    <data name="Trial3Day" xml:space="preserve">
+        <value>روز 14</value>
+    </data>
+    <data name="Trial3Title" xml:space="preserve">
+        <value>پلن را انتخاب کنید، همه‌چیز می‌ماند</value>
+    </data>
+    <data name="Trial3Body" xml:space="preserve">
+        <value>پلن را انتخاب کنید و با کارت بپردازید یا فاکتور بخواهید. داده‌ها، تنظیمات و سابقه دست‌نخورده می‌مانند.</value>
+    </data>
+    <data name="Trial4Day" xml:space="preserve">
+        <value>روز 15</value>
+    </data>
+    <data name="Trial4Title" xml:space="preserve">
+        <value>هنوز پلن ندارید؟ فقط خواندنی</value>
+    </data>
+    <data name="Trial4Body" xml:space="preserve">
+        <value>حساب متوقف می‌شود: همه می‌توانند ببینند و خروجی بگیرند، ولی کسی نمی‌تواند چیزی را عوض کند. با انتخاب پلن، همان لحظه دوباره فعال می‌شود.</value>
+    </data>
+    <data name="Trial5Day" xml:space="preserve">
+        <value>روز 75</value>
+    </data>
+    <data name="Trial5Title" xml:space="preserve">
+        <value>حذف، بعد از هشدار</value>
+    </data>
+    <data name="Trial5Body" xml:space="preserve">
+        <value>شصت روز بعد، حساب و داده‌هایش را حذف می‌کنیم. صاحب حساب یک هفته قبلش ایمیلی با پیوند خروجی گرفتن از همه‌چیز می‌گیرد.</value>
+    </data>
+    <data name="MatrixEyebrow" xml:space="preserve">
+        <value>مقایسه‌ی پلن‌ها</value>
+    </data>
+    <data name="MatrixTitle" xml:space="preserve">
+        <value>همه‌ی پلن‌ها، همه‌ی امکانات</value>
+    </data>
+    <data name="MatrixPick" xml:space="preserve">
+        <value>نمایش پلن</value>
+    </data>
+    <data name="MatrixIncluded" xml:space="preserve">
+        <value>دارد</value>
+    </data>
+    <data name="MatrixExcluded" xml:space="preserve">
+        <value>ندارد</value>
+    </data>
+    <data name="MatrixUnlimited" xml:space="preserve">
+        <value>نامحدود</value>
+    </data>
+    <data name="MatrixGroupPipeline" xml:space="preserve">
+        <value>پایپ‌لاین و معامله</value>
+    </data>
+    <data name="MatrixPipelines" xml:space="preserve">
+        <value>تعداد پایپ‌لاین</value>
+    </data>
+    <data name="MatrixContacts" xml:space="preserve">
+        <value>مخاطب و معامله</value>
+    </data>
+    <data name="MatrixCustomFields" xml:space="preserve">
+        <value>فیلدهای سفارشی</value>
+    </data>
+    <data name="MatrixProducts" xml:space="preserve">
+        <value>محصول و فهرست قیمت</value>
+    </data>
+    <data name="MatrixGroupEmail" xml:space="preserve">
+        <value>ایمیل و تقویم</value>
+    </data>
+    <data name="MatrixSync" xml:space="preserve">
+        <value>همگام‌سازی دوطرفه‌ی ایمیل و تقویم</value>
+    </data>
+    <data name="MatrixTemplates" xml:space="preserve">
+        <value>قالب ایمیل</value>
+    </data>
+    <data name="MatrixScheduling" xml:space="preserve">
+        <value>پیوند زمان‌بندی جلسه</value>
+    </data>
+    <data name="MatrixGroupForecast" xml:space="preserve">
+        <value>پیش‌بینی و گزارش</value>
+    </data>
+    <data name="MatrixWeighted" xml:space="preserve">
+        <value>پیش‌بینی وزنی</value>
+    </data>
+    <data name="MatrixAdjust" xml:space="preserve">
+        <value>پیش‌بینی هر فروشنده، با امکان تنظیم</value>
+    </data>
+    <data name="MatrixReports" xml:space="preserve">
+        <value>گزارش‌های ذخیره‌شده</value>
+    </data>
+    <data name="MatrixScheduled" xml:space="preserve">
+        <value>ارسال زمان‌بندی‌شده‌ی گزارش</value>
+    </data>
+    <data name="MatrixGroupAutomation" xml:space="preserve">
+        <value>خودکارسازی</value>
+    </data>
+    <data name="MatrixReminders" xml:space="preserve">
+        <value>یادآوری پیگیری</value>
+    </data>
+    <data name="MatrixWorkflows" xml:space="preserve">
+        <value>خودکارسازی گردش کار</value>
+    </data>
+    <data name="MatrixApi" xml:space="preserve">
+        <value>API و وب‌هوک</value>
+    </data>
+    <data name="MatrixGroupAdmin" xml:space="preserve">
+        <value>مدیریت و امنیت</value>
+    </data>
+    <data name="MatrixTwoFactor" xml:space="preserve">
+        <value>ورود دومرحله‌ای</value>
+    </data>
+    <data name="MatrixTeams" xml:space="preserve">
+        <value>دسترسی به تفکیک تیم</value>
+    </data>
+    <data name="MatrixSso" xml:space="preserve">
+        <value>ورود یکپارچه با SAML و SCIM</value>
+    </data>
+    <data name="MatrixSandbox" xml:space="preserve">
+        <value>حساب آزمایشی جدا</value>
+    </data>
+    <data name="MatrixAudit" xml:space="preserve">
+        <value>گزارش ممیزی</value>
+    </data>
+    <data name="MatrixGroupSupport" xml:space="preserve">
+        <value>پشتیبانی</value>
+    </data>
+    <data name="MatrixResponse" xml:space="preserve">
+        <value>زمان پاسخ</value>
+    </data>
+    <data name="MatrixResponseStarter" xml:space="preserve">
+        <value>2 روز کاری</value>
+    </data>
+    <data name="MatrixResponseTeam" xml:space="preserve">
+        <value>1 روز کاری</value>
+    </data>
+    <data name="MatrixResponseBusiness" xml:space="preserve">
+        <value>4 ساعت کاری</value>
+    </data>
+    <data name="MatrixResponseEnterprise" xml:space="preserve">
+        <value>1 ساعت، شبانه‌روزی</value>
+    </data>
+    <data name="MatrixOnboarding" xml:space="preserve">
+        <value>راه‌اندازی</value>
+    </data>
+    <data name="MatrixOnboardingSelf" xml:space="preserve">
+        <value>راهنما و ویدئو</value>
+    </data>
+    <data name="MatrixOnboardingSessions" xml:space="preserve">
+        <value>دو جلسه‌ی زنده</value>
+    </data>
+    <data name="MatrixOnboardingManager" xml:space="preserve">
+        <value>مدیر موفقیت اختصاصی</value>
+    </data>
+    <data name="MatrixSla" xml:space="preserve">
+        <value>تعهد در دسترس بودن (SLA)</value>
+    </data>
+    <data name="EnterpriseTitle" xml:space="preserve">
+        <value>بیش از 50 کاربر، یا فهرست بلندبالایی از واحد فناوری؟</value>
+    </data>
+    <data name="EnterpriseBody" xml:space="preserve">
+        <value>Enterprise همان Business است، به‌اضافه‌ی کاغذبازی‌ای که شرکت‌های بزرگ لازم دارند: قراردادی که می‌شود سرش مذاکره کرد، فاکتور به‌جای کارت، و کسی در Brightlane که حساب شما را با اسم می‌شناسد.</value>
+    </data>
+    <data name="Enterprise1" xml:space="preserve">
+        <value>ورود یکپارچه با SAML، SCIM و دسترسی تا سطح یک فیلد</value>
+    </data>
+    <data name="Enterprise2" xml:space="preserve">
+        <value>گزارش ممیزی همه‌ی تغییرها، با نگهداری هفت‌ساله</value>
+    </data>
+    <data name="Enterprise3" xml:space="preserve">
+        <value>شرایط قرارداد خودتان، بررسی DPA و فاکتور سالانه</value>
+    </data>
+    <data name="Enterprise4" xml:space="preserve">
+        <value>تعهد 99٫9% در دسترس بودن با جبران خسارت</value>
+    </data>
+    <data name="Enterprise5" xml:space="preserve">
+        <value>مدیر موفقیت اختصاصی و پاسخ در کمتر از یک ساعت، شب یا روز</value>
+    </data>
+    <data name="BillingFaqEyebrow" xml:space="preserve">
+        <value>پرداخت</value>
+    </data>
+    <data name="BillingFaqTitle" xml:space="preserve">
+        <value>پرسش‌های پرداخت</value>
+    </data>
+    <data name="BillingFaqLede" xml:space="preserve">
+        <value>سؤال دیگری دارید؟ از گفتگو بپرسید یا به تیم فروش ایمیل بزنید.</value>
+    </data>
+    <data name="BillingFaq1Question" xml:space="preserve">
+        <value>چه کسی یک کاربر حساب می‌شود؟</value>
+    </data>
+    <data name="BillingFaq1Answer" xml:space="preserve">
+        <value>هر کسی که برای ویرایش وارد می‌شود: فروشنده، مدیر و ادمین. بیننده‌های فقط‌خواندنی تا دو برابر تعداد کاربرها رایگان‌اند.</value>
+    </data>
+    <data name="BillingFaq2Question" xml:space="preserve">
+        <value>بعداً می‌شود کاربر کم یا زیاد کرد؟</value>
+    </data>
+    <data name="BillingFaq2Answer" xml:space="preserve">
+        <value>هر وقت بخواهید کاربر اضافه کنید و فقط برای باقی‌مانده‌ی ماه یا سال جاری بپردازید. کم کردن کاربر در تمدید بعدی انجام می‌شود.</value>
+    </data>
+    <data name="BillingFaq3Question" xml:space="preserve">
+        <value>چطور می‌شود پرداخت کرد؟</value>
+    </data>
+    <data name="BillingFaq3Answer" xml:space="preserve">
+        <value>با کارت در همه‌ی پلن‌ها، و با برداشت مستقیم SEPA در منطقه‌ی یورو. پلن‌های سالانه‌ی 20 کاربر یا بیشتر می‌توانند با فاکتور و حواله‌ی بانکی بپردازند.</value>
+    </data>
+    <data name="BillingFaq4Question" xml:space="preserve">
+        <value>قیمت‌ها مالیات بر ارزش افزوده دارند؟</value>
+    </data>
+    <data name="BillingFaq4Answer" xml:space="preserve">
+        <value>نه. مالیات بر ارزش افزوده یا مالیات فروش، هر جا لازم باشد، موقع پرداخت اضافه می‌شود. کسب‌وکارهای اتحادیه‌ی اروپا که شماره‌ی مالیاتی معتبر بدهند، طبق قاعده‌ی «پرداخت معکوس» (reverse charge) بدون مالیات صورت‌حساب می‌گیرند.</value>
+    </data>
+    <data name="BillingFaq5Question" xml:space="preserve">
+        <value>اگر لغو کنیم چه می‌شود؟</value>
+    </data>
+    <data name="BillingFaq5Answer" xml:space="preserve">
+        <value>پلن ماهانه در پایان همان ماهی که لغو کرده‌اید تمام می‌شود و پلن سالانه تا پایان سالی که پرداخته‌اید ادامه دارد. قبل و بعد از لغو، هر وقت بخواهید از همه‌چیز خروجی می‌گیرید.</value>
+    </data>
+    <data name="BillingFaq6Question" xml:space="preserve">
+        <value>برای سازمان‌های غیرانتفاعی تخفیف دارید؟</value>
+    </data>
+    <data name="BillingFaq6Answer" xml:space="preserve">
+        <value>بله: 30% تخفیف روی هر پلن برای سازمان‌های غیرانتفاعی ثبت‌شده و مدرسه‌ها. مدرک ثبت را به sales@brightlane.example بفرستید.</value>
+    </data>
+    <data name="SheetsPageTitle" xml:space="preserve">
+        <value>Brightlane یا صفحه‌گسترده؟ یک مقایسه‌ی منصفانه | Brightlane</value>
+    </data>
+    <data name="SheetsDescription" xml:space="preserve">
+        <value>جاهایی که صفحه‌گسترده هنوز ابزار بهتری برای پایپ‌لاین است، جاهایی که شروع می‌کند به از دست رفتن معامله، و چهار نشانه‌ی این‌که تیمتان به نقطه‌ی تغییر رسیده.</value>
+    </data>
+    <data name="SheetsEyebrow" xml:space="preserve">
+        <value>Brightlane در برابر صفحه‌گسترده</value>
+    </data>
+    <data name="SheetsTitle" xml:space="preserve">
+        <value>Brightlane یا صفحه‌گسترده؟ یک مقایسه‌ی منصفانه.</value>
+    </data>
+    <data name="SheetsLede" xml:space="preserve">
+        <value>بیشتر تیم‌ها پایپ‌لاینشان را با صفحه‌گسترده شروع می‌کنند و تا مدتی هم ابزار درستی است. این‌جا می‌گوییم کجا هنوز انتخاب بهتری است، از کجا به قیمت معامله‌هایتان تمام می‌شود و تیمتان کدام طرف این خط است.</value>
+    </data>
+    <data name="SheetsArtNote" xml:space="preserve">
+        <value>دو نفر هم‌زمان ردیف 3 را عوض کردند. یکی‌شان برنده شد.</value>
+    </data>
+    <data name="SheetsArtFriday" xml:space="preserve">
+        <value>جمعه؟</value>
+    </data>
+    <data name="SheetsWinsTitle" xml:space="preserve">
+        <value>جاهایی که صفحه‌گسترده برنده است</value>
+    </data>
+    <data name="Win1Title" xml:space="preserve">
+        <value>پولش را قبلاً داده‌اید</value>
+    </data>
+    <data name="Win1Body" xml:space="preserve">
+        <value>همراه نرم‌افزارهای اداری‌تان آمده و کسی حساب کاربری تازه لازم ندارد.</value>
+    </data>
+    <data name="Win2Title" xml:space="preserve">
+        <value>هر شکلی که بخواهید</value>
+    </data>
+    <data name="Win2Body" xml:space="preserve">
+        <value>یک ستون تازه پنج ثانیه کار دارد. در Brightlane یک فیلد سفارشی یک دقیقه وقت و یک ادمین لازم دارد.</value>
+    </data>
+    <data name="Win3Title" xml:space="preserve">
+        <value>همه بلدند</value>
+    </data>
+    <data name="Win3Body" xml:space="preserve">
+        <value>هیچ آموزشی نمی‌خواهد. بیشتر فروشنده‌ها حدود یک ساعت وقت لازم دارند تا با Brightlane راه بیفتند.</value>
+    </data>
+    <data name="Win4Title" xml:space="preserve">
+        <value>فرمول برای هر چیزی</value>
+    </data>
+    <data name="Win4Body" xml:space="preserve">
+        <value>اگر طرح پورسانتتان یک فرمول است، صفحه‌گسترده اجرایش می‌کند. گزارش‌های Brightlane هر محاسبه‌ی دلخواهی را انجام نمی‌دهند.</value>
+    </data>
+    <data name="SheetsCostsTitle" xml:space="preserve">
+        <value>از کجا برایتان گران تمام می‌شود</value>
+    </data>
+    <data name="Cost1Title" xml:space="preserve">
+        <value>دو نفر، یک ردیف</value>
+    </data>
+    <data name="Cost1Body" xml:space="preserve">
+        <value>وقتی دو فروشنده یک معامله را هم‌زمان ویرایش کنند، حرف آخر با کسی است که آخر ذخیره کند. Brightlane هر تغییر را با اسم و زمان نگه می‌دارد.</value>
+    </data>
+    <data name="Cost2Title" xml:space="preserve">
+        <value>پیگیری‌ها در ذهن آدم‌هاست</value>
+    </data>
+    <data name="Cost2Body" xml:space="preserve">
+        <value>صفحه‌گسترده به کسی یادآوری نمی‌کند. Brightlane به هر معامله یک قدم بعدی می‌دهد و معامله‌های بی‌قدم بعدی را فهرست می‌کند.</value>
+    </data>
+    <data name="Cost3Title" xml:space="preserve">
+        <value>پیش‌بینی یک فرمول است</value>
+    </data>
+    <data name="Cost3Body" xml:space="preserve">
+        <value>کار می‌کند تا روزی که کسی یک ستون را مرتب کند و بقیه را نه، و تا پایان فصل هم کسی متوجه نشود.</value>
+    </data>
+    <data name="Cost4Title" xml:space="preserve">
+        <value>ایمیل‌ها در صندوق‌ها می‌مانند</value>
+    </data>
+    <data name="Cost4Body" xml:space="preserve">
+        <value>سابقه‌ی یک معامله در صندوق ایمیل یک فروشنده است. وقتی برود، سابقه هم با او می‌رود.</value>
+    </data>
+    <data name="Cost5Title" xml:space="preserve">
+        <value>روی موبایل، دردسر است</value>
+    </data>
+    <data name="Cost5Body" xml:space="preserve">
+        <value>به‌روز کردن یک صفحه‌گسترده‌ی 30 ستونی روی موبایل بعد از جلسه، همان به‌روزرسانی‌ای است که کمتر انجام می‌شود.</value>
+    </data>
+    <data name="SheetsTableEyebrow" xml:space="preserve">
+        <value>کنار هم</value>
+    </data>
+    <data name="SheetsTableTitle" xml:space="preserve">
+        <value>ده پرسش، با جواب برای هر دو</value>
+    </data>
+    <data name="SheetsBetter" xml:space="preserve">
+        <value>این‌جا بهتر</value>
+    </data>
+    <data name="Side1" xml:space="preserve">
+        <value>هزینه</value>
+    </data>
+    <data name="Side1Sheet" xml:space="preserve">
+        <value>هزینه‌ی اضافه ندارد</value>
+    </data>
+    <data name="Side1Us" xml:space="preserve">
+        <value>از 12 یورو برای هر کاربر در ماه، با پرداخت سالانه</value>
+    </data>
+    <data name="Side2" xml:space="preserve">
+        <value>راه‌اندازی</value>
+    </data>
+    <data name="Side2Sheet" xml:space="preserve">
+        <value>یک فایل باز کنید</value>
+    </data>
+    <data name="Side2Us" xml:space="preserve">
+        <value>یک بعدازظهر: ورود داده، دعوت تیم، اتصال ایمیل</value>
+    </data>
+    <data name="Side3" xml:space="preserve">
+        <value>یاد گرفتن</value>
+    </data>
+    <data name="Side3Sheet" xml:space="preserve">
+        <value>همه از قبل بلدند</value>
+    </data>
+    <data name="Side3Us" xml:space="preserve">
+        <value>حدود یک ساعت برای هر فروشنده</value>
+    </data>
+    <data name="Side4" xml:space="preserve">
+        <value>ویرایش هم‌زمان چند نفر</value>
+    </data>
+    <data name="Side4Sheet" xml:space="preserve">
+        <value>آخرین ذخیره برنده است</value>
+    </data>
+    <data name="Side4Us" xml:space="preserve">
+        <value>هر تغییر با اسم و زمانش نگه داشته می‌شود</value>
+    </data>
+    <data name="Side5" xml:space="preserve">
+        <value>یادآوری</value>
+    </data>
+    <data name="Side5Sheet" xml:space="preserve">
+        <value>ندارد</value>
+    </data>
+    <data name="Side5Us" xml:space="preserve">
+        <value>قدم بعدی برای هر معامله، با ایمیل و موبایل</value>
+    </data>
+    <data name="Side6" xml:space="preserve">
+        <value>ایمیل و جلسه</value>
+    </data>
+    <data name="Side6Sheet" xml:space="preserve">
+        <value>دستی کپی می‌شود</value>
+    </data>
+    <data name="Side6Us" xml:space="preserve">
+        <value>خودکار کنار معامله ثبت می‌شود</value>
+    </data>
+    <data name="Side7" xml:space="preserve">
+        <value>پیش‌بینی</value>
+    </data>
+    <data name="Side7Sheet" xml:space="preserve">
+        <value>فرمولی که خودتان نگهش می‌دارید</value>
+    </data>
+    <data name="Side7Us" xml:space="preserve">
+        <value>وزنی، با جابه‌جا شدن معامله‌ها به‌روز</value>
+    </data>
+    <data name="Side8" xml:space="preserve">
+        <value>چه کسی چه می‌بیند</value>
+    </data>
+    <data name="Side8Sheet" xml:space="preserve">
+        <value>یا همه‌چیز، یا هیچ</value>
+    </data>
+    <data name="Side8Us" xml:space="preserve">
+        <value>دسترسی به تفکیک تیم در پلن Business</value>
+    </data>
+    <data name="Side9" xml:space="preserve">
+        <value>بدون اینترنت</value>
+    </data>
+    <data name="Side9Sheet" xml:space="preserve">
+        <value>در نسخه‌ی دسکتاپ آفلاین کار می‌کند</value>
+    </data>
+    <data name="Side9Us" xml:space="preserve">
+        <value>اپ موبایل آفلاین کار می‌کند و بعداً همگام می‌شود</value>
+    </data>
+    <data name="Side10" xml:space="preserve">
+        <value>ستون دلخواه</value>
+    </data>
+    <data name="Side10Sheet" xml:space="preserve">
+        <value>هر ستونی، در چند ثانیه</value>
+    </data>
+    <data name="Side10Us" xml:space="preserve">
+        <value>فیلد سفارشی، با تنظیم ادمین</value>
+    </data>
+    <data name="TippingEyebrow" xml:space="preserve">
+        <value>نقطه‌ی تغییر</value>
+    </data>
+    <data name="TippingTitle" xml:space="preserve">
+        <value>چهار نشانه‌ی این‌که وقت رفتن است</value>
+    </data>
+    <data name="TippingLede" xml:space="preserve">
+        <value>هر کدام که درباره‌ی تیمتان درست است را علامت بزنید. یکی‌اش به‌تنهایی عادی است. دو تا یا بیشتر یعنی صفحه‌گسترده بیشتر از آن‌چه صرفه‌جویی می‌کند برایتان خرج دارد.</value>
+    </data>
+    <data name="TippingLegend" xml:space="preserve">
+        <value>در تیم ما</value>
+    </data>
+    <data name="Sign1" xml:space="preserve">
+        <value>بیش از سه نفر پایپ‌لاین را به‌روز می‌کنند</value>
+    </data>
+    <data name="Sign2" xml:space="preserve">
+        <value>هم‌زمان بیش از 50 معامله‌ی باز داریم</value>
+    </data>
+    <data name="Sign3" xml:space="preserve">
+        <value>معامله‌ای سرد شد چون کسی پیگیری‌اش نکرد</value>
+    </data>
+    <data name="Sign4" xml:space="preserve">
+        <value>یک نفر هر هفته یک بعدازظهر را صرف درست کردن فایل می‌کند</value>
+    </data>
+    <data name="TippingCount" xml:space="preserve">
+        <value>{0} از {1}</value>
+    </data>
+    <data name="TippingStay" xml:space="preserve">
+        <value>فعلاً صفحه‌گسترده‌تان کافی است. هر وقت نبود، برگردید.</value>
+    </data>
+    <data name="TippingTime" xml:space="preserve">
+        <value>احتمالاً وقتش رسیده. دوره‌ی آزمایشی رایگان است و صفحه‌گسترده‌تان هم با شما می‌آید.</value>
+    </data>
+    <data name="MoveEyebrow" xml:space="preserve">
+        <value>کوچ کردن</value>
+    </data>
+    <data name="MoveTitle" xml:space="preserve">
+        <value>صفحه‌گسترده‌تان در حدود ده دقیقه پایپ‌لاینتان می‌شود</value>
+    </data>
+    <data name="MoveLede" xml:space="preserve">
+        <value>این برای یک فایل 5٬000 ردیفی است. خود فایل دست‌نخورده می‌ماند، پس اگر نظرتان عوض شد چیزی از دست نرفته.</value>
+    </data>
+    <data name="Move1Title" xml:space="preserve">
+        <value>فایل را بارگذاری کنید</value>
+    </data>
+    <data name="Move1Body" xml:space="preserve">
+        <value>CSV یا XLSX، مستقیم از درایو یا خروجی صفحه‌گسترده‌تان.</value>
+    </data>
+    <data name="Move2Title" xml:space="preserve">
+        <value>ستون‌ها را بررسی کنید</value>
+    </data>
+    <data name="Move2Body" xml:space="preserve">
+        <value>Brightlane حدس می‌زند هر ستون چیست. شما همان چند موردی را که اشتباه حدس زده درست می‌کنید.</value>
+    </data>
+    <data name="Move3Title" xml:space="preserve">
+        <value>تکراری‌ها را ببینید و وارد کنید</value>
+    </data>
+    <data name="Move3Body" xml:space="preserve">
+        <value>شرکت‌ها و آدم‌هایی که دو بار آمده‌اند کنار هم نشان داده می‌شوند تا خودتان انتخاب کنید کدام بماند.</value>
+    </data>
+    <data name="MappingLabel" xml:space="preserve">
+        <value>تطبیق ستون‌ها هنگام ورود داده: پنج ستون صفحه‌گسترده با فیلدهای Brightlane تطبیق داده شده‌اند و چهارتایشان خودکار حدس زده شده.</value>
+    </data>
+    <data name="MappingFrom" xml:space="preserve">
+        <value>ستون شما</value>
+    </data>
+    <data name="MappingTo" xml:space="preserve">
+        <value>فیلد Brightlane</value>
+    </data>
+    <data name="MapFrom1" xml:space="preserve">
+        <value>شرکت</value>
+    </data>
+    <data name="MapTo1" xml:space="preserve">
+        <value>سازمان</value>
+    </data>
+    <data name="MapFrom2" xml:space="preserve">
+        <value>مبلغ (یورو)</value>
+    </data>
+    <data name="MapTo2" xml:space="preserve">
+        <value>ارزش معامله</value>
+    </data>
+    <data name="MapFrom3" xml:space="preserve">
+        <value>مرحله</value>
+    </data>
+    <data name="MapTo3" xml:space="preserve">
+        <value>مرحله‌ی پایپ‌لاین</value>
+    </data>
+    <data name="MapFrom4" xml:space="preserve">
+        <value>تماس دوباره؟</value>
+    </data>
+    <data name="MapTo4" xml:space="preserve">
+        <value>تاریخ قدم بعدی</value>
+    </data>
+    <data name="MapFrom5" xml:space="preserve">
+        <value>مسئول</value>
+    </data>
+    <data name="MapTo5" xml:space="preserve">
+        <value>صاحب معامله</value>
+    </data>
+    <data name="MappingGuessed" xml:space="preserve">
+        <value>حدس خودکار</value>
+    </data>
+    <data name="MappingDuplicates" xml:space="preserve">
+        <value>12 مورد احتمالاً تکراری پیدا شد. قبل از ورود، بررسی‌شان کنید.</value>
+    </data>
+    <data name="SheetsCtaTitle" xml:space="preserve">
+        <value>صفحه‌گسترده را بیاورید. نگهش هم دارید.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>درباره‌ی Brightlane</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Brightlane برای تیم‌های فروشی CRM می‌سازد که برای صفحه‌گسترده بزرگ و برای پروژه‌های CRM کوچک‌اند. 46 نفر در دوبلین و لیسبون.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>ما برای تیم‌های فروشی CRM می‌سازیم که برای صفحه‌گسترده زیادی بزرگ و برای یک پروژه‌ی CRM زیادی کوچک‌اند. 46 نفریم در دوبلین و لیسبون و برای 1٬400 تیم از همین تیم‌ها کار می‌کنیم.</value>
+    </data>
+    <data name="AboutFactsLabel" xml:space="preserve">
+        <value>Brightlane در یک نگاه</value>
+    </data>
+    <data name="Fact1Value" xml:space="preserve">
+        <value>2019</value>
+    </data>
+    <data name="Fact1Label" xml:space="preserve">
+        <value>تأسیس در دوبلین</value>
+    </data>
+    <data name="Fact2Value" xml:space="preserve">
+        <value>46</value>
+    </data>
+    <data name="Fact2Label" xml:space="preserve">
+        <value>نفر، در دوبلین و لیسبون</value>
+    </data>
+    <data name="Fact3Value" xml:space="preserve">
+        <value>1٬400</value>
+    </data>
+    <data name="Fact3Label" xml:space="preserve">
+        <value>تیم مشتری در 38 کشور</value>
+    </data>
+    <data name="Fact4Value" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Fact4Label" xml:space="preserve">
+        <value>سال سودآور شدن، با پول مشتری‌ها</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>چرا ساختیمش</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>ایفا برنن مدیر فروش یک شرکت نرم‌افزار لجستیک با 11 فروشنده بود. CRM آن‌ها برای سالن فروشی با 400 نفر خریده شده بود؛ سرپا نگه داشتنش یک ادمین تمام‌وقت می‌خواست و تیم، پایپ‌لاین واقعی‌اش را آخرش در یک صفحه‌گسترده نگه می‌داشت.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>سال 2019 او و توماس فرِیرا، مهندسی از همان شرکت، ابزاری را ساختند که خودشان می‌خواستند: یک بورد، پیش‌بینی‌ای که حسابش را خودش می‌کند و هیچ چیزی که ادمین لازم داشته باشد. اولین کسانی که امتحانش کردند شش تیم از مشتری‌های قدیمی ایفا بودند.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>هنوز از هر تیم تازه همان سؤالی را می‌پرسیم که از آن شش تیم پرسیدیم: صفحه‌گسترده‌تان چه کاری می‌کرد که ما نمی‌کنیم؟ جواب‌ها در برنامه‌ی کاری ما هستند، و در صفحه‌ی مقایسه‌مان.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>چند نفر از آدم‌های پشت آن</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>ایفا برنن</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیرعامل</value>
+    </data>
+    <data name="Team1Place" xml:space="preserve">
+        <value>دوبلین</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>توماس فرِیرا</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیر فنی</value>
+    </data>
+    <data name="Team2Place" xml:space="preserve">
+        <value>لیسبون</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>فونمی آدیِمی</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>مدیر موفقیت مشتری</value>
+    </data>
+    <data name="Team3Place" xml:space="preserve">
+        <value>دوبلین</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>کنجی واتانابه</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>سرپرست طراحی</value>
+    </data>
+    <data name="Team4Place" xml:space="preserve">
+        <value>لیسبون</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>سؤال درباره‌ی پلن‌ها، دوره‌ی آزمایشی یا قرارداد را به تیم فروش بفرستید. بقیه‌ی موضوع‌ها را به نشانی عمومی بنویسید؛ یک آدم ظرف یک روز کاری جواب می‌دهد.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>مشخصات شرکت</value>
+    </data>
+    <data name="CompanyLisbon" xml:space="preserve">
+        <value>دفتر لیسبون</value>
+    </data>
+    <data name="CompanyLisbonAddress" xml:space="preserve">
+        <value>Rua da Prata 80، 1100-420 لیسبون، پرتغال</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این معامله از پایپ‌لاین افتاد</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>صفحه جایی که پیوند می‌گفت نیست. شاید جابه‌جا شده یا نشانی غلط تایپ شده. پایپ‌لاین شما سر جایش است.</value>
+    </data>
+    <data name="NotFoundPricing" xml:space="preserve">
+        <value>دیدن قیمت‌ها</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>نرم‌افزار B2B</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>یک CRM برای تیم‌های فروش کوچک که روی وب، ویندوز، مک، آیفون و اندروید منتشر شده: پایپ‌لاینی که می‌شود جابه‌جایش کرد، پلن‌هایی با سه واحد پول و مقایسه‌ای منصفانه با صفحه‌گسترده.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>پایپ‌لاین در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>قیمت با 3 واحد پول</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>صفحه‌ی مقایسه</value>
+    </data>
+    <data name="Milestone1Year" xml:space="preserve">
+        <value>2019</value>
+    </data>
+    <data name="Milestone1" xml:space="preserve">
+        <value>شش تیم اولین نسخه را امتحان می‌کنند</value>
+    </data>
+    <data name="Milestone2Year" xml:space="preserve">
+        <value>2021</value>
+    </data>
+    <data name="Milestone2" xml:space="preserve">
+        <value>دفتر لیسبون باز می‌شود</value>
+    </data>
+    <data name="Milestone3Year" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Milestone3" xml:space="preserve">
+        <value>سودآور، بدون سرمایه‌گذار بیرونی</value>
+    </data>
+    <data name="Milestone4Year" xml:space="preserve">
+        <value>2026</value>
+    </data>
+    <data name="Milestone4" xml:space="preserve">
+        <value>1٬400 تیم در 38 کشور</value>
+    </data>
+</root>

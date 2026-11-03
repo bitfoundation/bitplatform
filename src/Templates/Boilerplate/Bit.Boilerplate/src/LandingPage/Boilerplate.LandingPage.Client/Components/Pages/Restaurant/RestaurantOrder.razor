@@ -1,0 +1,80 @@
+@inherits LandingComponentBase
+
+<div class="order-demo">
+    <div class="order-demo-top">
+        <RestaurantLogo />
+        <p class="order-demo-title">@C[nameof(RestaurantStrings.DemoTitle)]</p>
+        <span class="order-demo-count">@C[nameof(RestaurantStrings.DemoStampCount), Stamps.ToString(CurrentCulture)]</span>
+    </div>
+
+    @if (placed)
+    {
+        <div class="order-demo-ready" role="status">
+            <p class="order-demo-ready-label">@(Ready.Tomorrow ? C[nameof(RestaurantStrings.DemoReadyLabelTomorrow)] : C[nameof(RestaurantStrings.DemoReadyLabel)])</p>
+            <p class="order-demo-ready-time">@Time(ReadyAt)</p>
+            <p class="order-demo-ready-where">@C[nameof(RestaurantStrings.DemoReadyWhere), C[SelectedCafe.NameKey], OrderNumber.ToString(CurrentCulture)]</p>
+            <p class="order-demo-ready-what">@Summary</p>
+            <div class="order-demo-card">
+                <p>@C[nameof(RestaurantStrings.DemoStampsNow), Stamps.ToString(CurrentCulture)]</p>
+                <div class="order-demo-stamp-row" aria-hidden="true">
+                    @for (var i = 1; i <= 10; i++)
+                    {
+                        <span class="@(i <= Stamps ? "is-full" : null) @(i == Stamps ? "is-new" : null)"></span>
+                    }
+                </div>
+            </div>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" FullWidth OnClick="() => placed = false" Class="order-demo-again">@C[nameof(RestaurantStrings.DemoAgain)]</BitButton>
+        </div>
+    }
+    else
+    {
+        <BitChoiceGroup Label="@C[nameof(RestaurantStrings.DemoDrink)]"
+                        Items="drinkItems"
+                        Value="drink"
+                        ValueChanged="(string? value) => SelectDrink(value)"
+                        Horizontal
+                        NoCircle
+                        Classes="@(new() { Container = "order-demo-drinks" })">
+            <ItemTemplate Context="item">
+                <span class="order-demo-chip @(item.Value == drink ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <div class="order-demo-pair">
+            <BitChoiceGroup Label="@C[nameof(RestaurantStrings.DemoSize)]" Items="sizeItems" @bind-Value="size" Horizontal NoCircle Classes="@(new() { Container = "order-demo-options" })">
+                <ItemTemplate Context="item">
+                    <span class="order-demo-chip @(item.Value == size ? "is-selected" : null) @(item.IsDisabled ? "is-off" : null)">@item.Text</span>
+                </ItemTemplate>
+            </BitChoiceGroup>
+            <BitChoiceGroup Label="@C[nameof(RestaurantStrings.DemoMilk)]" Items="milkItems" @bind-Value="milk" Horizontal NoCircle Classes="@(new() { Container = "order-demo-options" })">
+                <ItemTemplate Context="item">
+                    <span class="order-demo-chip @(item.Value == milk ? "is-selected" : null)">@item.Text</span>
+                </ItemTemplate>
+            </BitChoiceGroup>
+        </div>
+
+        <BitToggle @bind-Value="extraShot" Label="@C[nameof(RestaurantStrings.DemoShot), Money(RestaurantCafes.ExtraShot)]" Disabled="IsFilter" Inline Class="order-demo-shot" />
+
+        <BitChoiceGroup Label="@C[nameof(RestaurantStrings.DemoCafe)]"
+                        Items="cafeItems"
+                        Value="cafe"
+                        ValueChanged="(string? value) => SelectCafe(value)"
+                        Horizontal
+                        NoCircle
+                        Classes="@(new() { Container = "order-demo-options" })">
+            <ItemTemplate Context="item">
+                <span class="order-demo-chip @(item.Value == cafe ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <div class="order-demo-summary" aria-live="polite">
+            <p>
+                <span class="order-demo-when">@ReadyText</span>
+                <span>@ReadyNote</span>
+            </p>
+            <p class="order-demo-total">@Money(Total)</p>
+        </div>
+
+        <BitButton FullWidth OnClick="Place">@C[nameof(RestaurantStrings.DemoPlace)]</BitButton>
+    }
+</div>

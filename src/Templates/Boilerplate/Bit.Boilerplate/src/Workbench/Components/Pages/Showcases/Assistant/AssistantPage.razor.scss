@@ -33,13 +33,6 @@
     padding: 0.5rem;
 }
 
-// Keeps the panel clear of the device's notch and home indicator.
-::deep .history-panel {
-    top: $bit-env-inset-top;
-    bottom: $bit-env-inset-bottom;
-    height: $bit-env-height-available;
-}
-
 .chat {
     flex: 1;
     min-width: 0;

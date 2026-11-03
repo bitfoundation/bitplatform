@@ -1,0 +1,99 @@
+@attribute [Route(AccountingSite.Path + "/pricing")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/pricing")]
+@layout AccountingLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@A[nameof(AccountingStrings.PricingPageTitle)]"
+             Description="@A[nameof(AccountingStrings.PricingDescription)]"
+             Path="@($"{AccountingSite.Path}/pricing")"
+             Site="AccountingSite.Info" />
+
+<section class="lp-container acc-pricing-hero" aria-labelledby="acc-pricing-title">
+    <p class="acc-eyebrow">@A[nameof(AccountingStrings.NavPricing)]</p>
+    <h1 id="acc-pricing-title">@A[nameof(AccountingStrings.PricingTitle)]</h1>
+    <p class="lp-lede">@A[nameof(AccountingStrings.PricingLede)]</p>
+</section>
+
+<section class="lp-container acc-plans" aria-labelledby="acc-plans-title">
+    <h2 id="acc-plans-title" class="lp-visually-hidden">@A[nameof(AccountingStrings.PlansTitle)]</h2>
+
+    <div class="acc-plan-controls">
+        <BitDropdown Label="@A[nameof(AccountingStrings.CountryLabel)]" Items="countryItems" @bind-Value="CountryCode" Class="acc-country" />
+        <BitToggle Label="@A[nameof(AccountingStrings.VatToggle)]" @bind-Value="withVat" Class="acc-vat-toggle" />
+        <p class="acc-plan-rate">@A[nameof(AccountingStrings.VatRateNote), A[$"Country{Country.Code}"], Rate, A[$"Currency{Country.Currency}"]]</p>
+    </div>
+
+    <div class="acc-plan-grid">
+        @foreach (var plan in AccountingPricing.Plans)
+        {
+            var price = AccountingPricing.Price(plan, Country, withVat);
+            var other = AccountingPricing.Price(plan, Country, withVat is false);
+            <article class="acc-plan @(plan.IsPopular ? "is-popular" : null)" aria-labelledby="@($"acc-plan-{plan.Key}")">
+                @if (plan.IsPopular)
+                {
+                    <p class="acc-plan-flag">@A[nameof(AccountingStrings.PlanPopular)]</p>
+                }
+                <h3 id="@($"acc-plan-{plan.Key}")">@A[plan.Name]</h3>
+                <p class="acc-plan-summary">@A[plan.Summary]</p>
+                <p class="acc-plan-price">
+                    <span class="acc-num">@Money(price)</span>
+                    <span class="acc-plan-unit">@A[nameof(AccountingStrings.PerMonth)]</span>
+                </p>
+                <p class="acc-plan-vat">
+                    @if (price is 0)
+                    {
+                        @A[nameof(AccountingStrings.PlanFreeForever)]
+                    }
+                    else if (withVat)
+                    {
+                        @A[nameof(AccountingStrings.PriceWithVat), Rate, Money(other)]
+                    }
+                    else
+                    {
+                        @A[nameof(AccountingStrings.PriceWithoutVat), Money(other), Rate]
+                    }
+                </p>
+                <BitButton FullWidth Variant="@(plan.IsPopular ? BitVariant.Fill : BitVariant.Outline)" Color="@(plan.IsPopular ? BitColor.Primary : BitColor.PrimaryForeground)" Href="@AccountingSite.SignUpUrl">
+                    @(price is 0 ? A[nameof(AccountingStrings.HeroStart)] : A[nameof(AccountingStrings.PlanChoose), A[plan.Name]])
+                </BitButton>
+                <ul class="acc-plan-features">
+                    @foreach (var feature in plan.Features)
+                    {
+                        <li><BitIcon IconName="@BitIconName.CheckMark" Class="acc-plan-check" /> <span>@A[feature]</span></li>
+                    }
+                </ul>
+            </article>
+        }
+    </div>
+
+    <p class="acc-plan-note">@A[nameof(AccountingStrings.PricingNote)]</p>
+</section>
+
+<section id="guarantee" class="lp-section acc-guarantee" aria-labelledby="acc-guarantee-title">
+    <div class="lp-container acc-guarantee-grid">
+        <div class="acc-guarantee-seal" aria-hidden="true">
+            <span class="acc-num">30</span>
+            <small>@A[nameof(AccountingStrings.GuaranteeSealDays)]</small>
+        </div>
+        <div class="acc-guarantee-text">
+            <h2 id="acc-guarantee-title">@A[nameof(AccountingStrings.GuaranteeTitle)]</h2>
+            <p>@A[nameof(AccountingStrings.GuaranteeBody)]</p>
+            <ul>
+                <li>@A[nameof(AccountingStrings.Guarantee1)]</li>
+                <li>@A[nameof(AccountingStrings.Guarantee2)]</li>
+                <li>@A[nameof(AccountingStrings.Guarantee3)]</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section acc-billing" aria-labelledby="acc-billing-title">
+    <div class="lp-container acc-billing-grid">
+        <header class="acc-head">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.BillingEyebrow)]</p>
+            <h2 id="acc-billing-title" class="lp-title">@A[nameof(AccountingStrings.BillingTitle)]</h2>
+            <p class="lp-lede">@A[nameof(AccountingStrings.BillingLede)]</p>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>

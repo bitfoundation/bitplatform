@@ -142,7 +142,6 @@
     }
 
     &.desktop {
-        overflow: hidden;
         border-radius: 12px;
         background-color: $bit-color-background-tertiary;
         box-shadow: 0 0 0 1px $bit-color-border-secondary, 0 40px 80px -36px rgba(0, 0, 0, 0.45);
@@ -156,6 +155,7 @@
 .browser-bar {
     gap: 14px;
     height: 42px;
+    border-radius: 11px 11px 0 0;
     display: flex;
     padding: 0 16px;
     align-items: center;

@@ -555,9 +555,14 @@ Nothing to install: `dnx Bit.Cli --version 11.0.0-pre-16 -- translate` runs it s
 **`ResxPaths`**: Glob patterns to locate your `.resx` files:
 ```json
 "ResxPaths": [
-    "/src/**/*.resx",                    // All .resx files in src
+    "/src/Shared/**/*.resx",
+    "/src/Server/**/*.resx",
+    "/src/Client/**/*.resx",
+    "/src/Workbench/**/*.resx"
 ]
 ```
+
+`src/LandingPage` is left out on purpose: the landing page has English and Persian only, and both are kept in the repository. Add its folder here when you give it the app's other languages.
 
 **`ChatOptions`**: LLM configuration:
 - `"Temperature": "0"` - Deterministic translations (recommended for consistency)

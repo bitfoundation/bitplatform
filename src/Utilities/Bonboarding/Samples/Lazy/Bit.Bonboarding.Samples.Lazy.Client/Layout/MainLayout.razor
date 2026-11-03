@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+@* Every page shares this layout, so it renders before Bit.Bonboarding.wasm is downloaded and may not use Bonboarding's
+   types - BonboardingRoot included, which is in AdminLayout instead. data-interactive turns true once the page runs in
+   the browser; the end-to-end tests wait for it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="admin">Admin</NavLink>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+</div>

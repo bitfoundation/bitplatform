@@ -1,8 +1,8 @@
 ﻿@page "/e2e/data-grid/data"
 
-@* BitDataGrid's data modes: row virtualization of a tall local list, column virtualization, OnRead with paging and the
-   Loading state (and the cancellation of a superseded request), OnRead with virtualization and server-side aggregates,
-   OnLoadMore infinite scrolling, and an IQueryable source. *@
+@* BitDataGrid's data modes: row virtualization of a tall local list, column virtualization (also while hidden), OnRead
+   with paging and the Loading state (and the cancellation of a superseded request), OnRead with virtualization and
+   server-side aggregates, OnLoadMore infinite scrolling (also while hidden), and an IQueryable source. *@
 
 <PageTitle>BitDataGrid data modes E2E</PageTitle>
 
@@ -16,7 +16,8 @@
 </E2ESection>
 
 <E2ESection Id="virtual-columns" Title="Column virtualization">
-    <div style="width: 600px;">
+    <button id="btn-toggle-columns" type="button" @onclick="() => _columnsShown = !_columnsShown">Show or hide the grid</button>
+    <div style="width: 600px;@(_columnsShown ? null : " display: none;")">
         <BitDataGrid TItem="Row" Id="grid-virtual-columns" Items="@_wide" Virtualize="true" VirtualizeColumns="true" Height="260px">
             <BitDataGridColumn Property="r => r.Id" Width="80px" Frozen="true" />
             @for (var c = 1; c <= 40; c++)
@@ -54,6 +55,21 @@
         <BitDataGridColumn Property="r => r.Name" />
     </BitDataGrid>
     <p>batches <span id="infinite-batches">@_infiniteBatches</span> | last <span id="infinite-last">@_infiniteLast</span></p>
+</E2ESection>
+
+<E2ESection Id="infinite-hidden" Title="Infinite scrolling while hidden">
+    @* Starts out hidden, like a list a phone swaps out for a map, with batches far too small to fill its viewport. Held,
+       the next batch waits until the page releases it, so a test can hide the grid while that batch is still loading. *@
+    <button id="btn-toggle-hidden" type="button" @onclick="() => _hiddenShown = !_hiddenShown">Show or hide the grid</button>
+    <button id="btn-hold-hidden" type="button" @onclick="() => _hiddenGate = new(TaskCreationOptions.RunContinuationsAsynchronously)">Hold the next batch</button>
+    <button id="btn-release-hidden" type="button" @onclick="() => _hiddenGate?.TrySetResult()">Release the held batch</button>
+    <div style="@(_hiddenShown ? null : "display: none")">
+        <BitDataGrid TItem="Row" Id="grid-infinite-hidden" OnLoadMore="LoadHiddenAsync" LoadMoreBatchSize="3" Height="300px" RowHeight="36">
+            <BitDataGridColumn Property="r => r.Id" />
+            <BitDataGridColumn Property="r => r.Name" />
+        </BitDataGrid>
+    </div>
+    <p>batches <span id="hidden-batches">@_hiddenBatches</span> | held <span id="hidden-held">@(_hiddenHeld ? "yes" : "no")</span></p>
 </E2ESection>
 
 <E2ESection Id="skeleton" Title="The loading skeleton">
@@ -95,6 +111,7 @@
     private readonly List<Row> _infiniteAll = Rows(55);
     private readonly IQueryable<Row> _queryable = Rows(23).AsQueryable();
 
+    private bool _columnsShown = true;
     private bool _serverLoading;
     private int _serverRequests;
     private int _serverCancelled;
@@ -103,6 +120,10 @@
     private int _virtualMaxSkip;
     private int _infiniteBatches;
     private string _infiniteLast = "";
+    private bool _hiddenShown;
+    private int _hiddenBatches;
+    private TaskCompletionSource? _hiddenGate;
+    private bool _hiddenHeld;
 
     private static IEnumerable<Row> Query(IEnumerable<Row> source, BitDataGridReadRequest request)
     {
@@ -185,5 +206,22 @@
         _infiniteLast = $"skip {request.Skip}, take {request.Take}, got {batch.Count}";
         await InvokeAsync(StateHasChanged);
         return new BitDataGridReadResult<Row>(batch, 0);
+    }
+
+    // At once, so a hidden grid that kept asking would run through the whole list well within the time a test waits -
+    // unless the page holds it, when it waits until released. Only a click holds a batch, so a prerender never waits.
+    private async Task<BitDataGridReadResult<Row>> LoadHiddenAsync(BitDataGridReadRequest request)
+    {
+        _hiddenBatches++;
+        if (_hiddenGate is { } gate)
+        {
+            _hiddenHeld = true;
+            await InvokeAsync(StateHasChanged);
+            await gate.Task.WaitAsync(request.CancellationToken);
+            _hiddenGate = null;
+            _hiddenHeld = false;
+        }
+        await InvokeAsync(StateHasChanged);
+        return new BitDataGridReadResult<Row>(_infiniteAll.Skip(request.Skip).Take(request.Take ?? _infiniteAll.Count).ToList(), 0);
     }
 }

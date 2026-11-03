@@ -62,7 +62,8 @@
 </ProblemCard>
 
 <ProblemCard Id="problem-10" Title="10. What changed in the cart, and which click did it?" Symptom="State mutated somewhere; find the action and the before/after values." Href="/checkout">
-    <li>Add and remove items. State → CartState: change history with named actions, diffs and a link to the triggering UI event.</li>
+    <li>Add and remove items. State → CartState: change history with named actions and what each was about (<em>Add · Quantum Lamp 3</em>), diffs and a link to the triggering UI event; the filter finds a change by action, detail or member.</li>
+    <li><em>⟲ restore</em> on an earlier change puts the cart back as it was right after it: <code>CartState</code> implements <code>IBevStateRestorer</code> and keeps its versions - BevTools only asks, the provider restores itself. The restore is a change of its own in the history and the Timeline.</li>
 </ProblemCard>
 
 <ProblemCard Id="problem-11" Title="11. The product list is loaded twice" Symptom="GET /api/products runs on every visit to Products, and once more right after the page appears." Href="/products">
@@ -143,4 +144,17 @@
 <ProblemCard Id="problem-24" Title="24. A picture that never loads, a frame that stays blank" Symptom="Nothing throws in .NET, yet part of the page is missing." Href="/errors">
     <li>On the errors page, press <em>Load a missing image</em> and <em>Embed a frame the CSP forbids</em>.</li>
     <li>BevTools → Errors: <em>Failed to load &lt;img&gt;</em> with its address, source <em>resource</em>; <em>Content Security Policy blocked …</em> with the directive (<code>frame-src</code>), source <em>csp</em>. The browser bridge reports both; .NET never saw them.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-25" Title="25. Typing writes 120 log entries per keystroke" Symptom="The browser console scrolls on every keystroke; the search box lags more than the renders explain." Href="/products">
+    <li>On the products page, tick <em>rows log every update</em> and type a few characters in the search box.</li>
+    <li>BevTools → Logs: <em>Updating row {ProductId} ({Name})</em> from <code>ProductRow</code>, one entry per row per keystroke, each with its values, the keystroke that ran it (<em>During: oninput → FilterBar</em>) and its sender, <code>ProductRow.OnParametersSet</code>. <em>Categories</em> puts them on one line, next to <code>ProductApi</code>'s structured <em>Loaded {Count} products in {ElapsedMs} ms</em>.</li>
+    <li>Diagnostics: <em>Log flood: …ProductRow: "Updating row {ProductId} ({Name})" logged 120 times</em>, sent from <code>ProductRow.OnParametersSet</code>. Fix: log once per operation (the search), not per row, or at Debug, below what the host records.</li>
+</ProblemCard>
+
+<ProblemCard Id="problem-26" Title="26. A button that freezes the page" Symptom="After clicking Recalculate ratings nothing moves for a moment: no hover, no typing, no paint." Href="/products">
+    <li>On the products page, press <em>Recalculate ratings</em> a couple of times.</li>
+    <li>On WebAssembly - .NET runs on the browser's main thread - BevTools → Browser → <em>Responsiveness</em>: <em>click on &lt;button.btn&gt;</em>, next paint after about 400 ms, nearly all of it <em>processing</em>, and <em>Ran: onclick → Products.RecalculateRatings</em>; a long frame of the same length with that click inside it (Chromium names the scripts too). Diagnostics: <em>Slow interaction</em> (mostly processing) and <em>Blocked main thread</em>; the session's INP rises above 200 ms.</li>
+    <li>On a Server circuit the browser paints right away - the click's time to the next paint is small - and the 400 ms land on the circuit instead: Timeline → <em>Slow inbound message</em>. Same code, different place it hurts.</li>
+    <li>Fix: do CPU-bound work off the UI thread (a web worker on WebAssembly, <code>Task.Run</code> on Server), or in slices with <code>await Task.Yield()</code>, and show progress.</li>
 </ProblemCard>

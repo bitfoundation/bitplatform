@@ -1,0 +1,48 @@
+@inherits LandingComponentBase
+
+<LandingHead Title="@($"{Text("Title")} | {Site.Name}")" Description="@Text("Lede")" Path="@($"{Site.Path}/{slug}")" Site="Site" Icon="@Icon" />
+
+<article class="lp-container lp-legal">
+    <header class="lp-legal-header">
+        <h1>@Text("Title")</h1>
+        <p class="lp-lede">@Text("Lede")</p>
+        <p class="lp-legal-meta">@Localizer[nameof(LandingStrings.LastUpdated), UpdatedOn.ToString("D", CurrentCulture)]</p>
+        <p class="lp-legal-notice" role="note">@Localizer[nameof(LandingStrings.LegalSampleNotice)]</p>
+    </header>
+
+    @if (kind is LandingLegalKind.Imprint)
+    {
+        @* bdi and dir="ltr" keep Latin names, numbers and addresses in their own order on a Persian page *@
+        <dl class="lp-legal-facts">
+            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintCompany)]</dt><dd><bdi>@Site.Company.LegalName</bdi></dd></div>
+            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><bdi>@Site.Company.Address</bdi></dd></div>
+            @if (Site.Company.Representative is not null)
+            {
+                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd><bdi>@Site.Company.Representative</bdi></dd></div>
+            }
+            @if (Site.Company.RegistrationNumber is not null)
+            {
+                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@Site.Company.RegistrationNumber</dd></div>
+            }
+            @if (Site.Company.VatId is not null)
+            {
+                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@Site.Company.VatId</dd></div>
+            }
+            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintEmail)]</dt><dd><a href="mailto:@Site.Company.Email" dir="ltr">@Site.Company.Email</a></dd></div>
+            @if (Site.Company.Phone is not null)
+            {
+                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintPhone)]</dt><dd><a href="tel:@Site.Company.Phone.Replace(" ", string.Empty)" dir="ltr">@Site.Company.Phone</a></dd></div>
+            }
+        </dl>
+    }
+    else
+    {
+        @foreach (var index in Enumerable.Range(1, SectionCount))
+        {
+            <section class="lp-legal-section">
+                <h2>@Text($"{index}Title")</h2>
+                <p>@Text($"{index}Body")</p>
+            </section>
+        }
+    }
+</article>

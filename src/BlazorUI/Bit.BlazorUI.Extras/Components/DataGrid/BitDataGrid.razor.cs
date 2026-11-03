@@ -746,6 +746,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool _infiniteHasMore = true;
     private bool _infiniteLoading;
     private ElementReference _infiniteViewport;
+    private ElementReference _infiniteSentinel;
     private DotNetObjectReference<BitDataGrid<TItem>>? _infiniteSelfRef;
     private IJSObjectReference? _infiniteHandle;
     private bool _infiniteObserverAttached;
@@ -2098,7 +2099,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         return appended;
     }
 
-    /// <summary>Invoked from JavaScript when the viewport is scrolled near its end.</summary>
+    /// <summary>Invoked from JavaScript when the end of the rows comes near the bottom of the viewport.</summary>
     [JSInvokable]
     public async Task<bool> OnInfiniteScrollNearEndAsync()
     {
@@ -2301,7 +2302,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             try
             {
                 _infiniteHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
-                    "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+                    "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSentinel, _infiniteSelfRef, 200);
             }
             // Released on failure so a failed init retries on a later render.
             catch (Exception ex)

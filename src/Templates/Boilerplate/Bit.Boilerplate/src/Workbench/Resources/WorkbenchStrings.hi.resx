@@ -583,7 +583,7 @@
         <value>व्यस्त</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>शुभ दोपहर, यास</value>
+        <value>शुभ दोपहर, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>स्टोर</value>

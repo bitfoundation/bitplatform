@@ -125,6 +125,8 @@ public static class WebApplicationBuilderExtensions
 
             services.AddHttpContextAccessor();
 
+            // [mirror] response compression options - keep in sync with:
+            // - src/LandingPage/Boilerplate.LandingPage.Server/Program.Services.cs
             services.AddResponseCompression(opts =>
             {
                 opts.EnableForHttps = true;

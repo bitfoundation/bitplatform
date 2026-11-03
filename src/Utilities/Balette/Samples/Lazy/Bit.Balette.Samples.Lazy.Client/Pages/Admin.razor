@@ -1,0 +1,36 @@
+﻿@page "/admin"
+@layout AdminLayout
+@using Bit.Balette
+@implements IDisposable
+@inject IServiceProvider Services
+
+<PageTitle>Admin - Balette lazy loading sample</PageTitle>
+
+<h1>Admin</h1>
+
+<p>
+    <code>Bit.Balette.wasm</code> was downloaded as this page opened. The palette and the trigger above create the
+    services they need themselves, and this page registers its command with the same palette through
+    <code>GetBaletteService()</code>: the app does not register Balette's services. Press <kbd>Ctrl</kbd>+<kbd>K</kbd>
+    (<kbd>⌘</kbd><kbd>K</kbd> on macOS) and run <em>Approve pending requests</em>.
+</p>
+
+<p id="pending">@(_pending == 0 ? "No pending requests" : $"{_pending} pending requests")</p>
+
+@code {
+    private int _pending = 3;
+    private IDisposable? _commands;
+
+    // Registered while the page is open, and gone with it.
+    protected override void OnInitialized()
+        => _commands = Services.GetBaletteService().Register(
+            BaletteCmd.Action("Approve pending requests", ApproveAsync).Id("requests.approve").Group("Requests"));
+
+    private Task ApproveAsync()
+    {
+        _pending = 0;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => _commands?.Dispose();
+}

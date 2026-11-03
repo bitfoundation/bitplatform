@@ -1,0 +1,93 @@
+@attribute [Route(HotelSoftwareSite.Path + "/press")]
+@attribute [Route("/{culture}" + HotelSoftwareSite.Path + "/press")]
+@layout HotelSoftwareLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@H[nameof(HotelSoftwareStrings.PressPageTitle)]"
+             Description="@H[nameof(HotelSoftwareStrings.PressDescription)]"
+             Path="@($"{HotelSoftwareSite.Path}/press")"
+             Site="HotelSoftwareSite.Info" />
+
+<section class="lp-container hs-press-hero" aria-labelledby="hs-press-title">
+    <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.NavPress)]</p>
+    <h1 id="hs-press-title">@H[nameof(HotelSoftwareStrings.PressTitle)]</h1>
+    <p class="lp-lede">@H[nameof(HotelSoftwareStrings.PressLede)]</p>
+</section>
+
+<section class="lp-container hs-press-about" aria-labelledby="hs-press-about-title">
+    <div class="hs-press-copy">
+        <h2 id="hs-press-about-title">@H[nameof(HotelSoftwareStrings.PressAboutTitle)]</h2>
+        <p id="hs-press-text" class="hs-press-text">@H[nameof(HotelSoftwareStrings.PressAboutText)]</p>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@(copied ? BitIconName.CheckMark : BitIconName.Copy)" OnClick="CopyText">
+            @(copied ? H[nameof(HotelSoftwareStrings.PressCopied)] : H[nameof(HotelSoftwareStrings.PressCopy)])
+        </BitButton>
+    </div>
+    <dl class="hs-press-facts">
+        @foreach (var (label, value) in facts)
+        {
+            <div>
+                <dt>@H[label]</dt>
+                <dd>@H[value]</dd>
+            </div>
+        }
+    </dl>
+</section>
+
+<section class="lp-section hs-press-assets" aria-labelledby="hs-press-logos-title">
+    <div class="lp-container">
+        <h2 id="hs-press-logos-title">@H[nameof(HotelSoftwareStrings.PressLogosTitle)]</h2>
+        <p class="hs-press-assets-lede">@H[nameof(HotelSoftwareStrings.PressLogosLede)]</p>
+        <ul class="hs-logo-grid">
+            @foreach (var (file, name, note, isDark) in logos)
+            {
+                <li>
+                    <div class="hs-logo-preview @(isDark ? "is-dark" : null)">
+                        <img loading="lazy" src="@($"images/hotel-software/{file}")" alt="@H[name]" />
+                    </div>
+                    <div class="hs-logo-meta">
+                        <p><strong>@H[name]</strong><br />@H[note]</p>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Download" Href="@($"images/hotel-software/{file}")" Download="@file">@H[nameof(HotelSoftwareStrings.PressDownloadSvg)]</BitButton>
+                    </div>
+                </li>
+            }
+        </ul>
+
+        <h2 class="hs-press-colors-title">@H[nameof(HotelSoftwareStrings.PressColorsTitle)]</h2>
+        <ul class="hs-swatches">
+            @foreach (var (hex, name) in colors)
+            {
+                <li>
+                    <span class="hs-swatch" style="--swatch: @hex" aria-hidden="true"></span>
+                    <strong>@H[name]</strong>
+                    <span dir="ltr">@hex</span>
+                </li>
+            }
+        </ul>
+        <p class="hs-press-usage">@H[nameof(HotelSoftwareStrings.PressUsage)]</p>
+    </div>
+</section>
+
+<section class="lp-container hs-press-people" aria-labelledby="hs-press-founders-title">
+    <div>
+        <h2 id="hs-press-founders-title">@H[nameof(HotelSoftwareStrings.PressFoundersTitle)]</h2>
+        <ul class="hs-founders">
+            @foreach (var (name, role, bio) in founders)
+            {
+                <li>
+                    <span class="hs-founder-mark" aria-hidden="true">@Initials(H[name])</span>
+                    <div>
+                        <h3>@H[name]</h3>
+                        <p class="hs-founder-role">@H[role]</p>
+                        <p>@H[bio]</p>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    <aside class="hs-press-contact" aria-labelledby="hs-press-contact-title">
+        <h2 id="hs-press-contact-title">@H[nameof(HotelSoftwareStrings.PressContactTitle)]</h2>
+        <p><strong>@H[nameof(HotelSoftwareStrings.PressContactName)]</strong><br />@H[nameof(HotelSoftwareStrings.PressContactRole)]</p>
+        <BitButton IconName="@BitIconName.Mail" Href="@($"mailto:{HotelSoftwareSite.PressEmail}")" Class="hs-press-mail"><span dir="ltr">@HotelSoftwareSite.PressEmail</span></BitButton>
+        <p class="hs-press-contact-note">@H[nameof(HotelSoftwareStrings.PressContactNote)]</p>
+    </aside>
+</section>

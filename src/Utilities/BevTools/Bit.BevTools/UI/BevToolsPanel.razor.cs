@@ -70,6 +70,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         ("network", "Network"),
         ("interop", "JS Interop"),
         ("errors", "Errors"),
+        ("logs", "Logs"),
         ("services", "Services"),
         ("diagnostics", "Diagnostics"),
         ("runtime", "Runtime"),
@@ -182,6 +183,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                     shortcut = Options.Ui.ToggleShortcut,
                     trackJsToDotNet = Options.TrackJsInterop,
                     trackTraffic = Options.TrackWebSockets,
+                    trackResponsiveness = Options.TrackResponsiveness,
                     // The hub redacts URLs it shows itself (sockets, failed resources) with the same patterns.
                     sensitivePatterns = Options.SensitiveNamePatterns,
                     sessionId = Session.Id,
@@ -260,6 +262,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private void ApplyPendingChanges()
     {
+        SampleMemory();
+
         // A notification leaves when its time is up, not when something else happens to re-render the panel.
         if (Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt >= BevToolsUiState.NotificationLifetime)
         {
@@ -317,6 +321,40 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             StateHasChanged();
         }
     }
+
+    /// <summary>
+    /// Reads the memory counters at most once a second (<see cref="BevMemoryTrend"/>), and on WebAssembly the linear
+    /// memory, through the in-process module - a synchronous call into the same thread, not a round trip.
+    /// </summary>
+    private void SampleMemory()
+    {
+        if (_memorySamplingFailed)
+        {
+            return;
+        }
+
+        try
+        {
+            var sampled = Session.Memory.Sample(Session, DateTimeOffset.UtcNow, () => BevMemoryReading.Now(
+                OperatingSystem.IsBrowser() && _module is IJSInProcessObjectReference inProcess ? (long?)inProcess.Invoke<double?>("wasmMemory") : null));
+            if (sampled && Ui.IsOpen && Ui.ActivePanelId == "runtime")
+            {
+                // The open Runtime tab draws the trend: it re-reads with each sample, nothing else does.
+                Session.Touch();
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // No trend rather than a failing loop - said once, not every second.
+            if (!_memorySamplingFailed)
+            {
+                _memorySamplingFailed = true;
+                Session.Errors.Record(ex, "bevtools", "Reading the memory counters failed; the memory trend stops.");
+            }
+        }
+    }
+
+    private bool _memorySamplingFailed;
 
     /// <summary>"Server circuit", "WebAssembly": how the runtime switcher and the companion window name this runtime.</summary>
     private string RuntimeLabel() => Session.Platform switch
@@ -660,6 +698,10 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         b.NavigationLoadMs = s.NavigationLoadMs;
         b.DomContentLoadedMs = s.DomContentLoadedMs;
         b.ResourceCount = s.ResourceCount;
+        if (s.Responsiveness is not null)
+        {
+            b.Responsiveness.Support = s.Responsiveness;
+        }
     }
 
     private void ApplyPrefs(string? json)
@@ -837,6 +879,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         ShowPanel("errors");
     }
 
+    public void SelectLog(long logId)
+    {
+        Ui.SelectedLogId = logId;
+        ShowPanel("logs");
+    }
+
     public void SelectHttp(long requestId)
     {
         Ui.SelectedHttpId = requestId;
@@ -980,6 +1028,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             var previews = Session.ValueAccess != BevValueAccess.None;
             Session.Browser.LocalStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "local", patterns, previews);
             Session.Browser.SessionStorage = await _module.InvokeAsync<BevStorageEntry[]>("getStorage", "session", patterns, previews);
+            Session.Browser.AppStorage = Clean(await _module.InvokeAsync<BevAppStorage>("getAppStorage"));
             Session.Browser.StorageReadAt = DateTimeOffset.UtcNow;
             Session.Browser.StorageError = null;
             ApplySnapshot(await _module.InvokeAsync<BevBrowserSnapshot>("refresh"));
@@ -995,6 +1044,34 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
 
         Ui.Touch();
+    }
+
+    /// <summary>What the page reported is the page's text: bounded and redacted before anything shows or exports it.</summary>
+    internal static BevAppStorage? Clean(BevAppStorage? storage)
+    {
+        if (storage is null)
+        {
+            return null;
+        }
+
+        static string Text(string? value, int max = 400) => BevRedactor.RedactText(value is null ? "" : value.Length <= max ? value : value[..max]);
+        static string? Optional(string? value) => value is null ? null : Text(value);
+        storage.Cookies = (storage.Cookies ?? []).Take(200).Select(c => new BevCookieInfo { Name = Text(c.Name, 200), Size = Math.Max(0, c.Size) }).ToArray();
+        storage.IndexedDb = storage.IndexedDb?.Take(200).Select(d => new BevIndexedDbInfo { Name = Text(d.Name, 200), Version = d.Version }).ToArray();
+        storage.Caches = storage.Caches?.Take(200).Select(c => new BevCacheInfo { Name = Text(c.Name, 200), Entries = Math.Max(0, c.Entries) }).ToArray();
+        storage.ServiceWorkers = storage.ServiceWorkers?.Take(200).Select(w => new BevServiceWorkerInfo
+        {
+            Scope = Text(w.Scope),
+            Active = Optional(w.Active),
+            ActiveState = Optional(w.ActiveState),
+            Waiting = Optional(w.Waiting),
+            Installing = Optional(w.Installing),
+        }).ToArray();
+        storage.Controller = Optional(storage.Controller);
+        // Two names can clean to one (cut at the same length, redacted alike): the first of them is kept.
+        storage.UsageDetails = storage.UsageDetails?.Take(20).GroupBy(p => Text(p.Key, 60)).ToDictionary(g => g.Key, g => g.First().Value);
+        storage.Errors = (storage.Errors ?? []).Take(20).Select(e => Text(e, 300)).ToArray();
+        return storage;
     }
 
     /// <summary>Runs the page hub's accessibility checks and keeps the findings for the Browser panel, the rule and exports.</summary>

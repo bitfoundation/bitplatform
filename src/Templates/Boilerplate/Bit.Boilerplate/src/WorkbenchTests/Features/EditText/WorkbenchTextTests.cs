@@ -32,10 +32,8 @@ public class WorkbenchTextTests
     }
 
     [TestMethod]
-    public async Task SavingFromAnotherMachineOrWithoutTheProject_Should_BeRefused()
+    public async Task SavingWithoutTheProject_Should_BeRefused()
     {
-        Assert.IsFalse(await TextEdits(isLocal: false).Save(nameof(WorkbenchStrings), nameof(WorkbenchStrings.Save), CultureInfoManager.DefaultCulture.Name, "Store"));
-
         // The tests run from their own output, where no project with translation files is above them.
         Assert.IsFalse(TextEdits().CanWriteFiles);
         Assert.IsFalse(await TextEdits().Save(nameof(WorkbenchStrings), nameof(WorkbenchStrings.Save), CultureInfoManager.DefaultCulture.Name, "Store"));

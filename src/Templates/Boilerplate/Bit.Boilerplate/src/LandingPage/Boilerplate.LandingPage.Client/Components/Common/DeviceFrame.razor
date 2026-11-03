@@ -1,0 +1,19 @@
+<div class="lp-device lp-device-@Kind.ToString().ToLowerInvariant() @Class" role="@(Label is null ? null : "img")" aria-label="@Label">
+    @if (Kind is LandingDeviceKind.Browser)
+    {
+        <div class="lp-device-bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            @if (Address is not null)
+            {
+                <div class="lp-device-address" dir="ltr">@Address</div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="lp-device-island" aria-hidden="true"></div>
+    }
+    <div class="lp-device-screen">
+        @ChildContent
+    </div>
+</div>

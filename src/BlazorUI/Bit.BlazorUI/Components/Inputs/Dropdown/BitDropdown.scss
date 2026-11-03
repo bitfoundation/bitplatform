@@ -1436,11 +1436,10 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 
 .bit-drp-res {
     @include lt-sm {
+        @include responsive-panel-closed;
         top: 0;
         right: 0;
-        opacity: 0;
         height: 100%;
-        display: block;
         overflow: hidden;
         max-height: unset;
         // Capped at the viewport so a wider panel than the screen it opens on cannot push its close

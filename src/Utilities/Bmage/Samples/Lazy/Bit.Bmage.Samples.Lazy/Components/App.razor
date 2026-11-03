@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Bmage lazy loading sample</title>
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* The editor's stylesheet, the one thing it asks of the host. A stylesheet, not an assembly: linking it here
+       downloads nothing of Bmage's code. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bmage.Blazor/bit-bmage-editor.css"]" />
+    @* Named, so a browser does not ask for /favicon.ico, which the sample does not have. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bmage before the editor's page renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

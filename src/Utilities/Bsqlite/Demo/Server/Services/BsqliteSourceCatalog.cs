@@ -614,7 +614,7 @@ public static partial class BsqliteSourceCatalog
         var builder = new StringBuilder(heading.Length);
 
         // The little words carry nothing a heading is told apart by, and they are the ones a caller most
-        // often drops ("moving off besql") or adds ("the live queries").
+        // often drops ("shared database") or adds ("the live queries").
         foreach (var word in heading.Split(heading.Where(c => char.IsLetterOrDigit(c) is false).Distinct().ToArray(), StringSplitOptions.RemoveEmptyEntries))
         {
             if (_fillerWords.Contains(word)) continue;

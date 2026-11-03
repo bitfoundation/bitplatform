@@ -11,6 +11,7 @@ This is the pass `AGENTS.md` section 5 leaves for later: it moves the English li
 
 - Every literal passed to the `Localizer` indexer, and every raw user-visible string, in the files the user named; without that, in the changes on the current branch.
 - Not CSS classes or ids, configuration keys, URLs and routes, technical constants such as file extensions or MIME types, or log messages.
+- Not the landing page (`src/LandingPage`): its texts are resx keys already, in its own files, in English and Persian, and the **landing-page** skill keeps them.
 
 ## Keys
 

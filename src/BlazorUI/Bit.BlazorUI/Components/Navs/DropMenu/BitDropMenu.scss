@@ -476,9 +476,8 @@ $drm-cal-private-properties: cal-bg, cal-brd;
 
 .bit-drm-res {
     @include lt-sm {
-        opacity: 0;
+        @include responsive-panel-closed;
         height: 100%;
-        display: block;
         overflow: hidden;
         max-height: unset;
         box-shadow: $box-shadow-sheet;

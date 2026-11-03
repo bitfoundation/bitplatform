@@ -162,7 +162,7 @@ public static class IDistributedApplicationBuilderExtensions
                 return builder;
 
             builder.CreateResourceBuilder(dbGate)
-                .WithImageTag("7.3.3")
+                .WithImageTag("7.3.4")
                 .WithDataVolume()
                 .WithExplicitStart();
             //#if (redis == true)
@@ -223,7 +223,7 @@ public static class IDistributedApplicationBuilderExtensions
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         public IResourceBuilder<ContainerResource> AddTextEmbeddingsInference()
         {
-            return builder.AddContainer("embedding", "ghcr.io/huggingface/text-embeddings-inference", "cpu-1.8")
+            return builder.AddContainer("embedding", "ghcr.io/huggingface/text-embeddings-inference", "cpu-1.9")
                 .WithArgs("--model-id", "BAAI/bge-small-en-v1.5")
                 .WithVolume("tei-data", "/data")
                 .WithHttpEndpoint(targetPort: 80)
@@ -237,7 +237,8 @@ public static class IDistributedApplicationBuilderExtensions
         /// public ip). Opt-in: does nothing unless the <c>cloudflare-tunnel-*</c> parameters are set (see appsettings.Development.json).
         /// </summary>
         public void AddCloudflareTunnels(
-            IResourceBuilder<ProjectResource> serverWebProject
+            IResourceBuilder<ProjectResource> serverWebProject,
+            IResourceBuilder<ProjectResource> landingPageProject
             //#if (api == "Standalone")
             , IResourceBuilder<ProjectResource> serverApiProject
             //#endif
@@ -252,6 +253,7 @@ public static class IDistributedApplicationBuilderExtensions
                 var tunnel = builder.AddCloudflareTunnelConnector("cloudflare-tunnel")
                     .PublishAsDockerComposeService((_, service) => service.Restart = "unless-stopped");
                 serverWebProject.WithCloudflareTunnel(tunnel, hostname: "use-your-web-app-url-here.com", endpointName: "http", routeName: "serverweb-route");
+                landingPageProject.WithCloudflareTunnel(tunnel, hostname: "use-your-landing-page-url-here.com", endpointName: "http", routeName: "landingpage-route");
                 //#if (api == "Standalone")
                 serverApiProject.WithCloudflareTunnel(tunnel, hostname: "use-your-api-server-url-here.com", endpointName: "http", routeName: "serverapi-route");
                 //#endif

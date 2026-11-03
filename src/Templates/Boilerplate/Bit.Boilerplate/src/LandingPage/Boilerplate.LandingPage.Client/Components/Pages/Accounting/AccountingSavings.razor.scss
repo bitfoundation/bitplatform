@@ -1,0 +1,93 @@
+@import '../../../Styles/tokens';
+
+.acc-num {
+    font-family: var(--acc-figures);
+    font-feature-settings: "tnum";
+    letter-spacing: -.01em;
+}
+
+.acc-savings {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.acc-savings-inputs {
+    display: grid;
+    align-content: start;
+    gap: 28px;
+    padding: clamp(22px, 3vw, 36px);
+    --bit-Slider-color: var(--lp-accent);
+    --bit-Slider-rail-color: var(--lp-bg-alt);
+    --bit-Slider-font-size: .9375rem;
+    --bit-Slider-value-color: var(--lp-fg);
+    --bit-Slider-thumb-size: 20px;
+
+    ::deep .acc-slider {
+        width: 100%;
+    }
+}
+
+.acc-savings-basis {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.acc-savings-result {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    padding: clamp(22px, 3vw, 36px);
+    background: var(--acc-ledger);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--acc-ledger-rule) 31px 32px);
+
+    dl {
+        display: grid;
+        gap: 14px;
+        margin: 0;
+    }
+
+    div {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 2px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--lp-line);
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+    }
+
+    dd {
+        margin: 0;
+        color: var(--lp-fg);
+        font-size: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+        font-weight: 500;
+        line-height: 1.05;
+    }
+
+    .is-money dd {
+        color: var(--lp-accent);
+        text-decoration: underline double;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 8px;
+    }
+}
+
+.acc-savings-lead {
+    font-weight: 600;
+}
+
+.acc-savings-math {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}

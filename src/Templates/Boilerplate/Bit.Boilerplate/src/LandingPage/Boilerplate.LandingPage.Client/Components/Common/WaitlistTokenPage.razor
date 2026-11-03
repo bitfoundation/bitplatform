@@ -1,0 +1,30 @@
+@inherits LandingComponentBase
+
+<LandingHead Title="@($"{Title} | {Site.Name}")" Description="@Title" Path="@($"{Site.Path}/waitlist/{(isConfirm ? "confirm" : "unsubscribe")}")" Site="Site" NoIndex />
+
+<section class="lp-container lp-token">
+    <div class="lp-token-card">
+        @if (isDone)
+        {
+            <h1>@(isConfirm ? Localizer[nameof(LandingStrings.WaitlistConfirmedTitle)] : Localizer[nameof(LandingStrings.WaitlistUnsubscribedTitle)])</h1>
+            @if (isConfirm)
+            {
+                <p>@Localizer[nameof(LandingStrings.WaitlistConfirmedBody), position.ToString("N0", CurrentCulture)]</p>
+            }
+            <BitButton Variant="BitVariant.Outline" Href="@LocalUrl(Site.Path)">@Localizer[nameof(LandingStrings.BackToHome)]</BitButton>
+        }
+        else
+        {
+            <h1>@Title</h1>
+            <p>@(isConfirm ? Localizer[nameof(LandingStrings.WaitlistConfirmBody)] : Localizer[nameof(LandingStrings.WaitlistUnsubscribeBody)])</p>
+            @if (error is not null)
+            {
+                <p class="lp-token-error" role="alert">@error</p>
+            }
+            @* Nothing changes on a visit alone, since mail scanners open links too; the button sends it *@
+            <BitButton OnClick="Submit" IsLoading="isSubmitting" Disabled="@(string.IsNullOrEmpty(token))">
+                @(isConfirm ? Localizer[nameof(LandingStrings.WaitlistConfirmButton)] : Localizer[nameof(LandingStrings.WaitlistUnsubscribeButton)])
+            </BitButton>
+        }
+    </div>
+</section>

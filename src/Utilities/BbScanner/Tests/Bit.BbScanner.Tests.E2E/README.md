@@ -15,7 +15,9 @@ This suite boots the demo (`Bit.BbScanner.Demo.Server`, which prerenders the pag
 drives it in Chromium with Playwright. It boots the Blazor Server sample (`Bit.BbScanner.Samples.Server`) too, where
 the same scanner runs on a circuit: the camera in the browser, the frame loop and the decoder on the server. The browser's camera is a generated Y4M video
 (`--use-file-for-fake-video-capture`) rendered by the test kit's encoders, so everything below the sensor is real:
-the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the real frame loop and the real decoder.
+the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the real frame loop and the real decoder. One
+suite drives the published lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.BbScanner.wasm`
+only when its scanner page opens.
 
 ## What it proves
 
@@ -26,6 +28,7 @@ the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the real f
 | `ScannerInputTests` | An image dropped onto the scanner and one passed to `ScanImageAsync` from `InputFile` are scanned without the camera; every symbol of an image is reported when asked for; `AfterScan` stops the camera after a scan; `AcceptResult` reports only what it accepts; a session window reports each value once however often it returns; the current frame can be scanned at full resolution. |
 | `ScannerServerTests` | On a Blazor Server circuit: the camera opens in the browser and the server decodes the frames the page streams to it, without a WebAssembly runtime being downloaded; stop releases the camera and start opens it again; navigating away disposes the scanner and releases the camera; a camera the circuit leaves behind (`Blazor.disconnect()`) is closed by the page's watchdog; the built-in *Scan image* button opens the file picker although the click went to the server and back; an `InputFile` upload is scanned through `ScanImageAsync`. |
 | `ScannerExperienceTests` | The interface follows the application's `Texts`, right to left included; stopping from the keyboard keeps focus on the button that starts again; a camera the browser ends while the page is hidden is reopened, paused if it was, when the page returns; `ReleaseCameraWhenHidden` closes and reopens it, and without it a hidden page keeps its camera; the camera permission can be asked about without opening the camera; stopping and starting rebuilds the frame readback; a scan vibrates and beeps once per scan, only when asked. Hiding a page is simulated - headless Chromium never hides one - by overriding `document.visibilityState`. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.BbScanner.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, nothing of BbScanner registered - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.BbScanner.wasm`, yet the package's JS initializer has already added the stylesheet; navigating to the scanner page downloads it once (and not again on the way back), and a deep link to that page is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the scanner imports its module, opens the fake camera, reads its QR code and reports the camera's 640 x 480, which reads back only when the trimmer kept what the library's JSON context reads it into, and leaving the page releases the camera. No console error, unhandled exception or failed request. Published with AOT (`BBSCANNER_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.BbScanner with the app and nothing on demand. |
 
 Camera tracks are counted as the page opens and stops them, so a leaked stream fails a test rather than only
 lighting up the camera indicator. Every page is prerendered, so each test waits until the page runs in the browser
@@ -36,10 +39,11 @@ lighting up the camera indicator. Every page is prerendered, so each test waits 
 From `src/Utilities/BbScanner` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's and the Blazor Server sample's build output: build them first, in the configuration
-# the tests run in.
+# The suite runs the demo server's and the Blazor Server sample's build output and the lazy loading sample's publish
+# output: build and publish them first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.BbScanner.Demo.Server.csproj
 dotnet build Samples/Server/Bit.BbScanner.Samples.Server.csproj
+dotnet publish Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -62,10 +66,22 @@ publishes it - trimmed and compiled ahead of time, which a build output is neith
 dotnet workload install wasm-tools
 dotnet publish src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 dotnet build src/Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj -c Release
+dotnet publish src/Utilities/BbScanner/Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
 pwsh src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.BbScanner.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E && BBSCANNER_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bbscanner-e2e.trx
+```
+
+Its `lazy-loading-aot` job publishes the lazy loading sample ahead of time as well, which leaves its lazy mark out, and
+runs `LazyLoadingTests` against it. Every test starts the demo first, so that job builds it too:
+
+```bash
+dotnet workload install wasm-tools
+dotnet publish src/Utilities/BbScanner/Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+dotnet build src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
+dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
+cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E && BBSCANNER_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
 The suite starts the demo server itself (`dotnet Bit.BbScanner.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
@@ -77,6 +93,12 @@ own: the clip the fake camera plays and whether the permission prompt is accepte
 browser process. The tests run one at a time, because each one waits for the decoder to keep up with a video in
 real time.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BBSCANNER_E2E_LAZY_BASE_URL` points those tests at a copy that is
+already running. A sample that has not been published makes them inconclusive - or failed, on a build server - and
+leaves the other suites alone.
+
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason. On
 a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
@@ -84,8 +106,10 @@ a build server (`CI=true`) the same tests **fail** instead, so a suite that neve
 
 | Variable | Effect |
 |---|---|
-| `BBSCANNER_E2E_CONFIGURATION` | Build configuration of the demo server and the Blazor Server sample to boot; defaults to the test assembly's own. |
+| `BBSCANNER_E2E_CONFIGURATION` | Build configuration of the demo server, the Blazor Server sample and the lazy loading sample's publish to boot; defaults to the test assembly's own. |
 | `BBSCANNER_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BBSCANNER_E2E_SERVER_BASE_URL` | Drive an already running Blazor Server sample instead of booting one. |
+| `BBSCANNER_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BBSCANNER_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.BbScanner comes with the app and nothing is downloaded on demand. |
 | `BBSCANNER_E2E_CHANNEL` / `BBSCANNER_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary. Without either, the full Chromium build Playwright installed is used in its new headless mode (not the headless shell, which reports a denied camera permission as an unsupported API), falling back to an installed Chrome, then Edge. |
 | `BBSCANNER_E2E_HEADED=1` | Show the browser. |

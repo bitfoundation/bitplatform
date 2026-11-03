@@ -970,11 +970,10 @@ span.bit-ctp-txt {
 
 .bit-ctp-res {
     @include lt-sm {
+        @include responsive-panel-closed;
         top: 0;
         left: 0;
-        opacity: 0;
         width: 100%;
-        display: block;
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);

@@ -25,6 +25,11 @@
     <BitDatePicker Id="dp-narrow-two" MonthCount="2" Culture="_en" Today="_today" />
 </E2ESection>
 
+@* Last, so its calendar pushes none of the fields above down the screen; its month picker is folded, so it fits it. *@
+<E2ESection Id="r-standalone" Title="Responsive and Standalone">
+    <BitDatePicker Id="dp-resp-sa" Responsive Standalone ShowMonthPickerAsOverlay Culture="_en" Today="_today" />
+</E2ESection>
+
 <E2EStatus />
 
 @code {

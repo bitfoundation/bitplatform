@@ -1,0 +1,9 @@
+@inherits LandingComponentBase
+
+@if (LandingCultures.InvariantGlobalization is false)
+{
+    @foreach (var (name, culture) in LandingCultures.Supported.Where(s => s.Culture.Name != CurrentCulture.Name))
+    {
+        <a class="lp-lang @Class" href="@Localized(culture)" hreflang="@culture.Name" lang="@culture.Name" title="@Localizer[nameof(LandingStrings.Language)]">@name</a>
+    }
+}

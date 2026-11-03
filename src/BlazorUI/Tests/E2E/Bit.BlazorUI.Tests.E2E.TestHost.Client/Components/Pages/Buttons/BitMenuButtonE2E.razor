@@ -167,6 +167,26 @@
     <div id="fw-container" style="width: 420px;">
         <BitMenuButton Id="mnb-fullwidth" FullWidth Text="Full width" Items="@(L("fullwidth"))" />
     </div>
+    @NarrowRow(@<BitMenuButton Id="mnb-narrow-icononly" IconOnly Variant="BitVariant.Text" Size="BitSize.Small" AriaLabel="More" IconName="@BitIconName.More" Items="@(L("narrow-icononly"))" />)
+    @NarrowRow(@<BitMenuButton Id="mnb-narrow-split" Split Text="Save" Items="@(L("narrow-split"))" />)
+    @NarrowRow(@<BitMenuButton Id="mnb-narrow-text" Text="Options" IconName="@BitIconName.Add" Items="@(L("narrow-text"))" />)
+    @NarrowRow(@<BitMenuButton Id="mnb-narrow-rtl" Dir="BitDir.Rtl" Split Text="Save" IconName="@BitIconName.Add" Items="@(L("narrow-rtl"))" />)
+    @* A row narrower than the label but wide enough for the rest: the button takes the row and ellipsizes its label. *@
+    <div style="display: flex; width: 150px;">
+        <BitMenuButton Id="mnb-long-label" Text="A rather long label for the action" IconName="@BitIconName.Add" Items="@(L("long-label"))" />
+    </div>
+    @* A full-width one takes its grid track, or what its sibling leaves of a flex row, and ellipsizes its label there. *@
+    <div style="display: grid; grid-template-columns: 1fr 1fr; width: 200px;">
+        <BitMenuButton Id="mnb-fullwidth-grid" FullWidth Text="A rather long label for the action" Items="@(L("fullwidth-grid"))" />
+    </div>
+    <div style="display: flex; width: 200px;">
+        <span style="flex-shrink: 0; width: 60px;"></span>
+        <BitMenuButton Id="mnb-fullwidth-flex" FullWidth Text="A rather long label for the action" Items="@(L("fullwidth-flex"))" />
+    </div>
+    @* A row narrower than even the icon and the chevron, which the variable lets shrink the button past them. *@
+    <div style="display: flex; width: 40px;">
+        <BitMenuButton Id="mnb-min-width-zero" Style="--bit-MenuButton-min-width: 0;" Text="Options" IconName="@BitIconName.Add" Items="@(L("min-width-zero"))" />
+    </div>
     <BitMenuButton Id="mnb-chevron" Split Text="Chevron" Items="@(L("chevron"))" ChevronDownIconName="@BitIconName.ChevronDownMed" ChevronDownAriaLabel="Show the save options" ChevronDownTitle="More save options" />
     <BitMenuButton Id="mnb-icons-custom" Text="Custom marks" Items="_customMarks" CloseOnItemClick="false"
                    CheckIconName="@BitIconName.CheckboxComposite" RadioIconName="@BitIconName.RadioBtnOn" SubmenuIconName="@BitIconName.ChevronRightMed" />
@@ -466,6 +486,14 @@
 
         return list;
     }
+
+    // A flex row too narrow for the menu button it holds, beside a title that gives up its room the way a card
+    // header's does, and clipping what overflows it the way such a header does.
+    private static RenderFragment NarrowRow(RenderFragment button) =>
+        @<div style="display: flex; overflow: hidden; width: 100px;">
+            <span style="min-width: 0; overflow: hidden; white-space: nowrap;">A title far longer than the row it shares</span>
+            @button
+        </div>;
 
     private static List<BitMenuButtonItem> Basic() =>
     [

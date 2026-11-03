@@ -1,0 +1,107 @@
+﻿@page "/todos"
+@using Bit.BlazeDb
+@inject AppDatabase Database
+
+<PageTitle>Todos - BlazeDb lazy loading sample</PageTitle>
+
+<h1>Todos</h1>
+
+<p>
+    <code>Bit.BlazeDb.wasm</code> was downloaded as this page opened. The page opens the tab's database through
+    <code>AppDatabase</code>, which <code>Program.cs</code> registered before the assembly was there: BlazeDb itself
+    registers nothing.
+</p>
+
+<p id="database" data-storage="@Storage">@Status</p>
+
+@if (_todos is not null)
+{
+    <form class="add" @onsubmit="AddAsync">
+        <input id="new-title" @bind="_title" @bind:event="oninput" placeholder="What needs doing?" aria-label="New todo" />
+        <button type="submit" disabled="@string.IsNullOrWhiteSpace(_title)">Add</button>
+    </form>
+
+    <ul id="todos">
+        @foreach (var todo in _todos.OrderBy(TodoItem.Indexes.CreatedAt))
+        {
+            <li @key="todo.Id">
+                <label>
+                    <input type="checkbox" checked="@todo.Done" @onchange="() => ToggleAsync(todo)" />
+                    <span class="title">@todo.Title</span>
+                </label>
+            </li>
+        }
+    </ul>
+
+    <p>
+        <span id="open">@_todos.CountBy(TodoItem.Indexes.Done, false) open</span>,
+        <span id="saved">@(_saving > 0 ? "saving…" : "saved")</span>
+    </p>
+}
+
+@code {
+    // The router downloads Bit.BlazeDb.wasm before this page is created, so it may keep the engine's types in its fields.
+    private BlazeDbDatabase? _database;
+    private BlazeDbTable<Guid, TodoItem>? _todos;
+    private string? _error;
+    private string _title = "";
+    private int _saving;
+
+    private string Storage => _error is not null ? "Failed" : _todos is null ? "Opening" : Database.Backend!;
+
+    private string Status => _error is not null ? $"The database could not be opened: {_error}"
+        : _todos is null ? "Opening the database…"
+        : $"Kept in {Database.Backend}, in this browser.";
+
+    // The server prerenders this page, and it has no OPFS, IndexedDB or Web Locks: the database opens once the page
+    // runs in the browser, and the prerender shows that it is opening.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && OperatingSystem.IsBrowser())
+        {
+            try
+            {
+                _database = await Database.GetAsync();
+                _todos = _database.GetTable(TodoItem.Table);
+            }
+            catch (Exception exception)
+            {
+                _error = exception.Message;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddAsync()
+    {
+        var title = _title.Trim();
+        if (title.Length == 0) return;
+
+        _todos!.Insert(new TodoItem { Id = Guid.NewGuid(), Title = title, CreatedAt = DateTime.UtcNow });
+        _title = "";
+        await SaveAsync();
+    }
+
+    // Rows are live objects: a change is written as a new row, never by changing the one the table holds.
+    private Task ToggleAsync(TodoItem todo)
+    {
+        _todos!.Update(new TodoItem { Id = todo.Id, Title = todo.Title, Done = !todo.Done, CreatedAt = todo.CreatedAt });
+        return SaveAsync();
+    }
+
+    // The background flusher writes a commit to storage within 100 ms. Flushing here means that once the page says
+    // "saved", a reload finds the change.
+    private async Task SaveAsync()
+    {
+        _saving++;
+        try
+        {
+            await _database!.FlushAsync();
+        }
+        finally
+        {
+            _saving--;
+        }
+    }
+}

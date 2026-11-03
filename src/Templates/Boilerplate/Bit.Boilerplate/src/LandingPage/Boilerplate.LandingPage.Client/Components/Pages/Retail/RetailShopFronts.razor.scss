@@ -1,0 +1,111 @@
+@import '../../../Styles/tokens';
+
+.retail-fronts {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 10px solid var(--lp-fg);
+
+    li {
+        display: grid;
+        justify-items: center;
+        gap: 2px;
+        padding-inline: 4px;
+    }
+
+    svg {
+        width: 100%;
+        height: auto;
+        margin-bottom: 8px;
+    }
+
+    @include lt-md {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 24px;
+        border-bottom: 0;
+
+        li {
+            padding-bottom: 12px;
+            border-bottom: 8px solid var(--lp-fg);
+        }
+    }
+}
+
+.retail-front-wall {
+    fill: var(--wall);
+}
+
+.retail-front-roof {
+    fill: color-mix(in oklab, var(--wall), #000000 30%);
+}
+
+.retail-front-sign {
+    fill: #16181D;
+}
+
+.retail-front-sign-text {
+    stroke: #FFFFFF;
+    stroke-width: 3;
+    stroke-dasharray: 9 3 5 3 12 3 7 3;
+    opacity: .85;
+}
+
+.retail-front-awning {
+    fill: var(--awning);
+}
+
+.retail-front-stripes {
+    stroke: #FFFFFF;
+    stroke-width: 5;
+    opacity: .55;
+}
+
+.retail-front-window {
+    fill: color-mix(in oklab, #BFD7EA, var(--wall) 12%);
+    stroke: #16181D;
+    stroke-width: 2;
+}
+
+.retail-front-shelf {
+    stroke: #16181D;
+    stroke-width: 1.5;
+}
+
+.retail-front-goods {
+    fill: var(--goods);
+}
+
+.retail-front-crate {
+    fill: #A57B4F;
+}
+
+.retail-front-door {
+    fill: color-mix(in oklab, var(--wall), #000000 38%);
+    stroke: #16181D;
+    stroke-width: 2;
+}
+
+.retail-front-handle {
+    fill: #FFD43B;
+}
+
+.retail-front-step {
+    fill: color-mix(in oklab, var(--lp-fg), var(--lp-bg) 55%);
+}
+
+.retail-front-year {
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    font-weight: 850;
+    font-stretch: 125%;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.retail-front-name {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+    text-align: center;
+}

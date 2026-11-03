@@ -1413,6 +1413,14 @@ if (navigation.ToBaseRelativePath(navigation.Uri).StartsWith("showcase", StringC
 await host.RunAsync();
 ```
 
+The [lazy loading sample](Samples/Lazy/) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, and sets a switch next to it that tells its router and its `Program.cs` whether there is an assembly to
+load - and the [end-to-end suite](Tests/Bit.Bmotion.Tests.E2E/) runs its published copy in a browser, trimmed and
+AOT-compiled: the home page never downloads `Bit.Bmotion.wasm`, and the showcase downloads it once, whether opened from
+the home page or by a deep link the server prerenders. There its card enters - or, prerendered, is taken over without
+playing its enter again - and grows under the pointer, and its buttons animate from code through
+`GetBmotionService<BmotionAnimateService>()`.
+
 ---
 
 ## Examples
@@ -1427,7 +1435,9 @@ pages (gestures and drag, presence, layout and reorder, the programmatic API, an
 Android, iOS, macOS and Windows). The bar on every page names the renderer it is on, and the home, Gestures and
 Programmatic pages say whether the engine has its per-frame loop there. It does on WebAssembly. On Server and in the
 MAUI app interop is asynchronous, so the browser plays nearly everything and what needs the loop lands on its target
-at once. The web hosts prerender every page with `BmPrerenderMode.Animate`.
+at once. The web hosts prerender every page with `BmPrerenderMode.Animate`. [Lazy](Samples/Lazy/) stands apart: a
+Blazor Web App of its own whose browser half downloads `Bit.Bmotion.wasm` only when its showcase, the part that
+animates, opens (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ```bash
 dotnet run --project src/Utilities/Bmotion/Samples/Server

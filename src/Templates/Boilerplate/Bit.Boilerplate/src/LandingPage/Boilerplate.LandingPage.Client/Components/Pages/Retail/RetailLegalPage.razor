@@ -1,0 +1,14 @@
+@attribute [Route(RetailSite.Path + "/privacy")]
+@attribute [Route(RetailSite.Path + "/terms")]
+@attribute [Route(RetailSite.Path + "/cookies")]
+@attribute [Route(RetailSite.Path + "/imprint")]
+@attribute [Route(RetailSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/terms")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/accessibility")]
+@layout RetailLayout
+@inherits LandingPageBase
+
+<LegalPage Site="RetailSite.Info" />

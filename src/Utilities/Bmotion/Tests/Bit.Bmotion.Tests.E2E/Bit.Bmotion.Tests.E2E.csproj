@@ -22,6 +22,11 @@
         <PackageReference Include="MSTest" Version="4.5.2" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The lazy loading harness every lazy-loadable library shares (src/Utilities/Shared/LazyLoading.md). -->
+        <Compile Include="..\..\..\Shared\Tests\E2E\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <!-- Deliberately no ProjectReference to Bit.Bmotion or the harness: every test here drives a running host
          through the browser, exactly as an app's user would, and HarnessBuild builds that host before the run
          (a ProjectReference would only build it for the framework this project targets). -->

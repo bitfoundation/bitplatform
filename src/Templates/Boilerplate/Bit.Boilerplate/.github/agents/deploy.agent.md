@@ -27,6 +27,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
 - **Nothing reaches the VM from outside.** The runner pulls its jobs from GitHub and cloudflared dials out to
   Cloudflare, so every inbound port on the VM stays closed. Visitors reach the app on the user's domain through a
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
+- **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
+  often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
+  the `LANDINGPAGE_SETTINGS` secret.
 - **Cloudflare is the recommendation, and it is free.** Its free plan covers the tunnel, the DNS, the certificates and
   the cache this needs, so tell the user they need no paid plan to start.
 - **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch each
@@ -141,6 +144,9 @@ business, and only what the project doesn't answer by itself.
 <!--#if (multitenant == true)-->
 - Pages that differ per tenant stay out of the edge cache (`UserAgnostic` in `.docs/14- Response Caching System.md`).
 <!--#endif-->
+- The landing page (`src/LandingPage`) is prerendered whatever this decides, since being found is what it is for. Its
+  pages set no cookies and a short shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them
+  from the edge.
 - Blazor Server is for development only in this template, and so is Auto, which runs on Blazor Server until
   WebAssembly has loaded: offer neither for a deployment.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
@@ -221,6 +227,9 @@ there, and the setting or secret that carries it. Every environment gets its own
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
+- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: its public address (`Site__Url`), the
+  `smtp` connection string its waitlist emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+  variable to its public address, and the deployment checks that it answers.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
@@ -250,13 +259,15 @@ project up, and fails unless every container is healthy and the public address a
 - Add the user's domain to Cloudflare on the free plan, and create a named tunnel for each environment.
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
-  point the tunnel's public hostname at `http://serverweb:8080`.
+  point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
+  `http://landingpage:8080`.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`.
 <!--#endif-->
 <!--#else-->
 - This project was created without the `cloudflare` option, so add cloudflared to the Compose project through the app
-  host, with the tunnel's token as a secret, and point the tunnel's public hostname at the web app's service.
+  host, with the tunnel's token as a secret, and point the tunnel's public hostname at the web app's service and the
+  landing page's hostname at the `landingpage` service.
 <!--#if (api == "Standalone")-->
 - The web app and the api each get a hostname of their own.
 <!--#endif-->
@@ -285,6 +296,9 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (signalR == true)-->
 - Check the AI chat and a voice call there too.
 <!--#endif-->
+- Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
+  launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**
+  skill (`.github/agents/landing-page.agent.md`) describes, so every deployment empties it.
 - Once Test works, Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).

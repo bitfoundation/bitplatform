@@ -111,7 +111,7 @@ public static class RunCommand
                 }
             }
 
-            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, null, cancellationToken);
+            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, null, null, cancellationToken);
 
             return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
         });

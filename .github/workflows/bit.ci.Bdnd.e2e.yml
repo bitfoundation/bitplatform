@@ -1,8 +1,9 @@
 name: bit platform CI - Bdnd E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright, from its
-# build output and, in the publish gate, from trimmed and AOT-compiled publishes. It takes far longer than the
-# build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by hand. See
+# build output and, in the publish gate, from trimmed and AOT-compiled publishes, and the published lazy loading sample
+# next to it. It takes far longer than the build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by
+# hand. See
 # src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
@@ -30,7 +31,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -40,9 +41,11 @@ jobs:
 
     # No dotnet workload restore: neither project below needs a workload, and a restore over Bit.Bdnd.slnx would
     # install the Android workloads its MAUI sample needs.
-    - name: Build the demo and the E2E suite
+    - name: Build the demo, publish the lazy loading sample and build the E2E suite
+      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, trimmed.
       run: |
         dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
@@ -78,7 +81,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -129,7 +132,9 @@ jobs:
   # workload installed so the runtime is relinked as well - and in a second leg AOT-compiled, as the deployed demo is
   # not but an app using the library may be. Either leg fails on any trim/AOT analysis warning raised inside Bit.Bdnd,
   # then runs the browser suite against that published output. Trimming is where the interop types System.Text.Json
-  # reads and writes through reflection lose their members, and none of it is visible in a build output.
+  # reads and writes through reflection lose their members, and none of it is visible in a build output. The lazy
+  # loading sample is published the same way next to it: in the AOT leg it leaves its lazy mark out, as the README says
+  # an AOT build must, and LazyLoadingTests checks that it then loads Bit.Bdnd with the app and works all the same.
   publish-gate:
     name: Bdnd publish gate (${{ matrix.name }})
     runs-on: ubuntu-26.04
@@ -141,9 +146,11 @@ jobs:
         include:
         - name: trimmed
           properties: ''
+          lazy-aot: ''
           timeout: 90
         - name: aot
           properties: '-p:RunAOTCompilation=true'
+          lazy-aot: '1'
           timeout: 150
 
     steps:
@@ -154,7 +161,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -171,6 +178,9 @@ jobs:
     - name: Publish the demo (fails on trim/AOT warnings from Bit.Bdnd)
       run: cd src/Utilities/Bdnd && bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/demo-${{ matrix.name }} ${{ matrix.properties }}
 
+    - name: Publish the lazy loading sample
+      run: cd src/Utilities/Bdnd && dotnet publish Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release ${{ matrix.properties }}
+
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 
@@ -180,6 +190,7 @@ jobs:
     - name: Run E2E tests against the published demo
       env:
         BDND_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/demo-${{ matrix.name }}
+        BDND_E2E_LAZY_AOT: ${{ matrix.lazy-aot }}
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&

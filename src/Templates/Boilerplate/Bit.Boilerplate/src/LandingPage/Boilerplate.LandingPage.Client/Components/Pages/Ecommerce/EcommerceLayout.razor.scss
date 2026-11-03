@@ -1,0 +1,35 @@
+@import '../../../Styles/tokens';
+
+.lp-ecommerce {
+    --lp-announcement-bg: var(--lp-accent);
+    --lp-announcement-fg: var(--lp-accent-fg);
+    --lp-chat-bubble-bg: var(--lp-fg);
+    --lp-chat-bubble-fg: var(--lp-bg);
+}
+
+.ecommerce-sticky-cta {
+    display: none;
+
+    @include lt-sm {
+        position: fixed;
+        z-index: 600;
+        inset-inline: 12px 84px;
+        bottom: max(20px, env(safe-area-inset-bottom, 0px));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 52px;
+        border-radius: 999px;
+        background: var(--lp-accent);
+        color: var(--lp-accent-fg);
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 12px 30px -12px color-mix(in oklab, var(--lp-accent) 70%, transparent);
+    }
+}
+
+::deep .ecommerce-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}

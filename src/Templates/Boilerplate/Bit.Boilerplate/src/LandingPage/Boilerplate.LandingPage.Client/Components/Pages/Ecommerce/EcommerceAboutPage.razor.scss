@@ -1,0 +1,163 @@
+@import '../../../Styles/tokens';
+
+.ecommerce-about-hero {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding-block: clamp(48px, 7vw, 96px) 24px;
+
+    > * {
+        max-width: 820px;
+    }
+
+    h1 {
+        font-size: clamp(2.6rem, 2rem + 3vw, 4.4rem);
+        font-weight: 500;
+        letter-spacing: -.02em;
+    }
+}
+
+.ecommerce-story {
+    display: grid;
+    grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+    padding-block: 48px;
+
+    > div {
+        display: grid;
+        gap: 16px;
+        max-width: 60ch;
+    }
+
+    h2 {
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 500;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: 1.0625rem;
+    }
+
+    ::deep .ecommerce-story-plant {
+        width: 100%;
+        max-width: 320px;
+        --lp-device-screen: var(--lp-bg);
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-team {
+    background: var(--lp-bg-alt);
+
+    h2 {
+        margin-bottom: 36px;
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 500;
+    }
+
+    ul {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 32px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    li {
+        display: grid;
+        gap: 4px;
+
+        span:last-child {
+            color: var(--lp-fg-muted);
+            font-size: .9375rem;
+        }
+    }
+}
+
+.ecommerce-team-avatar {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+    border-radius: 24px 24px 24px 6px;
+    background: var(--lp-accent);
+    color: var(--lp-accent-fg);
+    font-family: var(--lp-stack-display);
+    font-size: 1.5rem;
+}
+
+.ecommerce-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    padding-block: clamp(56px, 7vw, 96px);
+
+    > div:first-child {
+        display: grid;
+        align-content: start;
+        gap: 16px;
+    }
+
+    h2 {
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 500;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ecommerce-visit {
+    display: grid;
+    gap: 12px;
+    padding: 28px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+
+    h3 {
+        font-size: 1.375rem;
+    }
+
+    dl {
+        display: grid;
+        gap: 10px;
+        margin: 8px 0 0;
+    }
+
+    div {
+        display: grid;
+        grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+        gap: 12px;
+        font-size: .9375rem;
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+    }
+
+    dd {
+        margin: 0;
+    }
+}

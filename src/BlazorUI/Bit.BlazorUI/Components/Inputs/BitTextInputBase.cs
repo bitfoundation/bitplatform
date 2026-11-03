@@ -8,6 +8,10 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 {
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
+    // How many input events are being committed through HandleOnStringValueChangeAsync right now, which is what tells
+    // them apart from the change event of the input element on the way through it (see PrepareStringValueCommit).
+    private int _committingInputEvents;
+
     // The parameters of this class are taken out of the ParameterView here, before it reaches the classes below,
     // so their sets never see them: IsSetByMarkup adds this one to theirs, which is what HasNotBeenSet reads.
     private readonly HashSet<string> _assignedTextInputParameters = [];
@@ -106,14 +110,22 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
 
     /// <summary>
-    /// Handler for the OnChange event.
+    /// Handler for the OnChange event, which is also what commits the input events of an <see cref="Immediate"/> input.
     /// </summary>
+    /// <remarks>
+    /// Called with anything but an input event - the change event, or a commit a derived component makes - it drops the
+    /// input events still waiting out their <see cref="DebounceTime"/> or <see cref="ThrottleTime"/>, whose text is older
+    /// than what it commits, and under <see cref="Immediate"/> it leaves a value every commit has already settled on
+    /// unreported, as the input events reported it while it was typed.
+    /// </remarks>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
         if (Disabled || ReadOnly) return;
 
-        await SetCurrentValueAsStringAsync(e.Value?.ToString());
+        var reportSettledValue = PrepareStringValueCommit();
+
+        await SetCurrentValueAsStringAsync(e.Value?.ToString(), bypass: false, reportSettledValue);
     }
 
     /// <summary>
@@ -126,8 +138,18 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
         if (Immediate is false) return;
 
-        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
-            await InvokeAsync(async () => await HandleOnStringValueChangeAsync(args)));
+        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args => await InvokeAsync(async () =>
+        {
+            _committingInputEvents++;
+            try
+            {
+                await HandleOnStringValueChangeAsync(args);
+            }
+            finally
+            {
+                _committingInputEvents--;
+            }
+        }));
     }
 
 
@@ -137,6 +159,28 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// for a derived component that has just committed that text by other means.
     /// </summary>
     protected void ResetInputRateLimiter() => _rateLimiter.Reset();
+
+    /// <summary>
+    /// Readies the commit of the text that reached <see cref="HandleOnStringValueChangeAsync"/> - the one of the base
+    /// class, or that of a derived component committing it by other means - and tells whether a value every commit has
+    /// already settled on is reported again (see <see cref="BitInputBase{TValue}.SetCurrentValueAsStringAsync(string?, bool, bool)"/>).
+    /// </summary>
+    /// <remarks>
+    /// An input event is reported whatever it carries, every keystroke of it. Anything else is taken for the change
+    /// event, which carries the latest text the input holds: an input event still waiting out its debounce or throttle
+    /// is older than that and is dropped, as landing after it - or after a value set since, a clearing say - it would put
+    /// back the text it was raised for. Under <see cref="Immediate"/> the input events reported the edit as it was typed,
+    /// so the change event raised on blur does not report it once more: a re-render the app runs again on the way out
+    /// can swallow the press that took the focus away.
+    /// </remarks>
+    private protected bool PrepareStringValueCommit()
+    {
+        if (_committingInputEvents > 0) return true;
+
+        _rateLimiter.Reset();
+
+        return Immediate is false;
+    }
 
 
 

@@ -34,7 +34,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
     private static readonly string[] apple = [AppleIssuerId, AppleKeyId, ApplePrivateKey, AppleCertificateFile, AppleCertificatePassword];
 
-    private static readonly string[] optional = [RetiredAppCertificate, "SERVERWEB_SETTINGS", "SERVERAPI_SETTINGS"];
+    private static readonly string[] optional = [RetiredAppCertificate, "SERVERWEB_SETTINGS", "SERVERAPI_SETTINGS", "LANDINGPAGE_SETTINGS"];
 
     private static readonly Dictionary<string, string> hints = new(StringComparer.Ordinal)
     {

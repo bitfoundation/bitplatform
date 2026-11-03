@@ -31,6 +31,9 @@ That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlit
 
 Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/) - run the
 `Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
+[`Samples/Lazy`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Samples/Lazy/) stands
+apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and EF Core only when its products page opens
+(see [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)).
 
 ---
 
@@ -44,7 +47,6 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 - [Where it runs](#where-it-runs)
 - [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [What this release does not claim](#what-this-release-does-not-claim)
-- [Moving off Bit.Besql](#moving-off-bitbesql)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Tests](#tests)
 - [Documentation](#documentation)
@@ -81,7 +83,7 @@ The storage backends, each in its own namespace and each registered with `AddSto
 | --- | --- | --- |
 | `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
 | `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, and the migration path off `Bit.Besql` |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
 | `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
 | `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
@@ -172,8 +174,9 @@ Brotli, for a small app on the demo's model. An app whose database only some pag
 then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
 
 ```csharp
-// Called only from the pages the assemblies are loaded for, once they run in the browser.
-internal static class AppDatabase
+// Called only from the pages the assemblies are loaded for, once they run in the browser - and, to register, from a
+// server that prerenders them or a Blazor Hybrid app that shares them: public for those.
+public static class AppDatabase
 {
     public static void Register(IServiceCollection services)
     {
@@ -216,14 +219,6 @@ the router reads, nothing of EF Core's in `Program.cs`, the database asked for o
 - `indexeddb` serializes readers. `IDBBatchAtomicVFS` is registered with `WebLocksMixin`'s default `exclusive` lock
   policy, so a read holds the same lock a write does. `SupportsConcurrentReads` reports that honestly.
 
-## Moving off Bit.Besql
-
-Bsqlite replaces Bit.Besql. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads the file Bit.Besql left in
-its `bit-Besql` cache: a database is imported losslessly into Bsqlite's own page layout the first time it is opened, so an
-application that switches keeps its users' data - and in a Blazor Hybrid app, the `file-system` backend opens the SQLite
-file Bit.Besql used on the device in place. The *Moving from Bit.Besql* guide, listed under [Documentation](#documentation),
-maps every Bit.Besql API to its replacement and walks through the move step by step.
-
 ## MCP server (for AI agents)
 
 The demo website hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
@@ -237,7 +232,7 @@ The wa-sqlite engine and the upstream VFS files are vendored at restore, verifie
 
 ```bash
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test        # ADO.NET, EF Core and storage selection, every target framework
-cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo and the lazy loading sample
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp && dotnet test    # the MCP server, hosted in-memory
 cd src/Utilities/Bsqlite/Tests/bit-bsqlite-js && npm ci && npm test   # the JavaScript that needs no browser
 ```
@@ -253,8 +248,6 @@ for the browser matrix, the soak suite and the benchmark page.
 - [Architecture and performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/architecture.md) - the worker, the binary wire format, the statement cache, change tracking
 - [Limits](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/limits.md) - what the browser cannot do and how the library tells you
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/extending.md) - SQL functions from JavaScript, custom transports
-- [Moving from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-from-besql.md) - what replaces each Bit.Besql API, and keeping users' data
-- [Moving a bit Boilerplate project from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-boilerplate-from-besql.md) - the offline database of a project made from the template, file by file
 
 ## License
 

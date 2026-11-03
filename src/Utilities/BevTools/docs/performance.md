@@ -63,6 +63,44 @@ Read these carefully:
 | `UseFrameworkInstrumentation = false` | Stops BevTools registering the framework's ActivitySource and meters. Render causes degrade to *StateHasChanged*. |
 | Pause capture (header button, `session.PauseCapture()`) | Stops all recording at runtime without uninstalling anything: the render wrapper degrades to one flag check and one counter increment, and every other path returns before allocating. |
 
+### Allocations per render
+
+Measuring what each render allocates adds two reads of the runtime's per-thread allocation counter around each
+recorded `BuildRenderTree` (an internal call, no allocation) and a field on the sample that was already allocated; the
+render path's allocations are the same with it (23.7, 23.7, 142.6 and 209.7 MB). Renders BevTools does not record -
+its own, those while capture is paused - read nothing.
+
+### Responsiveness
+
+The page hub's observers are the browser's own (`PerformanceObserver`): nothing runs per frame or per event in
+BevTools' code until the browser hands over entries, at most one per long frame and one per event of 16 ms or more.
+They are reported once a second; on WebAssembly each entry is matched against the timeline snapshot (a scan of at most
+`MaxEvents` events per report). `TrackResponsiveness = false` installs no observer.
+
+### Memory over time
+
+One reading a second while the panel component is on the page: three of the runtime's counters and, on
+WebAssembly, one in-process call for the linear memory; a sample of four numbers in a 600-entry ring. Nothing on the
+render path.
+
+### Log entries
+
+`TrackLogs` costs nothing on the render path (allocations above are unchanged with it on: 23.7, 23.7, 142.6 and 209.8 MB
+before the logs round, 23.7, 23.8, 142.6 and 209.7 MB after, on the same machine back to back). Its cost is per
+recorded entry, measured by the same harness (one structured Information entry with two values, written on the
+renderer's dispatcher, 20 000 times; net11.0, Release):
+
+| Configuration | Per entry | Allocated per entry |
+|---|---|---|
+| Without BevTools (the logging framework with no provider) | 0.03 µs | 64 B |
+| BevTools, `TrackLogs = false` | 0.02 µs | 64 B |
+| Recording, `CaptureLogCallers = false` | 2.9 µs | 1.8-1.9 KB |
+| Recording everything | 7.9 µs | 6.4 KB |
+
+The stack walk that names the sending component is most of it, as for HTTP senders. An entry below
+`MinimumLogLevel` (or filtered by the host) is refused in `IsEnabled`, before the message is formatted. `log.flood`
+reads the buffer (at most `MaxLogs` entries) once per evaluation.
+
 Forced-render detection (parameter flattening and diffing before a render) runs for the component selected in the
 inspector, like the field diff it sits next to, and is bounded the same way (depth 2, 25 items, 150 entries per
 parameter, one 50 ms wall-clock budget shared by all parameters of the render). It is not on the hot path for any other

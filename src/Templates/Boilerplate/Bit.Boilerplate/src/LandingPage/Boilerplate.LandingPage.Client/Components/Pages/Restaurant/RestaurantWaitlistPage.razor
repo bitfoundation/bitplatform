@@ -1,0 +1,8 @@
+@attribute [Route(RestaurantSite.Path + "/waitlist/confirm")]
+@attribute [Route(RestaurantSite.Path + "/waitlist/unsubscribe")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/waitlist/confirm")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/waitlist/unsubscribe")]
+@layout RestaurantLayout
+@inherits LandingPageBase
+
+<WaitlistTokenPage Site="RestaurantSite.Info" />

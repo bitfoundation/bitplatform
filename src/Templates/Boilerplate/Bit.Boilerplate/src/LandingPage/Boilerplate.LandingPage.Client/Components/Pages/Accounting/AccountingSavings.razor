@@ -1,0 +1,37 @@
+@inherits LandingComponentBase
+
+<div class="acc-savings">
+    <div class="acc-savings-inputs">
+        <BitSlider @bind-Value="hours"
+                   Label="@A[nameof(AccountingStrings.SavingsHoursLabel)]"
+                   Min="1"
+                   Max="20"
+                   Step="1"
+                   GetValueText="HoursText"
+                   AriaValueText="HoursText"
+                   Class="acc-slider" />
+        <BitSlider @bind-Value="rate"
+                   Label="@A[nameof(AccountingStrings.SavingsRateLabel)]"
+                   Min="20"
+                   Max="150"
+                   Step="5"
+                   GetValueText="RateText"
+                   AriaValueText="RateText"
+                   Class="acc-slider" />
+        <p class="acc-savings-basis">@A[nameof(AccountingStrings.SavingsBasis)]</p>
+    </div>
+    <div class="acc-savings-result" role="status">
+        <p class="acc-savings-lead">@A[nameof(AccountingStrings.SavingsLead)]</p>
+        <dl>
+            <div>
+                <dt>@A[nameof(AccountingStrings.SavingsHoursBack)]</dt>
+                <dd class="acc-num">@HoursBack.ToString("N0", CurrentCulture)</dd>
+            </div>
+            <div class="is-money">
+                <dt>@A[nameof(AccountingStrings.SavingsMoneyBack)]</dt>
+                <dd class="acc-num">@Money(MoneyBack)</dd>
+            </div>
+        </dl>
+        <p class="acc-savings-math">@A[nameof(AccountingStrings.SavingsMath), hours.ToString("N0", CurrentCulture), HoursBack.ToString("N0", CurrentCulture), Money(rate), Money(SoloYearly), Money(MoneyBack)]</p>
+    </div>
+</div>

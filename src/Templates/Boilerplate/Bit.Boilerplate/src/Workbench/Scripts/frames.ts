@@ -43,10 +43,11 @@ let notFromThemeLabel = '';
 let pinsByPane: Record<string, Pin[]> = {};
 /** The animation frame a pin repositioning is queued on, or 0. */
 let pinFrame = 0;
-/** The click listener of an inline pick in progress. */
-let inlinePick: ((event: MouseEvent) => void) | null = null;
 /** The component last picked in Inspect mode, found again by its id, or by its place when hot reload made it anew. */
-let inspected: { paneId: string; elementId: string; selector: string } | null = null;
+let inspected: { paneId: string; isScreen: boolean; elementId: string; selector: string } | null = null;
+
+/** The inner screens of store compositions whose loads are already handled. */
+const seenScreens = new WeakSet<HTMLIFrameElement>();
 
 /** Whether a mode is on in which a click picks an element instead of acting on the page. */
 const isPicking = () => mode === 'comment' || mode === 'inspect' || mode === 'text';
@@ -72,39 +73,13 @@ export function setMode(next: string) {
     if (mode === next) return;
 
     mode = next;
-    paneFrames().forEach(prepareFrame);
+    viewFrames().forEach(prepareFrame);
 }
 
 /** Replaces the pins of every view. */
 export function showPins(pins: Record<string, unknown[]>) {
     pinsByPane = (pins ?? {}) as Record<string, Pin[]>;
-    paneFrames().forEach(prepareFrame);
-}
-
-/** Waits for one click on the inline preview surface and hands its anchor to the callback. */
-export function pickInline(onPick: (anchor: ReturnType<typeof anchorOf>) => void) {
-    cancelInlinePick();
-
-    inlinePick = event => {
-        const target = event.target as Element | null;
-        if (!target?.closest('.inline-surface')) return;
-
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        cancelInlinePick();
-        onPick(anchorOf(target, event.clientX, event.clientY));
-    };
-
-    window.addEventListener('click', inlinePick, true);
-}
-
-/** Stops waiting for an inline pick. */
-export function cancelInlinePick() {
-    if (!inlinePick) return;
-
-    window.removeEventListener('click', inlinePick, true);
-    inlinePick = null;
+    viewFrames().forEach(prepareFrame);
 }
 
 /** Sets up a view's page, its listeners once per window, then applies the current mode and pins to it. */
@@ -142,6 +117,10 @@ export function prepareFrame(frame: HTMLIFrameElement) {
         blockedEvents.forEach(type => win.addEventListener(type, block, true));
         shieldedEvents.forEach(type => win.addEventListener(type, shield, { capture: true, passive: true }));
         win.addEventListener('click', event => onClick(frame, event), true);
+
+        // A press or a key in a view's page doesn't reach the shell's document, so they select the view from here; focus doesn't, as a page moves it while loading.
+        ['pointerdown', 'keyup'].forEach(type => win.addEventListener(type, () => selectView(frame), true));
+
         win.addEventListener('mousemove', event => onHover(frame, event), true);
         doc.documentElement.addEventListener('mouseleave', () => hideHover(doc));
         win.addEventListener('scroll', schedulePins, true);
@@ -159,6 +138,19 @@ export function prepareFrame(frame: HTMLIFrameElement) {
     }
 
     renderPins(frame);
+    prepareScreen(frame);
+}
+
+/** A store composition shows its page in an inner screen, which is set up like a view of its own, also each time it loads. */
+function prepareScreen(frame: HTMLIFrameElement) {
+    const screen = screenOf(frame);
+
+    if (!screen || seenScreens.has(screen)) return;
+
+    seenScreens.add(screen);
+    screen.dataset.paneId = frame.dataset.paneId;
+    screen.addEventListener('load', () => prepareFrame(screen));
+    prepareFrame(screen);
 }
 
 /** Adds the Workbench's style and overlay layer to a view's page when they are missing, and returns the layer. */
@@ -187,17 +179,40 @@ function paneFrames() {
     return Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]'));
 }
 
-/** A click while picking: opens a pin's thread, or starts a comment or a text edit on the element. */
-function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
-    if (!isPicking()) return;
+/** The inner screen of a view that is a store composition. */
+function screenOf(frame: HTMLIFrameElement) {
+    return frame.contentDocument?.querySelector<HTMLIFrameElement>('iframe.screen-frame') ?? null;
+}
 
+/** The iframes of the views with the inner screens they show. */
+function viewFrames() {
+    return paneFrames().flatMap(frame => {
+        const screen = screenOf(frame);
+
+        return screen ? [frame, screen] : [frame];
+    });
+}
+
+/** Selects a view, when another one of several is the selected one. */
+function selectView(frame: HTMLIFrameElement) {
+    const selected = document.querySelector<HTMLIFrameElement>('.pane.selected iframe[data-pane-id]');
+
+    if (selected && selected.dataset.paneId !== frame.dataset.paneId) {
+        host?.invoke('SelectPane', frame.dataset.paneId);
+    }
+}
+
+/** A click on a pin opens its thread in any mode; a click while picking starts a comment or a text edit on the element. */
+function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
     const target = event.target as Element | null;
     if (!target) return;
 
+    const pin = target.closest<HTMLElement>('.wb-pin');
+
+    if (!pin?.dataset.id && !isPicking()) return;
+
     event.preventDefault();
     event.stopImmediatePropagation();
-
-    const pin = target.closest<HTMLElement>('.wb-pin');
 
     if (pin?.dataset.id) {
         host?.invoke('OpenThread', pin.dataset.id);
@@ -247,7 +262,7 @@ function inspect(frame: HTMLIFrameElement, target: Element, x?: number, y?: numb
         return;
     }
 
-    inspected = { paneId, elementId: found.root.id, selector: selectorOf(found.root) };
+    inspected = { paneId, isScreen: frame.matches('.screen-frame'), elementId: found.root.id, selector: selectorOf(found.root) };
 
     const preview = frame.contentWindow as any;
 
@@ -258,7 +273,7 @@ function inspect(frame: HTMLIFrameElement, target: Element, x?: number, y?: numb
 
 /** Reads the last picked component again, after a change to its code reached the view. */
 export function inspectAgain() {
-    const frame = inspected && paneFrames().find(f => f.dataset.paneId === inspected!.paneId);
+    const frame = inspected && viewFrames().find(f => f.dataset.paneId === inspected!.paneId && f.matches('.screen-frame') === inspected!.isScreen);
     const doc = frame?.contentDocument;
     const element = inspected && (doc?.getElementById(inspected.elementId) ?? doc?.querySelector(inspected.selector));
 
@@ -613,7 +628,7 @@ function schedulePins() {
 
     pinFrame = requestAnimationFrame(() => {
         pinFrame = 0;
-        paneFrames().forEach(frame => frame.contentDocument && positionPins(frame.contentDocument));
+        viewFrames().forEach(frame => frame.contentDocument && positionPins(frame.contentDocument));
     });
 }
 

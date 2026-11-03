@@ -1,0 +1,76 @@
+@import '../../Styles/tokens';
+
+.lp-waitlist {
+    display: grid;
+    gap: 14px;
+}
+
+.lp-waitlist-fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+
+    ::deep .lp-waitlist-email {
+        flex: 1 1 240px;
+    }
+
+    @include lt-sm {
+        ::deep .lp-waitlist-submit {
+            flex: 1 1 100%;
+        }
+    }
+}
+
+.lp-waitlist-platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    legend {
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 0;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+    }
+}
+
+.lp-waitlist-trap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.lp-waitlist-promise {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.lp-waitlist-error {
+    color: var(--bit-clr-err);
+    font-size: .875rem;
+}
+
+.lp-waitlist-done {
+    display: grid;
+    gap: 10px;
+    padding: 20px;
+    border-radius: var(--lp-radius);
+    background: var(--lp-accent-soft);
+
+    h3 {
+        font-size: 1.25rem;
+    }
+}
+
+.lp-waitlist-share-prompt {
+    margin-top: 6px;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+}

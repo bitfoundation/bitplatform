@@ -1,4 +1,5 @@
 ﻿using Bit.Bcrdt.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. Most of them race an edit in one replica against its arrival in another, or a
@@ -27,6 +28,13 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+        }
+        finally
+        {
+            await LazyLoadingSample.StopAsync();
+        }
     }
 }

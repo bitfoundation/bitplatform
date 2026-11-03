@@ -1,0 +1,29 @@
+.lp-token {
+    display: grid;
+    place-items: center;
+    min-height: 60vh;
+    padding-block: 64px;
+}
+
+.lp-token-card {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    width: min(480px, 100%);
+    padding: 32px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+}
+
+.lp-token-error {
+    color: var(--bit-clr-err) !important;
+}

@@ -201,6 +201,8 @@ class TargetModel {
     error: string | null = null;
     inspected: any = null;
     inspectedId: number | null = null;
+    /** The render batch opened in the Profiler, as the runtime answered `batch`. */
+    batch: any = null;
     expanded = new Map<string, any[]>();
 
     constructor(public info: CompanionTarget) { }
@@ -248,6 +250,7 @@ const TABS: Tab[] = [
     { id: "network", title: "Network", badge: m => count(m.doc?.http?.filter((r: any) => r.failed)) },
     { id: "interop", title: "JS Interop" },
     { id: "errors", title: "Errors", badge: m => count(m.doc?.errors) },
+    { id: "logs", title: "Logs", badge: m => m.doc?.logCounts?.Warning ? String(m.doc.logCounts.Warning) : null },
     { id: "diagnostics", title: "Diagnostics", badge: m => count(m.doc?.diagnostics?.filter((f: any) => !f.dismissed && f.severity !== "Info")) },
     { id: "runtime", title: "Runtime" },
 ];
@@ -461,6 +464,7 @@ export class Companion {
             network: "Filter requests…",
             interop: "Filter identifiers…",
             errors: "Filter errors…",
+            logs: "Filter entries (text, level:warning)…",
             routing: "Filter routes…",
             state: "Filter providers…",
         };
@@ -522,6 +526,7 @@ export class Companion {
             case "network": return this.network(t);
             case "interop": return this.interop(t);
             case "errors": return this.errors(t);
+            case "logs": return this.logs(t);
             case "diagnostics": return this.diagnostics(t);
             case "runtime": return this.runtime(t);
             default: return this.overview(t);
@@ -836,16 +841,67 @@ export class Companion {
         return h("div", null, row, (t.expanded.get(key) || []).map(child => this.valueNode(t, sectionName, rootName, child, depth + 1)));
     }
 
+    /** A batch by its runtime and its number: two runtimes number their batches alike. */
+    private static batchKey(t: TargetModel, batchId: number) {
+        return "batch:" + t.info.id + ":" + batchId;
+    }
+
+    private async openBatch(t: TargetModel, batchId: number) {
+        const v = this.view();
+        const key = Companion.batchKey(t, batchId);
+        if (v.selected === key) {
+            v.selected = null;
+            t.batch = null;
+            this.renderContent();
+            return;
+        }
+        v.selected = key;
+        t.batch = { batchId, loading: true };
+        this.renderContent();
+        const answer = await this.source.request(t.info.id, "batch", { batchId });
+        if (v.selected !== key) return;
+        t.batch = answer && !answer.error ? answer : { batchId, error: answer && answer.error || "No answer." };
+        this.renderContent();
+    }
+
+    /** What one batch rendered: the cost tree and, below it, the same renders on a time axis. */
+    private batchView(t: TargetModel) {
+        const b = t.batch;
+        if (!b) return null;
+        if (b.loading) return section("Batch #" + b.batchId, h("div", { class: "bc-muted" }, "Reading…"));
+        if (b.error) return section("Batch #" + b.batchId, h("div", { class: "bc-err" }, b.error));
+        const rows: any[] = b.rows || [];
+        const bars: any[] = b.timeline && b.timeline.bars || [];
+        const span = Math.max(0.001, b.timeline && b.timeline.spanMs || 0);
+        // The clock could not tell the renders apart: side by side in the order they started, not to scale.
+        const toScale = b.timeline && b.timeline.spanMs > 0;
+        const lanes = Math.max(1, b.timeline && b.timeline.depth || 1);
+        return section("Batch #" + b.batchId + " · " + fmt.ms(b.totalMs) + " building" + (b.omitted ? " · " + b.omitted + " more not shown" : ""), h("div", null,
+            h("table", null,
+                h("thead", null, h("tr", null, h("th", null, "Component"), h("th", { class: "bc-num" }, "Renders"), h("th", { class: "bc-num" }, "Self"), h("th", { class: "bc-num" }, "With children"))),
+                h("tbody", null, rows.map(r => h("tr", { onclick: r.instances > 1 ? undefined : () => { this.showTab("components"); this.inspect(t, r.instanceId); } },
+                    h("td", { class: "bc-mono", style: "padding-left:" + (6 + r.depth * 14) + "px" }, r.name + (r.instances > 1 ? " ×" + r.instances + " instances" : "")),
+                    h("td", { class: "bc-num" }, r.renders), h("td", { class: "bc-num" }, fmt.ms(r.selfMs)), h("td", { class: "bc-num" }, fmt.ms(r.totalMs)))))),
+            bars.length ? h("div", { class: "bc-batch-axis", role: "img", "aria-label": "The batch's renders on a time axis; the table above has the same renders", style: "height:" + (lanes * 18 + 4) + "px" },
+                bars.map((bar, i) => h("div", {
+                    class: "bc-batch-bar",
+                    title: bar.name + " · " + fmt.ms(bar.durationMs),
+                    style: "top:" + (bar.depth * 18) + "px;left:" + (toScale ? bar.startMs / span * 100 : i / bars.length * 100) + "%;width:" + Math.max(0.5, toScale ? bar.durationMs / span * 100 : 100 / bars.length) + "%",
+                }, bar.name))) : null,
+            bars.length && !toScale ? h("div", { class: "bc-muted" }, "Not to scale: the clock could not tell these renders apart.") : null));
+    }
+
     private profiler(t: TargetModel) {
         const v = this.view();
         let rows: any[] = (t.doc.components?.items || []).filter((c: any) => !c.hidden && c.renders > 0 && matches(v.filter, c.displayName, c.type));
         if (v.flag) {
             const groups = new Map<string, any>();
             for (const c of rows) {
-                const g = groups.get(c.type) || { displayName: c.displayName, type: c.type, instances: 0, renders: 0, totalRenderMs: 0, maxRenderMs: 0 };
+                const g = groups.get(c.type) || { displayName: c.displayName, type: c.type, instances: 0, renders: 0, totalRenderMs: 0, maxRenderMs: 0, allocatedBytes: c.allocatedBytes === undefined ? undefined : 0 };
                 g.instances++;
                 g.renders += c.renders;
                 g.totalRenderMs += c.totalRenderMs;
+                if (g.allocatedBytes !== undefined) g.allocatedBytes += c.allocatedBytes || 0;
                 g.maxRenderMs = Math.max(g.maxRenderMs, c.maxRenderMs);
                 groups.set(c.type, g);
             }
@@ -854,13 +910,24 @@ export class Companion {
         const sort = v.sort || "total";
         const key: { [k: string]: (c: any) => number } = {
             total: c => c.totalRenderMs, renders: c => c.renders, max: c => c.maxRenderMs, avg: c => c.totalRenderMs / Math.max(1, c.renders),
-            forced: c => c.parentRendersWithUnchangedParameters || 0,
+            forced: c => c.parentRendersWithUnchangedParameters || 0, allocated: c => c.allocatedBytes || 0,
         };
+        // An export from a runtime that does not count allocations per thread has none: no column, rather than zeros.
+        const allocations = rows.some(c => c.allocatedBytes !== undefined);
         rows.sort((a, b) => key[sort](b) - key[sort](a));
+        // The batches the timeline holds, newest first; a live page answers what each rendered.
+        const batches: any[] = (t.events || []).filter((e: any) => e.kind === "RenderBatch" && e.data && typeof e.data.batch === "number").slice(-25).reverse();
+        const batchSection = section("Recent render batches", batches.length ? h("table", null, h("tbody", null, batches.map(e => h("tr", {
+            class: v.selected === Companion.batchKey(t, e.data.batch) ? "bc-selected" : "",
+            onclick: this.source.live ? () => this.openBatch(t, e.data.batch) : undefined,
+        }, h("td", { class: "bc-mono" }, fmt.time(e.timestamp)), h("td", null, e.title), h("td", { class: "bc-num" }, fmt.ms(e.durationMs))))))
+            : h("div", { class: "bc-muted" }, "No render batches in the timeline."), true);
         const header = (id: string, title: string) => h("th", { class: "bc-num bc-sortable" + (sort === id ? " bc-active" : ""), onclick: () => { v.sort = id; this.renderContent(); } }, title);
-        return h("div", { class: "bc-scroll" }, h("table", null,
+        return h("div", { class: "bc-scroll" }, this.batchView(t), batchSection,
+            this.source.live ? null : h("div", { class: "bc-muted" }, "What one batch rendered is read from the live page: an exported file carries the totals below, not every render."),
+            h("table", null,
             h("thead", null, h("tr", null, h("th", null, v.flag ? "Component type" : "Component"), v.flag ? h("th", { class: "bc-num" }, "Instances") : null,
-                header("renders", "Renders"), header("total", "Total"), header("avg", "Avg"), header("max", "Max"), v.flag ? null : header("forced", "Forced"), v.flag ? null : h("th", null, "Last cause"))),
+                header("renders", "Renders"), header("total", "Total"), header("avg", "Avg"), header("max", "Max"), allocations ? header("allocated", "Allocated") : null, v.flag ? null : header("forced", "Forced"), v.flag ? null : h("th", null, "Last cause"))),
             h("tbody", null, rows.slice(0, MAX_ROWS).map(c => h("tr", { onclick: v.flag ? undefined : () => { this.showTab("components"); this.inspect(t, c.instanceId); } },
                 h("td", { class: "bc-mono", title: c.type }, c.displayName),
                 v.flag ? h("td", { class: "bc-num" }, c.instances) : null,
@@ -868,6 +935,7 @@ export class Companion {
                 h("td", { class: "bc-num" }, fmt.ms(c.totalRenderMs)),
                 h("td", { class: "bc-num" }, fmt.ms(c.totalRenderMs / Math.max(1, c.renders))),
                 h("td", { class: "bc-num" }, fmt.ms(c.maxRenderMs)),
+                allocations ? h("td", { class: "bc-num", title: fmt.bytes((c.allocatedBytes || 0) / Math.max(1, c.renders)) + " per render" }, fmt.bytes(c.allocatedBytes)) : null,
                 v.flag ? null : h("td", { class: "bc-num" }, c.rendersWithComparedParameters ? c.parentRendersWithUnchangedParameters + "/" + c.rendersWithComparedParameters : "–"),
                 v.flag ? null : h("td", { class: "bc-muted bc-truncate" }, c.lastCauseDetail || ""))))));
     }
@@ -978,10 +1046,13 @@ export class Companion {
                 section("WebSockets · " + sockets.length, sockets.length ? sockets.map(s => this.socket(s)) : h("div", { class: "bc-muted" }, "No WebSocket observed yet."))),
             h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
                 h("h3", { class: "bc-mono" }, selected.method + " " + fmt.path(selected.url)),
-                kv([["URL", selected.url], ["Status", selected.error || (selected.statusCode + " " + (selected.reasonPhrase || ""))], ["Duration", fmt.ms(selected.durationMs)], ["Trigger", selected.trigger || "–"], ["Sent from", selected.caller || selected.callerMissing || this.noCaller(t)], ["Content type", selected.contentType || "–"]]),
+                kv([["URL", selected.url], ["Status", selected.error || (selected.statusCode + " " + (selected.reasonPhrase || ""))], ["Duration", fmt.ms(selected.durationMs)], ["Trigger", selected.trigger || "–"], ["Sent from", selected.caller || selected.callerMissing || this.noCaller(t)], ["Content type", selected.contentType || "–"], ["Trace", selected.traceId ? selected.traceId + " · " + selected.spanId : "none sent"],
+                    selected.protocol ? ["Protocol", selected.protocol + (selected.graphQlOperation ? " · operation " + selected.graphQlOperation : "")] : null]),
                 (selected.requestHeaders || []).length ? section("Request headers", kv(selected.requestHeaders.map((x: any) => [x.name, x.value]))) : null,
-                (selected.responseHeaders || []).length ? section("Response headers", kv(selected.responseHeaders.map((x: any) => [x.name, x.value]))) : null)
-                : this.empty("Select a request.", "Bodies are never captured; sensitive headers and query values are redacted.")));
+                (selected.responseHeaders || []).length ? section("Response headers", kv(selected.responseHeaders.map((x: any) => [x.name, x.value]))) : null,
+                selected.requestBody || selected.requestBodyNote ? section("Request body", selected.requestBody ? h("pre", { class: "bc-pre" }, selected.requestBody) : h("div", { class: "bc-muted" }, selected.requestBodyNote)) : null,
+                selected.responseBody || selected.responseBodyNote ? section("Response body", selected.responseBody ? h("pre", { class: "bc-pre" }, selected.responseBody) : h("div", { class: "bc-muted" }, selected.responseBodyNote)) : null)
+                : this.empty("Select a request.", t.doc.options && t.doc.options.captureHttpBodies ? "Bodies are captured (CaptureHttpBodies), redacted; sensitive headers and query values are redacted." : "Bodies are not captured unless the app turns on CaptureHttpBodies; sensitive headers and query values are redacted.")));
     }
 
     // A request with neither a caller nor the reason there is none: capture off, or an export from before either was recorded.
@@ -1038,6 +1109,47 @@ export class Companion {
                 h("h3", null, String(selected.exceptionType).split(".").pop() + ": " + selected.message),
                 kv([["Source", selected.source], ["Count", String(selected.count)], ["First seen", fmt.time(selected.firstSeen)], ["Component", selected.componentName || "–"], ["Location", selected.sourceLocation || "–"], ["Inner", selected.innerError || "–"]]),
                 selected.stackTrace ? h("pre", { class: "bc-pre" }, selected.stackTrace) : null) : this.empty("Select an error.", null)));
+    }
+
+    private logs(t: TargetModel) {
+        const v = this.view();
+        // "level:warning" is a minimum, read as the in-app panel reads it (BevLogLevels.Parse): a level's name or the
+        // start of it, its console label ("fail", "dbug") or its number; the rest of the filter is text.
+        const levels = ["Trace", "Debug", "Information", "Warning", "Error", "Critical"];
+        const labels = ["trce", "dbug", "info", "warn", "fail", "crit"];
+        const levelToken = /(?:^|\s)level:(\S+)/i.exec(v.filter);
+        const level = levelToken ? levelToken[1].toLowerCase() : "";
+        const minimum = !levelToken ? 0
+            : /^\d+$/.test(level) ? (Number(level) <= 5 ? Number(level) : -1)
+            : levels.findIndex((l, i) => labels[i] === level || l.toLowerCase().startsWith(level));
+        const text = v.filter.replace(/(?:^|\s)level:\S+/i, " ");
+        const values = (l: any) => l.properties ? Object.keys(l.properties).map(k => k + "=" + l.properties[k]).join(" ") : "";
+        const logs: any[] = (t.doc.logs || [])
+            .filter((l: any) => minimum >= 0 && levels.indexOf(l.level) >= minimum && matches(text, l.message, l.messageTemplate, l.category, values(l), l.exceptionType, l.caller))
+            .slice(-500).reverse();
+        const selected = logs.find(l => l.id === v.selected);
+        const counts = t.doc.logCounts || {};
+        const chip = (level: string) => h("span", { class: "bc-chip" + (level === "Warning" ? " bc-warn" : level === "Error" || level === "Critical" ? " bc-err" : "") }, level);
+        return h("div", { class: "bc-split" },
+            h("div", { class: "bc-scroll bc-left" },
+                h("div", { class: "bc-muted" }, levels.filter(l => counts[l]).map(l => l + " " + counts[l]).join(" · ") || "Nothing logged."),
+                // Entity Framework Core's commands, grouped by their SQL (read from its logs).
+                (t.doc.dbCommands || []).length ? section("Database commands", h("table", null,
+                    h("thead", null, h("tr", null, h("th", null, "SQL"), h("th", { class: "bc-num" }, "×"), h("th", { class: "bc-num" }, "Total"), h("th", { class: "bc-num" }, "Max"), h("th", { class: "bc-num" }, "Failed"))),
+                    h("tbody", null, t.doc.dbCommands.slice(0, 50).map((c: any) => h("tr", { class: c.failed ? "bc-sev-error" : "" },
+                        h("td", { class: "bc-mono bc-truncate", title: c.commandText }, c.commandText || "(SQL not read: value access None)"),
+                        h("td", { class: "bc-num" }, c.executions), h("td", { class: "bc-num" }, fmt.ms(c.totalMs)), h("td", { class: "bc-num" }, fmt.ms(c.maxMs)), h("td", { class: "bc-num" }, c.failed)))))) : null,
+                logs.length ? h("table", null, h("tbody", null, logs.map(l => h("tr", { class: (v.selected === l.id ? "bc-selected " : "") + (l.level === "Warning" ? "bc-sev-warning" : l.level === "Error" || l.level === "Critical" ? "bc-sev-error" : ""), onclick: () => { v.selected = l.id; this.renderContent(); } },
+                    h("td", { class: "bc-mono" }, fmt.time(l.at)), h("td", null, chip(l.level)), h("td", { class: "bc-mono bc-muted" }, String(l.category).split(".").pop()),
+                    h("td", { class: "bc-truncate" }, l.message ?? l.messageTemplate ?? "«hidden»"))))) : this.empty("No log entries.", "What an ILogger writes while this runtime's code runs, at BitBevToolsOptions.MinimumLogLevel or above.")),
+            h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
+                h("h3", null, selected.message ?? selected.messageTemplate ?? "«hidden»"),
+                kv([["Level", selected.level], ["Category", selected.category], ["Time", fmt.time(selected.at)], ["Template", selected.messageTemplate || "–"],
+                    ["Event id", String(selected.eventId) + (selected.eventName ? " (" + selected.eventName + ")" : "")], ["Sent from", selected.caller || "–"],
+                    ["Trace", selected.traceId ? selected.traceId + " · " + selected.spanId : "–"], ["Exception", selected.exceptionType || "–"]]),
+                selected.properties ? section("Values", kv(Object.keys(selected.properties).map(k => [k, String(selected.properties[k])] as [string, Child]))) : null,
+                selected.scopes ? section("Scopes", h("div", null, selected.scopes.map((s: string) => h("div", { class: "bc-mono" }, s)))) : null,
+                selected.exceptionMessage ? h("pre", { class: "bc-pre" }, selected.exceptionMessage) : null) : this.empty("Select an entry.", null)));
     }
 
     private diagnostics(t: TargetModel) {

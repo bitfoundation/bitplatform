@@ -1,0 +1,111 @@
+@inherits LandingComponentBase
+@implements IDisposable
+
+<div class="fit-stage @(isRunning ? "is-running" : null) @(isDone ? "is-done" : null)">
+    <svg class="fit-track" viewBox="0 0 460 800" aria-hidden="true" focusable="false">
+        <path class="fit-track-band" fill-rule="evenodd" d="M230 5A225 225 0 0 1 455 230V570A225 225 0 0 1 5 570V230A225 225 0 0 1 230 5ZM230 70A160 160 0 0 0 70 230V570A160 160 0 0 0 390 570V230A160 160 0 0 0 230 70Z" />
+        <rect class="fit-track-lane" x="26.7" y="26.7" width="406.6" height="746.6" rx="203.3" />
+        <rect class="fit-track-lane" x="48.3" y="48.3" width="363.4" height="703.4" rx="181.7" />
+        <path class="fit-track-finish" d="M390 400H455" />
+        <path class="fit-track-lap" d="M422.5 400V230A192.5 192.5 0 0 0 37.5 230V570A192.5 192.5 0 0 0 422.5 570Z" pathLength="100" style="stroke-dashoffset: @LapOffset" />
+    </svg>
+
+    <DeviceFrame Kind="LandingDeviceKind.Phone" Class="fit-phone">
+        <div class="fit-app">
+            <div class="fit-app-head">
+                <div>
+                    <p class="fit-app-kicker">@F[nameof(FitnessStrings.SessionToday)]</p>
+                    <p class="fit-app-date">@todayLabel</p>
+                </div>
+                <p class="fit-streak @(streakBumped ? "is-bumped" : null)">
+                    <BitIcon IconName="@BitIconName.FlameSolid" />
+                    @* Keyed by the count, so each new number is a new element and plays its roll animation again *@
+                    <span class="fit-streak-num" @key="streak">@streak.ToString(CurrentCulture)</span>
+                    <span class="lp-visually-hidden">@F[nameof(FitnessStrings.SessionStreakDays)]</span>
+                </p>
+            </div>
+
+            <ol class="fit-week" aria-label="@F[nameof(FitnessStrings.SessionWeek)]">
+                @foreach (var day in week)
+                {
+                    <li class="@day.State">
+                        <span aria-hidden="true">@day.Initial</span>
+                        <i aria-hidden="true"></i>
+                        <span class="lp-visually-hidden">@day.Name: @F[day.StateText]</span>
+                    </li>
+                }
+            </ol>
+
+            <div class="fit-app-plan">
+                <p class="fit-app-title">@F[nameof(FitnessStrings.SessionName)]</p>
+                <p class="fit-app-meta">@F[nameof(FitnessStrings.SessionMeta)]</p>
+            </div>
+
+            <ol class="fit-segments" aria-hidden="true">
+                @for (var i = 0; i < moves.Length; i++)
+                {
+                    var index = i;
+                    <li style="flex-grow: @moves[index].Seconds"><span style="width: @SegmentFill(index)%"></span></li>
+                }
+            </ol>
+
+            <div class="fit-ring">
+                <svg viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+                    <circle class="fit-ring-base" cx="100" cy="100" r="86" />
+                    <circle class="fit-ring-fill" cx="100" cy="100" r="86" pathLength="100" transform="rotate(-90 100 100)" style="stroke-dashoffset: @RingOffset" />
+                </svg>
+                <div class="fit-ring-center">
+                    <p class="fit-ring-time">@Clock(Remaining)</p>
+                    <p class="fit-ring-label">@F[RingLabel]</p>
+                </div>
+            </div>
+
+            @if (isDone)
+            {
+                <div class="fit-done">
+                    <p class="fit-done-title">@F[nameof(FitnessStrings.SessionDoneTitle)]</p>
+                    <p>@(countedTwice ? F[nameof(FitnessStrings.SessionDoneAgain), streak] : F[nameof(FitnessStrings.SessionDoneBody), streak])</p>
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" FullWidth OnClick="Reset" Class="fit-done-again">@F[nameof(FitnessStrings.SessionAgain)]</BitButton>
+                </div>
+            }
+            else
+            {
+                <div class="fit-move">
+                    <p class="fit-move-now">
+                        <span class="fit-move-tag">@(elapsed > 0 ? F[nameof(FitnessStrings.SessionNow)] : F[nameof(FitnessStrings.SessionFirst)])</span>
+                        <strong>@F[Current.Name]</strong>
+                        <span class="fit-move-left">@Clock(MoveRemaining)</span>
+                    </p>
+                    <p class="fit-move-cue">@F[Current.Cue]</p>
+                    <p class="fit-move-next">
+                        @if (CurrentIndex < moves.Length - 1)
+                        {
+                            @F[nameof(FitnessStrings.SessionNext)] <b>@F[moves[CurrentIndex + 1].Name]</b>
+                        }
+                        else
+                        {
+                            @F[nameof(FitnessStrings.SessionLastMove)]
+                        }
+                    </p>
+                </div>
+
+                <div class="fit-controls">
+                    @if (isRunning)
+                    {
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Pause" OnClick="Pause">@F[nameof(FitnessStrings.SessionPause)]</BitButton>
+                    }
+                    else
+                    {
+                        <BitButton IconName="@BitIconName.Play" OnClick="Start">@(elapsed > 0 ? F[nameof(FitnessStrings.SessionResume)] : F[nameof(FitnessStrings.SessionStart)])</BitButton>
+                    }
+                    @if (elapsed > 0 || isRunning)
+                    {
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@(IsRtl ? BitIconName.Previous : BitIconName.Next)" OnClick="NextMove">@F[nameof(FitnessStrings.SessionSkip)]</BitButton>
+                    }
+                </div>
+            }
+
+            <p class="lp-visually-hidden" aria-live="polite">@announcement</p>
+        </div>
+    </DeviceFrame>
+</div>

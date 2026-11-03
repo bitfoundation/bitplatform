@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1178,6 +1179,24 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
         Assert.AreEqual(1, clearCount);
         Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldClearButtonShouldLeaveTheFocusInTheField(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
+        // re-render the app between the press and the click.
+        Assert.IsTrue(component.Find(".bit-tfl-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]
@@ -4936,6 +4955,59 @@ public class BitTextFieldTests : BunitTestContext
 
         // A plain field set nothing up, so it has nothing to tear down and pays no round trip for it.
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitTextFieldDisposeShouldKeepItsDotNetReferenceUntilTheScriptLetsGoOfTheField()
+    {
+        // The script answers later, the way it does in a browser: until it lets go of the field accepting the ghost
+        // text still calls back through the reference the ghost text was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.TextField.dispose", _ => true);
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.GhostText, "suggestion");
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"].Single();
+        var reference = (DotNetObjectReference<BitTextField>)setup.Arguments[2]!;
+        var textField = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(textField, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitTextFieldShouldIgnoreAGhostTextAcceptedWhileItIsBeingDisposed()
+    {
+        // A Tab that accepts the ghost text in the round trip of the disposal arrives through the reference that is
+        // alive until the script lets go of the field - for a field that is going away.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.TextField.dispose", _ => true);
+        var accepted = 0;
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.GhostText, "suggestion");
+            parameters.Add(p => p.OnGhostTextAccepted, (string? _) => accepted++);
+        });
+
+        var textField = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => textField._NotifyGhostTextAccepted("suggestion"));
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.AreEqual(0, accepted);
     }
 
     [TestMethod]

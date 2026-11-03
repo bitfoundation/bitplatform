@@ -122,7 +122,9 @@ registered at runtime, and an inline palette), hosted unchanged under
 [Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Auto/) so the same palette
 runs, prerendered first, in each render mode, and under [Maui](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Maui/),
 a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a minimal example of the wiring that
-platform needs.
+platform needs. [Lazy](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Lazy/)
+stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Balette.wasm` only when its admin page, the
+part with the palette, opens (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ## How it fits together
 
@@ -1271,6 +1273,15 @@ JavaScript module the first time it renders.
   referencing Balette's types.
 - Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
   download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
+The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Lazy/)
+does all of this in a Blazor Web App - its project file leaves the mark out of AOT builds, and sets a switch next to it
+that tells its router whether there is an assembly to load - and the
+[end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E)
+runs its published copy in a browser, trimmed and AOT-compiled: the home page never downloads `Bit.Balette.wasm`, and
+the admin page - opened from the home page or by a deep link the server prerenders - downloads it once, opens the
+palette its layout holds from the trigger and from the keyboard, and runs the command the page registered through
+`GetBaletteService()`.
 
 ### Blazor Server
 

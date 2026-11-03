@@ -1,0 +1,72 @@
+@inherits LandingComponentBase
+
+<div class="stay-demo">
+    <div class="stay-demo-top">
+        <HotelLogo />
+        <p class="stay-demo-brand">Alder &amp; Salt</p>
+        <span class="stay-demo-badge">@H[nameof(HotelStrings.DemoBadge)]</span>
+    </div>
+
+    <p class="stay-demo-title">@H[nameof(HotelStrings.DemoTitle)]</p>
+
+    <BitDateRangePicker Value="range"
+                        ValueChanged="(BitDateRangePickerValue? value) => SelectDates(value)"
+                        Label="@H[nameof(HotelStrings.DemoDates)]"
+                        Placeholder="@H[nameof(HotelStrings.DemoDatesPlaceholder)]"
+                        Culture="CurrentCulture"
+                        DateFormat="@H[nameof(HotelStrings.DemoDateFormat)]"
+                        ValueFormat="@H[nameof(HotelStrings.DemoRangeFormat)]"
+                        MinDate="today"
+                        MaxRange="TimeSpan.FromDays(14)"
+                        ShowGoToToday="false"
+                        Responsive
+                        CalloutAriaLabel="@H[nameof(HotelStrings.DemoCalendar)]"
+                        GoToPrevMonthTitle="@H[nameof(HotelStrings.DemoPrevMonth)]"
+                        GoToNextMonthTitle="@H[nameof(HotelStrings.DemoNextMonth)]"
+                        MonthPickerToggleTitle="@H[nameof(HotelStrings.DemoChangeMonth)]"
+                        SelectedDateAriaAtomic="@H[nameof(HotelStrings.DemoSelectedDates)]"
+                        Class="stay-demo-dates" />
+
+    <BitChoiceGroup Label="@H[nameof(HotelStrings.DemoRoom)]"
+                    Items="roomItems"
+                    Value="room"
+                    ValueChanged="(string? value) => SelectRoom(value)"
+                    Horizontal
+                    NoCircle
+                    Classes="@(new() { Container = "stay-demo-rooms" })">
+        <ItemTemplate Context="item">
+            <span class="stay-demo-room @(item.Value == room ? "is-selected" : null)">
+                <strong>@item.Text</strong>
+                <small>@H[nameof(HotelStrings.DemoFrom), Money(HotelRooms.All.First(r => r.Key == item.Value).Rate)]</small>
+            </span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+
+    <div class="stay-demo-total" aria-live="polite">
+        @if (Nights > 0)
+        {
+            <p class="stay-demo-nights">@(Nights is 1 ? H[nameof(HotelStrings.DemoOneNight), H[SelectedRoom.NameKey]] : H[nameof(HotelStrings.DemoNights), Nights.ToString(CurrentCulture), H[SelectedRoom.NameKey]])</p>
+            <p class="stay-demo-price">@Money(Total)</p>
+            <p class="stay-demo-avg">@H[nameof(HotelStrings.DemoPerNight), Money(Math.Round(Total / Nights))]</p>
+        }
+        else
+        {
+            <p class="stay-demo-nights">@H[nameof(HotelStrings.DemoPickDates)]</p>
+        }
+    </div>
+
+    <ul class="stay-demo-perks">
+        <li><BitIcon IconName="@BitIconName.CheckMark" /> @H[nameof(HotelStrings.DemoPerk1)]</li>
+        <li><BitIcon IconName="@BitIconName.CheckMark" /> @H[nameof(HotelStrings.DemoPerk2)]</li>
+        <li><BitIcon IconName="@BitIconName.CheckMark" /> @H[nameof(HotelStrings.DemoPerk3)]</li>
+    </ul>
+
+    @if (isChecked && Nights > 0)
+    {
+        <p class="stay-demo-result" role="status"><BitIcon IconName="@BitIconName.Accept" /> @H[nameof(HotelStrings.DemoAvailable), H[SelectedRoom.NameKey], RoomsLeft.ToString(CurrentCulture)]</p>
+    }
+    else
+    {
+        <BitButton FullWidth OnClick="() => isChecked = true" Disabled="Nights < 1">@H[nameof(HotelStrings.DemoCheck)]</BitButton>
+    }
+</div>

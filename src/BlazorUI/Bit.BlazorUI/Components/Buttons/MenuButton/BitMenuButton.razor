@@ -97,10 +97,12 @@
                 {
                     <i aria-hidden="true" style="@Styles?.OperatorButtonIcon" class="bit-mnb-ico @icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
+                @* The text sits in a span of its own inside the label, so the label can give up all of its width
+                   (see .bit-mnb-btl) and the button never shrinks past its icon and chevron. *@
                 @if (IconOnly is false)
                 {
                     <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                        @(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
+                        <span class="bit-mnb-btl">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))</span>
                     </span>
                 }
             }
@@ -129,7 +131,7 @@
 
                 @if (IconOnly is false && (Text.HasValue() || (_showLoading && LoadingLabel.HasValue())))
                 {
-                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text"><span class="bit-mnb-btl">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span></span>
                 }
             }
         }

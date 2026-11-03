@@ -37,6 +37,10 @@
                         {
                             @SortHeader("last", "Last", null)
                         }
+                        @if (BevAllocations.IsMeasurable)
+                        {
+                            @SortHeader("alloc", "Allocated", "Bytes BuildRenderTree allocated, all renders together (each row's title: per render). Children render separately and count for themselves.")
+                        }
                         <th>@(View.ByType ? "Causes" : "Last cause")</th>
                         <th style="width:120px"></th>
                     </tr>
@@ -57,6 +61,10 @@
                             @if (!View.ByType)
                             {
                                 <td class="bev-num">@BevFmt.Ms(r.LastRenderMs)</td>
+                            }
+                            @if (BevAllocations.IsMeasurable)
+                            {
+                                <td class="bev-num" title="@(BevFmt.Bytes(r.RenderCount == 0 ? 0 : r.AllocatedBytes / r.RenderCount)) per render">@BevFmt.Bytes(r.AllocatedBytes)</td>
                             }
                             <td class="bev-truncate bev-muted" style="max-width:260px" title="@r.LastCause">@r.LastCause</td>
                             <td><span class="bev-bar" style="width:@(Math.Max(1, 110 * r.TotalRenderMs / Math.Max(0.001, _maxTotal)))px"></span></td>
@@ -285,7 +293,7 @@
 
 @code {
     /// <summary>One row: an instance, or (grouped) every instance of a type. <see cref="InstanceId"/> is null for a group.</summary>
-    private sealed record Row(long? InstanceId, string DisplayName, string TypeName, int Instances, int RenderCount, double TotalRenderMs, double AverageRenderMs, double MaxRenderMs, double LastRenderMs, string? LastCause, bool IsDisposed, double P95, int Samples);
+    private sealed record Row(long? InstanceId, string DisplayName, string TypeName, int Instances, int RenderCount, double TotalRenderMs, double AverageRenderMs, double MaxRenderMs, double LastRenderMs, string? LastCause, bool IsDisposed, double P95, int Samples, long AllocatedBytes);
 
     /// <summary>Uploads are parsed into one JSON document; this bounds it (a 20,000-component session exports to a few MB).</summary>
     private const long MaxComparedExportBytes = 32L * 1024 * 1024;
@@ -540,7 +548,7 @@
         var components = Session.Components.All
             .Where(c => !c.IsBevTools && !c.IsHidden && (View.IncludeDisposed || !c.IsDisposed))
             .Where(c => filter.MatchesText(c.DisplayName, c.TypeName))
-            .Select(c => (Record: c, Renders: since ? c.RendersSinceBaseline : c.RenderCount, Ms: since ? c.RenderMsSinceBaseline : c.TotalRenderMs, Max: since ? c.MaxRenderMsSinceBaseline : c.MaxRenderMs))
+            .Select(c => (Record: c, Renders: since ? c.RendersSinceBaseline : c.RenderCount, Ms: since ? c.RenderMsSinceBaseline : c.TotalRenderMs, Max: since ? c.MaxRenderMsSinceBaseline : c.MaxRenderMs, Allocated: since ? c.AllocatedBytesSinceBaseline : c.TotalAllocatedBytes))
             .Where(c => c.Renders > 0 && c.Renders > minRenders);
 
         IEnumerable<Row> rows;
@@ -560,7 +568,7 @@
                         .OrderByDescending(x => x.Count)
                         .Select(x => x.Count + " " + CauseLabel(x.Cause));
                     var (p95, sampleCount) = TypePercentile(g.Key, g.Select(c => c.Record).ToList(), since);
-                    return new Row(null, g.First().Record.DisplayName, g.Key, g.Count(), renders, total, renders == 0 ? 0 : total / renders, g.Max(c => c.Max), 0, string.Join(" · ", causes), g.All(c => c.Record.IsDisposed), p95, sampleCount);
+                    return new Row(null, g.First().Record.DisplayName, g.Key, g.Count(), renders, total, renders == 0 ? 0 : total / renders, g.Max(c => c.Max), 0, string.Join(" · ", causes), g.All(c => c.Record.IsDisposed), p95, sampleCount, g.Sum(c => c.Allocated));
                 });
         }
         else
@@ -568,7 +576,7 @@
             rows = components.Select(c =>
             {
                 var samples = RetainedDurations(c.Record, since);
-                return new Row(c.Record.InstanceId, c.Record.DisplayName, c.Record.TypeName, 1, c.Renders, c.Ms, c.Ms / c.Renders, c.Max, c.Record.LastRenderMs, c.Record.LastRender?.CauseDetail, c.Record.IsDisposed, BevStats.Percentile(samples, 95), samples.Length);
+                return new Row(c.Record.InstanceId, c.Record.DisplayName, c.Record.TypeName, 1, c.Renders, c.Ms, c.Ms / c.Renders, c.Max, c.Record.LastRenderMs, c.Record.LastRender?.CauseDetail, c.Record.IsDisposed, BevStats.Percentile(samples, 95), samples.Length, c.Allocated);
             });
         }
 
@@ -581,6 +589,7 @@
             "max" => Ordered(rows, r => r.MaxRenderMs, ascending),
             "p95" => Ordered(rows, r => r.P95, ascending),
             "last" => Ordered(rows, r => r.LastRenderMs, ascending),
+            "alloc" => Ordered(rows, r => r.AllocatedBytes, ascending),
             _ => Ordered(rows, r => r.TotalRenderMs, ascending),
         };
         _rows = rows.ToList();

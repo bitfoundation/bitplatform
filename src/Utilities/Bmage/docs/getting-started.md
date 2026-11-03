@@ -92,6 +92,22 @@ loading suits an app whose only use of Bmage is the editor. Do not lazy load in 
 assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled
 assembly can fail at startup.
 
+In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or `InteractiveAuto`
+render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the browser; with per-page render
+modes it renders statically on the server and never loads the assemblies in the browser. The server project loads
+Bmage with the rest of the app and keeps its `AddBitBmageServices()`, and registers `LazyAssemblyLoader`, which the
+router's file injects while it is prerendered there and which loads nothing outside the browser:
+`builder.Services.AddScoped<LazyAssemblyLoader>()`.
+
+The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Lazy/)
+does all of this in a Blazor Web App - its project file leaves both marks out of AOT builds, and sets a switch next to
+them that tells its router whether there is anything to load; its server, which prerenders the editor's page, keeps
+`AddBitBmageServices()` and registers `LazyAssemblyLoader`, which the router injects there too - and the
+[end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/)
+runs its published copy in a browser, trimmed and AOT-compiled: the home page downloads neither assembly, and the
+editor's page - opened from the home page or by a deep link the server prerenders - downloads each once, and its
+editor opens, turns and exports an image with nothing registered in the browser.
+
 ## Add the stylesheet
 
 Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in `App.razor` of a Blazor Web App, or

@@ -50,7 +50,8 @@ public partial class ChromeShell
     // The account actions change the view's scenario instead of calling a server.
     public Task SignOut() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedOut, User = 0 });
 
-    public Task SwitchAccount(WorkbenchDemoUser user) => ReportScenario(Scenario with { User = WorkbenchDemoUsers.All.ToList().IndexOf(user) });
+    // The view reloads, as what it shows belongs to the account it's signed in as.
+    public Task SwitchAccount(WorkbenchDemoUser user) => ReportScenario(Scenario with { User = WorkbenchDemoUsers.All.ToList().IndexOf(user) }, isApplied: false);
 
     public void SwitchTenant(string tenantKey) => chromeStore.SwitchTenant(tenantKey);
 
@@ -65,7 +66,7 @@ public partial class ChromeShell
     }
 
     /// <summary>What a nav item opens: a Workbench page in this view's settings, or the fallback anchor when the Workbench has no such page.</summary>
-    private string PageUrl(string pageKey, string fallback)
+    public string PageUrl(string pageKey, string fallback)
     {
         if (WorkbenchPageCatalog.Find(pageKey) is null)
             return fallback;

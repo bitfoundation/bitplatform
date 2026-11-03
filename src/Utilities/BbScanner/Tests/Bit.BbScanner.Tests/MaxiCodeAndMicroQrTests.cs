@@ -277,8 +277,10 @@ public class MaxiCodeAndMicroQrTests
     }
 
     /// <summary>
-    /// Each image above took from twenty to forty seconds before the walks were bounded and well under a second after;
-    /// the bound leaves room for a shared build machine running every target framework's tests side by side.
+    /// Built for Release, each image above took from under twenty seconds to over a minute before the walks were bounded
+    /// and a quarter of one after. The tests are built for Debug, which takes eight times as long either way - two
+    /// seconds bounded, over two minutes not - and a shared build machine running every target framework's tests side by
+    /// side takes ten times as long again: close to twenty seconds bounded. The bound sits between the two.
     /// </summary>
     private static void AssertGivenUpQuickly(BbBitMatrix image)
     {
@@ -287,7 +289,7 @@ public class MaxiCodeAndMicroQrTests
         watch.Stop();
 
         Assert.IsNull(result);
-        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(60), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     /// <summary>Up to four live frames of the same image through one decoder, as a camera held still delivers them.</summary>

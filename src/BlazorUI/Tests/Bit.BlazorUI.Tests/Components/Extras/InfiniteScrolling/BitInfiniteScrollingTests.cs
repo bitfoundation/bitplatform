@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.InfiniteScrolling;
@@ -1984,6 +1985,34 @@ public class BitInfiniteScrollingTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.dispose");
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingDisposeShouldKeepItsDotNetReferenceUntilTheObserverIsDisconnected()
+    {
+        // The script answers later, the way it does in a browser: until the observer is disconnected it still asks for
+        // the next page through the reference it was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.dispose", _ => true);
+
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, Provider);
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+        });
+
+        var setup = Context.JSInterop.Invocations.First(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.setup");
+        var reference = (DotNetObjectReference<BitInfiniteScrolling<int>>)setup.Arguments[9]!;
+        var infiniteScrolling = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(infiniteScrolling, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

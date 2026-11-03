@@ -1,0 +1,15 @@
+.restaurant-404-art {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: restaurant-404-swirl 9s ease-in-out infinite alternate;
+}
+
+@keyframes restaurant-404-swirl {
+    from {
+        transform: rotate(-4deg);
+    }
+
+    to {
+        transform: rotate(4deg);
+    }
+}

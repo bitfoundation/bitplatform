@@ -1,0 +1,48 @@
+.ecommerce-plant {
+    overflow: visible;
+}
+
+.ecommerce-plant-leaves {
+    transform: scale(var(--plant-scale, 1));
+    transform-box: view-box;
+    transform-origin: 0 0;
+    transition: transform .45s var(--lp-ease);
+}
+
+.ecommerce-plant-stem {
+    fill: none;
+    stroke: var(--fern-stem, #3F6B45);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.ecommerce-plant-leaf {
+    fill: var(--fern-leaf, #2F7D52);
+}
+
+.ecommerce-plant-leaf-deep {
+    fill: var(--fern-leaf-deep, #1F5C3B);
+}
+
+.ecommerce-plant-vein {
+    fill: none;
+    stroke: color-mix(in oklab, var(--fern-leaf, #2F7D52), #FFFFFF 22%);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}
+
+.ecommerce-plant-cut {
+    fill: none;
+    stroke: var(--lp-device-screen, var(--lp-surface));
+    stroke-width: 3.4;
+    stroke-linecap: round;
+}
+
+.ecommerce-plant-pot {
+    fill: var(--pot);
+    transition: fill .35s var(--lp-ease);
+
+    rect {
+        fill: color-mix(in oklab, var(--pot), #000000 12%);
+    }
+}

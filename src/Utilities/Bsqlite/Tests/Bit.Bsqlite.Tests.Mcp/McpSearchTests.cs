@@ -19,7 +19,6 @@ public partial class McpSearchTests
         ("migrate to another backend", "Migration"),
         ("unit test without a browser", "Unit testing with Bit.Bsqlite.Testing"),
         ("attach", "Check SQL against the guards"),
-        ("moving off besql", "Moving off Bit.Besql"),
         ("conformance kit", "The storage conformance kit"),
         ("custom storage provider", "Writing a custom storage provider"),
         ("export the database file", "ExportAsync"),
@@ -94,6 +93,21 @@ public partial class McpSearchTests
 
         Assert.IsTrue(kit.Hits.Any(hit => hit.Title == "BsqliteStorageProviderConformanceTests"));
         Assert.IsTrue(kit.Hits.Any(hit => hit.Title == "BsqliteStorageProviderConformanceTests.CreateProvider"), "What a test class overrides stays findable.");
+    }
+
+    [TestMethod]
+    public async Task A_question_about_keeping_a_database_is_answered_by_the_storage_guide_first()
+    {
+        // A heading that shares only "database" with the question ("The shared database") ranked level with the
+        // section that answers all of it, and ahead of it for the second: a word most of the index mentions names
+        // nothing in particular.
+        foreach (var query in new[] { "keep the database when OPFS is not available", "which backend keeps the database when opfs is missing" })
+        {
+            var result = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = query });
+
+            Assert.IsNotEmpty(result.Hits, query);
+            Assert.AreEqual("First-party backends", result.Hits[0].Title, $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        }
     }
 
     [TestMethod]

@@ -159,6 +159,7 @@
     <ul class="bb-detail-list">
         <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assemblies are there.</li>
         <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
+        <li>In a Blazor Web App only the browser lazy loads. Give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>, so the router - and its <code>OnNavigateAsync</code> - runs in the browser. The server project loads Bmage with the rest of the app and keeps its <code>AddBitBmageServices()</code>, and registers <code>LazyAssemblyLoader</code>, which the router's file injects while it is prerendered there: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
         <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
     </ul>
 </div>

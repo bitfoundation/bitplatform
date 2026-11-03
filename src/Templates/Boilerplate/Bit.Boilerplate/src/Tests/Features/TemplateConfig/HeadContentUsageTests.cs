@@ -25,12 +25,14 @@ namespace Boilerplate.Tests.Features.TemplateConfig;
 public class HeadContentUsageTests
 {
     /// <summary>
-    /// The two components allowed to open a HeadContent, by file name - a generated project renames the projects
+    /// The components allowed to open a HeadContent, by file name - a generated project renames the projects
     /// around them. <c>AppHeadCoordinator</c> is the app-wide one; <c>SsrLayout</c> is its counterpart for
     /// <c>BlazorMode: BlazorSsr</c> and <c>[ExcludeFromInteractiveRouting]</c> pages, where MainLayout - and with it
     /// AppHeadCoordinator - never renders. The two are mutually exclusive, so the document still only ever has one.
+    /// The landing page is a document of its own with no app-wide HeadContent: each of its pages renders exactly one
+    /// of <c>LandingHead</c>, <c>NotFoundPanel</c> and <c>NotFoundPage</c>'s own.
     /// </summary>
-    private static readonly string[] AllowedFileNames = ["AppHeadCoordinator.razor", "SsrLayout.razor"];
+    private static readonly string[] AllowedFileNames = ["AppHeadCoordinator.razor", "SsrLayout.razor", "LandingHead.razor", "NotFoundPanel.razor", "NotFoundPage.razor"];
 
     [TestMethod]
     public void NoComponent_Should_OpenItsOwnHeadContent()

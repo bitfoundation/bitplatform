@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Bmotion lazy loading sample</title>
+    @* A plain stylesheet, served whether Bit.Bmotion.wasm has been downloaded or not: it plays the showcase's enter
+       animation, prerendered with BmPrerenderMode.Animate, from the served HTML before the runtime has started. app.css
+       comes after it, so the sample's own rules win. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bmotion/bit-bmotion.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without an icon the browser asks for /favicon.ico, and the 404 lands in the console the end-to-end tests check. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.Bmotion.wasm before the showcase renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    @* No tag for bit-bmotion.js: the library imports it itself the first time an animation runs. *@
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

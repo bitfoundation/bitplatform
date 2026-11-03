@@ -28,7 +28,7 @@ public partial class PreviewPageView
     private async Task OnPageFailed()
     {
         // An exception thrown here would end the circuit, as the boundary rethrows what its handler throws.
-        if (IsInsidePreview is false || IsPrerendering)
+        if (IsPrerendering)
             return;
 
         try
@@ -41,23 +41,12 @@ public partial class PreviewPageView
     }
 
     /// <summary>
-    /// Puts the page's stores back to their defaults and renders it again. In a preview it also removes what the browser
-    /// saved for this view; inline in the shell it keeps the shell's own store and its saved views.
+    /// Puts the page's stores back to their defaults, removes what the browser saved for this view and renders it again.
     /// </summary>
     private async Task ResetView()
     {
-        if (IsInsidePreview)
-        {
-            blexManager.ResetAll();
-            await Persistor.ClearAsync();
-        }
-        else
-        {
-            foreach (var pageStore in blexManager.Stores.OfType<BlexStoreBase>().Where(s => s != WorkbenchStore))
-            {
-                pageStore.ResetState();
-            }
-        }
+        blexManager.ResetAll();
+        await Persistor.ClearAsync();
 
         errorBoundary?.Recover();
     }

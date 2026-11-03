@@ -99,6 +99,10 @@
   <Folder Name="/Utilities/Bmage/Samples/Core/">
     <Project Path="Utilities/Bmage/Samples/Core/Bit.Bmage.Samples.Core.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Lazy/">
+    <Project Path="Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy/Bit.Bmage.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy.Client/Bit.Bmage.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bmage/Samples/Server/">
     <Project Path="Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj" />
   </Folder>
@@ -124,6 +128,11 @@
     <Project Path="Utilities/Bsqlite/Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
     <Project Path="Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bsqlite/Samples/Lazy/">
+    <Project Path="Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.Bsqlite.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy.Client/Bit.Bsqlite.Samples.Lazy.Client.csproj" />
+    <Project Path="Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy.Data/Bit.Bsqlite.Samples.Lazy.Data.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bsqlite/Tests/">
     <Project Path="Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
     <Project Path="Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj" />
@@ -148,6 +157,10 @@
   </Folder>
   <Folder Name="/Utilities/Bmotion/Samples/Core/">
     <Project Path="Utilities/Bmotion/Samples/Core/Bit.Bmotion.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Lazy/">
+    <Project Path="Utilities/Bmotion/Samples/Lazy/Bit.Bmotion.Samples.Lazy/Bit.Bmotion.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bmotion/Samples/Lazy/Bit.Bmotion.Samples.Lazy.Client/Bit.Bmotion.Samples.Lazy.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bmotion/Samples/Server/">
     <Project Path="Utilities/Bmotion/Samples/Server/Bit.Bmotion.Samples.Server.csproj" />
@@ -183,6 +196,10 @@
     <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto/Bit.Bink.Samples.Auto.csproj" />
     <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto.Client/Bit.Bink.Samples.Auto.Client.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Lazy/">
+    <Project Path="Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy.Client/Bit.Bink.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bink/Samples/Server/">
     <Project Path="Utilities/Bink/Samples/Server/Bit.Bink.Samples.Server.csproj" />
   </Folder>
@@ -216,6 +233,10 @@
   <Folder Name="/Utilities/Balette/Samples/Core/">
     <Project Path="Utilities/Balette/Samples/Core/Bit.Balette.Samples.Core.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Lazy/">
+    <Project Path="Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy.Client/Bit.Balette.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Balette/Samples/Server/">
     <Project Path="Utilities/Balette/Samples/Server/Bit.Balette.Samples.Server.csproj" />
   </Folder>
@@ -246,6 +267,10 @@
   <Folder Name="/Utilities/BbScanner/Samples/Auto/">
     <Project Path="Utilities/BbScanner/Samples/Auto/Bit.BbScanner.Samples.Auto/Bit.BbScanner.Samples.Auto.csproj" />
     <Project Path="Utilities/BbScanner/Samples/Auto/Bit.BbScanner.Samples.Auto.Client/Bit.BbScanner.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BbScanner/Samples/Lazy/">
+    <Project Path="Utilities/BbScanner/Samples/Lazy/Bit.BbScanner.Samples.Lazy/Bit.BbScanner.Samples.Lazy.csproj" />
+    <Project Path="Utilities/BbScanner/Samples/Lazy/Bit.BbScanner.Samples.Lazy.Client/Bit.BbScanner.Samples.Lazy.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/BbScanner/Samples/Server/">
     <Project Path="Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj" />
@@ -282,6 +307,10 @@
       <Deploy />
     </Project>
   </Folder>
+  <Folder Name="/Utilities/Bdnd/Samples/Lazy/">
+    <Project Path="Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy.Client/Bit.Bdnd.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bdnd/Samples/Server/">
     <Project Path="Utilities/Bdnd/Samples/Server/Bit.Bdnd.Samples.Server.csproj" />
   </Folder>
@@ -317,6 +346,10 @@
   <Folder Name="/Utilities/BlazeDb/Samples/Core/">
     <Project Path="Utilities/BlazeDb/Samples/Core/Bit.BlazeDb.Samples.Core.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BlazeDb/Samples/Lazy/">
+    <Project Path="Utilities/BlazeDb/Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj" />
+    <Project Path="Utilities/BlazeDb/Samples/Lazy/Bit.BlazeDb.Samples.Lazy.Client/Bit.BlazeDb.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BlazeDb/Samples/Server/">
     <Project Path="Utilities/BlazeDb/Samples/Server/Bit.BlazeDb.Samples.Server.csproj" />
   </Folder>
@@ -347,6 +380,10 @@
   <Folder Name="/Utilities/Blow/Samples/Auto/">
     <Project Path="Utilities/Blow/Samples/Auto/Bit.Blow.Samples.Auto/Bit.Blow.Samples.Auto.csproj" />
     <Project Path="Utilities/Blow/Samples/Auto/Bit.Blow.Samples.Auto.Client/Bit.Blow.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blow/Samples/Lazy/">
+    <Project Path="Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy.Client/Bit.Blow.Samples.Lazy.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Blow/Samples/Server/">
     <Project Path="Utilities/Blow/Samples/Server/Bit.Blow.Samples.Server.csproj" />
@@ -419,6 +456,10 @@
       <Deploy />
     </Project>
   </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Lazy/">
+    <Project Path="Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy.Client/Bit.Bcrdt.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bcrdt/Samples/Server/">
     <Project Path="Utilities/Bcrdt/Samples/Server/Bit.Bcrdt.Samples.Server.csproj" />
   </Folder>
@@ -452,6 +493,10 @@
     <Project Path="Utilities/Bonboarding/Samples/Maui/Bit.Bonboarding.Samples.Maui.csproj">
       <Deploy />
     </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bonboarding/Samples/Lazy/">
+    <Project Path="Utilities/Bonboarding/Samples/Lazy/Bit.Bonboarding.Samples.Lazy/Bit.Bonboarding.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bonboarding/Samples/Lazy/Bit.Bonboarding.Samples.Lazy.Client/Bit.Bonboarding.Samples.Lazy.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bonboarding/Samples/Server/">
     <Project Path="Utilities/Bonboarding/Samples/Server/Bit.Bonboarding.Samples.Server.csproj" />
@@ -564,6 +609,10 @@
     <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
     <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Lazy/">
+    <Project Path="Utilities/BevTools/Samples/Lazy/Bit.BevTools.Samples.Lazy/Bit.BevTools.Samples.Lazy.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Lazy/Bit.BevTools.Samples.Lazy.Client/Bit.BevTools.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BevTools/Samples/Server/">
     <Project Path="Utilities/BevTools/Samples/Server/Bit.BevTools.Samples.Server.csproj" />
   </Folder>
@@ -574,6 +623,7 @@
   <Folder Name="/Utilities/BevTools/Tests/">
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
+    <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E/Bit.BevTools.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bheadless/">
     <File Path="Utilities/Bheadless/README.md" />

@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>BbScanner lazy loading sample</title>
+    @* No link to _content/Bit.BbScanner/bit-bbscanner.css: Bit.BbScanner's JS initializer adds it at startup, before
+       Bit.BbScanner.wasm is downloaded. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without an icon the browser asks for /favicon.ico, and the 404 lands in the console the end-to-end tests check. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.BbScanner.wasm before the scanner renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

@@ -21,6 +21,8 @@ builder.Services.AddBitBevToolsServices(options =>
 {
     options.Enabled = true;
     options.Ui.OpenByDefault = false;
+    // Request and response bodies, redacted: the demo's data is made up. An application would leave it off.
+    options.CaptureHttpBodies = true;
     // What a library contributes to BevTools: the Extending page walks through it.
     options.Extensions.Add(new DemoBevToolsExtension());
 });

@@ -5376,6 +5376,27 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerShouldNotTurnTheStandaloneCalloutIntoAPanel()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // The responsive class hides a closed panel, and a standalone calendar is never opened to be shown.
+        Assert.IsFalse(component.Find(".bit-dtp-cal").ClassList.Contains("bit-dtp-res"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-dtp-cal").ClassList.Contains("bit-dtp-res"));
+    }
+
+    [TestMethod]
     public void BitDatePickerShouldHandItsCalloutTheDropDirectionAndTheResponsiveMode()
     {
         var component = RenderComponent<BitDatePicker>(parameters =>

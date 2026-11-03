@@ -64,7 +64,7 @@ public partial class WorkbenchViewPage
             },
             OnEnded = async _ =>
             {
-                SetMode(modeBefore);
+                SetMode(isSmallScreen && IsDesktopOnly(modeBefore) ? WorkbenchModes.Browse : modeBefore);
                 store.ShowColumn(columnBefore);
                 store.ShowViews(viewsBefore);
 

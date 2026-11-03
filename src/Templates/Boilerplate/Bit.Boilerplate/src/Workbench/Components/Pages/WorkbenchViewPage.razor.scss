@@ -198,9 +198,11 @@
     }
 }
 
-.inline-surface {
+// Inside the phone's own safe areas, as a page in a frame can't read them.
+.phone-view {
     height: 100dvh;
-    overflow-y: auto;
+    box-sizing: border-box;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
 // Clear of the app's bottom bar and the home indicator.
@@ -220,16 +222,18 @@
 
 .pick-banner {
     top: 0.75rem;
-    left: 50%;
+    left: 1rem;
+    right: 1rem;
     gap: 0.5rem;
     display: flex;
+    font-size: 13px;
     position: fixed;
-    // Over the app's own chrome, which the inline page draws in this same document.
+    // Over the view's frame and the tools button.
     z-index: $bit-zindex-modal;
+    width: fit-content;
     align-items: center;
     border-radius: 999px;
-    max-width: calc(100vw - 2rem);
-    transform: translateX(-50%);
+    margin-inline: auto;
     padding-block: 0.25rem;
     padding-inline: 1rem 0.25rem;
     box-sizing: border-box;

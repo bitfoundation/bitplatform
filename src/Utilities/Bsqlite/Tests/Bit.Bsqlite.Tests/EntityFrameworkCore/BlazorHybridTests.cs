@@ -301,7 +301,7 @@ public sealed class BlazorHybridTests
     }
 
     /// <summary>
-    /// A Bit.Besql app kept its database on the device as a plain SQLite file - in WAL mode, since stock EF Core
+    /// An app on stock EF Core kept its database on the device as a plain SQLite file - in WAL mode, since EF Core
     /// created it. Pointing the backend at that folder, under the same name, opens the users' data as it is, and
     /// takes the file back to the rollback journal Bsqlite runs every database in.
     /// </summary>
@@ -314,7 +314,7 @@ public sealed class BlazorHybridTests
         {
             await connection.OpenAsync(Ct);
             await using var command = connection.CreateCommand();
-            command.CommandText = "PRAGMA journal_mode = WAL; CREATE TABLE notes (text TEXT NOT NULL); INSERT INTO notes VALUES ('written by Besql');";
+            command.CommandText = "PRAGMA journal_mode = WAL; CREATE TABLE notes (text TEXT NOT NULL); INSERT INTO notes VALUES ('written by EF Core');";
             await command.ExecuteNonQueryAsync(Ct);
         }
 
@@ -324,7 +324,7 @@ public sealed class BlazorHybridTests
 
         await using var query = session.Connection.CreateCommand();
         query.CommandText = "SELECT text FROM notes";
-        Assert.AreEqual("written by Besql", await query.ExecuteScalarAsync(Ct));
+        Assert.AreEqual("written by EF Core", await query.ExecuteScalarAsync(Ct));
         Assert.IsTrue(session.Resolution.WasFoundWithoutBinding);
 
         query.CommandText = "PRAGMA journal_mode";

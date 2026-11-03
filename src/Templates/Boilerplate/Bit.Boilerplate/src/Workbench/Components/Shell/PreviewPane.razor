@@ -1,12 +1,14 @@
 @inherits WorkbenchComponentBase
 
 @* Focus anywhere in the view, its page included, selects it, so the keyboard can select a view too *@
-<div class="pane @(IsSelected ? "selected" : null)"
+<div class="pane @(IsSelected ? "selected" : null) @(FullScreen ? "full-screen" : null) @(FillsScreen ? "fills-screen" : null)"
      role="group"
-     aria-label="@deviceName"
+     aria-label="@(FullScreen ? null : deviceName)"
      aria-current="@(IsSelected ? "true" : null)"
      @onclick="Select"
      @onfocusin="Select">
+    @if (FullScreen is false)
+    {
     <div class="pane-header">
         <BitIcon IconName="@GetDeviceIconName(device)" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
         <BitText Typography="BitTypography.Body2" Class="pane-device" NoWrap>@deviceName</BitText>
@@ -40,9 +42,10 @@
                        OnClick="() => OnRemove.InvokeAsync(Pane)" />
         }
     </div>
+    }
 
     @* The app's breakpoints, the current one highlighted; a click snaps the view's width to one *@
-    @if (Breakpoints.Count > 0)
+    @if (FullScreen is false && Breakpoints.Count > 0)
     {
         <div class="breakpoints" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.Breakpoints)]">
             @for (var index = 0; index < Breakpoints.Count; index++)
@@ -69,11 +72,11 @@
          data-fit-width="@(FitWidth ? "true" : "false")">
         <div class="pane-scaler">
             <DeviceFrame Device="device"
-                         Rotated="Pane.Scenario.Rotated"
+                         Rotated="Shown.Rotated"
                          ShowFrame="ShowFrame"
                          OnDarkContent="Pane.Scenario.Theme is WorkbenchThemeMode.Dark"
                          Address="@AddressText"
-                         Resizable>
+                         Resizable="FullScreen is false">
                 <iframe src="@frameUrl" data-pane-id="@Pane.Id" title="@Localizer[Page.TitleKey]"></iframe>
             </DeviceFrame>
         </div>

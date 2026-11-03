@@ -1,0 +1,900 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>Get the app</value>
+    </data>
+    <data name="NavScreens" xml:space="preserve">
+        <value>Screens</value>
+    </data>
+    <data name="NavWhatsNew" xml:space="preserve">
+        <value>What's new</value>
+    </data>
+    <data name="NavDevices" xml:space="preserve">
+        <value>Devices</value>
+    </data>
+    <data name="NavFaq" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>Ten-minute workouts and the habits around them, for people with full calendars. Made in Copenhagen.</value>
+    </data>
+    <data name="FooterNext" xml:space="preserve">
+        <value>Coming next</value>
+    </data>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Pulsepath: ten-minute workouts and the habits that make them stick</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>A workout and habit coach for busy people. Ten-minute sessions planned around your day, and a streak with rest days built in. On iPhone and the web now, Android planned for January 2027.</value>
+    </data>
+    <data name="HeroNewTag" xml:space="preserve">
+        <value>New in 2.4</value>
+    </data>
+    <data name="HeroNewText" xml:space="preserve">
+        <value>Rest days that keep your streak</value>
+    </data>
+    <data name="HeroTitleStart" xml:space="preserve">
+        <value>Ten minutes,</value>
+    </data>
+    <data name="HeroTitleMark" xml:space="preserve">
+        <value>most days.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Pulsepath fits a short workout into your day and keeps the small habits that make it stick: water, a walk, a sensible bedtime. Miss a day and your streak waits for you.</value>
+    </data>
+    <data name="HeroTry" xml:space="preserve">
+        <value>Try today's session on the phone: start it, skip a move, and watch the lap close.</value>
+    </data>
+    <data name="HeroGetTitle" xml:space="preserve">
+        <value>Get Pulsepath</value>
+    </data>
+    <data name="HeroGetNote" xml:space="preserve">
+        <value>For iPhone with iOS 16 or later. The web app runs in any current browser.</value>
+    </data>
+    <data name="HeroAndroid" xml:space="preserve">
+        <value>Android is in testing, planned for January 2027.</value>
+    </data>
+    <data name="HeroAndroidLink" xml:space="preserve">
+        <value>Join the Android waitlist</value>
+    </data>
+    <data name="HeroPrice" xml:space="preserve">
+        <value>Free for 3 sessions a week. Plus has every session for {0} a month or {1} a year, and the first 14 days are free.</value>
+    </data>
+    <data name="SessionToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="SessionStreakDays" xml:space="preserve">
+        <value>days in a row</value>
+    </data>
+    <data name="SessionWeek" xml:space="preserve">
+        <value>This week</value>
+    </data>
+    <data name="SessionName" xml:space="preserve">
+        <value>Desk-break strength</value>
+    </data>
+    <data name="SessionMeta" xml:space="preserve">
+        <value>10 min · 6 moves · no equipment</value>
+    </data>
+    <data name="SessionRingDone" xml:space="preserve">
+        <value>done</value>
+    </data>
+    <data name="SessionRingLeft" xml:space="preserve">
+        <value>left</value>
+    </data>
+    <data name="SessionRingPaused" xml:space="preserve">
+        <value>paused</value>
+    </data>
+    <data name="SessionRingReady" xml:space="preserve">
+        <value>ready when you are</value>
+    </data>
+    <data name="SessionDoneTitle" xml:space="preserve">
+        <value>Ten minutes, done.</value>
+    </data>
+    <data name="SessionDoneBody" xml:space="preserve">
+        <value>That's {0} days in a row. Same time tomorrow?</value>
+    </data>
+    <data name="SessionDoneAgain" xml:space="preserve">
+        <value>Today already counts. Your streak stays at {0} days.</value>
+    </data>
+    <data name="SessionAgain" xml:space="preserve">
+        <value>Run it again</value>
+    </data>
+    <data name="SessionNow" xml:space="preserve">
+        <value>Now</value>
+    </data>
+    <data name="SessionFirst" xml:space="preserve">
+        <value>First</value>
+    </data>
+    <data name="SessionNext" xml:space="preserve">
+        <value>Next:</value>
+    </data>
+    <data name="SessionLastMove" xml:space="preserve">
+        <value>Last move. Nearly there.</value>
+    </data>
+    <data name="SessionPause" xml:space="preserve">
+        <value>Pause</value>
+    </data>
+    <data name="SessionResume" xml:space="preserve">
+        <value>Resume</value>
+    </data>
+    <data name="SessionStart" xml:space="preserve">
+        <value>Start the session</value>
+    </data>
+    <data name="SessionSkip" xml:space="preserve">
+        <value>Next move</value>
+    </data>
+    <data name="SessionAnnounceMove" xml:space="preserve">
+        <value>{0}, {1}</value>
+    </data>
+    <data name="SessionAnnouncePaused" xml:space="preserve">
+        <value>Paused</value>
+    </data>
+    <data name="Move1" xml:space="preserve">
+        <value>Chair squats</value>
+    </data>
+    <data name="Move1Cue" xml:space="preserve">
+        <value>Sit back until you touch the seat, then stand tall.</value>
+    </data>
+    <data name="Move2" xml:space="preserve">
+        <value>Wall push-ups</value>
+    </data>
+    <data name="Move2Cue" xml:space="preserve">
+        <value>Hands at shoulder height, body in one line.</value>
+    </data>
+    <data name="Move3" xml:space="preserve">
+        <value>Forearm plank</value>
+    </data>
+    <data name="Move3Cue" xml:space="preserve">
+        <value>Knees down is fine. Keep breathing.</value>
+    </data>
+    <data name="Move4" xml:space="preserve">
+        <value>Reverse lunges</value>
+    </data>
+    <data name="Move4Cue" xml:space="preserve">
+        <value>Step back, lower slowly, switch legs each time.</value>
+    </data>
+    <data name="Move5" xml:space="preserve">
+        <value>Shoulder taps</value>
+    </data>
+    <data name="Move5Cue" xml:space="preserve">
+        <value>From a high plank, tap each shoulder without rocking.</value>
+    </data>
+    <data name="Move6" xml:space="preserve">
+        <value>Doorway chest stretch</value>
+    </data>
+    <data name="Move6Cue" xml:space="preserve">
+        <value>Forearms on the frame, lean in until you feel it.</value>
+    </data>
+    <data name="DayRest" xml:space="preserve">
+        <value>Rest day</value>
+    </data>
+    <data name="DayDone" xml:space="preserve">
+        <value>Session done</value>
+    </data>
+    <data name="DayToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="DayUpcoming" xml:space="preserve">
+        <value>Coming up</value>
+    </data>
+    <data name="InstallStandalone" xml:space="preserve">
+        <value>You're using the installed app.</value>
+    </data>
+    <data name="InstallDone" xml:space="preserve">
+        <value>Installed. Pulsepath is now with your other apps.</value>
+    </data>
+    <data name="InstallPromptHint" xml:space="preserve">
+        <value>Your browser can install it in one step.</value>
+    </data>
+    <data name="InstallDismissed" xml:space="preserve">
+        <value>No problem. You can install it later from the browser menu.</value>
+    </data>
+    <data name="InstallHowTitle" xml:space="preserve">
+        <value>How to install it</value>
+    </data>
+    <data name="InstallIphone" xml:space="preserve">
+        <value>iPhone and iPad</value>
+    </data>
+    <data name="InstallIphoneSteps" xml:space="preserve">
+        <value>In Safari, tap Share, then Add to Home Screen. On iPhone the App Store app does more: it reads your steps from Apple Health.</value>
+    </data>
+    <data name="InstallAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="InstallAndroidSteps" xml:space="preserve">
+        <value>In Chrome, open the menu (the three dots) and tap Install app or Add to Home screen. Until the Android app is out, this is the way to use Pulsepath on Android.</value>
+    </data>
+    <data name="InstallComputer" xml:space="preserve">
+        <value>Windows, Linux and ChromeOS</value>
+    </data>
+    <data name="InstallComputerSteps" xml:space="preserve">
+        <value>In Chrome or Edge, click the install icon at the end of the address bar, or find Install in the browser menu.</value>
+    </data>
+    <data name="InstallMac" xml:space="preserve">
+        <value>Mac</value>
+    </data>
+    <data name="InstallMacSteps" xml:space="preserve">
+        <value>In Safari, choose File, then Add to Dock. In Chrome or Edge, use the install icon in the address bar.</value>
+    </data>
+    <data name="InstallFallback" xml:space="preserve">
+        <value>No install option in your browser? Keep Pulsepath as a bookmark. It works the same in a tab.</value>
+    </data>
+    <data name="ScreensKicker" xml:space="preserve">
+        <value>The app</value>
+    </data>
+    <data name="ScreensTitle" xml:space="preserve">
+        <value>Three screens do most of the work</value>
+    </data>
+    <data name="ScreensLede" xml:space="preserve">
+        <value>Pulsepath stays small on purpose. These are the real screens, and they work: tick a habit, plan a rest day, switch the view.</value>
+    </data>
+    <data name="ScreenTodayTitle" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="ScreenTodayProgress" xml:space="preserve">
+        <value>{0} of {1} done</value>
+    </data>
+    <data name="ScreenWater" xml:space="preserve">
+        <value>Water</value>
+    </data>
+    <data name="ScreenWaterCount" xml:space="preserve">
+        <value>{0} of {1} glasses</value>
+    </data>
+    <data name="ScreenWaterAdd" xml:space="preserve">
+        <value>Add a glass of water</value>
+    </data>
+    <data name="ScreenTodayReminder" xml:space="preserve">
+        <value>Next reminder: stretch at 22:30</value>
+    </data>
+    <data name="ScreenTodayCaption" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="ScreenTodayBody" xml:space="preserve">
+        <value>Your session and the few habits around it, on one list. Tick them off as the day goes.</value>
+    </data>
+    <data name="ScreenStreakKicker" xml:space="preserve">
+        <value>Your streak</value>
+    </data>
+    <data name="ScreenStreakTitle" xml:space="preserve">
+        <value>Streak</value>
+    </data>
+    <data name="ScreenStreakDays" xml:space="preserve">
+        <value>{0} days</value>
+    </data>
+    <data name="ScreenStreakLongest" xml:space="preserve">
+        <value>Longest so far: {0} days</value>
+    </data>
+    <data name="ScreenStreakSummary" xml:space="preserve">
+        <value>Calendar of the last four weeks: a session every day except one rest day a week.</value>
+    </data>
+    <data name="ScreenStreakToggle" xml:space="preserve">
+        <value>Rest day tomorrow</value>
+    </data>
+    <data name="ScreenStreakPlanned" xml:space="preserve">
+        <value>Tomorrow is a rest day. Your streak waits for you.</value>
+    </data>
+    <data name="ScreenStreakHint" xml:space="preserve">
+        <value>Two rest days a week keep the streak alive. Plan one, or Pulsepath uses one when you miss a day.</value>
+    </data>
+    <data name="ScreenStreakCaption" xml:space="preserve">
+        <value>Streak</value>
+    </data>
+    <data name="ScreenStreakBody" xml:space="preserve">
+        <value>Rest days are part of the plan. Missing a Tuesday doesn't wipe out a month.</value>
+    </data>
+    <data name="ScreenProgressKicker" xml:space="preserve">
+        <value>Minutes, not calories</value>
+    </data>
+    <data name="ScreenProgressTitle" xml:space="preserve">
+        <value>Progress</value>
+    </data>
+    <data name="ScreenProgressWeek" xml:space="preserve">
+        <value>Last 7 days</value>
+    </data>
+    <data name="ScreenProgressWeeks" xml:space="preserve">
+        <value>8 weeks</value>
+    </data>
+    <data name="ScreenProgressMinutes" xml:space="preserve">
+        <value>{0} min</value>
+    </data>
+    <data name="ScreenProgressGoal" xml:space="preserve">
+        <value>Your goal: {0} minutes a week</value>
+    </data>
+    <data name="ScreenProgressAverage" xml:space="preserve">
+        <value>{0} min a week</value>
+    </data>
+    <data name="ScreenProgressTrend" xml:space="preserve">
+        <value>Average of the last 8 weeks</value>
+    </data>
+    <data name="ScreenProgressNote" xml:space="preserve">
+        <value>Pulsepath counts the minutes you showed up. Nothing about your weight unless you ask.</value>
+    </data>
+    <data name="ScreenProgressCaption" xml:space="preserve">
+        <value>Progress</value>
+    </data>
+    <data name="ScreenProgressBody" xml:space="preserve">
+        <value>Watch the weeks add up. Short sessions turn into hours you can see.</value>
+    </data>
+    <data name="HabitSession" xml:space="preserve">
+        <value>Ten-minute session</value>
+    </data>
+    <data name="HabitSessionDetail" xml:space="preserve">
+        <value>Done at 07:40</value>
+    </data>
+    <data name="HabitWalk" xml:space="preserve">
+        <value>Walk after lunch</value>
+    </data>
+    <data name="HabitWalkDetail" xml:space="preserve">
+        <value>15 minutes</value>
+    </data>
+    <data name="HabitStretch" xml:space="preserve">
+        <value>Stretch before bed</value>
+    </data>
+    <data name="HabitStretchDetail" xml:space="preserve">
+        <value>4 minutes, guided</value>
+    </data>
+    <data name="HabitSleep" xml:space="preserve">
+        <value>Lights out by 23:30</value>
+    </data>
+    <data name="HabitSleepDetail" xml:space="preserve">
+        <value>A reminder at 23:00</value>
+    </data>
+    <data name="NewsKicker" xml:space="preserve">
+        <value>Release notes</value>
+    </data>
+    <data name="NewsTitle" xml:space="preserve">
+        <value>What's new</value>
+    </data>
+    <data name="NewsLede" xml:space="preserve">
+        <value>We ship an update every three to four weeks. Here are the last two, in plain words.</value>
+    </data>
+    <data name="NewsVersion" xml:space="preserve">
+        <value>Version {0}</value>
+    </data>
+    <data name="NewsKindNew" xml:space="preserve">
+        <value>New</value>
+    </data>
+    <data name="NewsKindBetter" xml:space="preserve">
+        <value>Better</value>
+    </data>
+    <data name="NewsKindFixed" xml:space="preserve">
+        <value>Fixed</value>
+    </data>
+    <data name="News24Title" xml:space="preserve">
+        <value>Rest days that keep your streak</value>
+    </data>
+    <data name="News24Note1" xml:space="preserve">
+        <value>Plan up to two rest days a week, or let Pulsepath use one when you miss a day. Your streak waits.</value>
+    </data>
+    <data name="News24Note2" xml:space="preserve">
+        <value>Short on time? Every session now has a five-minute version.</value>
+    </data>
+    <data name="News24Note3" xml:space="preserve">
+        <value>A soft tick in the last three seconds of each move, so you can keep your eyes off the screen.</value>
+    </data>
+    <data name="News24Note4" xml:space="preserve">
+        <value>A phone call no longer stops the timer for good. The session picks up where you left it.</value>
+    </data>
+    <data name="News23Title" xml:space="preserve">
+        <value>Habits that ride along</value>
+    </data>
+    <data name="News23Note1" xml:space="preserve">
+        <value>Habit stacking: tie a habit to your session, like a glass of water right after it.</value>
+    </data>
+    <data name="News23Note2" xml:space="preserve">
+        <value>A weekly review on the last evening of your week: minutes, habits kept and one suggestion for the week ahead.</value>
+    </data>
+    <data name="News23Note3" xml:space="preserve">
+        <value>Text stays readable at the largest accessibility text sizes.</value>
+    </data>
+    <data name="News23Note4" xml:space="preserve">
+        <value>Streaks no longer lose a day when you travel across time zones.</value>
+    </data>
+    <data name="DevicesKicker" xml:space="preserve">
+        <value>Get it</value>
+    </data>
+    <data name="DevicesTitle" xml:space="preserve">
+        <value>On all your devices</value>
+    </data>
+    <data name="DevicesLede" xml:space="preserve">
+        <value>One account, one streak. Start a session on the web at your desk and tick the habits off on your phone later.</value>
+    </data>
+    <data name="DeviceIphone" xml:space="preserve">
+        <value>iPhone</value>
+    </data>
+    <data name="DeviceIphoneBody" xml:space="preserve">
+        <value>The full app: every session, habits, reminders and your steps from Apple Health. iOS 16 or later.</value>
+    </data>
+    <data name="DeviceWeb" xml:space="preserve">
+        <value>Web app</value>
+    </data>
+    <data name="DeviceWebBody" xml:space="preserve">
+        <value>Every session and habit in the browser, synced with your phone. Install it and it opens like an app.</value>
+    </data>
+    <data name="DeviceAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="DeviceAndroidStatus" xml:space="preserve">
+        <value>Coming soon · January 2027</value>
+    </data>
+    <data name="DeviceAndroidBody" xml:space="preserve">
+        <value>The Android app is in closed testing. Leave your email and we'll write once, on release day. Until then, the web app works in Chrome on Android.</value>
+    </data>
+    <data name="DeviceAndroidSubmit" xml:space="preserve">
+        <value>Join the Android waitlist</value>
+    </data>
+    <data name="DeviceWatch" xml:space="preserve">
+        <value>Apple Watch</value>
+    </data>
+    <data name="DeviceWatchStatus" xml:space="preserve">
+        <value>Later</value>
+    </data>
+    <data name="DeviceWatchBody" xml:space="preserve">
+        <value>Follow the timer from your wrist. We're building it after Android, and we'll give a date when it's in testing.</value>
+    </data>
+    <data name="NextKicker" xml:space="preserve">
+        <value>Roadmap</value>
+    </data>
+    <data name="NextTitle" xml:space="preserve">
+        <value>Coming next</value>
+    </data>
+    <data name="NextLede" xml:space="preserve">
+        <value>Dates where we're sure, and plain words where we aren't.</value>
+    </data>
+    <data name="NextStateTesting" xml:space="preserve">
+        <value>In testing</value>
+    </data>
+    <data name="NextStateBuilding" xml:space="preserve">
+        <value>Building</value>
+    </data>
+    <data name="NextStateExploring" xml:space="preserve">
+        <value>Exploring</value>
+    </data>
+    <data name="Next1Title" xml:space="preserve">
+        <value>Android app</value>
+    </data>
+    <data name="Next1When" xml:space="preserve">
+        <value>Planned for January 2027</value>
+    </data>
+    <data name="Next1Body" xml:space="preserve">
+        <value>400 people are testing it now. If the date moves, the waitlist hears it first.</value>
+    </data>
+    <data name="Next2Title" xml:space="preserve">
+        <value>Apple Watch</value>
+    </data>
+    <data name="Next2When" xml:space="preserve">
+        <value>No date yet</value>
+    </data>
+    <data name="Next2Body" xml:space="preserve">
+        <value>Start a session and follow the timer from your wrist. We'll name a date once it's in testing.</value>
+    </data>
+    <data name="Next3Title" xml:space="preserve">
+        <value>Train with a friend</value>
+    </data>
+    <data name="Next3When" xml:space="preserve">
+        <value>Maybe, in 2027</value>
+    </data>
+    <data name="Next3Body" xml:space="preserve">
+        <value>A shared streak for two people. We'll only build it if testers keep asking for it.</value>
+    </data>
+    <data name="VoicesKicker" xml:space="preserve">
+        <value>From people who use it</value>
+    </data>
+    <data name="VoicesTitle" xml:space="preserve">
+        <value>Full calendars, kept streaks</value>
+    </data>
+    <data name="VoicesNote" xml:space="preserve">
+        <value>The rating and version above come straight from the App Store listing.</value>
+    </data>
+    <data name="Voice1Quote" xml:space="preserve">
+        <value>I do it between the school run and my first call. Ten minutes I can defend. An hour, never.</value>
+    </data>
+    <data name="Voice1Name" xml:space="preserve">
+        <value>Mateus Carvalho</value>
+    </data>
+    <data name="Voice1Who" xml:space="preserve">
+        <value>Father of two, Braga</value>
+    </data>
+    <data name="Voice2Quote" xml:space="preserve">
+        <value>Night shifts wrecked every streak I ever started. The rest days are why this one is still going.</value>
+    </data>
+    <data name="Voice2Name" xml:space="preserve">
+        <value>Adaeze Nwosu</value>
+    </data>
+    <data name="Voice2Who" xml:space="preserve">
+        <value>ICU nurse, Manchester</value>
+    </data>
+    <data name="Voice3Quote" xml:space="preserve">
+        <value>My knees don't like lunges. I tapped Easier once, and it remembered.</value>
+    </data>
+    <data name="Voice3Name" xml:space="preserve">
+        <value>Hana Kobayashi</value>
+    </data>
+    <data name="Voice3Who" xml:space="preserve">
+        <value>Translator, Osaka</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>What people ask before they start</value>
+    </data>
+    <data name="Faq1Q" xml:space="preserve">
+        <value>Do I need any equipment?</value>
+    </data>
+    <data name="Faq1A" xml:space="preserve">
+        <value>No. A chair and a wall are enough for every session. If you have a resistance band, a few sessions use it, and each one says so before you start.</value>
+    </data>
+    <data name="Faq2Q" xml:space="preserve">
+        <value>What happens to my streak if I miss a day?</value>
+    </data>
+    <data name="Faq2A" xml:space="preserve">
+        <value>Nothing, the first two times in a week. You get two rest days a week: plan them, or Pulsepath uses one when you miss a day. The streak only starts over after a third missed day in the same week.</value>
+    </data>
+    <data name="Faq3Q" xml:space="preserve">
+        <value>When is the Android app coming?</value>
+    </data>
+    <data name="Faq3A" xml:space="preserve">
+        <value>We plan to release it in January 2027. It's in closed testing with 400 people now. Join the Android waitlist and we'll send one email on release day. Until then, the web app works in Chrome on Android, and you can install it on your home screen.</value>
+    </data>
+    <data name="Faq4Q" xml:space="preserve">
+        <value>What does it cost?</value>
+    </data>
+    <data name="Faq4A" xml:space="preserve">
+        <value>Pulsepath is free for 3 sessions a week, with all the habit tracking. Plus has every session, rest-day planning and the weekly review for {0} a month or {1} a year. The first 14 days of Plus are free: cancel before day 14 and you pay nothing. Outside the euro area, the App Store sets the price in your currency.</value>
+    </data>
+    <data name="Faq5Q" xml:space="preserve">
+        <value>Is the web app the same as the iPhone app?</value>
+    </data>
+    <data name="Faq5A" xml:space="preserve">
+        <value>Same sessions, habits and streak, synced through your account. The web app can't read steps from Apple Health, so the steps habit is iPhone only. Reminders come as browser notifications.</value>
+    </data>
+    <data name="Faq6Q" xml:space="preserve">
+        <value>What happens to my health data?</value>
+    </data>
+    <data name="Faq6A" xml:space="preserve">
+        <value>Your sessions and habits are stored in the EU, in Frankfurt, and are never sold or shared with advertisers. There are no ads in Pulsepath. Steps from Apple Health stay on your iPhone; only the daily total shows in Today. You can export or delete everything from Settings.</value>
+    </data>
+    <data name="Faq7Q" xml:space="preserve">
+        <value>Can I use it with an injury?</value>
+    </data>
+    <data name="Faq7A" xml:space="preserve">
+        <value>Every move has an easier version, and you can mark knees, back or shoulders to keep sessions gentle on them. Pulsepath isn't medical advice: if you're recovering from an injury, check with a doctor or physiotherapist first.</value>
+    </data>
+    <data name="AskTitle" xml:space="preserve">
+        <value>Ask about Pulsepath</value>
+    </data>
+    <data name="AskBody" xml:space="preserve">
+        <value>The assistant answers from the facts on this site. It can't give medical advice, and it says so when it doesn't know.</value>
+    </data>
+    <data name="AskPlaceholder" xml:space="preserve">
+        <value>For example: can I train on night shifts?</value>
+    </data>
+    <data name="AskMail" xml:space="preserve">
+        <value>Rather write to a person?</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>When is Android coming?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>What does Plus cost?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>Can I do it with bad knees?</value>
+    </data>
+    <data name="ChatSuggestion4" xml:space="preserve">
+        <value>Who is behind Pulsepath?</value>
+    </data>
+    <data name="MoneyEUR" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This page ran out of time</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The link may be old or mistyped. Your streak is safe, and today's session is one tap away.</value>
+    </data>
+    <data name="NotFoundTimer" xml:space="preserve">
+        <value>time's up</value>
+    </data>
+    <data name="NotFoundNews" xml:space="preserve">
+        <value>See what's new</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Workout and habit coach</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>iPhone live, Android on a waitlist and an installable web app, with a working ten-minute timer on the first screen.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Android waitlist</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Install on this device</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Release notes</value>
+    </data>
+    <data name="AboutPageTitle" xml:space="preserve">
+        <value>About Pulsepath</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Pulsepath is a team of 14 in Copenhagen, started by a physiotherapist and an app developer in 2023. Why ten minutes, why rest days, and why iPhone first.</value>
+    </data>
+    <data name="AboutKicker" xml:space="preserve">
+        <value>About us</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>We make ten minutes count.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Pulsepath started in a physiotherapy clinic in Copenhagen, with patients who knew exactly what to do and never had an hour to do it.</value>
+    </data>
+    <data name="AboutStoryTitle" xml:space="preserve">
+        <value>How it started</value>
+    </data>
+    <data name="AboutStory1" xml:space="preserve">
+        <value>Freja Holm spent nine years as a physiotherapist in Nørrebro. Her patients left with a sheet of exercises and came back a month later having done them twice. The ones who got better had one thing in common: they did a little, most days.</value>
+    </data>
+    <data name="AboutStory2" xml:space="preserve">
+        <value>In 2023 she started writing ten-minute sessions on the back of appointment cards, and Kofi Mensah, a patient with a bad shoulder and a career in banking apps, offered to put them on a phone. The first version had 40 sessions and a timer.</value>
+    </data>
+    <data name="AboutStory3" xml:space="preserve">
+        <value>Inés Navarro joined a year later, after studying why people quit. Her answer was the streak that punishes one bad Tuesday, so Pulsepath has rest days instead.</value>
+    </data>
+    <data name="AboutNumbersTitle" xml:space="preserve">
+        <value>Pulsepath in numbers</value>
+    </data>
+    <data name="AboutNumber1Value" xml:space="preserve">
+        <value>2.4 million</value>
+    </data>
+    <data name="AboutNumber1Label" xml:space="preserve">
+        <value>sessions finished since March 2025</value>
+    </data>
+    <data name="AboutNumber2Value" xml:space="preserve">
+        <value>61%</value>
+    </data>
+    <data name="AboutNumber2Label" xml:space="preserve">
+        <value>of people who start are still training eight weeks later</value>
+    </data>
+    <data name="AboutNumber3Value" xml:space="preserve">
+        <value>14</value>
+    </data>
+    <data name="AboutNumber3Label" xml:space="preserve">
+        <value>people on the team, plus 3 physiotherapists who review every session</value>
+    </data>
+    <data name="AboutNumber4Value" xml:space="preserve">
+        <value>0</value>
+    </data>
+    <data name="AboutNumber4Label" xml:space="preserve">
+        <value>ads, now or later. Plus pays for everything.</value>
+    </data>
+    <data name="AboutPrinciplesTitle" xml:space="preserve">
+        <value>What we hold to</value>
+    </data>
+    <data name="Principle1Title" xml:space="preserve">
+        <value>Short beats perfect</value>
+    </data>
+    <data name="Principle1Body" xml:space="preserve">
+        <value>A session you do is worth more than the one you plan. Every session has a five-minute version for the bad days.</value>
+    </data>
+    <data name="Principle2Title" xml:space="preserve">
+        <value>Rest is part of the plan</value>
+    </data>
+    <data name="Principle2Body" xml:space="preserve">
+        <value>Two rest days a week, and no red crosses. Missing a day doesn't wipe out a month.</value>
+    </data>
+    <data name="Principle3Title" xml:space="preserve">
+        <value>No ads, no data sales</value>
+    </data>
+    <data name="Principle3Body" xml:space="preserve">
+        <value>Plus pays for Pulsepath. Your data is stored in the EU and never sold, and you can take it with you at any time.</value>
+    </data>
+    <data name="Principle4Title" xml:space="preserve">
+        <value>Physios check every move</value>
+    </data>
+    <data name="Principle4Body" xml:space="preserve">
+        <value>Three physiotherapists review each session before it ships, and every move has an easier version.</value>
+    </data>
+    <data name="AboutLaunchTitle" xml:space="preserve">
+        <value>Why iPhone first</value>
+    </data>
+    <data name="AboutLaunchBody" xml:space="preserve">
+        <value>We're a small team, and we'd rather ship one app done well than two done halfway. The web app came next because people asked to train at their desks. Android is the one we're asked about most, and it's close.</value>
+    </data>
+    <data name="Launch1When" xml:space="preserve">
+        <value>March 2025</value>
+    </data>
+    <data name="Launch1What" xml:space="preserve">
+        <value>The iPhone app on the App Store, with 40 sessions</value>
+    </data>
+    <data name="Launch2When" xml:space="preserve">
+        <value>June 2026</value>
+    </data>
+    <data name="Launch2What" xml:space="preserve">
+        <value>The web app, for people who train at their desk</value>
+    </data>
+    <data name="Launch3When" xml:space="preserve">
+        <value>October 2026</value>
+    </data>
+    <data name="Launch3What" xml:space="preserve">
+        <value>Android in closed testing with 400 people</value>
+    </data>
+    <data name="Launch4When" xml:space="preserve">
+        <value>January 2027, planned</value>
+    </data>
+    <data name="Launch4What" xml:space="preserve">
+        <value>Android on Google Play</value>
+    </data>
+    <data name="Launch5When" xml:space="preserve">
+        <value>Later</value>
+    </data>
+    <data name="Launch5What" xml:space="preserve">
+        <value>Apple Watch. No date until it's in testing.</value>
+    </data>
+    <data name="AboutTeamTitle" xml:space="preserve">
+        <value>The people behind it</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Freja Holm</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Co-founder and CEO</value>
+    </data>
+    <data name="Team1Bio" xml:space="preserve">
+        <value>Physiotherapist for nine years. Still writes the first draft of every new session.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Kofi Mensah</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Co-founder and CTO</value>
+    </data>
+    <data name="Team2Bio" xml:space="preserve">
+        <value>Built banking apps in Accra and Copenhagen. Owns the timer, which he says is harder than it looks.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Inés Navarro</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Head of coaching</value>
+    </data>
+    <data name="Team3Bio" xml:space="preserve">
+        <value>Behaviour scientist. Designed rest days after studying 3,000 broken streaks.</value>
+    </data>
+    <data name="AboutContactTitle" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="AboutContactBody" xml:space="preserve">
+        <value>A person answers every email within two working days, usually sooner.</value>
+    </data>
+    <data name="AboutContactGeneral" xml:space="preserve">
+        <value>Questions and feedback</value>
+    </data>
+    <data name="AboutContactPress" xml:space="preserve">
+        <value>Press</value>
+    </data>
+    <data name="AboutContactAddress" xml:space="preserve">
+        <value>Office</value>
+    </data>
+    <data name="AboutAddress" xml:space="preserve">
+        <value>Vesterbrogade 41, 1620 Copenhagen V, Denmark</value>
+    </data>
+</root>
