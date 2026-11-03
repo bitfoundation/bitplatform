@@ -22,6 +22,24 @@ of them at `/`. Keep the sample closest to your product, make it your home page 
 - It needs no database and no keys: without an AI key the chat streams a sample answer, and without an SMTP server
   the waitlist emails are written to the log (under Aspire they land in Mailpit).
 
+## The samples
+
+| Sample | Path | For | Launch | Pages | Chat |
+| --- | --- | --- | --- | --- | --- |
+| Fernhouse | `/ecommerce` | An online shop for plants and pots | Launched | Home, about | Bubble |
+| Northside Market | `/retail` | A grocer with six shops and click and collect | Launched | Home, shops with map and hours, about | Concierge |
+| Alder & Salt | `/hotel` | A hotel that wants direct bookings | Launched | Home, rooms, about | Concierge |
+| Little Copper | `/restaurant` | Cafés whose ordering app isn't out yet | Before launch, with a countdown | Home, about | Inline |
+| Liora | `/period-tracker` | A period tracker in beta | Beta on iPhone, waitlist for Android | Home, about | Inline |
+| Pulsepath | `/fitness` | A workout app released in stages | iPhone and web, Android coming | Home with what's new, about | Inline |
+| Brightlane | `/crm` | A CRM for small sales teams | Launched | Home, pricing, versus spreadsheets, about | Bubble |
+| Sumwise | `/accounting` | Invoicing and bookkeeping for freelancers | Launched | Home, pricing, about | Concierge |
+| Lodgeboard | `/hotel-software` | Software for independent hotels | Launched | Home, pricing, press, about | Bubble |
+| Notch | `/minimal` | The smallest page that still does the job | Before launch | Home | Bubble |
+
+Each one also has its legal pages and a not-found page of its own, and the ones that collect a waitlist have the
+pages its emails link to.
+
 ## What every sample can use
 
 The samples share their building blocks, in
@@ -81,6 +99,9 @@ page, to change its texts, look or pages, or to launch it. In short:
 - **Keep the waitlist somewhere**: it lives in memory until you implement `IWaitlistStore` in
   [`WaitlistStore.cs`](/src/LandingPage/Boilerplate.LandingPage.Server/Features/Waitlist/WaitlistStore.cs) over your
   API, your database or your mailing list service, so every restart empties it.
+- **Replace its preview image**: the picture a shared link shows is `images/og/<sample>.png`, 1200 by 630, under
+  the client's `wwwroot`. Each sample also has its own web app manifest, so a visitor who installs it gets that
+  sample, under its own name, starting at its own page.
 - **Teach the chat**: it answers from each sample's facts in
   [`LandingChatPrompts.cs`](/src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatPrompts.cs).
 - **Replace the fictional parts**: the samples' companies, people, ratings and quotes are made up. Before you

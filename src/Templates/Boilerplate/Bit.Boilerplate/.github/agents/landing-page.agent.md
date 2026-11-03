@@ -18,8 +18,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - **A sample** is one folder, `Components/Pages/<Sample>/`: its `<Sample>Site.cs` (name, path, accent color, the
   platforms with their store links and launch state, the web app's address, the company the legal pages name), its
   layout, pages, not-found page, gallery card, logo, and its texts in `<Sample>Strings.resx` with
-  `<Sample>Strings.fa.resx`. Its look is `Styles/sites/_<sample>.scss`, imported from `Styles/landing.scss`, and its
-  images are under `wwwroot/images/<sample>/`.
+  `<Sample>Strings.fa.resx`. Its look is `Styles/sites/_<sample>.scss`, imported from `Styles/landing.scss`. Its
+  link preview is `wwwroot/images/og/<sample>.png` (1200 by 630), which `LandingHead` uses unless a page passes its
+  own, and it has a web app manifest of its own at `/<sample>/manifest.webmanifest`.
 - **The samples' list** is `Infrastructure/LandingSites.cs`. The gallery, the smart download links and the not-found
   handling read it, and the sitemap finds the pages from their routes.
 - **Shared parts** are in `Components/Common/`: the head tags (`LandingHead`: title, description, canonical and
@@ -80,8 +81,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 3. Delete `Components/Pages/Gallery/`, every other sample's folder, styles, images and chat facts, and their entries
    in `LandingSites.cs` and the project file. `Components/Layout/SiteLayout.razor` and the gallery's texts in
    `LandingStrings` go with the gallery when nothing else uses them.
-4. Replace the sample's name, logo, texts, images, company details, store links and chat facts with the product's, in
-   both languages, and give it the product's brand.
+4. Replace the sample's name, logo, texts, images (its link preview included), company details, store links and chat
+   facts with the product's, in both languages, and give it the product's brand.
 5. Build, then check the home page, a few inner pages, a missing page, `/sitemap.xml`, `/robots.txt` and the download
    link, in both languages.
 
