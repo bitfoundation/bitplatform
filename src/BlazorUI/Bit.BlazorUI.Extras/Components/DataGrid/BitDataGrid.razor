@@ -415,7 +415,7 @@
                             @* Virtualizing the accumulated batches keeps the DOM bounded no matter how
                                far the user scrolls (previously every loaded row stayed in the DOM).
                                The JS near-end watcher keeps working unchanged: Virtualize's spacer
-                               elements preserve the viewport's real scrollHeight. *@
+                               elements keep the sentinel after the body at the real end of the rows. *@
                             RenderVirtualRows(__builder, _infiniteItems);
                         }
                         else
@@ -499,6 +499,14 @@
                     }
                 }
             </div>
+
+            @if (IsInfiniteMode)
+            {
+                @* What the infinite-scroll watcher observes for the end of the rows coming into reach (see BitDataGrid.ts).
+                   Outside the body, so it stays the same element however the body's content changes, and marked once the
+                   data has ended, so the watcher asks for nothing more. *@
+                <div class="bit-dtg-infinite-sentinel" aria-hidden="true" data-bit-dtg-end="@(InfiniteHasMore ? null : "true")" @ref="_infiniteSentinel"></div>
+            }
 
             @if (HasFooterRow)
             {
