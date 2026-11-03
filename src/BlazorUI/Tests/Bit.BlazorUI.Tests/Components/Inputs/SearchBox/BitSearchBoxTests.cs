@@ -4153,6 +4153,28 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxWithImmediateShouldNotCommitTheSameTextAgainOnBlur()
+    {
+        var changedValues = new List<string?>();
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, v => changedValues.Add(v));
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Input("bit");
+
+        // The change event the browser raises as the field loses focus carries the text the input event committed.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changedValues);
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changes);
+    }
+
+    [TestMethod]
     public void BitSearchBoxShouldRefuseTheTypedTextOfAOneWayBoundValue()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>

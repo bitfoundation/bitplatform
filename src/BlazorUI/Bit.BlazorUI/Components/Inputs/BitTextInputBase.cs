@@ -113,7 +113,10 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     {
         if (Disabled || ReadOnly) return;
 
-        await SetCurrentValueAsStringAsync(e.Value?.ToString());
+        // Under Immediate the input events have reported the text as it was typed, so the change event raised on blur
+        // reports it only when it moves the value: a re-render the app runs again on the way out can swallow the press
+        // that took the focus away.
+        await SetCurrentValueAsStringAsync(e.Value?.ToString(), bypass: false, reportSameValue: Immediate is false);
     }
 
     /// <summary>

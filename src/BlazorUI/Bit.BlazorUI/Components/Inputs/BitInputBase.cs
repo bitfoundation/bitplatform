@@ -422,7 +422,16 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     }
 
 
-    protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
+    protected Task SetCurrentValueAsStringAsync(string? value, bool bypass = false) => SetCurrentValueAsStringAsync(value, bypass, reportSameValue: true);
+
+    /// <param name="value">The text to commit.</param>
+    /// <param name="bypass">Whether the parsed value is only written into the Value, with nobody told.</param>
+    /// <param name="reportSameValue">
+    /// Whether text that parses to the value already held is still reported. A change event is the browser's word that
+    /// the user finished an edit, so it is reported whatever it carries - unless the input events of an Immediate input
+    /// reported that edit already as it was typed, and the change event raised on blur only carries the same text again.
+    /// </param>
+    private protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass, bool reportSameValue)
     {
         if (Disabled) return;
 
@@ -446,7 +455,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             {
                 Value = parsedValue;
             }
-            else
+            else if (reportSameValue || EqualityComparer<TValue>.Default.Equals(parsedValue, Value) is false)
             {
                 await SetCurrentValueAsync(parsedValue);
             }

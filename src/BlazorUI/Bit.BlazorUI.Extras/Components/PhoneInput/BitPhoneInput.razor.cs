@@ -1962,7 +1962,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             await AssignNumber(FormatNumber(number));
         }
 
-        await UpdateValueFromParts();
+        // Under Immediate the input events have reported the number as it was typed, so the change event
+        // raised on blur reports it only when it moves the value (see BitTextInputBase).
+        await UpdateValueFromParts(reportSameValue: Immediate is false);
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
@@ -2004,7 +2006,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // Recomposes the full Value from the current Number and Country and pushes it out through
     // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
-    private async Task UpdateValueFromParts()
+    private async Task UpdateValueFromParts(bool reportSameValue = true)
     {
         var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 
@@ -2012,7 +2014,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _lastNumber = Number;
         _lastCountryIso = Country?.Iso2;
 
-        await SetCurrentValueAsStringAsync(composed);
+        await SetCurrentValueAsStringAsync(composed, bypass: false, reportSameValue);
     }
 
     private async Task FocusDropdown()

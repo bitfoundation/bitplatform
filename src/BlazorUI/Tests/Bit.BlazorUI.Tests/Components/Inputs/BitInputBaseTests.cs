@@ -151,7 +151,8 @@ public class BitInputBaseTests : BunitTestContext
         });
 
         // The string path reports what the change event committed, whether or not it moved the value: the event is
-        // the browser's word that the user finished an edit, and only the CurrentValue path compares before it reports.
+        // the browser's word that the user finished an edit, and only the CurrentValue path compares before it reports
+        // - and the string path of an Immediate input, whose input events reported the edit already as it was typed.
         component.Find("input").Change("same");
 
         Assert.AreEqual(1, changes);

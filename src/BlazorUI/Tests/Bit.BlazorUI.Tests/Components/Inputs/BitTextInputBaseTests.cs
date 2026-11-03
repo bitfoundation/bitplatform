@@ -8,8 +8,8 @@ namespace Bit.BlazorUI.Tests.Components.Inputs;
 
 /// <summary>
 /// Pins the members every text input inherits from BitTextInputBase, through BitTextField: the change event commits
-/// the value, the input event does so only under Immediate, a debounce defers that commit to the handler that carries
-/// the wait, a throttle lets the first keystroke of a burst through at once, and a field that cannot be edited takes
+/// the value, the input event does so only under Immediate - after which the change event commits nothing it already
+/// did - a debounce defers that commit to the handler that carries the wait, a throttle lets the first keystroke of a burst through at once, and a field that cannot be edited takes
 /// neither event.
 /// </summary>
 [TestClass]
@@ -48,6 +48,53 @@ public class BitTextInputBaseTests : BunitTestContext
         input.Input("ty");
 
         CollectionAssert.AreEqual(new[] { "t", "ty" }, values);
+    }
+
+    [TestMethod]
+    public void ImmediateShouldNotCommitTheSameTextAgainOnTheChangeEvent()
+    {
+        var changedValues = new List<string?>();
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, (string? v) => changedValues.Add(v));
+            parameters.Add(p => p.OnChange, (string? v) => changes.Add(v));
+        });
+
+        var input = component.Find("input");
+
+        input.Input("typed");
+
+        // The change event the browser raises as the field loses focus carries the text the input event committed.
+        input.Change("typed");
+
+        CollectionAssert.AreEqual(new[] { "typed" }, changedValues);
+        CollectionAssert.AreEqual(new[] { "typed" }, changes);
+    }
+
+    [TestMethod]
+    public void ImmediateShouldStillCommitWhatTheChangeEventMakesOfTheText()
+    {
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.OnChange, (string? v) => changes.Add(v));
+        });
+
+        var input = component.Find("input");
+
+        input.Input("typed ");
+
+        // Trim belongs to the change event alone, so the same text commits a different value there.
+        input.Change("typed ");
+
+        CollectionAssert.AreEqual(new[] { "typed ", "typed" }, changes);
+        Assert.AreEqual("typed", component.Instance.Value);
     }
 
     [TestMethod]

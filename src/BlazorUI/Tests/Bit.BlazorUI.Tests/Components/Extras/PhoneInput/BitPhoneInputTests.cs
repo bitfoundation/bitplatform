@@ -491,6 +491,29 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual("+14155550123", value);
     }
 
+    [TestMethod]
+    public void BitPhoneInputWithImmediateShouldNotCommitTheSameNumberAgainOnBlur()
+    {
+        var changedValues = new List<string?>();
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => changedValues.Add(v));
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find("input.bit-phi-inp").Input("4155550123");
+
+        // The change event the browser raises as the field loses focus carries the text the input event committed.
+        component.Find("input.bit-phi-inp").Change("4155550123");
+
+        CollectionAssert.AreEqual(new List<string?> { "+14155550123" }, changedValues);
+        CollectionAssert.AreEqual(new List<string?> { "+14155550123" }, changes);
+    }
+
     [TestMethod,
         DataRow("4", "(4"),
         DataRow("415", "(415"),
