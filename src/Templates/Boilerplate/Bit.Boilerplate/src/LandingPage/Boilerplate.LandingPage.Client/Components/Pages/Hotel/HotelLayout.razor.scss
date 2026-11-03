@@ -1,0 +1,19 @@
+@import '../../../Styles/tokens';
+
+.lp-hotel {
+    --lp-chat-bubble-bg: var(--lp-accent);
+    --lp-chat-bubble-fg: var(--lp-accent-fg);
+}
+
+::deep .hotel-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}
+
+@media (min-width: $breakpoint-sm) {
+    ::deep .hotel-chat:not(:lang(fa)) {
+        right: 0;
+        bottom: auto;
+    }
+}

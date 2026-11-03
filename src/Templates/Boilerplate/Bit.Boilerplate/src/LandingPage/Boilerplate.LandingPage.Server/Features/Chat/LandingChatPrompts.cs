@@ -53,6 +53,26 @@ public static partial class LandingChatPrompts
             - Northside Market is rated 4.7 on Google, from 1,284 reviews.
             - Contact: hello@northside.example or +353 1 555 0198, the office above the Phibsborough shop, Monday to Friday from 9:00 to 17:00. A person answers.
             """,
+        "hotel" => """
+            - Alder & Salt is a 32-room hotel in the dunes at Norddorf, at the quiet north end of Amrum, a North Frisian island in the North Sea close to the Danish border. It is a guesthouse from 1934, the old Haus Seeblick, that Freya Nielsen and Jonas Brodersen bought in 2019 and rebuilt room by room in alder wood, keeping the thatched roof and the 1934 front door. The company is Alder & Salt Hotel GmbH, Strandwai 14, 25946 Norddorf auf Amrum, Germany.
+            - Freya Nielsen grew up on Amrum and is the owner and host. Jonas Brodersen cooked in Copenhagen for twelve years and runs the kitchen; he bakes the breakfast bread every morning with sea salt from the Wadden coast. Malin Andersson runs the front desk and the app, Kofi Mensah housekeeping and the sauna.
+            - The app is on iPhone and Android, and booking also works on the web. In the app guests book direct, check in on the ferry (the room number arrives when the ferry docks in Wittdün), use the phone as the key to the room, the sauna and the bike shed (it works without a signal, and a travel companion can have a key too), message the front desk between 7:00 and 23:00, and read the hotel's island guide: tide times for the guided mudflat walk to Föhr, the lighthouse opening hours, the bakery in Nebel and where the seals are.
+            - Dune Room: 12 rooms, 19 square metres, queen bed, dune view and a window seat. From 165 euros a night.
+            - Sea Room: 12 rooms, 24 square metres, king bed, a balcony facing west over the dunes to the sea and the lighthouse. From 215 euros a night.
+            - Lantern Loft: 6 rooms, 34 square metres on two floors under the thatch, a double bed and a sofa below and a sleeping loft with two single beds above, a skylight, sleeps 4. From 260 euros a night.
+            - Salt Suite: 2 corner suites, 48 square metres, king bed, a bath by the window, a private sauna and the sea on two sides. From 380 euros a night.
+            - Every room has a bed made of alder, linen sheets and a window onto the dunes or the sea. The prices above are for November to March; rates go up by 30 euros a night in April, May, September and October, and by 60 euros a night from June to August.
+            - Booking direct, in the app or on the web, gets the lowest rate for the dates, breakfast for two included (otherwise 24 euros per person), check-out at 13:00 instead of 11:00, free cancellation until 3 days before arrival, the choice of room in the app, and a bottle of Amrum sea buckthorn juice on arrival. Booking sites keep up to a fifth of the room price.
+            - Best-rate promise: if a guest finds the same room for the same dates cheaper within 24 hours of booking direct, they send the link, and the hotel matches the price and takes another 10% off.
+            - Check-in from 15:00, check-out at 11:00, or 13:00 when booked direct. With mobile check-in the app says the moment the room is ready.
+            - Dogs are welcome in the Dune Rooms and the Lantern Lofts for 15 euros a night, and on the dune paths and the beach north of the lighthouse, on a lead.
+            - Breakfast is served in the Salt Kitchen from 7:30 to 10:30. The sauna in the dunes is open from 16:00 to 22:00. Kniepsand beach is at the end of the hotel's boardwalk.
+            - Getting there: about 3 hours by train from Hamburg to Dagebüll Mole at the ferry pier, about 90 minutes by ferry from Dagebüll to Wittdün, then 15 minutes in the hotel's car, which meets every ferry, to Norddorf. Guests can leave the car on the mainland.
+            - Alder & Salt is rated 4.8 out of 5, Excellent, on Tripadvisor from 612 reviews: location 4.9, rooms 4.8, service 4.9, value 4.6, cleanliness 4.9, sleep quality 4.8.
+            - The awards on the page are sample awards: Coast & Quiet Guide small hotel of the year on the North Sea coast (2025), Nordic Table Awards breakfast of the year (2024), and Slow Stay List one of twelve island hotels to know (2025).
+            - Gift vouchers are sold in the web app.
+            - Contact: stay@alderandsalt.example or +49 4682 555 0177. The front desk is open from 7:00 to 23:00 and answers the phone, email and messages in the app.
+            """,
         _ => "No facts have been written for this site yet."
     };
 }

@@ -1,0 +1,329 @@
+.hs {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.hs-sky {
+    fill: var(--hotel-sky);
+}
+
+.hs-haze-1,
+.hs-haze-2,
+.hs-haze-3 {
+    fill: var(--hotel-sky-low);
+}
+
+.hs-haze-1 {
+    opacity: .3;
+}
+
+.hs-haze-2 {
+    opacity: .45;
+}
+
+.hs-haze-3 {
+    opacity: .6;
+}
+
+.hs-sun {
+    fill: var(--hotel-sun);
+}
+
+.hs-star {
+    fill: var(--hotel-star);
+}
+
+.hs-bird {
+    fill: none;
+    stroke: var(--hotel-ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    opacity: .5;
+}
+
+.hs-sea {
+    fill: var(--hotel-sea);
+}
+
+.hs-horizon {
+    stroke: var(--hotel-sea-deep);
+    stroke-width: 1.5;
+}
+
+.hs-glint,
+.hs-wave {
+    fill: none;
+    stroke: var(--hotel-foam);
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: .7;
+}
+
+.hs-foam {
+    fill: var(--hotel-foam);
+    opacity: .8;
+}
+
+.hs-tide {
+    fill: none;
+    stroke: var(--hotel-sand-deep);
+    stroke-width: 2;
+    stroke-dasharray: 1 7;
+    stroke-linecap: round;
+}
+
+.hs-beam {
+    fill: var(--hotel-beam);
+}
+
+.hs-sand {
+    fill: var(--hotel-sand);
+}
+
+.hs-sand-deep {
+    fill: var(--hotel-sand-deep);
+}
+
+.hs-sand-far {
+    fill: color-mix(in oklab, var(--hotel-sand), var(--hotel-sea) 35%);
+}
+
+.hs-grass,
+.hs-grass-far {
+    fill: none;
+    stroke: var(--hotel-grass);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+}
+
+.hs-grass-far {
+    stroke-width: 1.6;
+    opacity: .75;
+}
+
+.hs-tower {
+    fill: var(--hotel-linen);
+}
+
+.hs-red {
+    fill: var(--hotel-red);
+}
+
+.hs-lamp {
+    fill: var(--hotel-lamp);
+}
+
+.hs-wall {
+    fill: var(--hotel-wall);
+}
+
+.hs-wall-out {
+    fill: var(--hotel-linen);
+}
+
+.hs-thatch {
+    fill: var(--hotel-thatch);
+}
+
+.hs-thatch-in {
+    fill: color-mix(in oklab, var(--hotel-wood-deep), var(--hotel-wall) 30%);
+}
+
+.hs-ridge {
+    stroke: color-mix(in oklab, var(--hotel-thatch), #000000 30%);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.hs-win {
+    fill: var(--hotel-win);
+}
+
+.hs-door {
+    fill: var(--hotel-throw);
+}
+
+.hs-wood {
+    fill: var(--hotel-wood);
+}
+
+.hs-wood-deep {
+    fill: var(--hotel-wood-deep);
+}
+
+.hs-plank,
+.hs-plank-light {
+    fill: none;
+    stroke: var(--hotel-wood-deep);
+    stroke-width: 1.4;
+    opacity: .55;
+}
+
+.hs-plank-light {
+    stroke-width: 2;
+    opacity: .45;
+}
+
+.hs-floor {
+    fill: var(--hotel-floor);
+}
+
+.hs-stone {
+    fill: color-mix(in oklab, var(--hotel-sand), var(--hotel-wall) 40%);
+}
+
+.hs-edge {
+    fill: none;
+    stroke: var(--hotel-ink);
+    stroke-width: 1.4;
+    opacity: .28;
+}
+
+.hs-mullion {
+    fill: none;
+    stroke: var(--hotel-wood);
+    stroke-width: 5;
+}
+
+.hs-rail,
+.hs-ladder {
+    fill: none;
+    stroke: var(--hotel-wood-deep);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.hs-ladder {
+    stroke: var(--hotel-wood);
+    stroke-width: 5;
+}
+
+.hs-beam-line {
+    fill: none;
+    stroke: var(--hotel-wood-deep);
+    stroke-width: 8;
+}
+
+.hs-frame {
+    fill: var(--hotel-wood-deep);
+}
+
+.hs-window {
+    fill: var(--hotel-window);
+}
+
+.hs-curtain {
+    fill: var(--hotel-linen-shade);
+}
+
+.hs-linen {
+    fill: var(--hotel-linen);
+}
+
+.hs-linen-shade {
+    fill: var(--hotel-linen-shade);
+}
+
+.hs-throw {
+    fill: var(--hotel-throw);
+}
+
+.hs-throw-deep {
+    fill: color-mix(in oklab, var(--hotel-throw), #000000 22%);
+}
+
+.hs-rug {
+    fill: color-mix(in oklab, var(--hotel-sand), var(--hotel-floor) 50%);
+}
+
+.hs-tub {
+    fill: var(--hotel-linen);
+}
+
+.hs-tub-rim {
+    stroke: var(--hotel-linen-shade);
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.hs-metal {
+    fill: none;
+    stroke: var(--hotel-ink);
+    stroke-width: 4;
+    stroke-linecap: round;
+    opacity: .6;
+}
+
+.hs-metal-fill {
+    fill: var(--hotel-ink);
+    opacity: .6;
+}
+
+.hs-steam,
+.hs-smoke {
+    fill: none;
+    stroke: var(--hotel-linen);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: .7;
+}
+
+.hs-smoke {
+    stroke: var(--hotel-foam);
+    opacity: .8;
+}
+
+.hs-roof-grass {
+    fill: var(--hotel-grass);
+}
+
+.hs-leg {
+    fill: none;
+    stroke: var(--hotel-wood-deep);
+    stroke-width: 6;
+}
+
+.hs-plate {
+    fill: var(--hotel-linen);
+}
+
+.hs-bread {
+    fill: var(--hotel-wood);
+}
+
+.hs-glass {
+    fill: var(--hotel-window);
+}
+
+.hs-canvas {
+    fill: var(--hotel-throw);
+}
+
+.hs-canvas-stripe {
+    fill: none;
+    stroke: var(--hotel-linen);
+    stroke-width: 6;
+}
+
+.hs-wicker {
+    fill: color-mix(in oklab, var(--hotel-sand), var(--hotel-wood) 45%);
+}
+
+.hs-wicker-line {
+    fill: none;
+    stroke: color-mix(in oklab, var(--hotel-wood), #000000 15%);
+    stroke-width: 1.4;
+    opacity: .5;
+}
+
+.hs-wicker-in {
+    fill: var(--hotel-linen-shade);
+}
+
+.hs-steps {
+    fill: none;
+    stroke: var(--hotel-sand-deep);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+}

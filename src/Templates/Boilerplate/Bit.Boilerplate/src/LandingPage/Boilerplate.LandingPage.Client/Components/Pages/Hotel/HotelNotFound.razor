@@ -1,0 +1,32 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@HotelSite.Path" Title="@H[nameof(HotelStrings.NotFoundTitle)]" Body="@H[nameof(HotelStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="0 0 300 300" role="presentation" class="hotel-404">
+            <clipPath id="hotel-404-frame">
+                <rect width="300" height="300" rx="14" />
+            </clipPath>
+            <g clip-path="url(#hotel-404-frame)">
+                <rect width="300" height="300" fill="var(--hotel-sky)" />
+                <circle cx="232" cy="66" r="20" fill="var(--hotel-sun)" />
+                <rect y="112" width="300" height="56" fill="var(--hotel-sea)" />
+                <path d="M0 112H300" stroke="var(--hotel-sea-deep)" stroke-width="1.5" />
+                <path class="hotel-404-wave" d="M0 160C40 152 80 164 120 158C170 150 220 164 300 154V190H0Z" fill="var(--hotel-foam)" opacity=".85" />
+                <path d="M0 176C60 168 120 178 180 172C230 167 270 176 300 170V300H0Z" fill="var(--hotel-sand)" />
+                <text x="96" y="236" text-anchor="middle" font-size="44" fill="var(--hotel-sand-deep)" transform="rotate(-8 96 236)" style="font-family: var(--lp-stack-display)">404</text>
+                <path d="M150 292l5-4M160 280l5-4M168 268l5-4M178 256l5-4M186 244l5-4M196 232l5-4M204 220l5-4M214 208l5-4M222 196l5-4" stroke="var(--hotel-sand-deep)" stroke-width="3.5" stroke-linecap="round" />
+                <g transform="translate(206 214)">
+                    <path d="M-4 0Q32 -30 68 0V8H-4Z" fill="var(--hotel-throw)" />
+                    <path d="M14 -16Q16 -6 16 8M32 -22V8M50 -16Q48 -6 48 8" stroke="var(--hotel-linen)" stroke-width="6" fill="none" />
+                    <rect x="-2" y="8" width="66" height="44" rx="3" fill="color-mix(in oklab, var(--hotel-sand), var(--hotel-wood) 45%)" />
+                    <rect x="6" y="16" width="50" height="22" rx="2" fill="var(--hotel-linen-shade)" />
+                    <path d="M4 52h56l6 10H-2Z" fill="var(--hotel-wood-deep)" />
+                </g>
+                <path d="M36 74q6-6 12 0q6-6 12 0" stroke="var(--hotel-ink)" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5" />
+            </g>
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@LocalUrl($"{HotelSite.Path}/rooms")">@H[nameof(HotelStrings.NotFoundRooms)]</BitButton>
+    </Actions>
+</NotFoundPanel>

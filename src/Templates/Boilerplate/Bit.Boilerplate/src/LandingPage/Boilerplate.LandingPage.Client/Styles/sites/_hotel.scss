@@ -1,0 +1,74 @@
+@include site(lp-hotel) {
+    --hotel-sky: #E3ECEC;
+    --hotel-sky-low: #F3EEE3;
+    --hotel-sun: #F4D79B;
+    --hotel-sea: #8DB6B7;
+    --hotel-sea-deep: #5E9295;
+    --hotel-foam: #F4F7F5;
+    --hotel-sand: #E8DABB;
+    --hotel-sand-deep: #D5C197;
+    --hotel-grass: #7B8A55;
+    --hotel-wood: #B08258;
+    --hotel-wood-deep: #84603F;
+    --hotel-wall: #F3EFE7;
+    --hotel-linen: #FCFBF7;
+    --hotel-linen-shade: #E6E1D6;
+    --hotel-thatch: #6F5D48;
+    --hotel-glow: #F2C46D;
+    --hotel-red: #B4493D;
+    --hotel-ink: #142A30;
+    --hotel-throw: #3E7C80;
+    --hotel-floor: #D8C3A0;
+    --hotel-window: #DCE7E7;
+    --hotel-win: #C7D8D9;
+    --hotel-lamp: #E6E1D2;
+    --hotel-beam: transparent;
+    --hotel-star: transparent;
+
+    @include type("Young Serif", "Familjen Grotesk");
+    @include shape(12px, 3px);
+    @include palette(light, #1F5E66, #FFFFFF, #F7F8F6, #EDF1EF, #FFFFFF, #142A30, #4C6067, #DAE2E0);
+}
+
+@include site-dark(lp-hotel) {
+    --hotel-sky: #182E36;
+    --hotel-sky-low: #2A4148;
+    --hotel-sun: #E9E3D1;
+    --hotel-sea: #2B5257;
+    --hotel-sea-deep: #1D3D42;
+    --hotel-foam: #9FB9B9;
+    --hotel-sand: #8D7D60;
+    --hotel-sand-deep: #75684D;
+    --hotel-grass: #55633E;
+    --hotel-wood: #876345;
+    --hotel-wood-deep: #634630;
+    --hotel-wall: #34433F;
+    --hotel-linen: #C9CEC9;
+    --hotel-linen-shade: #A3AAA5;
+    --hotel-thatch: #4C3F31;
+    --hotel-red: #9C4136;
+    --hotel-ink: #0B1A1E;
+    --hotel-throw: #2F6266;
+    --hotel-floor: #5E5240;
+    --hotel-window: #22393F;
+    --hotel-win: #F2C46D;
+    --hotel-lamp: #F7E3A1;
+    --hotel-beam: rgba(247, 227, 161, .16);
+    --hotel-star: #E9E3D1;
+
+    @include palette(dark, #8CCBC9, #0B1C1F, #0E1A1E, #122329, #172A31, #EAF0EE, #A0B3B4, #263A40);
+}
+
+.lp-hotel {
+    font-synthesis: none;
+
+    :is(h1, h2, h3, .lp-nav-brand, .lp-footer-brand) {
+        font-weight: 400;
+        letter-spacing: -.01em;
+
+        &:lang(fa) {
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+    }
+}

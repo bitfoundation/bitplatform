@@ -1,0 +1,58 @@
+.hotel-card-preview {
+    --hotel-sky: #E3ECEC;
+    --hotel-sky-low: #F3EEE3;
+    --hotel-sun: #F4D79B;
+    --hotel-sea: #8DB6B7;
+    --hotel-sea-deep: #5E9295;
+    --hotel-foam: #F4F7F5;
+    --hotel-sand: #E8DABB;
+    --hotel-sand-deep: #D5C197;
+    --hotel-grass: #7B8A55;
+    --hotel-wood: #B08258;
+    --hotel-wood-deep: #84603F;
+    --hotel-linen: #FCFBF7;
+    --hotel-thatch: #6F5D48;
+    --hotel-red: #B4493D;
+    --hotel-ink: #142A30;
+    --hotel-throw: #3E7C80;
+    --hotel-win: #C7D8D9;
+    --hotel-lamp: #E6E1D2;
+    --hotel-beam: transparent;
+    --hotel-star: transparent;
+    --hotel-logo: #1F5E66;
+    --hotel-logo-fg: #FFFFFF;
+
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #E3ECEC;
+    color: #142A30;
+
+    ::deep .hotel-card-scene {
+        position: absolute;
+        inset: 0;
+    }
+}
+
+.hotel-card-brand {
+    position: absolute;
+    top: 16px;
+    inset-inline-start: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Young Serif", Georgia, serif;
+    font-size: 1.25rem;
+}
+
+.hotel-card-rate {
+    position: absolute;
+    top: 18px;
+    inset-inline-end: 18px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    background: #FFFFFF;
+    color: #1F5E66;
+    font-size: .8125rem;
+    font-weight: 600;
+}
