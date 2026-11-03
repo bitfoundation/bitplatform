@@ -165,6 +165,31 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task EveryLazyImage_Should_SayItIsLazyBeforeItsSource()
+    {
+        HashSet<string> failures = [];
+        var lazy = 0;
+
+        foreach (var url in await SitemapUrls())
+        {
+            var html = await client.GetStringAsync(url);
+
+            foreach (Match tag in Regex.Matches(html, "<(img|iframe)\\b[^>]*\\bloading=\"lazy\"[^>]*>"))
+            {
+                lazy++;
+
+                if (tag.Value.IndexOf(" src=", StringComparison.Ordinal) < tag.Value.IndexOf(" loading=", StringComparison.Ordinal))
+                {
+                    failures.Add(tag.Value);
+                }
+            }
+        }
+
+        Assert.AreNotEqual(0, lazy, "No page has a lazy image to check.");
+        Assert.IsEmpty(failures, $"Once the page hydrates, these download right away, because Blazor sets their src before their loading: {string.Join(Environment.NewLine, failures)}");
+    }
+
+    [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
         using var response = await client.GetAsync(LandingSites.All[0].Path);

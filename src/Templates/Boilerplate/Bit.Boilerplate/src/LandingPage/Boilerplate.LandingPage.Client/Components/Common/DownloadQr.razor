@@ -1,6 +1,6 @@
 @inherits LandingComponentBase
 
 <figure class="lp-qr @Class">
-    <img src="@($"{Site.Path.TrimStart('/')}/download.svg")" width="132" height="132" loading="lazy" alt="@Localizer[nameof(LandingStrings.QrAlt)]" />
+    <img loading="lazy" src="@($"{Site.Path.TrimStart('/')}/download.svg")" width="132" height="132" alt="@Localizer[nameof(LandingStrings.QrAlt)]" />
     <figcaption>@Localizer[nameof(LandingStrings.ScanToGetApp)]</figcaption>
 </figure>

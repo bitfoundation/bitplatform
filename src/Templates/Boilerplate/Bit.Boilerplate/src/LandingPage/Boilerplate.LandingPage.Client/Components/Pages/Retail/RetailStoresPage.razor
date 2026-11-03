@@ -20,7 +20,7 @@
         <div class="retail-stores-frame">
             @if (mapReady)
             {
-                <iframe @key="selected" src="@Selected.MapUrl" title="@R[nameof(RetailStrings.StoresMapTitle), R[Selected.NameKey]]" loading="lazy"></iframe>
+                <iframe @key="selected" loading="lazy" src="@Selected.MapUrl" title="@R[nameof(RetailStrings.StoresMapTitle), R[Selected.NameKey]]"></iframe>
             }
             else
             {
