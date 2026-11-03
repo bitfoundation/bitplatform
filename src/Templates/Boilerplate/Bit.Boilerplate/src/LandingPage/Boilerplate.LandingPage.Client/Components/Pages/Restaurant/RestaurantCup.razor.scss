@@ -1,0 +1,79 @@
+.restaurant-cup {
+    display: block;
+    overflow: visible;
+}
+
+.restaurant-cup-steam {
+    fill: none;
+    stroke: var(--porcelain-line);
+    stroke-width: 3;
+    stroke-linecap: round;
+    animation: restaurant-steam 3.6s ease-in-out infinite;
+}
+
+.restaurant-cup-saucer {
+    fill: var(--porcelain);
+    stroke: var(--porcelain-line);
+    stroke-width: 1.5;
+}
+
+.restaurant-cup-saucer-well {
+    fill: none;
+    stroke: var(--porcelain-blue);
+    stroke-width: 2;
+    stroke-dasharray: 3 5;
+}
+
+.restaurant-cup-handle {
+    fill: none;
+    stroke: var(--porcelain);
+    stroke-width: 11;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 1px var(--porcelain-line));
+}
+
+.restaurant-cup-body {
+    fill: var(--porcelain);
+    stroke: var(--porcelain-line);
+    stroke-width: 1.5;
+}
+
+.restaurant-cup-flutes {
+    fill: none;
+    stroke: var(--porcelain-blue);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+}
+
+.restaurant-cup-rim {
+    stroke: var(--porcelain-blue);
+    stroke-width: 4;
+}
+
+.restaurant-cup-dots {
+    stroke: var(--porcelain-blue);
+    stroke-width: 3;
+    stroke-dasharray: .5 7;
+    stroke-linecap: round;
+}
+
+.restaurant-cup-coffee {
+    fill: var(--coffee);
+}
+
+.restaurant-cup-crema {
+    fill: var(--crema);
+}
+
+@keyframes restaurant-steam {
+    0%,
+    100% {
+        opacity: .25;
+        transform: translateY(4px);
+    }
+
+    50% {
+        opacity: .9;
+        transform: translateY(-4px);
+    }
+}

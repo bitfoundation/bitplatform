@@ -1,5 +1,6 @@
 using Boilerplate.LandingPage.Client.Components.Pages.Ecommerce;
 using Boilerplate.LandingPage.Client.Components.Pages.Hotel;
+using Boilerplate.LandingPage.Client.Components.Pages.Restaurant;
 using Boilerplate.LandingPage.Client.Components.Pages.Retail;
 
 namespace Boilerplate.LandingPage.Client.Infrastructure;
@@ -10,7 +11,8 @@ public static class LandingSites
     [
         EcommerceSite.Info,
         RetailSite.Info,
-        HotelSite.Info
+        HotelSite.Info,
+        RestaurantSite.Info
     ];
 
     public static LandingSite? Find(string? key) => All.FirstOrDefault(s => string.Equals(s.Key, key, StringComparison.OrdinalIgnoreCase));

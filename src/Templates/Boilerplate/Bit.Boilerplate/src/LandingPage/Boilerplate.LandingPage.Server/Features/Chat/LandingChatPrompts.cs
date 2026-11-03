@@ -73,6 +73,21 @@ public static partial class LandingChatPrompts
             - Gift vouchers are sold in the web app.
             - Contact: stay@alderandsalt.example or +49 4682 555 0177. The front desk is open from 7:00 to 23:00 and answers the phone, email and messages in the app.
             """,
+        "restaurant" => """
+            - Little Copper is a café and kitchen with three cafés in Copenhagen: Nørrebro, Vesterbro and Christianshavn. Ida Mørch and Omar Haddad opened the first one on Elmegade in Nørrebro in 2016, around a copper lever espresso machine from 1961 that Ida's grandfather had kept in his garage; the cafés are named after it. Vesterbro opened in 2019 with a kitchen for brunch, and Christianshavn in 2022. The company is Little Copper ApS, Elmegade 14, 2200 København N, Denmark.
+            - The Little Copper app is not out yet. It opens on 15 January 2027 at 8:00, Copenhagen time, for iPhone, Android and the web, and it is free. Prices in the app are the same as at the counter.
+            - In the app at launch: order ahead and skip the queue (choose the drink and the café on the way, and the cup waits on the copper counter with the customer's name on it), a stamp card (every coffee earns a stamp, at the counter or in the app, and the tenth coffee is free), and saving a usual order to send with two taps. Table booking for weekend brunch in Vesterbro, served on Saturdays and Sundays from 9:00 to 14:00, comes in spring 2027.
+            - Paper stamp cards: from 15 January 2027 customers can bring them to any café and the stamps are moved into the app. Paper cards keep working until 30 June 2027.
+            - Group orders: up to eight drinks in one order. For bigger orders, like an office breakfast, customers should email a day ahead.
+            - Waitlist: customers leave their email, optionally their first name, and the platforms they want (iPhone and iPad, Android, web). They get one email on launch day, and product news only if they ticked the box; every email has a link to leave the list. Everyone on the waitlist gets their first coffee in the app free: any drink, any size, any milk, in any of the three cafés. It appears in the app on 15 January 2027 and is valid until 28 February 2027.
+            - Drinks in the app preview: flat white 42 kroner, cortado 38 kroner, latte 45 kroner, filter coffee 35 kroner, chai latte 46 kroner. A regular size costs 6 kroner more than small (flat white and cortado come in one size), oat milk 5 kroner more, and an extra shot 8 kroner.
+            - Nørrebro, Elmegade 14, 2200 København N: Monday to Friday 7:00 to 18:00, Saturday and Sunday 8:00 to 17:00. The first café, with the copper machine.
+            - Vesterbro, Værnedamsvej 9, 1819 Frederiksberg C: Monday to Friday 7:30 to 18:00, Saturday and Sunday 8:30 to 17:00. The biggest, with brunch at weekends.
+            - Christianshavn, Overgaden neden Vandet 27, 1414 København K: Monday to Friday 7:00 to 17:00, Saturday and Sunday 9:00 to 16:00. The smallest, by the canal.
+            - On public holidays the cafés keep their weekend hours. All three are closed on 24, 25 and 31 December and on 1 January.
+            - The team: Ida Mørch, co-founder, roasts the coffee twice a week in Valby; Omar Haddad, co-founder, runs the cafés; Nanami Sato is the head barista; Lukas Berg builds the app.
+            - Contact: hej@littlecopper.example or +45 31 55 01 23, Monday to Friday from 9:00 to 16:00.
+            """,
         _ => "No facts have been written for this site yet."
     };
 }

@@ -1,0 +1,54 @@
+.restaurant-card-preview {
+    --copper: #B8662E;
+    --porcelain: #FFFFFF;
+    --porcelain-blue: #1F44B8;
+    --porcelain-line: #C9D3F2;
+    --coffee: #6B4430;
+    --crema: #C98F5A;
+
+    position: relative;
+    display: grid;
+    place-items: end center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 118%, #FFD166 0 46%, transparent 46.4%),
+        #1F44B8;
+    color: #FFFFFF;
+
+    ::deep .restaurant-card-cup {
+        width: 40%;
+        margin-bottom: 4%;
+    }
+}
+
+.restaurant-card-top {
+    position: absolute;
+    top: 14px;
+    inset-inline: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+}
+
+.restaurant-card-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.restaurant-card-date {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #FFFFFF;
+    color: #1F44B8;
+    font-size: .75rem;
+    white-space: nowrap;
+    font-weight: 700;
+}
