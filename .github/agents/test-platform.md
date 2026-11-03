@@ -209,7 +209,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      coming back to. Find it by trimming a console app that roots one suspect assembly, then one namespace, then one
      type of it, with a root descriptor.
    - A test that fails at random in CI on timing often fails here too when it runs on its own, since a single test
-     pays the cold start. Run it alone a few times before calling it CI-only.
+     pays the cold start. Run it alone a few times before calling it CI-only. One that keeps passing alone can still
+     fail next to a slow test that takes the CPU, so run the two together as well.
    - A Linux-only Chromium wait that times out needs evidence before a fix: have the test log every request the page
      starts and finishes, run the job a few times on a branch of your own, and read what was still in flight. A
      network idle that never comes with nothing in flight is Chromium's event, not the app.
@@ -229,11 +230,16 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    `.editorconfig` says so - and CI's `dotnet format` fails on a BOM; check new files with
    `dotnet format whitespace <slnx> --verify-no-changes --include <folder>`.
 
-5. Put the run's fixes in one issue and one PR, cut from develop when they apply there and from bit11 otherwise, not
+5. Before fixing a failure, fetch develop and read its newest commits, open issues and open PRs: other sessions work
+   on this machine and on develop's failures too, so the fix may be merged or under way already.
+
+   Put the run's fixes in one issue and one PR, cut from develop when they apply there and from bit11 otherwise, not
    on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
    asking, for the user to review with the report; ask before pushing to anyone else's. A CI run on the pushed branch
    is the final proof: `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed
-   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. A push to a branch
+   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. It has to wait for
+   the whole run to end, which the E2E suites can hold up for hours: a new All CI with every other job off answers
+   sooner. A push to a branch
    with an open PR also starts that PR's CI workflows; cancel the ones All CI runs anyway, so the runners go to it.
 
    A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
@@ -523,7 +529,8 @@ step 6 shows they do on Windows: on Linux the keeper that stops them is a differ
 its own, and the containers run on the dev container's own Docker engine, not on the host's. So run
 `devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
 `dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
-its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Give
+its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Run them
+as the container's default user, `root`, which is who set the project up. Give
 every request to the web app a timeout: Aspire's proxy takes the connection on its port before the app is up, and a
 request without one never returns. Start each run only once the previous one's web app has stopped answering, and
 count it as up only once its own app host has started: a web app still shutting down answers the next run's first
@@ -632,7 +639,9 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   time, not in dollars. Every scenario once with one model takes about 40 minutes, three at a time but only one that
   builds, tests or runs the app, and half of its usage is `resume` reaching its budget. `-Long` adds about as much again. A turn that runs out of budget
   leaves its builds, test runs or app behind; the helper stops every process started from the scenario's folder
-  after each turn, and afterwards removes the folders and the agents' memory unless `-Keep` is given.
+  after each turn, and afterwards removes the folders and the agents' memory unless `-Keep` is given. The agents
+  share this machine's bit home, so a scenario run again can find what an earlier one left in `~/.bitplatform/diff`:
+  clear what they left there between runs.
 
 A failure is fixed in the template's agent files - `AGENTS.md`, `.github/agents/` and the bridges in `.claude/skills/`,
 `.agents/skills/` and `.gemini/commands/` - and the next `agents -Sha` on the fix shows whether it worked. Keep the

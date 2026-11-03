@@ -35,7 +35,11 @@ public class ShowcaseStatesTests
 
         var cut = Render(ctx, pageKey, new() { Data = WorkbenchDataState.Error });
 
-        cut.WaitForAssertion(() => Assert.Contains(message, cut.Markup), timeout);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(message, cut.Markup);
+            Assert.IsEmpty(cut.FindAll(".widget-loading"), "A widget that is still loading can fail after the failures are counted.");
+        }, timeout);
 
         var retries = cut.FindAll("button").Where(b => b.TextContent.Trim() is var text && (text == WorkbenchStrings.PosRetry || text == WorkbenchStrings.AssistantRetry)).ToArray();
 
