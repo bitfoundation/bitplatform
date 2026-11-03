@@ -238,6 +238,27 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.HasCount(0, component.FindAll("button[aria-label='Close date range picker']"));
     }
 
+    [TestMethod]
+    public void BitDateRangePickerShouldNotTurnTheStandaloneCalloutIntoAPanel()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // The responsive class hides a closed panel, and a standalone calendar is never opened to be shown.
+        Assert.IsFalse(component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-res"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-res"));
+    }
+
     [TestMethod,
         DataRow(false),
         DataRow(true)

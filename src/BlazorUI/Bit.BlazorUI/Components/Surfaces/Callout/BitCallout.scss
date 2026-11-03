@@ -290,9 +290,8 @@ $clo-arw-private-properties: arw-siz;
 
 .bit-clo-res {
     @include lt-sm {
-        opacity: 0;
+        @include responsive-panel-closed;
         height: 100%;
-        display: block;
         overflow: hidden;
         max-height: unset;
         min-width: unset;

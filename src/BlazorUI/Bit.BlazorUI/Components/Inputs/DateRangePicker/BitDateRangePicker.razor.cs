@@ -4436,7 +4436,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             classes.Add(Classes.Callout);
         }
 
-        if (Responsive)
+        // The responsive class hides the callout off the top of a small screen until the JS that opens it slides
+        // it in. A standalone picker never goes through that - it has no callout to open - so carrying the class
+        // would leave the calendar out of sight, out of the accessibility tree and out of the tab order on a
+        // narrow viewport.
+        if (Responsive && Standalone is false)
         {
             classes.Add("bit-dtrp-res");
         }

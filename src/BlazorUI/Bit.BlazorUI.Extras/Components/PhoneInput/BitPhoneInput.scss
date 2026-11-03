@@ -603,11 +603,10 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 
 .bit-phi-res {
     @include lt-sm {
+        @include responsive-panel-closed;
         top: 0;
         right: 0;
-        opacity: 0;
         height: 100%;
-        display: block;
         overflow: hidden;
         max-height: unset;
         animation-name: unset;

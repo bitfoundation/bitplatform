@@ -513,3 +513,33 @@ $html-font-size: 16px;
         color: $color;
     }
 }
+
+/*
+ * responsive-panel-closed
+ * --------------------------------------------------
+ * The closed state of a popup that Callouts.ts slides in as a panel on a narrow screen (a Responsive
+ * dropdown, picker, menu or callout), included in the lt-sm block of the component's responsive class
+ * beside the transform its panel slides in from. Every such component includes it, so they all close the
+ * same way.
+ *   - A closed panel is never display:none - it is laid out off the screen, for the slide that brings it
+ *     in - so its opacity and its transform alone would leave its content in the accessibility tree and its
+ *     controls in the tab order: another set of options and another close button for a screen reader to
+ *     find, for every responsive component on the page. It is hidden with visibility as well, which keeps
+ *     the layout the slide needs.
+ *   - Callouts.position shows the open panel inline, and Callouts.concealPanel takes all of that back off
+ *     it once it has slid out, so the closed state is always the one declared here - and at any other
+ *     width the one of the plain popup, never the open panel's display left behind by a rotation.
+ *
+ * Usage:
+ *   .bit-xyz-res {
+ *       @include lt-sm {
+ *           @include responsive-panel-closed;
+ *           transform: translateX(100%);
+ *       }
+ *   }
+ */
+@mixin responsive-panel-closed {
+    opacity: 0;
+    display: block;
+    visibility: hidden;
+}
