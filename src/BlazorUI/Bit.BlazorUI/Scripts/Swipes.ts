@@ -31,6 +31,9 @@
             // The transform the drag itself last left on the element, told apart from one written over it since.
             let dragTransform: string;
             let orientation = BitSwipeOrientation.None;
+            // Set once the swipe is disposed: a gesture that dismissed the surface is still awaiting OnClose by then,
+            // and the reference it would report its end through goes along with the swipe.
+            let disposed = false;
             // Which way Start and End face. A direction the component was given is taken as it is; one it was
             // not given (or left to its content to decide) is the one the element is laid out in - inherited from the page or from whatever box
             // it sits in - read when the gesture starts, so a page whose direction changes is followed.
@@ -225,7 +228,7 @@
                         element.style.transform = originalTransform;
                     }
 
-                    await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
+                    if (!disposed) await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                     diffX = diffY = 0;
                     orientation = BitSwipeOrientation.None;
                 }
@@ -295,6 +298,7 @@
 
             const swipe = new BitSwipe(id, element, trigger, dotnetObj);
             swipe.setDisposer(() => {
+                disposed = true;
                 if (isTouchDevice) {
                     element.removeEventListener('touchstart', onStart);
                     element.removeEventListener('touchmove', onMove);
