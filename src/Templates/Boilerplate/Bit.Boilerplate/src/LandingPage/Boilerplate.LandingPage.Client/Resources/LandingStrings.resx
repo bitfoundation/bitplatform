@@ -649,7 +649,7 @@
         <value>Landing page samples</value>
     </data>
     <data name="GalleryLede" xml:space="preserve">
-        <value>Each sample is a complete site for a different kind of product, before or after its launch. Open the one closest to yours, and make it your home page.</value>
+        <value>Each sample is a complete site for a different kind of product, before or after its launch. Open the ones closest to yours and take what you need from each.</value>
     </data>
     <data name="GalleryFilterAll" xml:space="preserve">
         <value>All samples</value>
@@ -670,25 +670,37 @@
         <value>Staged launch</value>
     </data>
     <data name="GalleryHowTitle" xml:space="preserve">
-        <value>Make one of them yours</value>
+        <value>Take what you like, from anywhere</value>
     </data>
-    <data name="GalleryHow1Title" xml:space="preserve">
-        <value>Pick the closest</value>
+    <data name="GalleryHowSamplesTitle" xml:space="preserve">
+        <value>From the samples</value>
     </data>
-    <data name="GalleryHow1Body" xml:space="preserve">
-        <value>Each sample has its own pages, look and features. Keep the one that fits your product and remove the rest.</value>
+    <data name="GalleryHowSamples1" xml:space="preserve">
+        <value>Pages: pricing, shops, press, legal</value>
     </data>
-    <data name="GalleryHow2Title" xml:space="preserve">
-        <value>Ask your AI agent</value>
+    <data name="GalleryHowSamples2" xml:space="preserve">
+        <value>Looks: nine palettes, fonts and shapes</value>
     </data>
-    <data name="GalleryHow2Body" xml:space="preserve">
-        <value>Your project's agent skills know this project: give it your product's facts, brand and store links, and it rewrites the texts in both languages.</value>
+    <data name="GalleryHowSamples3" xml:space="preserve">
+        <value>Features: countdown, waitlist, chat, calculators</value>
     </data>
-    <data name="GalleryHow3Title" xml:space="preserve">
-        <value>Publish</value>
+    <data name="GalleryHowYouTitle" xml:space="preserve">
+        <value>From you</value>
     </data>
-    <data name="GalleryHow3Body" xml:space="preserve">
-        <value>It deploys with the rest of the project, on an address of its own, and every page reaches search engines and link previews complete.</value>
+    <data name="GalleryHowYou1" xml:space="preserve">
+        <value>Your product's facts and store links</value>
+    </data>
+    <data name="GalleryHowYou2" xml:space="preserve">
+        <value>Your brand, or a site whose style you like</value>
+    </data>
+    <data name="GalleryHowYou3" xml:space="preserve">
+        <value>The features only your product has</value>
+    </data>
+    <data name="GalleryHowResultTitle" xml:space="preserve">
+        <value>Your landing page</value>
+    </data>
+    <data name="GalleryHowResultBody" xml:space="preserve">
+        <value>Your agent puts it together with the project's agent skills, in both languages, and it deploys with the rest of the project.</value>
     </data>
     <data name="GalleryFooter" xml:space="preserve">
         <value>Every business, person and number in these samples is made up.</value>

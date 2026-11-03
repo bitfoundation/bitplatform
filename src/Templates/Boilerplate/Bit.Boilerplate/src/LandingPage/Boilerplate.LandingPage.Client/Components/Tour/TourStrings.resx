@@ -301,6 +301,6 @@
         <value>Make it yours</value>
     </data>
     <data name="YoursBody" xml:space="preserve">
-        <value>bit new creates a project with all {0} samples. Ask your AI agent to make one of them your home page, and it removes the rest.</value>
+        <value>bit new creates a project with all {0} samples. Tell your agent what to take from them, along with your product's facts and brand, and it puts your landing page together.</value>
     </data>
 </root>

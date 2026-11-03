@@ -649,7 +649,7 @@
         <value>نمونه‌های لندینگ‌پیج</value>
     </data>
     <data name="GalleryLede" xml:space="preserve">
-        <value>هر نمونه یک سایت کامل برای نوع متفاوتی از محصول است، پیش یا پس از انتشار. نزدیک‌ترین را به کار خودتان باز کنید و صفحه‌ی اصلی‌تان کنید.</value>
+        <value>هر نمونه یک سایت کامل برای نوع متفاوتی از محصول است، پیش یا پس از انتشار. آن‌هایی را که به کارتان نزدیک‌ترند باز کنید و از هر کدام هر چه لازم دارید بردارید.</value>
     </data>
     <data name="GalleryFilterAll" xml:space="preserve">
         <value>همه‌ی نمونه‌ها</value>
@@ -670,25 +670,37 @@
         <value>انتشار مرحله‌ای</value>
     </data>
     <data name="GalleryHowTitle" xml:space="preserve">
-        <value>یکی را مال خودتان کنید</value>
+        <value>هر چه دوست دارید، از هر جا</value>
     </data>
-    <data name="GalleryHow1Title" xml:space="preserve">
-        <value>نزدیک‌ترین را انتخاب کنید</value>
+    <data name="GalleryHowSamplesTitle" xml:space="preserve">
+        <value>از نمونه‌ها</value>
     </data>
-    <data name="GalleryHow1Body" xml:space="preserve">
-        <value>هر نمونه صفحه‌ها، ظاهر و امکانات خودش را دارد. آن‌که به محصولتان می‌خورد را نگه دارید و بقیه را حذف کنید.</value>
+    <data name="GalleryHowSamples1" xml:space="preserve">
+        <value>صفحه‌ها: قیمت، فروشگاه‌ها، رسانه، حقوقی</value>
     </data>
-    <data name="GalleryHow2Title" xml:space="preserve">
-        <value>از دستیار هوش مصنوعی‌تان بخواهید</value>
+    <data name="GalleryHowSamples2" xml:space="preserve">
+        <value>ظاهر: نه پالت، فونت و شکل</value>
     </data>
-    <data name="GalleryHow2Body" xml:space="preserve">
-        <value>skillهای پروژه این پروژه را می‌شناسند: اطلاعات محصول، برند و پیوند فروشگاه‌ها را بدهید تا متن‌ها را به هر دو زبان بازنویسی کند.</value>
+    <data name="GalleryHowSamples3" xml:space="preserve">
+        <value>امکانات: شمارش معکوس، فهرست انتظار، چت، ماشین‌حساب</value>
     </data>
-    <data name="GalleryHow3Title" xml:space="preserve">
-        <value>منتشر کنید</value>
+    <data name="GalleryHowYouTitle" xml:space="preserve">
+        <value>از شما</value>
     </data>
-    <data name="GalleryHow3Body" xml:space="preserve">
-        <value>همراه بقیه‌ی پروژه و روی نشانی خودش منتشر می‌شود و همه‌ی صفحه‌ها کامل به موتورهای جستجو و پیش‌نمایش پیوندها می‌رسند.</value>
+    <data name="GalleryHowYou1" xml:space="preserve">
+        <value>اطلاعات محصول و پیوند فروشگاه‌هایتان</value>
+    </data>
+    <data name="GalleryHowYou2" xml:space="preserve">
+        <value>برندتان، یا سایتی که سبکش را دوست دارید</value>
+    </data>
+    <data name="GalleryHowYou3" xml:space="preserve">
+        <value>امکاناتی که فقط محصول شما دارد</value>
+    </data>
+    <data name="GalleryHowResultTitle" xml:space="preserve">
+        <value>لندینگ‌پیج شما</value>
+    </data>
+    <data name="GalleryHowResultBody" xml:space="preserve">
+        <value>agentتان با skillهای پروژه آن را سر هم می‌کند، به هر دو زبان، و همراه بقیه‌ی پروژه منتشر می‌شود.</value>
     </data>
     <data name="GalleryFooter" xml:space="preserve">
         <value>همه‌ی کسب‌وکارها، آدم‌ها و عددهای این نمونه‌ها ساختگی‌اند.</value>

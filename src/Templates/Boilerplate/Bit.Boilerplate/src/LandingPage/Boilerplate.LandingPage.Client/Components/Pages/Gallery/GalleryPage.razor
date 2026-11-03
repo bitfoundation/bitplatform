@@ -28,18 +28,28 @@
 
 <section class="lp-container gallery-how" aria-labelledby="gallery-how-title">
     <h2 id="gallery-how-title">@Localizer[nameof(LandingStrings.GalleryHowTitle)]</h2>
-    <ol>
-        <li>
-            <h3>@Localizer[nameof(LandingStrings.GalleryHow1Title)]</h3>
-            <p>@Localizer[nameof(LandingStrings.GalleryHow1Body)]</p>
-        </li>
-        <li>
-            <h3>@Localizer[nameof(LandingStrings.GalleryHow2Title)]</h3>
-            <p>@Localizer[nameof(LandingStrings.GalleryHow2Body)]</p>
-        </li>
-        <li>
-            <h3>@Localizer[nameof(LandingStrings.GalleryHow3Title)]</h3>
-            <p>@Localizer[nameof(LandingStrings.GalleryHow3Body)]</p>
-        </li>
-    </ol>
+    <div class="gallery-mix">
+        <div class="gallery-mix-card">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowSamplesTitle)]</h3>
+            <ul>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples1)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples2)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples3)]</li>
+            </ul>
+        </div>
+        <span class="gallery-mix-sign" aria-hidden="true">+</span>
+        <div class="gallery-mix-card">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowYouTitle)]</h3>
+            <ul>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou1)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou2)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou3)]</li>
+            </ul>
+        </div>
+        <span class="gallery-mix-sign" aria-hidden="true">=</span>
+        <div class="gallery-mix-card is-result">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowResultTitle)]</h3>
+            <p>@Localizer[nameof(LandingStrings.GalleryHowResultBody)]</p>
+        </div>
+    </div>
 </section>

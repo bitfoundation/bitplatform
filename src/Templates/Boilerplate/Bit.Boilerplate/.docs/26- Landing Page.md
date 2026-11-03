@@ -12,7 +12,8 @@ two projects:
 It references none of the app's projects, so it builds, runs and deploys on its own, and a change to the app never
 breaks it. It comes with **sample landing pages for several kinds of business**, each under its own path
 (`/ecommerce`, `/ecommerce/about` and so on) and each with its own pages, look, texts and chat, plus a gallery of all
-of them at `/`. Keep the sample closest to your product, make it your home page and delete the others.
+of them at `/`. Keep the sample closest to your product, or parts of several, make it your home page and delete the
+rest.
 
 ## Run it
 

@@ -70,46 +70,64 @@
         letter-spacing: -.02em;
     }
 
-    ol {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 32px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        counter-reset: how;
-
-        @include lt-md {
-            grid-template-columns: minmax(0, 1fr);
-        }
-    }
-
-    li {
-        display: grid;
-        align-content: start;
-        gap: 8px;
-        counter-increment: how;
-
-        &::before {
-            content: counter(how);
-            display: grid;
-            place-items: center;
-            width: 32px;
-            height: 32px;
-            margin-bottom: 6px;
-            border-radius: 50%;
-            background: var(--lp-fg);
-            color: var(--lp-bg);
-            font-size: .875rem;
-            font-weight: 600;
-        }
-    }
-
     h3 {
         font-size: 1.125rem;
     }
+}
 
-    p {
+.gallery-mix {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.15fr);
+    gap: 16px;
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.gallery-mix-card {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 22px 24px;
+    border: 1px solid var(--lp-line);
+    border-radius: 18px;
+    background: var(--lp-surface);
+
+    ul {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        padding-inline-start: 16px;
+        border-inline-start: 2px solid var(--lp-line);
         color: var(--lp-fg-muted);
+    }
+
+    &.is-result {
+        border-color: var(--lp-fg);
+        background: var(--lp-fg);
+        color: var(--lp-bg);
+
+        p {
+            color: color-mix(in oklab, var(--lp-bg) 78%, var(--lp-fg));
+        }
+    }
+}
+
+.gallery-mix-sign {
+    display: grid;
+    place-items: center;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--lp-fg-muted);
+
+    @include lt-md {
+        font-size: 1.5rem;
+        line-height: 1;
     }
 }

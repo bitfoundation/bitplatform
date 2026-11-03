@@ -77,10 +77,11 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   English and Persian, light and dark, at phone and desktop widths, and its prerendered HTML (the page's source
   before scripts run) for its text, title, description, canonical link and structured data.
 
-## 4. Make one sample the product's home page
+## 4. Make the product's home page from the samples
 
 1. Agree with the user on the sample closest to the product, or pick one by the product's kind of business and say
-   why.
+   why. When the user wants parts of several samples, keep the one whose layout comes closest and bring the others'
+   pages, sections or features into it, each with its texts in both languages, its styles and its chat facts.
 2. In that sample's `<Sample>Site.cs`, set `Path` to an empty string, and give its home page the two routes the
    Gallery page has (`/` and `/{culture:nonfile}`) instead of the ones built from `Path`. Its other pages then answer
    at `/about`, `/fa-IR/about` and so on.
@@ -90,7 +91,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
    `<LandingTour />` in `Components/Routes.razor`, `LandingTourLauncher` and its registration, and the
    `Bit.Bonboarding` and `TourStrings` lines in the client's project file.
 4. Replace the sample's name, logo, texts, images (its link preview included), company details, store links and chat
-   facts with the product's, in both languages, and give it the product's brand.
+   facts with the product's, in both languages, and give it the product's brand, or the look of a site the user points
+   to, through the palette, fonts and shapes in its `Styles/sites/_<sample>.scss`.
 5. Build, then check the home page, a few inner pages, a missing page, `/sitemap.xml`, `/robots.txt` and the download
    link, in both languages.
 
