@@ -12,9 +12,9 @@ public partial class GalleryPage
     [AutoInject] private IStringLocalizer<TourStrings> T = default!;
     [AutoInject] private IStringLocalizerFactory localizerFactory = default!;
 
-    [SupplyParameterFromQuery(Name = "idea")] public int? Idea { get; set; }
+    [SupplyParameterFromQuery(Name = "idea")] public string? Idea { get; set; }
 
-    private int CurrentIdea => Idea is >= 1 and <= 5 ? Idea.Value : 1;
+    private int CurrentIdea => int.TryParse(Idea, CultureInfo.InvariantCulture, out var idea) && idea is >= 1 and <= 5 ? idea : 1;
 
     private string? filter = All;
     private BitChoiceGroupItem<string>[] filters = [];
