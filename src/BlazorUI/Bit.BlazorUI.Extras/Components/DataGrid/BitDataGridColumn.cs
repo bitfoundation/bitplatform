@@ -1,4 +1,7 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
+using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
 using System.Diagnostics.CodeAnalysis;
 
@@ -222,6 +225,21 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }
+
+    /// <summary>
+    /// The text a value of the column is shown as, in place of what <see cref="Format"/> or the value itself would
+    /// write - e.g. a translated name for each member of an enum: <c>ValueText="@(v => Localizer[$"Status{v}"])"</c>.
+    /// Returning <c>null</c> leaves the value to the default text.
+    /// </summary>
+    /// <remarks>
+    /// It is the text the grid writes wherever it shows the value itself: the cells (unless a <see cref="Template"/>
+    /// draws them) and their tooltips, the group headers, the options of an enum column's filter and inline editor,
+    /// the CSV, the clipboard and the text cells of an Excel export, and what an in-memory source's quick search
+    /// matches. Without it, an enum member is shown by the name of its <c>[Display]</c> attribute
+    /// (<see cref="DisplayAttribute.GetName"/>, translated when it names a <c>ResourceType</c>), or by its own name when
+    /// it has none.
+    /// </remarks>
+    [Parameter] public Func<object, string?>? ValueText { get; set; }
 
     /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
     /// reads it off the bound property's type.</summary>
@@ -528,6 +546,8 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     {
         if (value is null) return string.Empty;
 
+        if (ValueText?.Invoke(value) is { } text) return text;
+
         var culture = System.Globalization.CultureInfo.CurrentCulture;
 
         try
@@ -552,8 +572,34 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     {
         if (!string.IsNullOrEmpty(Format) && value is IFormattable f)
             return f.ToString(Format, culture);
+        if (value is Enum member && EnumDisplayName(member) is { } name)
+            return name;
         return Convert.ToString(value, culture) ?? string.Empty;
     }
+
+    /// <summary>The members of the column's enum, each with the text the column shows it by: the options of its filter
+    /// and of its inline editor. Each option's value stays the member's name, which is what the two parse back.</summary>
+    internal IEnumerable<(string Name, string Text)> EnumOptions()
+    {
+        var type = Accessor?.UnderlyingType;
+        if (type is not { IsEnum: true }) yield break;
+
+        foreach (var name in Enum.GetNames(type))
+            yield return (name, FormatValue(Enum.Parse(type, name)));
+    }
+
+    // The [Display] attribute of each enum member, looked up once: every render of the column's cells asks for it. The
+    // attribute is kept rather than its name, since a name read off a ResourceType follows the UI culture.
+    private static readonly ConcurrentDictionary<Enum, DisplayAttribute?> EnumDisplays = new();
+
+    // A value no single member stands for (a combination of flags, a number no member has) finds no field, and keeps its
+    // own text.
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The trimmer keeps every field of an enum it keeps, and the attributes on them.")]
+    private static string? EnumDisplayName(Enum member)
+        => EnumDisplays.GetOrAdd(member, static m => m.GetType()
+                                                       .GetField(m.ToString(), BindingFlags.Public | BindingFlags.Static)?
+                                                       .GetCustomAttribute<DisplayAttribute>())?
+                       .GetName();
 
     private static string? Humanize(string? field)
     {

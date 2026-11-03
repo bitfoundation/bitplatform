@@ -918,9 +918,9 @@
             <select disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">@Strings.FilterAllText</option>
-                @foreach (var name in EnumNames(column))
+                @foreach (var (name, text) in column.EnumOptions())
                 {
-                    <option value="@name">@name</option>
+                    <option value="@name">@text</option>
                 }
             </select>
         }
@@ -1067,12 +1067,6 @@
                (op, value) => SetFilterAsync(column, op, value),
                (from, toExclusive) => SetRangeFilterAsync(column, from, toExclusive),
                () => ClearFilterAsync(column.Id));
-
-    private static IEnumerable<string> EnumNames(BitDataGridColumn<TItem> column)
-    {
-        var t = column.Accessor?.UnderlyingType;
-        return t is { IsEnum: true } ? Enum.GetNames(t) : Enumerable.Empty<string>();
-    }
 
     private static string? FormatFilterNumber(object? value)
         => value is IFormattable f ? f.ToString(null, System.Globalization.CultureInfo.InvariantCulture) : value?.ToString();

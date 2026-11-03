@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -4990,5 +4991,151 @@ public class BitDataGridTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(reads + 1, component.Instance.Reads));
         Assert.AreEqual(0, component.Instance.Grid!.ActiveSorts.Count);
+    }
+
+    // ------------------------------------------------------------ Enum text
+
+    public enum Fruit
+    {
+        [Display(Name = "Green apple")] Apple,
+        Banana,
+        [Display(Name = nameof(FruitTexts.Cherry), ResourceType = typeof(FruitTexts))] Cherry,
+    }
+
+    // Stands in for a strongly typed resource class: what a [Display] with a ResourceType reads its name from.
+    public static class FruitTexts
+    {
+        public static string Cherry { get; set; } = "Cherry";
+    }
+
+    public class FruitRow
+    {
+        public int Id { get; set; }
+        public Fruit Kind { get; set; }
+    }
+
+    private IRenderedComponent<BitDataGrid<FruitRow>> RenderFruitGrid(
+        Func<object, string?>? valueText = null,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<FruitRow>>>? configure = null)
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<FruitRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Kind");
+            builder.AddComponentParameter(2, "ValueText", valueText);
+            builder.CloseComponent();
+        };
+
+        return RenderComponent<BitDataGrid<FruitRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<FruitRow>
+            {
+                new() { Id = 1, Kind = Fruit.Apple },
+                new() { Id = 2, Kind = Fruit.Banana },
+                new() { Id = 3, Kind = Fruit.Cherry },
+            });
+            parameters.Add(p => p.ChildContent, columns);
+            configure?.Invoke(parameters);
+        });
+    }
+
+    private static string[] FruitCellTexts(IRenderedComponent<BitDataGrid<FruitRow>> component)
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row)")
+            .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
+            .ToArray();
+
+    private static string[] OptionTexts(IElement select)
+        => select.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+
+    private static string[] OptionValues(IElement select)
+        => select.QuerySelectorAll("option").Select(o => o.GetAttribute("value") ?? string.Empty).ToArray();
+
+    [TestMethod]
+    public void EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheCellsAndTheFilter()
+    {
+        var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Filterable, true));
+
+        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, FruitCellTexts(component));
+
+        var filter = component.Find("select.bit-dtg-filter-input");
+        CollectionAssert.AreEqual(new[] { "All", "Green apple", "Banana", "Cherry" }, OptionTexts(filter));
+        // The values stay the members' names, which is what the filter parses back.
+        CollectionAssert.AreEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
+
+        filter.Change("Apple");
+
+        CollectionAssert.AreEqual(new[] { "Green apple" }, FruitCellTexts(component));
+        Assert.AreEqual(Fruit.Apple, component.Instance.ActiveFilters.Single().Value);
+    }
+
+    [TestMethod]
+    public void EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheInlineEditor()
+    {
+        var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Editable, true));
+
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+
+        var editor = component.Find("select.bit-dtg-editor");
+        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, OptionTexts(editor));
+        CollectionAssert.AreEqual(new[] { "Apple", "Banana", "Cherry" }, OptionValues(editor));
+        Assert.AreEqual("Apple", editor.GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void EnumDisplayNameReadOffAResourceTypeShouldFollowTheResource()
+    {
+        var original = FruitTexts.Cherry;
+
+        try
+        {
+            var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Filterable, true));
+            Assert.AreEqual("Cherry", FruitCellTexts(component)[2]);
+
+            // A resource answers in the UI culture of the moment, so the name is read again on every render.
+            FruitTexts.Cherry = "Kirsche";
+            component.Render();
+
+            Assert.AreEqual("Kirsche", FruitCellTexts(component)[2]);
+            Assert.AreEqual("Kirsche", OptionTexts(component.Find("select.bit-dtg-filter-input"))[3]);
+        }
+        finally
+        {
+            FruitTexts.Cherry = original;
+        }
+    }
+
+    [TestMethod]
+    public void ValueTextShouldWriteTheValueWhereverTheGridShowsIt()
+    {
+        string? Translate(object value) => value is Fruit.Banana ? null : $"Fruit:{value}";
+
+        var component = RenderFruitGrid(Translate, parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        });
+
+        // Banana is left to the default text by the null the delegate returns for it.
+        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Banana", "Fruit:Cherry" }, FruitCellTexts(component));
+        CollectionAssert.AreEqual(new[] { "All", "Fruit:Apple", "Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
+
+        var csv = component.Instance.ToCsv();
+        StringAssert.Contains(csv, "Fruit:Apple");
+        StringAssert.Contains(csv, "Fruit:Cherry");
+
+        // The quick search matches the text the cells show, not the members' names.
+        component.Find(".bit-dtg-search-input").Input("fruit:ch");
+        CollectionAssert.AreEqual(new[] { "Fruit:Cherry" }, FruitCellTexts(component));
+    }
+
+    [TestMethod]
+    public void ValueTextShouldWriteTheOptionsOfTheEnumEditor()
+    {
+        var component = RenderFruitGrid(value => $"Fruit:{value}", parameters => parameters.Add(p => p.Editable, true));
+
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+
+        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Fruit:Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-editor")));
     }
 }
