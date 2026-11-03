@@ -18,7 +18,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-family: "Instrument Serif", Georgia, serif;
+    font-family: Georgia, serif;
     font-size: 1.5rem;
     font-style: italic;
 }
@@ -76,11 +76,11 @@
 
 .tracker-card-day {
     fill: #2A1426;
-    font-family: "Instrument Serif", Georgia, serif;
+    font-family: Georgia, serif;
     font-size: 46px;
 
     &:lang(fa) {
-        font-family: "Vazirmatn FD Digits", "Instrument Serif", Georgia, serif;
+        font-family: "Vazirmatn FD Digits", Georgia, serif;
         font-size: 40px;
     }
 }

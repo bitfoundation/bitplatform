@@ -86,8 +86,8 @@ $breakpoint-lg: 1280px;
 }
 
 @mixin stacks {
-    --lp-stack-body: var(--lp-font-body), "Vazirmatn", system-ui, sans-serif;
-    --lp-stack-display: var(--lp-font-display), "Vazirmatn", system-ui, sans-serif;
+    --lp-stack-body: var(--lp-font-body), system-ui, sans-serif;
+    --lp-stack-display: var(--lp-font-display), system-ui, sans-serif;
 }
 
 @mixin stacks-fa {
