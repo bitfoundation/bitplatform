@@ -85,10 +85,16 @@ public partial class AuthManager
     // False until the first GetAuthenticationStateAsync records the user the app started with.
     private bool isNotifiedUserKnown;
     private Guid? notifiedUserId;
+    //#if (multitenant == true)
+    private Guid? notifiedTenantId;
+    //#endif
 
     private async Task NotifyActiveAccountChanged(bool softRestartOnSwitch)
     {
         var previousUserId = notifiedUserId;
+        //#if (multitenant == true)
+        var previousTenantId = notifiedTenantId;
+        //#endif
 
         var state = await GetAuthenticationStateAsync();
 
@@ -96,7 +102,13 @@ public partial class AuthManager
         {
             notifiedUserId = userId;
 
-            if (softRestartOnSwitch && previousUserId is not null && previousUserId != userId)
+            var isSwitch = previousUserId is not null && previousUserId != userId;
+            //#if (multitenant == true)
+            notifiedTenantId = state.User.GetTenantId();
+            isSwitch |= previousUserId == userId && previousTenantId != notifiedTenantId;
+            //#endif
+
+            if (softRestartOnSwitch && isSwitch)
             {
                 accessTokenTsc = null;
                 pubSubService.Publish(ClientAppMessages.SOFT_RESTART);

@@ -300,6 +300,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             {
                 isNotifiedUserKnown = true;
                 notifiedUserId = GetUserId(user);
+                //#if (multitenant == true)
+                notifiedTenantId = user.GetTenantId();
+                //#endif
             }
 
             return new AuthenticationState(user);

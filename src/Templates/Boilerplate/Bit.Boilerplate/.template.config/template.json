@@ -1048,6 +1048,7 @@
                     "condition": "(advancedTests != true || multitenant != true)",
                     "exclude": [
                         "src/Tests/Features/Data/ConcurrencyTokenTests.cs",
+                        "src/Tests/Features/Tenants/CrossTabTenantSwitchTests.cs",
                         // The rule it pins - a tenant filtered body gets no client max-age - only exists under multitenant.
                         "src/Tests/Features/Caching/ResponseCachePolicyClientCacheTests.cs"
                     ]
