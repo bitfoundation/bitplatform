@@ -18,11 +18,12 @@ public static class WebApplicationExtensions
             if (section.Exists() is false)
                 return app;
 
-            var options = new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = section.GetValue<ForwardedHeaders?>(nameof(ForwardedHeadersOptions.ForwardedHeaders)) ?? ForwardedHeaders.All,
-                ForwardLimit = section.GetValue<int?>(nameof(ForwardedHeadersOptions.ForwardLimit)) ?? 2
-            };
+            var options = new ForwardedHeadersOptions();
+            options.ForwardedHeaders = section.GetValue(nameof(ForwardedHeadersOptions.ForwardedHeaders), options.ForwardedHeaders);
+            options.ForwardLimit = section.GetValue(nameof(ForwardedHeadersOptions.ForwardLimit), options.ForwardLimit);
+            options.ForwardedForHeaderName = section.GetValue(nameof(ForwardedHeadersOptions.ForwardedForHeaderName), options.ForwardedForHeaderName)!;
+            options.ForwardedHostHeaderName = section.GetValue(nameof(ForwardedHeadersOptions.ForwardedHostHeaderName), options.ForwardedHostHeaderName)!;
+            options.ForwardedProtoHeaderName = section.GetValue(nameof(ForwardedHeadersOptions.ForwardedProtoHeaderName), options.ForwardedProtoHeaderName)!;
 
             foreach (var host in section.GetSection(nameof(ForwardedHeadersOptions.AllowedHosts)).Get<string[]>() ?? [])
                 options.AllowedHosts.Add(host);
