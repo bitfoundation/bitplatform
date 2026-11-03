@@ -53,6 +53,13 @@ jobs:
     - name: Create project with bit new
       run: bit new Bit.Boilerplate --framework net10.0 --webAppUrl https://adminpanel.bitplatform.dev --landingPageUrl https://landingpage.bitplatform.dev --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
+    - name: Update the client's appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'Bit.Boilerplate/src/LandingPage/Bit.Boilerplate.LandingPage.Client/appsettings.json'
+      env:
+        Belemetry.AzureMonitorConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
     - name: Publish
       working-directory: Bit.Boilerplate
       run: dotnet publish src/LandingPage/Bit.Boilerplate.LandingPage.Server/Bit.Boilerplate.LandingPage.Server.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
