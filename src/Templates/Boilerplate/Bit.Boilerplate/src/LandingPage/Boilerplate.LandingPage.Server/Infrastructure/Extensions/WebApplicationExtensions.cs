@@ -165,7 +165,6 @@ public static class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
-                && context.Request.Path.StartsWithSegments("/_framework") is false
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {
