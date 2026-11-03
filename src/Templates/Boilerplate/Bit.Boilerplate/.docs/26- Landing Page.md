@@ -91,8 +91,8 @@ step whose sample is gone is left out, and one whose element isn't there shows i
 - **Its own conventions.** Text goes into resx keys, in each sample's own file (`<Sample>Strings.resx` and
   `<Sample>Strings.fa.resx`) or in `LandingStrings.resx` for what the samples share; components inherit
   `LandingComponentBase`. The app's own conventions that name its types and files don't apply here.
-- **Analytics only with consent.** bit Belemetry sends page views, interactions and errors to Azure Monitor, only after
-  the visitor agrees, and without cookies.
+- **Analytics only with consent.** bit Belemetry sends page views, interactions and performance to Azure Monitor only
+  after the visitor agrees, and without cookies. Errors are sent either way, as a legitimate interest.
 
 ## Make it yours
 
@@ -137,7 +137,7 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 | `ConnectionStrings:smtp` | The SMTP server, in the same format as the app's server. Without it, emails are logged. |
 | `AI:ChatOptions`, `AI:OpenAI:ChatModel`, `AI:OpenAI:ChatApiKey`, `AI:OpenAI:ChatEndpoint` | The chat's model and what it is sent, the same settings and user secrets as the app's server. |
 | `WebAppRender:BlazorMode`, `WebAppRender:PrerenderEnabled` | WebAssembly with prerendering. Blazor Server and Auto are for development only. |
-| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where analytics go, after consent. |
+| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. |
 
 The server's settings are in
 [`appsettings.json`](/src/LandingPage/Boilerplate.LandingPage.Server/appsettings.json), and a deployment reads them

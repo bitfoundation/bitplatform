@@ -116,7 +116,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - `AI:OpenAI` holds the chat's model and key, the same setting as the app's server. The chat answers only from the
   facts in `LandingChatPrompts.cs`, so keep those true and in step with the page.
 - Analytics and monitoring go through bit Belemetry to Azure Monitor, with the connection string in the client's
-  `appsettings.json`, and only after the visitor agrees in the consent banner.
+  `appsettings.json`, and only after the visitor agrees in the consent banner. Errors are the exception: they are sent
+  from the first moment, whatever the visitor chooses, and the privacy page says so.
 - The deployment reads these as `LANDINGPAGE_SETTINGS` lines; the **deploy** skill (`.github/agents/deploy.agent.md`)
   covers its domain and its secrets.
 

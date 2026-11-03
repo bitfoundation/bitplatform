@@ -25,6 +25,7 @@ public static class IServiceCollectionExtensions
         services.AddBitBelemetryServices(options =>
         {
             options.ServiceName = "Boilerplate.LandingPage";
+            options.Consent.Default = BelemetryFeatures.Errors;
 
             if (string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false)
             {

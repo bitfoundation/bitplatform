@@ -4,7 +4,7 @@ namespace Boilerplate.LandingPage.Client.Components.Common;
 
 public partial class ConsentBanner : IDisposable
 {
-    private const BelemetryFeatures PerformanceFeatures = BelemetryFeatures.Diagnostics | BelemetryFeatures.Monitoring;
+    private const BelemetryFeatures PerformanceFeatures = BelemetryFeatures.Logs | BelemetryFeatures.Traces | BelemetryFeatures.Dependencies | BelemetryFeatures.Monitoring;
 
     private const BelemetryFeatures AnalyticsFeatures = BelemetryFeatures.PageViews | BelemetryFeatures.Interactions | BelemetryFeatures.Sessions | BelemetryFeatures.Events;
 
@@ -56,7 +56,7 @@ public partial class ConsentBanner : IDisposable
         isVisible = false;
         isChoosing = false;
 
-        await consent.SetAsync(features);
+        await consent.SetAsync(features | BelemetryFeatures.Errors);
     }
 
     public void Dispose() => prompt.Requested -= Open;

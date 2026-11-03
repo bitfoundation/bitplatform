@@ -187,7 +187,7 @@
         <value>Your privacy</value>
     </data>
     <data name="ConsentBody" xml:space="preserve">
-        <value>We'd like to measure how this site is used and catch the errors you run into, so we can make it better. Nothing is collected until you agree, and we use no cookies.</value>
+        <value>We'd like to measure how fast this site is and how it's used, so we can make it better. None of that is collected until you agree, and we use no cookies. Errors are reported either way, without telling who you are.</value>
     </data>
     <data name="ConsentAccept" xml:space="preserve">
         <value>Accept</value>
@@ -202,10 +202,10 @@
         <value>Save my choices</value>
     </data>
     <data name="ConsentPerformance" xml:space="preserve">
-        <value>Performance and errors</value>
+        <value>Performance and diagnostics</value>
     </data>
     <data name="ConsentPerformanceHint" xml:space="preserve">
-        <value>How fast pages load, and the errors visitors run into.</value>
+        <value>How fast pages load and respond, and the details that help fix the errors visitors run into.</value>
     </data>
     <data name="ConsentAnalytics" xml:space="preserve">
         <value>Usage statistics</value>
@@ -496,13 +496,13 @@
         <value>What we collect</value>
     </data>
     <data name="LegalPrivacy2Body" xml:space="preserve">
-        <value>When you join the waitlist: your email address, your first name if you give it, the platforms you chose, your language and the page that brought you here. When you use the chat: your questions, which are sent to an AI provider to be answered and aren't kept after the conversation. With your consent only: how pages load and which ones are read, without cookies and without telling who you are. Always: the server's logs of requests, including IP addresses, kept briefly for security.</value>
+        <value>When you join the waitlist: your email address, your first name if you give it, the platforms you chose, your language and the page that brought you here. When you use the chat: your questions, which are sent to an AI provider to be answered and aren't kept after the conversation. With your consent only: how pages load and which ones are read, without cookies and without telling who you are. Always: the errors the site runs into in your browser, without telling who you are, and the server's logs of requests, including IP addresses, kept briefly for security.</value>
     </data>
     <data name="LegalPrivacy3Title" xml:space="preserve">
         <value>Why we may use it</value>
     </data>
     <data name="LegalPrivacy3Body" xml:space="preserve">
-        <value>Your consent, for the waitlist and the usage statistics. Our legitimate interest in keeping the site secure, for the server's logs.</value>
+        <value>Your consent, for the waitlist and the usage statistics. Our legitimate interest in keeping the site secure and working, for the server's logs and the error reports.</value>
     </data>
     <data name="LegalPrivacy4Title" xml:space="preserve">
         <value>Who else handles it</value>
@@ -514,7 +514,7 @@
         <value>How long we keep it</value>
     </data>
     <data name="LegalPrivacy5Body" xml:space="preserve">
-        <value>Waitlist details until you unsubscribe or we launch and send the last email. Server logs for 30 days. Chat questions not at all.</value>
+        <value>Waitlist details until you unsubscribe or we launch and send the last email. Server logs and error reports for 30 days. Chat questions not at all.</value>
     </data>
     <data name="LegalPrivacy6Title" xml:space="preserve">
         <value>Your rights</value>
