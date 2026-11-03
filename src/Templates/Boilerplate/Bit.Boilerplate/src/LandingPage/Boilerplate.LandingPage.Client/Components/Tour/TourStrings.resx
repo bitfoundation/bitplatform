@@ -189,12 +189,6 @@
     <data name="RatingBody" xml:space="preserve">
         <value>Its App Store listing is read live from Apple and kept on the server for a while: the rating once there are enough of them, the latest version until then.</value>
     </data>
-    <data name="ProofTitle" xml:space="preserve">
-        <value>Press and reviews</value>
-    </data>
-    <data name="ProofBody" xml:space="preserve">
-        <value>The press that wrote about it, and further down what customers say. In the samples they are made up: swap in real ones before launch.</value>
-    </data>
     <data name="FaqTitle" xml:space="preserve">
         <value>Answers search engines can read</value>
     </data>
@@ -206,12 +200,6 @@
     </data>
     <data name="ChatBody" xml:space="preserve">
         <value>The tour opened it for you. It answers from {0}'s own facts, in the visitor's language, with a real AI model, and its code downloads only when someone opens it.</value>
-    </data>
-    <data name="AboutTitle" xml:space="preserve">
-        <value>An about page</value>
-    </data>
-    <data name="AboutBody" xml:space="preserve">
-        <value>Each sample has an about page with its story, its team and how to reach it.</value>
     </data>
     <data name="WaitlistTitle" xml:space="preserve">
         <value>A waitlist that stays clean</value>
@@ -229,7 +217,7 @@
         <value>The chat as a side tab</value>
     </data>
     <data name="ConciergeBody" xml:space="preserve">
-        <value>The same assistant, this time as a tab at the edge of the page that opens this panel. The tour opened it for you.</value>
+        <value>The same assistant, this time as a tab at the edge of the page: one click opens it in a side panel.</value>
     </data>
     <data name="LanguagesTitle" xml:space="preserve">
         <value>Two languages, both directions</value>
@@ -249,12 +237,6 @@
     <data name="SearchBody" xml:space="preserve">
         <value>Every page is prerendered, so search engines and visitors get its text before any code runs, along with its canonical link, structured data and a place in the sitemap.</value>
     </data>
-    <data name="SourcesTitle" xml:space="preserve">
-        <value>Figures with their source</value>
-    </data>
-    <data name="SourcesBody" xml:space="preserve">
-        <value>Right under the numbers, the page says where each one comes from: a survey of customers, an outside monitor.</value>
-    </data>
     <data name="InvoiceTitle" xml:space="preserve">
         <value>{0}, an invoice to send</value>
     </data>
@@ -272,12 +254,6 @@
     </data>
     <data name="DeskBody" xml:space="preserve">
         <value>These previews are not pictures but working pieces of the app, enough to show what it does. Watch two guests get checked in, then mark a room clean yourself.</value>
-    </data>
-    <data name="CalcTitle" xml:space="preserve">
-        <value>A price per room</value>
-    </data>
-    <data name="CalcBody" xml:space="preserve">
-        <value>Enter the number of rooms and see each plan's price for the month.</value>
     </data>
     <data name="PressTitle" xml:space="preserve">
         <value>A press kit</value>

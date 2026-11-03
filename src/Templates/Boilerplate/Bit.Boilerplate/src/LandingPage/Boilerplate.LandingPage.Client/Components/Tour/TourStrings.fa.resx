@@ -189,12 +189,6 @@
     <data name="RatingBody" xml:space="preserve">
         <value>اطلاعات صفحه‌ی App Store آن مستقیم از اپل خوانده و مدتی روی سرور نگه داشته می‌شود: امتیاز، وقتی امتیازها به اندازه‌ی کافی برسند، و تا آن موقع آخرین نسخه.</value>
     </data>
-    <data name="ProofTitle" xml:space="preserve">
-        <value>رسانه‌ها و نظرها</value>
-    </data>
-    <data name="ProofBody" xml:space="preserve">
-        <value>رسانه‌هایی که درباره‌اش نوشته‌اند و پایین‌تر حرف مشتری‌ها. در نمونه‌ها همه ساختگی‌اند: پیش از انتشار با واقعی‌ها عوضشان کنید.</value>
-    </data>
     <data name="FaqTitle" xml:space="preserve">
         <value>جواب‌هایی که موتورهای جست‌وجو می‌خوانند</value>
     </data>
@@ -206,12 +200,6 @@
     </data>
     <data name="ChatBody" xml:space="preserve">
         <value>تور آن را برایتان باز کرد. از روی اطلاعات خود {0}، به زبان بازدیدکننده و با یک مدل هوش مصنوعی واقعی جواب می‌دهد، و کدش فقط وقتی دانلود می‌شود که کسی بازش کند.</value>
-    </data>
-    <data name="AboutTitle" xml:space="preserve">
-        <value>صفحه‌ی درباره‌ی ما</value>
-    </data>
-    <data name="AboutBody" xml:space="preserve">
-        <value>هر نمونه صفحه‌ی درباره‌ی ما دارد، با داستانش، تیمش و راه تماس.</value>
     </data>
     <data name="WaitlistTitle" xml:space="preserve">
         <value>فهرست انتظاری که تمیز می‌ماند</value>
@@ -229,7 +217,7 @@
         <value>چت به شکل زبانه‌ی کناری</value>
     </data>
     <data name="ConciergeBody" xml:space="preserve">
-        <value>همان دستیار، این بار به شکل زبانه‌ای در لبه‌ی صفحه که همین پنل را باز می‌کند. تور آن را برایتان باز کرد.</value>
+        <value>همان دستیار، این بار به شکل زبانه‌ای در لبه‌ی صفحه: یک کلیک آن را در یک پنل کناری باز می‌کند.</value>
     </data>
     <data name="LanguagesTitle" xml:space="preserve">
         <value>دو زبان، هر دو جهت</value>
@@ -249,12 +237,6 @@
     <data name="SearchBody" xml:space="preserve">
         <value>همه‌ی صفحه‌ها prerender می‌شوند، پس موتورهای جست‌وجو و بازدیدکننده‌ها متن صفحه را پیش از اجرای هر کدی می‌گیرند، همراه با پیوند canonical، داده‌ی ساخت‌یافته و جایی در sitemap.</value>
     </data>
-    <data name="SourcesTitle" xml:space="preserve">
-        <value>عدد با منبعش</value>
-    </data>
-    <data name="SourcesBody" xml:space="preserve">
-        <value>درست زیر عددها، صفحه می‌گوید هر کدام از کجا آمده: یک نظرسنجی از مشتری‌ها، یک ناظر بیرونی.</value>
-    </data>
     <data name="InvoiceTitle" xml:space="preserve">
         <value>{0}، فاکتوری برای فرستادن</value>
     </data>
@@ -272,12 +254,6 @@
     </data>
     <data name="DeskBody" xml:space="preserve">
         <value>این پیش‌نمایش‌ها عکس نیستند؛ تکه‌هایی از خود اپ‌اند که کار می‌کنند و نشان می‌دهند اپ چه می‌کند. ببینید دو مهمان پذیرش می‌شوند، بعد خودتان اتاقی را تمیز علامت بزنید.</value>
-    </data>
-    <data name="CalcTitle" xml:space="preserve">
-        <value>قیمت به ازای هر اتاق</value>
-    </data>
-    <data name="CalcBody" xml:space="preserve">
-        <value>تعداد اتاق‌ها را وارد کنید و قیمت ماهانه‌ی هر طرح را ببینید.</value>
     </data>
     <data name="PressTitle" xml:space="preserve">
         <value>کیت رسانه‌ای</value>

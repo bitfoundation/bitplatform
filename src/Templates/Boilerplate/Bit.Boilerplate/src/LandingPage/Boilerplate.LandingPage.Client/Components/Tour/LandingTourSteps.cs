@@ -42,10 +42,8 @@ public static class LandingTourSteps
             Try(Add(tour, "shop-demo", shop.Path, ".shop-demo", t[nameof(TourStrings.DemoTitle)], t[nameof(TourStrings.DemoBody)]));
             Add(tour, "shop-stores", shop.Path, ".ecommerce-hero .lp-badges", t[nameof(TourStrings.StoresTitle)], t[nameof(TourStrings.StoresBody)]);
             Add(tour, "shop-rating", shop.Path, ".lp-rating", t[nameof(TourStrings.RatingTitle)], t[nameof(TourStrings.RatingBody)]);
-            Add(tour, "shop-press", shop.Path, ".ecommerce-press", t[nameof(TourStrings.ProofTitle)], t[nameof(TourStrings.ProofBody)]);
             Add(tour, "shop-faq", shop.Path, ".lp-faq", t[nameof(TourStrings.FaqTitle)], t[nameof(TourStrings.FaqBody)]);
             Open(Add(tour, "shop-chat", shop.Path, ".lp-chat-card", t[nameof(TourStrings.ChatTitle)], t[nameof(TourStrings.ChatBody), shop.Name]), ".lp-chat-bubble");
-            Add(tour, "shop-about", $"{shop.Path}/about", ".ecommerce-team", t[nameof(TourStrings.AboutTitle)], t[nameof(TourStrings.AboutBody)]);
         }
 
         if (LandingSites.Find("restaurant") is { } cafe)
@@ -56,7 +54,7 @@ public static class LandingTourSteps
         if (LandingSites.Find("retail") is { } grocer)
         {
             Add(tour, "grocer-shops", $"{grocer.Path}/stores", ".retail-store", t[nameof(TourStrings.PagesTitle)], t[nameof(TourStrings.PagesBody), grocer.Name]);
-            Open(Add(tour, "grocer-concierge", $"{grocer.Path}/stores", ".lp-chat-panel-body", t[nameof(TourStrings.ConciergeTitle)], t[nameof(TourStrings.ConciergeBody)]), ".lp-chat-concierge-tab", ".bit-pnl:has(.lp-chat-panel-body) .bit-pnl-cls");
+            Add(tour, "grocer-concierge", $"{grocer.Path}/stores", ".lp-chat-concierge-tab", t[nameof(TourStrings.ConciergeTitle)], t[nameof(TourStrings.ConciergeBody)]);
         }
 
         if (LandingSites.Find("fitness") is { } workout)
@@ -64,11 +62,6 @@ public static class LandingTourSteps
             Add(tour, "fit-languages", workout.Path, ".lp-nav .lp-lang", t[nameof(TourStrings.LanguagesTitle)], t[nameof(TourStrings.LanguagesBody)]);
             Add(tour, "fit-theme", workout.Path, ".lp-nav .lp-theme-toggle", t[nameof(TourStrings.ThemeTitle)], t[nameof(TourStrings.ThemeBody)]);
             Add(tour, "fit-search", workout.Path, null, t[nameof(TourStrings.SearchTitle)], t[nameof(TourStrings.SearchBody)]);
-        }
-
-        if (LandingSites.Find("crm") is { } crm)
-        {
-            Add(tour, "crm-stats", crm.Path, ".crm-stats", t[nameof(TourStrings.SourcesTitle)], t[nameof(TourStrings.SourcesBody)]);
         }
 
         if (LandingSites.Find("accounting") is { } books)
@@ -80,7 +73,6 @@ public static class LandingTourSteps
         if (LandingSites.Find("hotel-software") is { } lodge)
         {
             Press(Add(tour, "lodge-desk", lodge.Path, ".hs-desk", t[nameof(TourStrings.DeskTitle), lodge.Name], t[nameof(TourStrings.DeskBody)]), ".hs-desk-list:first-child .hs-stay:not(.is-done) .hs-stay-action", 2);
-            Try(Add(tour, "lodge-calc", $"{lodge.Path}/pricing", ".hs-calc", t[nameof(TourStrings.CalcTitle)], t[nameof(TourStrings.CalcBody)]));
             Add(tour, "lodge-press", $"{lodge.Path}/press", ".hs-press-assets", t[nameof(TourStrings.PressTitle)], t[nameof(TourStrings.PressBody)]);
         }
 
@@ -117,12 +109,10 @@ public static class LandingTourSteps
 
     private static void Try(BonboardingStepDefinition step) => step.Interaction = BonboardingInteractionMode.TargetOnly;
 
-    private static void Open(BonboardingStepDefinition step, string toggle, string? close = null)
+    private static void Open(BonboardingStepDefinition step, string toggle)
     {
         step.OnBeforeShow = context => Run(context, "landing.setExpanded", toggle, true);
-        step.OnBeforeLeave = context => close is null
-            ? Run(context, "landing.setExpanded", toggle, false)
-            : Run(context, "landing.press", close, 1, 0);
+        step.OnBeforeLeave = context => Run(context, "landing.setExpanded", toggle, false);
     }
 
     private static void Press(BonboardingStepDefinition step, string buttons, int count)
