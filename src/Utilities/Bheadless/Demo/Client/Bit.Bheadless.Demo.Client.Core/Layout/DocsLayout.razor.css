@@ -238,8 +238,8 @@
     height: 18px;
 }
 
-/* The drawer's backdrop only exists at the widths where there is a drawer. It is rendered
-   whenever the panel is open, so it needs this floor for the case where the reader opens the
+/* The drawer's backdrop only exists at the widths where there is a drawer. It is marked open
+   whenever the panel is, so it needs this floor for the case where the reader opens the
    panel on a phone and then widens the window past the breakpoint. */
 .bb-docs-scrim {
     display: none;
@@ -339,7 +339,7 @@
         display: inline-flex;
     }
 
-    .bb-docs-scrim {
+    .bb-docs-scrim.bb-open {
         display: block;
         position: fixed;
         inset: var(--bb-header-height) 0 0;

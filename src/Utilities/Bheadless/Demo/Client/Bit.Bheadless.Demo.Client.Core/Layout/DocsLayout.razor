@@ -125,10 +125,10 @@
     <nav class="bb-rail" aria-label="On this page"></nav>
 </div>
 
-@if (_menuOpen)
-{
-    <div class="bb-docs-scrim" @onclick="CloseFromDrawer"></div>
-}
+@* Always in the markup and shown by its class, as the panel is: on a page that stays on the server (MainLayout's
+   data-static) site.js opens the drawer, and the backdrop has to be here already - one it created would carry none
+   of this component's scoped styles. *@
+<div class="bb-docs-scrim @(_menuOpen ? "bb-open" : null)" @onclick="CloseFromDrawer"></div>
 
 @code {
     private bool _menuOpen;

@@ -61,7 +61,8 @@
         return copyLegacy(text);
     }
 
-    // Fallback for non-secure contexts, and for a clipboard API that refused.
+    // Fallback for non-secure contexts, and for a clipboard API that refused. A copy the browser
+    // refused here too rejects, so the button never claims "Copied" over an unchanged clipboard.
     function copyLegacy(text) {
         var area = document.createElement('textarea');
         area.value = text;
@@ -69,9 +70,10 @@
         area.style.opacity = '0';
         document.body.appendChild(area);
         area.select();
-        try { document.execCommand('copy'); } catch (_) { }
+        var copied = false;
+        try { copied = document.execCommand('copy'); } catch (_) { }
         area.remove();
-        return Promise.resolve();
+        return copied ? Promise.resolve() : Promise.reject(new Error('Copy failed.'));
     }
 
     function decorate(pre) {
@@ -101,7 +103,7 @@
                     button.replaceChildren(svg(COPY_ICON));
                     button.title = 'Copy to clipboard';
                 }, 1600);
-            });
+            }, function () { /* Nothing was copied: the button stays as it was. */ });
         });
 
         // The button is positioned inside the scroller it decorates, so a code block scrolled sideways
@@ -359,8 +361,24 @@
         palette.invokeMethodAsync('OpenFromShortcut');
     }
 
+    /* ArrowUp and ArrowDown move the palette's result cursor (CommandPalette.OnKeyDown), and left
+       alone they would move the caret in its text field as well - to the start, to the end. Blazor's
+       @onkeydown:preventDefault cannot pick the keys it applies to, so these two are held back here,
+       while there are results for them to walk. */
+    function onPaletteArrow(e) {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        if (!(e.target instanceof Element) || !e.target.matches('.bb-palette-input input')) return;
+        if (document.querySelector('.bb-palette-results [role="option"]') === null) return;
+        e.preventDefault();
+    }
+
     function goToTop() {
         window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    }
+
+    /** Holds the page still behind a modal, so scrolling the dialog does not scroll the page. */
+    function lockScroll(locked) {
+        document.documentElement.style.overflow = locked ? 'hidden' : '';
     }
 
     // ── Fragments ────────────────────────────────────────────────────────────────────────────
@@ -381,6 +399,10 @@
         if (panel === null || toggle === null) return;
 
         panel.classList.toggle('bb-open', open);
+        // The backdrop DocsLayout keeps in the markup for this, and the scroll lock its own drawer takes.
+        var scrim = document.querySelector('.bb-docs-scrim');
+        if (scrim !== null) scrim.classList.toggle('bb-open', open);
+        lockScroll(open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         var label = toggle.querySelector('.bb-docs-menu-label');
         if (label !== null) label.textContent = open ? 'Hide docs' : 'Browse docs';
@@ -399,7 +421,7 @@
         } else if (e.target.closest('.bb-docs-menu-toggle')) {
             var panel = document.getElementById('bb-docs-nav');
             setStaticDrawer(panel === null || !panel.classList.contains('bb-open'), true);
-        } else if (e.target.closest('.bb-docs-close')) {
+        } else if (e.target.closest('.bb-docs-close, .bb-docs-scrim')) {
             setStaticDrawer(false, true);
         }
     }
@@ -553,6 +575,7 @@
         }, { passive: true });
 
         document.addEventListener('keydown', onShortcut);
+        document.addEventListener('keydown', onPaletteArrow);
         document.addEventListener('click', onSkipLink, true);
         document.addEventListener('click', onStaticChrome);
         document.addEventListener('keydown', onStaticEscape);
@@ -572,10 +595,7 @@
             palette = null;
         },
 
-        /** Holds the page still behind a modal, so scrolling the dialog does not scroll the page. */
-        lockScroll: function (locked) {
-            document.documentElement.style.overflow = locked ? 'hidden' : '';
-        },
+        lockScroll: lockScroll,
 
         /**
          * Keeps the palette's keyboard cursor inside its scrolling results list. The arrow keys
