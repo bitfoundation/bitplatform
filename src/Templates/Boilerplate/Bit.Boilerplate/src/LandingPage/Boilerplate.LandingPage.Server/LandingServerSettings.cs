@@ -1,5 +1,6 @@
 //-:cnd:noEmit
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.AI;
 
 namespace Boilerplate.LandingPage.Server;
 
@@ -71,6 +72,8 @@ public partial class EmailOptions
 
 public partial class AIOptions
 {
+    public ChatOptions ChatOptions { get; set; } = new();
+
     public OpenAIOptions OpenAI { get; set; } = new();
 }
 

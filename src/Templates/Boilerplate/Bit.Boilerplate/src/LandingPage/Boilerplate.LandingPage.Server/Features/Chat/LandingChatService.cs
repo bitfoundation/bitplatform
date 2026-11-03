@@ -6,7 +6,7 @@ using Microsoft.Extensions.AI;
 
 namespace Boilerplate.LandingPage.Server.Features.Chat;
 
-public sealed partial class LandingChatService(IServiceProvider serviceProvider, IStringLocalizer<LandingStrings> localizer, ILogger<LandingChatService> logger)
+public sealed partial class LandingChatService(IServiceProvider serviceProvider, LandingServerSettings settings, IStringLocalizer<LandingStrings> localizer, ILogger<LandingChatService> logger)
 {
     public const int MaxTurns = 20;
 
@@ -34,7 +34,7 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
         List<ChatMessage> messages = [new(ChatRole.System, LandingChatPrompts.Get(site, culture))];
         messages.AddRange(ask.Turns.TakeLast(12).Select(t => new ChatMessage(t.FromVisitor ? ChatRole.User : ChatRole.Assistant, t.Text)));
 
-        var options = new ChatOptions { Temperature = 0.2f, MaxOutputTokens = 600 };
+        var options = settings.AI.ChatOptions.Clone();
 
         await using var updates = chatClient.GetStreamingResponseAsync(messages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
