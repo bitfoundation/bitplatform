@@ -2821,6 +2821,28 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldErrorMessageAriaLabelShouldBeAnnouncedForTheTemplate()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "سن باید حداقل ۱۸ باشد");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "سن باید حداقل ۱۸ باشد");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("سن باید حداقل ۱۸ باشد", component.Find("[role=\"status\"]").TextContent);
+
+        // A plain message is its own accessible text, so it is still what the region reads out.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Too young."));
+
+        Assert.AreEqual("Too young.", component.Find("[role=\"status\"]").TextContent);
+    }
+
+    [TestMethod]
     public void BitNumberFieldInvalidShouldMarkTheFieldWithoutAMessage()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>

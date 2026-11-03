@@ -150,6 +150,12 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public string? EnterKeyHint { get; set; }
 
     /// <summary>
+    /// What a screen reader announces when an error message template is shown without an error message,
+    /// in place of the default "Invalid input".
+    /// </summary>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Stretches the number field to the full width of its container.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -472,6 +478,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (EnterKeyHint.HasValue())
         {
             bitNumberField.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint, static n => n.EnterKeyHint, static (n, v) => n.EnterKeyHint = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitNumberField.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static n => n.ErrorMessageAriaLabel, static (n, v) => n.ErrorMessageAriaLabel = v);
         }
 
         if (FullWidth.HasValue)

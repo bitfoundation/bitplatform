@@ -167,6 +167,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces when an ErrorMessageTemplate is shown without an ErrorMessage, in place of the default \"Invalid input\". A template has no text the live region can read out, so this is what keeps the rejection announced in the language of the page.",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",

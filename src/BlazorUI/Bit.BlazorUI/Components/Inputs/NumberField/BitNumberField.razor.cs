@@ -271,6 +271,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// What a screen reader announces when an <see cref="ErrorMessageTemplate"/> is shown without an
+    /// <see cref="ErrorMessage"/>, in place of the default "Invalid input". A template has no text the live
+    /// region can read out, so this is what keeps the rejection announced in the language of the page.
+    /// </summary>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// A custom template rendered in place of the <see cref="ErrorMessage"/>, marking the field invalid and
     /// referenced by the input through its aria-describedby attribute just the same.
     /// </summary>
@@ -1411,7 +1418,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // assistive technology activated), until the input takes the focus back and announces the value itself.
     // An ErrorMessageTemplate has no text on this side of the DOM to read out, so the region says that the
     // value was rejected rather than staying silent and leaving the field sounding accepted.
-    private string? LiveText => HasErrorMessage ? (ErrorMessage.HasValue() ? ErrorMessage : "Invalid input")
+    private string? LiveText => HasErrorMessage ? (ErrorMessage.HasValue() ? ErrorMessage : (ErrorMessageAriaLabel ?? "Invalid input"))
                               : Loading ? (LoadingAriaLabel ?? "Loading")
                               : HideInput || _announceValue ? GetDisplayValueAsString()
                               : null;
