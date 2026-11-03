@@ -27,6 +27,8 @@ public sealed partial class ProjectContext
 
     public string WorkbenchDirectory => Path.Combine(Directory, "src", "Workbench");
 
+    public string LandingPageDirectory => Path.Combine(Directory, "src", "LandingPage", $"{Name}.LandingPage.Server");
+
     public IReadOnlyList<string> ProjectsOutsideWebFilter
     {
         get

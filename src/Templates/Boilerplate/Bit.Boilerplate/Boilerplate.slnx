@@ -114,6 +114,14 @@
     </Project>
 <!--#endif-->
   </Folder>
+  <Folder Name="/LandingPage/">
+    <Project Path="src/LandingPage/Boilerplate.LandingPage.Client/Boilerplate.LandingPage.Client.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+    <Project Path="src/LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+  </Folder>
   <Folder Name="/Workbench/">
     <Project Path="src/Workbench/Boilerplate.Workbench.csproj">
       <Build Solution="DebugBlazorServer|*" Project="false" />

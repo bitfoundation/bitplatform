@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
         <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
-        <InvariantTimezone>true</InvariantTimezone>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
