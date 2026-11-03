@@ -105,6 +105,7 @@ public partial class AuthManager
             var isSwitch = previousUserId is not null && previousUserId != userId;
             //#if (multitenant == true)
             notifiedTenantId = state.User.GetTenantId();
+            // The same user in another tenant, which a tenant switch in another tab brings.
             isSwitch |= previousUserId == userId && previousTenantId != notifiedTenantId;
             //#endif
 
