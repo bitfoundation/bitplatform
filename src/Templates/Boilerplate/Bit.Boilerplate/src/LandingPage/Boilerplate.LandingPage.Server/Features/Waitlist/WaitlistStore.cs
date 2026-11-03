@@ -30,6 +30,8 @@ public sealed record WaitlistEntry
 
     public DateTimeOffset JoinedOn { get; init; }
 
+    public DateTimeOffset? ConfirmationSentOn { get; init; }
+
     public DateTimeOffset? ConfirmedOn { get; init; }
 
     public DateTimeOffset? UnsubscribedOn { get; init; }

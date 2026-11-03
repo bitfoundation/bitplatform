@@ -19,6 +19,7 @@ public static class IServiceCollectionExtensions
         services.TryAddScoped<ILandingChatClient, WebSocketLandingChatClient>();
         services.TryAddScoped<IWaitlistClient, HttpWaitlistClient>();
         services.TryAddScoped<IStoreListingClient, HttpStoreListingClient>();
+        services.TryAddScoped<ISiteAddress, NavigationSiteAddress>();
 
         services.AddBitBelemetryServices(options =>
         {

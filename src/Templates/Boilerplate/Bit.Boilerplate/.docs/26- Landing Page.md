@@ -86,6 +86,15 @@ page, to change its texts, look or pages, or to launch it. In short:
 - **Replace the fictional parts**: the samples' companies, people, ratings and quotes are made up. Before you
   launch, the sample you keep needs your real company details, legal texts, reviews and links.
 
+## Tests
+
+`src/LandingPage/Boilerplate.LandingPage.Tests` runs the landing page in its own process and checks it the way a
+crawler and a visitor reach it: every page in the sitemap is prerendered with its title, description, canonical link,
+language alternates, one heading and valid structured data; a missing page answers 404 inside its sample's layout;
+the waitlist confirms, unsubscribes, keeps bots out and limits retries; the chat streams its answers and refuses other
+sites; and the App Store is asked only about the samples' own apps. It needs no database, browser or keys. Run
+`dotnet test` in that folder; the project's CI runs it too.
+
 ## Settings
 
 | Setting | What it does |

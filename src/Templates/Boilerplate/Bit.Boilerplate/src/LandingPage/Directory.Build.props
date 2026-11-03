@@ -1,6 +1,10 @@
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
+    <PropertyGroup Condition=" '$(InvariantGlobalization)' == 'true' ">
+        <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
+    </PropertyGroup>
+
     <ItemGroup>
         <Using Remove="Boilerplate.Shared" />
         <Using Remove="Boilerplate.Shared.Resources" />

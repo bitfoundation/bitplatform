@@ -2,8 +2,6 @@
 @layout EmptyLayout
 @inherits LandingComponentBase
 
-<PageTitle>@Localizer[nameof(LandingStrings.NotFoundTitle)]</PageTitle>
-
 <LayoutView Layout="@(site?.Layout ?? typeof(SiteLayout))">
     @if (site is not null)
     {
@@ -11,6 +9,10 @@
     }
     else
     {
+        <PageTitle>@Localizer[nameof(LandingStrings.NotFoundTitle)]</PageTitle>
+        <HeadContent>
+            <meta name="robots" content="noindex" />
+        </HeadContent>
         <section class="lp-container lp-section not-found">
             <h1 class="lp-title">@Localizer[nameof(LandingStrings.NotFoundTitle)]</h1>
             <p class="lp-lede">@Localizer[nameof(LandingStrings.NotFoundBody)]</p>

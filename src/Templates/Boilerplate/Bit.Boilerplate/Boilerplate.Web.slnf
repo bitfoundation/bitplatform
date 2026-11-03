@@ -6,6 +6,7 @@
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
       "src\\LandingPage\\Boilerplate.LandingPage.Client\\Boilerplate.LandingPage.Client.csproj",
       "src\\LandingPage\\Boilerplate.LandingPage.Server\\Boilerplate.LandingPage.Server.csproj",
+      "src\\LandingPage\\Boilerplate.LandingPage.Tests\\Boilerplate.LandingPage.Tests.csproj",
 //#if (IsInsideProjectTemplate == true)
       "src\\Internal\\Boilerplate.Tests.E2E\\Boilerplate.Tests.E2E.csproj",
 //#endif

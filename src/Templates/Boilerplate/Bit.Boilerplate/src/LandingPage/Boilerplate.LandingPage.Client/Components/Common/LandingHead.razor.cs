@@ -29,7 +29,5 @@ public partial class LandingHead
         base.OnParametersSet();
     }
 
-    private string Absolute(CultureInfo culture) => new Uri(new Uri(NavigationManager.BaseUri), LandingCultures.Localize(Path, culture).TrimStart('/')).ToString();
-
-    private string AbsoluteAsset(string asset) => new Uri(new Uri(NavigationManager.BaseUri), asset.TrimStart('/')).ToString();
+    private string Absolute(CultureInfo culture) => AbsoluteUrl(LandingCultures.Localize(Path, culture));
 }

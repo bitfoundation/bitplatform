@@ -119,4 +119,5 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - Every new text has its English and Persian keys, and no literal text is left in markup.
 - Every new page has its title, description and preview, and shows in `/sitemap.xml`.
 - What the change does with the server - a form, the chat, the waitlist - works with its waiting and failure states.
-- The build is clean.
+- The build is clean, and `dotnet test` passes in `src/LandingPage/Boilerplate.LandingPage.Tests`: it checks every page
+  in the sitemap for its head tags, every sample's 404, the waitlist, the chat and the rating lookups.

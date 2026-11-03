@@ -24,6 +24,7 @@ public static partial class Program
             services.AddSingleton(settings);
 
             services.AddLandingPageClientServices(configuration);
+            services.AddScoped<ISiteAddress, ConfiguredSiteAddress>();
 
             services.AddRazorComponents()
                 .AddInteractiveServerComponents()

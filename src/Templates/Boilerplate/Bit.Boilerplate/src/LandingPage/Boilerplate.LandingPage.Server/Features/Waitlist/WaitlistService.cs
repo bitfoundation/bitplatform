@@ -13,6 +13,7 @@ public sealed partial class WaitlistService(
     ILogger<WaitlistService> logger)
 {
     private static readonly TimeSpan minimumFillTime = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan confirmationResendInterval = TimeSpan.FromMinutes(10);
 
     public async Task<WaitlistJoinResult> JoinAsync(WaitlistJoinRequest request, Uri siteUrl, CancellationToken cancellationToken)
     {
@@ -45,9 +46,12 @@ public sealed partial class WaitlistService(
             JoinedOn = timeProvider.GetUtcNow()
         }, cancellationToken);
 
-        if (alreadyJoined is false || entry.ConfirmedOn is null)
+        var now = timeProvider.GetUtcNow();
+
+        if (entry.ConfirmedOn is null && (entry.ConfirmationSentOn is not { } sentOn || now - sentOn >= confirmationResendInterval))
         {
             await SendConfirmationAsync(entry, site, culture, siteUrl, cancellationToken);
+            await store.UpdateAsync(entry with { ConfirmationSentOn = now }, cancellationToken);
         }
 
         return new(entry.Position, alreadyJoined, ConfirmationSent: entry.ConfirmedOn is null);
