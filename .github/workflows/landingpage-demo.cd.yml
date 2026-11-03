@@ -1,8 +1,6 @@
 name: Landing page demo CD
 
 on:
-  push:
-    branches: [yasmoradi/landing/add-landing-page-project]
   workflow_dispatch:
     inputs:
       prerelease_packages:
