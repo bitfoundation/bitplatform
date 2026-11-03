@@ -94,54 +94,51 @@
 
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
            the controls before the content they control), and the stylesheet places them over the slides.
-           Between the two of them, the one the keyboard reaches first is the one sitting at the start of
-           the reading order, so the focus does not run backwards across the carousel: the buttons keep
-           their physical sides (the "left" one is the one at the right edge, which goes forwards), while
-           a right-to-left carousel is read the other way around. *@
+           The previous button comes first, since it sits at the start of the reading order in either
+           direction, so the focus does not run backwards across the carousel. What a page gives a button (its
+           label, its icon, its parts) is named after what it does and stays on it, while the direction picks
+           its edge: bit-csl-lbt is the right edge (the bottom of a vertical carousel) and bit-csl-rbt the left
+           one (the top), so the next button sits at the left edge of a right-to-left carousel. *@
         @if (HideNextPrev is false)
         {
-            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
-            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
+            var isRtl = Vertical is false && _IsRtl;
+
+            // The default chevrons point to the edge their button sits at.
+            var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (Vertical ? "ChevronDown" : isRtl ? "ChevronRight bit-ico-r180" : "ChevronRight"));
+            var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? (Vertical ? "ChevronUp" : isRtl ? "ChevronRight" : "ChevronRight bit-ico-r180"));
 
             // The styles of a part are joined with JoinStyles, which puts the semicolon between two of them: the
             // display:none of a button at the end it cannot pass would otherwise run into a style the page gives
             // the buttons and be dropped by the browser along with it, leaving the button on screen.
-            RenderFragment goLeftButton =
-                @<button @ref="_goLeftButtonRef"
-                         @onclick="HandleGoLeftButtonClick"
-                         data-bit-key-origin="@KeyOriginGoLeft"
-                         type="button"
-                         aria-controls="@_ContainerId"
-                         aria-label="@GetGoLeftAriaLabel()"
-                         disabled="@(Disabled)"
-                         aria-disabled="@(Disabled ? "true" : null)"
-                         class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                         style="@JoinStyles(JoinStyles(_goLeftButtonStyle, Styles?.Buttons), Styles?.GoLeftButton)">
-                    <i aria-hidden="true"
-                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoLeftButtonIcon)"
-                       class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
-                </button>;
+            <button @ref="_prevButtonRef"
+                    @onclick="HandlePrevButtonClick"
+                    data-bit-key-origin="@KeyOriginPrev"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
+                    class="@(isRtl ? "bit-csl-lbt" : "bit-csl-rbt") @Classes?.Buttons @Classes?.PrevButton"
+                    style="@JoinStyles(JoinStyles(_prevButtonStyle, Styles?.Buttons), Styles?.PrevButton)">
+                <i aria-hidden="true"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.PrevButtonIcon)"
+                   class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
+            </button>
 
-            RenderFragment goRightButton =
-                @<button @ref="_goRightButtonRef"
-                         @onclick="HandleGoRightButtonClick"
-                         data-bit-key-origin="@KeyOriginGoRight"
-                         type="button"
-                         aria-controls="@_ContainerId"
-                         aria-label="@GetGoRightAriaLabel()"
-                         disabled="@(Disabled)"
-                         aria-disabled="@(Disabled ? "true" : null)"
-                         class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                         style="@JoinStyles(JoinStyles(_goRightButtonStyle, Styles?.Buttons), Styles?.GoRightButton)">
-                    <i aria-hidden="true"
-                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoRightButtonIcon)"
-                       class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
-                </button>;
-
-            var goLeftIsFirst = Vertical is false && _IsRtl;
-
-            @(goLeftIsFirst ? goLeftButton : goRightButton)
-            @(goLeftIsFirst ? goRightButton : goLeftButton)
+            <button @ref="_nextButtonRef"
+                    @onclick="HandleNextButtonClick"
+                    data-bit-key-origin="@KeyOriginNext"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
+                    disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
+                    class="@(isRtl ? "bit-csl-rbt" : "bit-csl-lbt") @Classes?.Buttons @Classes?.NextButton"
+                    style="@JoinStyles(JoinStyles(_nextButtonStyle, Styles?.Buttons), Styles?.NextButton)">
+                <i aria-hidden="true"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.NextButtonIcon)"
+                   class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
+            </button>
         }
 
         <CascadingValue Value="this" IsFixed="true">

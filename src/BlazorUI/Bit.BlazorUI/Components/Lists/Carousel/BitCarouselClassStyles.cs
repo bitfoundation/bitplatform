@@ -40,24 +40,24 @@ public class BitCarouselClassStyles
     public string? ButtonIcons { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the go to left button of the BitCarousel.
+    /// Custom CSS classes/styles for the next button of the BitCarousel.
     /// </summary>
-    public string? GoLeftButton { get; set; }
+    public string? NextButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the icon of the go to left button of the BitCarousel.
+    /// Custom CSS classes/styles for the icon of the next button of the BitCarousel.
     /// </summary>
-    public string? GoLeftButtonIcon { get; set; }
+    public string? NextButtonIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the go to right button of the BitCarousel.
+    /// Custom CSS classes/styles for the previous button of the BitCarousel.
     /// </summary>
-    public string? GoRightButton { get; set; }
+    public string? PrevButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the icon of the go to right button of the BitCarousel.
+    /// Custom CSS classes/styles for the icon of the previous button of the BitCarousel.
     /// </summary>
-    public string? GoRightButtonIcon { get; set; }
+    public string? PrevButtonIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the dots container of the BitCarousel.

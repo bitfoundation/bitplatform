@@ -476,8 +476,8 @@ private int thumbsPage = 1;";
              ItemAriaLabelFormat=""Photo {0} of {1}""
              DotAriaLabel=""Photo""
              DotsAriaLabel=""Choose a photo to display""
-             GoLeftAriaLabel=""Next photo""
-             GoRightAriaLabel=""Previous photo""
+             NextAriaLabel=""Next photo""
+             PrevAriaLabel=""Previous photo""
              PlayButtonAriaLabel=""Start the photo slide show""
              PauseButtonAriaLabel=""Stop the photo slide show"">
     <BitCarouselItem AriaLabel=""Aurora over a frozen lake"">
@@ -586,8 +586,8 @@ private readonly BitCarouselParams[] carouselParams =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitCarousel InfiniteScrolling
-             GoLeftIcon=""@BitIconInfo.Fa(""solid circle-arrow-right"")""
-             GoRightIcon=""@BitIconInfo.Fa(""solid circle-arrow-left"")"">
+             NextIcon=""@BitIconInfo.Fa(""solid circle-arrow-right"")""
+             PrevIcon=""@BitIconInfo.Fa(""solid circle-arrow-left"")"">
     <BitCarouselItem>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>
@@ -600,8 +600,8 @@ private readonly BitCarouselParams[] carouselParams =
 </BitCarousel>
 
 <BitCarousel InfiniteScrolling
-             GoLeftIcon=""@BitIconInfo.Bi(""arrow-right-circle"")""
-             GoRightIcon=""@BitIconInfo.Bi(""arrow-left-circle"")"">
+             NextIcon=""@BitIconInfo.Bi(""arrow-right-circle"")""
+             PrevIcon=""@BitIconInfo.Bi(""arrow-left-circle"")"">
     <BitCarouselItem>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>

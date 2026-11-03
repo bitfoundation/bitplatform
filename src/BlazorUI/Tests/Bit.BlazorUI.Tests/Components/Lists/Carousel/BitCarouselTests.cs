@@ -80,18 +80,60 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.DotAriaLabel, "Page");
-            parameters.Add(p => p.GoLeftAriaLabel, "Go left");
-            parameters.Add(p => p.GoRightAriaLabel, "Go right");
+            parameters.Add(p => p.NextAriaLabel, "Go forwards");
+            parameters.Add(p => p.PrevAriaLabel, "Go back");
         });
 
-        Assert.AreEqual("Go left", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
-        Assert.AreEqual("Go right", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Go forwards", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Go back", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
 
         component.WaitForAssertion(() =>
         {
             var dots = component.FindAll(".bit-csl-dot");
             Assert.AreEqual("Page 2", dots[1].GetAttribute("aria-label"));
         });
+    }
+
+    // The buttons swap sides in right-to-left, and what a page names them goes along: the next button is the one at
+    // the left edge there, and it is the one that goes forward.
+    [TestMethod]
+    public async Task BitCarouselShouldKeepCustomAriaLabelsOnTheButtonsTheyNameInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.NextAriaLabel, "Next");
+            parameters.Add(p => p.PrevAriaLabel, "Previous");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var next = component.Find(".bit-csl-rbt");
+
+        Assert.AreEqual("Next", next.GetAttribute("aria-label"));
+        Assert.AreEqual("Previous", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+
+        await next.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitCarouselShouldKeepCustomAriaLabelsOnTheButtonsTheyNameInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.NextAriaLabel, "Next");
+            parameters.Add(p => p.PrevAriaLabel, "Previous");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("Next", component.Find(".bit-csl-rbt").GetAttribute("aria-label")));
+        Assert.AreEqual("Previous", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -623,8 +665,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        // the "left" button goes forwards in a left-to-right carousel, and hides itself on the last page
-        await PressKey(component, "End", "left");
+        // the next button sits at the right edge of a left-to-right carousel, and hides itself on the last page
+        await PressKey(component, "End", "next");
 
         component.WaitForAssertion(() =>
         {
@@ -1536,8 +1578,8 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarousel>(parameters =>
         {
-            parameters.Add(p => p.GoLeftIconName, "Add");
-            parameters.Add(p => p.GoRightIconName, "Remove");
+            parameters.Add(p => p.NextIconName, "Add");
+            parameters.Add(p => p.PrevIconName, "Remove");
         });
 
         var leftIcon = component.Find(".bit-csl-lbt i");
@@ -1545,6 +1587,64 @@ public partial class BitCarouselTests : BunitTestContext
 
         Assert.IsTrue(leftIcon.ClassList.Contains("bit-icon--Add"));
         Assert.IsTrue(rightIcon.ClassList.Contains("bit-icon--Remove"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepCustomIconsAndPartsOnTheButtonsTheyNameInRtl()
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.NextIcon, BitIconInfo.Css("next-icon"));
+            parameters.Add(p => p.PrevIconName, "Remove");
+            parameters.Add(p => p.Classes, new BitCarouselClassStyles
+            {
+                NextButton = "next-button",
+                NextButtonIcon = "next-button-icon",
+                PrevButton = "prev-button",
+                PrevButtonIcon = "prev-button-icon"
+            });
+            parameters.Add(p => p.Styles, new BitCarouselClassStyles
+            {
+                NextButton = "color: red",
+                PrevButton = "color: blue"
+            });
+        });
+
+        // The next button sits at the left edge of a right-to-left carousel.
+        var next = component.Find(".bit-csl-rbt");
+        var prev = component.Find(".bit-csl-lbt");
+
+        Assert.IsTrue(next.ClassList.Contains("next-button"));
+        Assert.IsTrue(next.QuerySelector("i")!.ClassList.Contains("next-icon"));
+        Assert.IsTrue(next.QuerySelector("i")!.ClassList.Contains("next-button-icon"));
+        StringAssert.Contains(next.GetAttribute("style"), "color: red");
+
+        Assert.IsTrue(prev.ClassList.Contains("prev-button"));
+        Assert.IsTrue(prev.QuerySelector("i")!.ClassList.Contains("bit-icon--Remove"));
+        Assert.IsTrue(prev.QuerySelector("i")!.ClassList.Contains("prev-button-icon"));
+        StringAssert.Contains(prev.GetAttribute("style"), "color: blue");
+    }
+
+    // The default chevrons point to the edge their button sits at, whichever way the button goes.
+    [TestMethod,
+        DataRow(BitDir.Ltr),
+        DataRow(BitDir.Rtl)
+    ]
+    public void BitCarouselShouldPointTheDefaultIconsToTheEdgesOfTheirButtons(BitDir dir)
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        var rightEdgeIcon = component.Find(".bit-csl-lbt i");
+        var leftEdgeIcon = component.Find(".bit-csl-rbt i");
+
+        Assert.IsTrue(rightEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsFalse(rightEdgeIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-ico-r180"));
     }
 
     [TestMethod]
@@ -2600,8 +2700,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        Assert.AreEqual("left", component.Find(".bit-csl-lbt").GetAttribute("data-bit-key-origin"));
-        Assert.AreEqual("right", component.Find(".bit-csl-rbt").GetAttribute("data-bit-key-origin"));
+        Assert.AreEqual("next", component.Find(".bit-csl-lbt").GetAttribute("data-bit-key-origin"));
+        Assert.AreEqual("prev", component.Find(".bit-csl-rbt").GetAttribute("data-bit-key-origin"));
         Assert.IsTrue(component.FindAll(".bit-csl-dot").All(d => d.GetAttribute("data-bit-key-origin") == "dot"));
         Assert.IsTrue(component.FindAll(".bit-crsi").All(s => s.GetAttribute("data-bit-key-origin") == "slide"));
     }
@@ -2804,8 +2904,8 @@ public partial class BitCarouselTests : BunitTestContext
         var responsiveOptions = new[] { new BitCarouselResponsiveOption { Breakpoint = 600, VisibleItemsCount = 1 } };
         var classes = new BitCarouselClassStyles { Root = "root-class" };
         var styles = new BitCarouselClassStyles { Root = "color: red;" };
-        var goLeftIcon = BitIconInfo.Css("left");
-        var goRightIcon = BitIconInfo.Css("right");
+        var nextIcon = BitIconInfo.Css("next");
+        var prevIcon = BitIconInfo.Css("prev");
         var pauseIcon = BitIconInfo.Css("pause");
         var playIcon = BitIconInfo.Css("play");
         RenderFragment<int> dotTemplate = index => builder => builder.AddContent(0, index);
@@ -2826,16 +2926,13 @@ public partial class BitCarouselTests : BunitTestContext
             DragThreshold = 40,
             Fade = true,
             Gap = "1rem",
-            GoLeftAriaLabel = "Forwards",
-            GoLeftIcon = goLeftIcon,
-            GoLeftIconName = "Forward",
-            GoRightAriaLabel = "Backwards",
-            GoRightIcon = goRightIcon,
-            GoRightIconName = "Back",
             HideDots = true,
             HideNextPrev = true,
             InfiniteScrolling = true,
             ItemAriaLabelFormat = "Photo {0}",
+            NextAriaLabel = "Forwards",
+            NextIcon = nextIcon,
+            NextIconName = "Forward",
             NoDrag = true,
             NoKeyboard = true,
             PauseButtonAriaLabel = "Stop",
@@ -2846,6 +2943,9 @@ public partial class BitCarouselTests : BunitTestContext
             PlayButtonAriaLabel = "Start",
             PlayIcon = playIcon,
             PlayIconName = "Play",
+            PrevAriaLabel = "Backwards",
+            PrevIcon = prevIcon,
+            PrevIconName = "Back",
             ResponsiveOptions = responsiveOptions,
             ScrollItemsCount = 2,
             ShowPlayPause = true,
@@ -2882,16 +2982,13 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual(40, carousel.DragThreshold);
         Assert.IsTrue(carousel.Fade);
         Assert.AreEqual("1rem", carousel.Gap);
-        Assert.AreEqual("Forwards", carousel.GoLeftAriaLabel);
-        Assert.AreSame(goLeftIcon, carousel.GoLeftIcon);
-        Assert.AreEqual("Forward", carousel.GoLeftIconName);
-        Assert.AreEqual("Backwards", carousel.GoRightAriaLabel);
-        Assert.AreSame(goRightIcon, carousel.GoRightIcon);
-        Assert.AreEqual("Back", carousel.GoRightIconName);
         Assert.IsTrue(carousel.HideDots);
         Assert.IsTrue(carousel.HideNextPrev);
         Assert.IsTrue(carousel.InfiniteScrolling);
         Assert.AreEqual("Photo {0}", carousel.ItemAriaLabelFormat);
+        Assert.AreEqual("Forwards", carousel.NextAriaLabel);
+        Assert.AreSame(nextIcon, carousel.NextIcon);
+        Assert.AreEqual("Forward", carousel.NextIconName);
         Assert.IsTrue(carousel.NoDrag);
         Assert.IsTrue(carousel.NoKeyboard);
         Assert.AreEqual("Stop", carousel.PauseButtonAriaLabel);
@@ -2902,6 +2999,9 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual("Start", carousel.PlayButtonAriaLabel);
         Assert.AreSame(playIcon, carousel.PlayIcon);
         Assert.AreEqual("Play", carousel.PlayIconName);
+        Assert.AreEqual("Backwards", carousel.PrevAriaLabel);
+        Assert.AreSame(prevIcon, carousel.PrevIcon);
+        Assert.AreEqual("Back", carousel.PrevIconName);
         Assert.AreSame(responsiveOptions, carousel.ResponsiveOptions);
         Assert.AreEqual(2, carousel.ScrollItemsCount);
         Assert.IsTrue(carousel.ShowPlayPause);
