@@ -101,7 +101,7 @@
             <div class="bev-section">
                 <div class="bev-section-title"><span class="bev-chip @LevelClass(s.Level)">@s.Level</span> <span class="bev-mono">@s.Category</span></div>
                 <div class="bev-section-body">
-                    <div style="margin-bottom:6px; white-space:pre-wrap">@(s.Message ?? "«hidden»: value access is None, so the values the message was formatted from are not read; its template is below.")</div>
+                    <div style="margin-bottom:6px; white-space:pre-wrap">@(s.Message ?? "«hidden»: value access is None, so the values the message was formatted from are not read" + (s.MessageTemplate is null ? ". It has no template with holes either: logged as one string, it may be interpolated, values and all." : "; its template is below."))</div>
                     <dl class="bev-kv">
                         <dt>Time</dt><dd>@BevFmt.Time(s.At)</dd>
                         @if (s.MessageTemplate is not null)

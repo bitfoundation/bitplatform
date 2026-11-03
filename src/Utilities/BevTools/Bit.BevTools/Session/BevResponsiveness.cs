@@ -70,7 +70,7 @@ public sealed record BevLongFrame(DateTimeOffset At, double DurationMs, double B
 
     /// <summary>
     /// How much of the frame BevTools' own panel spent rendering, on WebAssembly, where it renders on the same thread;
-    /// zero elsewhere. A frame mostly the panel's is not reported as the application's.
+    /// zero elsewhere. A frame mostly the panel's is not recorded at all: it is not the application's.
     /// </summary>
     public double OwnMs { get; init; }
 
@@ -101,7 +101,9 @@ public sealed class BevResponsiveness
     private readonly RingBuffer<BevLongFrame> _frames = new(Capacity);
     private readonly RingBuffer<BevInteraction> _interactions = new(Capacity);
     private readonly object _lock = new();
-    private readonly List<double> _durations = [];
+    // The percentile needs every duration; a session's interactions are few, and past this many the slowest of the
+    // last ones says as much. Made with the first one: a session that reports none (a server's request scope) pays nothing.
+    private RingBuffer<double>? _durations;
 
     /// <summary>What the browser supports; null until the hub attached.</summary>
     public BevResponsivenessSupport? Support { get; internal set; }
@@ -128,17 +130,20 @@ public sealed class BevResponsiveness
     {
         get
         {
+            double[] sorted;
             lock (_lock)
             {
-                if (_durations.Count == 0)
-                {
-                    return null;
-                }
-
-                var sorted = _durations.Order().ToArray();
-                // One outlier is ignored for every 50 interactions, as the metric does.
-                return sorted[Math.Max(0, sorted.Length - 1 - sorted.Length / 50)];
+                sorted = _durations?.ToArray() ?? [];
             }
+
+            if (sorted.Length == 0)
+            {
+                return null;
+            }
+
+            Array.Sort(sorted);
+            // One outlier is ignored for every 50 interactions, as the metric does.
+            return sorted[Math.Max(0, sorted.Length - 1 - sorted.Length / 50)];
         }
     }
 
@@ -159,14 +164,7 @@ public sealed class BevResponsiveness
         lock (_lock)
         {
             InteractionCount++;
-            // Bounded: the percentile needs every duration, a session's interactions are few, and past this many the
-            // slowest of the last ones says as much.
-            if (_durations.Count >= 10_000)
-            {
-                _durations.RemoveAt(0);
-            }
-
-            _durations.Add(interaction.DurationMs);
+            (_durations ??= new(10_000)).Add(interaction.DurationMs);
             if (SlowestInteraction is null || interaction.DurationMs > SlowestInteraction.DurationMs)
             {
                 SlowestInteraction = interaction;
@@ -185,7 +183,7 @@ public sealed class BevResponsiveness
             LongestFrameMs = 0;
             InteractionCount = 0;
             SlowestInteraction = null;
-            _durations.Clear();
+            _durations?.Clear();
         }
 
         _frames.Clear();
@@ -219,7 +217,13 @@ public sealed class BevResponsiveness
             }
 
             var startTicks = nowTicks - Ticks(f.AgeMs);
-            var ownMs = sameThread ? session.RenderTracker.OwnRenderMsWithin(startTicks - Tolerance, startTicks + Ticks(f.DurationMs) + Tolerance) : 0;
+            var ownMs = Math.Min(sameThread ? session.RenderTracker.OwnRenderMsWithin(startTicks - Tolerance, startTicks + Ticks(f.DurationMs) + Tolerance) : 0, f.DurationMs);
+            if (ownMs > 0 && ownMs >= f.DurationMs / 2)
+            {
+                // Mostly BevTools' own panel: not the application's frame, in the timeline or in the totals.
+                continue;
+            }
+
             var during = sameThread ? StartedWithin(events, startTicks, startTicks + Ticks(f.DurationMs), BevToolsEventKind.UiEvent, BevToolsEventKind.Navigation, BevToolsEventKind.RenderBatch) : [];
             var trigger = during.FirstOrDefault(e => e.Kind is BevToolsEventKind.UiEvent or BevToolsEventKind.Navigation);
             var scripts = (f.Scripts ?? []).Take(3).Select(Clean).ToArray();
@@ -227,7 +231,7 @@ public sealed class BevResponsiveness
             {
                 During = during.Take(3).Select(e => e.Title).ToArray(),
                 TriggerEventId = trigger?.Id,
-                OwnMs = Math.Min(ownMs, f.DurationMs),
+                OwnMs = ownMs,
             };
             frame.TimelineEventId = session.Timeline.Record(new BevToolsEvent
             {
@@ -238,7 +242,7 @@ public sealed class BevResponsiveness
                 Title = "Long frame: main thread busy " + BevFmt.Ms(f.DurationMs) + (frame.BlockingMs > 0 ? " (" + BevFmt.Ms(frame.BlockingMs) + " blocking)" : ""),
                 Detail = Describe(frame),
                 DurationMs = f.DurationMs,
-                Severity = frame.BlockingMs >= session.Options.Diagnostics.LongFrameBlockingMs && !frame.IsMostlyBevTools ? BevToolsSeverity.Warning : BevToolsSeverity.Info,
+                Severity = frame.BlockingMs >= session.Options.Diagnostics.LongFrameBlockingMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info,
                 ParentEventId = trigger?.Id,
             });
             state.Add(frame);

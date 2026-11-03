@@ -58,7 +58,7 @@ internal static class BuiltInRules
             foreach (var group in session.Logs.Snapshot().Where(l => l.DbCommand is { CommandText: not null } && l.At >= since).GroupBy(l => BevDbCommands.Normalize(l.DbCommand!.CommandText!), StringComparer.Ordinal))
             {
                 var executions = group.ToArray();
-                if (executions.Length < threshold || BevDbCommands.DensestRun(executions, TimeSpan.FromSeconds(2)) is not { } densest || densest.Run.Length < threshold)
+                if (executions.Length < threshold || DensestRun(executions, TimeSpan.FromSeconds(2)) is not { } densest || densest.Run.Length < threshold)
                 {
                     continue;
                 }
@@ -241,8 +241,8 @@ internal static class BuiltInRules
             }
 
             var threshold = Opt(context).LongFrameBlockingMs;
-            // A frame BevTools' own panel mostly spent rendering is BevTools' cost (About → overhead), not the application's.
-            var frames = session.Browser.Responsiveness.Frames.Where(f => f.At >= context.Now - TimeSpan.FromMinutes(1) && f.BlockingMs >= threshold && !f.IsMostlyBevTools).ToArray();
+            // A frame BevTools' own panel mostly spent rendering is not among them (BevResponsiveness.Record).
+            var frames = session.Browser.Responsiveness.Frames.Where(f => f.At >= context.Now - TimeSpan.FromMinutes(1) && f.BlockingMs >= threshold).ToArray();
             if (frames.Length == 0)
             {
                 yield break;
@@ -345,35 +345,17 @@ internal static class BuiltInRules
 
             var window = TimeSpan.FromSeconds(10);
             var since = context.Now - TimeSpan.FromMinutes(5);
-            foreach (var group in logs.Where(l => l.At >= since).GroupBy(l => (l.Category, Template: l.MessageTemplate ?? l.Text)))
+            // An entry whose message and template value access None hides cannot be told from any other.
+            foreach (var group in logs.Where(l => l.At >= since && (l.MessageTemplate ?? l.Message) is not null).GroupBy(l => (l.Category, Template: (l.MessageTemplate ?? l.Message)!)))
             {
                 var entries = group.ToArray();
-                if (entries.Length < threshold)
+                if (entries.Length < threshold || DensestRun(entries, window) is not { } densest || densest.Run.Length < threshold)
                 {
                     continue;
                 }
 
-                // The densest ten seconds: entries are in the order they were logged.
-                var (best, start) = (0, 0);
-                for (int first = 0, last = 0; last < entries.Length; last++)
-                {
-                    while (entries[last].At - entries[first].At > window)
-                    {
-                        first++;
-                    }
-
-                    if (last - first + 1 > best)
-                    {
-                        (best, start) = (last - first + 1, first);
-                    }
-                }
-
-                if (best < threshold)
-                {
-                    continue;
-                }
-
-                var burst = entries.AsSpan(start, best).ToArray();
+                var burst = densest.Run;
+                var best = burst.Length;
                 var senders = burst.Where(l => l.CallerComponent is not null).GroupBy(l => l.CallerComponent!).OrderByDescending(g => g.Count()).Take(3)
                     .Select(g => g.Key + " ×" + g.Count()).ToList();
                 var level = burst[^1].Level;
@@ -710,6 +692,35 @@ internal static class BuiltInRules
         }
 
         return ordered.GetRange(bestStart, bestCount);
+    }
+
+    /// <summary>
+    /// The most recent of the busiest runs of log entries within <paramref name="window"/>, and how long it lasted:
+    /// <paramref name="entries"/> are in the order they were logged.
+    /// </summary>
+    private static (BevLogRecord[] Run, TimeSpan Span)? DensestRun(IReadOnlyList<BevLogRecord> entries, TimeSpan window)
+    {
+        var (best, start) = (0, 0);
+        for (int first = 0, last = 0; last < entries.Count; last++)
+        {
+            while (entries[last].At - entries[first].At > window)
+            {
+                first++;
+            }
+
+            if (last - first + 1 >= best)
+            {
+                (best, start) = (last - first + 1, first);
+            }
+        }
+
+        if (best == 0)
+        {
+            return null;
+        }
+
+        var run = entries.Skip(start).Take(best).ToArray();
+        return (run, run[^1].At - run[0].At);
     }
 
     /// <summary>

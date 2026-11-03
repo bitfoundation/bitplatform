@@ -24,6 +24,7 @@ internal static class SessionResolver
     private static readonly AsyncLocal<BevToolsSession?> Ambient = new();
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SynchronizationContext, WeakReference<BevToolsSession>> ByContext = new();
     private static BevToolsSession?[] _cache = [];
+    private static bool _allInMultiUserHost;
 
     public static void Register(BevToolsSession session)
     {
@@ -104,6 +105,13 @@ internal static class SessionResolver
             return null;
         }
 
+        if (SynchronizationContext.Current is null && Volatile.Read(ref _allInMultiUserHost))
+        {
+            // A server's dispatchers say yes only on their own synchronization context: without one (the request pipeline,
+            // a hosted service) none can, and a busy server would ask every circuit's on each entry it logs.
+            return ActivityObserver.SessionOfCurrentActivity() is { IsDisposed: false } fromActivity ? fromActivity : null;
+        }
+
         BevToolsSession? single = null;
         var liveCount = 0;
         foreach (var session in sessions)
@@ -156,6 +164,9 @@ internal static class SessionResolver
             Sessions[i].TryGetTarget(out list[i]);
         }
 
+        // Read as sessions come and go, not per lookup. A session's host can only turn out to serve many users later (its
+        // platform reported), never the reverse, so a stale false only costs the scan it would have saved.
+        Volatile.Write(ref _allInMultiUserHost, list.Length > 0 && Array.TrueForAll(list, s => s is null or { IsInMultiUserHost: true }));
         Volatile.Write(ref _cache, list);
     }
 

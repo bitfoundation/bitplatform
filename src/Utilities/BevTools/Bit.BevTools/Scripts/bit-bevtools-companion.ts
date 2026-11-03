@@ -1107,10 +1107,15 @@ export class Companion {
 
     private logs(t: TargetModel) {
         const v = this.view();
-        // "level:warning" is a minimum, as in the in-app panel; the rest of the filter is text.
+        // "level:warning" is a minimum, read as the in-app panel reads it (BevLogLevels.Parse): a level's name or the
+        // start of it, its console label ("fail", "dbug") or its number; the rest of the filter is text.
         const levels = ["Trace", "Debug", "Information", "Warning", "Error", "Critical"];
+        const labels = ["trce", "dbug", "info", "warn", "fail", "crit"];
         const levelToken = /(?:^|\s)level:(\S+)/i.exec(v.filter);
-        const minimum = levelToken ? levels.findIndex(l => l.toLowerCase().startsWith(levelToken[1].toLowerCase())) : 0;
+        const level = levelToken ? levelToken[1].toLowerCase() : "";
+        const minimum = !levelToken ? 0
+            : /^\d+$/.test(level) ? (Number(level) <= 5 ? Number(level) : -1)
+            : levels.findIndex((l, i) => labels[i] === level || l.toLowerCase().startsWith(level));
         const text = v.filter.replace(/(?:^|\s)level:\S+/i, " ");
         const values = (l: any) => l.properties ? Object.keys(l.properties).map(k => k + "=" + l.properties[k]).join(" ") : "";
         const logs: any[] = (t.doc.logs || [])
@@ -1130,9 +1135,9 @@ export class Companion {
                         h("td", { class: "bc-num" }, c.executions), h("td", { class: "bc-num" }, fmt.ms(c.totalMs)), h("td", { class: "bc-num" }, fmt.ms(c.maxMs)), h("td", { class: "bc-num" }, c.failed)))))) : null,
                 logs.length ? h("table", null, h("tbody", null, logs.map(l => h("tr", { class: (v.selected === l.id ? "bc-selected " : "") + (l.level === "Warning" ? "bc-sev-warning" : l.level === "Error" || l.level === "Critical" ? "bc-sev-error" : ""), onclick: () => { v.selected = l.id; this.renderContent(); } },
                     h("td", { class: "bc-mono" }, fmt.time(l.at)), h("td", null, chip(l.level)), h("td", { class: "bc-mono bc-muted" }, String(l.category).split(".").pop()),
-                    h("td", { class: "bc-truncate" }, l.message ?? l.messageTemplate ?? ""))))) : this.empty("No log entries.", "What an ILogger writes while this runtime's code runs, at BitBevToolsOptions.MinimumLogLevel or above.")),
+                    h("td", { class: "bc-truncate" }, l.message ?? l.messageTemplate ?? "«hidden»"))))) : this.empty("No log entries.", "What an ILogger writes while this runtime's code runs, at BitBevToolsOptions.MinimumLogLevel or above.")),
             h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
-                h("h3", null, selected.message ?? selected.messageTemplate ?? ""),
+                h("h3", null, selected.message ?? selected.messageTemplate ?? "«hidden»"),
                 kv([["Level", selected.level], ["Category", selected.category], ["Time", fmt.time(selected.at)], ["Template", selected.messageTemplate || "–"],
                     ["Event id", String(selected.eventId) + (selected.eventName ? " (" + selected.eventName + ")" : "")], ["Sent from", selected.caller || "–"],
                     ["Trace", selected.traceId ? selected.traceId + " · " + selected.spanId : "–"], ["Exception", selected.exceptionType || "–"]]),

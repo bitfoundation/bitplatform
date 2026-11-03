@@ -21,6 +21,8 @@ namespace Bit.BevTools;
 internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILoggerProvider, ISupportExternalScope
 {
     private const int MaxProperties = 20;
+    // A message template's holes, the most read of one entry's state; far more than any template has.
+    private const int MaxPairs = 128;
     private const int MaxScopes = 8;
     private const int MaxMessageLength = 4000;
     private const int MaxScopeLength = 300;
@@ -203,31 +205,44 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             var rebuild = inspector.ValueAccess != BevValueAccess.Full;
             if (state is IReadOnlyList<KeyValuePair<string, object?>> pairs)
             {
-                var count = Math.Min(pairs.Count, MaxProperties + 1);
+                var count = Math.Min(pairs.Count, MaxPairs);
                 for (var i = 0; i < count; i++)
                 {
                     var (name, value) = pairs[i];
                     if (name == "{OriginalFormat}")
                     {
-                        // Code most of the time, but an interpolated or concatenated string logged as it is is its own
-                        // template, values and all.
-                        template = value is string text ? BevRedactor.RedactText(text) : null;
+                        template = value as string;
                         continue;
                     }
 
-                    if (properties.Count >= MaxProperties)
-                    {
-                        continue;
-                    }
-
+                    // Every value the message holds is inspected, so a sensitive one past the shown properties still
+                    // rebuilds it; only the first ones are listed.
                     var node = inspector.Describe(name, value);
-                    properties.Add(new(name, node.Display));
+                    if (properties.Count < MaxProperties)
+                    {
+                        properties.Add(new(name, node.Display));
+                    }
+
                     (values ??= []).Add((name, value, node));
                     // A value redacted by its name is in the logger's own text all the same: the message is rebuilt
                     // from what the properties show instead.
                     rebuild |= node.Kind == BevNodeKind.Redacted;
                 }
+
+                if (pairs.Count > count)
+                {
+                    // Not a template's state any more; what was not inspected stays out of the message, its hole as written.
+                    rebuild = true;
+                    if (pairs[^1] is { Key: "{OriginalFormat}", Value: string last })
+                    {
+                        template = last;
+                    }
+                }
             }
+
+            // Code most of the time, but an interpolated or concatenated string logged as it is is its own template,
+            // values and all: under None a template is kept only with holes, since without any nothing tells the two apart.
+            template = template is null || (inspector.ValueAccess == BevValueAccess.None && values is null) ? null : BevRedactor.RedactText(template);
 
             string? message;
             if (inspector.ValueAccess == BevValueAccess.None)
@@ -331,11 +346,14 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
         /// <summary>
         /// The template with each hole filled with what its property shows: a sensitive value redacted, an object under
-        /// <see cref="BevValueAccess.Shallow"/> as its type. Holes are matched by name, as the logger matches them.
+        /// <see cref="BevValueAccess.Shallow"/> as its type. The n-th hole takes the n-th value when that one bears its
+        /// name, as <c>LoggerMessage.Define</c> and <c>ILogger.Log*</c> fill them, a name repeated included; otherwise the
+        /// first value of its name, as the source generator does, which lists each parameter once, in the method's order.
         /// </summary>
         private static string Render(string template, List<(string Name, object? Value, BevInspectedNode Node)>? values)
         {
             var sb = new StringBuilder(template.Length + 32);
+            var hole = 0;
             var i = 0;
             while (i < template.Length)
             {
@@ -355,10 +373,11 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                     continue;
                 }
 
-                var hole = template.AsSpan(i + 1, end - i - 1);
-                var stop = hole.IndexOfAny(',', ':');
-                var name = (stop < 0 ? hole : hole[..stop]).Trim().TrimStart('@').TrimStart('$').ToString();
-                var found = values?.FindIndex(v => v.Name == name) ?? -1;
+                var text = template.AsSpan(i + 1, end - i - 1);
+                var stop = text.IndexOfAny(',', ':');
+                var name = (stop < 0 ? text : text[..stop]).Trim().TrimStart('@').TrimStart('$').ToString();
+                var found = values is not null && hole < values.Count && values[hole].Name == name ? hole : values?.FindIndex(v => v.Name == name) ?? -1;
+                hole++;
                 if (found < 0)
                 {
                     sb.Append(template, i, end - i + 1);
@@ -366,7 +385,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 else
                 {
                     var (_, value, node) = values![found];
-                    var format = stop >= 0 && hole[stop] == ':' ? hole[(stop + 1)..].ToString() : null;
+                    var format = stop >= 0 && text[stop] == ':' ? text[(stop + 1)..].ToString() : null;
                     sb.Append(node.Kind is BevNodeKind.Primitive && format is not null && value is IFormattable formattable
                         ? Safe(() => formattable.ToString(format, CultureInfo.InvariantCulture)) ?? Unquoted(node)
                         : Unquoted(node));

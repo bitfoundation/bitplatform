@@ -18,7 +18,7 @@
                     Component state is inspected per component in the Components panel.
                 </div>
             }
-            @foreach (var item in _entries.Where(e => _filter.MatchesText(e.Name, e.Description) || _changes.ContainsKey(e.Name)))
+            @foreach (var item in _entries.Where(e => _filter.MatchesText(e.Name, e.Description) || _changes.ContainsKey(e)))
             {
                 var name = item.Name;
                 <div class="bev-ev-row @(Ui.SelectedStateProvider == name ? "bev-selected" : "")" @onclick="() => { Ui.SelectedStateProvider = name; _selectedChange = null; Ui.Touch(); }">
@@ -45,7 +45,7 @@
             <div class="bev-section">
                 <div class="bev-section-title">Change history (@entry.ChangeCount) <span class="bev-muted" style="font-weight:normal">newest first · click to see before/after@(entry.Provider is IBevStateRestorer ? (Session.AllowsStateRestore ? " · ⟲ restores the state after a change" : " · restoring is off outside Development in a multi-user process") : "")</span></div>
                 <div class="bev-section-body">
-                    @foreach (var change in _changes.GetValueOrDefault(entry.Name) ?? [])
+                    @foreach (var change in _changes.GetValueOrDefault(entry) ?? [])
                     {
                         var c = change;
                         <div class="bev-ev-row @(_selectedChange?.Id == c.Id ? "bev-selected" : "")" @onclick="() => _selectedChange = c">
@@ -108,7 +108,8 @@
     private object? _snapshot;
     private BevStateChangeRecord? _selectedChange;
     private BevQueryFilter _filter = BevQueryFilter.Parse(null);
-    private Dictionary<string, BevStateChangeRecord[]> _changes = [];
+    // By entry, not by name: nothing makes two providers' names differ (a provider registered twice, two adapters named alike).
+    private Dictionary<BevStateProviderEntry, BevStateChangeRecord[]> _changes = [];
 
     private string? Query => Ui.GetQuery("state");
 
@@ -117,7 +118,7 @@
         _entries = Session.State.Entries;
         _filter = BevQueryFilter.Parse(Query);
         // A provider matches by name; otherwise by the changes that do: their action, detail and members.
-        _changes = _entries.ToDictionary(e => e.Name, e => e.Changes.Reverse()
+        _changes = _entries.ToDictionary(e => e, e => e.Changes.Reverse()
             .Where(c => _filter.MatchesText(e.Name, e.Description) || _filter.MatchesText(c.Action, c.Detail, string.Join(" ", c.Changes.Select(d => d.Path))))
             .ToArray());
         if (_filter.Terms.Count > 0)

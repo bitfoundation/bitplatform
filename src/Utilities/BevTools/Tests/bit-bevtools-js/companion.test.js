@@ -308,6 +308,15 @@ describe('companion', () => {
         input.value = 'level:warning';
         input.dispatchEvent(new Event('input'));
         expect(document.body.textContent).not.toContain('Cache hit for orders');
+        // Read as the in-app panel reads it: the console labels it shows, and the numbers.
+        for (const [filter, shown] of [['level:fail', false], ['level:warn', true], ['level:3', true], ['level:4', false], ['level:info', true], ['level:dbug', true], ['level:9', false]]) {
+            input.value = filter;
+            input.dispatchEvent(new Event('input'));
+            expect(document.body.textContent.includes('Retrying <b>2</b>'), filter).toBe(shown);
+        }
+
+        input.value = 'level:warning';
+        input.dispatchEvent(new Event('input'));
 
         [...document.querySelectorAll('tr')].find(r => r.textContent.includes('Retrying')).click();
         const detail = document.querySelector('.bc-right').textContent;

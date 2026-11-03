@@ -119,32 +119,6 @@ public static class BevDbCommands
             })
             .OrderByDescending(s => s.Executions).ThenByDescending(s => s.TotalMs)
             .ToList();
-
-    /// <summary>The most recent run of one command repeated within <paramref name="window"/>: the N+1 shape.</summary>
-    internal static (BevLogRecord[] Run, TimeSpan Span)? DensestRun(IReadOnlyList<BevLogRecord> executions, TimeSpan window)
-    {
-        var (best, start) = (0, 0);
-        for (int first = 0, last = 0; last < executions.Count; last++)
-        {
-            while (executions[last].At - executions[first].At > window)
-            {
-                first++;
-            }
-
-            if (last - first + 1 >= best)
-            {
-                (best, start) = (last - first + 1, first);
-            }
-        }
-
-        if (best == 0)
-        {
-            return null;
-        }
-
-        var run = executions.Skip(start).Take(best).ToArray();
-        return (run, run[^1].At - run[0].At);
-    }
 }
 
 /// <summary>One SQL command's executions in the log buffer.</summary>

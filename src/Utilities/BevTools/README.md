@@ -412,7 +412,8 @@ BevTools references `Bit.BevTools`, which carries the extension contracts:
   and value formatters, or hide internal components.
 - `IBevStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs;
   `IBevStateRestorer` alongside it, with a `RestoreToken` on each `BevStateChangeInfo`, lets the panel restore an
-  earlier state through the provider's own code.
+  earlier state through the provider's own code. A change's `Arguments` (an action's payload) are read through the
+  inspector at the session's value access; its `Detail` is shown as it is, so it carries no application value.
 - `IBevDiagnosticRule` - turn symptoms into findings with evidence.
 - `IBevToolsCommand` - add commands to the command palette.
 - `IBevToolsTimeline` / `BevToolsEvent` - write your own events into the activity timeline.

@@ -347,9 +347,12 @@ server-sent events are left alone, and the record says why.
 
 An integration is a small package that references `Bit.BevTools` and the library, and implements the public contract
 only (`IBevStateProvider`, `IBevStateRestorer`): nothing internal, so it is the shape a third party's integration has.
-`Bit.BevTools.Blex` keeps the last hundred global states by action sequence and restores through
-`BlexManager.RestoreGlobalState` on Blex's dispatcher. The inspector flattens JSON member by member for it (and for
-any provider that snapshots as JSON), names redacted as for objects.
+`Bit.BevTools.Blex` hands each action's arguments over as `BevStateChangeInfo.Arguments`, which the store reads through
+the inspector when the change is raised, and keeps the last hundred global states by action sequence - each read and
+serialized once, when BevTools asks for the snapshot of a change it records, so nothing is kept while capture is
+paused - and restores through `BlexManager.RestoreGlobalState` on Blex's dispatcher. The inspector flattens JSON member
+by member for it (and for any provider that snapshots as JSON) at `Full`, names redacted as for objects; below `Full`,
+JSON is its type and size, as an object is.
 
 ### Responsiveness (`Session/BevResponsiveness.cs`, the hub's *responsiveness* section)
 

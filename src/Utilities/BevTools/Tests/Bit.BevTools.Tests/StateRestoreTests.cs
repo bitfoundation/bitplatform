@@ -183,4 +183,23 @@ public class StateRestoreTests : BunitContext
         Assert.AreEqual(7, counter.Value);
         StringAssert.Contains(panel.Markup, "Restored Counter to after Add.");
     }
+
+    [TestMethod]
+    public void Two_providers_of_one_name_both_show_in_the_state_panel()
+    {
+        // Nothing makes names differ: a provider registered twice, two adapters named alike.
+        var first = new VersionedCounter();
+        var second = new VersionedCounter();
+        Session.State.Register(first);
+        Session.State.Register(second);
+        first.Add(7);
+        second.Add(40);
+        var panel = Render<BevToolsPanel>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("State", StringComparison.Ordinal)).Click();
+
+        IEnumerable<AngleSharp.Dom.IElement> Counters() => panel.FindAll(".bev-left .bev-ev-row").Where(r => r.QuerySelector(".bev-ev-title")!.TextContent == "Counter");
+        Assert.HasCount(2, Counters());
+        panel.Find("input[aria-label='Filter state providers and changes']").Input("40");
+        Assert.HasCount(1, Counters(), "the one whose change matches");
+    }
 }

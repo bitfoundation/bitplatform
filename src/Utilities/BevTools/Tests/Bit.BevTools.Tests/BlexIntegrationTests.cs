@@ -80,12 +80,52 @@ public class BlexIntegrationTests
     }
 
     [TestMethod]
-    public void Payloads_show_scalars_hide_objects_and_redact_credentials()
+    public void An_actions_arguments_are_shown_at_the_sessions_value_access()
     {
-        var token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJlLXZhbHVl";
-        Assert.IsNull(BevBlexStateProvider.Payload([]));
-        Assert.AreEqual("id=42, when=2026-01-02, item=BlexIntegrationTests", BevBlexStateProvider.Payload([new("id", 42), new("when", new DateOnly(2026, 1, 2)), new("item", this)]));
-        Assert.AreEqual("note=«redacted»", BevBlexStateProvider.Payload([new("note", token)]));
-        Assert.AreEqual("apiKey=«redacted»", BevBlexStateProvider.Payload([new("apiKey", "abc")]));
+        string?[] Details(BevValueAccess access)
+        {
+            var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = access);
+            using (scope)
+            {
+                var manager = new BlexManager();
+                var store = new BevCartStore();
+                manager.Register(store);
+                using var provider = new BevBlexStateProvider(manager);
+                session.State.Register(provider);
+                store.Add(2, "hunter2");
+                store.ApplyCoupon("SPRING");
+                return session.State.Entries.Single(e => e.Name == "Blex").Changes.Select(c => c.Detail).ToArray();
+            }
+        }
+
+        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Full));
+        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Shallow));
+        CollectionAssert.AreEqual(new[] { "count, password", "code" }, Details(BevValueAccess.None), "names only, as for every other value");
+    }
+
+    [TestMethod]
+    public async Task While_capture_is_paused_no_state_is_kept_for_a_restore()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var manager = new BlexManager();
+            var store = new BevCartStore();
+            manager.Register(store);
+            using var provider = new BevBlexStateProvider(manager);
+            session.State.Register(provider);
+
+            session.PauseCapture();
+            store.Add(1, "x");
+            Assert.IsEmpty(session.State.Entries.Single().Changes);
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => provider.RestoreAsync("1").AsTask(), "nothing recorded, nothing kept");
+
+            session.ResumeCapture();
+            store.Add(1, "x");
+            var change = Assert.ContainsSingle(session.State.Entries.Single().Changes);
+            store.Add(5, "x");
+            Assert.AreEqual("Restored Blex to after cart/Add.", await session.State.RestoreAsync(change.Id));
+            Assert.AreEqual(2, store.Items);
+        }
     }
 }

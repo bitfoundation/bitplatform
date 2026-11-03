@@ -44,6 +44,17 @@ public class StateStoreTests
         }
     }
 
+    private sealed class OrdersState : IBevStateProvider
+    {
+        public string Name => "Orders";
+
+        public event Action<BevStateChangeInfo>? Changed;
+
+        public object? GetSnapshot() => null;
+
+        public void Place(params KeyValuePair<string, object?>[] arguments) => Changed?.Invoke(new BevStateChangeInfo("Place", "from the cart") { Arguments = arguments });
+    }
+
     private sealed class ObservableState
     {
         private Action? _changed;
@@ -120,6 +131,27 @@ public class StateStoreTests
             Assert.AreEqual(0, entry.ChangeCount);
             Assert.IsEmpty(entry.Changes);
         }
+    }
+
+    [TestMethod]
+    public void A_changes_arguments_are_read_through_the_inspector_at_the_sessions_value_access()
+    {
+        string? Detail(BevValueAccess access)
+        {
+            var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = access);
+            using (scope)
+            {
+                var orders = new OrdersState();
+                session.State.Register(orders);
+                orders.Place(new("id", 42), new("street", "1 Main St"), new("password", "hunter2"), new("customer", new CounterState()));
+                return Assert.ContainsSingle(session.State.Entries.Single().Changes).Detail;
+            }
+        }
+
+        var full = Detail(BevValueAccess.Full);
+        StringAssert.StartsWith(full, "from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=");
+        Assert.AreEqual("from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=CounterState", Detail(BevValueAccess.Shallow), "an object by its type");
+        Assert.AreEqual("from the cart · id, street, password, customer", Detail(BevValueAccess.None), "names only");
     }
 
     [TestMethod]

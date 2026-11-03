@@ -2,8 +2,9 @@
 
 [bit Blex](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Blex) in
 [bit BevTools](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools)' State panel: the
-global state of every store, a change per action - its qualified name (`cart/AddItem`) and payload, values under
-sensitive names and credential-shaped text redacted - and restoring the state after any change through Blex's own time
+global state of every store, a change per action - its qualified name (`cart/AddItem`) and arguments, read as BevTools
+reads any application value: at its value access, values under sensitive names and credential-shaped text redacted -
+and restoring the state after any change through Blex's own time
 travel (`BlexManager.RestoreGlobalState`), the way the Redux DevTools jump to a state.
 
 ```csharp

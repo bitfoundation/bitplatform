@@ -148,6 +148,72 @@ public class LogsTests
     }
 
     [TestMethod]
+    public void Value_access_none_shows_no_message_logged_as_one_string_since_it_may_be_interpolated()
+    {
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.None);
+        using (scope)
+        {
+            var email = "bob@x.test";
+            using (session.UseAmbient())
+            {
+#pragma warning disable CA2254 // The point: an interpolated string is its own template.
+                factory.CreateLogger("Shop.Auth").LogError($"Login failed for {email}");
+#pragma warning restore CA2254
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.IsNull(log.Message);
+            Assert.IsNull(log.MessageTemplate);
+            Assert.AreEqual(BevRedactor.HiddenValue, log.Text);
+            StringAssert.Contains(Assert.ContainsSingle(session.Errors.Snapshot()).Message, BevRedactor.HiddenValue);
+            Assert.DoesNotContain(email, BevSessionExporter.ToJson(session), StringComparison.Ordinal);
+            Assert.DoesNotContain(email, BevSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void A_sensitive_value_past_the_listed_properties_is_still_kept_out_of_the_message()
+    {
+        var (session, scope, factory) = Create();
+        using (scope)
+        {
+            var names = Enumerable.Range(1, 21).Select(i => "{P" + i + "}").Append("{Password}");
+            object?[] values = [.. Enumerable.Range(1, 21).Select(i => (object?)i), "hunter2"];
+            using (session.UseAmbient())
+            {
+#pragma warning disable CA2254 // A template of 22 holes, built for the test.
+                factory.CreateLogger("Shop").LogInformation(string.Join(" ", names), values);
+#pragma warning restore CA2254
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.HasCount(20, log.Properties, "only the first are listed");
+            Assert.AreEqual(string.Join(" ", names), log.MessageTemplate, "the template is read past them");
+            Assert.DoesNotContain("hunter2", log.Message!, StringComparison.Ordinal);
+            StringAssert.EndsWith(log.Message, "21 «redacted»");
+        }
+    }
+
+    [TestMethod]
+    public void A_hole_named_twice_takes_the_value_in_its_place_when_the_message_is_rebuilt()
+    {
+        var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.Shallow);
+        using (scope)
+        {
+            using (session.UseAmbient())
+            {
+                factory.CreateLogger("Shop").LogInformation("Moved {Item} from {Place} to {Place}", "box", "A", "B");
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.AreEqual("Moved box from A to B", log.Message);
+            var json = BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "logs" } });
+            Assert.AreEqual(1, json.Split("\"Place\"").Length - 1, "a name once in the export's properties");
+            Assert.IsNotNull(System.Text.Json.Nodes.JsonNode.Parse(json)!["logs"]!.AsArray()[0]!["properties"]!.AsObject()["Place"], "and an export a JSON reader takes");
+        }
+    }
+
+    [TestMethod]
     public void Value_access_shallow_never_prints_an_object_through_its_ToString()
     {
         var (session, scope, factory) = Create(o => o.ValueAccess = BevValueAccess.Shallow);

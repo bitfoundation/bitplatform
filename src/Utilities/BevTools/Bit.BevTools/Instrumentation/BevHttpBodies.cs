@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Buffers;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Bit.BevTools;
 
@@ -44,9 +44,16 @@ internal static class BevHttpBodies
 
             return (null, "a stream is read once, as it is sent: not read");
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException)
+        catch (HttpRequestException ex) when (ex.InnerException is null)
         {
+            // What LoadIntoBufferAsync throws for content past its limit; a failed copy wraps the exception it hit.
             return (null, "larger than " + BevToolsHttpMessageHandler.FormatBytes(max) + ": not read");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // An unknown charset, a value the serializer refuses: the app's send meets the same failure on its own, and a
+            // body BevTools could not read must not be the reason it does.
+            return (null, "could not be read: " + ex.GetType().Name);
         }
     }
 
@@ -87,8 +94,9 @@ internal static class BevHttpBodies
             await content.LoadIntoBufferAsync(max, cancellationToken);
             return (Redact(session, await content.ReadAsStringAsync(cancellationToken), type, max), null);
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or OperationCanceledException)
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
+            // Whatever failed, the response is the app's to read: it gets its own exception, if any, when it does.
             return (null, "could not be read: " + ex.GetType().Name);
         }
     }
@@ -143,14 +151,16 @@ internal static class BevHttpBodies
         redacted = body;
         try
         {
-            var node = JsonNode.Parse(body, documentOptions: new JsonDocumentOptions { MaxDepth = 64 });
-            if (node is null)
+            // A document rewritten, not a node tree edited: JsonObject refuses a name that repeats, and a body is shown as
+            // it was sent, a repeated name included - each occurrence redacted by its name.
+            using var document = JsonDocument.Parse(body, new JsonDocumentOptions { MaxDepth = 64 });
+            var buffer = new ArrayBufferWriter<byte>(body.Length + 64);
+            using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }))
             {
-                return false;
+                Write(session, writer, document.RootElement);
             }
 
-            Walk(session, node, 0);
-            redacted = node.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+            redacted = Encoding.UTF8.GetString(buffer.WrittenSpan);
             return true;
         }
         catch (JsonException)
@@ -159,38 +169,38 @@ internal static class BevHttpBodies
         }
     }
 
-    private static void Walk(BevToolsSession session, JsonNode node, int depth)
+    private static void Write(BevToolsSession session, Utf8JsonWriter writer, JsonElement element)
     {
-        if (depth > 64)
+        switch (element.ValueKind)
         {
-            return;
-        }
-
-        switch (node)
-        {
-            case JsonObject obj:
-                foreach (var name in obj.Select(p => p.Key).ToList())
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject())
                 {
-                    if (session.Redactor.IsSensitiveName(name))
+                    writer.WritePropertyName(property.Name);
+                    if (session.Redactor.IsSensitiveName(property.Name))
                     {
-                        obj[name] = BevRedactor.RedactedValue;
+                        writer.WriteStringValue(BevRedactor.RedactedValue);
                     }
-                    else if (obj[name] is { } child)
+                    else
                     {
-                        Walk(session, child, depth + 1);
+                        Write(session, writer, property.Value);
                     }
                 }
 
+                writer.WriteEndObject();
                 break;
-            case JsonArray array:
-                foreach (var item in array)
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
                 {
-                    if (item is not null)
-                    {
-                        Walk(session, item, depth + 1);
-                    }
+                    Write(session, writer, item);
                 }
 
+                writer.WriteEndArray();
+                break;
+            default:
+                element.WriteTo(writer);
                 break;
         }
     }

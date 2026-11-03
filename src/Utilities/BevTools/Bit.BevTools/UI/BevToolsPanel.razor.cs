@@ -328,6 +328,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
     /// </summary>
     private void SampleMemory()
     {
+        if (_memorySamplingFailed)
+        {
+            return;
+        }
+
         try
         {
             var sampled = Session.Memory.Sample(Session, DateTimeOffset.UtcNow, () => BevMemoryReading.Now(

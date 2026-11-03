@@ -202,6 +202,21 @@ public class ObjectInspectorTests
     }
 
     [TestMethod]
+    public void Json_is_diffed_member_by_member_only_at_Full()
+    {
+        // What a state provider that snapshots as JSON hands over (Blex does).
+        using var document = System.Text.Json.JsonDocument.Parse("""{"Cart":{"customerEmail":"bob@x.test","items":[1,2]}}""");
+        var options = new BitBevToolsOptions();
+        var shallow = new BevObjectInspector(options, new BevRedactor(options.SensitiveNamePatterns), valueAccess: BevValueAccess.Shallow);
+
+        Assert.IsEmpty(shallow.Flatten(document.RootElement), "below Full, JSON is its type and size, as an object is");
+
+        var full = Create().Flatten(document.RootElement);
+        Assert.AreEqual("\"bob@x.test\"", full["Cart.customerEmail"]);
+        Assert.AreEqual("2", full["Cart.items[1]"]);
+    }
+
+    [TestMethod]
     public void Redacts_by_name_and_by_attribute()
     {
         var inspector = Create();

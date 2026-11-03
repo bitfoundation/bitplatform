@@ -43,11 +43,12 @@ public sealed class BevStateProviderEntry
     public string? Error { get; internal set; }
 }
 
-internal sealed record PendingStateChange(BevStateChangeInfo Info, DateTimeOffset At, long? TriggerEventId, Dictionary<string, string>? Snapshot, string? Error);
+internal sealed record PendingStateChange(BevStateChangeInfo Info, string? Detail, DateTimeOffset At, long? TriggerEventId, Dictionary<string, string>? Snapshot, string? Error);
 
 /// <summary>Tracks registered state providers, records changes and computes before/after diffs.</summary>
 internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
 {
+    private const int MaxArguments = 8;
     private readonly BevToolsSession _session;
     private readonly BitBevToolsOptions _options;
     private readonly object _lock = new();
@@ -170,6 +171,8 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         string? error = null;
         var at = DateTimeOffset.UtcNow;
         var triggerEventId = _session.CurrentTriggerEventId;
+        // Now, while the arguments are what the change was made with.
+        var detail = DescribeDetail(info);
         try
         {
             snapshot = _session.Inspector.Flatten(entry.Provider.GetSnapshot());
@@ -186,7 +189,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                 return;
             }
 
-            entry.PendingChanges[sequence] = new PendingStateChange(info, at, triggerEventId, snapshot, error);
+            entry.PendingChanges[sequence] = new PendingStateChange(info, detail, at, triggerEventId, snapshot, error);
             if (entry.PendingChanges.Count > _options.MaxStateChangesPerProvider)
             {
                 entry.Generation++;
@@ -218,7 +221,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                     At = entry.LastChangedAt.Value,
                     Provider = entry.Name,
                     Action = pending.Info?.Action,
-                    Detail = pending.Info?.Detail,
+                    Detail = pending.Detail,
                     Changes = changes,
                     Snapshot = pending.Snapshot,
                     TriggerEventId = pending.TriggerEventId,
@@ -241,6 +244,24 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
 
         _session.Overhead.AddInspection(Stopwatch.GetTimestamp() - start);
         _session.Touch();
+    }
+
+    /// <summary>
+    /// The provider's detail, then the change's arguments as the inspector shows them ("count=2, password=«redacted»"),
+    /// by name only under <see cref="BevValueAccess.None"/>.
+    /// </summary>
+    private string? DescribeDetail(BevStateChangeInfo? info)
+    {
+        if (info?.Arguments is not { Count: > 0 } arguments)
+        {
+            return info?.Detail;
+        }
+
+        var inspector = _session.Inspector;
+        var text = string.Join(", ", arguments.Take(MaxArguments).Select(a => inspector.ValueAccess == BevValueAccess.None ? a.Key : a.Key + "=" + inspector.Describe(a.Key, a.Value).Display))
+            + (arguments.Count > MaxArguments ? $" … +{arguments.Count - MaxArguments}" : "");
+        text = text.Length <= 300 ? text : text[..299] + "…";
+        return string.IsNullOrEmpty(info.Detail) ? text : info.Detail + " · " + text;
     }
 
     /// <summary>

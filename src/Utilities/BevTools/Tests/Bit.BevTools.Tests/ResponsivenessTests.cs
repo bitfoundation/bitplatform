@@ -99,11 +99,15 @@ public class ResponsivenessTests
                 [new BevLongFramePayload { AgeMs = 1010, DurationMs = 260, BlockingMs = 210 }, new BevLongFramePayload { AgeMs = 410, DurationMs = 300, BlockingMs = 250 }],
                 []);
 
-            var frames = session.Browser.Responsiveness.Frames;
-            Assert.IsTrue(frames[0].OwnMs is > 190 and < 215, "about 200 ms: " + frames[0].OwnMs);
-            Assert.IsTrue(frames[0].IsMostlyBevTools);
-            StringAssert.StartsWith(BevResponsiveness.Describe(frames[0]), BevFmt.Ms(frames[0].OwnMs) + " of it BevTools' own panel rendering");
-            Assert.IsFalse(frames[1].IsMostlyBevTools);
+            var responsiveness = session.Browser.Responsiveness;
+            var frame = Assert.ContainsSingle(responsiveness.Frames, "the panel's own frame is not recorded");
+            Assert.IsTrue(frame.OwnMs is > 10 and < 35, "about 20 ms: " + frame.OwnMs);
+            Assert.IsFalse(frame.IsMostlyBevTools);
+            StringAssert.StartsWith(BevResponsiveness.Describe(frame), BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering");
+            Assert.AreEqual(1, responsiveness.LongFrameCount, "nor counted");
+            Assert.AreEqual(250, responsiveness.TotalBlockingMs);
+            Assert.AreEqual(300, responsiveness.LongestFrameMs);
+            Assert.IsFalse(session.Timeline.Snapshot().Any(e => e.Category == "long-frame" && e.DurationMs == 260), "nor in the timeline");
 
             session.Diagnostics.Evaluate(force: true);
             var blocked = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "browser.long-frame", session.Diagnostics.Findings).Diagnostic;

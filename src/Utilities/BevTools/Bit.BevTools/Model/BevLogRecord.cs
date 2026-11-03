@@ -25,11 +25,15 @@ public sealed class BevLogRecord
 
     /// <summary>
     /// The message as the logger formatted it, redacted; null when <see cref="BevValueAccess.None"/> keeps the values it
-    /// was formatted from unread (<see cref="MessageTemplate"/> still says what was logged).
+    /// was formatted from unread (<see cref="MessageTemplate"/> still says what was logged, when it has holes).
     /// </summary>
     public string? Message { get; init; }
 
-    /// <summary>The message template of a structured entry ("Loaded {Count} orders in {ElapsedMs} ms"), when it has one.</summary>
+    /// <summary>
+    /// The message template of a structured entry ("Loaded {Count} orders in {ElapsedMs} ms"), when it has one. Under
+    /// <see cref="BevValueAccess.None"/> only one with holes: a message without any may be an interpolated string, which
+    /// is its own template, values and all.
+    /// </summary>
     public string? MessageTemplate { get; init; }
 
     /// <summary>The template's values by name, each as the inspector shows it at the session's value access, redacted.</summary>
@@ -68,8 +72,8 @@ public sealed class BevLogRecord
 
     public long TimelineEventId { get; internal set; }
 
-    /// <summary>What a list shows for it: the message, else its template.</summary>
-    public string Text => Message ?? MessageTemplate ?? "";
+    /// <summary>What a list shows for it: the message, else its template, else that neither may be shown.</summary>
+    public string Text => Message ?? MessageTemplate ?? BevRedactor.HiddenValue;
 
     /// <summary>"Information" as the short label consoles use: "info", "warn", "fail", "crit", "dbug", "trce".</summary>
     public string LevelLabel => BevLogLevels.Label(Level);

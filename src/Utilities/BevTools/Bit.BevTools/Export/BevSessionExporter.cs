@@ -988,9 +988,15 @@ public static class BevSessionExporter
             if (l.Properties.Count > 0)
             {
                 w.WriteStartObject("properties");
+                // A template can name a hole twice ("from {Place} to {Place}"); an object's names are unique, so the first
+                // value stands for it, as the message shows every one.
+                HashSet<string> written = new(StringComparer.Ordinal);
                 foreach (var (name, value) in l.Properties)
                 {
-                    w.WriteString(name, value);
+                    if (written.Add(name))
+                    {
+                        w.WriteString(name, value);
+                    }
                 }
 
                 w.WriteEndObject();

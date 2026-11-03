@@ -102,6 +102,36 @@ public class HttpBodiesTests
     }
 
     [TestMethod]
+    public async Task A_body_bevtools_cannot_read_never_costs_the_app_its_request()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.CaptureHttpBodies = true);
+        using (scope)
+        {
+            // A repeated name is JSON a node tree refuses; the app reads the response all the same.
+            const string answer = "{\"a\":1,\"password\":\"hunter2\",\"password\":\"hunter3\"}";
+            var (client, echo) = Client(session, () => Json(answer));
+            var response = await client.PostAsync("pairs", new StringContent("{\"token\":\"x1\",\"token\":\"x2\",\"b\":2}", Encoding.UTF8, "application/json"));
+            Assert.AreEqual(answer, await response.Content.ReadAsStringAsync());
+            Assert.IsNotNull(echo.Received, "the request was sent");
+
+            var record = Assert.ContainsSingle(session.Http.Snapshot());
+            Assert.IsNull(record.Error);
+            Assert.DoesNotContain("hunter", record.ResponseBody!, StringComparison.Ordinal);
+            Assert.AreEqual(2, record.ResponseBody!.Split("\"password\": \"«redacted»\"").Length - 1, "each occurrence redacted by its name");
+            Assert.DoesNotContain("x1", record.RequestBody!, StringComparison.Ordinal);
+            Assert.DoesNotContain("x2", record.RequestBody!, StringComparison.Ordinal);
+            StringAssert.Contains(record.RequestBody, "\"b\": 2");
+
+            // A charset nothing can decode: not read, and not called too large either.
+            var unknown = new StringContent("short", Encoding.UTF8, "text/plain");
+            unknown.Headers.ContentType!.CharSet = "bogus";
+            // The echo decodes what it received, and cannot either; what BevTools noted before the send is what matters.
+            await Assert.ThrowsAsync<InvalidOperationException>(() => client.PostAsync("notes", unknown));
+            StringAssert.StartsWith(session.Http.Snapshot()[^1].RequestBodyNote, "could not be read: ");
+        }
+    }
+
+    [TestMethod]
     public async Task A_stream_and_a_response_of_unknown_length_are_never_read()
     {
         var (session, scope) = TestHelpers.CreateSession(o => o.CaptureHttpBodies = true);

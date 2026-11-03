@@ -33,6 +33,13 @@ public sealed record BevStateChangeInfo(string? Action = null, string? Detail = 
     /// implements <see cref="IBevStateRestorer"/>: BevTools offers to restore the change and hands the token back.
     /// </summary>
     public string? RestoreToken { get; init; }
+
+    /// <summary>
+    /// The values the change was made with, by name: an action's arguments. BevTools reads them through its inspector, at
+    /// the session's value access, when the change is raised, and shows them after <see cref="Detail"/>, which is shown
+    /// as it is: put the application's values here, not there.
+    /// </summary>
+    public IReadOnlyList<KeyValuePair<string, object?>>? Arguments { get; init; }
 }
 
 /// <summary>

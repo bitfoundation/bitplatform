@@ -835,8 +835,9 @@ public sealed class BevObjectInspector
         }
 
         // JSON (a state provider that snapshots its state as JSON, a store's serialized slice) is shown as text but
-        // diffed member by member, like any object: each property by its name, sensitive names redacted.
-        if (value is JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } json && node.Kind is BevNodeKind.Special && depth < maxDepth)
+        // diffed member by member, like any object: each property by its name, sensitive names redacted. Only at Full,
+        // where an object is walked too; below it, JSON is the type and size its node shows.
+        if (value is JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } json && node.Kind is BevNodeKind.Special && depth < maxDepth && ValueAccess == BevValueAccess.Full)
         {
             FlattenJson(result, path, json, depth, maxDepth, maxItems, maxEntries, ancestors, deadline);
             return;
