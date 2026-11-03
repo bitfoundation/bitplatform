@@ -10,10 +10,14 @@
     <p class="gallery-eyebrow">@Localizer[nameof(LandingStrings.GalleryEyebrow)]</p>
     <h1>@Localizer[nameof(LandingStrings.GalleryTitle)]</h1>
     <p class="lp-lede">@Localizer[nameof(LandingStrings.GalleryLede)]</p>
+    <div class="gallery-tour">
+        <BitButton IconName="@BitIconName.Play" OnClick="tourLauncher.Start">@T[nameof(TourStrings.Offer)]</BitButton>
+        <p>@T[nameof(TourStrings.OfferNote)]</p>
+    </div>
 </section>
 
 <section class="lp-container gallery-samples" aria-label="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
-    <BitChoiceGroup Items="filters" @bind-Value="filter" Horizontal NoCircle AriaLabel="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
+    <BitChoiceGroup Items="filters" @bind-Value="filter" Horizontal NoCircle AriaLabel="@Localizer[nameof(LandingStrings.GalleryEyebrow)]" Class="gallery-filters">
         <ItemTemplate Context="item">
             <span class="gallery-filter @(item.Value == filter ? "is-selected" : null)">@item.Text</span>
         </ItemTemplate>

@@ -1,3 +1,5 @@
+using Boilerplate.LandingPage.Client.Components.Tour;
+
 namespace Boilerplate.LandingPage.Client.Components.Pages.Gallery;
 
 public partial class GalleryPage
@@ -5,6 +7,9 @@ public partial class GalleryPage
     private const string All = "all";
     private const string Launched = "launched";
     private const string PreLaunch = "pre-launch";
+
+    [AutoInject] private LandingTourLauncher tourLauncher = default!;
+    [AutoInject] private IStringLocalizer<TourStrings> T = default!;
 
     private string? filter = All;
     private BitChoiceGroupItem<string>[] filters = [];

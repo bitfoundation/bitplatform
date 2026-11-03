@@ -124,6 +124,22 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task TheGallery_Should_OfferTheTourWithoutLoadingIt()
+    {
+        var html = await client.GetStringAsync(LandingRoutes.Home);
+
+        Assert.DoesNotContain("Bonboarding", html, "The tour's code and styles download only when someone starts it.");
+
+        if (html.Contains("gallery-hero", StringComparison.Ordinal) is false)
+        {
+            Assert.Inconclusive("The home page is a sample, not the gallery.");
+            return;
+        }
+
+        Assert.Contains("class=\"gallery-tour\"", html);
+    }
+
+    [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
         using var response = await client.GetAsync(LandingSites.All[0].Path);

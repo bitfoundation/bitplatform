@@ -30,6 +30,11 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - **The chat** is `Components/Chat/`, in three looks (bubble, inline, concierge) that the samples pick from. It loads
   only when a visitor opens it. What it may say about each sample is in
   `src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatPrompts.cs`.
+- **The tour** of the samples is `Components/Tour/`, started from the gallery's button and rendered next to the router
+  in `Components/Routes.razor`, so it survives the move from one sample's layout to another's. `LandingTourSteps.cs`
+  lists its steps, each with the page it opens and the CSS class it points at, and `TourStrings.resx` with its
+  `.fa.resx` holds their texts. Bit.Bonboarding runs it and, like the chat, is downloaded only when a visitor starts it;
+  nothing outside `LandingTourHost` and `LandingTourSteps` may use Bonboarding's types.
 - **The server** (`src/LandingPage/Boilerplate.LandingPage.Server`): `Features/Waitlist` (join, confirm,
   unsubscribe, and where the list is kept), `Features/Email` (the Razor email templates), `Features/Seo` (sitemap,
   robots.txt, llms.txt, found from the pages' routes), `Features/Download` (the link that sends each phone to its own
@@ -49,7 +54,7 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - **Both languages, both directions, both color schemes, phone to desktop**, for every change.
 - **What a crawler or a link preview should see is in the prerendered page**: no text that appears only after the
   app loads, every page with its own title, description and preview image through `LandingHead`, and one `h1`.
-- **Keep the download small.** The chat and its assets load on first use. Before adding a package, find out what it
+- **Keep the download small.** The chat, the tour and their assets load on first use. Before adding a package, find out what it
   adds to the visitor's download and prefer what the project already has. Images are sized and in a modern format,
   fonts are self-hosted subsets with `font-display: swap`, and work that isn't needed for the first view starts after
   the page is interactive.
@@ -80,7 +85,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
    at `/about`, `/fa-IR/about` and so on.
 3. Delete `Components/Pages/Gallery/`, every other sample's folder, styles, images and chat facts, and their entries
    in `LandingSites.cs` and the project file. `Components/Layout/SiteLayout.razor` and the gallery's texts in
-   `LandingStrings` go with the gallery when nothing else uses them.
+   `LandingStrings` go with the gallery when nothing else uses them, and so does its tour: `Components/Tour/`,
+   `<LandingTour />` in `Components/Routes.razor`, `LandingTourLauncher` and its registration, and the
+   `Bit.Bonboarding` and `TourStrings` lines in the client's project file.
 4. Replace the sample's name, logo, texts, images (its link preview included), company details, store links and chat
    facts with the product's, in both languages, and give it the product's brand.
 5. Build, then check the home page, a few inner pages, a missing page, `/sitemap.xml`, `/robots.txt` and the download

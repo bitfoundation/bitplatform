@@ -1,0 +1,29 @@
+@import '../../Styles/tokens';
+
+.lp-tour ::deep .bit-bonboarding-root[data-bonboarding-theme] {
+    @include gallery-theme;
+    @include stacks;
+
+    --bit-bonboarding-surface: var(--lp-surface);
+    --bit-bonboarding-surface-subtle: var(--lp-bg-alt);
+    --bit-bonboarding-text: var(--lp-fg);
+    --bit-bonboarding-text-muted: var(--lp-fg-muted);
+    --bit-bonboarding-border: var(--lp-line);
+    --bit-bonboarding-border-strong: var(--bit-clr-brd-pri);
+    --bit-bonboarding-accent: var(--lp-accent);
+    --bit-bonboarding-accent-hover: var(--bit-clr-pri-hover);
+    --bit-bonboarding-accent-active: var(--bit-clr-pri-active);
+    --bit-bonboarding-accent-text: var(--lp-accent-fg);
+    --bit-bonboarding-accent-soft: var(--lp-accent-soft);
+    --bit-bonboarding-font: var(--lp-stack-body);
+    --bit-bonboarding-radius: var(--lp-radius);
+    --bit-bonboarding-radius-sm: var(--lp-radius-control);
+}
+
+:root[bit-theme="dark"] .lp-tour ::deep .bit-bonboarding-root[data-bonboarding-theme] {
+    @include gallery-theme-dark;
+}
+
+:root:lang(fa) .lp-tour ::deep .bit-bonboarding-root[data-bonboarding-theme] {
+    @include stacks-fa;
+}

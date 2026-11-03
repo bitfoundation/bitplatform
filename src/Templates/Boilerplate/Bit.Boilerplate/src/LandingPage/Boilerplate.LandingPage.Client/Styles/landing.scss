@@ -4,8 +4,6 @@
 
 :root {
     --lp-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --lp-stack-body: var(--lp-font-body), "Vazirmatn", system-ui, sans-serif;
-    --lp-stack-display: var(--lp-font-display), "Vazirmatn", system-ui, sans-serif;
     --lp-max-width: 1180px;
     --lp-gutter: clamp(16px, 4vw, 40px);
     --lp-section-space: clamp(64px, 9vw, 128px);
@@ -13,18 +11,16 @@
     --lp-ease: cubic-bezier(.2, .7, .2, 1);
     --bit-tpg-font-family: var(--lp-stack-body);
 
-    @include type(("Instrument Sans", system-ui, sans-serif), ("Instrument Sans", system-ui, sans-serif));
-    @include shape(16px, 10px);
-    @include palette(light, #2448C9, #FFFFFF, #FBFBFA, #F3F3F0, #FFFFFF, #17181B, #5A5F69, #E4E4E0);
+    @include stacks;
+    @include gallery-theme;
 }
 
 :root[bit-theme="dark"] {
-    @include palette(dark, #8EA8FF, #0C0E14, #111214, #17181B, #1D1F23, #F2F2EF, #A9ADB5, #2C2E33);
+    @include gallery-theme-dark;
 }
 
 :root:lang(fa) {
-    --lp-stack-body: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-body), system-ui, sans-serif;
-    --lp-stack-display: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-display), system-ui, sans-serif;
+    @include stacks-fa;
 }
 
 *,

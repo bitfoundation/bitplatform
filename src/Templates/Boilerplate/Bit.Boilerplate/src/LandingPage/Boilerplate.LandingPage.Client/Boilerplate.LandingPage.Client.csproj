@@ -28,6 +28,7 @@
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <PackageReference Include="Bit.BlazorUI.AI" />
+        <PackageReference Include="Bit.Bonboarding" />
         <PackageReference Include="Bit.Bswup" />
         <PackageReference Include="Bit.Butil" />
         <PackageReference Include="Bit.Belemetry" />
@@ -55,6 +56,11 @@
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.Client.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bonboarding.wasm" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <RuntimeHostConfigurationOption Include="Bit.Bonboarding.LazyLoad" Value="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -69,6 +75,7 @@
         <EmbeddedResource Update="Components\Pages\Hotel\HotelStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="HotelStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.Hotel" StronglyTypedFileName="$(IntermediateOutputPath)\HotelStrings.Designer.cs" />
         <EmbeddedResource Update="Components\Pages\Restaurant\RestaurantStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="RestaurantStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.Restaurant" StronglyTypedFileName="$(IntermediateOutputPath)\RestaurantStrings.Designer.cs" />
         <EmbeddedResource Update="Components\Pages\PeriodTracker\PeriodTrackerStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="PeriodTrackerStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.PeriodTracker" StronglyTypedFileName="$(IntermediateOutputPath)\PeriodTrackerStrings.Designer.cs" />
+        <EmbeddedResource Update="Components\Tour\TourStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="TourStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Tour" StronglyTypedFileName="$(IntermediateOutputPath)\TourStrings.Designer.cs" />
         <None Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
     </ItemGroup>
 

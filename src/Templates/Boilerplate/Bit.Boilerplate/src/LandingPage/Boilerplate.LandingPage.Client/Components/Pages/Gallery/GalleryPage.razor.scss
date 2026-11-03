@@ -24,6 +24,20 @@
     color: var(--lp-fg-muted);
 }
 
+.gallery-tour {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-top: 6px;
+
+    p {
+        margin: 0;
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+    }
+}
+
 .gallery-samples {
     display: grid;
     gap: 24px;

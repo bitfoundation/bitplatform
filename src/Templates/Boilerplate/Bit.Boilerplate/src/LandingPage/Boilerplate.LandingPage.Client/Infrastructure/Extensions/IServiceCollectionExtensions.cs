@@ -16,6 +16,7 @@ public static class IServiceCollectionExtensions
 
         services.TryAddScoped<LazyAssemblyLoader>();
         services.TryAddScoped<LandingConsentPrompt>();
+        services.TryAddScoped<LandingTourLauncher>();
         services.TryAddScoped<ILandingChatClient, WebSocketLandingChatClient>();
         services.TryAddScoped<IWaitlistClient, HttpWaitlistClient>();
         services.TryAddScoped<IStoreListingClient, HttpStoreListingClient>();

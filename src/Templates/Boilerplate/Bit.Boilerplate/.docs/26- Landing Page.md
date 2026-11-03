@@ -65,14 +65,24 @@ fits its business:
 - Legal pages (privacy, terms, cookies, imprint and accessibility), a not-found page of each sample's own, an
   announcement bar, a countdown, an FAQ, share buttons and a consent banner. It installs and works as a PWA as well.
 
+## The tour
+
+The gallery offers a two-minute tour that opens a few samples one after another and points at what they show: the
+App Store listing, the chat, the waitlist, the inner pages, a launch one platform at a time, the two languages and
+themes, and what search engines get. It runs on bit Bonboarding, which is downloaded only when a visitor starts it,
+keeps no progress in the browser and wears the gallery's look on every sample. The steps are in
+[`LandingTourSteps.cs`](/src/LandingPage/Boilerplate.LandingPage.Client/Components/Tour/LandingTourSteps.cs), each with
+the page it opens and the element it points at, and their texts in `TourStrings.resx` and `TourStrings.fa.resx`. A
+step whose sample is gone is left out, and one whose element isn't there shows in the middle of the screen.
+
 ## How it's built
 
 - **Prerendered on every visit.** The server renders each page to HTML, so a crawler, a link preview and a visitor on
   a slow phone all see it at once, then WebAssembly takes over. bit Bswup runs it as a PWA in `AlwaysPrerender` mode:
   each visit still gets the server's fresh page, and the app's files come from the device's cache.
-- **Small to download.** Trimmed and minified with Bit.Minifier, the chat lazy-loaded, only the visitor's language's
-  data downloaded, fonts self-hosted as small subsets, static files precompressed with Brotli, and responses compressed
-  with Brotli and Gzip (and Zstandard on .NET 11).
+- **Small to download.** Trimmed and minified with Bit.Minifier, the chat and the tour lazy-loaded, only the visitor's
+  language's data downloaded, fonts self-hosted as small subsets, static files precompressed with Brotli, and responses
+  compressed with Brotli and Gzip (and Zstandard on .NET 11).
 - **Cacheable.** The pages set no cookies, the antiforgery check included, so a CDN can cache them; static files are
   cached for a week when their URL carries a version, and pages for ten minutes.
 - **Light on the server.** The waitlist and the chat have rate limits of their own, the rating is looked up only for
@@ -91,7 +101,7 @@ Your AI agent knows the landing page through its `landing-page` skill
 page, to change its texts, look or pages, or to launch it. In short:
 
 - **Make a sample your home page**: give it an empty `Path` in its `<Sample>Site.cs`, give its home page the
-  gallery's routes, and delete the gallery and the other samples.
+  gallery's routes, and delete the gallery, its tour and the other samples.
 - **Brand it**: the sample's palette, fonts and shapes are in `Styles/sites/_<sample>.scss`, and the **rebrand** skill
   re-skins it together with the app.
 - **Launch**: set each platform in `<Sample>Site.cs` from `ComingSoon` or `PreOrder` to `Live` with its store link.

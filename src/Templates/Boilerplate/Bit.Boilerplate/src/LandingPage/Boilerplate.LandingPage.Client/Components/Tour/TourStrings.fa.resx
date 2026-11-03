@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="Offer" xml:space="preserve">
+        <value>شروع تور</value>
+    </data>
+    <data name="OfferNote" xml:space="preserve">
+        <value>دو دقیقه در میان نمونه‌ها و چیزهایی که از اول در آن‌ها هست.</value>
+    </data>
+    <data name="Next" xml:space="preserve">
+        <value>بعدی</value>
+    </data>
+    <data name="Back" xml:space="preserve">
+        <value>قبلی</value>
+    </data>
+    <data name="Skip" xml:space="preserve">
+        <value>رد کردن تور</value>
+    </data>
+    <data name="Done" xml:space="preserve">
+        <value>تمام</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="DialogLabel" xml:space="preserve">
+        <value>تور نمونه‌ها</value>
+    </data>
+    <data name="ProgressFormat" xml:space="preserve">
+        <value>{0} از {1}</value>
+    </data>
+    <data name="StepAnnouncementFormat" xml:space="preserve">
+        <value>مرحله‌ی {0} از {1}. {2}</value>
+    </data>
+    <data name="WaitingAnnouncement" xml:space="preserve">
+        <value>منتظر بخش بعدی صفحه.</value>
+    </data>
+    <data name="ProgressLabel" xml:space="preserve">
+        <value>پیشرفت تور</value>
+    </data>
+    <data name="IntroTitle" xml:space="preserve">
+        <value>تور دو دقیقه‌ای</value>
+    </data>
+    <data name="IntroBody" xml:space="preserve">
+        <value>{0} لندینگ‌پیج برای {0} نوع کسب‌وکار، که هر کدام آماده است مال شما شود. این تور چند تا از آن‌ها را باز می‌کند و نشان می‌دهد چه چیزهایی از اول در آن‌ها هست.</value>
+    </data>
+    <data name="ModesTitle" xml:space="preserve">
+        <value>منتشرشده، یا هنوز نه</value>
+    </data>
+    <data name="ModesBody" xml:space="preserve">
+        <value>نمونه‌ای که یکی از اپ‌هایش منتشر شده باشد به فروشگاه‌های اپ پیوند می‌دهد. تا پیش از آن، فهرست انتظار جمع می‌کند.</value>
+    </data>
+    <data name="RatingTitle" xml:space="preserve">
+        <value>{0}، یک فروشگاه آنلاین</value>
+    </data>
+    <data name="RatingBody" xml:space="preserve">
+        <value>اطلاعات صفحه‌ی App Store آن مستقیم از اپل خوانده و مدتی روی سرور نگه داشته می‌شود: امتیاز، وقتی امتیازها به اندازه‌ی کافی برسند، و تا آن موقع آخرین نسخه. نشان‌ها فقط فروشگاه‌هایی را نشان می‌دهند که اپ در آن‌ها هست.</value>
+    </data>
+    <data name="ChatTitle" xml:space="preserve">
+        <value>دستیاری که کسب‌وکار را می‌شناسد</value>
+    </data>
+    <data name="ChatBody" xml:space="preserve">
+        <value>از روی اطلاعات خود {0} و به زبان بازدیدکننده جواب می‌دهد. کدش فقط وقتی دانلود می‌شود که کسی آن را باز کند.</value>
+    </data>
+    <data name="WaitlistTitle" xml:space="preserve">
+        <value>{0}، پیش از انتشار</value>
+    </data>
+    <data name="WaitlistBody" xml:space="preserve">
+        <value>یک شمارش معکوس و یک فهرست انتظار. هر ثبت‌نام با ایمیل تأیید می‌شود، ربات‌ها بی‌سروصدا کنار گذاشته می‌شوند و هر بازدیدکننده چند بار فرصت دارد.</value>
+    </data>
+    <data name="PagesTitle" xml:space="preserve">
+        <value>بیش از یک صفحه</value>
+    </data>
+    <data name="PagesBody" xml:space="preserve">
+        <value>هر نمونه صفحه‌هایی را دارد که کسب‌وکارش لازم دارد، مثل فروشگاه‌های {0} با ساعت کارشان. هر صفحه عنوان، توضیح و تصویر پیش‌نمایش خودش را دارد.</value>
+    </data>
+    <data name="LaunchTitle" xml:space="preserve">
+        <value>{0}، با انتشار پلتفرم به پلتفرم</value>
+    </data>
+    <data name="LaunchBody" xml:space="preserve">
+        <value>App Store برای iPhone، فهرست انتظار برای Android و دکمه‌ی نصب برای وب، همه در یک صفحه. هر نمونه بعد از نصب مثل یک اپ جداگانه باز می‌شود.</value>
+    </data>
+    <data name="LanguagesTitle" xml:space="preserve">
+        <value>دو زبان، دو پوسته</value>
+    </data>
+    <data name="LanguagesBody" xml:space="preserve">
+        <value>هر صفحه به انگلیسی و فارسی، با راست‌به‌چپ کامل، و در حالت روشن و تیره هست. با خاموش کردن localization، سایت فقط انگلیسی می‌شود.</value>
+    </data>
+    <data name="SearchTitle" xml:space="preserve">
+        <value>آماده برای موتورهای جست‌وجو</value>
+    </data>
+    <data name="SearchBody" xml:space="preserve">
+        <value>همه‌ی صفحه‌ها prerender می‌شوند، پس موتورهای جست‌وجو و بازدیدکننده‌ها متن صفحه را پیش از اجرای هر کدی می‌گیرند، همراه با پیوند canonical، داده‌ی ساخت‌یافته و جایی در sitemap.</value>
+    </data>
+    <data name="YoursTitle" xml:space="preserve">
+        <value>مال خودتان کنید</value>
+    </data>
+    <data name="YoursBody" xml:space="preserve">
+        <value>bit new پروژه‌ای با هر {0} نمونه می‌سازد. از agent هوش مصنوعی‌تان بخواهید یکی از آن‌ها را صفحه‌ی اصلی‌تان کند تا بقیه را حذف کند.</value>
+    </data>
+</root>
