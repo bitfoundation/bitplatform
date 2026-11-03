@@ -39,7 +39,7 @@ public partial class AuthStatePropagationTests
 
         await Propagate(IAuthTokenProvider.Anonymous(), firstRun: true);
 
-        await Propagate(new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString())], "Bearer")));
+        await Propagate(new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId.ToString()), new Claim(AppClaimTypes.SESSION_ID, Guid.NewGuid().ToString())], "Bearer")));
 
         Assert.AreEqual(2, subscribeCalls, "The sign-in did not try to subscribe, so the rest of this test cannot mean anything.");
         Assert.AreEqual(userId, telemetryContext.UserId);
