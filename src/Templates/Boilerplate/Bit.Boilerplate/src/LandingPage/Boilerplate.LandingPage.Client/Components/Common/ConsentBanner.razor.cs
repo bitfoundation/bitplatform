@@ -11,7 +11,7 @@ public partial class ConsentBanner : IDisposable
     [AutoInject] private IBelemetryConsent consent = default!;
     [AutoInject] private LandingConsentPrompt prompt = default!;
 
-    [Parameter, EditorRequired] public string SitePath { get; set; } = default!;
+    [Parameter] public string? SitePath { get; set; }
 
     private bool isVisible;
     private bool isChoosing;

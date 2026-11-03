@@ -2,9 +2,13 @@
 
 .ecommerce-about-hero {
     display: grid;
+    justify-items: start;
     gap: 18px;
-    max-width: 820px;
     padding-block: clamp(48px, 7vw, 96px) 24px;
+
+    > * {
+        max-width: 820px;
+    }
 
     h1 {
         font-size: clamp(2.6rem, 2rem + 3vw, 4.4rem);

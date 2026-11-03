@@ -1,0 +1,20 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card ecommerce-card" href="@LocalUrl(EcommerceSite.Path)">
+    <div class="ecommerce-card-preview" aria-hidden="true">
+        <span class="ecommerce-card-brand"><EcommerceLogo /> Fernhouse</span>
+        <EcommercePlant PotColor="#C4703F" Class="ecommerce-card-plant" />
+        <span class="ecommerce-card-price">€48</span>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@E[nameof(EcommerceStrings.CardIndustry)]</p>
+        <h2>Fernhouse</h2>
+        <p>@E[nameof(EcommerceStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeLaunched)]</li>
+            <li>@E[nameof(EcommerceStrings.CardTag1)]</li>
+            <li>@E[nameof(EcommerceStrings.CardTag2)]</li>
+            <li>@E[nameof(EcommerceStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

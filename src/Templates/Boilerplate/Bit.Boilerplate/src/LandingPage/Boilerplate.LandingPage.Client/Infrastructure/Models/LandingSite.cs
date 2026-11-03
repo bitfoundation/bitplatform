@@ -49,6 +49,8 @@ public sealed record LandingSite
 
     public required Type NotFound { get; init; }
 
+    public required Type Card { get; init; }
+
     public LandingPlatformLink[] Platforms { get; init; } = [];
 
     public string? AppleAppId { get; init; }

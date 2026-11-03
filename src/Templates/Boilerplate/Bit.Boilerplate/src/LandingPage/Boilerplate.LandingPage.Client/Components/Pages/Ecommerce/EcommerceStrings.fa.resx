@@ -489,4 +489,19 @@
     <data name="NotFoundBody" xml:space="preserve">
         <value>آن را جایی که قبلاً بود پیدا نکردیم. فروشگاه همان جایی است که رهایش کردید.</value>
     </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>فروشگاه آنلاین</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>اپ یک گیاه‌فروشی که روی آیفون، اندروید و وب منتشر شده: صفحه‌ی محصولی که می‌شود امتحانش کرد، کد تخفیف اولین سفارش و اطلاعات زنده‌ی App Store.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>صفحه‌ی محصول در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>کد تخفیف</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>حباب گفتگو</value>
+    </data>
 </root>

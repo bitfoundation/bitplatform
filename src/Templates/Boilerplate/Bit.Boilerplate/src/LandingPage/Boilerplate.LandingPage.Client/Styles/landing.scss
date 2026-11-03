@@ -13,7 +13,7 @@
     --lp-ease: cubic-bezier(.2, .7, .2, 1);
     --bit-tpg-font-family: var(--lp-stack-body);
 
-    @include type((system-ui, -apple-system, "Segoe UI", Roboto, sans-serif), (system-ui, -apple-system, "Segoe UI", Roboto, sans-serif));
+    @include type(("Instrument Sans", system-ui, sans-serif), ("Instrument Sans", system-ui, sans-serif));
     @include shape(16px, 10px);
     @include palette(light, #2448C9, #FFFFFF, #FBFBFA, #F3F3F0, #FFFFFF, #17181B, #5A5F69, #E4E4E0);
 }
@@ -184,4 +184,5 @@ h1:focus {
     }
 }
 
+@import 'gallery';
 @import 'sites/ecommerce';

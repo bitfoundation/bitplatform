@@ -12,6 +12,7 @@ public static class EcommerceSite
         AccentColor = "#1E6B47",
         Layout = typeof(EcommerceLayout),
         NotFound = typeof(EcommerceNotFound),
+        Card = typeof(EcommerceCard),
         AppleAppId = "6450611349",
         WebAppUrl = "https://adminpanel.bitplatform.dev/",
         StatusUrl = "https://status.example.com/",

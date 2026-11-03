@@ -639,4 +639,64 @@
     <data name="StoreListingUpdated" xml:space="preserve">
         <value>Updated {0}</value>
     </data>
+    <data name="GalleryTitle" xml:space="preserve">
+        <value>Landing pages, ready to become yours</value>
+    </data>
+    <data name="GalleryDescription" xml:space="preserve">
+        <value>Sample landing pages for ten kinds of product: waitlists and store links, AI chat, two languages, dark mode and pages a search engine can read.</value>
+    </data>
+    <data name="GalleryEyebrow" xml:space="preserve">
+        <value>Landing page samples</value>
+    </data>
+    <data name="GalleryLede" xml:space="preserve">
+        <value>Each sample is a complete site for a different kind of product, before or after its launch. Open the one closest to yours, and make it your home page.</value>
+    </data>
+    <data name="GalleryFilterAll" xml:space="preserve">
+        <value>All samples</value>
+    </data>
+    <data name="GalleryFilterLaunched" xml:space="preserve">
+        <value>After launch</value>
+    </data>
+    <data name="GalleryFilterPreLaunch" xml:space="preserve">
+        <value>Before launch</value>
+    </data>
+    <data name="GalleryOpen" xml:space="preserve">
+        <value>Open the sample</value>
+    </data>
+    <data name="GalleryModeLaunched" xml:space="preserve">
+        <value>Launched</value>
+    </data>
+    <data name="GalleryModePreLaunch" xml:space="preserve">
+        <value>Waitlist</value>
+    </data>
+    <data name="GalleryModeBeta" xml:space="preserve">
+        <value>Beta</value>
+    </data>
+    <data name="GalleryModeStaged" xml:space="preserve">
+        <value>Staged launch</value>
+    </data>
+    <data name="GalleryHowTitle" xml:space="preserve">
+        <value>Make one of them yours</value>
+    </data>
+    <data name="GalleryHow1Title" xml:space="preserve">
+        <value>Pick the closest</value>
+    </data>
+    <data name="GalleryHow1Body" xml:space="preserve">
+        <value>Each sample has its own pages, look and features. Keep the one that fits your product and remove the rest.</value>
+    </data>
+    <data name="GalleryHow2Title" xml:space="preserve">
+        <value>Ask your AI agent</value>
+    </data>
+    <data name="GalleryHow2Body" xml:space="preserve">
+        <value>Your project's agent skills know this project: give it your product's facts, brand and store links, and it rewrites the texts in both languages.</value>
+    </data>
+    <data name="GalleryHow3Title" xml:space="preserve">
+        <value>Publish</value>
+    </data>
+    <data name="GalleryHow3Body" xml:space="preserve">
+        <value>It deploys with the rest of the project, on an address of its own, and every page reaches search engines and link previews complete.</value>
+    </data>
+    <data name="GalleryFooter" xml:space="preserve">
+        <value>Every business, person and number in these samples is made up.</value>
+    </data>
 </root>

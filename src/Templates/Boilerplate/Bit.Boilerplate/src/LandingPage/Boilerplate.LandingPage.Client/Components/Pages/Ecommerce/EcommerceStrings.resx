@@ -489,4 +489,19 @@
     <data name="NotFoundBody" xml:space="preserve">
         <value>We couldn't find it where it used to be. The shop is right where you left it.</value>
     </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Online store</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A plant shop's app, launched on iPhone, Android and the web: a product page you can try, a first-order code and live App Store details.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Product page in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Discount code</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Chat bubble</value>
+    </data>
 </root>

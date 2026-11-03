@@ -639,4 +639,64 @@
     <data name="StoreListingUpdated" xml:space="preserve">
         <value>به‌روزرسانی {0}</value>
     </data>
+    <data name="GalleryTitle" xml:space="preserve">
+        <value>لندینگ‌پیج‌هایی آماده که مال شما شوند</value>
+    </data>
+    <data name="GalleryDescription" xml:space="preserve">
+        <value>لندینگ‌پیج‌های نمونه برای ده نوع محصول: فهرست انتظار و پیوند فروشگاه‌ها، گفتگوی هوش مصنوعی، دو زبان، حالت تیره و صفحه‌هایی که موتورهای جستجو می‌خوانند.</value>
+    </data>
+    <data name="GalleryEyebrow" xml:space="preserve">
+        <value>نمونه‌های لندینگ‌پیج</value>
+    </data>
+    <data name="GalleryLede" xml:space="preserve">
+        <value>هر نمونه یک سایت کامل برای نوع متفاوتی از محصول است، پیش یا پس از انتشار. نزدیک‌ترین را به کار خودتان باز کنید و صفحه‌ی اصلی‌تان کنید.</value>
+    </data>
+    <data name="GalleryFilterAll" xml:space="preserve">
+        <value>همه‌ی نمونه‌ها</value>
+    </data>
+    <data name="GalleryFilterLaunched" xml:space="preserve">
+        <value>پس از انتشار</value>
+    </data>
+    <data name="GalleryFilterPreLaunch" xml:space="preserve">
+        <value>پیش از انتشار</value>
+    </data>
+    <data name="GalleryOpen" xml:space="preserve">
+        <value>باز کردن نمونه</value>
+    </data>
+    <data name="GalleryModeLaunched" xml:space="preserve">
+        <value>منتشرشده</value>
+    </data>
+    <data name="GalleryModePreLaunch" xml:space="preserve">
+        <value>فهرست انتظار</value>
+    </data>
+    <data name="GalleryModeBeta" xml:space="preserve">
+        <value>بتا</value>
+    </data>
+    <data name="GalleryModeStaged" xml:space="preserve">
+        <value>انتشار مرحله‌ای</value>
+    </data>
+    <data name="GalleryHowTitle" xml:space="preserve">
+        <value>یکی را مال خودتان کنید</value>
+    </data>
+    <data name="GalleryHow1Title" xml:space="preserve">
+        <value>نزدیک‌ترین را انتخاب کنید</value>
+    </data>
+    <data name="GalleryHow1Body" xml:space="preserve">
+        <value>هر نمونه صفحه‌ها، ظاهر و امکانات خودش را دارد. آن‌که به محصولتان می‌خورد را نگه دارید و بقیه را حذف کنید.</value>
+    </data>
+    <data name="GalleryHow2Title" xml:space="preserve">
+        <value>از دستیار هوش مصنوعی‌تان بخواهید</value>
+    </data>
+    <data name="GalleryHow2Body" xml:space="preserve">
+        <value>skillهای پروژه این پروژه را می‌شناسند: اطلاعات محصول، برند و پیوند فروشگاه‌ها را بدهید تا متن‌ها را به هر دو زبان بازنویسی کند.</value>
+    </data>
+    <data name="GalleryHow3Title" xml:space="preserve">
+        <value>منتشر کنید</value>
+    </data>
+    <data name="GalleryHow3Body" xml:space="preserve">
+        <value>همراه بقیه‌ی پروژه و روی نشانی خودش منتشر می‌شود و همه‌ی صفحه‌ها کامل به موتورهای جستجو و پیش‌نمایش پیوندها می‌رسند.</value>
+    </data>
+    <data name="GalleryFooter" xml:space="preserve">
+        <value>همه‌ی کسب‌وکارها، آدم‌ها و عددهای این نمونه‌ها ساختگی‌اند.</value>
+    </data>
 </root>

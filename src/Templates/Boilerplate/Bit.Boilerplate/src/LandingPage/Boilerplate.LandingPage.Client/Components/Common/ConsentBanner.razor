@@ -4,7 +4,13 @@
 {
     <section class="lp-consent" role="dialog" aria-labelledby="lp-consent-title" aria-describedby="lp-consent-body">
         <h2 id="lp-consent-title">@Localizer[nameof(LandingStrings.ConsentTitle)]</h2>
-        <p id="lp-consent-body">@Localizer[nameof(LandingStrings.ConsentBody)] <a href="@LocalUrl($"{SitePath}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a></p>
+        <p id="lp-consent-body">
+            @Localizer[nameof(LandingStrings.ConsentBody)]
+            @if (SitePath is not null)
+            {
+                <a href="@LocalUrl($"{SitePath}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a>
+            }
+        </p>
 
         @if (isChoosing)
         {

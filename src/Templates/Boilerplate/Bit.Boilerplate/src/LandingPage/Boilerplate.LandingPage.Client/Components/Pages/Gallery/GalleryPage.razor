@@ -2,8 +2,45 @@
 @attribute [Route("/{culture:nonfile}")]
 @inherits LandingPageBase
 
-<PageTitle>Gallery</PageTitle>
+<LandingHead Title="@Localizer[nameof(LandingStrings.GalleryTitle)]"
+             Description="@Localizer[nameof(LandingStrings.GalleryDescription)]"
+             Path="@LandingRoutes.Home" />
 
-<section class="lp-container lp-section">
-    <h1 class="lp-title">Gallery</h1>
+<section class="lp-container gallery-hero">
+    <p class="gallery-eyebrow">@Localizer[nameof(LandingStrings.GalleryEyebrow)]</p>
+    <h1>@Localizer[nameof(LandingStrings.GalleryTitle)]</h1>
+    <p class="lp-lede">@Localizer[nameof(LandingStrings.GalleryLede)]</p>
+</section>
+
+<section class="lp-container gallery-samples" aria-label="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
+    <BitChoiceGroup Items="filters" @bind-Value="filter" Horizontal NoCircle AriaLabel="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
+        <ItemTemplate Context="item">
+            <span class="gallery-filter @(item.Value == filter ? "is-selected" : null)">@item.Text</span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+
+    <div class="gallery-grid">
+        @foreach (var site in Shown())
+        {
+            <DynamicComponent @key="site.Key" Type="site.Card" />
+        }
+    </div>
+</section>
+
+<section class="lp-container gallery-how" aria-labelledby="gallery-how-title">
+    <h2 id="gallery-how-title">@Localizer[nameof(LandingStrings.GalleryHowTitle)]</h2>
+    <ol>
+        <li>
+            <h3>@Localizer[nameof(LandingStrings.GalleryHow1Title)]</h3>
+            <p>@Localizer[nameof(LandingStrings.GalleryHow1Body)]</p>
+        </li>
+        <li>
+            <h3>@Localizer[nameof(LandingStrings.GalleryHow2Title)]</h3>
+            <p>@Localizer[nameof(LandingStrings.GalleryHow2Body)]</p>
+        </li>
+        <li>
+            <h3>@Localizer[nameof(LandingStrings.GalleryHow3Title)]</h3>
+            <p>@Localizer[nameof(LandingStrings.GalleryHow3Body)]</p>
+        </li>
+    </ol>
 </section>

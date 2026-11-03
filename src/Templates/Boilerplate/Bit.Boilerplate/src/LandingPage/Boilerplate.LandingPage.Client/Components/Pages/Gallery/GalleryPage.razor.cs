@@ -1,0 +1,30 @@
+namespace Boilerplate.LandingPage.Client.Components.Pages.Gallery;
+
+public partial class GalleryPage
+{
+    private const string All = "all";
+    private const string Launched = "launched";
+    private const string PreLaunch = "pre-launch";
+
+    private string? filter = All;
+    private BitChoiceGroupItem<string>[] filters = [];
+
+    protected override void OnParametersSet()
+    {
+        filters =
+        [
+            new() { Value = All, Text = Localizer[nameof(LandingStrings.GalleryFilterAll)] },
+            new() { Value = Launched, Text = Localizer[nameof(LandingStrings.GalleryFilterLaunched)] },
+            new() { Value = PreLaunch, Text = Localizer[nameof(LandingStrings.GalleryFilterPreLaunch)] }
+        ];
+
+        base.OnParametersSet();
+    }
+
+    private IEnumerable<LandingSite> Shown() => filter switch
+    {
+        Launched => LandingSites.All.Where(s => s.IsPreLaunch is false),
+        PreLaunch => LandingSites.All.Where(s => s.IsPreLaunch),
+        _ => LandingSites.All
+    };
+}

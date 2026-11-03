@@ -1,0 +1,115 @@
+@import '../../../Styles/tokens';
+
+.gallery-hero {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding-block: clamp(48px, 8vw, 112px) 40px;
+
+    > * {
+        max-width: 880px;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 1.8rem + 3.4vw, 4.75rem);
+        font-weight: 600;
+        letter-spacing: -.035em;
+        line-height: 1;
+    }
+}
+
+.gallery-eyebrow {
+    font-family: var(--lp-font-mono);
+    font-size: .8125rem;
+    color: var(--lp-fg-muted);
+}
+
+.gallery-samples {
+    display: grid;
+    gap: 24px;
+    padding-bottom: 72px;
+}
+
+.gallery-filter {
+    display: block;
+    padding: 7px 14px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    font-size: .875rem;
+    transition: background-color .2s, color .2s, border-color .2s;
+
+    &.is-selected {
+        border-color: var(--lp-fg);
+        background: var(--lp-fg);
+        color: var(--lp-bg);
+    }
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.gallery-how {
+    display: grid;
+    gap: 32px;
+    padding-block: 64px 96px;
+    border-top: 1px solid var(--lp-line);
+
+    h2 {
+        font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+        letter-spacing: -.02em;
+    }
+
+    ol {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 32px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: how;
+
+        @include lt-md {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 8px;
+        counter-increment: how;
+
+        &::before {
+            content: counter(how);
+            display: grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            margin-bottom: 6px;
+            border-radius: 50%;
+            background: var(--lp-fg);
+            color: var(--lp-bg);
+            font-size: .875rem;
+            font-weight: 600;
+        }
+    }
+
+    h3 {
+        font-size: 1.125rem;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+}

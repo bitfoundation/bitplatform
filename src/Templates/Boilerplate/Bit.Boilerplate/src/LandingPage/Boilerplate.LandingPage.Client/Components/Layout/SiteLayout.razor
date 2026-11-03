@@ -1,6 +1,32 @@
 @inherits LayoutComponentBase
 
-<a class="lp-skip" href="#main">@Localizer[nameof(LandingStrings.SkipToContent)]</a>
-<main id="main">
-    @Body
-</main>
+<div class="lp-site lp-gallery">
+    <a class="lp-skip" href="#main">@Localizer[nameof(LandingStrings.SkipToContent)]</a>
+
+    <header class="lp-container site-bar">
+        <a class="site-brand" href="@LandingCultures.Localize(LandingRoutes.Home, CultureInfo.CurrentUICulture)">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+                <rect x="2" y="2" width="9" height="9" rx="2.5" fill="currentColor" />
+                <rect x="13" y="2" width="9" height="9" rx="4.5" fill="currentColor" opacity=".55" />
+                <rect x="2" y="13" width="9" height="9" rx="4.5" fill="currentColor" opacity=".55" />
+                <rect x="13" y="13" width="9" height="9" rx="2.5" fill="currentColor" />
+            </svg>
+            <span>@Localizer[nameof(LandingStrings.GalleryEyebrow)]</span>
+        </a>
+        <div class="site-tools">
+            <LanguageSwitch />
+            <ThemeToggle />
+        </div>
+    </header>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <footer class="lp-container site-footer">
+        <p>@Localizer[nameof(LandingStrings.GalleryFooter)]</p>
+        <button type="button" @onclick="consentPrompt.Open">@Localizer[nameof(LandingStrings.PrivacySettings)]</button>
+    </footer>
+
+    <ConsentBanner />
+</div>
