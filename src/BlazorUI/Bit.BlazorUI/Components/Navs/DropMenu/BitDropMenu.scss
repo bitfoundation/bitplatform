@@ -479,6 +479,10 @@ $drm-cal-private-properties: cal-bg, cal-brd;
         opacity: 0;
         height: 100%;
         display: block;
+        // Out of the accessibility tree and the tab order while it is closed, which the opacity and the
+        // transform alone left its items in. Visibility rather than display, so it is still laid out for the
+        // slide that brings it in; the open panel is made visible inline (see Callouts.concealPanel).
+        visibility: hidden;
         overflow: hidden;
         max-height: unset;
         box-shadow: $box-shadow-sheet;

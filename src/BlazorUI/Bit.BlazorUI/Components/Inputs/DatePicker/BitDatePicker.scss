@@ -1036,6 +1036,10 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
         opacity: 0;
         width: 100%;
         display: block;
+        // Out of the accessibility tree and the tab order while it is closed, which the opacity and the
+        // transform alone left it in. Visibility rather than display, so it is still laid out for the slide
+        // that brings it in; the open panel is made visible inline (see Callouts.concealPanel).
+        visibility: hidden;
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);

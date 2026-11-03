@@ -158,7 +158,7 @@
                 }
                 if (slidesOut) {
                     // The panel slides and fades out from here, so it stays in the chain that hands it what its
-                    // root and ancestors declare until that transition is over.
+                    // root and ancestors declare until that transition is over - and stays visible until then too.
                     Callouts.restoreAfterTransition(calloutId, callout);
                 } else {
                     Callouts.restoreCalloutToOriginalParent(calloutId, callout);
@@ -404,7 +404,9 @@
                 // A panel is sized against the screen rather than placed against the component, so it is
                 // never the detached one the placement below can hide - including when the screen only
                 // just became narrow enough for the panel, with the callout already hidden as detached.
-                callout.style.visibility = '';
+                // Visible outright rather than left to the stylesheet, which hides a closed panel (see
+                // concealPanel): this is what tells the open one apart from it.
+                callout.style.visibility = 'visible';
 
                 // A callout shown as a panel is sized against the screen rather than placed against the
                 // component, so there is nothing left for an arrow to point at.
@@ -1558,20 +1560,30 @@
 
         // A responsive panel fades and slides out once it is closed, so it is left in the chain that hands it
         // what its root and its ancestors declare until that transition has run, and only then put back beside
-        // its root. Reopening it before then keeps it where it is (see moveCalloutToBody), and the component
-        // going away takes it back at once (see clear).
+        // its root and concealed. Reopening it before then keeps it where it is (see moveCalloutToBody), and the
+        // component going away takes it back at once (see clear). A panel that was never relocated is waited
+        // for all the same, since it is still sliding out on the screen until then.
         export function restoreAfterTransition(calloutId: string, callout: HTMLElement) {
             Callouts.cancelPendingRestore(calloutId);
 
-            if (Callouts._calloutOriginalParents.has(calloutId) === false) return;
-
             const duration = Callouts.transitionTime(callout);
             if (duration <= 0) {
+                Callouts.concealPanel(callout);
                 Callouts.restoreCalloutToOriginalParent(calloutId, callout);
                 return;
             }
 
             Callouts._pendingRestores.set(calloutId, window.setTimeout(() => Callouts.flushPendingRestore(calloutId), duration));
+        }
+
+        // A closed panel is never display:none - it is laid out off the screen, for the slide that brings it in -
+        // so its opacity and its transform alone took it out of sight, and left its content in the accessibility
+        // tree and its controls in the tab order: every responsive component on a narrow page added another set
+        // of options and another close button for a screen reader to find. The stylesheet of each component hides
+        // its closed panel with visibility instead, which keeps the layout the slide needs; the open one is made
+        // visible inline (see position), and that is taken back here once it has slid out of sight.
+        export function concealPanel(callout: HTMLElement) {
+            callout.style.visibility = '';
         }
 
         export function cancelPendingRestore(calloutId: string) {
@@ -1589,7 +1601,12 @@
         export function flushPendingRestore(calloutId: string) {
             if (Callouts.cancelPendingRestore(calloutId) === false) return;
 
-            Callouts.restoreCalloutToOriginalParent(calloutId, document.getElementById(calloutId));
+            const callout = document.getElementById(calloutId);
+            if (callout) {
+                Callouts.concealPanel(callout);
+            }
+
+            Callouts.restoreCalloutToOriginalParent(calloutId, callout);
         }
 
         // How long the transitions of an element run, delays included: the longest of the durations it lists,

@@ -5,7 +5,8 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// <summary>
 /// The Responsive mode of BitDropdown on a phone (<c>/e2e/dropdown/responsive</c>, a 390x844 touch viewport): a tap
 /// opens a full-height side panel at the end of the screen carrying the label and a close button
-/// (ResponsiveCloseButtonAriaLabel), the close button, a pick and a swipe dismiss it, an RTL panel slides in from the
+/// (ResponsiveCloseButtonAriaLabel), the close button, a pick and a swipe dismiss it, a closed panel is out of the
+/// accessibility tree and the tab order, an RTL panel slides in from the
 /// left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
 /// icons by name and by BitIconInfo), Enter in a multi select panel keeps it open, the search box takes the focus inside
 /// the panel, the panel's parts take Styles and Classes, and a dropdown that is not Responsive stays a plain callout.
@@ -79,6 +80,40 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
 
         await WaitForAnimationsAsync(callout);
         Assert.IsTrue((await BoxAsync(callout)).X >= 389, "The panel slid out past the right edge.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTreeAndTheTabOrder()
+    {
+        await OpenAsync(Url);
+
+        // Four of the responsive dropdowns on the page keep the default name of the close button, and none of them is
+        // open: a closed panel is only out of sight, laid out off the screen for its slide, and must not leave its close
+        // button (or its options) for a screen reader - or a test - to find.
+        var close = Page.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true });
+        await Expect(close).ToHaveCountAsync(0);
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+
+        var callout = await CalloutAsync("dd-resp-rtl");
+        await Expect(callout).ToBeHiddenAsync();
+
+        // The closed panel is rendered right after its field, and it is focusable while it is open.
+        await Trigger("dd-resp-rtl").FocusAsync();
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(Trigger("dd-resp-search")).ToBeFocusedAsync();
+
+        await TapOpenAsync("dd-resp-rtl");
+
+        await Expect(close).ToHaveCountAsync(1);
+        await Expect(callout.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true })).ToBeVisibleAsync();
+        await Expect(Options(callout)).ToHaveCountAsync(3);
+
+        await close.TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(close).ToHaveCountAsync(0);
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
     }
 
     [TestMethod]
