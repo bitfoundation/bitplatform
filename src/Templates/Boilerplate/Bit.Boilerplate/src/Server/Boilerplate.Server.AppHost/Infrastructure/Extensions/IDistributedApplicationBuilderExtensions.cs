@@ -162,7 +162,7 @@ public static class IDistributedApplicationBuilderExtensions
                 return builder;
 
             builder.CreateResourceBuilder(dbGate)
-                .WithImageTag("7.3.3")
+                .WithImageTag("7.3.4")
                 .WithDataVolume()
                 .WithExplicitStart();
             //#if (redis == true)
@@ -223,7 +223,7 @@ public static class IDistributedApplicationBuilderExtensions
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         public IResourceBuilder<ContainerResource> AddTextEmbeddingsInference()
         {
-            return builder.AddContainer("embedding", "ghcr.io/huggingface/text-embeddings-inference", "cpu-1.8")
+            return builder.AddContainer("embedding", "ghcr.io/huggingface/text-embeddings-inference", "cpu-1.9")
                 .WithArgs("--model-id", "BAAI/bge-small-en-v1.5")
                 .WithVolume("tei-data", "/data")
                 .WithHttpEndpoint(targetPort: 80)
