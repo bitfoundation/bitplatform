@@ -1,0 +1,31 @@
+.tracker-sheet-art {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.tracker-sheet-paper {
+    fill: var(--lp-surface);
+    stroke: var(--lp-line);
+    stroke-width: 1.5;
+}
+
+.tracker-sheet-rule {
+    stroke: var(--lp-line);
+    stroke-width: 1.5;
+}
+
+.tracker-sheet-year {
+    fill: var(--lp-fg-muted);
+    font-family: var(--lp-stack-body);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tracker-sheet-track {
+    fill: var(--lp-bg-alt);
+}
+
+.tracker-sheet-period {
+    fill: var(--rose);
+}

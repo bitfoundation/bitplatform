@@ -1,0 +1,27 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card tracker-card" href="@LocalUrl(PeriodTrackerSite.Path)">
+    <div class="tracker-card-preview" aria-hidden="true">
+        <span class="tracker-card-brand"><PeriodTrackerLogo /> Liora</span>
+        <span class="tracker-card-beta">@L[nameof(LandingStrings.GalleryModeBeta)]</span>
+        <svg class="tracker-card-ring" viewBox="0 0 200 200" focusable="false">
+            @foreach (var dot in dots)
+            {
+                <circle cx="@dot.X" cy="@dot.Y" r="7" class="@dot.Class" />
+            }
+            <text x="100" y="96" text-anchor="middle" class="tracker-card-label">@P[nameof(PeriodTrackerStrings.DemoDay)]</text>
+            <text x="100" y="132" text-anchor="middle" class="tracker-card-day">26</text>
+        </svg>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@P[nameof(PeriodTrackerStrings.CardIndustry)]</p>
+        <h2>Liora</h2>
+        <p>@P[nameof(PeriodTrackerStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeBeta)]</li>
+            <li>@P[nameof(PeriodTrackerStrings.CardTag1)]</li>
+            <li>@P[nameof(PeriodTrackerStrings.CardTag2)]</li>
+            <li>@P[nameof(PeriodTrackerStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

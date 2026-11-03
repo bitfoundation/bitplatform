@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Liora: a period tracker that keeps your data on your phone</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Liora is a period tracker that keeps everything on your iPhone: no account, no ads, no trackers. Join the free iPhone beta, or the waitlist for Android in spring 2027.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Liora</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Why four people in Stockholm build a period tracker that can't read your data, who they are, and the promise they put in writing.</value>
+    </data>
+    <data name="NavPromise" xml:space="preserve">
+        <value>Our promise</value>
+    </data>
+    <data name="NavHow" xml:space="preserve">
+        <value>How it works</value>
+    </data>
+    <data name="NavBeta" xml:space="preserve">
+        <value>Beta</value>
+    </data>
+    <data name="NavFaq" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="NavJoin" xml:space="preserve">
+        <value>Try the beta</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>A period tracker that keeps what you log on your phone. Made in Stockholm.</value>
+    </data>
+    <data name="FooterApp" xml:space="preserve">
+        <value>The app</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>iPhone beta open · Android in spring 2027</value>
+    </data>
+    <data name="HeroTitleStart" xml:space="preserve">
+        <value>Know your cycle.</value>
+    </data>
+    <data name="HeroTitleEm" xml:space="preserve">
+        <value>Keep it to yourself.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Liora predicts your next period and learns your patterns without an account, and without sending what you log anywhere. It stays on your phone.</value>
+    </data>
+    <data name="HeroBetaNote" xml:space="preserve">
+        <value>Free during the beta · iOS 17 or later</value>
+    </data>
+    <data name="HeroAndroidCta" xml:space="preserve">
+        <value>Android: tell me when</value>
+    </data>
+    <data name="HeroFact1" xml:space="preserve">
+        <value>No account</value>
+    </data>
+    <data name="HeroFact2" xml:space="preserve">
+        <value>No ads or trackers</value>
+    </data>
+    <data name="HeroFact3" xml:space="preserve">
+        <value>Works offline</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>A working preview. Tap a day to log it; nothing here is saved.</value>
+    </data>
+    <data name="DemoOnPhone" xml:space="preserve">
+        <value>On this phone only</value>
+    </data>
+    <data name="DemoDay" xml:space="preserve">
+        <value>Day</value>
+    </data>
+    <data name="DemoDays" xml:space="preserve">
+        <value>Days of this cycle</value>
+    </data>
+    <data name="DemoAriaDay" xml:space="preserve">
+        <value>{0}, day {1}</value>
+    </data>
+    <data name="DemoAriaPredicted" xml:space="preserve">
+        <value>predicted period</value>
+    </data>
+    <data name="DemoAriaToday" xml:space="preserve">
+        <value>today</value>
+    </data>
+    <data name="DemoAriaNotes" xml:space="preserve">
+        <value>has notes</value>
+    </data>
+    <data name="DemoStatusPeriod" xml:space="preserve">
+        <value>Period, day {0}</value>
+    </data>
+    <data name="DemoStatusIn" xml:space="preserve">
+        <value>Period in {0} days</value>
+    </data>
+    <data name="DemoStatusTomorrow" xml:space="preserve">
+        <value>Period likely tomorrow</value>
+    </data>
+    <data name="DemoStatusDue" xml:space="preserve">
+        <value>Period may start today</value>
+    </data>
+    <data name="DemoStatusLate" xml:space="preserve">
+        <value>{0} days later than usual</value>
+    </data>
+    <data name="DemoNext" xml:space="preserve">
+        <value>Next period between {0} and {1}</value>
+    </data>
+    <data name="DemoAverage" xml:space="preserve">
+        <value>{0}-day average, from your last {1} cycles</value>
+    </data>
+    <data name="DemoPreviousDay" xml:space="preserve">
+        <value>Previous day</value>
+    </data>
+    <data name="DemoNextDay" xml:space="preserve">
+        <value>Next day</value>
+    </data>
+    <data name="DemoSelected" xml:space="preserve">
+        <value>{0} · day {1}</value>
+    </data>
+    <data name="DemoToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="DemoFlow" xml:space="preserve">
+        <value>Flow</value>
+    </data>
+    <data name="DemoMood" xml:space="preserve">
+        <value>Mood</value>
+    </data>
+    <data name="DemoSymptoms" xml:space="preserve">
+        <value>Symptoms</value>
+    </data>
+    <data name="FlowNone" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="FlowSpotting" xml:space="preserve">
+        <value>Spotting</value>
+    </data>
+    <data name="FlowLight" xml:space="preserve">
+        <value>Light</value>
+    </data>
+    <data name="FlowMedium" xml:space="preserve">
+        <value>Medium</value>
+    </data>
+    <data name="FlowHeavy" xml:space="preserve">
+        <value>Heavy</value>
+    </data>
+    <data name="MoodCalm" xml:space="preserve">
+        <value>Calm</value>
+    </data>
+    <data name="MoodHappy" xml:space="preserve">
+        <value>Happy</value>
+    </data>
+    <data name="MoodLow" xml:space="preserve">
+        <value>Low</value>
+    </data>
+    <data name="MoodIrritable" xml:space="preserve">
+        <value>Irritable</value>
+    </data>
+    <data name="SymptomCramps" xml:space="preserve">
+        <value>Cramps</value>
+    </data>
+    <data name="SymptomHeadache" xml:space="preserve">
+        <value>Headache</value>
+    </data>
+    <data name="SymptomBloating" xml:space="preserve">
+        <value>Bloating</value>
+    </data>
+    <data name="SymptomAcne" xml:space="preserve">
+        <value>Acne</value>
+    </data>
+    <data name="ListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="PromiseKicker" xml:space="preserve">
+        <value>Our privacy promise</value>
+    </data>
+    <data name="PromiseTitle" xml:space="preserve">
+        <value>What you log stays on your phone.</value>
+    </data>
+    <data name="PromiseLede" xml:space="preserve">
+        <value>We built Liora so that we couldn't read your data even if we wanted to. This is where it goes, and where it never goes.</value>
+    </data>
+    <data name="RoutePhoneTitle" xml:space="preserve">
+        <value>Your iPhone</value>
+    </data>
+    <data name="RoutePhoneBody" xml:space="preserve">
+        <value>Every entry lives in the app, locked behind Face ID or your passcode.</value>
+    </data>
+    <data name="RouteBackupTitle" xml:space="preserve">
+        <value>Backup, if you want it</value>
+    </data>
+    <data name="RouteBackupBody" xml:space="preserve">
+        <value>Off until you turn it on. Encrypted on the phone with a key only you hold.</value>
+    </data>
+    <data name="RouteServerTitle" xml:space="preserve">
+        <value>Our server in Stockholm</value>
+    </data>
+    <data name="RouteServerBody" xml:space="preserve">
+        <value>Keeps the encrypted file. We can see its size and date, nothing else.</value>
+    </data>
+    <data name="RouteNeverTitle" xml:space="preserve">
+        <value>Advertisers and data brokers</value>
+    </data>
+    <data name="RouteNeverBody" xml:space="preserve">
+        <value>Get nothing. We have nothing to sell them.</value>
+    </data>
+    <data name="RouteOptional" xml:space="preserve">
+        <value>optional</value>
+    </data>
+    <data name="RouteNever" xml:space="preserve">
+        <value>never</value>
+    </data>
+    <data name="Promise1Title" xml:space="preserve">
+        <value>No account</value>
+    </data>
+    <data name="Promise1Body" xml:space="preserve">
+        <value>You don't sign up. There's no email, password or name to give us.</value>
+    </data>
+    <data name="Promise2Title" xml:space="preserve">
+        <value>Stored on the phone</value>
+    </data>
+    <data name="Promise2Body" xml:space="preserve">
+        <value>Your entries stay in the app's own storage, which iOS keeps encrypted while the phone is locked.</value>
+    </data>
+    <data name="Promise3Title" xml:space="preserve">
+        <value>A backup only you can open</value>
+    </data>
+    <data name="Promise3Body" xml:space="preserve">
+        <value>Turning backup on gives you a 12-word recovery phrase. Without it nobody can open the backup, us included.</value>
+    </data>
+    <data name="Promise4Title" xml:space="preserve">
+        <value>No ads, no analytics</value>
+    </data>
+    <data name="Promise4Body" xml:space="preserve">
+        <value>The app has no advertising or analytics code in it. A crash report is sent only if you tap Send.</value>
+    </data>
+    <data name="Promise5Title" xml:space="preserve">
+        <value>Delete means deleted</value>
+    </data>
+    <data name="Promise5Body" xml:space="preserve">
+        <value>One button in Settings erases everything on the phone and your backup on our server.</value>
+    </data>
+    <data name="PromiseNote" xml:space="preserve">
+        <value>An independent security firm will review the app before version 1.0, and we'll publish its report in full. Until then, these are our commitments, not a certification.</value>
+    </data>
+    <data name="HowKicker" xml:space="preserve">
+        <value>How predictions work</value>
+    </data>
+    <data name="HowTitle" xml:space="preserve">
+        <value>A window of days, not a promise.</value>
+    </data>
+    <data name="HowLede" xml:space="preserve">
+        <value>Bodies aren't clocks. Liora shows your next period as a range and narrows it as it learns your cycles.</value>
+    </data>
+    <data name="HowRow1" xml:space="preserve">
+        <value>After your first cycle</value>
+    </data>
+    <data name="HowRow1Note" xml:space="preserve">
+        <value>3 days earlier or later</value>
+    </data>
+    <data name="HowRow2" xml:space="preserve">
+        <value>After three cycles</value>
+    </data>
+    <data name="HowRow2Note" xml:space="preserve">
+        <value>2 days earlier or later</value>
+    </data>
+    <data name="HowRow3" xml:space="preserve">
+        <value>After six regular cycles</value>
+    </data>
+    <data name="HowRow3Note" xml:space="preserve">
+        <value>1 day earlier or later</value>
+    </data>
+    <data name="HowChange" xml:space="preserve">
+        <value>When your cycles change, after stopping the pill or after a pregnancy for example, the window widens again until they settle.</value>
+    </data>
+    <data name="HowDisclaimer" xml:space="preserve">
+        <value>Liora is not a medical device and not a method of contraception. Don't rely on its predictions to avoid or plan a pregnancy.</value>
+    </data>
+    <data name="BetaKicker" xml:space="preserve">
+        <value>Early access</value>
+    </data>
+    <data name="BetaTitle" xml:space="preserve">
+        <value>Try the beta on iPhone. Android is next.</value>
+    </data>
+    <data name="BetaIosTitle" xml:space="preserve">
+        <value>iPhone beta</value>
+    </data>
+    <data name="BetaIosTag" xml:space="preserve">
+        <value>Open now</value>
+    </data>
+    <data name="BetaIosBody" xml:space="preserve">
+        <value>Version 0.9, free while it's in beta. A new build arrives every two weeks, and once a month a five-question survey you can skip.</value>
+    </data>
+    <data name="BetaIosNeeds" xml:space="preserve">
+        <value>Needs iOS 17 or later</value>
+    </data>
+    <data name="BetaAndroidTitle" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="BetaAndroidTag" xml:space="preserve">
+        <value>Spring 2027</value>
+    </data>
+    <data name="BetaAndroidBody" xml:space="preserve">
+        <value>Leave your email and we'll write once, the day Liora is on Google Play. Waiting for the finished iPhone app instead? Tick iPhone too.</value>
+    </data>
+    <data name="BetaSubmit" xml:space="preserve">
+        <value>Tell me when</value>
+    </data>
+    <data name="BetaNowTitle" xml:space="preserve">
+        <value>In the beta now</value>
+    </data>
+    <data name="BetaNow1" xml:space="preserve">
+        <value>Period, flow and spotting</value>
+    </data>
+    <data name="BetaNow2" xml:space="preserve">
+        <value>Mood and 12 symptoms</value>
+    </data>
+    <data name="BetaNow3" xml:space="preserve">
+        <value>Predictions as a range of days</value>
+    </data>
+    <data name="BetaNow4" xml:space="preserve">
+        <value>A reminder two days before</value>
+    </data>
+    <data name="BetaNow5" xml:space="preserve">
+        <value>Face ID lock</value>
+    </data>
+    <data name="BetaNow6" xml:space="preserve">
+        <value>A PDF summary for your doctor</value>
+    </data>
+    <data name="BetaNow7" xml:space="preserve">
+        <value>Encrypted backup</value>
+    </data>
+    <data name="BetaNow8" xml:space="preserve">
+        <value>English, Swedish and Persian</value>
+    </data>
+    <data name="BetaNextTitle" xml:space="preserve">
+        <value>Before 1.0</value>
+    </data>
+    <data name="BetaNext1" xml:space="preserve">
+        <value>The Android app</value>
+    </data>
+    <data name="BetaNext2" xml:space="preserve">
+        <value>Apple Health sync, on the phone only</value>
+    </data>
+    <data name="BetaNext3" xml:space="preserve">
+        <value>Home screen widgets</value>
+    </data>
+    <data name="BetaNext4" xml:space="preserve">
+        <value>The published security review</value>
+    </data>
+    <data name="StoriesKicker" xml:space="preserve">
+        <value>From the beta</value>
+    </data>
+    <data name="StoriesTitle" xml:space="preserve">
+        <value>What testers write to us</value>
+    </data>
+    <data name="Story1Quote" xml:space="preserve">
+        <value>I deleted my old app the day it asked for my email. Liora opened and asked one thing: when did your last period start?</value>
+    </data>
+    <data name="Story1Name" xml:space="preserve">
+        <value>Hannah K.</value>
+    </data>
+    <data name="Story1Meta" xml:space="preserve">
+        <value>Gothenburg, testing since September</value>
+    </data>
+    <data name="Story2Quote" xml:space="preserve">
+        <value>My cycles run anywhere from 26 to 35 days. Seeing a window instead of one date is the first time an app has been honest with me.</value>
+    </data>
+    <data name="Story2Name" xml:space="preserve">
+        <value>Nasrin A.</value>
+    </data>
+    <data name="Story2Meta" xml:space="preserve">
+        <value>Malmö, testing since October</value>
+    </data>
+    <data name="Story3Quote" xml:space="preserve">
+        <value>I made the PDF summary in the waiting room and showed my doctor the phone. Nothing went through anyone's server first.</value>
+    </data>
+    <data name="Story3Name" xml:space="preserve">
+        <value>Chloé M.</value>
+    </data>
+    <data name="Story3Meta" xml:space="preserve">
+        <value>Lyon, testing since September</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Answered plainly</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>Is Liora a medical device?</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>No. Liora is a diary that makes predictions. It can't diagnose anything and it isn't a method of contraception. If something about your cycle worries you, talk to a doctor or a midwife.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>Can you see what I log?</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>No. Without backup, nothing leaves your phone. With backup on, we store a file that only your recovery phrase can open.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>What if I lose my phone?</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>Without backup, your data goes with the phone and we can't bring it back. With backup, install Liora on the new iPhone and enter your 12-word recovery phrase.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>What will it cost?</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>The beta is free. After 1.0, logging, predictions and reminders stay free. Any paid extras will be optional, and the app will show their price before anything changes.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>When is Android coming?</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>In spring 2027. Join the list and we'll send one email, the day it's on Google Play.</value>
+    </data>
+    <data name="Faq6Question" xml:space="preserve">
+        <value>Can I export or delete everything?</value>
+    </data>
+    <data name="Faq6Answer" xml:space="preserve">
+        <value>Yes. Settings has a PDF summary, a CSV file of every entry, and one button that erases the app's data and your backup.</value>
+    </data>
+    <data name="AskTitle" xml:space="preserve">
+        <value>Ask about Liora</value>
+    </data>
+    <data name="AskBody" xml:space="preserve">
+        <value>An AI assistant answers from what's on this page: the app, the beta and privacy. It won't give medical advice.</value>
+    </data>
+    <data name="AskPlaceholder" xml:space="preserve">
+        <value>Ask about the app, the beta or privacy</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>Can you see my data?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>How do I join the beta?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>When is Android coming?</value>
+    </data>
+    <data name="AboutHeadingStart" xml:space="preserve">
+        <value>We built the tracker</value>
+    </data>
+    <data name="AboutHeadingEm" xml:space="preserve">
+        <value>we wanted to use.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Liora Health is four people in Stockholm. We make one app, and we'd rather know nothing about the people who use it.</value>
+    </data>
+    <data name="SheetAlt" xml:space="preserve">
+        <value>Elin's spreadsheet: one column a year from 2017 to 2023, one row a month, with her period days filled in</value>
+    </data>
+    <data name="SheetCaption" xml:space="preserve">
+        <value>Elin's spreadsheet, 2017 to 2023</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>Why Liora exists</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>For six years Elin Sandberg tracked her cycle in a spreadsheet, because every app she tried wanted an account first and shared data with advertisers. In 2023 she showed it to Priya Raman, who had spent ten years building models that run on phones.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>Priya's first prototype ran entirely on the phone and predicted Elin's next period within a day. They founded Liora Health in 2024 with one rule: what we don't collect, we can't lose, sell or be made to hand over. The iPhone beta opened in September 2026.</value>
+    </data>
+    <data name="LetterTitle" xml:space="preserve">
+        <value>Our promise, in writing</value>
+    </data>
+    <data name="LetterIntro" xml:space="preserve">
+        <value>We'll keep these five promises for as long as Liora exists. If we ever change one, the app will tell you 60 days before, so you can export and delete everything first.</value>
+    </data>
+    <data name="LetterSigned" xml:space="preserve">
+        <value>Elin Sandberg and Priya Raman, founders</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>Who makes Liora</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Elin Sandberg</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Co-founder, product</value>
+    </data>
+    <data name="Team1Note" xml:space="preserve">
+        <value>Kept the spreadsheet. Still reads every message that reaches the beta inbox.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Priya Raman</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Co-founder, engineering</value>
+    </data>
+    <data name="Team2Note" xml:space="preserve">
+        <value>Built the prediction model that runs on your phone. It takes up less than 2 MB.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Tomás Ferreira</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Security and privacy</value>
+    </data>
+    <data name="Team3Note" xml:space="preserve">
+        <value>Designed the backup so its key never leaves your phone.</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Dr Leila Karimi</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Medical adviser, gynaecologist</value>
+    </data>
+    <data name="Team4Note" xml:space="preserve">
+        <value>Reviews every sentence in the app that mentions health.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>The company</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Write to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>Questions about the beta, privacy or press: we answer within two working days. We will never ask you to email us health data.</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This day isn't on the calendar</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>We couldn't find that page. The rest of Liora is where you left it.</value>
+    </data>
+    <data name="NotFoundPromise" xml:space="preserve">
+        <value>Read our promise</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Health app in beta</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A privacy-first cycle tracker with an iPhone beta and an Android waitlist: a cycle ring you can log on, a privacy promise spelled out, and a chat that won't give medical advice.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Beta and waitlist</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>A cycle ring to log on</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Privacy promise</value>
+    </data>
+</root>

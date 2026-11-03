@@ -1,0 +1,18 @@
+<svg class="tracker-sheet-art" viewBox="0 0 440 312" role="img" aria-label="@Label">
+    <rect x="1" y="1" width="438" height="310" rx="14" class="tracker-sheet-paper" />
+    <path d="M1 44H439" class="tracker-sheet-rule" />
+    @for (var column = 0; column < Years; column++)
+    {
+        <g>
+            <text x="@Invariant(ColumnX(column) + 26)" y="29" text-anchor="middle" class="tracker-sheet-year">@(FirstYear + column)</text>
+            @for (var row = 0; row < 12; row++)
+            {
+                <rect x="@Invariant(ColumnX(column))" y="@Invariant(RowY(row))" width="52" height="8" rx="4" class="tracker-sheet-track" />
+            }
+        </g>
+    }
+    @foreach (var period in periods)
+    {
+        <rect x="@Invariant(period.X)" y="@Invariant(period.Y)" width="@Invariant(period.Width)" height="8" rx="4" class="tracker-sheet-period" />
+    }
+</svg>

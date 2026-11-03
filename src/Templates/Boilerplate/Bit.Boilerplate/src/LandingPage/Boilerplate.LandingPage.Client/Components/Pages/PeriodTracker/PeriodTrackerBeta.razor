@@ -1,0 +1,15 @@
+@inherits LandingComponentBase
+
+<div class="tracker-beta @Class">
+    <a class="tracker-beta-badge" href="@Url" target="_blank" rel="noopener">
+        <img src="images/badges/app-store.svg" width="120" height="40" alt="@Localizer[nameof(LandingStrings.BadgeAppStore)]" />
+    </a>
+    @if (Note is not null)
+    {
+        <span class="tracker-beta-note">@Note</span>
+    }
+    @if (ShowAndroid)
+    {
+        <span class="tracker-beta-soon">@Localizer[nameof(LandingStrings.PlatformAndroid)] · @Localizer[nameof(LandingStrings.StatusComingSoon)]</span>
+    }
+</div>

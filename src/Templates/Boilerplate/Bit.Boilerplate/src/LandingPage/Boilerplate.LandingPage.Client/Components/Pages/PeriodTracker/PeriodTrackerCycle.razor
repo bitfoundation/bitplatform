@@ -1,0 +1,120 @@
+@inherits LandingComponentBase
+
+<div class="cycle-demo">
+    <div class="cycle-demo-top">
+        <PeriodTrackerLogo />
+        <p class="cycle-demo-brand">Liora</p>
+        <span class="cycle-demo-local"><BitIcon IconName="@BitIconName.Lock" /> @P[nameof(PeriodTrackerStrings.DemoOnPhone)]</span>
+    </div>
+
+    <div class="cycle-ring">
+        <svg class="cycle-ring-track" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <circle cx="50" cy="50" r="@Invariant(TrackRadius)" />
+            @if (WindowArc is { } arc)
+            {
+                <path d="@arc" class="cycle-ring-window" />
+            }
+        </svg>
+
+        <div class="cycle-days" role="radiogroup" aria-label="@P[nameof(PeriodTrackerStrings.DemoDays)]">
+            @for (var index = 0; index < RingDays; index++)
+            {
+                var date = Start.AddDays(index);
+                var log = logs.GetValueOrDefault(date);
+                var style = FormattableString.Invariant($"--i: {index}");
+
+                if (date <= today)
+                {
+                    var day = date;
+                    var slot = index;
+                    <button type="button"
+                            role="radio"
+                            class="cycle-day @DayClasses(day, log)"
+                            style="@style"
+                            aria-label="@DayLabel(day, log)"
+                            aria-checked="@(day == selected ? "true" : "false")"
+                            tabindex="@(day == selected ? 0 : -1)"
+                            @ref="dayRefs[slot]"
+                            @onclick="() => Select(day)"
+                            @onkeydown="e => OnDayKey(e, day)"></button>
+                }
+                else
+                {
+                    <span class="cycle-day is-future @DayClasses(date, log)" style="@style" aria-hidden="true"></span>
+                }
+            }
+        </div>
+
+        <div class="cycle-center" aria-live="polite">
+            <p class="cycle-center-label">@P[nameof(PeriodTrackerStrings.DemoDay)]</p>
+            <p class="cycle-center-day">@DayNumber(today).ToString(CurrentCulture)</p>
+            <p class="cycle-center-status">@Status</p>
+        </div>
+    </div>
+
+    <div class="cycle-forecast" aria-live="polite">
+        <p class="cycle-forecast-next"><span class="cycle-key" aria-hidden="true"></span>@P[nameof(PeriodTrackerStrings.DemoNext), DateText(Predicted.AddDays(-1)), DateText(Predicted.AddDays(1))]</p>
+        <p class="cycle-forecast-average">@P[nameof(PeriodTrackerStrings.DemoAverage), Average.ToString(CurrentCulture), CycleCount.ToString(CurrentCulture)]</p>
+    </div>
+
+    <div class="cycle-log">
+        <div class="cycle-log-head">
+            <BitButton Variant="BitVariant.Text"
+                       Color="BitColor.PrimaryForeground"
+                       Size="BitSize.Small"
+                       IconOnly
+                       IconName="@(IsRtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)"
+                       AriaLabel="@P[nameof(PeriodTrackerStrings.DemoPreviousDay)]"
+                       Title="@P[nameof(PeriodTrackerStrings.DemoPreviousDay)]"
+                       Disabled="selected <= Start"
+                       OnClick="() => Select(selected.AddDays(-1))" />
+            <p>@SelectedText</p>
+            <BitButton Variant="BitVariant.Text"
+                       Color="BitColor.PrimaryForeground"
+                       Size="BitSize.Small"
+                       IconOnly
+                       IconName="@(IsRtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)"
+                       AriaLabel="@P[nameof(PeriodTrackerStrings.DemoNextDay)]"
+                       Title="@P[nameof(PeriodTrackerStrings.DemoNextDay)]"
+                       Disabled="selected >= today"
+                       OnClick="() => Select(selected.AddDays(1))" />
+        </div>
+
+        <BitChoiceGroup Label="@P[nameof(PeriodTrackerStrings.DemoFlow)]"
+                        Items="flowItems"
+                        Value="SelectedLog.Flow"
+                        ValueChanged="(string? value) => SetFlow(value)"
+                        Horizontal
+                        NoCircle>
+            <ItemTemplate Context="item">
+                <span class="cycle-chip @(item.Value == SelectedLog.Flow ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="@P[nameof(PeriodTrackerStrings.DemoMood)]"
+                        Items="moodItems"
+                        Value="SelectedLog.Mood"
+                        ValueChanged="(string? value) => SetMood(value)"
+                        Horizontal
+                        NoCircle>
+            <ItemTemplate Context="item">
+                <span class="cycle-chip @(item.Value == SelectedLog.Mood ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <div class="cycle-symptoms" role="group" aria-labelledby="cycle-symptoms-label">
+            <p id="cycle-symptoms-label" class="cycle-symptoms-label">@P[nameof(PeriodTrackerStrings.DemoSymptoms)]</p>
+            <div class="cycle-chips">
+                @foreach (var symptom in Symptoms)
+                {
+                    var name = symptom;
+                    <BitToggleButton IsChecked="SelectedLog.Symptoms.Contains(name)"
+                                     IsCheckedChanged="(bool value) => SetSymptom(name, value)"
+                                     Text="@P[$"Symptom{name}"]"
+                                     Variant="BitVariant.Outline"
+                                     Class="cycle-toggle" />
+                }
+            </div>
+        </div>
+    </div>
+</div>

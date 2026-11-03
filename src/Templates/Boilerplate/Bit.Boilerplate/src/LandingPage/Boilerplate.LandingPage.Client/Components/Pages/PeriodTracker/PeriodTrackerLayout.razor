@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-period-tracker">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="PeriodTrackerSite.Info" Links="links">
+        <Brand><PeriodTrackerLogo /><span>Liora</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#download")" Size="BitSize.Small" Class="tracker-nav-cta">@P[nameof(PeriodTrackerStrings.NavJoin)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="PeriodTrackerSite.Info" Tagline="@P[nameof(PeriodTrackerStrings.FooterTagline)]">
+        <Brand><PeriodTrackerLogo /><span>Liora</span></Brand>
+        <Intro>
+            <PeriodTrackerBeta Campaign="footer" Note="@P[nameof(PeriodTrackerStrings.BetaIosTitle)]" ShowAndroid />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@P[nameof(PeriodTrackerStrings.FooterApp)]</h2>
+                <a href="@Link("#promise")">@P[nameof(PeriodTrackerStrings.NavPromise)]</a>
+                <a href="@Link("#how")">@P[nameof(PeriodTrackerStrings.NavHow)]</a>
+                <a href="@Link("#download")">@P[nameof(PeriodTrackerStrings.NavBeta)]</a>
+                <a href="@Link("#faq")">@P[nameof(PeriodTrackerStrings.NavFaq)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <ConsentBanner SitePath="@PeriodTrackerSite.Path" />
+    <LanguageSuggestion />
+</div>

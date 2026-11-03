@@ -1,0 +1,8 @@
+@attribute [Route(PeriodTrackerSite.Path + "/waitlist/confirm")]
+@attribute [Route(PeriodTrackerSite.Path + "/waitlist/unsubscribe")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/waitlist/confirm")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/waitlist/unsubscribe")]
+@layout PeriodTrackerLayout
+@inherits LandingPageBase
+
+<WaitlistTokenPage Site="PeriodTrackerSite.Info" />

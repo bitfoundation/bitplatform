@@ -1,0 +1,89 @@
+@attribute [Route(PeriodTrackerSite.Path + "/about")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/about")]
+@layout PeriodTrackerLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@P[nameof(PeriodTrackerStrings.AboutTitle)]"
+             Description="@P[nameof(PeriodTrackerStrings.AboutDescription)]"
+             Path="@($"{PeriodTrackerSite.Path}/about")"
+             Site="PeriodTrackerSite.Info"
+             Image="images/period-tracker/og.png" />
+
+<section class="lp-container tracker-about-hero">
+    <div class="tracker-about-text">
+        <p class="tracker-kicker">@L[nameof(LandingStrings.About)]</p>
+        <h1>@P[nameof(PeriodTrackerStrings.AboutHeadingStart)] <em>@P[nameof(PeriodTrackerStrings.AboutHeadingEm)]</em></h1>
+        <p class="lp-lede">@P[nameof(PeriodTrackerStrings.AboutLede)]</p>
+    </div>
+    <figure class="tracker-sheet">
+        <PeriodTrackerSheet Label="@P[nameof(PeriodTrackerStrings.SheetAlt)]" />
+        <figcaption>@P[nameof(PeriodTrackerStrings.SheetCaption)]</figcaption>
+    </figure>
+</section>
+
+<section class="lp-container tracker-story" aria-labelledby="tracker-story-title">
+    <h2 id="tracker-story-title">@P[nameof(PeriodTrackerStrings.StoryTitle)]</h2>
+    <div>
+        <p>@P[nameof(PeriodTrackerStrings.StoryBody1)]</p>
+        <p>@P[nameof(PeriodTrackerStrings.StoryBody2)]</p>
+    </div>
+</section>
+
+<section id="promise" class="lp-section tracker-letter-section" aria-labelledby="tracker-letter-title">
+    <div class="lp-container">
+        <div class="tracker-letter">
+            <PeriodTrackerLogo />
+            <h2 id="tracker-letter-title">@P[nameof(PeriodTrackerStrings.LetterTitle)]</h2>
+            <p class="tracker-letter-intro">@P[nameof(PeriodTrackerStrings.LetterIntro)]</p>
+            <ul class="tracker-letter-list">
+                @foreach (var (title, body) in promises)
+                {
+                    <li><strong>@P[title]</strong> @P[body]</li>
+                }
+            </ul>
+            <p class="tracker-letter-signed">@P[nameof(PeriodTrackerStrings.LetterSigned)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section tracker-team" aria-labelledby="tracker-team-title">
+    <div class="lp-container">
+        <h2 id="tracker-team-title">@P[nameof(PeriodTrackerStrings.TeamTitle)]</h2>
+        <ul>
+            @for (var index = 0; index < team.Length; index++)
+            {
+                var (name, role, note) = team[index];
+                var dot = DotPosition(index);
+                <li>
+                    <svg class="tracker-team-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                        <circle cx="24" cy="24" r="18" />
+                        <circle cx="@dot.X" cy="@dot.Y" r="4.5" class="tracker-team-dot" />
+                    </svg>
+                    <strong>@P[name]</strong>
+                    <span class="tracker-team-role">@P[role]</span>
+                    <p>@P[note]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container tracker-contact" aria-labelledby="tracker-contact-title">
+    <div class="tracker-contact-text">
+        <h2 id="tracker-contact-title">@P[nameof(PeriodTrackerStrings.ContactTitle)]</h2>
+        <p>@P[nameof(PeriodTrackerStrings.ContactBody)]</p>
+        <div class="tracker-contact-links">
+            <BitButton Href="@($"mailto:{PeriodTrackerSite.Info.Company.Email}")" IconName="@BitIconName.Mail">@PeriodTrackerSite.Info.Company.Email</BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{PeriodTrackerSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@PeriodTrackerSite.Info.Company.Phone</span></BitButton>
+        </div>
+    </div>
+    <div class="tracker-company">
+        <h3>@P[nameof(PeriodTrackerStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@PeriodTrackerSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><span dir="ltr">@PeriodTrackerSite.Info.Company.Address</span></dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@PeriodTrackerSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@PeriodTrackerSite.Info.Company.RegistrationNumber</dd></div>
+        </dl>
+    </div>
+</section>

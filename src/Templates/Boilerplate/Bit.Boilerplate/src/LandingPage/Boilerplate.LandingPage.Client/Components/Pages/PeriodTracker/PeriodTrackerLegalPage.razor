@@ -1,0 +1,14 @@
+@attribute [Route(PeriodTrackerSite.Path + "/privacy")]
+@attribute [Route(PeriodTrackerSite.Path + "/terms")]
+@attribute [Route(PeriodTrackerSite.Path + "/cookies")]
+@attribute [Route(PeriodTrackerSite.Path + "/imprint")]
+@attribute [Route(PeriodTrackerSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/terms")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + PeriodTrackerSite.Path + "/accessibility")]
+@layout PeriodTrackerLayout
+@inherits LandingPageBase
+
+<LegalPage Site="PeriodTrackerSite.Info" />
