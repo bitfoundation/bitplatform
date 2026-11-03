@@ -14,6 +14,10 @@
             const check = () => {
                 ticking = false;
                 if (disposed || !viewport || pending) return;
+                // A viewport hidden by an ancestor (display:none, e.g. a list swapped out for a map) measures 0 all
+                // round, which would read as "at the end" after every batch until the whole data set is loaded; wait
+                // for the resize observer below to report it shown again instead.
+                if (viewport.getClientRects().length === 0) return;
                 const remaining = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
                 if (remaining <= distance) {
                     pending = true;
@@ -42,13 +46,20 @@
             };
 
             viewport.addEventListener('scroll', onScroll, { passive: true });
+            // Re-checks when the viewport is shown again after being hidden, or grows past the rows it holds.
+            const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(onScroll) : null;
+            resizeObserver?.observe(viewport);
             // Initial check so a first batch that doesn't fill the viewport keeps loading.
             setTimeout(check, 0);
 
             return {
                 check: () => check(),
                 scrollToTop: () => { if (viewport) viewport.scrollTop = 0; },
-                dispose: () => { disposed = true; viewport.removeEventListener('scroll', onScroll); }
+                dispose: () => {
+                    disposed = true;
+                    viewport.removeEventListener('scroll', onScroll);
+                    resizeObserver?.disconnect();
+                }
             };
         }
 

@@ -2,7 +2,7 @@
 
 @* BitDataGrid's data modes: row virtualization of a tall local list, column virtualization, OnRead with paging and the
    Loading state (and the cancellation of a superseded request), OnRead with virtualization and server-side aggregates,
-   OnLoadMore infinite scrolling, and an IQueryable source. *@
+   OnLoadMore infinite scrolling (also while hidden), and an IQueryable source. *@
 
 <PageTitle>BitDataGrid data modes E2E</PageTitle>
 
@@ -56,6 +56,18 @@
     <p>batches <span id="infinite-batches">@_infiniteBatches</span> | last <span id="infinite-last">@_infiniteLast</span></p>
 </E2ESection>
 
+<E2ESection Id="infinite-hidden" Title="Infinite scrolling while hidden">
+    @* Starts out hidden, like a list a phone swaps out for a map, with batches far too small to fill its viewport. *@
+    <button id="btn-show-hidden" type="button" @onclick="() => _hiddenShown = true">Show the grid</button>
+    <div style="@(_hiddenShown ? null : "display: none")">
+        <BitDataGrid TItem="Row" Id="grid-infinite-hidden" OnLoadMore="LoadHiddenAsync" LoadMoreBatchSize="3" Height="300px" RowHeight="36">
+            <BitDataGridColumn Property="r => r.Id" />
+            <BitDataGridColumn Property="r => r.Name" />
+        </BitDataGrid>
+    </div>
+    <p>batches <span id="hidden-batches">@_hiddenBatches</span></p>
+</E2ESection>
+
 <E2ESection Id="skeleton" Title="The loading skeleton">
     @* The second batch waits for the page, so the skeleton row stays for as long as a test needs to read it. *@
     <button id="btn-release-skeleton" type="button" @onclick="() => _skeletonGate.TrySetResult()">Release the second batch</button>
@@ -103,6 +115,8 @@
     private int _virtualMaxSkip;
     private int _infiniteBatches;
     private string _infiniteLast = "";
+    private bool _hiddenShown;
+    private int _hiddenBatches;
 
     private static IEnumerable<Row> Query(IEnumerable<Row> source, BitDataGridReadRequest request)
     {
@@ -185,5 +199,13 @@
         _infiniteLast = $"skip {request.Skip}, take {request.Take}, got {batch.Count}";
         await InvokeAsync(StateHasChanged);
         return new BitDataGridReadResult<Row>(batch, 0);
+    }
+
+    // At once, so a hidden grid that kept asking would run through the whole list well within the time a test waits.
+    private async Task<BitDataGridReadResult<Row>> LoadHiddenAsync(BitDataGridReadRequest request)
+    {
+        _hiddenBatches++;
+        await InvokeAsync(StateHasChanged);
+        return new BitDataGridReadResult<Row>(_infiniteAll.Skip(request.Skip).Take(request.Take ?? _infiniteAll.Count).ToList(), 0);
     }
 }

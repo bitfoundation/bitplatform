@@ -8,7 +8,8 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// columns following a sideways scroll, OnRead with paging (the request's window, sorts, filters and search, the
 /// Loading state and aria-busy, a superseded request cancelled), OnRead with virtualization (windows fetched as the
 /// viewport scrolls, the result's aggregates in the footer), OnLoadMore infinite scrolling (batches appended near the
-/// end, the skeleton row while one loads, the end message after a short batch), and an IQueryable source.
+/// end, the skeleton row while one loads, the end message after a short batch, none asked for while the grid is
+/// hidden), and an IQueryable source.
 /// </summary>
 [TestClass]
 public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
@@ -239,6 +240,28 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await NextFramesAsync();
         await Expect(Text("infinite-batches")).ToHaveTextAsync("3");
         await Expect(Cell(id, 54, 2)).ToHaveTextAsync("Item 0055");
+    }
+
+    [TestMethod]
+    public async Task Infinite_AHiddenGrid_LoadsNothingPastItsFirstBatchUntilItIsShown()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-infinite-hidden";
+        await Expect(Text("hidden-batches")).ToHaveTextAsync("1");
+        // Its viewport measures 0 while an ancestor hides it, which must not read as scrolled to the end: batches that
+        // come at once would otherwise have run through all 55 rows by now.
+        await Page.WaitForTimeoutAsync(500);
+        await Expect(Text("hidden-batches")).ToHaveTextAsync("1");
+        await Expect(DataRows(id)).ToHaveCountAsync(3);
+
+        // Shown, it loads until its viewport is filled, and stops there.
+        await Page.Locator("#btn-show-hidden").ClickAsync();
+        await UntilAsync(async () => await DataRows(id).CountAsync() > 8, "The grid loaded no more once shown.");
+        await Page.WaitForTimeoutAsync(500);
+        var rows = await DataRows(id).CountAsync();
+        Assert.IsTrue(rows < 55, $"The grid loaded {rows} of 55 rows once shown, far past what fills its viewport.");
+        await Expect(Page.Locator($"#{id} .bit-dtg-infinite-end")).ToHaveCountAsync(0);
     }
 
     [TestMethod]
