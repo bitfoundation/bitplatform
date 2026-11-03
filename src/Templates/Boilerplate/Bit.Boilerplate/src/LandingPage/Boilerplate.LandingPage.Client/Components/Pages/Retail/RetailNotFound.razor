@@ -1,0 +1,32 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@RetailSite.Path" Title="@R[nameof(RetailStrings.NotFoundTitle)]" Body="@R[nameof(RetailStrings.NotFoundBody)]" Class="retail-not-found">
+    <Art>
+        <svg viewBox="-150 -200 300 300" role="presentation" class="retail-404">
+            <rect x="-150" y="-200" width="300" height="6" fill="var(--lp-line)" />
+            <path d="M-72 -194V-146M72 -194V-146" stroke="var(--lp-fg-muted)" stroke-width="3" stroke-dasharray="5 3" />
+            <g class="retail-404-sign">
+                <rect x="-118" y="-150" width="236" height="100" rx="6" fill="#16181D" />
+                <rect x="-106" y="-138" width="84" height="76" rx="4" fill="var(--retail-sign)" />
+                <text x="-64" y="-86" text-anchor="middle" fill="#FFFFFF" font-size="34" font-weight="900" style="font-stretch: 125%">404</text>
+                <rect x="-8" y="-128" width="108" height="12" rx="2" fill="#FFFFFF" />
+                <rect x="-8" y="-106" width="78" height="9" rx="2" fill="#FFFFFF" opacity=".55" />
+                <rect x="-8" y="-88" width="92" height="9" rx="2" fill="#FFFFFF" opacity=".55" />
+                <path d="M-8 -66h30m-8 -6l8 6l-8 6" stroke="var(--retail-label)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+            <ellipse cx="0" cy="88" rx="132" ry="9" fill="var(--lp-line)" />
+            <g transform="translate(-34 52) rotate(-22)">
+                <path d="M-46 -26 C -40 -64, 40 -64, 46 -26" fill="none" stroke="var(--retail-sign)" stroke-width="5" stroke-linecap="round" />
+                <path d="M-56 -26 H56 L46 30 H-46 Z" fill="var(--retail-sign)" />
+                <path d="M-34 -18 L-30 22 M-12 -18 L-10 22 M10 -18 L10 22 M32 -18 L30 22 M-52 -4 H52 M-49 12 H49" stroke="color-mix(in oklab, var(--retail-sign), #000000 28%)" stroke-width="4" />
+            </g>
+            <circle cx="40" cy="78" r="10" fill="#7BAA4A" />
+            <path d="M40 68 q3 -6 8 -6" stroke="#3E5A22" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            <circle cx="70" cy="80" r="8" fill="#D9542E" />
+            <circle cx="96" cy="82" r="6" fill="var(--retail-label)" />
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@LocalUrl($"{RetailSite.Path}/stores")" IconName="@BitIconName.MapPin">@R[nameof(RetailStrings.NotFoundStores)]</BitButton>
+    </Actions>
+</NotFoundPanel>

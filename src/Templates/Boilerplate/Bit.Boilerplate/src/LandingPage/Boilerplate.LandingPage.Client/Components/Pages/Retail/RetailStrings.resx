@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Northside Market: order ahead, collect from your local shop</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Order your groceries in the Northside Market app and collect them from one of six Dublin shops, in the hour you choose. This week's offers and the Northside Card are in the app too.</value>
+    </data>
+    <data name="NavOffers" xml:space="preserve">
+        <value>Offers</value>
+    </data>
+    <data name="NavCollect" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="NavCard" xml:space="preserve">
+        <value>Northside Card</value>
+    </data>
+    <data name="NavStores" xml:space="preserve">
+        <value>Shops</value>
+    </data>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>Get the app</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>A family grocer with six shops on Dublin's Northside, since 1998.</value>
+    </data>
+    <data name="FooterShop" xml:space="preserve">
+        <value>Shopping</value>
+    </data>
+    <data name="FooterOffers" xml:space="preserve">
+        <value>This week's offers</value>
+    </data>
+    <data name="FooterCollect" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="FooterCard" xml:space="preserve">
+        <value>Northside Card</value>
+    </data>
+    <data name="FooterStores" xml:space="preserve">
+        <value>Find a shop</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>Ask the shop</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>Which shop is open latest?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>How do collection slots work?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>How do Northside Card points work?</value>
+    </data>
+    <data name="Money" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="TimeRange" xml:space="preserve">
+        <value>{0}–{1}</value>
+    </data>
+    <data name="ShopPhibsborough" xml:space="preserve">
+        <value>Phibsborough</value>
+    </data>
+    <data name="ShopStoneybatter" xml:space="preserve">
+        <value>Stoneybatter</value>
+    </data>
+    <data name="ShopDrumcondra" xml:space="preserve">
+        <value>Drumcondra</value>
+    </data>
+    <data name="ShopGlasnevin" xml:space="preserve">
+        <value>Glasnevin</value>
+    </data>
+    <data name="ShopFairview" xml:space="preserve">
+        <value>Fairview</value>
+    </data>
+    <data name="ShopClontarf" xml:space="preserve">
+        <value>Clontarf</value>
+    </data>
+    <data name="ServiceCollect" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="ServiceBakery" xml:space="preserve">
+        <value>Bakery</value>
+    </data>
+    <data name="ServiceDeli" xml:space="preserve">
+        <value>Deli counter</value>
+    </data>
+    <data name="ServiceFish" xml:space="preserve">
+        <value>Fish counter</value>
+    </data>
+    <data name="ServiceParking" xml:space="preserve">
+        <value>Parking</value>
+    </data>
+    <data name="ServiceFlowers" xml:space="preserve">
+        <value>Flowers</value>
+    </data>
+    <data name="OpenUntil" xml:space="preserve">
+        <value>Open until {0}</value>
+    </data>
+    <data name="ClosesSoon" xml:space="preserve">
+        <value>Closes soon, at {0}</value>
+    </data>
+    <data name="OpensAt" xml:space="preserve">
+        <value>Opens at {0}</value>
+    </data>
+    <data name="OpensTomorrow" xml:space="preserve">
+        <value>Opens tomorrow at {0}</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>Click and collect at six shops</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Shop at lunch. Collect on the way home.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Fill your basket in the Northside Market app, pick one of our six shops and an hour that suits you, and your shopping is packed and waiting at the counter. This week's offers and your Northside Card are in there too.</value>
+    </data>
+    <data name="HeroFactSlots" xml:space="preserve">
+        <value>Hourly slots, 10:00 to 21:00</value>
+    </data>
+    <data name="HeroFactFree" xml:space="preserve">
+        <value>Free collection over €40</value>
+    </data>
+    <data name="HeroFactRating" xml:space="preserve">
+        <value>{0} on Google, from {1} reviews</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>The slot picker from the app. Try it.</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="DemoBasket" xml:space="preserve">
+        <value>Basket: {0} items, {1}</value>
+    </data>
+    <data name="DemoShop" xml:space="preserve">
+        <value>Collect from</value>
+    </data>
+    <data name="DemoDay" xml:space="preserve">
+        <value>Day</value>
+    </data>
+    <data name="DemoTime" xml:space="preserve">
+        <value>Collection hour</value>
+    </data>
+    <data name="DemoToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="DemoTomorrow" xml:space="preserve">
+        <value>Tomorrow</value>
+    </data>
+    <data name="DemoFull" xml:space="preserve">
+        <value>Full</value>
+    </data>
+    <data name="DemoSlotSummary" xml:space="preserve">
+        <value>{0}, {1} to {2}</value>
+    </data>
+    <data name="DemoPickSlot" xml:space="preserve">
+        <value>Pick a collection hour</value>
+    </data>
+    <data name="DemoFree" xml:space="preserve">
+        <value>Collection is free: your basket is over €40.</value>
+    </data>
+    <data name="DemoBook" xml:space="preserve">
+        <value>Book this slot</value>
+    </data>
+    <data name="DemoBooked" xml:space="preserve">
+        <value>Slot booked</value>
+    </data>
+    <data name="DemoCode" xml:space="preserve">
+        <value>Collection code</value>
+    </data>
+    <data name="DemoTextYou" xml:space="preserve">
+        <value>We'll text you when it's packed. Give the code at the counter.</value>
+    </data>
+    <data name="DemoChange" xml:space="preserve">
+        <value>Change the slot</value>
+    </data>
+    <data name="DemoStepBooked" xml:space="preserve">
+        <value>Slot held for you</value>
+    </data>
+    <data name="DemoStepPick" xml:space="preserve">
+        <value>Picking starts at {0}</value>
+    </data>
+    <data name="DemoStepReady" xml:space="preserve">
+        <value>Ready at the counter from {0}</value>
+    </data>
+    <data name="OffersKicker" xml:space="preserve">
+        <value>Thursday to Wednesday</value>
+    </data>
+    <data name="OffersTitle" xml:space="preserve">
+        <value>This week's offers</value>
+    </data>
+    <data name="OffersLede" xml:space="preserve">
+        <value>The same prices in all six shops and in the app. Card prices are for Northside Card holders, and the card is free.</value>
+    </data>
+    <data name="OfferKindOffer" xml:space="preserve">
+        <value>Offer</value>
+    </data>
+    <data name="OfferKindCard" xml:space="preserve">
+        <value>Card price</value>
+    </data>
+    <data name="OfferKindLocal" xml:space="preserve">
+        <value>Local</value>
+    </data>
+    <data name="OfferPotatoes" xml:space="preserve">
+        <value>Rooster potatoes</value>
+    </data>
+    <data name="OfferPotatoesPack" xml:space="preserve">
+        <value>2.5 kg bag, Co. Meath</value>
+    </data>
+    <data name="OfferHake" xml:space="preserve">
+        <value>Hake fillets</value>
+    </data>
+    <data name="OfferHakePack" xml:space="preserve">
+        <value>300 g, landed in Howth</value>
+    </data>
+    <data name="OfferSourdough" xml:space="preserve">
+        <value>Sourdough loaf</value>
+    </data>
+    <data name="OfferSourdoughPack" xml:space="preserve">
+        <value>800 g, baked in Phibsborough this morning</value>
+    </data>
+    <data name="OfferEggs" xml:space="preserve">
+        <value>Free-range eggs</value>
+    </data>
+    <data name="OfferEggsPack" xml:space="preserve">
+        <value>Box of 12, Co. Wicklow</value>
+    </data>
+    <data name="OfferApples" xml:space="preserve">
+        <value>Bramley cooking apples</value>
+    </data>
+    <data name="OfferApplesPack" xml:space="preserve">
+        <value>1 kg, Co. Armagh</value>
+    </data>
+    <data name="OfferCoffee" xml:space="preserve">
+        <value>House roast coffee beans</value>
+    </data>
+    <data name="OfferCoffeePack" xml:space="preserve">
+        <value>250 g, roasted in Smithfield</value>
+    </data>
+    <data name="OfferPerKg" xml:space="preserve">
+        <value>{0} per kg</value>
+    </data>
+    <data name="OfferEach" xml:space="preserve">
+        <value>{0} each</value>
+    </data>
+    <data name="OfferWas" xml:space="preserve">
+        <value>Was {0}</value>
+    </data>
+    <data name="CollectKicker" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="CollectTitle" xml:space="preserve">
+        <value>Packed in your shop, by people who know it</value>
+    </data>
+    <data name="CollectLede" xml:space="preserve">
+        <value>Your order is picked in the shop you collect from, by staff who know where everything is. Chilled and frozen food waits in the cold room until you arrive, and you only pay for what's in the bags.</value>
+    </data>
+    <data name="CollectRule1" xml:space="preserve">
+        <value>Hourly collection slots, every day, at all six shops</value>
+    </data>
+    <data name="CollectRule2Key" xml:space="preserve">
+        <value>2 hours ahead</value>
+    </data>
+    <data name="CollectRule2" xml:space="preserve">
+        <value>The latest you can order for a slot today</value>
+    </data>
+    <data name="CollectRule3Key" xml:space="preserve">
+        <value>6 days</value>
+    </data>
+    <data name="CollectRule3" xml:space="preserve">
+        <value>How far ahead you can book a slot</value>
+    </data>
+    <data name="CollectRule4" xml:space="preserve">
+        <value>Collection is free above this, and €2 below it</value>
+    </data>
+    <data name="TicketTitle" xml:space="preserve">
+        <value>Thursday's order</value>
+    </data>
+    <data name="Ticket1" xml:space="preserve">
+        <value>You order on your lunch break: 23 items, €64.80, with substitutes allowed for two of them.</value>
+    </data>
+    <data name="Ticket2" xml:space="preserve">
+        <value>Kasia picks it in the Phibsborough shop and swaps the sold-out oat drink for the one you allowed.</value>
+    </data>
+    <data name="Ticket3" xml:space="preserve">
+        <value>Packed. Chilled and frozen bags go into the cold room, and you get a text.</value>
+    </data>
+    <data name="Ticket4" xml:space="preserve">
+        <value>You give your code at the counter and you're out in two minutes.</value>
+    </data>
+    <data name="CardKicker" xml:space="preserve">
+        <value>The Northside Card</value>
+    </data>
+    <data name="CardTitle" xml:space="preserve">
+        <value>A point for every euro. €5 back for every 500.</value>
+    </data>
+    <data name="CardLede" xml:space="preserve">
+        <value>The card lives in the app, so it's never in the other jacket. Scan it at any till or let click and collect add it for you, and your vouchers come off your next shop on their own.</value>
+    </data>
+    <data name="CardSliderLabel" xml:space="preserve">
+        <value>Your weekly shop</value>
+    </data>
+    <data name="CardResultPoints" xml:space="preserve">
+        <value>Points a year</value>
+    </data>
+    <data name="CardResultVouchers" xml:space="preserve">
+        <value>Vouchers of €5</value>
+    </data>
+    <data name="CardResultBack" xml:space="preserve">
+        <value>Back each year</value>
+    </data>
+    <data name="CardTuesday" xml:space="preserve">
+        <value>Double points on fruit and vegetables every Tuesday.</value>
+    </data>
+    <data name="CardVisualAlt" xml:space="preserve">
+        <value>A Northside Card in the app, with {0} points</value>
+    </data>
+    <data name="CardPoints" xml:space="preserve">
+        <value>points</value>
+    </data>
+    <data name="CardNext" xml:space="preserve">
+        <value>{0} points to your next {1} voucher</value>
+    </data>
+    <data name="ShopsKicker" xml:space="preserve">
+        <value>Six shops</value>
+    </data>
+    <data name="ShopsTitle" xml:space="preserve">
+        <value>All north of the Liffey, all with click and collect</value>
+    </data>
+    <data name="ShopsCta" xml:space="preserve">
+        <value>Opening hours and directions</value>
+    </data>
+    <data name="MapAlt" xml:space="preserve">
+        <value>Map of Dublin's Northside with our six shops: Stoneybatter, Phibsborough, Glasnevin, Drumcondra, Fairview and Clontarf</value>
+    </data>
+    <data name="ReviewsKicker" xml:space="preserve">
+        <value>Reviews</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>What the neighbours say</value>
+    </data>
+    <data name="ReviewsCount" xml:space="preserve">
+        <value>{0} reviews on Google</value>
+    </data>
+    <data name="ReviewsStarsAlt" xml:space="preserve">
+        <value>Rated {0} out of 5</value>
+    </data>
+    <data name="ReviewsBarAlt" xml:space="preserve">
+        <value>{0} stars: {1}% of reviews</value>
+    </data>
+    <data name="ReviewsLink" xml:space="preserve">
+        <value>Read them all on Google</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>Darragh O.</value>
+    </data>
+    <data name="Review1When" xml:space="preserve">
+        <value>2 weeks ago</value>
+    </data>
+    <data name="Review1Text" xml:space="preserve">
+        <value>I order at my desk around one and collect at Drumcondra on the way back from work. Twenty minutes saved every Thursday, and they've never once forgotten the eggs.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>Ewa K.</value>
+    </data>
+    <data name="Review2When" xml:space="preserve">
+        <value>A month ago</value>
+    </data>
+    <data name="Review2Text" xml:space="preserve">
+        <value>The sourdough alone is worth the walk to Phibsborough. The staff know my name, and the app hasn't changed that.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>Nkechi A.</value>
+    </data>
+    <data name="Review3When" xml:space="preserve">
+        <value>3 days ago</value>
+    </data>
+    <data name="Review3Text" xml:space="preserve">
+        <value>Clontarf is my local and the slots always run on time. One star off because the 18:00 slot fills up fast on Fridays.</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Before your first order</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>How much does click and collect cost?</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>Nothing on orders over €40. Below that it costs €2. Prices are the same as on the shelf.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>How late can I order for today?</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>Up to two hours before your slot. Slots start every hour from 10:00, and the last one is 20:00 to 21:00.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>What if something is out of stock?</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>You decide for each item: a similar product at the same price or lower, or nothing at all. You only pay for what ends up in your bags.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>Can I use the Northside Card in the shop?</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>Yes. Open the card in the app and scan it at any till. Points and vouchers work the same in the shop and with click and collect.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>Do I need the app?</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>You can order on the web too, with the same slots and offers. The Northside Card is in the app.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>Your shop's already in the app</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>Pick your shop once, and its offers, its slots and your Northside Card follow. Free on iPhone and Android.</value>
+    </data>
+    <data name="StoresTitle" xml:space="preserve">
+        <value>Find your shop</value>
+    </data>
+    <data name="StoresDescription" xml:space="preserve">
+        <value>Addresses, opening hours and directions for the six Northside Market shops in Dublin, all with click and collect.</value>
+    </data>
+    <data name="StoresKicker" xml:space="preserve">
+        <value>Six shops, Dublin's Northside</value>
+    </data>
+    <data name="StoresLede" xml:space="preserve">
+        <value>Every shop has click and collect, the same prices as the app and this week's offers. Bread comes from our bakery in Phibsborough each morning.</value>
+    </data>
+    <data name="StoresMapTitle" xml:space="preserve">
+        <value>Map: Northside Market {0}</value>
+    </data>
+    <data name="StoresMapLoading" xml:space="preserve">
+        <value>The map appears in a moment.</value>
+    </data>
+    <data name="StoresDirections" xml:space="preserve">
+        <value>Directions</value>
+    </data>
+    <data name="StoresHoursCaption" xml:space="preserve">
+        <value>Opening hours of {0}</value>
+    </data>
+    <data name="StoresToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="StoresEveryDay" xml:space="preserve">
+        <value>Every day</value>
+    </data>
+    <data name="StoresDayRange" xml:space="preserve">
+        <value>{0} to {1}</value>
+    </data>
+    <data name="StoresShowOnMap" xml:space="preserve">
+        <value>Show on the map</value>
+    </data>
+    <data name="StoresHolidayTitle" xml:space="preserve">
+        <value>Bank holidays and Christmas</value>
+    </data>
+    <data name="StoresHolidayBody" xml:space="preserve">
+        <value>Hours change on bank holidays and over Christmas. The app shows each shop's new hours two weeks ahead, and so does this page.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>A grocer that never left the Northside</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>How one shop on Phibsborough Road became six, with the same bakery and the same growers since 1998.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Northside Market started as one shop on Phibsborough Road in 1998. It's six shops now, all north of the Liffey, and still a family business.</value>
+    </data>
+    <data name="FrontsTitle" xml:space="preserve">
+        <value>Our six shops and the year each one opened</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>One oven, the same growers</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Siobhán Byrne opened the first shop with her brother Ciarán, a bread oven in the back room and vegetables from growers in Rush and Lusk, half an hour up the coast.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>The oven still bakes for all six shops before seven every morning, and most of the growers are the same families. A new shop only opens where the bakery can get to it before the doors do.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>What changed is the queue. Since the app arrived in 2024, about a third of our customers order ahead and collect on the way home, and the tills are quieter for everyone else.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>The people you'll meet</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Siobhán Byrne</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Founder and managing director</value>
+    </data>
+    <data name="Team1Note" xml:space="preserve">
+        <value>Still works the Saturday morning till in Phibsborough.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Tomasz Wójcik</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Head baker</value>
+    </data>
+    <data name="Team2Note" xml:space="preserve">
+        <value>Starts at four. The sourdough recipe is his grandmother's.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Adaeze Nwankwo</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="Team3Note" xml:space="preserve">
+        <value>Runs the pickers in all six shops, and the slot times.</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Rui Costa</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>App and Northside Card</value>
+    </data>
+    <data name="Team4Note" xml:space="preserve">
+        <value>Reads every app review, including the one-star ones.</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>A question about an order, a shop or your card? Email or ring the office above the Phibsborough shop, Monday to Friday from 9:00 to 17:00. A person answers.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>The company</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This aisle doesn't exist</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The page may have moved, or the link has a typo. The shops are still where they were.</value>
+    </data>
+    <data name="NotFoundStores" xml:space="preserve">
+        <value>Find a shop</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Neighbourhood grocer</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A grocery chain's app, live on iPhone, Android and the web: a pickup-slot picker you can try, a store finder with a map and opening hours, and a loyalty card.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Pickup slots in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Store finder and map</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Concierge chat</value>
+    </data>
+</root>

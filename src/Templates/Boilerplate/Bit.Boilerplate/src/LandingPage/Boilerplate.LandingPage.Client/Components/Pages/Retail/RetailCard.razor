@@ -1,0 +1,29 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card retail-card" href="@LocalUrl(RetailSite.Path)">
+    <div class="retail-card-preview" aria-hidden="true">
+        <span class="retail-card-brand"><RetailLogo /> Northside Market</span>
+        <span class="retail-card-shelf"></span>
+        <span class="retail-card-label is-offer">
+            <span class="retail-card-flag">@R[nameof(RetailStrings.OfferKindOffer)]</span>
+            <span class="retail-card-name">@R[nameof(RetailStrings.OfferPotatoes)]</span>
+            <span class="retail-card-price">@R[nameof(RetailStrings.Money), 2.49m.ToString("0.00", CurrentCulture)]</span>
+        </span>
+        <span class="retail-card-label is-card">
+            <span class="retail-card-flag">@R[nameof(RetailStrings.OfferKindCard)]</span>
+            <span class="retail-card-name">@R[nameof(RetailStrings.OfferHake)]</span>
+            <span class="retail-card-price">@R[nameof(RetailStrings.Money), 5.99m.ToString("0.00", CurrentCulture)]</span>
+        </span>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@R[nameof(RetailStrings.CardIndustry)]</p>
+        <h2>Northside Market</h2>
+        <p>@R[nameof(RetailStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeLaunched)]</li>
+            <li>@R[nameof(RetailStrings.CardTag1)]</li>
+            <li>@R[nameof(RetailStrings.CardTag2)]</li>
+            <li>@R[nameof(RetailStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

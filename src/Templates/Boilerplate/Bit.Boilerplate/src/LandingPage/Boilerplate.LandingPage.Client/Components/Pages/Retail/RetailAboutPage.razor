@@ -1,0 +1,70 @@
+@attribute [Route(RetailSite.Path + "/about")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/about")]
+@layout RetailLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{R[nameof(RetailStrings.AboutTitle)]} | Northside Market")"
+             Description="@R[nameof(RetailStrings.AboutDescription)]"
+             Path="@($"{RetailSite.Path}/about")"
+             Site="RetailSite.Info"
+             Image="images/retail/og.png" />
+
+<section class="lp-container retail-about-hero">
+    <p class="retail-about-kicker">@L[nameof(LandingStrings.About)]</p>
+    <h1>@R[nameof(RetailStrings.AboutTitle)]</h1>
+    <p class="lp-lede">@R[nameof(RetailStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container retail-about-fronts" aria-labelledby="retail-fronts-title">
+    <h2 id="retail-fronts-title" class="lp-visually-hidden">@R[nameof(RetailStrings.FrontsTitle)]</h2>
+    <RetailShopFronts />
+</section>
+
+<section class="lp-container retail-story" aria-labelledby="retail-story-title">
+    <h2 id="retail-story-title">@R[nameof(RetailStrings.StoryTitle)]</h2>
+    <div>
+        <p>@R[nameof(RetailStrings.StoryBody1)]</p>
+        <p>@R[nameof(RetailStrings.StoryBody2)]</p>
+        <p>@R[nameof(RetailStrings.StoryBody3)]</p>
+    </div>
+</section>
+
+<section class="lp-section retail-team" aria-labelledby="retail-team-title">
+    <div class="lp-container">
+        <h2 id="retail-team-title">@R[nameof(RetailStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role, note) in team)
+            {
+                <li>
+                    <span class="retail-team-badge" aria-hidden="true">
+                        <span>@Initials(R[name])</span>
+                    </span>
+                    <strong>@R[name]</strong>
+                    <span class="retail-team-role">@R[role]</span>
+                    <p>@R[note]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container retail-contact" aria-labelledby="retail-contact-title">
+    <div class="retail-contact-text">
+        <h2 id="retail-contact-title">@R[nameof(RetailStrings.ContactTitle)]</h2>
+        <p>@R[nameof(RetailStrings.ContactBody)]</p>
+        <div class="retail-contact-links">
+            <BitButton Href="@($"mailto:{RetailSite.Info.Company.Email}")" IconName="@BitIconName.Mail">@RetailSite.Info.Company.Email</BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{RetailSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@RetailSite.Info.Company.Phone</span></BitButton>
+        </div>
+    </div>
+    <div class="retail-company">
+        <h3>@R[nameof(RetailStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@RetailSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><span dir="ltr">@RetailSite.Info.Company.Address</span></dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@RetailSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@RetailSite.Info.Company.RegistrationNumber</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@RetailSite.Info.Company.VatId</dd></div>
+        </dl>
+    </div>
+</section>

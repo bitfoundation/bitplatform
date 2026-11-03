@@ -61,6 +61,7 @@
     <ItemGroup>
         <EmbeddedResource Update="Resources\LandingStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="LandingStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Resources" StronglyTypedFileName="$(IntermediateOutputPath)\LandingStrings.Designer.cs" />
         <EmbeddedResource Update="Components\Pages\Ecommerce\EcommerceStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="EcommerceStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.Ecommerce" StronglyTypedFileName="$(IntermediateOutputPath)\EcommerceStrings.Designer.cs" />
+        <EmbeddedResource Update="Components\Pages\Retail\RetailStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="RetailStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.Retail" StronglyTypedFileName="$(IntermediateOutputPath)\RetailStrings.Designer.cs" />
         <None Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
     </ItemGroup>
 

@@ -1,0 +1,237 @@
+@import '../../../Styles/tokens';
+
+.retail-about-hero {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding-block: clamp(48px, 7vw, 96px) clamp(32px, 4vw, 56px);
+
+    > * {
+        max-width: 860px;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4.75rem);
+        font-weight: 850;
+        line-height: .98;
+        letter-spacing: -.03em;
+
+        &:lang(fa) {
+            line-height: 1.3;
+            letter-spacing: 0;
+        }
+    }
+}
+
+.retail-about-kicker {
+    padding: 5px 10px 4px;
+    border-radius: 3px;
+    background: var(--retail-label);
+    color: var(--retail-label-fg);
+    font-size: .8125rem;
+    font-weight: 800;
+    font-stretch: 112%;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+
+    &:lang(fa) {
+        letter-spacing: 0;
+    }
+}
+
+.retail-about-fronts {
+    padding-block: 8px 24px;
+}
+
+.retail-story {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: clamp(24px, 5vw, 72px);
+    padding-block: clamp(40px, 6vw, 80px);
+
+    h2 {
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+        font-weight: 850;
+        letter-spacing: -.02em;
+
+        &:lang(fa) {
+            letter-spacing: 0;
+        }
+    }
+
+    > div {
+        display: grid;
+        gap: 16px;
+        max-width: 62ch;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: 1.0625rem;
+        line-height: 1.7;
+    }
+
+    p:first-child {
+        color: var(--lp-fg);
+        font-size: 1.25rem;
+        line-height: 1.55;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.retail-team {
+    background: var(--lp-bg-alt);
+
+    h2 {
+        margin-bottom: 40px;
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+        font-weight: 850;
+        letter-spacing: -.02em;
+
+        &:lang(fa) {
+            letter-spacing: 0;
+        }
+    }
+
+    ul {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @include lt-sm {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 4px;
+        padding: 20px;
+        border-top: 6px solid var(--lp-fg);
+        background: var(--lp-surface);
+
+        p {
+            margin-top: 8px;
+            color: var(--lp-fg-muted);
+            font-size: .9375rem;
+        }
+    }
+
+    strong {
+        font-size: 1.125rem;
+        font-weight: 800;
+    }
+}
+
+.retail-team-badge {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 14px;
+    border-radius: 4px;
+    background: var(--retail-label);
+    color: var(--retail-label-fg);
+    font-size: 1.375rem;
+    font-weight: 850;
+    font-stretch: 125%;
+}
+
+.retail-team-role {
+    color: var(--lp-accent);
+    font-size: .875rem;
+    font-weight: 700;
+}
+
+.retail-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    padding-block: clamp(56px, 7vw, 96px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.retail-contact-text {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+
+    h2 {
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+        font-weight: 850;
+        letter-spacing: -.02em;
+
+        &:lang(fa) {
+            letter-spacing: 0;
+        }
+    }
+
+    p {
+        max-width: 50ch;
+        color: var(--lp-fg-muted);
+    }
+}
+
+.retail-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.retail-company {
+    display: grid;
+    gap: 12px;
+    padding: 28px;
+    border-radius: var(--lp-radius);
+    box-shadow: 0 0 0 2px var(--lp-fg), 8px 8px 0 0 var(--retail-label);
+
+    h3 {
+        font-size: 1.375rem;
+        font-weight: 850;
+    }
+
+    dl {
+        display: grid;
+        gap: 10px;
+        margin: 8px 0 0;
+    }
+
+    div {
+        display: grid;
+        grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+        gap: 12px;
+        font-size: .9375rem;
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+    }
+
+    dd {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    @include lt-sm {
+        padding: 22px;
+
+        div {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
+        }
+    }
+}
