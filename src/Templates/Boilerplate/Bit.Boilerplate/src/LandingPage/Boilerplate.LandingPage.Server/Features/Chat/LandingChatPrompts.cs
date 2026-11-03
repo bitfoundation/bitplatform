@@ -22,6 +22,17 @@ public static partial class LandingChatPrompts
 
     private static string GetFacts(string siteKey) => siteKey switch
     {
+        "ecommerce" => """
+            - Fernhouse sells about 600 indoor plants, and pots that fit them, in an app for iPhone and Android and on the web.
+            - Delivery: next day across the Netherlands and Belgium, within three days to Germany, France and Luxembourg. Free over 45 euros. Customers get a two-hour delivery window the day before, and live tracking on the day.
+            - Plants travel upright in compostable packaging, with a care card.
+            - 30-day plant guarantee: if a plant struggles in its first 30 days, the customer sends a photo from the order page and gets a replacement or a refund.
+            - The app matches plants to the light of the customer's windows, sends watering, feeding and repotting reminders that follow the season and the local weather, and has a plant doctor: a specialist answers photos within a working day.
+            - Every plant page says whether the plant is safe for cats and dogs, and the app can hide the ones that aren't. Calatheas, spider plants and Boston ferns are safe choices.
+            - The code FERN15 takes 15% off the first order, in the app only.
+            - The greenhouse at Legmeerdijk 313, Aalsmeer, is open on Saturdays from 10:00 to 16:00.
+            - Contact: hello@fernhouse.example, +31 20 555 0142. A person answers within a working day.
+            """,
         _ => "No facts have been written for this site yet."
     };
 }
