@@ -105,7 +105,10 @@ public partial class AuthManager
             var isSwitch = previousUserId is not null && previousUserId != userId;
             //#if (multitenant == true)
             notifiedTenantId = state.User.GetTenantId();
-            // The same user in another tenant, which a tenant switch in another tab brings.
+            // A tenant switch keeps the user id, so the check above misses it, yet every page loaded before it shows
+            // the previous tenant's data while its next requests already go out with the new tenant's token.
+            // The tenant id is compared rather than the token, so a plain refresh in another tab restarts nothing.
+            // previousUserId == userId also rules out the first notification, when nothing was known yet.
             isSwitch |= previousUserId == userId && previousTenantId != notifiedTenantId;
             //#endif
 
