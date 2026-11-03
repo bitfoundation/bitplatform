@@ -75,3 +75,16 @@
         letter-spacing: 0;
     }
 }
+
+:root[bit-theme="dark"] .accounting-card-preview {
+    background: #171B21;
+}
+
+:root[bit-theme="dark"] .accounting-card-sheet {
+    background: #E9E6DE;
+    box-shadow: 0 24px 44px -20px rgb(0 0 0 / .75);
+
+    i {
+        background: #CFCAC0;
+    }
+}

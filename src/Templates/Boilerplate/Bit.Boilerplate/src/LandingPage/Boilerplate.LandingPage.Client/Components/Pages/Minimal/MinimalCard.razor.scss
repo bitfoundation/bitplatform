@@ -49,3 +49,20 @@
         background: #141414;
     }
 }
+
+:root[bit-theme="dark"] .minimal-card-preview {
+    --lp-fg: #F2F2EC;
+    --lp-bg: #121211;
+    --notch-mark: #E9C53A;
+
+    background: #121211;
+    color: #F2F2EC;
+}
+
+:root[bit-theme="dark"] .minimal-card-marks {
+    background: linear-gradient(-24deg, transparent 42%, #E9C53A 42% 60%, transparent 60%);
+
+    span {
+        background: #F2F2EC;
+    }
+}

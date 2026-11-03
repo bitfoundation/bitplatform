@@ -52,3 +52,22 @@
     white-space: nowrap;
     font-weight: 700;
 }
+
+:root[bit-theme="dark"] .restaurant-card-preview {
+    --copper: #E0915A;
+    --porcelain: #F4EEE6;
+    --porcelain-blue: #6F8FF0;
+    --porcelain-line: #8A7566;
+    --coffee: #3B2519;
+    --crema: #B8783F;
+
+    background:
+        radial-gradient(circle at 50% 118%, #F2C25B 0 46%, transparent 46.4%),
+        #221915;
+    color: #F6EEE7;
+}
+
+:root[bit-theme="dark"] .restaurant-card-date {
+    background: #E0915A;
+    color: #1A0E07;
+}

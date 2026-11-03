@@ -101,3 +101,30 @@
         font-size: 1.125rem;
     }
 }
+
+:root[bit-theme="dark"] .retail-card-preview {
+    --retail-sign: #A62914;
+
+    background: #A62914;
+}
+
+:root[bit-theme="dark"] .retail-card-shelf {
+    background: #3A3D44;
+}
+
+:root[bit-theme="dark"] .retail-card-label {
+    background: #F7F5F0;
+    box-shadow: 0 14px 22px -14px rgba(0, 0, 0, .8);
+
+    &.is-offer {
+        background: #FFD43B;
+    }
+}
+
+:root[bit-theme="dark"] .retail-card-flag {
+    background: #0A0B0D;
+
+    .is-card > & {
+        background: #A62914;
+    }
+}

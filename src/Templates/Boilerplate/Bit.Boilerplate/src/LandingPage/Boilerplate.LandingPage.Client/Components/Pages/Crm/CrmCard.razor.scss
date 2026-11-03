@@ -93,3 +93,40 @@
 .crm-card-lanes .is-moving:dir(rtl) {
     transform: translateX(-10px) rotate(-3deg);
 }
+
+:root[bit-theme="dark"] .crm-card-preview {
+    --lp-accent: #FF7A5C;
+    --lp-accent-fg: #1A0A05;
+
+    background: #16223F;
+}
+
+:root[bit-theme="dark"] .crm-card-lanes {
+    background: #0B1222;
+
+    div {
+        background: #0F1829;
+    }
+
+    i {
+        background: #52618A;
+    }
+
+    b {
+        border-color: #24304A;
+        background: #141F37;
+    }
+
+    .is-moving {
+        border-color: #FF7A5C;
+        box-shadow: 0 6px 14px -8px rgb(255 122 92 / .6);
+    }
+
+    .is-won {
+        background: #2B1816;
+
+        i {
+            background: #FF7A5C;
+        }
+    }
+}

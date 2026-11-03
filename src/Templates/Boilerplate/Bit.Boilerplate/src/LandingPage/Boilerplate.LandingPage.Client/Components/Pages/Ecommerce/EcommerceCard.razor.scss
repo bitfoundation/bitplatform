@@ -43,3 +43,20 @@
     font-family: Georgia, serif;
     font-weight: 600;
 }
+
+:root[bit-theme="dark"] .ecommerce-card-preview {
+    --lp-accent: #74D3A0;
+    --lp-accent-fg: #06190F;
+    --lp-device-screen: #15241C;
+    --fern-leaf: #4FA374;
+    --fern-leaf-deep: #2E7A50;
+    --fern-stem: #5C8A62;
+
+    background: #15241C;
+    color: #E8F0EA;
+}
+
+:root[bit-theme="dark"] .ecommerce-card-price {
+    background: #E9B949;
+    color: #2B1F00;
+}

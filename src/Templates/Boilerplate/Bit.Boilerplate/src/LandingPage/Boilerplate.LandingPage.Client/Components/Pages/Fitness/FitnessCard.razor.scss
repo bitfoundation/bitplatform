@@ -1,6 +1,12 @@
 .fit-card-preview {
     --fit-mark: #C81E5B;
     --fit-mark-dot: #F6E35A;
+    --fit-track: #E04A77;
+    --fit-track-lane: rgb(255 255 255 / .55);
+    --fit-track-finish: #FFFFFF;
+    --fit-infield: #F6E35A;
+    --fit-lap: #17131F;
+    --fit-time: #17131F;
 
     position: relative;
     display: grid;
@@ -46,4 +52,24 @@
     color: #17131F;
     font-size: .875rem;
     font-weight: 800;
+}
+
+:root[bit-theme="dark"] .fit-card-preview {
+    --fit-mark: #FF9DBF;
+    --fit-mark-dot: #EBD850;
+    --fit-track: #7D1E43;
+    --fit-track-lane: rgb(255 255 255 / .28);
+    --fit-track-finish: rgb(255 255 255 / .85);
+    --fit-infield: #241D2D;
+    --fit-lap: #EBD850;
+    --fit-time: #F1EEF5;
+
+    background: #16121D;
+    color: #F1EEF5;
+}
+
+:root[bit-theme="dark"] .fit-card-streak {
+    --bit-Icon-color: #A3164A;
+
+    background: #EBD850;
 }

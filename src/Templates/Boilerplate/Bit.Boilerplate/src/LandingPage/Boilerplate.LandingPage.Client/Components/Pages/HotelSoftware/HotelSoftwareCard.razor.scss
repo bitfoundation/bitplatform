@@ -61,3 +61,32 @@
         color: #1D5536;
     }
 }
+
+:root[bit-theme="dark"] .hs-card-preview {
+    --hs-mark-detail: #1A1D20;
+
+    background: #26292E;
+    color: #EEEBE4;
+}
+
+:root[bit-theme="dark"] .hs-card-board {
+    .is-occupied {
+        background: #1F2A3A;
+        color: #B7C8DE;
+    }
+
+    .is-dirty {
+        background: #3A2A0E;
+        color: #F1CB7E;
+    }
+
+    .is-arriving {
+        border-color: #B48A2E;
+        color: #EBCB7C;
+    }
+
+    .is-clean {
+        background: #17301F;
+        color: #9FD8B1;
+    }
+}
