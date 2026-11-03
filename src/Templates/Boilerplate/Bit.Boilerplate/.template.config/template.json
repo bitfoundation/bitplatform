@@ -894,6 +894,7 @@
                         "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
+                        "src/Tests/Features/Identity/CrossTabSignOutTests.cs",
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
                         "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
