@@ -274,21 +274,28 @@
     <span id="dialog-open">@_dialogOpen</span>
 </E2ESection>
 
-@* A map partly out of view in a box that scrolls, as in an app shell's main area. Leaflet focuses the map as it is
-   pressed, which must not scroll the box and take the marker from under the pointer. *@
+@* A map partly out of view in a box that scrolls, as in an app shell's main area, and in the window. Leaflet focuses
+   the map as it is pressed, which must scroll neither and take the marker from under the pointer. Shown on demand, as
+   only the tests of this section need it. *@
 <E2ESection Id="scroller" Title="In a scrolling box">
-    <div id="map-scroller" class="map-scroller">
-        <div class="map-scroller-spacer"></div>
-        <div class="map-box-short">
-            <BitMap TMapProvider="BitLeafletMapProvider" Id="map-scrolled" Provider="_scrolledProvider"
-                    Markers="_scrolledMarkers"
-                    OnMarkerClick="_ => _scrolledMarkerClicks++"
-                    OnMarkerDoubleClick="_ => _scrolledMarkerDoubleClicks++"
-                    OnClick="_ => _scrolledMapClicks++"
-                    OnDoubleClick="_ => _scrolledMapDoubleClicks++" />
+    <button id="btn-show-scroller" @onclick="() => _showScroller = true">Show a map in a scrolling box</button>
+    @if (_showScroller)
+    {
+        <div id="map-scroller" class="map-scroller">
+            <div class="map-scroller-spacer"></div>
+            <div class="map-box-short">
+                <BitMap TMapProvider="BitLeafletMapProvider" Id="map-scrolled" Provider="_scrolledProvider"
+                        Markers="_scrolledMarkers"
+                        OnMarkerClick="_ => _scrolledMarkerClicks++"
+                        OnMarkerDoubleClick="_ => _scrolledMarkerDoubleClicks++"
+                        OnClick="_ => _scrolledMapClicks++"
+                        OnDoubleClick="_ => _scrolledMapDoubleClicks++" />
+            </div>
+            <div class="map-scroller-spacer"></div>
         </div>
-        <div class="map-scroller-spacer"></div>
-    </div>
+    }
+    <button id="btn-scrolled-ping" @onclick="() => _scrolledPings++">Ping</button>
+    <span id="scrolled-pings">@_scrolledPings</span>
     <span id="scrolled-marker-clicks">@_scrolledMarkerClicks</span>
     <span id="scrolled-marker-double-clicks">@_scrolledMarkerDoubleClicks</span>
     <span id="scrolled-map-clicks">@_scrolledMapClicks</span>
@@ -498,6 +505,8 @@
 
     private bool _disabled = true;
     private bool _dialogOpen;
+    private bool _showScroller;
+    private int _scrolledPings;
     private int _scrolledMarkerClicks;
     private int _scrolledMarkerDoubleClicks;
     private int _scrolledMapClicks;

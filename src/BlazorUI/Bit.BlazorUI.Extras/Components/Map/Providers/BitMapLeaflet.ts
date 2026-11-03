@@ -27,11 +27,12 @@
         isDisposed: boolean;
     };
 
-    let leafletDefaultIconPatched = false;
+    /** The Leaflet whose default icon has been patched: a page that loads Leaflet again has one to patch anew. */
+    let leafletDefaultIconPatched: any = null;
 
     function patchLeafletDefaultIcon(L: any) {
-        if (leafletDefaultIconPatched) return;
-        leafletDefaultIconPatched = true;
+        if (leafletDefaultIconPatched === L) return;
+        leafletDefaultIconPatched = L;
         const base = "_content/Bit.BlazorUI.Extras/leaflet/images/";
         try {
             delete L.Icon.Default.prototype._getIconUrl;
@@ -43,24 +44,24 @@
         } catch { /* ignore */ }
     }
 
-    let leafletKeyboardFocusPatched = false;
-
     /**
-     * Leaflet 1.9.4 focuses the map as it is pressed (Keyboard._onMouseDown) and then puts back only the window's
-     * scroll. A box the map is partly out of view in - an app shell's main area - scrolls the map into view meanwhile,
-     * which moves a marker from under the pointer, so the release lands on the map and the marker's click is lost.
-     * Focusing without scrolling leaves every scroll where it was. Done before any map is created, so the handler of
-     * each one listens with this function and takes the same one off again.
+     * The press of a map's keyboard handler (Keyboard._onMouseDown, see BitMapLeaflet._focusWithoutScrolling).
+     * Leaflet 1.9.4 focuses the map as it is pressed and then puts back only the window's scroll. A box the map is
+     * partly out of view in - an app shell's main area - scrolls the map into view meanwhile, which moves a marker from
+     * under the pointer, so the release lands on the map and the marker's click is lost. Focusing without scrolling
+     * leaves every scroll where it was; a browser that ignores preventScroll (Safari before 15) has the scroll of every
+     * box the map is in, the window's among them, put back.
      */
-    function patchLeafletKeyboardFocus(L: any) {
-        if (leafletKeyboardFocusPatched) return;
-        leafletKeyboardFocusPatched = true;
-        try {
-            L.Map.Keyboard.prototype._onMouseDown = function (this: any) {
-                if (this._focused) return;
-                this._map._container.focus({ preventScroll: true });
-            };
-        } catch { /* ignore */ }
+    function focusMapWithoutScrolling(this: any) {
+        if (this._focused) return;
+        const container: HTMLElement = this._map._container;
+        const scrolls: [Element, number, number][] = [];
+        for (let e = container.parentElement; e; e = e.parentElement) scrolls.push([e, e.scrollLeft, e.scrollTop]);
+        container.focus({ preventScroll: true });
+        for (const [e, left, top] of scrolls) {
+            if (e.scrollLeft !== left) e.scrollLeft = left;
+            if (e.scrollTop !== top) e.scrollTop = top;
+        }
     }
 
     // bit-trim: owners BitLeafletMapProvider
@@ -83,13 +84,12 @@
             if (!L) throw new Error("Leaflet is not loaded.");
 
             patchLeafletDefaultIcon(L);
-            patchLeafletKeyboardFocus(L);
             const o = options || {};
             const center: [number, number] = [o.center?.lat ?? 51.505, o.center?.lng ?? -0.09];
             const zoom: number = o.zoom ?? 13;
 
             const zoomControlEnabled = o.zoomControl !== false;
-            const map = BitMapLeaflet._keepTabIndex(element, () => L.map(element, {
+            const map = BitMapLeaflet._keepTabIndex(element, () => BitMapLeaflet._focusWithoutScrolling(L.map(element, {
                 center, zoom,
                 minZoom: o.minZoom ?? undefined,
                 maxZoom: o.maxZoom ?? undefined,
@@ -102,7 +102,7 @@
                 keyboard: o.keyboardNavigation !== false,
                 // Spread last so an escape-hatch entry wins over what the component models.
                 ...(o.additionalOptions || {}),
-            }));
+            })));
 
             // The default tileUrl is OpenStreetMap, which contractually requires the
             // standard attribution. When the caller leaves tileUrl unset (so we serve
@@ -815,6 +815,22 @@
             } finally {
                 if (tabIndex !== null && element.getAttribute('tabindex') !== tabIndex) element.setAttribute('tabindex', tabIndex);
             }
+        }
+
+        /**
+         * Has a new map's keyboard handler focus the map without scrolling as it is pressed (focusMapWithoutScrolling).
+         * Set on the handler rather than on Leaflet's prototype, which every map of the page shares: one created before
+         * would take off a function other than the one it listens with. The handler listens with the function it has
+         * as it is enabled, which Leaflet has done already, so it is enabled again. Returns the map.
+         */
+        private static _focusWithoutScrolling(map: any): any {
+            const keyboard = map.keyboard;
+            if (!keyboard) return map;
+            const enabled = keyboard.enabled();
+            if (enabled) keyboard.disable();
+            keyboard._onMouseDown = focusMapWithoutScrolling;
+            if (enabled) keyboard.enable();
+            return map;
         }
 
         /** A shape's Leaflet options. An open line is never filled: Leaflet would fill the area its ends enclose. */
