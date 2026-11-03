@@ -4,14 +4,20 @@
 
 <div class="bb-intro">
     <h1>Toggle / Toggle Group</h1>
-    <p class="bb-subtitle">Two-state buttons styled with <code>aria-pressed:</code> and <code>data-[state=on]:</code> utilities.</p>
-    <SectionSwitcher Slug="toggle-group" />
+    <p class="bb-subtitle">Two-state buttons on their own, or grouped for formatting, alignment and view switchers.</p>
 </div>
+
+<SectionSwitcher Slug="toggle-group" />
 
 <TwDemoBlock Title="Toggle button" Code="@_toggleCode">
     <Description>
-        <code>BitBhToggle</code> is a native button with <code>aria-pressed</code> and <code>data-state="on|off"</code>.
-        Space / Enter or a click flips it; use <code>@@bind-Pressed</code>, <code>DefaultPressed</code> and <code>Disabled</code>.
+        <code>BitBhToggle</code> is the APG Button pattern's toggle variant: a native
+        <code>&lt;button&gt;</code> with <code>aria-pressed</code> and <code>data-state="on|off"</code>.
+        <kbd>Space</kbd> / <kbd>Enter</kbd> or a click flips it. Use <code>@@bind-Pressed</code>,
+        <code>DefaultPressed</code> for uncontrolled use, and <code>Disabled</code>. Either attribute
+        can drive the pressed look: the CSS version styles it with <code>[data-state="on"]</code> and
+        <code>[data-disabled]</code> selectors, the Tailwind version with the <code>aria-pressed:</code>
+        and <code>disabled:</code> variants.
     </Description>
     <LiveContent>
         <div class="flex flex-wrap items-center gap-3">
@@ -28,7 +34,9 @@
 
 <TwDemoBlock Title="State-aware content with Template" Code="@_templateCode">
     <Description>
-        <code>Template</code> receives the <code>bool</code> pressed state. Keep the label constant and swap only the icon — <code>aria-pressed</code> conveys the state.
+        When the content depends on the pressed state, use <code>Template</code> instead of child
+        content — its context is the <code>bool</code> pressed state. Keep the label itself constant
+        (APG): only the icon swaps here, <code>aria-pressed</code> conveys the state.
     </Description>
     <LiveContent>
         <div class="flex flex-wrap items-center gap-3">
@@ -51,8 +59,10 @@
 
 <TwDemoBlock Title="Multiple: text formatting" Code="@_multipleCode">
     <Description>
-        <code>Type="BitBhToggleGroupType.Multiple"</code> is a <code>role="group"</code> of <code>aria-pressed</code> buttons bound with <code>@@bind-Values</code>.
-        One tab stop; ← / → move focus, Home / End jump, Space / Enter toggle.
+        <code>Type="BitBhToggleGroupType.Multiple"</code> renders a <code>role="group"</code> of
+        <code>aria-pressed</code> buttons bound with <code>@@bind-Values</code>. The group is a single
+        tab stop: <kbd>←</kbd> / <kbd>→</kbd> move focus (wrapping), <kbd>Home</kbd> / <kbd>End</kbd>
+        jump, <kbd>Space</kbd> / <kbd>Enter</kbd> toggle.
     </Description>
     <LiveContent>
         <div class="grid w-full justify-items-start gap-4">
@@ -79,8 +89,11 @@
 
 <TwDemoBlock Title="Single: alignment" Code="@_singleCode">
     <Description>
-        The default <code>Single</code> type is a <code>radiogroup</code> of <code>radio</code> items (<code>aria-checked</code>); the pressed item is the tab stop.
-        <code>AllowEmpty="false"</code> stops a click on the pressed item from clearing the value.
+        In the default <code>Type="BitBhToggleGroupType.Single"</code> one item is pressed at a time,
+        and clicking the pressed item clears the value. <code>AllowEmpty="false"</code> keeps one
+        alignment selected at all times, which makes the group a radio group: a
+        <code>role="radiogroup"</code> of <code>role="radio"</code> items with
+        <code>aria-checked</code>, where the pressed item is the tab stop.
     </Description>
     <LiveContent>
         <div class="grid w-full justify-items-start gap-4">
@@ -114,8 +127,12 @@
 
 <TwDemoBlock Title="Vertical orientation" Code="@_verticalCode">
     <Description>
-        <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to ↑ / ↓ and sets <code>data-orientation="vertical"</code>.
-        Uncontrolled via <code>DefaultValue</code>; each item's <code>Template</code> draws a check mark.
+        <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to <kbd>↑</kbd> /
+        <kbd>↓</kbd> and sets <code>data-orientation="vertical"</code> for styling: the CSS version
+        styles it with a <code>[data-orientation="vertical"]</code> selector, the Tailwind version with
+        the <code>data-orientation-vertical:</code> variant. This group is uncontrolled
+        (<code>DefaultValue</code>) and each item's <code>Template</code> receives its pressed state to
+        draw a check mark.
     </Description>
     <LiveContent>
         <BitBhToggleGroup Orientation="BitBhRovingOrientation.Vertical" DefaultValue="week"
@@ -137,7 +154,11 @@
 
 <TwDemoBlock Title="Disabled items" Code="@_disabledCode">
     <Description>
-        A disabled item gets the native <code>disabled</code> attribute (style with <code>disabled:</code> or <code>data-disabled:</code>) and arrow keys skip it. <code>Disabled</code> on the group disables every item.
+        <code>Disabled="true"</code> on an item renders the native <code>disabled</code> attribute and
+        <code>data-disabled</code>; arrow keys skip it. On the group it disables every item, and the
+        group gets <code>data-disabled</code> too. The CSS version styles them with
+        <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <div class="grid w-full justify-items-start gap-4">

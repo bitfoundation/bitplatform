@@ -5,16 +5,21 @@
 <div class="bb-intro">
     <h1>Radio Group</h1>
     <p class="bb-subtitle">An accessible single-select group with roving tabindex and full keyboard support.</p>
-    <SectionSwitcher Slug="radiogroup" />
 </div>
 
+<SectionSwitcher Slug="radiogroup" />
+
 <TwDemoBlock Title="Basic Radio Group" Code="@_basicCode">
-    <Description>Click or use Up / Down arrow keys to navigate. Disabled radios are skipped.</Description>
+    <Description>
+        Click a radio or use the arrow keys to navigate and select. Disabled radios are
+        skipped. <code>aria-checked</code>, <code>role="radiogroup"</code>, and
+        <code>role="radio"</code> are wired automatically.
+    </Description>
     <LiveContent>
         <BitBhRadioGroup DefaultValue="medium" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="small"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -23,7 +28,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="medium"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -32,7 +37,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="large"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -44,12 +49,18 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Horizontal Orientation" Code="@_horizontalCode">
-    <Description>Set <code>Vertical="false"</code>. The <code>data-orientation-horizontal:</code> variant flips the layout.</Description>
+    <Description>
+        Set <code>Vertical="false"</code> to lay radios out horizontally. The group then
+        emits <code>aria-orientation</code> / <code>data-orientation="horizontal"</code>;
+        all four arrow keys navigate in either orientation. The CSS version lays the row out
+        with a <code>[data-orientation="horizontal"]</code> selector, the Tailwind version
+        with the <code>data-orientation-horizontal:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhRadioGroup Vertical="false" DefaultValue="card" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="card"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -58,7 +69,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="bank"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -67,7 +78,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="paypal"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -79,12 +90,16 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled Radio" Code="@_disabledCode">
-    <Description>Arrow-key navigation skips disabled radios automatically.</Description>
+    <Description>
+        Set <code>Disabled="true"</code> on individual radios. Arrow-key navigation
+        skips disabled options. Set <code>Disabled="true"</code> on the root group to
+        disable everything at once.
+    </Description>
     <LiveContent>
         <BitBhRadioGroup DefaultValue="standard" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="standard"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -93,7 +108,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="express"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -102,7 +117,7 @@
             </label>
             <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                 <BitBhRadio Value="same-day" Disabled="true"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -114,12 +129,18 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Card-style options" Code="@_cardCode">
-    <Description>Use the rich <code>has-[]</code> selector to highlight the wrapper based on the inner radio state.</Description>
+    <Description>
+        Because the radio is the only interactive element, you can place rich content
+        (titles, descriptions, prices) inside the <code>&lt;label&gt;</code> wrapper
+        and use the radio's <code>data-state="checked"</code> hook to highlight the selected card.
+        The CSS version does it with a <code>:has()</code> selector, the Tailwind version with
+        the <code>has-[[data-state=checked]]:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhRadioGroup DefaultValue="pro" class="flex flex-col gap-2.5 w-full max-w-md">
             <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
                 <BitBhRadio Value="free"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -131,7 +152,7 @@
             </label>
             <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
                 <BitBhRadio Value="pro"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -143,7 +164,7 @@
             </label>
             <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
                 <BitBhRadio Value="team"
-                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                         class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                     <Template Context="r">
                         @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                     </Template>
@@ -158,7 +179,9 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-    <Description>Drive selection externally.</Description>
+    <Description>
+        Drive selection externally with <code>Value</code> and <code>OnValueChange</code>.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 w-full">
             <div class="flex flex-wrap items-center gap-3">
@@ -170,7 +193,7 @@
             <BitBhRadioGroup Value="@selectedColor" OnValueChange="v => selectedColor = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="red"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -179,7 +202,7 @@
                 </label>
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="green"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -188,7 +211,7 @@
                 </label>
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="blue"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -201,13 +224,16 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Form Submission" Code="@_formCode">
-    <Description>Set <code>Name</code> to render a hidden input with the current value.</Description>
+    <Description>
+        Set <code>Name</code> on the group to render a hidden <code>&lt;input&gt;</code>
+        carrying the selected value, so plain HTML form posts include the group's selection.
+    </Description>
     <LiveContent>
         <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true" class="flex flex-col items-start gap-3">
-            <BitBhRadioGroup Name="size" DefaultValue="m" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+            <BitBhRadioGroup Name="size" DefaultValue="m" OnValueChange="v => postedSize = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="s"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -216,7 +242,7 @@
                 </label>
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="m"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -225,7 +251,7 @@
                 </label>
                 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
                     <BitBhRadio Value="l"
-                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                         </Template>
@@ -245,15 +271,16 @@
 @code {
     private string? selectedColor = "green";
     private string? lastSubmitted;
+    private string? postedSize = "m";
 
     private void HandleFormSubmit() =>
-        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+        lastSubmitted = $"Submitted: the form posts size={postedSize}";
 
     private const string _basicCode = """
 <BitBhRadioGroup DefaultValue="medium" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="small"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -262,7 +289,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="medium"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -271,7 +298,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="large"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -285,7 +312,7 @@
 <BitBhRadioGroup Vertical="false" DefaultValue="card" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="card"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -294,7 +321,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="bank"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -303,7 +330,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="paypal"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -317,7 +344,7 @@
 <BitBhRadioGroup DefaultValue="standard" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="standard"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -326,7 +353,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="express"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -335,7 +362,7 @@
     </label>
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
         <BitBhRadio Value="same-day" Disabled="true"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -349,7 +376,7 @@
 <BitBhRadioGroup DefaultValue="pro" class="flex flex-col gap-2.5 w-full max-w-md">
     <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
         <BitBhRadio Value="free"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -361,7 +388,7 @@
     </label>
     <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
         <BitBhRadio Value="pro"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -373,7 +400,7 @@
     </label>
     <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
         <BitBhRadio Value="team"
-                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
             <Template Context="r">
                 @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
             </Template>
@@ -397,7 +424,7 @@
     <BitBhRadioGroup Value="@selectedColor" OnValueChange="v => selectedColor = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="red"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -406,7 +433,7 @@
         </label>
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="green"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -415,7 +442,7 @@
         </label>
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="blue"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -432,10 +459,10 @@
 
     private const string _formCode = """
 <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true" class="flex flex-col items-start gap-3">
-    <BitBhRadioGroup Name="size" DefaultValue="m" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+    <BitBhRadioGroup Name="size" DefaultValue="m" OnValueChange="v => postedSize = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="s"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -444,7 +471,7 @@
         </label>
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="m"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -453,7 +480,7 @@
         </label>
         <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
             <BitBhRadio Value="l"
-                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="r">
                     @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
                 </Template>
@@ -470,9 +497,10 @@
 
 @code {
     private string? lastSubmitted;
+    private string? postedSize = "m";
 
     private void HandleFormSubmit() =>
-        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+        lastSubmitted = $"Submitted: the form posts size={postedSize}";
 }
 """;
 }

@@ -4,20 +4,25 @@
 
 <div class="bb-intro">
     <h1>CloseButton</h1>
-    <p class="bb-subtitle">A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure.</p>
-    <SectionSwitcher Slug="close-button" />
+    <p class="bb-subtitle">A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure — saves boilerplate for dismiss actions.</p>
 </div>
 
+<SectionSwitcher Slug="close-button" />
+
 <TwDemoBlock Title="Inside a Dialog" Code="@_dialogCode">
-    <Description>Drop <code>&lt;BitBhCloseButton&gt;</code> anywhere inside a Dialog and it auto-wires the close action.</Description>
+    <Description>
+        Drop <code>&lt;BitBhCloseButton&gt;</code> anywhere inside a Dialog and it will
+        automatically call the dialog's close callback. No need to wire up
+        <code>@@onclick</code> or pass state around.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => dialogOpen = true"
                   class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
             Open dialog
         </BitBhButton>
         <BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
-            <BitBhDialogBackdrop class="bg-black/50" />
-            <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+            <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+            <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
                 <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Deactivate account</BitBhDialogTitle>
                 <BitBhDialogDescription class="text-sm text-zinc-500">
                     This will permanently deactivate your account. All of your data will be permanently removed.
@@ -32,7 +37,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Inside a Popover" Code="@_popoverCode">
-    <Description>Use inside a popover panel to close it on click.</Description>
+    <Description>
+        Use <code>BitBhCloseButton</code> inside a popover panel to close it on click.
+        Combine with the <code>As</code> parameter to render as an anchor or any
+        other element.
+    </Description>
     <LiveContent>
         <BitBhPopover class="relative inline-block">
             <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
@@ -40,9 +49,9 @@
             </BitBhPopoverButton>
             <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
                 <h3 class="text-sm font-semibold m-0">Navigation</h3>
-                <BitBhCloseButton As="a" href="#analytics"  class="py-1 text-sm text-blue-600 no-underline hover:underline">Analytics</BitBhCloseButton>
-                <BitBhCloseButton As="a" href="#engagement" class="py-1 text-sm text-blue-600 no-underline hover:underline">Engagement</BitBhCloseButton>
-                <BitBhCloseButton As="a" href="#security"   class="py-1 text-sm text-blue-600 no-underline hover:underline">Security</BitBhCloseButton>
+                <BitBhCloseButton As="a" href="#analytics" @onclick:preventDefault  class="py-1 text-sm text-blue-600 no-underline hover:underline">Analytics</BitBhCloseButton>
+                <BitBhCloseButton As="a" href="#engagement" @onclick:preventDefault class="py-1 text-sm text-blue-600 no-underline hover:underline">Engagement</BitBhCloseButton>
+                <BitBhCloseButton As="a" href="#security" @onclick:preventDefault   class="py-1 text-sm text-blue-600 no-underline hover:underline">Security</BitBhCloseButton>
                 <hr class="my-1 border-t border-zinc-200" />
                 <BitBhCloseButton class="block w-full rounded-md p-1.5 text-center text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">Dismiss ✕</BitBhCloseButton>
             </BitBhPopoverPanel>
@@ -51,7 +60,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Inside a Disclosure" Code="@_disclosureCode">
-    <Description>Same pattern in a Disclosure.</Description>
+    <Description>
+        Works the same way inside a Disclosure. The button finds the nearest
+        closeable ancestor and calls its close method.
+    </Description>
     <LiveContent>
         <BitBhDisclosure DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 font-medium hover:bg-zinc-100 data-state-open:bg-zinc-100">
@@ -68,7 +80,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Polymorphic rendering (As)" Code="@_polymorphicCode">
-    <Description>Render as different HTML tags while keeping ARIA + keyboard semantics.</Description>
+    <Description>
+        Use the <code>As</code> parameter to render the close button as any HTML element.
+        Non-native button elements automatically receive <code>role="button"</code>,
+        <code>tabindex="0"</code>, and Enter/Space keyboard handling.
+    </Description>
     <LiveContent>
         <BitBhPopover class="relative inline-block">
             <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
@@ -78,7 +94,7 @@
                 <p class="text-sm text-zinc-500 m-0">The close actions below render as different elements:</p>
                 <div class="mt-2 flex flex-col gap-2">
                     <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100">Button (default)</BitBhCloseButton>
-                    <BitBhCloseButton As="a" href="#" class="py-1 text-sm text-blue-600 no-underline hover:underline">Anchor link</BitBhCloseButton>
+                    <BitBhCloseButton As="a" href="#" @onclick:preventDefault class="py-1 text-sm text-blue-600 no-underline hover:underline">Anchor link</BitBhCloseButton>
                     <BitBhCloseButton As="div" class="rounded-md bg-zinc-100 px-2.5 py-1.5 text-center text-sm cursor-pointer hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Div with role="button"</BitBhCloseButton>
                 </div>
             </BitBhPopoverPanel>
@@ -87,7 +103,13 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled state" Code="@_disabledCode">
-    <Description><code>data-disabled:</code> dims the button and skips the close action.</Description>
+    <Description>
+        Set <code>Disabled="true"</code> to prevent the close action. The button receives the native
+        <code>disabled</code> attribute (or <code>aria-disabled</code> for non-native elements) and a
+        <code>data-disabled</code> styling hook: the CSS version styles it with a
+        <code>[data-disabled]</code> selector, the Tailwind version with the <code>data-disabled:</code>
+        variant.
+    </Description>
     <LiveContent>
         <BitBhPopover class="relative inline-block">
             <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
@@ -118,8 +140,8 @@
     Open dialog
 </BitBhButton>
 <BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
-    <BitBhDialogBackdrop class="bg-black/50" />
-    <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+    <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+    <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
         <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Deactivate account</BitBhDialogTitle>
         <BitBhDialogDescription class="text-sm text-zinc-500">
             This will permanently deactivate your account. All of your data will be permanently removed.

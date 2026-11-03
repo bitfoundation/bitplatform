@@ -6,14 +6,15 @@
 <div class="bb-intro">
     <h1>Field / Input</h1>
     <p class="bb-subtitle">Form primitives with auto-wired ARIA labels, descriptions, and validation state.</p>
-    <SectionSwitcher Slug="field" />
 </div>
+
+<SectionSwitcher Slug="field" />
 
 <DemoBlock Title="Basic Field"
            Code="@_basicCode"
            Css="@_fieldCss">
     <Description>
-        Wrap a label, input, and description in an <code>BitBhField</code>. The label's
+        Wrap a label, input, and description in a <code>BitBhField</code>. The label's
         <code>for</code>, the input's <code>id</code>, and the description's
         <code>aria-describedby</code> are all wired automatically — no manual id management.
     </Description>
@@ -37,7 +38,7 @@
     <LiveContent>
         <BitBhField class="field">
             <BitBhLabel class="field-label">Bio</BitBhLabel>
-            <BitBhTextarea rows="3" placeholder="Tell us about yourself…" class="field-input field-textarea" />
+            <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…" class="field-input field-textarea" />
             <BitBhDescription class="field-description">Max 280 characters.</BitBhDescription>
         </BitBhField>
     </LiveContent>
@@ -53,13 +54,16 @@
     <LiveContent>
         <BitBhField class="field">
             <BitBhLabel class="field-label">Country</BitBhLabel>
-            <BitBhSelect class="field-input field-select">
-                <option value="">Choose…</option>
-                <option value="us">United States</option>
-                <option value="gb">United Kingdom</option>
-                <option value="fr">France</option>
-                <option value="de">Germany</option>
-            </BitBhSelect>
+            <div class="field-select-wrap">
+                <BitBhSelect class="field-input field-select">
+                    <option value="">Choose…</option>
+                    <option value="us">United States</option>
+                    <option value="gb">United Kingdom</option>
+                    <option value="fr">France</option>
+                    <option value="de">Germany</option>
+                </BitBhSelect>
+                <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
             <BitBhDescription class="field-description">Where you're based.</BitBhDescription>
         </BitBhField>
     </LiveContent>
@@ -70,8 +74,9 @@
            Css="@_disabledCss">
     <Description>
         Set <code>Disabled="true"</code> on the <code>BitBhField</code> to disable all
-        children at once. The field, label, and input all receive <code>data-disabled</code>
-        for CSS hooks.
+        children at once. The field, label, and input all receive <code>data-disabled</code>:
+        the CSS version styles them with <code>[data-disabled]</code> selectors, the Tailwind
+        version with the <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhField Disabled="true" class="field">
@@ -88,7 +93,9 @@
     <Description>
         Set <code>Invalid="true"</code> on the <code>BitBhField</code> to mark the input
         as invalid. The input receives <code>aria-invalid="true"</code> and
-        <code>data-invalid</code> for CSS hooks. Use the description to show an error message.
+        <code>data-invalid</code>. Use the description to show an error message. The CSS version
+        styles the input with a <code>[data-invalid]</code> selector, the Tailwind version with
+        Tailwind's built-in <code>aria-invalid:</code> variant.
     </Description>
     <LiveContent>
         <BitBhField Invalid="true" class="field">
@@ -143,6 +150,9 @@
         too: the radio group is named by its <code>BitBhLabel</code> via <code>aria-labelledby</code>, and
         clicking the label focuses the group. Because these components take plain child content, they
         nest inside <code>EditForm</code> without <code>Context</code> clashes. Submit empty to see it.
+        The CSS version styles the invalid state with <code>[data-invalid]</code> /
+        <code>[aria-invalid]</code> selectors, the Tailwind version with the <code>data-invalid:</code> /
+        <code>aria-invalid:</code> variants.
     </Description>
     <LiveContent>
         <EditForm Model="signup" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="() => signupResult = null"
@@ -409,7 +419,7 @@
     private const string _textareaCode = """
 <BitBhField class="field">
     <BitBhLabel class="field-label">Bio</BitBhLabel>
-    <BitBhTextarea rows="3" placeholder="Tell us about yourself…" class="field-input" />
+    <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…" class="field-input field-textarea" />
     <BitBhDescription class="field-description">Max 280 characters.</BitBhDescription>
 </BitBhField>
 """;
@@ -417,11 +427,14 @@
     private const string _selectCode = """
 <BitBhField class="field">
     <BitBhLabel class="field-label">Country</BitBhLabel>
-    <BitBhSelect class="field-input field-select">
-        <option value="">Choose…</option>
-        <option value="us">United States</option>
-        <option value="gb">United Kingdom</option>
-    </BitBhSelect>
+    <div class="field-select-wrap">
+        <BitBhSelect class="field-input field-select">
+            <option value="">Choose…</option>
+            <option value="us">United States</option>
+            <option value="gb">United Kingdom</option>
+        </BitBhSelect>
+        <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </div>
     <BitBhDescription class="field-description">Where you're based.</BitBhDescription>
 </BitBhField>
 """;
@@ -612,6 +625,15 @@
 
 /* The select needs a small appearance override. */
 .field-select { appearance: none; padding-right: 2rem; }
+.field-select-wrap { position: relative; }
+.field-select-wrap .field-select { width: 100%; }
+.field-select-chevron {
+    position: absolute; top: 50%; right: 0.625rem;
+    width: 1rem; height: 1rem;
+    translate: 0 -50%;
+    color: #71717a;
+    pointer-events: none;
+}
 """;
 
     private const string _disabledCss = """
@@ -761,6 +783,11 @@
     gap: 1rem;
     width: 100%;
     max-width: 24rem;
+}
+
+/* The submit button keeps its own width instead of the form's. */
+.field-form > .btn {
+    align-self: flex-start;
 }
 
 /* Submit button */

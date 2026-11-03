@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Menubar</h1>
     <p class="bb-subtitle">A desktop-style application menu bar — menus, submenus, checkable items and keyboard shortcuts — with zero visual opinion.</p>
-    <SectionSwitcher Slug="menubar" />
 </div>
+
+<SectionSwitcher Slug="menubar" />
 
 <DemoBlock Title="Application menubar"
            Code="@_appCode"
@@ -310,7 +311,8 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        A disabled <code>BitBhMenu</code> can't be opened and ← / → skip over it; disabled items stay visible (with
+        A disabled <code>BitBhMenu</code> can't be opened, but ← / → still reach its trigger (it stays
+        focusable and is announced as disabled); disabled items stay visible (with
         <code>data-disabled</code> and <code>aria-disabled</code>) but arrow keys and typeahead pass them by.
         <code>Loop="false"</code> stops the arrow keys at the first and last menu instead of wrapping. Items can
         also render as links with <code>As="a"</code> — Enter follows the link.
@@ -821,7 +823,7 @@
 }
 
 .menubar-item[data-highlighted] .menubar-shortcut,
-.menubar-item[data-highlighted] .menubar-chevron { color: #60a5fa; }
+.menubar-item[data-highlighted] .menubar-chevron { color: #2563eb; }
 
 .menubar-separator { height: 1px; margin: 0.25rem -0.25rem; background: #e4e4e7; }
 """;
@@ -896,6 +898,8 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     line-height: 1.65;
 }
+
+.menubar-code:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
 
 .menubar-line        { display: flex; gap: 0.75rem; }
 .menubar-line-number { width: 1.25rem; flex-shrink: 0; text-align: right; opacity: 0.4; user-select: none; }

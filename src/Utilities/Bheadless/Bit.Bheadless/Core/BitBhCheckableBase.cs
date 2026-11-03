@@ -138,6 +138,11 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
         builder.AddMultipleAttributes(20, GetFinalAttributes());
         builder.AddAttribute(30, "onclick",
             On<MouseEventArgs>("onclick", HandleClick));
+        // Content shown only while checked (a tick, BitBhCheckboxIndicator) is removed by this click's re-render
+        // while the click is still being dispatched; Firefox and Safari then let an enclosing <label> click the
+        // control a second time, undoing the toggle. A type="button" has no default action of its own to lose.
+        if (IsNativeButton)
+            builder.AddEventPreventDefaultAttribute(32, "onclick", true);
         // A native button toggles on Space by itself (a click) and its Enter is suppressed by the runtime
         // (data-bit-bh-keys): a .NET handler would only cost a round trip per key.
         if (!IsNativeButton)

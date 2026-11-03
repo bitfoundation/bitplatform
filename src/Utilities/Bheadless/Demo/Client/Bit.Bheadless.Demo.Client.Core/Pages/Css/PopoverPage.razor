@@ -5,15 +5,17 @@
 <div class="bb-intro">
     <h1>Popover</h1>
     <p class="bb-subtitle">A non-modal floating panel with focus management, Escape-to-close, and group coordination.</p>
-    <SectionSwitcher Slug="popover" />
 </div>
+
+<SectionSwitcher Slug="popover" />
 
 <DemoBlock Title="Basic Popover"
            Code="@_basicCode"
            Css="@_popoverCss">
     <Description>
         Click the button to open the panel. Focus moves into the panel automatically.
-        Press Escape or click outside to close — focus returns to the button.
+        Press Escape to close it and give the focus back to the button; a click outside closes it too,
+        leaving the focus where you clicked.
         Unlike a Dialog, the rest of the page stays interactive.
     </Description>
     <LiveContent>
@@ -45,7 +47,7 @@
            Code="@_groupCode"
            Css="@_groupCss">
     <Description>
-        Wrap multiple popovers in an <code>BitBhPopoverGroup</code> so opening one
+        Wrap multiple popovers in a <code>BitBhPopoverGroup</code> so opening one
         automatically closes the others. Useful for navigation bars.
     </Description>
     <LiveContent>
@@ -60,9 +62,9 @@
                 <BitBhPopoverPanel class="popover-panel">
                     <h3 class="popover-title">Products</h3>
                     <ul class="popover-nav-list">
-                        <li><a href="#" class="popover-nav-link">Analytics</a></li>
-                        <li><a href="#" class="popover-nav-link">Automation</a></li>
-                        <li><a href="#" class="popover-nav-link">Commerce</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Analytics</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Automation</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Commerce</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -77,9 +79,9 @@
                 <BitBhPopoverPanel class="popover-panel">
                     <h3 class="popover-title">Solutions</h3>
                     <ul class="popover-nav-list">
-                        <li><a href="#" class="popover-nav-link">Marketing</a></li>
-                        <li><a href="#" class="popover-nav-link">Engineering</a></li>
-                        <li><a href="#" class="popover-nav-link">Finance</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Marketing</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Engineering</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Finance</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -94,9 +96,9 @@
                 <BitBhPopoverPanel class="popover-panel">
                     <h3 class="popover-title">Company</h3>
                     <ul class="popover-nav-list">
-                        <li><a href="#" class="popover-nav-link">About</a></li>
-                        <li><a href="#" class="popover-nav-link">Blog</a></li>
-                        <li><a href="#" class="popover-nav-link">Careers</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">About</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Blog</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Careers</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -111,11 +113,13 @@
         Drive the open state externally with <code>Open</code> and
         <code>OnOpenChange</code>. The button below opens or closes the popover
         programmatically.
+        The outside button carries <code>data-bit-bh-dismiss-ignore</code>: without it, pressing it would
+        first dismiss the open surface as an outside press, and its click would then open it again.
     </Description>
     <LiveContent>
         <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
             <div class="demo-row">
-                <BitBhButton OnClick="ToggleControlled" class="btn">
+                <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore class="btn">
                     Toggle from outside
                 </BitBhButton>
                 <span class="demo-output">Open: <strong>@controlledOpen.ToString().ToLowerInvariant()</strong></span>
@@ -146,9 +150,9 @@
     <Description>
         Set <code>Anchor</code> on <code>BitBhPopoverPanel</code> to automatically position
         the panel relative to the button. The panel uses <code>position: fixed</code>,
-        flips when there's not enough space, and auto-updates on scroll/resize.
-        No <code>position: relative</code> on the parent or <code>position: absolute</code>
-        on the panel needed.
+        flips when there's not enough space, shifts to stay within the viewport, and
+        auto-updates on scroll/resize. No <code>position: relative</code> on the parent or
+        <code>position: absolute</code> on the panel needed.
     </Description>
     <LiveContent>
         <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
@@ -252,7 +256,7 @@
                         </div>
                     </li>
                 </ul>
-                <a href="#" class="popover-footer-link">View all notifications →</a>
+                <a href="#" @onclick:preventDefault class="popover-footer-link">View all notifications →</a>
             </BitBhPopoverPanel>
         </BitBhPopover>
     </LiveContent>
@@ -350,7 +354,7 @@
     private const string _controlledCode = """
 <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
     <div class="demo-row">
-        <BitBhButton OnClick="ToggleControlled" class="btn">
+        <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore class="btn">
             Toggle from outside
         </BitBhButton>
         <span class="demo-output">Open: <strong>@controlledOpen.ToString().ToLowerInvariant()</strong></span>
@@ -478,6 +482,7 @@
 .popover-panel-anchored {
     z-index: 31;
     min-width: 16rem;
+    max-width: 24rem;
     background: #fff;
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
@@ -541,6 +546,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 """;
 
     private const string _groupCss = """
@@ -598,6 +605,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 
 /* Wrap popovers in a flex row for a nav-bar layout */
 .popover-group {
@@ -664,6 +673,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 
 /* Controlled mode adds no new CSS hooks — data-state simply reflects
    whatever Open value you bind to. */

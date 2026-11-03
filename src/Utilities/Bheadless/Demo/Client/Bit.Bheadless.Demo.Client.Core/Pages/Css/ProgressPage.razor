@@ -6,8 +6,9 @@
 <div class="bb-intro">
     <h1>Progress / Meter</h1>
     <p class="bb-subtitle">Report task completion with a progress bar, or a measurement within a known range with a meter.</p>
-    <SectionSwitcher Slug="progress" />
 </div>
+
+<SectionSwitcher Slug="progress" />
 
 <DemoBlock Title="Determinate progress"
            Code="@_determinateCode"
@@ -16,8 +17,11 @@
         <code>BitBhProgress</code> renders <code>role="progressbar"</code> with
         <code>aria-valuenow</code>/<code>min</code>/<code>max</code> and a percentage
         <code>aria-valuetext</code>. It exposes <code>--bit-bh-progress</code> (a unitless 0–100 number) and
-        <code>data-state="loading|complete"</code>; size the <code>BitBhProgressIndicator</code> with
-        <code>calc(var(--bit-bh-progress) * 1%)</code>. Name it with <code>aria-labelledby</code>.
+        <code>data-state="loading|complete"</code>, which <code>BitBhProgressIndicator</code> mirrors; size the
+        indicator with <code>calc(var(--bit-bh-progress, 0) * 1%)</code>. Name it with <code>aria-labelledby</code>.
+        The CSS version sets that width in a rule and recolors a full bar with
+        <code>[data-state="complete"]</code>; the Tailwind version uses the
+        <code>w-[calc(var(--bit-bh-progress,0)*1%)]</code> utility and the <code>data-[state=complete]:</code> variant.
     </Description>
     <LiveContent>
         <div class="progress-card">
@@ -78,8 +82,10 @@
     <Description>
         Leave <code>Value</code> unset (<code>null</code>) when the duration is unknown:
         <code>aria-valuenow</code> is omitted, <code>data-state="indeterminate"</code> is set and
-        <code>--bit-bh-progress</code> is absent, so CSS can switch to an animation. Honor
-        <code>prefers-reduced-motion</code>.
+        <code>--bit-bh-progress</code> is absent, so the indicator can switch to an animation. Honor
+        <code>prefers-reduced-motion</code>: the CSS version slides the indicator and slows it down under
+        <code>prefers-reduced-motion: reduce</code>; the Tailwind version pulses it with
+        <code>data-[state=indeterminate]:</code>, only under <code>motion-safe:</code>.
     </Description>
     <LiveContent>
         <div class="progress-card">
@@ -101,7 +107,9 @@
         <code>BitBhMeter</code> (<code>role="meter"</code>) shows a scalar within a known range — not task
         progress. <code>Low</code> and <code>High</code> split the range into
         <code>data-level="low|optimum|high"</code>, and <code>--bit-bh-meter</code> (0–100) sizes the fill.
-        <code>ValueText</code> gives a readable value.
+        <code>ValueText</code> gives a readable value. The CSS version colors the fill with
+        <code>[data-level]</code> selectors on the meter; the Tailwind version marks the meter as a
+        <code>group</code> and uses <code>group-data-[level=low]:</code> / <code>group-data-[level=high]:</code>.
     </Description>
     <LiveContent>
         <ul class="meter-list">
@@ -130,7 +138,7 @@
         A 0–4 score with <code>Low="2"</code> and <code>High="3"</code>: weak scores are
         <code>low</code>, fair ones <code>optimum</code>, a full score <code>high</code>.
         <code>BitBhMeter</code>'s <code>Template</code> receives the percentage, used here to fill
-        four segments.
+        four segments (<code>data-filled</code>), colored by the meter's level.
     </Description>
     <LiveContent>
         <div class="strength">

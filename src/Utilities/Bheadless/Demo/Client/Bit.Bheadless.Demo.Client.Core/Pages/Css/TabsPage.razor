@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Tabs</h1>
     <p class="bb-subtitle">An accessible tab group with roving tabindex, full keyboard navigation, and zero visual opinion.</p>
-    <SectionSwitcher Slug="tabs" />
 </div>
+
+<SectionSwitcher Slug="tabs" />
 
 <DemoBlock Title="Basic Tabs"
            Code="@_basicCode"
@@ -46,7 +47,9 @@
     <Description>
         Set <code>Vertical="true"</code> to render tabs in a column.
         Arrow-key navigation switches to Up / Down, and the root and tablist
-        both emit <code>data-orientation="vertical"</code> for CSS layout hooks.
+        both emit <code>data-orientation="vertical"</code>. The CSS version keys its column layout off
+        <code>[data-orientation="vertical"]</code>; the Tailwind version writes the column layout
+        straight into the classes (<code>flex-col</code>, <code>border-r-2</code>).
     </Description>
     <LiveContent>
         <BitBhTabGroup Vertical="true" class="tabs tabs-vertical">
@@ -105,8 +108,9 @@
            Css="@_disabledCss">
     <Description>
         Set <code>Disabled="true"</code> on individual tabs. Arrow-key navigation
-        skips disabled tabs, and the disabled tab still receives <code>data-disabled</code>
-        for CSS hooks.
+        skips disabled tabs, and the disabled tab still receives <code>data-disabled</code>: the CSS
+        version dims it with a <code>[data-disabled]</code> selector, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhTabGroup class="tabs">
@@ -130,7 +134,8 @@
     <Description>
         <code>BitBhTab</code> exposes a <code>BitBhTabRenderContext</code> via
         <code>Context="t"</code> so you can render badges, icons, or active
-        indicators driven by the tab's own state.
+        indicators driven by the tab's own state — here <code>t.IsSelected</code> highlights the
+        count badges.
     </Description>
     <LiveContent>
         <BitBhTabGroup class="tabs">

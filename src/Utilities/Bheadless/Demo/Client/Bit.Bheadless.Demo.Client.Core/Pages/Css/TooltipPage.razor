@@ -5,16 +5,18 @@
 <div class="bb-intro">
     <h1>Tooltip</h1>
     <p class="bb-subtitle">A small popup that surfaces information about a control on hover or focus.</p>
-    <SectionSwitcher Slug="tooltip" />
 </div>
+
+<SectionSwitcher Slug="tooltip" />
 
 <DemoBlock Title="Basic Tooltip"
            Code="@_basicCode"
            Css="@_tooltipCss">
     <Description>
-        Hover or focus the trigger to open the tooltip. Pointer leave, blur,
-        or pressing Escape closes it. <code>aria-describedby</code> wires the
-        content to the trigger automatically.
+        Hover or focus the trigger to open the tooltip. Pointer leave, blur, or pressing Escape closes
+        it. <code>aria-describedby</code> wires the content to the trigger automatically.
+        <code>BitBhTooltipArrow</code> draws the pointer: the CSS version adds one to every example on
+        this page, the Tailwind version only to this one.
     </Description>
     <LiveContent>
         <BitBhTooltipProvider DelayDuration="200">
@@ -309,12 +311,8 @@
 
 .tooltip-content[hidden] { display: none; }
 
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .tooltip-arrow { fill: #18181b; }
-
-.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 """;
 
     private const string _providerCss = """
@@ -353,12 +351,8 @@
 
 .tooltip-content[hidden] { display: none; }
 
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .tooltip-arrow { fill: #18181b; }
-
-.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 /* Lay the three triggers out in a row */
 .tooltip-row { display: flex; gap: 0.5rem; align-items: center; }
@@ -400,12 +394,8 @@
 
 .tooltip-content[hidden] { display: none; }
 
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .tooltip-arrow { fill: #18181b; }
-
-.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 """;
 
     private const string _sidesCss = """
@@ -444,12 +434,8 @@
 
 .tooltip-content[hidden] { display: none; }
 
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .tooltip-arrow { fill: #18181b; }
-
-.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 /* Lay the four triggers out in a row */
 .tooltip-row { display: flex; gap: 0.5rem; align-items: center; }
@@ -491,12 +477,8 @@
 
 .tooltip-content[hidden] { display: none; }
 
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .tooltip-arrow { fill: #18181b; }
-
-.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 /* Trigger button + tooltip laid out in a row */
 .tooltip-row { display: flex; gap: 0.5rem; align-items: center; }

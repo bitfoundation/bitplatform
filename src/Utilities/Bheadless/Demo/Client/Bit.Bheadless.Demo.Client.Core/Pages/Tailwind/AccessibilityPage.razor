@@ -6,13 +6,16 @@
 <div class="bb-intro">
     <h1>Accessibility Utilities</h1>
     <p class="bb-subtitle">The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
-    <SectionSwitcher Slug="accessibility" />
 </div>
+
+<SectionSwitcher Slug="accessibility" />
 
 <TwDemoBlock Title="Visually hidden" Code="@_hiddenCode">
     <Description>
-        <code>BitBhVisuallyHidden</code> keeps text in the accessibility tree while hiding it — the names of icon-only buttons.
-        <code>Focusable="true"</code> reveals it while focused: Tab into this demo to uncover the skip link.
+        <code>BitBhVisuallyHidden</code> hides content visually but keeps it in the accessibility
+        tree — the label of an icon-only button is read as "Edit", "Notifications", "Delete".
+        With <code>Focusable="true"</code> the content is revealed while keyboard focus is inside
+        it: Tab into this demo to uncover the skip link.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">
@@ -53,9 +56,12 @@
 
 <TwDemoBlock Title="Separator" Code="@_separatorCode">
     <Description>
-        Semantic separators render <code>role="separator"</code> (+ <code>aria-orientation="vertical"</code>);
-        <code>Decorative="true"</code> renders <code>role="none"</code>.
-        Style both with <code>data-orientation-*:</code>.
+        <code>BitBhSeparator</code> renders <code>role="separator"</code> (plus
+        <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
+        assistive tech announces the boundary between groups of content. When the line is purely
+        visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
+        <code>data-orientation</code>: the CSS version styles it with <code>[data-orientation]</code>
+        selectors, the Tailwind version with the <code>data-orientation-*:</code> variants.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">
@@ -85,8 +91,11 @@
 
 <TwDemoBlock Title="Live regions" Code="@_liveRegionCode">
     <Description>
-        <code>BitBhLiveRegion</code> exists from the first render, so content changes are announced — politely (<code>role="status"</code>)
-        or assertively (<code>role="alert"</code>). <code>VisuallyHidden="true"</code> announces without showing.
+        <code>BitBhLiveRegion</code> is rendered from the first render (live regions must exist before
+        their content changes), so updating its content is announced. Polite regions
+        (<code>role="status"</code>) wait for the user to be idle; assertive ones
+        (<code>role="alert"</code>) interrupt — reserve them for urgent problems. Set
+        <code>VisuallyHidden="true"</code> to announce without showing.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">
@@ -111,8 +120,10 @@
 
 <TwDemoBlock Title="Announcer" Code="@_announcerCode">
     <Description>
-        Inject <code>IBitBhAnnouncer</code> and call <code>AnnounceAsync</code> for fire-and-forget messages — it writes to one shared,
-        visually hidden live region. The log only mirrors what a screen reader hears.
+        For fire-and-forget messages from code, inject <code>IBitBhAnnouncer</code> and call
+        <code>AnnounceAsync</code>. It writes to one shared, visually hidden live region (the one
+        toasts and drag-and-drop use too), so nothing needs to be rendered. The log below only
+        mirrors what a screen reader hears.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">
@@ -151,8 +162,11 @@
 
 <TwDemoBlock Title="Hotkeys" Code="@_hotkeyCode">
     <Description>
-        <code>BitBhHotkey</code> registers a global shortcut while rendered (<code>mod</code> = ⌘ on Apple, Ctrl elsewhere).
-        Shortcuts without Ctrl / ⌘ are ignored in text fields unless <code>AllowInInputs</code> is set. Try <code>Ctrl+K</code> and <code>?</code>.
+        <code>BitBhHotkey</code> registers a global shortcut while it is rendered and renders nothing.
+        <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
+        (like <code>shift+?</code>) are ignored while typing in a text field unless
+        <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
+        Try <code>Ctrl+K</code> and <code>?</code> here.
     </Description>
     <LiveContent>
         <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
@@ -162,7 +176,7 @@
             <div class="relative w-full max-w-xs">
                 <input @ref="searchInput" type="search" placeholder="Search components…"
                        aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
-                       class="w-full rounded-md border border-zinc-300 bg-white py-2 pl-3 pr-18 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                       class="w-full rounded-md border border-zinc-300 bg-white py-2 pl-3 pr-18 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
                 <span class="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 gap-1" aria-hidden="true">
                     <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">Ctrl</kbd>
                     <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">K</kbd>
@@ -199,8 +213,12 @@
 
 <TwDemoBlock Title="Focus scope and focus trap" Code="@_focusScopeCode">
     <Description>
-        <code>BitBhFocusScope</code> auto-focuses its content, traps (<code>Trapped</code>) or wraps (<code>Loop</code>) Tab, and restores focus when it deactivates.
-        <code>BitBhFocusTrap</code> = trapped by default. Save, Cancel or Escape return focus to "Edit profile".
+        <code>BitBhFocusScope</code> manages focus for a region: it moves focus inside when it
+        activates, can trap Tab / Shift+Tab (<code>Trapped</code>) or just wrap it
+        (<code>Loop</code>), and restores focus to where it was when it deactivates.
+        <code>BitBhFocusTrap</code> is the same component with <code>Trapped</code> on by default.
+        Click "Edit profile": focus lands on the first field and stays in the form; Save, Cancel
+        or Escape return it to the button.
     </Description>
     <LiveContent>
         <div class="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-zinc-200 bg-white px-5 py-4">
@@ -221,12 +239,12 @@
                     <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
                         <span>Name</span>
                         <input @bind="draftName"
-                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
                     </label>
                     <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
                         <span>Email</span>
                         <input type="email" @bind="draftEmail"
-                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
                     </label>
                     <div class="flex justify-end gap-2">
                         <button type="button" @onclick="CancelEditing"
@@ -246,8 +264,10 @@
 
 <TwDemoBlock Title="Reading direction" Code="@_directionCode">
     <Description>
-        <code>BitBhDirectionProvider</code> cascades the direction to every component below it: in RTL, ArrowLeft moves to the <em>next</em> radio or tab.
-        Set the HTML <code>dir</code> attribute too so the layout mirrors.
+        <code>BitBhDirectionProvider</code> cascades the reading direction to every component below
+        it. In RTL, Left / Right arrow keys are mirrored: ArrowLeft moves to the <em>next</em>
+        radio or tab. Set the HTML <code>dir</code> attribute as well so the layout flips; a
+        component's own <code>Dir</code> parameter takes precedence.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">
@@ -293,8 +313,11 @@
 
 <TwDemoBlock Title="Roving focus" Code="@_rovingCode">
     <Description>
-        <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> give your own composite widgets a roving <code>tabindex</code>:
-        one Tab stop, arrow keys / Home / End between items, disabled items skipped. Give the group the role that fits — here a <code>toolbar</code> of toggle chips.
+        <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> implement a roving
+        <code>tabindex</code> for your own composite widgets: the group is a single Tab stop, arrow
+        keys (per <code>Orientation</code>) and Home / End move between items, disabled items are
+        skipped and the last focused item is remembered. Give the group the role that matches your
+        widget — here a <code>toolbar</code> of toggle chips.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-4">

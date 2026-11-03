@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>CloseButton</h1>
     <p class="bb-subtitle">A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure — saves boilerplate for dismiss actions.</p>
-    <SectionSwitcher Slug="close-button" />
 </div>
+
+<SectionSwitcher Slug="close-button" />
 
 <DemoBlock Title="Inside a Dialog"
            Code="@_dialogCode"
@@ -54,13 +55,13 @@
             </BitBhPopoverButton>
             <BitBhPopoverPanel class="popover-panel">
                 <h3 class="popover-title">Navigation</h3>
-                <BitBhCloseButton As="a" href="#analytics" class="popover-nav-link">
+                <BitBhCloseButton As="a" href="#analytics" @onclick:preventDefault class="popover-nav-link">
                     Analytics
                 </BitBhCloseButton>
-                <BitBhCloseButton As="a" href="#engagement" class="popover-nav-link">
+                <BitBhCloseButton As="a" href="#engagement" @onclick:preventDefault class="popover-nav-link">
                     Engagement
                 </BitBhCloseButton>
-                <BitBhCloseButton As="a" href="#security" class="popover-nav-link">
+                <BitBhCloseButton As="a" href="#security" @onclick:preventDefault class="popover-nav-link">
                     Security
                 </BitBhCloseButton>
                 <hr class="popover-divider" />
@@ -115,7 +116,7 @@
                     <BitBhCloseButton class="btn btn-sm">
                         Button (default)
                     </BitBhCloseButton>
-                    <BitBhCloseButton As="a" href="#" class="popover-nav-link">
+                    <BitBhCloseButton As="a" href="#" @onclick:preventDefault class="popover-nav-link">
                         Anchor link
                     </BitBhCloseButton>
                     <BitBhCloseButton As="div" class="close-div">
@@ -131,9 +132,11 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        Set <code>Disabled="true"</code> to prevent the close action. The button
-        receives the native <code>disabled</code> attribute (or <code>aria-disabled</code>
-        for non-native elements) and a <code>data-disabled</code> styling hook.
+        Set <code>Disabled="true"</code> to prevent the close action. The button receives the native
+        <code>disabled</code> attribute (or <code>aria-disabled</code> for non-native elements) and a
+        <code>data-disabled</code> styling hook: the CSS version styles it with a
+        <code>[data-disabled]</code> selector, the Tailwind version with the <code>data-disabled:</code>
+        variant.
     </Description>
     <LiveContent>
         <BitBhPopover class="popover">
@@ -259,9 +262,11 @@
 """;
 
     private const string _dialogCss = """
-.dialog-backdrop { background: rgba(0, 0, 0, 0.5); }
+/* A backdrop and panel with a class keep none of the library's default positioning. */
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); }
 
 .dialog-panel {
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     background: #fff;

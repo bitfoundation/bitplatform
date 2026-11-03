@@ -4,15 +4,21 @@
 
 <div class="bb-intro">
     <h1>Context Menu</h1>
-    <p class="bb-subtitle">A menu at the pointer, opened by right-click. Keyboard navigation, typeahead, and viewport collision handling.</p>
-    <SectionSwitcher Slug="context-menu" />
+    <p class="bb-subtitle">A menu located at the pointer, triggered by a right click. Keyboard navigation, typeahead, and viewport collision handling included.</p>
 </div>
 
+<SectionSwitcher Slug="context-menu" />
+
 <TwDemoBlock Title="Basic Context Menu" Code="@_basicCode">
-    <Description>Right-click the trigger; navigate with arrow keys / Home / End / Enter / Escape / typeahead.</Description>
+    <Description>
+        Right-click the trigger area to open the menu at the pointer. Use Up / Down to
+        navigate, Home / End to jump, Enter / Space to activate, Escape to close, and
+        type a letter to jump to the first matching item. The native browser menu is
+        suppressed on the trigger.
+    </Description>
     <LiveContent>
-        <BitBhContextMenu>
-            <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
+        <BitBhContextMenu class="min-w-0 flex-1 basis-72">
+            <BitBhContextMenuTrigger tabindex="0" class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
                 Right-click here
             </BitBhContextMenuTrigger>
             <BitBhContextMenuContent class="z-[9999] m-0 min-w-44 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
@@ -26,15 +32,19 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Labels, groups and separators" Code="@_structuredCode">
-    <Description><code>Label</code>, <code>Group</code> and <code>Separator</code> structure the menu; they're skipped by keyboard nav.</Description>
+    <Description>
+        Use <code>BitBhContextMenuLabel</code> to title a section, <code>BitBhContextMenuGroup</code>
+        to relate items for assistive tech, and <code>BitBhContextMenuSeparator</code> to draw a
+        divider. Labels and separators are skipped by keyboard nav and typeahead.
+    </Description>
     <LiveContent>
-        <BitBhContextMenu>
-            <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
+        <BitBhContextMenu class="min-w-0 flex-1 basis-72">
+            <BitBhContextMenuTrigger tabindex="0" class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
                 Right-click for a structured menu
             </BitBhContextMenuTrigger>
             <BitBhContextMenuContent class="z-[9999] m-0 min-w-44 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
-                <BitBhContextMenuLabel class="@_labelClass">Edit</BitBhContextMenuLabel>
                 <BitBhContextMenuGroup class="list-none">
+                    <BitBhContextMenuLabel class="@_labelClass">Edit</BitBhContextMenuLabel>
                     <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="@_itemClass" Label="Cut">Cut <span class="ml-auto text-xs text-zinc-500">⌘X</span></BitBhContextMenuItem>
                     <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="@_itemClass" Label="Copy">Copy <span class="ml-auto text-xs text-zinc-500">⌘C</span></BitBhContextMenuItem>
                     <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="@_itemClass" Label="Paste">Paste <span class="ml-auto text-xs text-zinc-500">⌘V</span></BitBhContextMenuItem>
@@ -49,9 +59,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled menu" Code="@_disabledCode">
-    <Description><code>Disabled="true"</code> on the root lets the native browser menu through.</Description>
+    <Description>
+        Set <code>Disabled="true"</code> on <code>BitBhContextMenu</code> to turn the whole
+        thing off. The trigger then lets the native browser context menu through instead.
+    </Description>
     <LiveContent>
-        <BitBhContextMenu Disabled="true">
+        <BitBhContextMenu Disabled="true" class="min-w-0 flex-1 basis-72">
             <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-default">
                 Right-click here (disabled — native menu shows)
             </BitBhContextMenuTrigger>
@@ -79,8 +92,8 @@
         "px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 list-none";
 
     private const string _basicCode = """
-<BitBhContextMenu>
-    <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
+<BitBhContextMenu class="min-w-0 flex-1 basis-72">
+    <BitBhContextMenuTrigger tabindex="0" class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
         Right-click here
     </BitBhContextMenuTrigger>
     <BitBhContextMenuContent class="z-[9999] m-0 min-w-44 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
@@ -97,13 +110,13 @@
 """;
 
     private const string _structuredCode = """
-<BitBhContextMenu>
-    <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
+<BitBhContextMenu class="min-w-0 flex-1 basis-72">
+    <BitBhContextMenuTrigger tabindex="0" class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-context-menu transition-colors data-state-open:border-blue-600 data-state-open:text-blue-700">
         Right-click for a structured menu
     </BitBhContextMenuTrigger>
     <BitBhContextMenuContent class="z-[9999] m-0 min-w-44 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
-        <BitBhContextMenuLabel class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 list-none">Edit</BitBhContextMenuLabel>
         <BitBhContextMenuGroup class="list-none">
+            <BitBhContextMenuLabel class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 list-none">Edit</BitBhContextMenuLabel>
             <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none data-active:bg-blue-50 data-active:text-blue-700" Label="Cut">Cut <span class="ml-auto text-xs text-zinc-500">⌘X</span></BitBhContextMenuItem>
             <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none data-active:bg-blue-50 data-active:text-blue-700" Label="Copy">Copy <span class="ml-auto text-xs text-zinc-500">⌘C</span></BitBhContextMenuItem>
             <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none data-active:bg-blue-50 data-active:text-blue-700" Label="Paste">Paste <span class="ml-auto text-xs text-zinc-500">⌘V</span></BitBhContextMenuItem>
@@ -116,7 +129,7 @@
 """;
 
     private const string _disabledCode = """
-<BitBhContextMenu Disabled="true">
+<BitBhContextMenu Disabled="true" class="min-w-0 flex-1 basis-72">
     <BitBhContextMenuTrigger class="grid place-items-center w-full min-h-36 px-8 py-8 rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 select-none cursor-default">
         Right-click here (disabled — native menu shows)
     </BitBhContextMenuTrigger>

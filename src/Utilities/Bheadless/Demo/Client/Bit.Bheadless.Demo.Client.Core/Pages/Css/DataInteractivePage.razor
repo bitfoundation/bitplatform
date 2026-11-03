@@ -5,19 +5,23 @@
 <div class="bb-intro">
     <h1>DataInteractive</h1>
     <p class="bb-subtitle">
-        A wrapper that forwards <code>data-hover</code>, <code>data-active</code>, and
-        <code>data-focus</code> attributes to its child element for consistent interactive
+        A wrapper that puts <code>data-hover</code>, <code>data-active</code>, and
+        <code>data-focus</code> attributes on the element it renders for consistent interactive
         state styling — without relying on CSS pseudo-classes.
     </p>
-    <SectionSwitcher Slug="data-interactive" />
 </div>
+
+<SectionSwitcher Slug="data-interactive" />
 
 <DemoBlock Title="Basic Usage"
            Code="@_basicCode"
            Css="@_basicCss">
     <Description>
         Wrap any element to get <code>data-hover</code>, <code>data-active</code>, and
-        <code>data-focus</code> attributes applied automatically. Style with CSS attribute selectors.
+        <code>data-focus</code> attributes applied automatically. The CSS version styles them with
+        <code>[data-hover]</code> / <code>[data-active]</code> / <code>[data-focus]</code> attribute
+        selectors, the Tailwind version with the <code>data-[hover]:</code> / <code>data-active:</code> /
+        <code>data-[focus]:</code> variants.
     </Description>
     <LiveContent>
         <BitBhDataInteractive As="button" class="interactive-btn">
@@ -34,13 +38,13 @@
         hover/focus/active states consistently across all interactive elements.
     </Description>
     <LiveContent>
-        <BitBhDataInteractive As="a" href="#" class="interactive-link">
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
             Dashboard
         </BitBhDataInteractive>
-        <BitBhDataInteractive As="a" href="#" class="interactive-link">
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
             Settings
         </BitBhDataInteractive>
-        <BitBhDataInteractive As="a" href="#" class="interactive-link">
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
             Profile
         </BitBhDataInteractive>
     </LiveContent>
@@ -50,8 +54,8 @@
            Code="@_contextCode"
            Css="@_contextCss">
     <Description>
-        Access the interactive state via the render context to conditionally render content
-        or apply classes based on hover, focus, and active states.
+        Access the interactive state via the render context (<code>Context="state"</code>) to
+        conditionally render content or apply classes based on hover, focus, and active states.
     </Description>
     <LiveContent>
         <BitBhDataInteractive As="button" class="interactive-card">

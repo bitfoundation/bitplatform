@@ -195,4 +195,23 @@
         cut.Find("button").Click();
         Assert.IsTrue(open);
     }
+
+    [TestMethod]
+    public void A_press_on_an_item_leaves_the_focus_on_the_menu()
+    {
+        // The menu names its item through aria-activedescendant and owns the keys: a press focusing the item
+        // (a checkable one keeps the menu open) would let arrows and Space scroll the page.
+        var cut = Render(
+            @<BitBhMenu>
+                <BitBhMenuButton>Options</BitBhMenuButton>
+                <BitBhMenuItems>
+                    <BitBhMenuItem>Edit</BitBhMenuItem>
+                    <BitBhMenuCheckboxItem>Wrap lines</BitBhMenuCheckboxItem>
+                </BitBhMenuItems>
+            </BitBhMenu>);
+        cut.Find("button").Click();
+
+        foreach (var item in cut.FindAll("[role=menuitem], [role=menuitemcheckbox]"))
+            Assert.IsTrue(item.Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventdefault", StringComparison.OrdinalIgnoreCase)), item.OuterHtml);
+    }
 }

@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Tree View</h1>
     <p class="bb-subtitle">A hierarchical list — file explorers, navigation, nested settings — with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
-    <SectionSwitcher Slug="tree" />
 </div>
+
+<SectionSwitcher Slug="tree" />
 
 <DemoBlock Title="File explorer"
            Code="@_explorerCode"
@@ -18,7 +19,11 @@
         <code>*</code> expands every sibling, Enter (or double click) fires <code>OnItemActivate</code>,
         and typing a name jumps to it (typeahead, matched against <code>Label</code>).
         <code>aria-level</code>, <code>aria-setsize</code>, <code>aria-posinset</code> and the roving
-        <code>tabindex</code> are computed for you; disabled items are skipped.
+        <code>tabindex</code> are computed for you; disabled items are skipped. Each item's
+        <code>&lt;li&gt;</code> wraps its children, so state is styled on the item's own row through a child
+        combinator — the CSS version with <code>.tree-item[aria-selected="true"] &gt; .tree-row</code>, the
+        Tailwind version with <code>[&amp;_[aria-selected=true]&gt;div]:</code> on the tree root — which keeps a
+        selected folder from tinting its children.
     </Description>
     <LiveContent>
         <div class="tree-demo">
@@ -230,8 +235,12 @@
     <Description>
         <code>Checkboxes="true"</code> turns the tree into a hierarchical picker: checking a parent checks all
         of its descendants, and a parent whose leaves are only partly checked reports
-        <code>aria-checked="mixed"</code>. Every item also emits <code>data-checked="true|false|mixed"</code>,
-        so the box below is drawn with CSS alone. Click a row or press Space to toggle it.
+        <code>aria-checked="mixed"</code>. Click a row or press Space to toggle it. The two versions draw the
+        box differently: the CSS version reads the <code>data-checked="true|false|mixed"</code> every item
+        emits (<code>.tree-item[data-checked="mixed"] &gt; .tree-row .tree-check</code>), while the Tailwind
+        version takes <code>Checked</code> (true / false / null = mixed) from the item's <code>Template</code>,
+        mirrors it onto the box's own <code>data-checked</code> and styles it with
+        <code>data-[checked=mixed]:</code>.
     </Description>
     <LiveContent>
         <div class="tree-demo">

@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Combobox</h1>
     <p class="bb-subtitle">An accessible typeable autocomplete with consumer-driven filtering.</p>
-    <SectionSwitcher Slug="combobox" />
 </div>
+
+<SectionSwitcher Slug="combobox" />
 
 <DemoBlock Title="Basic Combobox"
            Code="@_basicCode"
@@ -62,7 +63,7 @@
            Css="@_multiCss">
     <Description>
         Set <code>Multiple="true"</code> to allow many selections. Selected values are
-        shown as chips above the input (each with a remove button). The panel stays
+        shown as chips before the input (each with a remove button). The panel stays
         open after each pick.
     </Description>
     <LiveContent>
@@ -70,6 +71,7 @@
                    Values="@pickedTags"
                    OnValuesChange="v => pickedTags = v"
                    OnQueryChange="HandleTagQuery"
+                   @ref="tagCombobox"
                    class="combobox">
             <div class="combobox-input-wrapper combobox-input-wrapper-multi">
                 @foreach (var tag in pickedTags)
@@ -102,8 +104,8 @@
                     {
                         <BitBhComboboxOption TValue="string" Value="@tag" class="combobox-option">
                             <Template Context="o">
-                                <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
                                 <span>@tag</span>
+                                <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
                             </Template>
                         </BitBhComboboxOption>
                     }
@@ -278,10 +280,13 @@
     <Description>
         Pass the matching data to <code>BitBhComboboxOptions</code> through <code>Items</code> with an
         <code>ItemTemplate</code>, and set <code>Virtualize="true"</code> so only the options in view
-        are rendered (fixed <code>ItemSize</code>, scrollable panel). Filtering stays yours:
+        are rendered in a scrollable panel. Every option must be exactly <code>ItemSize</code> tall
+        (36px here): the CSS version sizes the generated <code>[role="option"]</code> elements, the
+        Tailwind version gives the template's content <code>h-9</code>. Filtering stays yours:
         <code>OnQueryChange</code> runs <code>BitBhFilter.Contains</code> — case- and
         accent-insensitive — over 10,000 items on every keystroke. Child content such as
-        <code>BitBhComboboxEmpty</code> still renders after the data options.
+        <code>BitBhComboboxEmpty</code> still renders after the data options; it shows only while
+        nothing matches.
     </Description>
     <LiveContent>
         <BitBhCombobox TValue="string"
@@ -389,6 +394,7 @@
     // ── Multi-select (tags) ─────────────────────────────────────────────────
 
     private IReadOnlyCollection<string> pickedTags = Array.Empty<string>();
+    private BitBhCombobox<string> tagCombobox = default!;
     private string tagQuery = string.Empty;
     private string[] allTags = new[] {
         "design", "engineering", "marketing", "sales", "support",
@@ -406,9 +412,11 @@
                 .ToList();
     }
 
-    private void RemoveTag(string tag)
+    // The chip's remove button leaves with the chip: give the focus back to the input.
+    private async Task RemoveTag(string tag)
     {
         pickedTags = pickedTags.Where(t => t != tag).ToList();
+        await tagCombobox.FocusAsync();
     }
 
     // ── Object values (people) ──────────────────────────────────────────────
@@ -635,6 +643,7 @@
            Values="@pickedTags"
            OnValuesChange="v => pickedTags = v"
            OnQueryChange="HandleTagQuery"
+           @ref="tagCombobox"
            class="combobox">
     <div class="combobox-input-wrapper combobox-input-wrapper-multi">
         @foreach (var tag in pickedTags)
@@ -667,8 +676,8 @@
             {
                 <BitBhComboboxOption TValue="string" Value="@tag" class="combobox-option">
                     <Template Context="o">
-                        <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
                         <span>@tag</span>
+                        <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
                     </Template>
                 </BitBhComboboxOption>
             }
@@ -678,6 +687,7 @@
 
 @code {
     private IReadOnlyCollection<string> pickedTags = Array.Empty<string>();
+    private BitBhCombobox<string> tagCombobox = default!;
     private string[] allTags = new[] {
         "design", "engineering", "marketing", "sales", "support",
         "research", "product", "operations", "finance", "legal"
@@ -689,8 +699,12 @@
             ? allTags.ToList()
             : allTags.Where(t => t.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
 
-    private void RemoveTag(string tag) =>
+    // The chip's remove button leaves with the chip: give the focus back to the input.
+    private async Task RemoveTag(string tag)
+    {
         pickedTags = pickedTags.Where(t => t != tag).ToList();
+        await tagCombobox.FocusAsync();
+    }
 
     protected override void OnInitialized() => filteredTags = allTags.ToList();
 }

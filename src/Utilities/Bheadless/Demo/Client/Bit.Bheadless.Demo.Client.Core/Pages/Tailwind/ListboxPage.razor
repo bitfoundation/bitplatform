@@ -4,12 +4,18 @@
 
 <div class="bb-intro">
     <h1>Listbox</h1>
-    <p class="bb-subtitle">Accessible custom select with single/multi-select, full keyboard navigation, and typeahead.</p>
-    <SectionSwitcher Slug="listbox" />
+    <p class="bb-subtitle">An accessible custom select with single/multi-select, full keyboard navigation, and typeahead.</p>
 </div>
 
+<SectionSwitcher Slug="listbox" />
+
 <TwDemoBlock Title="Basic Listbox" Code="@_basicCode">
-    <Description>Click or use Space / Enter / arrow keys / typeahead.</Description>
+    <Description>
+        Click the button or press Space / Enter / arrow keys to open. Use Up / Down to navigate,
+        Home / End to jump, Enter / Space to select, Escape to close, or simply type to jump
+        to an option. ARIA wiring (<code>combobox</code>, <code>listbox</code>,
+        <code>aria-activedescendant</code>) is handled for you.
+    </Description>
     <LiveContent>
         <BitBhListbox TValue="string" Value="@favPerson" OnValueChange="v => favPerson = v" class="relative inline-block min-w-56">
             <BitBhListboxButton aria-label="Person" TValue="string"
@@ -36,7 +42,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Multi-select" Code="@_multiCode">
-    <Description>Set <code>Multiple="true"</code>. Use <code>data-selected:</code> for the check.</Description>
+    <Description>
+        Set <code>Multiple="true"</code> to allow selecting many values. The panel stays
+        open after each selection. The button label here renders the joined names, and each
+        option draws its check mark from its render context's <code>IsSelected</code>.
+    </Description>
     <LiveContent>
         <BitBhListbox TValue="string" Multiple="true" Values="@favColors" OnValuesChange="v => favColors = v" class="relative inline-block min-w-56">
             <BitBhListboxButton aria-label="Colours" TValue="string"
@@ -91,13 +101,18 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled Options" Code="@_disabledCode">
-    <Description><code>data-disabled:</code> dims and skips disabled options.</Description>
+    <Description>
+        Mark individual options with <code>Disabled="true"</code>. They render with
+        <code>data-disabled</code>, are skipped by arrow-key nav, and ignore typeahead matches.
+        The CSS version styles them with a <code>[data-disabled]</code> selector, the Tailwind
+        version with the <code>data-disabled:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhListbox TValue="string" DefaultValue='@("standard")' class="relative inline-block min-w-56">
             <BitBhListboxButton aria-label="Plan" TValue="string"
                              class="flex w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
                 <Template Context="b">
-                    <span>@(b.Value ?? "Pick a plan")</span>
+                    <span>@(b.Text ?? "Pick a plan")</span>
                     <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
                 </Template>
             </BitBhListboxButton>
@@ -113,7 +128,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Custom Option Content" Code="@_customCode">
-    <Description>Rich content per option; provide <code>Label</code> for typeahead.</Description>
+    <Description>
+        Options can render any markup. Use the <code>data-active</code> and
+        <code>data-selected</code> hooks to drive the highlighted and selected styles.
+        Provide a <code>Label</code> string when your content is rich so typeahead
+        still matches sensibly.
+    </Description>
     <LiveContent>
         <BitBhListbox TValue="string" Value="@country" OnValueChange="v => country = v" class="relative inline-block min-w-56">
             <BitBhListboxButton aria-label="Country" TValue="string"
@@ -161,7 +181,14 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Anchor Positioning" Code="@_anchorCode">
-    <Description><code>Anchor</code> + <code>--button-width</code> for matched-width dropdowns.</Description>
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhListboxOptions</code> to automatically position
+        the dropdown relative to the button using <code>position: fixed</code>. The panel
+        flips to the opposite side when there's not enough space, shifts to stay within
+        the viewport, and auto-updates on scroll/resize. The CSS variable
+        <code>--button-width</code> is exposed so you can match the dropdown width to the trigger.
+        No <code>position: relative</code> on the parent is needed.
+    </Description>
     <LiveContent>
         <div class="flex flex-wrap items-end gap-8">
             <div>
@@ -217,7 +244,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Form Submission" Code="@_formCode">
-    <Description>Set <code>Name</code> to render hidden inputs.</Description>
+    <Description>
+        Set <code>Name</code> on the listbox and the selection participates in plain HTML
+        form posts. In multi-select mode a separate hidden input is rendered for each value.
+    </Description>
     <LiveContent>
         <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true" class="flex flex-col items-start gap-3">
             <BitBhListbox TValue="string" Name="role" DefaultValue='@("user")' class="relative inline-block min-w-56">
@@ -246,9 +276,16 @@
 
 <TwDemoBlock Title="Large lists (virtualized)" Code="@_virtualCode">
     <Description>
-        <code>Items</code> + <code>ItemTemplate</code> + <code>Virtualize="true"</code> render only the visible options of 10,000 —
-        give the panel a fixed height (<code>h-64 overflow-y-auto</code>) and each option exactly <code>ItemSize</code> px (<code>h-9</code> = 36).
-        A content-less <code>BitBhListboxButton</code> shows the selection or its <code>Placeholder</code> (<code>data-placeholder:</code>).
+        For thousands of options, pass the data through <code>Items</code> and render each option
+        with an <code>ItemTemplate</code>. <code>Virtualize="true"</code> renders only the options in
+        view — give the panel a fixed height with <code>overflow-y: auto</code> and make every option
+        exactly <code>ItemSize</code> pixels tall (36px here). Options still get <code>aria-setsize</code> /
+        <code>aria-posinset</code>, and arrow keys, Home / End and typeahead reach all 10,000. With no
+        content, <code>BitBhListboxButton</code> shows the selected option's text or its
+        <code>Placeholder</code> (and emits <code>data-placeholder</code>). The generated options carry
+        no class: the CSS version targets them by role with <code>[data-active]</code> /
+        <code>[data-selected]</code>, the Tailwind version styles a full-height inner element from the
+        template's <code>IsActive</code> / <code>IsSelected</code>.
     </Description>
     <LiveContent>
         <BitBhListbox TValue="string" @bind-Value="virtualPick" class="relative inline-block min-w-64">
@@ -438,7 +475,7 @@
     <BitBhListboxButton aria-label="Plan" TValue="string"
                      class="flex w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
         <Template Context="b">
-            <span>@(b.Value ?? "Pick a plan")</span>
+            <span>@(b.Text ?? "Pick a plan")</span>
             <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
         </Template>
     </BitBhListboxButton>

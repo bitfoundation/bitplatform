@@ -302,7 +302,10 @@
     function syncRail() {
         if (railItems.length === 0) return;
 
-        var offset = 96;
+        // Just past where scrolling to a section leaves its heading: its scroll-margin, which clears
+        // the sticky header (and the styling switch under it on a component page).
+        var first = document.getElementById(railItems[0].id);
+        var offset = (first ? parseFloat(getComputedStyle(first).scrollMarginTop) || 80 : 80) + 16;
         var atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 8;
         var activeId = railItems[0].id;
 
@@ -420,14 +423,18 @@
 
         e.preventDefault();
         // On a docs page <main> opens with the nav panel - thirty-odd links - so landing on <main> skipped the header
-        // and left the panel still to tab through. The page's own heading is where the content starts; <main> (which
-        // carries tabindex="-1" for this, its focus ring suppressed in app.css) is the landing page's.
+        // and left the panel still to tab through. The page's own heading is where the content starts; <main> (given
+        // tabindex="-1" for this only while it has the focus, its focus ring suppressed in app.css) is the landing
+        // page's. A <main> focusable all the time took the focus of every click on its text - and Tab then went
+        // on from the top of the docs nav, wherever the click was.
         var heading = main.querySelector('.bb-docs-content h1');
         if (heading !== null) {
             if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
             heading.focus();
             return;
         }
+        main.setAttribute('tabindex', '-1');
+        main.addEventListener('blur', function () { main.removeAttribute('tabindex'); }, { once: true });
         main.focus();
     }
 

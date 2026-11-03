@@ -5,16 +5,19 @@
 <div class="bb-intro">
     <h1>Switch</h1>
     <p class="bb-subtitle">An accessible on/off toggle with full keyboard support and zero visual opinion.</p>
-    <SectionSwitcher Slug="switch" />
 </div>
+
+<SectionSwitcher Slug="switch" />
 
 <DemoBlock Title="Basic Switch (Uncontrolled)"
            Code="@_basicCode"
            Css="@_switchCss">
     <Description>
         Renders a native <code>&lt;button&gt;</code> with <code>role="switch"</code> and
-        <code>aria-checked</code>. Click or press Space/Enter to toggle.
-        <code>DefaultChecked</code> seeds the initial state.
+        <code>aria-checked</code>. Click or press Space/Enter to toggle. <code>DefaultChecked</code>
+        seeds the initial state. The switch and its thumb both carry <code>data-state</code>: the CSS
+        version styles the on look with a <code>[data-state="checked"]</code> selector, the Tailwind
+        version with the custom <code>data-state-checked:</code> variant.
     </Description>
     <LiveContent>
         <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
@@ -57,8 +60,10 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        Set <code>Disabled="true"</code> to block interaction. The button receives
-        the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+        Set <code>Disabled="true"</code> to block interaction. The button receives the native
+        <code>disabled</code> attribute and a <code>data-disabled</code> hook: the CSS version styles it
+        with a <code>[data-disabled]</code> selector, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true" class="switch">
@@ -116,7 +121,7 @@
               @onsubmit:preventDefault="true"
               style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
             <label class="switch-label">
-                <BitBhSwitch Name="newsletter" Value="yes"
+                <BitBhSwitch Name="newsletter" Value="yes" OnCheckedChange="v => newsletterOn = v"
                          DefaultChecked="false"
                          class="switch">
                     <BitBhSwitchThumb class="switch-thumb" />
@@ -137,13 +142,12 @@
 @code {
     private bool notificationsOn = true;
     private string? lastSubmittedValue;
+    private bool newsletterOn;
 
     private void HandleFormSubmit()
     {
-        // In a real app the browser would post the hidden input; here we read it
-        // back from the model to demonstrate which value would be submitted.
-        // For demo purposes we'll just show whatever is currently in the form.
-        lastSubmittedValue = "(submitted — check the network tab in a real form)";
+        // The hidden input exists only while the switch is on.
+        lastSubmittedValue = newsletterOn ? "newsletter=yes" : "(nothing - the switch is off)";
     }
 
     // ── Source snippets shown alongside each live demo ─────────────────────────
@@ -152,14 +156,28 @@
 <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
     <BitBhSwitchThumb class="switch-thumb" />
 </BitBhSwitch>
+
+<BitBhSwitch aria-label="Bluetooth" DefaultChecked="true" class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
 """;
 
     private const string _controlledCode = """
-<BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
-         OnCheckedChange="v => notificationsOn = v"
-         class="switch">
-    <BitBhSwitchThumb class="switch-thumb" />
-</BitBhSwitch>
+<div style="display:flex; align-items:center; gap:1rem;">
+    <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
+             OnCheckedChange="v => notificationsOn = v"
+             class="switch">
+        <BitBhSwitchThumb class="switch-thumb" />
+    </BitBhSwitch>
+
+    <span class="demo-output">
+        Notifications: <strong>@(notificationsOn ? "on" : "off")</strong>
+    </span>
+
+    <BitBhButton OnClick="() => notificationsOn = !notificationsOn" class="btn">
+        Toggle from outside
+    </BitBhButton>
+</div>
 
 @code {
     private bool notificationsOn = true;
@@ -167,6 +185,10 @@
 """;
 
     private const string _disabledCode = """
+<BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true" class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
+
 <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true" class="switch">
     <BitBhSwitchThumb class="switch-thumb" />
 </BitBhSwitch>

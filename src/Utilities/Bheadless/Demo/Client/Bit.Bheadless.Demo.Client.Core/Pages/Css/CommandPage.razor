@@ -1,12 +1,14 @@
 ﻿@page "/command"
+@inject BitBhInterop Interop
 
 <PageTitle>Command Palette · Bheadless</PageTitle>
 
 <div class="bb-intro">
     <h1>Command Palette</h1>
     <p class="bb-subtitle">A cmdk-style command menu — fuzzy search, groups, nested pages and a ⌘K palette — with zero visual opinion.</p>
-    <SectionSwitcher Slug="command" />
 </div>
+
+<SectionSwitcher Slug="command" />
 
 <DemoBlock Title="Inline command menu"
            Code="@_basicCode"
@@ -168,7 +170,7 @@
             <span class="cmd-input-icon" aria-hidden="true">⌕</span>
             Search or jump to…
             <span class="cmd-trigger-keys" aria-hidden="true">
-                <kbd class="cmd-kbd">Ctrl</kbd><kbd class="cmd-kbd">K</kbd>
+                <kbd class="cmd-kbd">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="cmd-kbd">K</kbd>
             </span>
         </button>
 
@@ -357,6 +359,16 @@
     // ── ⌘K palette ─────────────────────────────────────────────────────────────
 
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
 
     // Fires when the palette changes its own state: the ⌘K / Ctrl+K shortcut,
@@ -592,11 +604,13 @@
 """;
 
     private const string _dialogCode = """
+@inject BitBhInterop Interop
+
 <button type="button" class="cmd-trigger" @onclick="() => paletteOpen = true">
     <span class="cmd-input-icon" aria-hidden="true">⌕</span>
     Search or jump to…
     <span class="cmd-trigger-keys" aria-hidden="true">
-        <kbd class="cmd-kbd">Ctrl</kbd><kbd class="cmd-kbd">K</kbd>
+        <kbd class="cmd-kbd">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="cmd-kbd">K</kbd>
     </span>
 </button>
 
@@ -664,6 +678,16 @@
 
 @code {
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
     private string? lastCommand;
 
@@ -889,7 +913,7 @@
     color: #71717a;
 }
 
-.cmd-item[data-selected] .cmd-item-shortcut { color: #60a5fa; }
+.cmd-item[data-selected] .cmd-item-shortcut { color: #2563eb; }
 
 /* BitBhCommandSeparator is removed while searching */
 .cmd-separator { height: 1px; margin: 0.375rem -0.375rem; background: #e4e4e7; }

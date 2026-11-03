@@ -432,6 +432,9 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
                     (Math.Abs(values[i] - value) == Math.Abs(values[best] - value) && value > values[i]))
                     best = i;
             _activeThumb = best;
+            // The runtime focused the thumb under the pointer, or the first one for a press on the track: the
+            // keyboard goes on with the thumb that moves.
+            if (best < _thumbs.Count && values.Count > 1) await Interop.FocusAsync(_thumbs[best].ThumbId);
         }
         if (_activeThumb < 0) return;
         var (next, _) = await SetThumbValueAsync(_activeThumb, value);

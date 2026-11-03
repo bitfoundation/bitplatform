@@ -5,8 +5,9 @@
 /// timing across all enclosed <see cref="BitBhTooltip"/> instances.
 ///
 /// <para>
-/// The provider tracks when the last tooltip closed so that a subsequent
-/// tooltip can open without delay if the user is moving quickly between
+/// The provider tracks which tooltips are open and when the last one closed, so that
+/// a subsequent tooltip can open without delay while another is still showing (its
+/// close waits a short grace period) or if the user is moving quickly between
 /// triggers — matching Radix UI's <c>skipDelayDuration</c> behaviour.
 /// </para>
 /// </summary>
@@ -32,11 +33,20 @@ public sealed class BitBhTooltipProviderContext
     public bool DisableHoverableContent { get; internal set; }
 
     private DateTime? _lastClosedAt;
+    private readonly HashSet<BitBhTooltip> _open = new();
 
-    internal void NotifyClosed()
+    internal void NotifyOpened(BitBhTooltip tooltip) => _open.Add(tooltip);
+
+    internal void NotifyDisposed(BitBhTooltip tooltip) => _open.Remove(tooltip);
+
+    internal void NotifyClosed(BitBhTooltip tooltip)
     {
+        _open.Remove(tooltip);
         _lastClosedAt = DateTime.UtcNow;
     }
+
+    /// <summary>Whether a tooltip opening now skips its delay: another one is open, or closed a moment ago.</summary>
+    internal bool SkipsDelay() => _open.Count > 0 || IsRecentlyClosed();
 
     internal bool IsRecentlyClosed()
     {

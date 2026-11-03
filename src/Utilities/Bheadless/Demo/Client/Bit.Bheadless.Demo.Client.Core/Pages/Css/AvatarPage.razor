@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Avatar</h1>
     <p class="bb-subtitle">An image element with a graceful fallback for representing a user or entity.</p>
-    <SectionSwitcher Slug="avatar" />
 </div>
+
+<SectionSwitcher Slug="avatar" />
 
 <DemoBlock Title="Basic"
            Code="@_basicCode"
@@ -31,7 +32,8 @@
            Css="@_fallbackCss">
     <Description>
         When the image fails to load (or no <code>Src</code> is given), the fallback is
-        shown instead of a broken-image icon. Here the source is intentionally invalid.
+        shown instead of a broken-image icon. Here the first source is intentionally invalid;
+        the second avatar has no image at all, so its icon fallback always shows.
     </Description>
     <LiveContent>
         <BitBhAvatar class="avatar">
@@ -57,9 +59,9 @@
            Code="@_delayCode"
            Css="@_delayCss">
     <Description>
-        Set <code>DelayMs</code> on the fallback to wait before showing it. This avoids a
-        flash of initials for images that load quickly. The fallback only appears if the
-        image hasn't loaded by the time the delay elapses.
+        Set <code>DelayMs</code> on the fallback to wait before showing it (600 ms here). This
+        avoids a flash of initials for images that load quickly. The fallback only appears if
+        the image hasn't loaded by the time the delay elapses.
     </Description>
     <LiveContent>
         <BitBhAvatar class="avatar">
@@ -75,8 +77,10 @@
            Code="@_variantsCode"
            Css="@_variantsCss">
     <Description>
-        The library ships zero styling, so size and shape are entirely up to your CSS.
-        Override <code>class</code> per avatar for circles, squares, or stacked groups.
+        The library ships zero styling, so size and shape come entirely from your own classes:
+        here a small and a regular circle and a larger rounded square. The CSS version uses
+        modifier classes (<code>avatar-sm</code>, <code>avatar-lg</code>, <code>avatar-square</code>),
+        the Tailwind version swaps the <code>h-*</code> / <code>w-*</code> and rounding utilities.
     </Description>
     <LiveContent>
         <div class="avatar-row">

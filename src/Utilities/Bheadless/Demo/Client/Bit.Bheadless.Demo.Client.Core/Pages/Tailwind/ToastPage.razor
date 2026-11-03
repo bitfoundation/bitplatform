@@ -7,15 +7,21 @@
 <div class="bb-intro">
     <h1>Toast</h1>
     <p class="bb-subtitle">Short, non-blocking notifications — queued from anywhere, announced to screen readers, dismissed automatically.</p>
-    <SectionSwitcher Slug="toast" />
 </div>
+
+<SectionSwitcher Slug="toast" />
 
 <TwDemoBlock Title="Simple toast" Code="@_simpleCode">
     <Description>
-        Inject <code>BitBhToaster</code> and call <code>Show</code>.
-        The <code>BitBhToastViewport</code> is a "Notifications (F8)" landmark — press <code>F8</code> to reach it.
-        Toasts are announced automatically, pause while hovered or focused, and enter / exit with
-        <code>starting:</code> and <code>data-state-closed:</code> transitions (the exit is awaited).
+        Inject <code>BitBhToaster</code> (registered by <code>AddBitBheadlessServices()</code>) and call
+        <code>Show</code>. Toasts appear in a <code>BitBhToastViewport</code> — a
+        <code>role="region"</code> landmark labelled "Notifications (F8)"; press <code>F8</code>
+        to jump to it. Every toast is announced through the shared live region, auto-dismisses
+        after the viewport's <code>Duration</code> (paused while hovered or focused) and closes
+        with <code>Escape</code> or a <code>BitBhToastClose</code>. Toasts emit
+        <code>data-state="open|closed"</code> and the exit animation is awaited before removal: the CSS
+        version animates them with keyframes on <code>[data-state]</code>, the Tailwind version with
+        <code>starting:</code> and <code>data-state-closed:</code> transitions.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowSimple"
@@ -27,8 +33,10 @@
 
 <TwDemoBlock Title="With a description" Code="@_descriptionCode">
     <Description>
-        <code>BitBhToastDescription</code> renders the description; title and description are announced together.
-        <code>Data</code> carries a variant for the template (<code>data-[variant=success]:</code>).
+        Pass a description and render it with <code>BitBhToastDescription</code>. Title and
+        description are announced together ("Changes saved. Your profile is now visible…").
+        <code>Data</code> carries anything your template needs — here a variant that picks the icon
+        and is set as <code>data-variant</code> on the toast.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowWithDescription"
@@ -40,8 +48,9 @@
 
 <TwDemoBlock Title="With an action" Code="@_actionCode">
     <Description>
-        <code>ActionLabel</code> + <code>OnAction</code> power <code>BitBhToastAction</code>, which runs the callback and dismisses the toast.
-        Keep the action reachable elsewhere too ("Restore all").
+        Set <code>ActionLabel</code> and <code>OnAction</code>; <code>BitBhToastAction</code> renders
+        the button, runs the callback and dismisses the toast. Toasts disappear, so keep the action
+        reachable elsewhere too — here "Restore all" stays on the page.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col gap-3">
@@ -79,8 +88,10 @@
 
 <TwDemoBlock Title="Foreground (assertive) error" Code="@_errorCode">
     <Description>
-        <code>Foreground = true</code> announces assertively (<code>role="alert"</code>) and sets <code>data-type="foreground"</code>.
-        Use it for the direct result of a user action that needs attention.
+        Toasts are background (<code>role="status"</code>, announced politely) by default. Set
+        <code>Foreground = true</code> for the direct result of a user action that needs attention:
+        it is announced assertively (<code>role="alert"</code>) and the toast gets
+        <code>data-type="foreground"</code>.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowError"
@@ -92,8 +103,9 @@
 
 <TwDemoBlock Title="Custom duration and persistent toasts" Code="@_durationCode">
     <Description>
-        <code>Duration</code> (ms) overrides the viewport default; <code>Duration = 0</code> keeps the toast until dismissed.
-        <code>Clear()</code> dismisses everything.
+        <code>Duration</code> (ms) on a toast overrides the viewport's default (5000 ms).
+        <code>Duration = 0</code> keeps the toast until it is dismissed. <code>Clear()</code>
+        dismisses every toast.
     </Description>
     <LiveContent>
         <div class="flex flex-wrap items-center gap-2">
@@ -119,8 +131,13 @@
 
 <TwDemoBlock Title="Stacking with Limit" Code="@_stackCode">
     <Description>
-        A page-owned toaster with <code>Limit = 3</code> (the oldest is dropped beyond that) feeds a second viewport via
-        <code>Toaster</code> (bottom-left, <code>Shift+F8</code>). Toasts overlap in one grid cell and fan out on hover or focus.
+        <code>BitBhToaster.Limit</code> (default 5) caps how many toasts are kept — the oldest is
+        dropped when a new one arrives. This demo creates its own toaster with
+        <code>Limit = 3</code> and renders it in a second viewport (passed through
+        <code>Toaster</code>, bottom-left, <code>Shift+F8</code>) styled as a stack: the toasts overlap
+        in one grid cell and fan out on hover or keyboard focus. The CSS version offsets the older
+        toasts with <code>:nth-last-child</code>; the Tailwind version picks per-depth utilities from
+        each toast's position in <code>Toasts</code>.
     </Description>
     <LiveContent>
         <div class="flex flex-wrap items-center gap-3">
@@ -136,9 +153,9 @@
 @* One viewport renders every toast shown through the injected BitBhToaster.
    In a real app it lives in MainLayout.razor. *@
 <BitBhToastViewport Context="t" Duration="5000"
-                 class="fixed bottom-4 right-4 z-100 m-0 flex w-[min(22rem,calc(100vw-2rem))] list-none flex-col gap-2 p-0 outline-none focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+                 class="fixed bottom-4 right-4 z-100 m-0 flex w-[min(22rem,calc(100vw-2rem))] list-none flex-col gap-2 p-0 focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
     <BitBhToast Item="t" data-variant="@(t.Data ?? "info")"
-             class="group flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg outline-none transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 data-state-closed:duration-150 data-state-closed:ease-in data-[variant=error]:border-red-200 data-[variant=error]:bg-red-50 motion-reduce:transition-none">
+             class="group flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 data-state-closed:duration-150 data-state-closed:ease-in data-[variant=error]:border-red-200 data-[variant=error]:bg-red-50 motion-reduce:transition-none">
         @if (t.Data is "success" or "error")
         {
             <span aria-hidden="true"
@@ -167,9 +184,9 @@
 @* A second, independent toaster for the stacking demo. *@
 <BitBhToastViewport Toaster="stackToaster" Label="Stacked notifications" Hotkey="shift+F8"
                  Context="t" Duration="8000"
-                 class="group/stack fixed bottom-4 left-4 z-100 m-0 grid w-[min(20rem,calc(100vw-2rem))] list-none p-0 outline-none hover:flex hover:flex-col hover:gap-2 focus-within:flex focus-within:flex-col focus-within:gap-2 focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+                 class="group/stack fixed bottom-4 left-4 max-md:top-4 max-md:bottom-auto z-100 m-0 grid w-[min(20rem,calc(100vw-2rem))] list-none p-0 hover:flex hover:flex-col hover:gap-2 focus-within:flex focus-within:flex-col focus-within:gap-2 focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
     <BitBhToast Item="t"
-             class="@($"col-start-1 row-start-1 flex origin-bottom items-start gap-3 self-end rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg outline-none transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 motion-reduce:transition-none {StackClass(StackDepth(t))}")">
+             class="@($"col-start-1 row-start-1 relative flex origin-bottom items-start gap-3 self-end group-hover/stack:self-stretch group-focus-within/stack:self-stretch rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 motion-reduce:transition-none {StackClass(StackDepth(t))}")">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
             <BitBhToastTitle class="font-semibold">@t.Title</BitBhToastTitle>
             <BitBhToastDescription class="text-zinc-600">@t.Description</BitBhToastDescription>
@@ -284,9 +301,9 @@
 
 @* Place ONE viewport in your layout (e.g. MainLayout.razor). *@
 <BitBhToastViewport Context="t" Duration="5000"
-                 class="fixed bottom-4 right-4 z-100 m-0 flex w-[min(22rem,calc(100vw-2rem))] list-none flex-col gap-2 p-0 outline-none focus-visible:outline-2 focus-visible:outline-blue-600">
+                 class="fixed bottom-4 right-4 z-100 m-0 flex w-[min(22rem,calc(100vw-2rem))] list-none flex-col gap-2 p-0 focus-visible:outline-2 focus-visible:outline-blue-600">
     <BitBhToast Item="t" data-variant="@(t.Data ?? "info")"
-             class="group flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg outline-none
+             class="group flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm text-zinc-900 shadow-lg
                     transition duration-200 ease-out
                     starting:translate-y-3 starting:opacity-0
                     data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 data-state-closed:duration-150 data-state-closed:ease-in
@@ -422,10 +439,10 @@
    and the list switches to a flex column on hover / focus-within. *@
 <BitBhToastViewport Toaster="stackToaster" Label="Stacked notifications" Hotkey="shift+F8"
                  Context="t" Duration="8000"
-                 class="group/stack fixed bottom-4 left-4 z-100 m-0 grid w-80 list-none p-0
+                 class="group/stack fixed bottom-4 left-4 max-md:top-4 max-md:bottom-auto z-100 m-0 grid w-80 list-none p-0
                         hover:flex hover:flex-col hover:gap-2 focus-within:flex focus-within:flex-col focus-within:gap-2">
     <BitBhToast Item="t"
-             class="@($"col-start-1 row-start-1 self-end origin-bottom flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm shadow-lg transition duration-200 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 {StackClass(StackDepth(t))}")">
+             class="@($"col-start-1 row-start-1 relative self-end group-hover/stack:self-stretch group-focus-within/stack:self-stretch origin-bottom flex items-start gap-3 rounded-xl border border-zinc-200 bg-white py-3.5 pl-4 pr-3 text-sm shadow-lg transition duration-200 starting:translate-y-3 starting:opacity-0 data-state-closed:translate-x-[calc(100%+1rem)] data-state-closed:opacity-0 {StackClass(StackDepth(t))}")">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
             <BitBhToastTitle class="font-semibold">@t.Title</BitBhToastTitle>
             <BitBhToastDescription class="text-zinc-600">@t.Description</BitBhToastDescription>

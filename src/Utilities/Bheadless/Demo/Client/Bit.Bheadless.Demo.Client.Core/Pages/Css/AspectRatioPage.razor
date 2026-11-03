@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Aspect Ratio</h1>
     <p class="bb-subtitle">Displays content within a desired ratio, regardless of the content's intrinsic size.</p>
-    <SectionSwitcher Slug="aspect-ratio" />
 </div>
+
+<SectionSwitcher Slug="aspect-ratio" />
 
 <DemoBlock Title="Basic (16 / 9)"
            Code="@_basicCode"
@@ -14,7 +15,8 @@
     <Description>
         Wrap any content in <code>BitBhAspectRatio</code> and set <code>Ratio</code> to the
         desired <code>width / height</code>. The image fills the box at a constant 16:9
-        ratio no matter how wide the column gets.
+        ratio no matter how wide the column gets. Your <code>class</code> and <code>style</code>
+        go on the inner element and merge with the component's positioning styles.
     </Description>
     <LiveContent>
         <div class="ratio-frame">
@@ -68,8 +70,8 @@
            Css="@_contentCss">
     <Description>
         The ratio box isn't limited to images — drop in any content. The inner element
-        is absolutely positioned to fill the reserved space, so flex centring works as
-        expected.
+        is absolutely positioned to fill the reserved space, so flex centring works
+        directly on the component.
     </Description>
     <LiveContent>
         <div class="ratio-frame">

@@ -4,12 +4,24 @@
 
 <div class="bb-intro">
     <h1>Portal</h1>
-    <p class="bb-subtitle">Renders children into a different part of the DOM tree.</p>
-    <SectionSwitcher Slug="portal" />
+    <p class="bb-subtitle">
+        Renders children into a different part of the DOM tree (the <code>BitBhPortalOutlet</code>,
+        or a container appended to <code>&lt;body&gt;</code>, by default). Useful for tooltips,
+        dropdowns, and modals that need to escape overflow or z-index stacking contexts.
+    </p>
 </div>
 
+<SectionSwitcher Slug="portal" />
+
 <TwDemoBlock Title="Basic Portal" Code="@_basicCode">
-    <Description>Toggle the portal. When enabled, the content escapes to the portal outlet.</Description>
+    <Description>
+        Toggle the portal on and off. When enabled, the content moves to the app's
+        <code>BitBhPortalOutlet</code> (or, without one, a container appended to
+        <code>&lt;body&gt;</code>), escaping any overflow or z-index constraints of its parent.
+        Inspect the DOM to see the element move.
+        While portalled it is pinned to the bottom-right corner of the window (<code>position: fixed</code>),
+        so you can see it outside the box.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
                   class="@(basicEnabled
@@ -20,11 +32,11 @@
         <div class="mt-4 h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
             <p class="text-sm text-zinc-500">This box has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
             <BitBhPortal Enabled="basicEnabled">
-                <div class="rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm">
+                <div class="@($"rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm {(basicEnabled ? "fixed right-4 bottom-4 z-50 max-w-[min(20rem,calc(100vw-2rem))] shadow-lg" : "")}")">
                     <p>I'm portalled content!</p>
                     <p class="mt-1 text-xs">
                         @(basicEnabled
-                            ? "✓ I'm rendered at the end of <body>, escaping the overflow box."
+                            ? "✓ I'm rendered at the end of <body>, outside the overflow box."
                             : "I'm rendered in place (portal disabled).")
                     </p>
                 </div>
@@ -34,7 +46,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Tooltip escaping stacking context" Code="@_tooltipCode">
-    <Description>The portal moves the tooltip to body level so it's always visible.</Description>
+    <Description>
+        A common use case: a tooltip that needs to escape a parent with
+        <code>overflow: hidden</code> or a restrictive <code>z-index</code>.
+        The portal moves the tooltip out of that parent so it's always visible.
+    </Description>
     <LiveContent>
         <div class="overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative z-[1]">
             <p class="text-sm">This container has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code> and <code class="rounded bg-zinc-100 px-1 text-xs">z-index: 1</code>.</p>
@@ -46,7 +62,7 @@
             @if (tooltipVisible)
             {
                 <BitBhPortal>
-                    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
+                    <div class="pointer-events-none fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
                         This tooltip escapes the stacking context via Portal!
                     </div>
                 </BitBhPortal>
@@ -56,7 +72,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Portal Group (shared target)" Code="@_groupCode">
-    <Description><code>BitBhPortalGroup</code> directs nested portals into a shared container.</Description>
+    <Description>
+        Use <code>BitBhPortalGroup</code> to direct all nested portals into a shared
+        container element instead of the default target. This is useful
+        when you want portalled content to land in a specific region of your layout.
+    </Description>
     <LiveContent>
         <div class="flex gap-2 flex-wrap">
             <BitBhButton OnClick="() => groupShowA = !groupShowA"
@@ -91,7 +111,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled portal (render in place)" Code="@_disabledCode">
-    <Description><code>Enabled="false"</code> renders in the natural position.</Description>
+    <Description>
+        Set <code>Enabled="false"</code> to render content in its natural DOM
+        position without teleportation. This is useful for conditional portalling
+        based on viewport size or other runtime conditions.
+        While portalled it is pinned to the bottom-left corner of the window, outside the box.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-3">
             <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
@@ -101,7 +126,7 @@
             <div class="h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
                 <p class="text-sm text-zinc-500">Container with <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
                 <BitBhPortal Enabled="disabledPortalEnabled">
-                    <div class="rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm">
+                    <div class="@($"rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm {(disabledPortalEnabled ? "fixed left-4 bottom-4 z-50 max-w-[min(20rem,calc(100vw-2rem))] shadow-lg" : "")}")">
                         <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
                     </div>
                 </BitBhPortal>
@@ -127,11 +152,11 @@
 <div class="mt-4 h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
     <p class="text-sm text-zinc-500">This box has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
     <BitBhPortal Enabled="basicEnabled">
-        <div class="rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm">
+        <div class="@($"rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm {(basicEnabled ? "fixed right-4 bottom-4 z-50 max-w-[min(20rem,calc(100vw-2rem))] shadow-lg" : "")}")">
             <p>I'm portalled content!</p>
             <p class="mt-1 text-xs">
                 @(basicEnabled
-                    ? "✓ I'm rendered at the end of <body>, escaping the overflow box."
+                    ? "✓ I'm rendered at the end of <body>, outside the overflow box."
                     : "I'm rendered in place (portal disabled).")
             </p>
         </div>
@@ -154,7 +179,7 @@
     @if (tooltipVisible)
     {
         <BitBhPortal>
-            <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
+            <div class="pointer-events-none fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
                 This tooltip escapes the stacking context via Portal!
             </div>
         </BitBhPortal>
@@ -212,7 +237,7 @@
     <div class="h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
         <p class="text-sm text-zinc-500">Container with <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
         <BitBhPortal Enabled="disabledPortalEnabled">
-            <div class="rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm">
+            <div class="@($"rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm {(disabledPortalEnabled ? "fixed left-4 bottom-4 z-50 max-w-[min(20rem,calc(100vw-2rem))] shadow-lg" : "")}")">
                 <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
             </div>
         </BitBhPortal>

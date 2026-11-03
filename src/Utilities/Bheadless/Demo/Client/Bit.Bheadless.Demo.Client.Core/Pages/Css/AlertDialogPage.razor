@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Alert Dialog</h1>
     <p class="bb-subtitle">A modal dialog that interrupts the user with an important message and expects a deliberate response.</p>
-    <SectionSwitcher Slug="alert-dialog" />
 </div>
+
+<SectionSwitcher Slug="alert-dialog" />
 
 <DemoBlock Title="Basic Alert Dialog"
            Code="@_basicCode"
@@ -50,7 +51,7 @@
     <Description>
         Drive the open state yourself with <code>Open</code> + <code>OnOpenChange</code>.
         Useful when an external event (e.g. an unsaved-changes guard) needs to open the
-        alert.
+        alert — here the "Discard changes" button opens it.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="() => discardOpen = true" class="btn">
@@ -143,16 +144,23 @@
 """;
 
     private const string _alertCss = """
-/* The library applies minimal default positioning (position:fixed inset:0 on the
-   overlay) so consumers can layer the content inside it. Everything else is yours. */
+/* The library stretches the overlay over the viewport and centres the content
+   only for parts without a class or style. Give them a class and the
+   positioning is yours too, like everything else. */
 
 .alert-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .alert-content {
-    /* The library centres the content in the viewport by default (position:fixed).
-       These rules just give it a surface. */
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 51;
+    transform: translate(-50%, -50%);
     width: calc(100vw - 2rem);
     max-width: 28rem;
     background: #fff;

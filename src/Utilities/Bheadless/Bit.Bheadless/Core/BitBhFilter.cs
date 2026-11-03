@@ -1,23 +1,33 @@
 ﻿using System.Globalization;
+using System.Text;
 
 namespace Bit.Bheadless;
 
 /// <summary>
 /// Ready-made text matchers for comboboxes and command palettes.
-/// All matching is case- and accent-insensitive.
+/// All matching is case- and accent-insensitive. Without ICU (an app published with
+/// <c>InvariantGlobalization</c>, common for WebAssembly) the accents of Latin letters are folded.
 /// </summary>
 public static class BitBhFilter
 {
     private static readonly CompareInfo Compare = CultureInfo.InvariantCulture.CompareInfo;
     private const CompareOptions Options = CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
 
+    // IgnoreNonSpace and string.Normalize need ICU. In globalization-invariant mode both quietly act ordinally,
+    // so "gécko" would not find "Gecko": the matchers then compare Fold()ed text instead.
+    private static readonly bool CultureFoldsAccents = ProbeCultureFolding();
+
     /// <summary>True when <paramref name="text"/> contains <paramref name="query"/> (empty query matches everything).</summary>
     public static bool Contains(string? text, string? query)
-        => string.IsNullOrWhiteSpace(query) || (text is not null && Compare.IndexOf(text, query.Trim(), Options) >= 0);
+        => string.IsNullOrWhiteSpace(query) || (text is not null && (CultureFoldsAccents
+            ? Compare.IndexOf(text, query.Trim(), Options) >= 0
+            : Fold(text).Contains(Fold(query.Trim()), StringComparison.Ordinal)));
 
     /// <summary>True when <paramref name="text"/> starts with <paramref name="query"/>.</summary>
     public static bool StartsWith(string? text, string? query)
-        => string.IsNullOrWhiteSpace(query) || (text is not null && Compare.IsPrefix(text, query.Trim(), Options));
+        => string.IsNullOrWhiteSpace(query) || (text is not null && (CultureFoldsAccents
+            ? Compare.IsPrefix(text, query.Trim(), Options)
+            : Fold(text).StartsWith(Fold(query.Trim()), StringComparison.Ordinal)));
 
     /// <summary>True when every whitespace-separated word of <paramref name="query"/> appears in <paramref name="text"/>.</summary>
     public static bool AllWords(string? text, string? query)
@@ -86,8 +96,59 @@ public static class BitBhFilter
 
     private static string Normalize(string value)
     {
-        var decomposed = value.Normalize(System.Text.NormalizationForm.FormD);
+        if (CultureFoldsAccents is false) return Fold(value);
+        var decomposed = value.Normalize(NormalizationForm.FormD);
         var chars = decomposed.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark);
         return new string(chars.ToArray()).ToLowerInvariant();
     }
+
+    private static bool ProbeCultureFolding()
+    {
+        try
+        {
+            return Compare.Compare("\u00E9", "e", Options) == 0;
+        }
+        catch (PlatformNotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    // The base letter of U+00C0-U+017F (Latin-1 Supplement and Latin Extended-A), lower-cased; '\0' marks the
+    // ligatures and letters that fold to two (FoldPair), and the two symbols of the block map to themselves.
+    private const string LatinFold =
+        "aaaaaa\0ceeeeiiiidnooooo\u00D7ouuuuy\0\0" +
+        "aaaaaa\0ceeeeiiiidnooooo\u00F7ouuuuy\0y" +
+        "aaaaaaccccccccddddeeeeeeeeeegggg" +
+        "gggghhhhiiiiiiiiii\0\0jjkkklllllll" +
+        "lllnnnnnnnnnoooooo\0\0rrrrrrssssss" +
+        "ssttttttuuuuuuuuuuuuwwyyyzzzzzzs";
+
+    /// <summary>Lower-cases <paramref name="value"/> and strips the accents of Latin letters, without ICU.</summary>
+    internal static string Fold(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            if (c is >= '\u0300' and <= '\u036F') continue; // combining marks of already decomposed text
+            if (c is >= '\u00C0' and <= '\u017F')
+            {
+                var folded = LatinFold[c - '\u00C0'];
+                if (folded == '\0') builder.Append(FoldPair(c));
+                else builder.Append(folded);
+                continue;
+            }
+            builder.Append(char.ToLowerInvariant(c));
+        }
+        return builder.ToString();
+    }
+
+    private static string FoldPair(char c) => c switch
+    {
+        '\u00DF' => "ss",
+        '\u00C6' or '\u00E6' => "ae",
+        '\u0152' or '\u0153' => "oe",
+        '\u00DE' or '\u00FE' => "th",
+        _ => "ij", // U+0132, U+0133
+    };
 }

@@ -5,13 +5,22 @@
 <div class="bb-intro">
     <h1>DataInteractive</h1>
     <p class="bb-subtitle">
-        A wrapper that forwards <code>data-hover</code>, <code>data-active</code>, and <code>data-focus</code> attributes for consistent state styling.
+        A wrapper that puts <code>data-hover</code>, <code>data-active</code>, and
+        <code>data-focus</code> attributes on the element it renders for consistent interactive
+        state styling — without relying on CSS pseudo-classes.
     </p>
-    <SectionSwitcher Slug="data-interactive" />
 </div>
 
+<SectionSwitcher Slug="data-interactive" />
+
 <TwDemoBlock Title="Basic Usage" Code="@_basicCode">
-    <Description>Style hover/focus/active via the data-attributes Tailwind variants.</Description>
+    <Description>
+        Wrap any element to get <code>data-hover</code>, <code>data-active</code>, and
+        <code>data-focus</code> attributes applied automatically. The CSS version styles them with
+        <code>[data-hover]</code> / <code>[data-active]</code> / <code>[data-focus]</code> attribute
+        selectors, the Tailwind version with the <code>data-[hover]:</code> / <code>data-active:</code> /
+        <code>data-[focus]:</code> variants.
+    </Description>
     <LiveContent>
         <BitBhDataInteractive As="button"
                            class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium cursor-pointer transition-all data-[hover]:bg-sky-50 data-[hover]:border-sky-300 data-[hover]:text-sky-700 data-active:bg-sky-500 data-active:border-sky-500 data-active:text-white data-active:scale-[0.97] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">
@@ -21,17 +30,20 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Link Wrapper" Code="@_linkCode">
-    <Description>Use <code>As="a"</code> for nav links.</Description>
+    <Description>
+        Use <code>As="a"</code> to wrap a link element. The data attributes let you style
+        hover/focus/active states consistently across all interactive elements.
+    </Description>
     <LiveContent>
-        <BitBhDataInteractive As="a" href="#"
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault
                            class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
             Dashboard
         </BitBhDataInteractive>
-        <BitBhDataInteractive As="a" href="#"
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault
                            class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
             Settings
         </BitBhDataInteractive>
-        <BitBhDataInteractive As="a" href="#"
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault
                            class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
             Profile
         </BitBhDataInteractive>
@@ -39,7 +51,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Render Context" Code="@_contextCode">
-    <Description>Access state programmatically via <code>Context="state"</code>.</Description>
+    <Description>
+        Access the interactive state via the render context (<code>Context="state"</code>) to
+        conditionally render content or apply classes based on hover, focus, and active states.
+    </Description>
     <LiveContent>
         <BitBhDataInteractive As="button"
                            class="inline-flex items-center gap-3 rounded-xl border-2 border-zinc-200 bg-white px-6 py-4 text-base cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:bg-violet-50 data-active:border-violet-600 data-active:bg-violet-100 data-active:scale-[0.96] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
@@ -57,7 +72,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled State" Code="@_disabledCode">
-    <Description>When <code>Disabled="true"</code>, all interactive states are suppressed.</Description>
+    <Description>
+        When <code>Disabled="true"</code>, all interactive state tracking is suppressed and
+        <code>data-disabled</code> is emitted instead.
+    </Description>
     <LiveContent>
         <BitBhDataInteractive As="button" Disabled="true"
                            class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium data-disabled:opacity-40 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
@@ -71,7 +89,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Card Grid" Code="@_cardCode">
-    <Description>Build interactive cards.</Description>
+    <Description>
+        Build interactive cards that respond to hover, focus, and press. The data attributes
+        give you full control over each state's visual treatment.
+    </Description>
     <LiveContent>
         <div class="grid w-full gap-4 grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
             <BitBhDataInteractive As="div" tabindex="0"
@@ -94,7 +115,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="State Inspector" Code="@_inspectorCode">
-    <Description>Live view of the data attributes.</Description>
+    <Description>
+        A live view of the data attributes being applied. Interact with the element and
+        watch the state indicators update in real time.
+    </Description>
     <LiveContent>
         <BitBhDataInteractive As="button"
                            class="flex flex-col items-center gap-3 rounded-xl border-2 border-zinc-200 bg-zinc-50 px-8 py-6 cursor-pointer transition-all min-w-72 data-[hover]:border-blue-400 data-[hover]:bg-blue-50 data-active:border-blue-600 data-active:bg-blue-100 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">

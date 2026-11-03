@@ -4,9 +4,10 @@
 
 <div class="bb-intro">
     <h1>Hover Card</h1>
-    <p class="bb-subtitle">For sighted users to preview content available behind a link.</p>
-    <SectionSwitcher Slug="hover-card" />
+    <p class="bb-subtitle">For sighted users to preview content available behind a link, on hover or focus.</p>
 </div>
+
+<SectionSwitcher Slug="hover-card" />
 
 <DemoBlock Title="Basic"
            Code="@_basicCode"
@@ -114,10 +115,12 @@
         Drive the open state externally with <code>Open</code> and
         <code>OnOpenChange</code>. Hovering still works; the button reflects and toggles
         the same state.
+        The outside button carries <code>data-bit-bh-dismiss-ignore</code>: without it, pressing it would
+        first dismiss the open surface as an outside press, and its click would then open it again.
     </Description>
     <LiveContent>
         <div class="hover-card-row">
-            <BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
+            <BitBhButton OnClick="() => cardOpen = !cardOpen" data-bit-bh-dismiss-ignore class="btn">
                 @(cardOpen ? "Hide card" : "Show card")
             </BitBhButton>
             <BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="hover-card">
@@ -181,7 +184,7 @@
 """;
 
     private const string _controlledCode = """
-<BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
+<BitBhButton OnClick="() => cardOpen = !cardOpen" data-bit-bh-dismiss-ignore class="btn">
     @(cardOpen ? "Hide card" : "Show card")
 </BitBhButton>
 
@@ -233,12 +236,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 /* Profile card content */
 .hc-profile { display: flex; gap: 0.85rem; }
@@ -294,12 +293,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 """;
@@ -339,12 +334,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 
@@ -387,12 +378,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 

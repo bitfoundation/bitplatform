@@ -4,18 +4,24 @@
 
 <div class="bb-intro">
     <h1>Tree View</h1>
-    <p class="bb-subtitle">A hierarchical list with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
-    <SectionSwitcher Slug="tree" />
+    <p class="bb-subtitle">A hierarchical list — file explorers, navigation, nested settings — with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
 </div>
+
+<SectionSwitcher Slug="tree" />
 
 <TwDemoBlock Title="File explorer" Code="@_explorerCode">
     <Description>
-        WAI-ARIA Tree View. Up / Down move, Right / Left expand, enter, collapse or go to the parent, Home / End jump,
-        <code>*</code> expands siblings, Enter or double click fires
-        <code>OnItemActivate</code>, typing jumps by
-        <code>Label</code>. Each <code>&lt;li&gt;</code>
-        wraps its children, so state is styled on the tree root with <code>[&amp;_[aria-selected=true]&gt;div]:</code>
-        — the <code>&gt;div</code> keeps a selected folder from tinting its children.
+        The WAI-ARIA Tree View pattern. Click a row to select it (<code>@@bind-SelectedValue</code>) or
+        the chevron (<code>BitBhTreeItemToggle</code>) to expand without selecting. Keyboard: Up / Down move,
+        Right expands or enters a folder, Left collapses or returns to the parent, Home / End jump,
+        <code>*</code> expands every sibling, Enter (or double click) fires <code>OnItemActivate</code>,
+        and typing a name jumps to it (typeahead, matched against <code>Label</code>).
+        <code>aria-level</code>, <code>aria-setsize</code>, <code>aria-posinset</code> and the roving
+        <code>tabindex</code> are computed for you; disabled items are skipped. Each item's
+        <code>&lt;li&gt;</code> wraps its children, so state is styled on the item's own row through a child
+        combinator — the CSS version with <code>.tree-item[aria-selected="true"] &gt; .tree-row</code>, the
+        Tailwind version with <code>[&amp;_[aria-selected=true]&gt;div]:</code> on the tree root — which keeps a
+        selected folder from tinting its children.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col items-start gap-3">
@@ -144,9 +150,10 @@
 
 <TwDemoBlock Title="Data-driven (recursive)" Code="@_recursiveCode">
     <Description>
-        A recursive <code>RenderFragment&lt;Node&gt;</code> renders every level;
-        items compute their own depth. <code>@@bind-ExpandedValues</code> makes
-        expansion controlled.
+        Render the tree from a model with a recursive <code>RenderFragment&lt;Node&gt;</code> helper. Each
+        <code>BitBhTreeItem</code> works out its depth from where it is rendered, so the markup is the same at
+        every level. Supplying <code>@@bind-ExpandedValues</code> makes expansion controlled, so plain
+        buttons can expand or collapse everything.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col items-start gap-3">
@@ -177,9 +184,10 @@
 
 <TwDemoBlock Title="Multiple selection" Code="@_multiCode">
     <Description>
-        <code>SelectionMode="BitBhTreeSelectionMode.Multiple"</code> +
-        <code>@@bind-SelectedValues</code>. Ctrl / ⌘ + click toggles, Shift + click
-        selects a range; Space toggles, Shift + Up / Down extends, Ctrl + A selects all.
+        <code>SelectionMode="BitBhTreeSelectionMode.Multiple"</code> sets <code>aria-multiselectable</code> and
+        binds with <code>@@bind-SelectedValues</code>. Click selects one item, Ctrl / ⌘ + click toggles,
+        Shift + click selects a range. Keyboard: Space toggles the focused item, Shift + Up / Down extends
+        the selection, Ctrl + A selects everything.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col items-start gap-3">
@@ -222,10 +230,14 @@
 
 <TwDemoBlock Title="Hierarchical checkboxes" Code="@_checkboxCode">
     <Description>
-        <code>Checkboxes="true"</code>: checking a parent checks its descendants;
-        partly checked parents are <code>aria-checked="mixed"</code>. The
-        <code>Template</code>'s <code>Checked</code>
-        (true / false / null = mixed) is mirrored onto the box and styled with <code>data-[checked=mixed]:</code>.
+        <code>Checkboxes="true"</code> turns the tree into a hierarchical picker: checking a parent checks all
+        of its descendants, and a parent whose leaves are only partly checked reports
+        <code>aria-checked="mixed"</code>. Click a row or press Space to toggle it. The two versions draw the
+        box differently: the CSS version reads the <code>data-checked="true|false|mixed"</code> every item
+        emits (<code>.tree-item[data-checked="mixed"] &gt; .tree-row .tree-check</code>), while the Tailwind
+        version takes <code>Checked</code> (true / false / null = mixed) from the item's <code>Template</code>,
+        mirrors it onto the box's own <code>data-checked</code> and styles it with
+        <code>data-[checked=mixed]:</code>.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col items-start gap-3">
@@ -249,10 +261,10 @@
 
 <TwDemoBlock Title="Lazy loading" Code="@_lazyCode">
     <Description>
-        <code>HasChildren="true"</code> +
-        <code>LoadChildren</code> fetch a folder's children the first time it
-        expands. While loading the item is <code>aria-busy="true"</code> and the
-        <code>Template</code> reports <code>IsLoading</code>.
+        Mark folders whose children are not loaded yet with <code>HasChildren="true"</code> and supply
+        <code>LoadChildren</code>. It runs the first time a folder expands; meanwhile the item reports
+        <code>aria-busy="true"</code> (and <code>IsLoading</code> in its <code>Template</code>) so you can show
+        a spinner. The folder opens once the children are rendered.
     </Description>
     <LiveContent>
         <div class="flex w-full flex-col items-start gap-3">

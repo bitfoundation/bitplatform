@@ -65,7 +65,7 @@ public class BitBhCommandInput : BitBhComponentBase, IDisposable
             if (CommandContext.List is not null) attrs["aria-controls"] = CommandContext.ListId;
             if (CommandContext.ActiveItem is { } active)
                 attrs["aria-activedescendant"] = active.ItemId;
-            attrs[BitBhKeyboard.KeysAttribute] = "ArrowDown ArrowUp PageDown PageUp Enter Ctrl+n Ctrl+p Ctrl+j Ctrl+k Ctrl+Home Ctrl+End Meta+Home Meta+End";
+            attrs[BitBhKeyboard.KeysAttribute] = "ArrowDown ArrowUp PageDown PageUp Enter Ctrl+n Ctrl+p Ctrl+Home Ctrl+End Meta+Home Meta+End";
         }
         return attrs;
     }

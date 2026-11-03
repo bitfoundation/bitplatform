@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Context Menu</h1>
     <p class="bb-subtitle">A menu located at the pointer, triggered by a right click. Keyboard navigation, typeahead, and viewport collision handling included.</p>
-    <SectionSwitcher Slug="context-menu" />
 </div>
+
+<SectionSwitcher Slug="context-menu" />
 
 <DemoBlock Title="Basic Context Menu"
            Code="@_basicCode"
@@ -18,8 +19,8 @@
         suppressed on the trigger.
     </Description>
     <LiveContent>
-        <BitBhContextMenu>
-            <BitBhContextMenuTrigger class="cm-trigger">
+        <BitBhContextMenu class="cm">
+            <BitBhContextMenuTrigger tabindex="0" class="cm-trigger">
                 Right-click here
             </BitBhContextMenuTrigger>
             <BitBhContextMenuContent class="cm-content">
@@ -42,13 +43,13 @@
         divider. Labels and separators are skipped by keyboard nav and typeahead.
     </Description>
     <LiveContent>
-        <BitBhContextMenu>
-            <BitBhContextMenuTrigger class="cm-trigger">
+        <BitBhContextMenu class="cm">
+            <BitBhContextMenuTrigger tabindex="0" class="cm-trigger">
                 Right-click for a structured menu
             </BitBhContextMenuTrigger>
             <BitBhContextMenuContent class="cm-content">
-                <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
                 <BitBhContextMenuGroup class="cm-group">
+                    <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
                     <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="cm-item" Label="Cut">Cut <span class="cm-shortcut">⌘X</span></BitBhContextMenuItem>
                     <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="cm-item" Label="Copy">Copy <span class="cm-shortcut">⌘C</span></BitBhContextMenuItem>
                     <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="cm-item" Label="Paste">Paste <span class="cm-shortcut">⌘V</span></BitBhContextMenuItem>
@@ -73,7 +74,7 @@
         thing off. The trigger then lets the native browser context menu through instead.
     </Description>
     <LiveContent>
-        <BitBhContextMenu Disabled="true">
+        <BitBhContextMenu Disabled="true" class="cm">
             <BitBhContextMenuTrigger class="cm-trigger cm-trigger-disabled">
                 Right-click here (disabled — native menu shows)
             </BitBhContextMenuTrigger>
@@ -92,8 +93,8 @@
     // ── Source snippets shown alongside each live demo ─────────────────────────
 
     private const string _basicCode = """
-<BitBhContextMenu>
-    <BitBhContextMenuTrigger class="cm-trigger">
+<BitBhContextMenu class="cm">
+    <BitBhContextMenuTrigger tabindex="0" class="cm-trigger">
         Right-click here
     </BitBhContextMenuTrigger>
     <BitBhContextMenuContent class="cm-content">
@@ -113,13 +114,13 @@
 """;
 
     private const string _structuredCode = """
-<BitBhContextMenu>
-    <BitBhContextMenuTrigger class="cm-trigger">
+<BitBhContextMenu class="cm">
+    <BitBhContextMenuTrigger tabindex="0" class="cm-trigger">
         Right-click for a structured menu
     </BitBhContextMenuTrigger>
     <BitBhContextMenuContent class="cm-content">
-        <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
         <BitBhContextMenuGroup class="cm-group">
+            <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
             <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="cm-item" Label="Cut">Cut <span class="cm-shortcut">⌘X</span></BitBhContextMenuItem>
             <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="cm-item" Label="Copy">Copy <span class="cm-shortcut">⌘C</span></BitBhContextMenuItem>
             <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="cm-item" Label="Paste">Paste <span class="cm-shortcut">⌘V</span></BitBhContextMenuItem>
@@ -134,7 +135,7 @@
 """;
 
     private const string _disabledCode = """
-<BitBhContextMenu Disabled="true">
+<BitBhContextMenu Disabled="true" class="cm">
     <BitBhContextMenuTrigger class="cm-trigger cm-trigger-disabled">
         Right-click here (disabled — native menu shows)
     </BitBhContextMenuTrigger>
@@ -146,6 +147,11 @@
 
     private const string _basicCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
+.cm {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
 .cm-trigger {
     display: grid;
     place-items: center;
@@ -160,6 +166,7 @@
     cursor: context-menu;
 }
 
+.cm-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 .cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
 
 /* The content panel is positioned at the pointer with fixed positioning by the
@@ -197,6 +204,11 @@
 
     private const string _structuredCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
+.cm {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
 .cm-trigger {
     display: grid;
     place-items: center;
@@ -211,6 +223,7 @@
     cursor: context-menu;
 }
 
+.cm-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 .cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
 
 /* The content panel is positioned at the pointer with fixed positioning by the
@@ -273,6 +286,11 @@
 
     private const string _disabledCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
+.cm {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
 .cm-trigger {
     display: grid;
     place-items: center;
@@ -287,6 +305,7 @@
     cursor: context-menu;
 }
 
+.cm-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 .cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
 
 /* The content panel is positioned at the pointer with fixed positioning by the

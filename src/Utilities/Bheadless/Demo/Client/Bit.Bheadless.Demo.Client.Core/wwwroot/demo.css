@@ -9,8 +9,13 @@
 /* Establish layer order so Tailwind's utility layer (declared in
    wwwroot/tailwind.css) wins against this reset on the /tw pages.
    Specific component rules below remain unlayered and still beat
-   utilities by specificity on the CSS pages. */
-@layer base, theme, components, utilities;
+   utilities by specificity on the CSS pages. Tailwind's own "properties"
+   layer goes first, as tailwind.css means it to: left out, it would be
+   appended last - the strongest layer - and the --tw-* defaults it sets on
+   every element in browsers without @property (Safari before 16.4, Firefox
+   before 128) would override every ring, shadow, translate and content
+   utility. */
+@layer properties, base, theme, components, utilities;
 
 @layer base {
 
@@ -38,6 +43,9 @@
     --color-border: light-dark(#e4e4e7, #27272a);
     --color-border-subtle: light-dark(#f4f4f5, #1f1f23);
     --color-border-strong: light-dark(#d4d4d8, #3f3f46);
+    /* The edge of an unchecked box or radio: it alone shows the control is there (3:1, WCAG 1.4.11). */
+    --color-border-control: light-dark(#71717a, #71717a);
+    --color-border-control-hover: light-dark(#52525b, #a1a1aa);
     --color-border-hover: light-dark(#a1a1aa, #52525b);
     --color-text: light-dark(#18181b, #fafafa);
     --color-text-secondary: light-dark(#3f3f46, #d4d4d8);
@@ -93,6 +101,10 @@
 .demo-output {
     font-size: 0.875rem;
     color: var(--color-muted);
+}
+
+.demo-output strong {
+    color: var(--color-text);
 }
 
 /* ============================================================
@@ -273,6 +285,14 @@
 
 /* ---- Accordion trigger ---- */
 
+/* The heading around each trigger: the trigger carries the look, the heading only the outline level */
+.accordion-header {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
+
 .accordion-trigger {
     all: unset;
     display: flex;
@@ -432,8 +452,15 @@
     background: var(--color-surface);
 }
 
-.collapsible[data-disabled] {
+.collapsible[data-disabled],
+.disclosure[data-disabled],
+.accordion-item[data-disabled] {
     background: var(--color-subtle);
+}
+
+.disclosure[data-disabled] .disclosure-button,
+.accordion-item[data-disabled] .accordion-trigger {
+    background: transparent;
 }
 
 .collapsible-header {
@@ -709,7 +736,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-border-control);
     border-radius: 0.25rem;
     background: var(--color-surface);
     color: #fff;
@@ -719,7 +746,7 @@
 }
 
 .checkbox:hover {
-    border-color: var(--color-border-hover);
+    border-color: var(--color-border-control-hover);
 }
 
 .checkbox:focus-visible {
@@ -799,7 +826,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-border-control);
     border-radius: 999px;
     background: var(--color-surface);
     cursor: pointer;
@@ -808,7 +835,7 @@
 }
 
 .radio:hover {
-    border-color: var(--color-border-hover);
+    border-color: var(--color-border-control-hover);
 }
 
 .radio:focus-visible {
@@ -1015,7 +1042,6 @@
 
 .listbox-options-anchored {
     z-index: 9999;
-    min-width: 14rem;
     margin: 0;
     padding: 0.25rem;
     list-style: none;
@@ -1036,11 +1062,19 @@
    Dialog styles — purely consumer-defined
    ============================================================ */
 
+/* The dialog root (no class) keeps the library's default position:fixed;
+   inset:0 layer. The backdrop and panel have a class, which turns their
+   defaults off, so they place themselves inside that layer. */
+
 .dialog-backdrop {
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .dialog-panel {
+    /* Positioned, so it paints above the backdrop. */
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     width: calc(100% - 2rem);
@@ -1115,13 +1149,23 @@
    Alert Dialog styles — purely consumer-defined
    ============================================================ */
 
+/* The library centres the content and stretches the overlay over the
+   viewport only for parts without a class or style: these have a class, so
+   they position themselves. */
+
 .alert-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .alert-content {
-    /* The library centres the content in the viewport by default
-       (position:fixed). These rules just give it a surface. */
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 51;
+    transform: translate(-50%, -50%);
     width: calc(100vw - 2rem);
     max-width: 28rem;
     background: var(--color-surface);
@@ -1441,6 +1485,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 .menu-items-wide {
@@ -1461,6 +1506,11 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
+}
+
+.menu-items-anchored.menu-items-wide {
+    min-width: 16rem;
 }
 
 .menu-items-match-width {
@@ -1528,7 +1578,7 @@
 }
 
 .menu-item[data-active] .menu-item-body span {
-    color: #93c5fd;
+    color: var(--color-primary-text);
 }
 
 /* ---- Section labels and dividers ---- */
@@ -1567,6 +1617,16 @@
     user-select: none;
     cursor: context-menu;
     transition: border-color 120ms ease, color 120ms ease;
+}
+
+.cm {
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
+.cm-trigger:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
 }
 
 .cm-trigger[data-state="open"] {
@@ -1748,6 +1808,7 @@
 .popover-panel-anchored {
     z-index: 9999;
     min-width: 16rem;
+    max-width: 24rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -1789,6 +1850,12 @@
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 2px;
+}
+
+.popover-close-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 0.2rem;
 }
 
 /* ---- Group layout ---- */
@@ -2028,20 +2095,22 @@
     opacity: 1;
 }
 
+/* The individual scale / translate properties, not transform: tailwind.css is on every page and its
+   utilities of these names set those properties, which a transform here would add to (0.95 x 0.95). */
 .scale-95 {
-    transform: scale(0.95);
+    scale: 0.95;
 }
 
 .scale-100 {
-    transform: scale(1);
+    scale: 1;
 }
 
 .translate-y-4 {
-    transform: translateY(1rem);
+    translate: 0 1rem;
 }
 
 .translate-y-0 {
-    transform: translateY(0);
+    translate: 0 0;
 }
 
 /* ---- Slide-down transition ---- */
@@ -2161,12 +2230,37 @@
     padding-right: 2rem;
 }
 
+/* appearance: none takes the arrow away with the native look: the wrapper draws it back. */
+.field-select-wrap {
+    position: relative;
+}
+
+.field-select-wrap .field-select {
+    width: 100%;
+}
+
+.field-select-chevron {
+    position: absolute;
+    top: 50%;
+    right: 0.625rem;
+    width: 1rem;
+    height: 1rem;
+    translate: 0 -50%;
+    color: var(--color-muted);
+    pointer-events: none;
+}
+
 .field-form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     width: 100%;
     max-width: 24rem;
+}
+
+/* The submit button keeps its own width instead of the form's. */
+.field-form > .btn {
+    align-self: flex-start;
 }
 
 /* ============================================================
@@ -2257,7 +2351,7 @@
     color: var(--color-muted);
 }
 
-.fieldset-status[data-active="true"] {
+.fieldset-status[data-active] {
     color: var(--color-success-text);
 }
 
@@ -2268,7 +2362,7 @@
     background: var(--color-border-hover);
 }
 
-.fieldset-status[data-active="true"] .fieldset-status-dot {
+.fieldset-status[data-active] .fieldset-status-dot {
     background: #22c55e;
 }
 
@@ -2644,6 +2738,21 @@
     margin-bottom: 0;
 }
 
+/* While portalled: pinned to a corner of the window, where the reader can see it */
+.portal-content-floating {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+    max-width: min(20rem, calc(100vw - 2rem));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.portal-content-floating.portal-content-alt {
+    right: auto;
+    left: 1rem;
+}
+
 .portal-hint {
     font-size: 0.8rem;
     color: var(--color-muted);
@@ -2703,6 +2812,7 @@
     z-index: 9999;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
+    pointer-events: none;
 }
 
 /* ---- Portal Group demo ---- */
@@ -2766,37 +2876,20 @@
    ============================================================ */
 
 @media (max-width: 768px) {
-    /* Vertical tabs — stack on mobile */
-    .tabs[data-orientation="vertical"] {
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .tabs[data-orientation="vertical"] .tab-list {
-        flex-direction: row;
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
-        min-width: 0;
-        overflow-x: auto;
-    }
-
-    .tabs[data-orientation="vertical"] .tab {
-        border-right: none;
-        border-bottom: 2px solid transparent;
-    }
-
-    .tabs[data-orientation="vertical"] .tab[data-state="active"] {
-        border-right-color: transparent;
-        border-bottom-color: var(--color-primary);
-    }
-
-    /* Combobox / Listbox — full width on mobile */
+    /* Combobox / Listbox — their desktop widths, capped by the screen (a percentage of the shrink-to-fit
+       boxes around them would follow their content instead, and leave a wider panel hanging off them) */
     .combobox,
-    .combobox-anchored,
+    .combobox-anchored {
+        min-width: min(18rem, calc(100vw - 4rem));
+    }
+
     .listbox,
     .listbox-anchored {
-        min-width: 0;
-        width: 100%;
+        min-width: min(14rem, calc(100vw - 4rem));
+    }
+
+    .combobox-options-anchored {
+        min-width: min(18rem, calc(100vw - 2rem));
     }
 
     /* Popover panels — constrain to viewport */
@@ -2815,8 +2908,8 @@
         max-width: calc(100vw - 2rem);
     }
 
-    /* Demo row — stack items vertically when needed */
-    .demo-row {
+    /* A sample's row stacks its parts; rows inside a sample keep their own layout */
+    .bh-example-panel > .demo-row:not(.bh-tw-sample) {
         flex-direction: column;
         align-items: stretch;
     }
@@ -2899,37 +2992,10 @@
     display: none;
 }
 
+/* The positioning engine places and rotates the arrow; only its look is ours. */
 .tooltip-arrow {
-    fill: var(--color-text);
+    fill: var(--color-inverse);
     display: block;
-}
-
-.tooltip-content[data-anchor^="top"] .tooltip-arrow {
-    position: absolute;
-    bottom: -4px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.tooltip-content[data-anchor^="bottom"] .tooltip-arrow {
-    position: absolute;
-    top: -4px;
-    left: 50%;
-    transform: translateX(-50%) rotate(180deg);
-}
-
-.tooltip-content[data-anchor^="left"] .tooltip-arrow {
-    position: absolute;
-    right: -7px;
-    top: 50%;
-    transform: translateY(-50%) rotate(-90deg);
-}
-
-.tooltip-content[data-anchor^="right"] .tooltip-arrow {
-    position: absolute;
-    left: -7px;
-    top: 50%;
-    transform: translateY(-50%) rotate(90deg);
 }
 
 .tooltip-row {
@@ -3100,38 +3166,11 @@
     }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the positioning engine places it on the resolved side and rotates it
+   to face the trigger (data-side); only its look is ours. */
 .hover-card-arrow {
     fill: var(--color-border);
     filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25));
-}
-
-.hover-card-content[data-anchor^="top"] .hover-card-arrow {
-    position: absolute;
-    bottom: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow {
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%) rotate(180deg);
-}
-
-.hover-card-content[data-anchor^="left"] .hover-card-arrow {
-    position: absolute;
-    right: -9px;
-    top: 50%;
-    transform: translateY(-50%) rotate(-90deg);
-}
-
-.hover-card-content[data-anchor^="right"] .hover-card-arrow {
-    position: absolute;
-    left: -9px;
-    top: 50%;
-    transform: translateY(-50%) rotate(90deg);
 }
 
 /* Profile card content */
@@ -3210,6 +3249,7 @@
     all: unset;
     box-sizing: border-box;
     display: inline-flex;
+    align-self: flex-start;
     align-items: center;
     gap: 0.55rem;
     border-radius: 0.25rem;
@@ -3234,7 +3274,7 @@
     width: 1.15rem;
     height: 1.15rem;
     flex-shrink: 0;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-border-control);
     border-radius: 0.25rem;
     background: var(--color-surface);
     color: #fff;
@@ -3242,7 +3282,7 @@
 }
 
 .checkbox-row:hover .checkbox-box {
-    border-color: var(--color-border-hover);
+    border-color: var(--color-border-control-hover);
 }
 
 .checkbox-row[data-state="checked"] .checkbox-box,
@@ -3602,14 +3642,45 @@
    kit's segmented control. The kit styles a segmented control's
    <button> children; these two are links - each styling is a page
    of its own - so the same look is given to <a> here.
+
+   It sticks under the header, so the other styling stays one click
+   away however far down the page the reader is. Sticky holds only
+   inside the parent, so the switch is a child of the page column
+   (.bb-docs-content) rather than of the short page intro, and it
+   takes the header's frosted surface so the examples scroll under
+   both alike.
    ============================================================ */
 
 .bh-styling-switch {
+    position: sticky;
+    top: var(--bb-header-height);
+    /* Over the examples' in-flow stacking (z-index 1 and 10), under every floating layer they
+       open - dropdowns and their click-outside overlays (30, 31), tooltips, hover cards and
+       slide-overs (40, 50) - so an open popup is never cut by the bar. */
+    z-index: 20;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: .5rem .75rem;
-    margin-top: 1rem;
+    padding-block: .5rem;
+    margin-bottom: 2rem;
+    background: color-mix(in srgb, var(--bb-bg) 80%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* The switch's own padding is the gap under the subtitle it belongs to, so the intro gives up most
+   of its bottom margin; the switch's margin carries the rest down to the first example. */
+.bb-intro:has(+ .bh-styling-switch) {
+    margin-bottom: .5rem;
+}
+
+/* A heading scrolled to has to clear the switch as well as the header: app.css leaves it the
+   header's height plus 1.5rem, and the switch is about 3.25rem tall. site.js reads this margin to
+   decide which section the rail marks as current. The link site.js hangs off each heading takes the
+   same margin: Shift+Tab scrolls it into view by itself, and would leave it under the bar (WCAG 2.4.11). */
+.bb-docs-content:has(> .bh-styling-switch) :is([id], .bb-anchor) {
+    scroll-margin-top: calc(var(--bb-header-height) + 4.75rem);
 }
 
 .bh-styling-switch-label {
@@ -3655,8 +3726,8 @@
    Tailwind home page) every declaration of this layer is rolled
    back with revert-layer, so an element looks the way its utility
    classes say - the classes its Razor tab shows. The same goes for
-   what such a page renders into the portal outlet: its dialogs,
-   menus and toasts.
+   what such a page renders into the portal outlet - its dialogs and
+   menus - and for its toast viewports, which render in place.
 
    Last in the file, so it also outranks this file's own rules of
    the same weight - the transition demo's .transition-all and
@@ -3669,11 +3740,23 @@
 
 .bh-tw-sample :not(:where(.bb-anchor, .bb-anchor *)),
 .bh-tw-sample a:not(:where(.bb-anchor)):hover,
-:root:has(.bh-tw-sample) [data-bit-bh-portal-root] * {
+:root:has(.bh-tw-sample) [data-bit-bh-portal-root] *,
+:root:has(.bh-tw-sample) [data-bit-bh-toast-region] * {
     all: revert-layer;
 }
 
+/* The portal outlet is one layer over the site chrome: the kit's sticky header is z-index 1000 in the
+   root stacking context, and the modals and floating panels portalled here (z-index 50 and the like,
+   inside the outlet) would otherwise sit under it - the header left undimmed and clickable over a
+   dialog's backdrop. position: relative leaves the fixed-positioned layers in it placed against the
+   viewport. */
+[data-bit-bh-portal-root] {
+    position: relative;
+    z-index: 1001;
+}
+
 .bh-tw-sample ::placeholder,
-:root:has(.bh-tw-sample) [data-bit-bh-portal-root] ::placeholder {
+:root:has(.bh-tw-sample) [data-bit-bh-portal-root] ::placeholder,
+:root:has(.bh-tw-sample) [data-bit-bh-toast-region] ::placeholder {
     color: revert-layer;
 }

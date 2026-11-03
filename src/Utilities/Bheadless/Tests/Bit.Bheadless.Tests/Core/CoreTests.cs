@@ -54,6 +54,18 @@ public class FilterTests
         Assert.AreEqual("Billing", result[0]);
         Assert.DoesNotContain("Profile", result);
     }
+
+    // What the matchers compare when the app has no ICU (published with InvariantGlobalization), where
+    // CompareOptions.IgnoreNonSpace and string.Normalize leave the accents in place.
+    [TestMethod]
+    [DataRow("Gécko 5", "gecko 5")]
+    [DataRow("ÉMOJI", "emoji")]
+    [DataRow("Ærøskøbing", "aeroskobing")]
+    [DataRow("Straße", "strasse")]
+    [DataRow("Łódź Œuvre", "lodz oeuvre")]
+    [DataRow("2 × 3", "2 × 3")]
+    public void Fold_strips_Latin_accents_without_ICU(string text, string expected)
+        => Assert.AreEqual(expected, BitBhFilter.Fold(text));
 }
 
 [TestClass]
@@ -188,5 +200,51 @@ public class CollectionTests
         await collection.EnsureOrderAsync(interop);
         Assert.AreEqual(6, changes, "the registration and the new order");
         Assert.AreSequenceEqual(new[] { "b", "a", "c", "d" }, collection.Items.Select(i => i.ItemId).ToArray());
+    }
+
+    [TestMethod]
+    public async Task An_invalidated_collection_reads_the_order_again()
+    {
+        // Items re-sorted with @key keep their components: nothing registers, so only Invalidate says the order is stale.
+        var page = new Page();
+        var interop = new BitBhInterop(page);
+        var collection = new BitBhCollection<Item>("rows");
+        collection.Register(new("a"));
+        collection.Register(new("b"));
+        page.Order = [["a", "A"], ["b", "B"]];
+        await collection.EnsureOrderAsync(interop);
+
+        page.Order = [["b", "B"], ["a", "A"]];
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, collection.Items.Select(i => i.ItemId).ToArray(), "synced: not asked again");
+
+        collection.Invalidate();
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreSequenceEqual(new[] { "b", "a" }, collection.Items.Select(i => i.ItemId).ToArray());
+    }
+
+    [TestMethod]
+    public async Task IsApplePlatformAsync_asks_the_runtime()
+    {
+        var page = new Platform();
+        Assert.IsTrue(await new BitBhInterop(page).IsApplePlatformAsync());
+        Assert.AreEqual("keys.isApple", page.Asked);
+    }
+
+    private sealed class Platform : IJSRuntime, IJSObjectReference
+    {
+        public string? Asked { get; private set; }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            if (identifier == "import") return ValueTask.FromResult((TValue)(object)this);
+            Asked = identifier;
+            return ValueTask.FromResult((TValue)(object)true);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => InvokeAsync<TValue>(identifier, args);
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

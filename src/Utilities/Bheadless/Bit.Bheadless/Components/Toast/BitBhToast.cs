@@ -59,6 +59,10 @@ public class BitBhToast : BitBhComponentBase, IDisposable
         StateHasChanged();
         await _closedRendered.Task;
         await Interop.WaitForExitAsync(ComponentId);
+        // Removing the toast that holds the focus would drop it to <body>: the list keeps it instead, so the
+        // next Tab or F8 carries on from the toasts.
+        if (_focused && Viewport is not null)
+            await Viewport.FocusListAsync();
         Viewport?.EffectiveToaster.Dismiss(Item.Id);
     }
 

@@ -101,7 +101,16 @@ public class BitBhCollapsible : BitBhComponentBase
 
     private Task ToggleAsync() => Disabled ? Task.CompletedTask : SetOpenAsync(!IsOpen);
 
-    private Task CloseAsync() => IsOpen ? SetOpenAsync(false) : Task.CompletedTask;
+    // Closing from inside (a close button in the content) hides the focused element, which would drop the
+    // focus to <body>: it goes back to the trigger instead, as it would for a dialog.
+    private async Task CloseAsync()
+    {
+        if (!IsOpen) return;
+        var focusInside = await Interop.ContainsFocusAsync($"{ComponentId}-content");
+        await SetOpenAsync(false);
+        if (focusInside)
+            await Interop.FocusAsync($"{ComponentId}-trigger");
+    }
 
     private async Task SetOpenAsync(bool value)
     {

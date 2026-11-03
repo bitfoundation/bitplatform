@@ -1,12 +1,14 @@
 ﻿@page "/tw/command"
+@inject BitBhInterop Interop
 
 <PageTitle>Command Palette (Tailwind) · Bheadless</PageTitle>
 
 <div class="bb-intro">
     <h1>Command Palette</h1>
     <p class="bb-subtitle">A cmdk-style command menu — fuzzy search, groups, nested pages and a ⌘K palette — with zero visual opinion.</p>
-    <SectionSwitcher Slug="command" />
 </div>
+
+<SectionSwitcher Slug="command" />
 
 <TwDemoBlock Title="Inline command menu" Code="@_basicCode">
     <Description>
@@ -24,7 +26,7 @@
             </div>
             <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
                 <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
-                <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">📅</span> Calendar
                     </BitBhCommandItem>
@@ -37,7 +39,7 @@
                     </BitBhCommandItem>
                 </BitBhCommandGroup>
                 <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-                <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">👤</span> Profile
                         <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘P</span>
@@ -89,7 +91,7 @@
 
                 <BitBhCommandPage>
                     <Template Context="cmd">
-                        <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                             <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                                 <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> Search projects…
                                 <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
@@ -162,7 +164,7 @@
             <span class="text-zinc-400" aria-hidden="true">⌕</span>
             Search or jump to…
             <span class="ml-auto inline-flex gap-0.5" aria-hidden="true">
-                <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Ctrl</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
+                <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
             </span>
         </button>
 
@@ -178,7 +180,7 @@
             </div>
             <BitBhCommandList class="max-h-[min(22rem,50vh)] scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
                 <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
-                <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">📝</span> New document
                         <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘N</span>
@@ -193,7 +195,7 @@
                     </BitBhCommandItem>
                 </BitBhCommandGroup>
                 <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-                <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
                                    OnSelect='@(() => Run("Toggle dark mode"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">🌙</span> Toggle dark mode
@@ -210,7 +212,7 @@
                     </BitBhCommandItem>
                 </BitBhCommandGroup>
                 <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-                <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">⌨️</span> Keyboard shortcuts
                         <span class="ml-auto text-xs tracking-widest text-zinc-500">?</span>
@@ -349,6 +351,16 @@
     // ── ⌘K palette ─────────────────────────────────────────────────────────────
 
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
 
     // Fires when the palette changes its own state: the ⌘K / Ctrl+K shortcut,
@@ -425,7 +437,7 @@
     </div>
     <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
         <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
-        <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+        <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
             <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                 <span class="w-5 shrink-0 text-center" aria-hidden="true">📅</span> Calendar
             </BitBhCommandItem>
@@ -438,7 +450,7 @@
             </BitBhCommandItem>
         </BitBhCommandGroup>
         <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-        <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+        <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
             <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                 <span class="w-5 shrink-0 text-center" aria-hidden="true">👤</span> Profile
                 <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘P</span>
@@ -488,7 +500,7 @@
 
         <BitBhCommandPage>
             <Template Context="cmd">
-                <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
                     <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                         <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> Search projects…
                         <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
@@ -584,11 +596,13 @@
 """;
 
     private const string _dialogCode = """
+@inject BitBhInterop Interop
+
 <button type="button" class="flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 bg-white py-2 pr-2 pl-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" @onclick="() => paletteOpen = true">
     <span class="text-zinc-400" aria-hidden="true">⌕</span>
     Search or jump to…
     <span class="ml-auto inline-flex gap-0.5" aria-hidden="true">
-        <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Ctrl</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
+        <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
     </span>
 </button>
 
@@ -604,7 +618,7 @@
     </div>
     <BitBhCommandList class="max-h-[min(22rem,50vh)] scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
         <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
-        <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+        <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
             <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                 <span class="w-5 shrink-0 text-center" aria-hidden="true">📝</span> New document
                 <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘N</span>
@@ -619,7 +633,7 @@
             </BitBhCommandItem>
         </BitBhCommandGroup>
         <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-        <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+        <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
             <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
                            OnSelect='@(() => Run("Toggle dark mode"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                 <span class="w-5 shrink-0 text-center" aria-hidden="true">🌙</span> Toggle dark mode
@@ -636,7 +650,7 @@
             </BitBhCommandItem>
         </BitBhCommandGroup>
         <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
-        <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+        <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:uppercase [&_[data-bit-bh-command-group-heading]]:tracking-wider [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
             <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
                 <span class="w-5 shrink-0 text-center" aria-hidden="true">⌨️</span> Keyboard shortcuts
                 <span class="ml-auto text-xs tracking-widest text-zinc-500">?</span>
@@ -658,6 +672,16 @@
 
 @code {
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
     private string? lastCommand;
 

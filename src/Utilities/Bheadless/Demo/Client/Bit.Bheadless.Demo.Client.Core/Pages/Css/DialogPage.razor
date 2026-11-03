@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Dialog</h1>
     <p class="bb-subtitle">An accessible modal with focus trap, scroll lock, and inert background.</p>
-    <SectionSwitcher Slug="dialog" />
 </div>
+
+<SectionSwitcher Slug="dialog" />
 
 <DemoBlock Title="Basic Dialog"
            Code="@_basicCode"
@@ -246,15 +247,19 @@
 """;
 
     private const string _dialogCss = """
-/* The library applies minimal default positioning (position:fixed inset:0)
-   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+/* The dialog root keeps the library's default position:fixed; inset:0 layer
+   (it has no class). A part given a class keeps none of its defaults, so the
+   backdrop and panel place themselves inside that layer. Everything else is yours. */
 
 .dialog-backdrop {
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .dialog-panel {
-    /* Centre the panel in the viewport */
+    /* Above the backdrop, centred horizontally */
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     background: #fff;
@@ -278,15 +283,19 @@
 """;
 
     private const string _confirmCss = """
-/* The library applies minimal default positioning (position:fixed inset:0)
-   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+/* The dialog root keeps the library's default position:fixed; inset:0 layer
+   (it has no class). A part given a class keeps none of its defaults, so the
+   backdrop and panel place themselves inside that layer. Everything else is yours. */
 
 .dialog-backdrop {
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .dialog-panel {
-    /* Centre the panel in the viewport */
+    /* Above the backdrop, centred horizontally */
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     background: #fff;
@@ -321,15 +330,19 @@
 """;
 
     private const string _formCss = """
-/* The library applies minimal default positioning (position:fixed inset:0)
-   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+/* The dialog root keeps the library's default position:fixed; inset:0 layer
+   (it has no class). A part given a class keeps none of its defaults, so the
+   backdrop and panel place themselves inside that layer. Everything else is yours. */
 
 .dialog-backdrop {
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
 }
 
 .dialog-panel {
-    /* Centre the panel in the viewport */
+    /* Above the backdrop, centred horizontally */
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     background: #fff;

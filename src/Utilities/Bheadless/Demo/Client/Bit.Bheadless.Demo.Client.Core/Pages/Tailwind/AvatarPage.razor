@@ -4,13 +4,16 @@
 
 <div class="bb-intro">
     <h1>Avatar</h1>
-    <p class="bb-subtitle">An image with a graceful fallback, styled entirely with Tailwind utilities.</p>
-    <SectionSwitcher Slug="avatar" />
+    <p class="bb-subtitle">An image element with a graceful fallback for representing a user or entity.</p>
 </div>
+
+<SectionSwitcher Slug="avatar" />
 
 <TwDemoBlock Title="Basic" Code="@_basicCode">
     <Description>
-        Compose <code>BitBhAvatarImage</code> with a <code>BitBhAvatarFallback</code>. The image only shows once it loads.
+        Compose <code>BitBhAvatarImage</code> with a <code>BitBhAvatarFallback</code> inside
+        <code>BitBhAvatar</code>. The image is only shown once it loads successfully — until
+        then the fallback initials are displayed.
     </Description>
     <LiveContent>
         <BitBhAvatar class="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-zinc-200 align-middle select-none">
@@ -24,7 +27,9 @@
 
 <TwDemoBlock Title="Fallback (broken image)" Code="@_fallbackCode">
     <Description>
-        On load failure the fallback replaces the broken-image icon. Here the source is intentionally invalid.
+        When the image fails to load (or no <code>Src</code> is given), the fallback is
+        shown instead of a broken-image icon. Here the first source is intentionally invalid;
+        the second avatar has no image at all, so its icon fallback always shows.
     </Description>
     <LiveContent>
         <BitBhAvatar class="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-zinc-200 align-middle select-none">
@@ -48,7 +53,9 @@
 
 <TwDemoBlock Title="Delayed fallback" Code="@_delayCode">
     <Description>
-        <code>DelayMs</code> waits before showing the fallback, avoiding a flash for fast-loading images.
+        Set <code>DelayMs</code> on the fallback to wait before showing it (600 ms here). This
+        avoids a flash of initials for images that load quickly. The fallback only appears if
+        the image hasn't loaded by the time the delay elapses.
     </Description>
     <LiveContent>
         <BitBhAvatar class="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-zinc-200 align-middle select-none">
@@ -62,7 +69,10 @@
 
 <TwDemoBlock Title="Sizes and shapes" Code="@_variantsCode">
     <Description>
-        Size and shape are pure utilities — swap <code>h-*/w-*</code> and the rounding to taste.
+        The library ships zero styling, so size and shape come entirely from your own classes:
+        here a small and a regular circle and a larger rounded square. The CSS version uses
+        modifier classes (<code>avatar-sm</code>, <code>avatar-lg</code>, <code>avatar-square</code>),
+        the Tailwind version swaps the <code>h-*</code> / <code>w-*</code> and rounding utilities.
     </Description>
     <LiveContent>
         <div class="flex items-center gap-4">

@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Accordion</h1>
     <p class="bb-subtitle">A vertically stacked set of collapsible sections, single or multiple open at a time.</p>
-    <SectionSwitcher Slug="accordion" />
 </div>
+
+<SectionSwitcher Slug="accordion" />
 
 <DemoBlock Title="Basic Accordion (Single)"
            Code="@_basicCode"
@@ -14,16 +15,21 @@
     <Description>
         Only one item can be open at a time. <code>DefaultValue</code> seeds the initial open item.
         Each trigger gets <code>aria-expanded</code> and <code>aria-controls</code> automatically.
+        Every trigger sits in a <code>BitBhAccordionHeader</code> - an <code>&lt;h3&gt;</code> unless
+        <code>As</code> says otherwise - as the accordion pattern asks, so screen readers list the items
+        among the page's headings.
     </Description>
     <LiveContent>
         <BitBhAccordion DefaultValue="item-1" class="accordion">
             <BitBhAccordionItem Value="item-1" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        What is bit Bheadless?
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            What is bit Bheadless?
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">
                         bit Bheadless is a headless component library for Blazor.
@@ -33,12 +39,14 @@
             </BitBhAccordionItem>
 
             <BitBhAccordionItem Value="item-2" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        Why headless?
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            Why headless?
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">
                         You own the look and feel entirely. ARIA and keyboard support never have to be
@@ -48,12 +56,14 @@
             </BitBhAccordionItem>
 
             <BitBhAccordionItem Value="item-3" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        How do I style it?
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            How do I style it?
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">
                         Use <code>data-state="open"|"closed"</code> on any element, or just apply
@@ -75,12 +85,14 @@
     <LiveContent>
         <BitBhAccordion Type="BitBhAccordionType.Multiple" class="accordion">
             <BitBhAccordionItem Value="faq-1" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        Can I open multiple panels?
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            Can I open multiple panels?
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">
                         Yes — every panel is independent. Try opening both!
@@ -89,12 +101,14 @@
             </BitBhAccordionItem>
 
             <BitBhAccordionItem Value="faq-2" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        Does this one close when I open another?
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            Does this one close when I open another?
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">
                         No — both can be open at once.
@@ -109,30 +123,36 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        Individual items can be disabled via <code>Disabled="true"</code>. The whole accordion can
-        also be disabled at the root.
+        Individual items can be disabled via <code>Disabled="true"</code>. The whole accordion can also
+        be disabled at the root. A disabled item and its trigger get <code>data-disabled</code>: the CSS
+        version styles them with <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhAccordion class="accordion">
             <BitBhAccordionItem Value="d-1" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        I am enabled
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            I am enabled
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">This item works normally.</div>
                 </BitBhAccordionContent>
             </BitBhAccordionItem>
 
             <BitBhAccordionItem Value="d-2" Disabled="true" class="accordion-item">
-                <BitBhAccordionTrigger class="accordion-trigger">
-                    <Template Context="t">
-                        I am disabled
-                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhAccordionTrigger>
+                <BitBhAccordionHeader class="accordion-header">
+                    <BitBhAccordionTrigger class="accordion-trigger">
+                        <Template Context="t">
+                            I am disabled
+                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                </BitBhAccordionHeader>
                 <BitBhAccordionContent class="accordion-content">
                     <div class="accordion-body">You should not be able to open this.</div>
                 </BitBhAccordionContent>
@@ -161,24 +181,28 @@
                         OnValueChange="v => controlledValue = v"
                         class="accordion">
                 <BitBhAccordionItem Value="ctrl-1" class="accordion-item">
-                    <BitBhAccordionTrigger class="accordion-trigger">
-                        <Template Context="t">
-                            Panel 1
-                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhAccordionTrigger>
+                    <BitBhAccordionHeader class="accordion-header">
+                        <BitBhAccordionTrigger class="accordion-trigger">
+                            <Template Context="t">
+                                Panel 1
+                                <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                            </Template>
+                        </BitBhAccordionTrigger>
+                    </BitBhAccordionHeader>
                     <BitBhAccordionContent class="accordion-content">
                         <div class="accordion-body">Controlled by external state.</div>
                     </BitBhAccordionContent>
                 </BitBhAccordionItem>
 
                 <BitBhAccordionItem Value="ctrl-2" class="accordion-item">
-                    <BitBhAccordionTrigger class="accordion-trigger">
-                        <Template Context="t">
-                            Panel 2
-                            <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhAccordionTrigger>
+                    <BitBhAccordionHeader class="accordion-header">
+                        <BitBhAccordionTrigger class="accordion-trigger">
+                            <Template Context="t">
+                                Panel 2
+                                <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                            </Template>
+                        </BitBhAccordionTrigger>
+                    </BitBhAccordionHeader>
                     <BitBhAccordionContent class="accordion-content">
                         <div class="accordion-body">This panel is toggled by the button above.</div>
                     </BitBhAccordionContent>
@@ -201,12 +225,14 @@
     private const string _basicCode = """
 <BitBhAccordion DefaultValue="item-1" class="accordion">
     <BitBhAccordionItem Value="item-1" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                What is bit Bheadless?
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    What is bit Bheadless?
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">
                 bit Bheadless is a headless component library for Blazor.
@@ -216,12 +242,14 @@
     </BitBhAccordionItem>
 
     <BitBhAccordionItem Value="item-2" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                Why headless?
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    Why headless?
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">
                 You own the look and feel entirely. ARIA and keyboard support never have to be
@@ -231,12 +259,14 @@
     </BitBhAccordionItem>
 
     <BitBhAccordionItem Value="item-3" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                How do I style it?
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    How do I style it?
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">
                 Use <code>data-state="open"|"closed"</code> on any element, or just apply
@@ -250,12 +280,14 @@
     private const string _multipleCode = """
 <BitBhAccordion Type="BitBhAccordionType.Multiple" class="accordion">
     <BitBhAccordionItem Value="faq-1" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                Can I open multiple panels?
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    Can I open multiple panels?
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">
                 Yes — every panel is independent. Try opening both!
@@ -264,12 +296,14 @@
     </BitBhAccordionItem>
 
     <BitBhAccordionItem Value="faq-2" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                Does this one close when I open another?
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    Does this one close when I open another?
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">
                 No — both can be open at once.
@@ -282,24 +316,28 @@
     private const string _disabledCode = """
 <BitBhAccordion class="accordion">
     <BitBhAccordionItem Value="d-1" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                I am enabled
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    I am enabled
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">This item works normally.</div>
         </BitBhAccordionContent>
     </BitBhAccordionItem>
 
     <BitBhAccordionItem Value="d-2" Disabled="true" class="accordion-item">
-        <BitBhAccordionTrigger class="accordion-trigger">
-            <Template Context="t">
-                I am disabled
-                <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-            </Template>
-        </BitBhAccordionTrigger>
+        <BitBhAccordionHeader class="accordion-header">
+            <BitBhAccordionTrigger class="accordion-trigger">
+                <Template Context="t">
+                    I am disabled
+                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+        </BitBhAccordionHeader>
         <BitBhAccordionContent class="accordion-content">
             <div class="accordion-body">You should not be able to open this.</div>
         </BitBhAccordionContent>
@@ -320,24 +358,28 @@
                 OnValueChange="v => controlledValue = v"
                 class="accordion">
         <BitBhAccordionItem Value="ctrl-1" class="accordion-item">
-            <BitBhAccordionTrigger class="accordion-trigger">
-                <Template Context="t">
-                    Panel 1
-                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                </Template>
-            </BitBhAccordionTrigger>
+            <BitBhAccordionHeader class="accordion-header">
+                <BitBhAccordionTrigger class="accordion-trigger">
+                    <Template Context="t">
+                        Panel 1
+                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                    </Template>
+                </BitBhAccordionTrigger>
+            </BitBhAccordionHeader>
             <BitBhAccordionContent class="accordion-content">
                 <div class="accordion-body">Controlled by external state.</div>
             </BitBhAccordionContent>
         </BitBhAccordionItem>
 
         <BitBhAccordionItem Value="ctrl-2" class="accordion-item">
-            <BitBhAccordionTrigger class="accordion-trigger">
-                <Template Context="t">
-                    Panel 2
-                    <span class="accordion-chevron @(t.IsOpen ? "open" : "")">▾</span>
-                </Template>
-            </BitBhAccordionTrigger>
+            <BitBhAccordionHeader class="accordion-header">
+                <BitBhAccordionTrigger class="accordion-trigger">
+                    <Template Context="t">
+                        Panel 2
+                        <span class="accordion-chevron @(t.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                    </Template>
+                </BitBhAccordionTrigger>
+            </BitBhAccordionHeader>
             <BitBhAccordionContent class="accordion-content">
                 <div class="accordion-body">This panel is toggled by the button above.</div>
             </BitBhAccordionContent>
@@ -366,6 +408,14 @@
 
 .accordion-item            { border-bottom: 1px solid #e4e4e7; }
 .accordion-item:last-child { border-bottom: none; }
+
+/* The heading around each trigger: the trigger carries the look, the heading only the outline level */
+.accordion-header {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
 
 .accordion-trigger {
     all: unset;
@@ -407,6 +457,14 @@
 .accordion-item            { border-bottom: 1px solid #e4e4e7; }
 .accordion-item:last-child { border-bottom: none; }
 
+/* The heading around each trigger: the trigger carries the look, the heading only the outline level */
+.accordion-header {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
+
 .accordion-trigger {
     all: unset;
     display: flex;
@@ -447,6 +505,14 @@
 .accordion-item            { border-bottom: 1px solid #e4e4e7; }
 .accordion-item:last-child { border-bottom: none; }
 
+/* The heading around each trigger: the trigger carries the look, the heading only the outline level */
+.accordion-header {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
+
 .accordion-trigger {
     all: unset;
     display: flex;
@@ -479,6 +545,10 @@
 .accordion-item[data-disabled] {
     background: #fafafa;
 }
+
+.accordion-item[data-disabled] .accordion-trigger {
+    background: transparent;
+}
 """;
 
     private const string _controlledCss = """
@@ -492,6 +562,14 @@
 
 .accordion-item            { border-bottom: 1px solid #e4e4e7; }
 .accordion-item:last-child { border-bottom: none; }
+
+/* The heading around each trigger: the trigger carries the look, the heading only the outline level */
+.accordion-header {
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
 
 .accordion-trigger {
     all: unset;

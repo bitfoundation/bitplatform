@@ -4,12 +4,17 @@
 
 <div class="bb-intro">
     <h1>Combobox</h1>
-    <p class="bb-subtitle">Accessible typeable autocomplete with consumer-driven filtering.</p>
-    <SectionSwitcher Slug="combobox" />
+    <p class="bb-subtitle">An accessible typeable autocomplete with consumer-driven filtering.</p>
 </div>
 
+<SectionSwitcher Slug="combobox" />
+
 <TwDemoBlock Title="Basic Combobox" Code="@_basicCode">
-    <Description>Type to filter; you handle the filtering and pass matching options.</Description>
+    <Description>
+        Type to filter, use Up / Down to navigate, Enter to select, Escape to close.
+        The combobox emits an <code>OnQueryChange</code> event; you do the filtering
+        in your own code and pass only the matching options as children.
+    </Description>
     <LiveContent>
         <BitBhCombobox TValue="string"
                     Value="@selectedFruit"
@@ -53,12 +58,17 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Multi-select with chips" Code="@_multiCode">
-    <Description>Selected values render as chips above the input.</Description>
+    <Description>
+        Set <code>Multiple="true"</code> to allow many selections. Selected values are
+        shown as chips before the input (each with a remove button). The panel stays
+        open after each pick.
+    </Description>
     <LiveContent>
         <BitBhCombobox TValue="string" Multiple="true"
                     Values="@pickedTags"
                     OnValuesChange="v => pickedTags = v"
                     OnQueryChange="HandleTagQuery"
+                    @ref="tagCombobox"
                     class="relative inline-block min-w-72">
             <div class="relative flex flex-wrap items-center rounded-lg border border-zinc-300 bg-white transition-colors focus-within:border-blue-600 p-1 gap-1">
                 @foreach (var tag in pickedTags)
@@ -94,8 +104,8 @@
                         <BitBhComboboxOption TValue="string" Value="@tag"
                                           class="flex items-center justify-between gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none data-active:bg-blue-50 data-selected:font-semibold">
                             <Template Context="o">
-                                <span class="inline-block w-4 text-blue-600 font-bold">@(o.IsSelected ? "✓" : "")</span>
                                 <span>@tag</span>
+                                <span class="inline-block w-4 text-blue-600 font-bold">@(o.IsSelected ? "✓" : "")</span>
                             </Template>
                         </BitBhComboboxOption>
                     }
@@ -107,7 +117,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Object values with rich content" Code="@_objectCode">
-    <Description>Bind to objects; provide <code>DisplayValue</code>.</Description>
+    <Description>
+        Bind to objects rather than strings. Provide a <code>DisplayValue</code> function
+        that converts the selected object back to the input text, and render rich content
+        inside each option.
+    </Description>
     <LiveContent>
         <BitBhCombobox TValue="Person"
                     Value="@selectedPerson"
@@ -157,7 +171,13 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Anchor Positioning" Code="@_anchorCode">
-    <Description><code>Anchor</code> auto-positions and flips.</Description>
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhComboboxOptions</code> to automatically position
+        the dropdown relative to the input using <code>position: fixed</code>. The panel
+        flips to the opposite side when there's not enough space, shifts to stay within
+        the viewport, and auto-updates on scroll/resize. No <code>position: relative</code>
+        on the parent is needed.
+    </Description>
     <LiveContent>
         <div class="flex flex-wrap items-end gap-8">
             <div>
@@ -198,7 +218,7 @@
             </div>
 
             <div>
-                <p class="text-xs text-zinc-500 mb-2">Top Start</p>
+                <p class="text-xs text-zinc-500 mb-2">Top Start (flips down if no space)</p>
                 <BitBhCombobox TValue="string" Value="@anchorFruit2" OnValueChange="v => anchorFruit2 = v"
                             OnQueryChange="HandleAnchorFruitQuery2" DisplayValue="v => v ?? string.Empty" class="inline-block min-w-72">
                     <div class="relative flex items-center rounded-lg border border-zinc-300 bg-white transition-colors focus-within:border-blue-600">
@@ -240,8 +260,15 @@
 
 <TwDemoBlock Title="Large lists (virtualized)" Code="@_virtualCode">
     <Description>
-        <code>Items</code> + <code>ItemTemplate</code> + <code>Virtualize="true"</code> render only the visible options (each <code>h-9</code> = <code>ItemSize</code> 36px).
-        <code>OnQueryChange</code> filters 10,000 items with <code>BitBhFilter.Contains</code> (case- and accent-insensitive); <code>BitBhComboboxEmpty</code> covers no matches.
+        Pass the matching data to <code>BitBhComboboxOptions</code> through <code>Items</code> with an
+        <code>ItemTemplate</code>, and set <code>Virtualize="true"</code> so only the options in view
+        are rendered in a scrollable panel. Every option must be exactly <code>ItemSize</code> tall
+        (36px here): the CSS version sizes the generated <code>[role="option"]</code> elements, the
+        Tailwind version gives the template's content <code>h-9</code>. Filtering stays yours:
+        <code>OnQueryChange</code> runs <code>BitBhFilter.Contains</code> — case- and
+        accent-insensitive — over 10,000 items on every keystroke. Child content such as
+        <code>BitBhComboboxEmpty</code> still renders after the data options; it shows only while
+        nothing matches.
     </Description>
     <LiveContent>
         <BitBhCombobox TValue="string"
@@ -382,6 +409,7 @@
             : allFruits.Where(f => f.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
 
     private IReadOnlyCollection<string> pickedTags = Array.Empty<string>();
+    private BitBhCombobox<string> tagCombobox = default!;
     private readonly string[] allTags =
     {
         "design", "engineering", "marketing", "sales", "support",
@@ -391,8 +419,12 @@
     private void HandleTagQuery(string q) =>
         filteredTags = string.IsNullOrWhiteSpace(q) ? allTags.ToList()
             : allTags.Where(t => t.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
-    private void RemoveTag(string tag) =>
+    // The chip's remove button leaves with the chip: give the focus back to the input.
+    private async Task RemoveTag(string tag)
+    {
         pickedTags = pickedTags.Where(t => t != tag).ToList();
+        await tagCombobox.FocusAsync();
+    }
 
     public sealed record Person(string Name, string Email)
     {
@@ -490,6 +522,7 @@
             Values="@pickedTags"
             OnValuesChange="v => pickedTags = v"
             OnQueryChange="HandleTagQuery"
+            @ref="tagCombobox"
             class="relative inline-block min-w-72">
     <div class="relative flex flex-wrap items-center rounded-lg border border-zinc-300 bg-white transition-colors focus-within:border-blue-600 p-1 gap-1">
         @foreach (var tag in pickedTags)
@@ -525,8 +558,8 @@
                 <BitBhComboboxOption TValue="string" Value="@tag"
                                   class="flex items-center justify-between gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none data-active:bg-blue-50 data-selected:font-semibold">
                     <Template Context="o">
-                        <span class="inline-block w-4 text-blue-600 font-bold">@(o.IsSelected ? "✓" : "")</span>
                         <span>@tag</span>
+                        <span class="inline-block w-4 text-blue-600 font-bold">@(o.IsSelected ? "✓" : "")</span>
                     </Template>
                 </BitBhComboboxOption>
             }
@@ -536,6 +569,7 @@
 
 @code {
     private IReadOnlyCollection<string> pickedTags = Array.Empty<string>();
+    private BitBhCombobox<string> tagCombobox = default!;
     private readonly string[] allTags =
     {
         "design", "engineering", "marketing", "sales", "support",
@@ -547,8 +581,12 @@
         filteredTags = string.IsNullOrWhiteSpace(q) ? allTags.ToList()
             : allTags.Where(t => t.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
 
-    private void RemoveTag(string tag) =>
+    // The chip's remove button leaves with the chip: give the focus back to the input.
+    private async Task RemoveTag(string tag)
+    {
         pickedTags = pickedTags.Where(t => t != tag).ToList();
+        await tagCombobox.FocusAsync();
+    }
 
     protected override void OnInitialized() => filteredTags = allTags.ToList();
 }

@@ -4,12 +4,18 @@
 
 <div class="bb-intro">
     <h1>Popover</h1>
-    <p class="bb-subtitle">Non-modal floating panel with focus management and group coordination.</p>
-    <SectionSwitcher Slug="popover" />
+    <p class="bb-subtitle">A non-modal floating panel with focus management, Escape-to-close, and group coordination.</p>
 </div>
 
+<SectionSwitcher Slug="popover" />
+
 <TwDemoBlock Title="Basic Popover" Code="@_basicCode">
-    <Description>Click to open. Escape or outside click closes; focus returns to the button.</Description>
+    <Description>
+        Click the button to open the panel. Focus moves into the panel automatically.
+        Press Escape to close it and give the focus back to the button; a click outside closes it too,
+        leaving the focus where you clicked.
+        Unlike a Dialog, the rest of the page stays interactive.
+    </Description>
     <LiveContent>
         <BitBhPopover class="relative inline-block">
             <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
@@ -34,9 +40,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Popover Group (mutual exclusion)" Code="@_groupCode">
-    <Description><code>BitBhPopoverGroup</code> auto-closes siblings.</Description>
+    <Description>
+        Wrap multiple popovers in a <code>BitBhPopoverGroup</code> so opening one
+        automatically closes the others. Useful for navigation bars.
+    </Description>
     <LiveContent>
-        <BitBhPopoverGroup class="flex items-center gap-2">
+        <BitBhPopoverGroup class="flex flex-wrap items-center gap-2">
             <BitBhPopover class="relative inline-block">
                 <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
                     <Template Context="b">
@@ -47,9 +56,9 @@
                 <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
                     <h3 class="text-sm font-semibold text-zinc-900 m-0">Products</h3>
                     <ul class="list-none p-0 m-0 flex flex-col gap-1">
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Analytics</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Automation</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Commerce</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Analytics</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Automation</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Commerce</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -63,9 +72,9 @@
                 <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
                     <h3 class="text-sm font-semibold text-zinc-900 m-0">Solutions</h3>
                     <ul class="list-none p-0 m-0 flex flex-col gap-1">
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Marketing</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Engineering</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Finance</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Marketing</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Engineering</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Finance</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -79,9 +88,9 @@
                 <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
                     <h3 class="text-sm font-semibold text-zinc-900 m-0">Company</h3>
                     <ul class="list-none p-0 m-0 flex flex-col gap-1">
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">About</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Blog</a></li>
-                        <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Careers</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">About</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Blog</a></li>
+                        <li><a href="#" @onclick:preventDefault class="text-sm text-blue-600 no-underline hover:underline">Careers</a></li>
                     </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
@@ -90,11 +99,17 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-    <Description>External <code>Open</code> + <code>OnOpenChange</code>.</Description>
+    <Description>
+        Drive the open state externally with <code>Open</code> and
+        <code>OnOpenChange</code>. The button below opens or closes the popover
+        programmatically.
+        The outside button carries <code>data-bit-bh-dismiss-ignore</code>: without it, pressing it would
+        first dismiss the open surface as an outside press, and its click would then open it again.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <div class="flex flex-wrap items-center gap-3">
-                <BitBhButton OnClick="ToggleControlled"
+                <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore
                           class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
                     Toggle from outside
                 </BitBhButton>
@@ -116,7 +131,13 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Anchor Positioning" Code="@_anchorCode">
-    <Description><code>Anchor</code> auto-positions the panel with viewport-aware flip + shift.</Description>
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhPopoverPanel</code> to automatically position
+        the panel relative to the button. The panel uses <code>position: fixed</code>,
+        flips when there's not enough space, shifts to stay within the viewport, and
+        auto-updates on scroll/resize. No <code>position: relative</code> on the parent or
+        <code>position: absolute</code> on the panel needed.
+    </Description>
     <LiveContent>
         <div class="flex flex-wrap items-start gap-6">
             <BitBhPopover class="inline-block">
@@ -160,7 +181,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Rich panel content" Code="@_richCode">
-    <Description>Any markup works inside the panel.</Description>
+    <Description>
+        The panel can contain any content — forms, images, links, nested interactive
+        elements. Tab navigates freely inside and out (no focus trap).
+    </Description>
     <LiveContent>
         <BitBhPopover class="relative inline-block">
             <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
@@ -198,7 +222,7 @@
                         </div>
                     </li>
                 </ul>
-                <a href="#" class="block border-t border-zinc-200 py-2.5 text-center text-sm text-blue-600 no-underline hover:bg-zinc-50">View all notifications →</a>
+                <a href="#" @onclick:preventDefault class="block border-t border-zinc-200 py-2.5 text-center text-sm text-blue-600 no-underline hover:bg-zinc-50">View all notifications →</a>
             </BitBhPopoverPanel>
         </BitBhPopover>
     </LiveContent>
@@ -232,7 +256,7 @@
 """;
 
     private const string _groupCode = """
-<BitBhPopoverGroup class="flex items-center gap-2">
+<BitBhPopoverGroup class="flex flex-wrap items-center gap-2">
     <BitBhPopover class="relative inline-block">
         <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
             <Template Context="b">
@@ -287,7 +311,7 @@
     private const string _controlledCode = """
 <div class="flex flex-col gap-4 items-start">
     <div class="flex flex-wrap items-center gap-3">
-        <BitBhButton OnClick="ToggleControlled"
+        <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore
                   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
             Toggle from outside
         </BitBhButton>

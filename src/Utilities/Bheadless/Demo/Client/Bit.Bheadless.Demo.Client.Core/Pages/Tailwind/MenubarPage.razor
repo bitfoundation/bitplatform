@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Menubar</h1>
     <p class="bb-subtitle">A desktop-style application menu bar — menus, submenus, checkable items and keyboard shortcuts — with zero visual opinion.</p>
-    <SectionSwitcher Slug="menubar" />
 </div>
+
+<SectionSwitcher Slug="menubar" />
 
 <TwDemoBlock Title="Application menubar" Code="@_appCode">
     <Description>
@@ -201,7 +202,7 @@
             </BitBhMenubar>
 
             <div class="bg-[#fff] text-[0.8rem] text-[#27272a] transition-colors data-[theme=Dark]:bg-[#18181b] data-[theme=Dark]:text-[#e4e4e7] data-[theme=Sepia]:bg-[#f7f0e1] data-[theme=Sepia]:text-[#5b4636]" data-theme="@editorTheme">
-                <div class="overflow-x-auto px-4 py-3 font-mono leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-blue-600" tabindex="0" role="region" aria-label="Editor preview" style="font-size: @(zoom)%">
+                <div class="overflow-x-auto px-4 py-3 font-mono leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600" tabindex="0" role="region" aria-label="Editor preview" style="font-size: @(zoom)%">
                     @for (var i = 0; i < editorLines.Length; i++)
                     {
                         <div class="flex gap-3">
@@ -302,7 +303,8 @@
 
 <TwDemoBlock Title="Disabled menus and items" Code="@_disabledCode">
     <Description>
-        A disabled <code>BitBhMenu</code> can't be opened and ← / → skip over it; disabled items stay visible (with
+        A disabled <code>BitBhMenu</code> can't be opened, but ← / → still reach its trigger (it stays
+        focusable and is announced as disabled); disabled items stay visible (with
         <code>data-disabled</code> and <code>aria-disabled</code>) but arrow keys and typeahead pass them by.
         <code>Loop="false"</code> stops the arrow keys at the first and last menu instead of wrapping. Items can
         also render as links with <code>As="a"</code> — Enter follows the link.
@@ -567,7 +569,7 @@
     </BitBhMenubar>
 
     <div class="bg-[#fff] text-[0.8rem] text-[#27272a] transition-colors data-[theme=Dark]:bg-[#18181b] data-[theme=Dark]:text-[#e4e4e7] data-[theme=Sepia]:bg-[#f7f0e1] data-[theme=Sepia]:text-[#5b4636]" data-theme="@editorTheme">
-        <div class="overflow-x-auto px-4 py-3 font-mono leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-blue-600" tabindex="0" role="region" aria-label="Editor preview" style="font-size: @(zoom)%">
+        <div class="overflow-x-auto px-4 py-3 font-mono leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600" tabindex="0" role="region" aria-label="Editor preview" style="font-size: @(zoom)%">
             @for (var i = 0; i < editorLines.Length; i++)
             {
                 <div class="flex gap-3">

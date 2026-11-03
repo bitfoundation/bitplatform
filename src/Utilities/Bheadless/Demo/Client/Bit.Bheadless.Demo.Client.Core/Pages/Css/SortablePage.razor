@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Sortable</h1>
     <p class="bb-subtitle">Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
-    <SectionSwitcher Slug="sortable" />
 </div>
+
+<SectionSwitcher Slug="sortable" />
 
 <DemoBlock Title="Reorderable task list"
            Code="@_tasksCode"
@@ -16,7 +17,11 @@
         stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
         finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
         <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
-        <kbd>Escape</kbd> to cancel. Each step is announced automatically.
+        <kbd>Escape</kbd> to cancel. Each step is announced automatically. The moving item and the root
+        carry <code>data-dragging</code>, and a handle picked up with the keyboard gets
+        <code>aria-pressed="true"</code>. The sortable renders the <code>&lt;li&gt;</code> items itself,
+        so they're styled from the list: a <code>.sortable-list &gt; li</code> selector in the CSS
+        version, the <code>*:</code> variant in the Tailwind version.
     </Description>
     <LiveContent>
         <div class="sortable-demo">
@@ -114,9 +119,11 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every
-        item get <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>.
-        The lock below is a <code>BitBhToggle</code>.
+        <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every item get
+        <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>: the CSS version
+        styles them with <code>[data-disabled]</code> / <code>[aria-disabled="true"]</code> selectors,
+        the Tailwind version with the <code>data-disabled:</code> / <code>aria-disabled:</code>
+        variants. The lock below is a <code>BitBhToggle</code>.
     </Description>
     <LiveContent>
         <div class="sortable-demo">
@@ -409,7 +416,8 @@
     display: flex;
     gap: 0.5rem;
     margin: 0;
-    padding: 0;
+    padding: 0.25rem;
+    overflow-x: auto;
     list-style: none;
 }
 
@@ -481,6 +489,8 @@
     background: #fafafa;
     color: #71717a;
 }
+
+.sortable-list[data-disabled] .sortable-title { color: #71717a; }
 
 .sortable-handle[aria-disabled="true"] { cursor: not-allowed; opacity: 0.5; }
 

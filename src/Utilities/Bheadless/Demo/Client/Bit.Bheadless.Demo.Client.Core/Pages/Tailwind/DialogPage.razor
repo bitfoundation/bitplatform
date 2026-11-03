@@ -4,20 +4,26 @@
 
 <div class="bb-intro">
     <h1>Dialog</h1>
-    <p class="bb-subtitle">Modal with focus trap, scroll lock, and inert background.</p>
-    <SectionSwitcher Slug="dialog" />
+    <p class="bb-subtitle">An accessible modal with focus trap, scroll lock, and inert background.</p>
 </div>
 
+<SectionSwitcher Slug="dialog" />
+
 <TwDemoBlock Title="Basic Dialog" Code="@_basicCode">
-    <Description>Click to open. Tab cycles inside, Escape closes, focus returns to the opener.</Description>
+    <Description>
+        Click the button to open the dialog. While open, focus is trapped inside the
+        panel, body scroll is locked, the rest of the page is marked <code>inert</code>,
+        and Escape or clicking the backdrop closes it. Focus is returned to the
+        opener button on close.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => basicOpen = true"
                   class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
             Open dialog
         </BitBhButton>
         <BitBhDialog Open="basicOpen" OnClose="() => basicOpen = false">
-            <BitBhDialogBackdrop class="bg-black/50" />
-            <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+            <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+            <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
                 <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Welcome aboard</BitBhDialogTitle>
                 <BitBhDialogDescription class="text-sm text-zinc-500">
                     This is a fully-accessible dialog. Try Tab and Shift+Tab — focus
@@ -39,7 +45,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Confirmation (no backdrop dismiss)" Code="@_confirmCode">
-    <Description><code>DismissOnClick="false"</code> + <code>DismissOnEscape="false"</code> require an explicit choice.</Description>
+    <Description>
+        Set <code>DismissOnClick="false"</code> on the backdrop and
+        <code>DismissOnEscape="false"</code> on the panel to require an explicit
+        choice. Useful for destructive actions.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => confirmOpen = true"
                   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
@@ -47,8 +57,8 @@
         </BitBhButton>
         <span class="text-sm text-zinc-500">@confirmResult</span>
         <BitBhDialog Open="confirmOpen" OnClose="() => confirmOpen = false">
-            <BitBhDialogBackdrop class="bg-black/50" DismissOnClick="false" />
-            <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3" DismissOnEscape="false">
+            <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" DismissOnClick="false" />
+            <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3" DismissOnEscape="false">
                 <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Delete account?</BitBhDialogTitle>
                 <BitBhDialogDescription class="text-sm text-zinc-500">
                     This will permanently remove your account and all its data.
@@ -70,7 +80,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="With form fields" Code="@_formCode">
-    <Description>Tab cycles between inputs and buttons.</Description>
+    <Description>
+        The dialog also works as a focusable form container. Tab cycles between the
+        inputs and buttons; the focus trap keeps them all reachable while keeping the
+        background untouchable.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => formOpen = true"
                   class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
@@ -78,8 +92,8 @@
         </BitBhButton>
         <span class="text-sm text-zinc-500">@formResult</span>
         <BitBhDialog Open="formOpen" OnClose="() => formOpen = false">
-            <BitBhDialogBackdrop class="bg-black/50" />
-            <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+            <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+            <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
                 <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Edit profile</BitBhDialogTitle>
                 <BitBhDialogDescription class="text-sm text-zinc-500">
                     Update your display name. Press Escape or click outside to cancel.
@@ -87,7 +101,7 @@
                 <label class="flex flex-col gap-1.5 text-sm">
                     <span>Display name</span>
                     <input type="text" @bind="displayName"
-                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
                 </label>
                 <div class="mt-2 flex justify-end gap-2">
                     <BitBhButton OnClick="() => formOpen = false"
@@ -122,8 +136,8 @@
     Open dialog
 </BitBhButton>
 <BitBhDialog Open="basicOpen" OnClose="() => basicOpen = false">
-    <BitBhDialogBackdrop class="bg-black/50" />
-    <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+    <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+    <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
         <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Welcome aboard</BitBhDialogTitle>
         <BitBhDialogDescription class="text-sm text-zinc-500">
             This is a fully-accessible dialog. Try Tab and Shift+Tab — focus
@@ -154,8 +168,8 @@
 </BitBhButton>
 <span class="text-sm text-zinc-500">@confirmResult</span>
 <BitBhDialog Open="confirmOpen" OnClose="() => confirmOpen = false">
-    <BitBhDialogBackdrop class="bg-black/50" DismissOnClick="false" />
-    <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3" DismissOnEscape="false">
+    <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" DismissOnClick="false" />
+    <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3" DismissOnEscape="false">
         <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Delete account?</BitBhDialogTitle>
         <BitBhDialogDescription class="text-sm text-zinc-500">
             This will permanently remove your account and all its data.
@@ -190,8 +204,8 @@
 </BitBhButton>
 <span class="text-sm text-zinc-500">@formResult</span>
 <BitBhDialog Open="formOpen" OnClose="() => formOpen = false">
-    <BitBhDialogBackdrop class="bg-black/50" />
-    <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+    <BitBhDialogBackdrop class="fixed inset-0 bg-black/50" />
+    <BitBhDialogPanel class="relative mx-auto my-16 w-[calc(100%-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
         <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Edit profile</BitBhDialogTitle>
         <BitBhDialogDescription class="text-sm text-zinc-500">
             Update your display name. Press Escape or click outside to cancel.
@@ -199,7 +213,7 @@
         <label class="flex flex-col gap-1.5 text-sm">
             <span>Display name</span>
             <input type="text" @bind="displayName"
-                   class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                   class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
         </label>
         <div class="mt-2 flex justify-end gap-2">
             <BitBhButton OnClick="() => formOpen = false"

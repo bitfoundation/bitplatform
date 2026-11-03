@@ -5,15 +5,16 @@
 <div class="bb-intro">
     <h1>Disclosure</h1>
     <p class="bb-subtitle">A single show/hide region toggled by a button — the simplest collapsible primitive.</p>
-    <SectionSwitcher Slug="disclosure" />
 </div>
+
+<SectionSwitcher Slug="disclosure" />
 
 <DemoBlock Title="Basic Disclosure"
            Code="@_basicCode"
            Css="@_disclosureCss">
     <Description>
         Renders a button and a panel. Clicking the button toggles the panel.
-        <code>aria-expanded</code>, <code>aria-controls</code>, and <code>aria-labelledby</code>
+        <code>aria-expanded</code> and <code>aria-controls</code>
         are wired automatically.
     </Description>
     <LiveContent>
@@ -64,7 +65,7 @@
             <BitBhDisclosureButton class="disclosure-button">
                 <Template Context="d">
                     <span>What's inside?</span>
-                    <span class="disclosure-chevron @(d.IsOpen ? "open" : "")">▾</span>
+                    <span class="disclosure-chevron @(d.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
                 </Template>
             </BitBhDisclosureButton>
             <BitBhDisclosurePanel class="disclosure-panel">
@@ -84,7 +85,10 @@
            Css="@_disabledCss">
     <Description>
         Set <code>Disabled="true"</code> on the root to block interaction. The button receives
-        both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+        both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook; the root
+        gets <code>data-disabled</code> too, for dimming the whole region. The CSS version styles them
+        with <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhDisclosure Disabled="true" class="disclosure">
@@ -169,7 +173,7 @@
     <BitBhDisclosureButton class="disclosure-button">
         <Template Context="d">
             <span>What's inside?</span>
-            <span class="disclosure-chevron @(d.IsOpen ? "open" : "")">▾</span>
+            <span class="disclosure-chevron @(d.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
         </Template>
     </BitBhDisclosureButton>
     <BitBhDisclosurePanel class="disclosure-panel">
@@ -380,6 +384,10 @@
    dimming the entire region. */
 .disclosure[data-disabled] {
     background: #fafafa;
+}
+
+.disclosure[data-disabled] .disclosure-button {
+    background: transparent;
 }
 """;
 

@@ -5,16 +5,19 @@
 <div class="bb-intro">
     <h1>Disclosure</h1>
     <p class="bb-subtitle">A single show/hide region toggled by a button — the simplest collapsible primitive.</p>
-    <SectionSwitcher Slug="disclosure" />
 </div>
+
+<SectionSwitcher Slug="disclosure" />
 
 <TwDemoBlock Title="Basic Disclosure" Code="@_basicCode">
     <Description>
-        <code>aria-expanded</code>, <code>aria-controls</code>, and <code>aria-labelledby</code> are wired automatically.
+        Renders a button and a panel. Clicking the button toggles the panel.
+        <code>aria-expanded</code> and <code>aria-controls</code>
+        are wired automatically.
     </Description>
     <LiveContent>
         <BitBhDisclosure class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
                 Show details
             </BitBhDisclosureButton>
             <BitBhDisclosurePanel>
@@ -27,10 +30,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Default Open" Code="@_defaultOpenCode">
-    <Description>Set <code>DefaultOpen="true"</code> to render open initially.</Description>
+    <Description>
+        Set <code>DefaultOpen="true"</code> to render the panel open initially (uncontrolled).
+    </Description>
     <LiveContent>
         <BitBhDisclosure DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
                 Already open
             </BitBhDisclosureButton>
             <BitBhDisclosurePanel>
@@ -44,14 +49,16 @@
 
 <TwDemoBlock Title="Render Context (rotating chevron + Close)" Code="@_renderContextCode">
     <Description>
-        All three components expose a <code>BitBhDisclosureRenderContext</code>. Use it to drive UI from the open state and call <code>d.Close()</code>.
+        <code>BitBhDisclosure</code>, <code>BitBhDisclosureButton</code>, and <code>BitBhDisclosurePanel</code>
+        all expose a <code>BitBhDisclosureRenderContext</code> via <code>Context="d"</code>. Use it
+        to drive UI from the open state and to call <code>d.Close()</code> from anywhere inside.
     </Description>
     <LiveContent>
         <BitBhDisclosure class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
                 <Template Context="d">
                     <span>What's inside?</span>
-                    <span class="@($"text-zinc-500 transition-transform duration-200 {(d.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    <span class="@($"text-zinc-500 transition-transform duration-200 {(d.IsOpen ? "rotate-180" : "")}")" aria-hidden="true">▾</span>
                 </Template>
             </BitBhDisclosureButton>
             <BitBhDisclosurePanel>
@@ -67,10 +74,16 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled" Code="@_disabledCode">
-    <Description><code>data-disabled:</code> dims the row.</Description>
+    <Description>
+        Set <code>Disabled="true"</code> on the root to block interaction. The button receives
+        both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook; the root
+        gets <code>data-disabled</code> too, for dimming the whole region. The CSS version styles them
+        with <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhDisclosure Disabled="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
                 Can't toggle me
             </BitBhDisclosureButton>
             <BitBhDisclosurePanel>
@@ -81,7 +94,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-    <Description>External <code>Open</code> + <code>OnOpenChange</code>.</Description>
+    <Description>
+        Drive the open state externally with <code>Open</code> + <code>OnOpenChange</code>.
+        The button below opens or closes the disclosure programmatically.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 w-full">
             <div class="flex flex-wrap items-center gap-3">
@@ -94,7 +110,7 @@
 
             <BitBhDisclosure Open="controlledOpen" OnOpenChange="v => controlledOpen = v"
                           class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-                <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
                     Internal trigger
                 </BitBhDisclosureButton>
                 <BitBhDisclosurePanel>
@@ -112,7 +128,7 @@
 
     private const string _basicCode = """
 <BitBhDisclosure class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
         Show details
     </BitBhDisclosureButton>
     <BitBhDisclosurePanel>
@@ -125,7 +141,7 @@
 
     private const string _defaultOpenCode = """
 <BitBhDisclosure DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
         Already open
     </BitBhDisclosureButton>
     <BitBhDisclosurePanel>
@@ -138,10 +154,10 @@
 
     private const string _renderContextCode = """
 <BitBhDisclosure class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
         <Template Context="d">
             <span>What's inside?</span>
-            <span class="@($"text-zinc-500 transition-transform duration-200 {(d.IsOpen ? "rotate-180" : "")}")">▾</span>
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(d.IsOpen ? "rotate-180" : "")}")" aria-hidden="true">▾</span>
         </Template>
     </BitBhDisclosureButton>
     <BitBhDisclosurePanel>
@@ -157,7 +173,7 @@
 
     private const string _disabledCode = """
 <BitBhDisclosure Disabled="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
         Can't toggle me
     </BitBhDisclosureButton>
     <BitBhDisclosurePanel>
@@ -178,7 +194,7 @@
 
     <BitBhDisclosure Open="controlledOpen" OnOpenChange="v => controlledOpen = v"
                   class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
-        <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 text-base font-medium outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+        <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between gap-3 border-0 bg-transparent px-5 py-3.5 text-left text-base font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
             Internal trigger
         </BitBhDisclosureButton>
         <BitBhDisclosurePanel>

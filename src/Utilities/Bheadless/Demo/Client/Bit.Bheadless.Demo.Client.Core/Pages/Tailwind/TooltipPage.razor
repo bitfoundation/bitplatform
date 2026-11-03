@@ -5,11 +5,17 @@
 <div class="bb-intro">
     <h1>Tooltip</h1>
     <p class="bb-subtitle">A small popup that surfaces information about a control on hover or focus.</p>
-    <SectionSwitcher Slug="tooltip" />
 </div>
 
+<SectionSwitcher Slug="tooltip" />
+
 <TwDemoBlock Title="Basic Tooltip" Code="@_basicCode">
-    <Description>Hover or focus the trigger to open. Escape, blur, or pointer leave closes.</Description>
+    <Description>
+        Hover or focus the trigger to open the tooltip. Pointer leave, blur, or pressing Escape closes
+        it. <code>aria-describedby</code> wires the content to the trigger automatically.
+        <code>BitBhTooltipArrow</code> draws the pointer: the CSS version adds one to every example on
+        this page, the Tailwind version only to this one.
+    </Description>
     <LiveContent>
         <BitBhTooltipProvider DelayDuration="200">
             <BitBhTooltip class="inline-block">
@@ -19,7 +25,7 @@
                 <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
                                   class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md relative">
                     Adds the item to your library
-                    <BitBhTooltipArrow class="fill-zinc-900 absolute left-1/2 -translate-x-1/2 -bottom-1 data-anchor-bottom:rotate-180 data-anchor-bottom:top-[-4px] data-anchor-bottom:bottom-auto" />
+                    <BitBhTooltipArrow class="fill-zinc-900" />
                 </BitBhTooltipContent>
             </BitBhTooltip>
         </BitBhTooltipProvider>
@@ -28,7 +34,10 @@
 
 <TwDemoBlock Title="Provider configuration" Code="@_providerCode">
     <Description>
-        <code>BitBhTooltipProvider</code> sets <code>DelayDuration</code> and <code>SkipDelayDuration</code>. Move quickly between triggers — the next one opens instantly.
+        Use <code>BitBhTooltipProvider</code> to set <code>DelayDuration</code> and
+        <code>SkipDelayDuration</code> globally. Hover one trigger then move
+        quickly to the next — the second tooltip opens instantly because
+        the recently-closed window is still active.
     </Description>
     <LiveContent>
         <BitBhTooltipProvider DelayDuration="500" SkipDelayDuration="500">
@@ -66,7 +75,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Show instantly" Code="@_instantCode">
-    <Description><code>DelayDuration="0"</code> opens immediately.</Description>
+    <Description>
+        Set <code>DelayDuration="0"</code> on a tooltip to have it open
+        immediately on hover or focus.
+    </Description>
     <LiveContent>
         <BitBhTooltip DelayDuration="0" class="inline-block">
             <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
@@ -81,7 +93,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Anchor sides and alignment" Code="@_sidesCode">
-    <Description>The engine flips and shifts to keep the tooltip in view.</Description>
+    <Description>
+        The <code>Anchor</code> on <code>BitBhTooltipContent</code> supports
+        <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code>
+        with optional <code>start</code> / <code>end</code> alignment. The
+        engine flips and shifts to keep the tooltip in view.
+    </Description>
     <LiveContent>
         <BitBhTooltipProvider DelayDuration="200">
             <div class="flex items-center gap-2">
@@ -111,7 +128,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-    <Description>External <code>Open</code> + <code>OnOpenChange</code>.</Description>
+    <Description>
+        Drive the open state externally with <code>Open</code> and
+        <code>OnOpenChange</code>. Useful for guided tours or programmatic
+        highlighting.
+    </Description>
     <LiveContent>
         <div class="flex items-center gap-2">
             <BitBhButton OnClick="ToggleControlled"

@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Menu</h1>
     <p class="bb-subtitle">An accessible dropdown menu with keyboard navigation, typeahead, and zero visual opinion.</p>
-    <SectionSwitcher Slug="menu" />
 </div>
+
+<SectionSwitcher Slug="menu" />
 
 <DemoBlock Title="Basic Menu"
            Code="@_basicCode"
@@ -26,7 +27,7 @@
                     <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhMenuButton>
-            <BitBhMenuItems class="menu-items">
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
                 <BitBhMenuItem OnClick='@(() => Log("Edit"))'      class="menu-item" Label="Edit">Edit</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' class="menu-item" Label="Duplicate">Duplicate</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Archive"))'   class="menu-item" Label="Archive">Archive</BitBhMenuItem>
@@ -43,8 +44,9 @@
            Css="@_disabledCss">
     <Description>
         Set <code>Disabled="true"</code> on individual items. Disabled items receive
-        <code>data-disabled</code> for CSS, are skipped by arrow-key nav, and are
-        ignored by typeahead.
+        <code>data-disabled</code>, are skipped by arrow-key nav, and are ignored by typeahead.
+        The CSS version styles them with a <code>[data-disabled]</code> selector, the Tailwind
+        version with the <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhMenu class="menu">
@@ -54,7 +56,7 @@
                     <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhMenuButton>
-            <BitBhMenuItems class="menu-items">
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
                 <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="menu-item" Label="Profile">Profile</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="menu-item" Label="Settings">Settings</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Billing"))'  class="menu-item" Label="Billing"
@@ -83,7 +85,7 @@
                     <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhMenuButton>
-            <BitBhMenuItems class="menu-items menu-items-wide">
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored menu-items-wide">
                 <BitBhMenuItem OnClick='@(() => Log("New file"))' class="menu-item" Label="New file">
                     <Template Context="i">
                         <span class="menu-item-icon">📄</span>
@@ -135,7 +137,7 @@
            Code="@_sectionsCode"
            Css="@_sectionsCss">
     <Description>
-        Group related items with a plain <code>&lt;li&gt;</code> divider or a
+        Group related items with a plain <code>&lt;div&gt;</code> divider or a
         section heading. These are regular HTML elements — the menu component
         doesn't need to know about them.
     </Description>
@@ -147,15 +149,15 @@
                     <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhMenuButton>
-            <BitBhMenuItems class="menu-items">
-                <li class="menu-section-label" role="presentation">View</li>
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
+                <div class="menu-section-label" role="presentation">View</div>
                 <BitBhMenuItem OnClick='@(() => Log("Zoom in"))'     class="menu-item" Label="Zoom in">Zoom in</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Zoom out"))'    class="menu-item" Label="Zoom out">Zoom out</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Full screen"))' class="menu-item" Label="Full screen">Full screen</BitBhMenuItem>
 
-                <li class="menu-divider" role="separator"></li>
+                <div class="menu-divider" role="separator"></div>
 
-                <li class="menu-section-label" role="presentation">Help</li>
+                <div class="menu-section-label" role="presentation">Help</div>
                 <BitBhMenuItem OnClick='@(() => Log("Documentation"))'    class="menu-item" Label="Documentation">Documentation</BitBhMenuItem>
                 <BitBhMenuItem OnClick='@(() => Log("Keyboard shortcuts"))' class="menu-item" Label="Keyboard shortcuts">Keyboard shortcuts</BitBhMenuItem>
             </BitBhMenuItems>
@@ -173,7 +175,8 @@
         dropdown relative to the button. The panel uses <code>position: fixed</code> and
         auto-updates on scroll/resize. It flips to the opposite side if there's not enough
         space, and shifts to stay within the viewport. CSS custom properties
-        <code>--button-width</code>, <code>--anchor-gap</code> are exposed on the panel.
+        <code>--button-width</code>, <code>--anchor-gap</code> are exposed on the panel —
+        "Match Width" sets the panel's width to <code>--button-width</code>.
     </Description>
     <LiveContent>
         <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
@@ -243,7 +246,7 @@
                     <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhMenuButton>
-            <BitBhMenuItems class="menu-items">
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
                 <BitBhMenuItem As="a" href="/button"     class="menu-item" Label="Button">Button</BitBhMenuItem>
                 <BitBhMenuItem As="a" href="/switch"     class="menu-item" Label="Switch">Switch</BitBhMenuItem>
                 <BitBhMenuItem As="a" href="/disclosure" class="menu-item" Label="Disclosure">Disclosure</BitBhMenuItem>
@@ -268,7 +271,7 @@
             <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhMenuButton>
-    <BitBhMenuItems class="menu-items">
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
         <BitBhMenuItem OnClick='@(() => Log("Edit"))'      class="menu-item" Label="Edit">Edit</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' class="menu-item" Label="Duplicate">Duplicate</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Archive"))'   class="menu-item" Label="Archive">Archive</BitBhMenuItem>
@@ -293,7 +296,7 @@
             <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhMenuButton>
-    <BitBhMenuItems class="menu-items">
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
         <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="menu-item" Label="Profile">Profile</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="menu-item" Label="Settings">Settings</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Billing"))'  class="menu-item" Label="Billing"
@@ -311,7 +314,7 @@
             <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhMenuButton>
-    <BitBhMenuItems class="menu-items menu-items-wide">
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored menu-items-wide">
         <BitBhMenuItem OnClick='@(() => Log("New file"))' class="menu-item" Label="New file">
             <Template Context="i">
                 <span class="menu-item-icon">📄</span>
@@ -367,15 +370,15 @@
             <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhMenuButton>
-    <BitBhMenuItems class="menu-items">
-        <li class="menu-section-label" role="presentation">View</li>
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
+        <div class="menu-section-label" role="presentation">View</div>
         <BitBhMenuItem OnClick='@(() => Log("Zoom in"))'     class="menu-item" Label="Zoom in">Zoom in</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Zoom out"))'    class="menu-item" Label="Zoom out">Zoom out</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Full screen"))' class="menu-item" Label="Full screen">Full screen</BitBhMenuItem>
 
-        <li class="menu-divider" role="separator"></li>
+        <div class="menu-divider" role="separator"></div>
 
-        <li class="menu-section-label" role="presentation">Help</li>
+        <div class="menu-section-label" role="presentation">Help</div>
         <BitBhMenuItem OnClick='@(() => Log("Documentation"))'      class="menu-item" Label="Documentation">Documentation</BitBhMenuItem>
         <BitBhMenuItem OnClick='@(() => Log("Keyboard shortcuts"))' class="menu-item" Label="Keyboard shortcuts">Keyboard shortcuts</BitBhMenuItem>
     </BitBhMenuItems>
@@ -390,7 +393,7 @@
             <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhMenuButton>
-    <BitBhMenuItems class="menu-items">
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
         <BitBhMenuItem As="a" href="/button"     class="menu-item" Label="Button">Button</BitBhMenuItem>
         <BitBhMenuItem As="a" href="/switch"     class="menu-item" Label="Switch">Switch</BitBhMenuItem>
         <BitBhMenuItem As="a" href="/disclosure" class="menu-item" Label="Disclosure">Disclosure</BitBhMenuItem>
@@ -454,7 +457,7 @@
 
     private const string _anchorCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -491,6 +494,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 /* Use the --button-width CSS variable to match the trigger width */
@@ -520,7 +524,7 @@
 
     private const string _menuCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -544,12 +548,10 @@
 .menu-chevron       { transition: transform 200ms ease; color: #71717a; }
 .menu-chevron.open  { transform: rotate(180deg); }
 
-/* Options panel — sits above the click-outside overlay (z-index: 30 inline) */
-.menu-items {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 31;
+/* Options panel — Anchor places it (position: fixed, flipped and shifted to stay in view): no position,
+   top or left here. A high z-index keeps it above the page. */
+.menu-items-anchored {
+    z-index: 9999;
     min-width: 10rem;
     margin: 0;
     padding: 0.25rem;
@@ -558,6 +560,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 .menu-item {
@@ -582,7 +585,7 @@
 
     private const string _disabledCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -606,12 +609,10 @@
 .menu-chevron       { transition: transform 200ms ease; color: #71717a; }
 .menu-chevron.open  { transform: rotate(180deg); }
 
-/* Options panel — sits above the click-outside overlay (z-index: 30 inline) */
-.menu-items {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 31;
+/* Options panel — Anchor places it (position: fixed, flipped and shifted to stay in view): no position,
+   top or left here. A high z-index keeps it above the page. */
+.menu-items-anchored {
+    z-index: 9999;
     min-width: 10rem;
     margin: 0;
     padding: 0.25rem;
@@ -620,6 +621,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 .menu-item {
@@ -645,7 +647,7 @@
 
     private const string _richCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -669,12 +671,10 @@
 .menu-chevron       { transition: transform 200ms ease; color: #71717a; }
 .menu-chevron.open  { transform: rotate(180deg); }
 
-/* Options panel — sits above the click-outside overlay (z-index: 30 inline) */
-.menu-items {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 31;
+/* Options panel — Anchor places it (position: fixed, flipped and shifted to stay in view): no position,
+   top or left here. A high z-index keeps it above the page. */
+.menu-items-anchored {
+    z-index: 9999;
     min-width: 10rem;
     margin: 0;
     padding: 0.25rem;
@@ -683,6 +683,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 .menu-item {
@@ -705,7 +706,7 @@
 .demo-output { font-size: 0.875rem; color: #71717a; }
 
 /* Rich item layout: icon + body (title + description) + shortcut */
-.menu-items-wide { min-width: 16rem; }
+.menu-items-anchored.menu-items-wide { min-width: 16rem; }
 
 .menu-item-icon     { font-size: 1rem; flex-shrink: 0; }
 .menu-item-shortcut { margin-left: auto; font-size: 0.75rem; color: #71717a; }
@@ -721,12 +722,12 @@
 .menu-item-body span   { font-size: 0.75rem; color: #71717a; }
 
 /* Active state overrides the muted description colour */
-.menu-item[data-active] .menu-item-body span { color: #93c5fd; }
+.menu-item[data-active] .menu-item-body span { color: #2563eb; }
 """;
 
     private const string _sectionsCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -750,12 +751,10 @@
 .menu-chevron       { transition: transform 200ms ease; color: #71717a; }
 .menu-chevron.open  { transform: rotate(180deg); }
 
-/* Options panel — sits above the click-outside overlay (z-index: 30 inline) */
-.menu-items {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 31;
+/* Options panel — Anchor places it (position: fixed, flipped and shifted to stay in view): no position,
+   top or left here. A high z-index keeps it above the page. */
+.menu-items-anchored {
+    z-index: 9999;
     min-width: 10rem;
     margin: 0;
     padding: 0.25rem;
@@ -764,6 +763,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 .menu-item {
@@ -807,7 +807,7 @@
 
     private const string _polymorphicCss = """
 /* All styles are consumer-authored — the library ships zero CSS */
-.menu          { position: relative; display: inline-block; }
+.menu          { display: inline-block; }
 
 .menu-button {
     display: inline-flex;
@@ -831,12 +831,10 @@
 .menu-chevron       { transition: transform 200ms ease; color: #71717a; }
 .menu-chevron.open  { transform: rotate(180deg); }
 
-/* Options panel — sits above the click-outside overlay (z-index: 30 inline) */
-.menu-items {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 31;
+/* Options panel — Anchor places it (position: fixed, flipped and shifted to stay in view): no position,
+   top or left here. A high z-index keeps it above the page. */
+.menu-items-anchored {
+    z-index: 9999;
     min-width: 10rem;
     margin: 0;
     padding: 0.25rem;
@@ -845,6 +843,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
 }
 
 /* When As="a" the item renders as an anchor. The same .menu-item styles apply

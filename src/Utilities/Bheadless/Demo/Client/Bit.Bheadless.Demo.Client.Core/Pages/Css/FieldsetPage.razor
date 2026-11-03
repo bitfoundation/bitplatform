@@ -9,18 +9,19 @@
         much easier-to-style version of the native <code>fieldset</code> and
         <code>legend</code> elements.
     </p>
-    <SectionSwitcher Slug="fieldset" />
 </div>
+
+<SectionSwitcher Slug="fieldset" />
 
 <DemoBlock Title="Basic example"
            Code="@_basicCode"
            Css="@_basicCss">
     <Description>
-        Use <code>BitBhFieldset</code> and <code>BitBhLegend</code> to group a set of
-        form controls together with a title. The fieldset uses the native
-        <code>&lt;fieldset&gt;</code> element while the legend renders as a
-        <code>&lt;div&gt;</code> (since native <code>&lt;legend&gt;</code> is
-        notoriously hard to style).
+        Use <code>BitBhFieldset</code> and <code>BitBhLegend</code> to group a set of form controls
+        together with a title. They render the native <code>&lt;fieldset&gt;</code> and
+        <code>&lt;legend&gt;</code> elements, and the fieldset also points <code>aria-labelledby</code>
+        at the legend, so the group stays named even with the legend inside a header next to a hint, as
+        here.
     </Description>
     <LiveContent>
         <BitBhFieldset class="fieldset">
@@ -36,11 +37,14 @@
 
             <BitBhField class="field">
                 <BitBhLabel class="field-label">Country</BitBhLabel>
-                <BitBhSelect name="country" class="field-input field-select">
-                    <option>Canada</option>
-                    <option>Mexico</option>
-                    <option>United States</option>
-                </BitBhSelect>
+                <div class="field-select-wrap">
+                    <BitBhSelect name="country" class="field-input field-select">
+                        <option>Canada</option>
+                        <option>Mexico</option>
+                        <option>United States</option>
+                    </BitBhSelect>
+                    <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </div>
             </BitBhField>
 
             <BitBhField class="field">
@@ -57,11 +61,11 @@
            Code="@_disabledCode"
            Css="@_disabledCss">
     <Description>
-        Set <code>Disabled="true"</code> on the <code>BitBhFieldset</code> to
-        disable every form control inside. The fieldset, legend, and all
-        nested fields receive <code>data-disabled</code> for CSS hooks, and
-        the native <code>disabled</code> attribute on the fieldset prevents
-        interaction.
+        Set <code>Disabled="true"</code> on the <code>BitBhFieldset</code> to disable every form control
+        inside. The native <code>disabled</code> attribute on the fieldset prevents interaction, and the
+        fieldset, legend, and all nested fields and controls receive <code>data-disabled</code>: the CSS
+        version styles them with <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhFieldset Disabled="true" class="fieldset">
@@ -142,11 +146,14 @@
 
     <BitBhField class="field">
         <BitBhLabel class="field-label">Country</BitBhLabel>
-        <BitBhSelect name="country" class="field-input field-select">
-            <option>Canada</option>
-            <option>Mexico</option>
-            <option>United States</option>
-        </BitBhSelect>
+        <div class="field-select-wrap">
+            <BitBhSelect name="country" class="field-input field-select">
+                <option>Canada</option>
+                <option>Mexico</option>
+                <option>United States</option>
+            </BitBhSelect>
+            <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </div>
     </BitBhField>
 
     <BitBhField class="field">
@@ -302,6 +309,15 @@
 .field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
 
 .field-select   { appearance: none; padding-right: 2rem; }
+.field-select-wrap { position: relative; }
+.field-select-wrap .field-select { width: 100%; }
+.field-select-chevron {
+    position: absolute; top: 50%; right: 0.625rem;
+    width: 1rem; height: 1rem;
+    translate: 0 -50%;
+    color: #71717a;
+    pointer-events: none;
+}
 .field-textarea { resize: vertical; min-height: 4rem; }
 """;
 
@@ -373,6 +389,15 @@
 .field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
 
 .field-select   { appearance: none; padding-right: 2rem; }
+.field-select-wrap { position: relative; }
+.field-select-wrap .field-select { width: 100%; }
+.field-select-chevron {
+    position: absolute; top: 50%; right: 0.625rem;
+    width: 1rem; height: 1rem;
+    translate: 0 -50%;
+    color: #71717a;
+    pointer-events: none;
+}
 .field-textarea { resize: vertical; min-height: 4rem; }
 
 /* Hooks cascaded from BitBhFieldset Disabled="true" */
@@ -461,6 +486,15 @@
 .field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
 
 .field-select   { appearance: none; padding-right: 2rem; }
+.field-select-wrap { position: relative; }
+.field-select-wrap .field-select { width: 100%; }
+.field-select-chevron {
+    position: absolute; top: 50%; right: 0.625rem;
+    width: 1rem; height: 1rem;
+    translate: 0 -50%;
+    color: #71717a;
+    pointer-events: none;
+}
 .field-textarea { resize: vertical; min-height: 4rem; }
 
 /* Toolbar above the fieldset that toggles the disabled state */
@@ -486,9 +520,9 @@
     color: var(--color-muted);
 }
 
-.fieldset-status[data-active="true"]                    { color: #15803d; }
-.fieldset-status-dot                                    { width: .5rem; height: .5rem; border-radius: 999px; background: #a1a1af; }
-.fieldset-status[data-active="true"] .fieldset-status-dot { background: #22c55e; }
+.fieldset-status[data-active]                      { color: #15803d; }
+.fieldset-status-dot                               { width: .5rem; height: .5rem; border-radius: 999px; background: #a1a1af; }
+.fieldset-status[data-active] .fieldset-status-dot { background: #22c55e; }
 
 /* Enable / Disable button */
 .btn {

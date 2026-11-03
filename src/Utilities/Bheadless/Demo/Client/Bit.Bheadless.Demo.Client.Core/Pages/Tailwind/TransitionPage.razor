@@ -4,12 +4,19 @@
 
 <div class="bb-intro">
     <h1>Transition</h1>
-    <p class="bb-subtitle">CSS class-based enter/leave animations — Tailwind utilities go directly into the Enter/Leave parameters.</p>
-    <SectionSwitcher Slug="transition" />
+    <p class="bb-subtitle">Class-based enter/leave animations with automatic lifecycle management — the <code>Enter*</code> / <code>Leave*</code> parameters take your own CSS classes or Tailwind utilities.</p>
 </div>
 
+<SectionSwitcher Slug="transition" />
+
 <TwDemoBlock Title="Fade" Code="@_fadeCode">
-    <Description>Each <code>Enter*</code> / <code>Leave*</code> parameter is a string of utility classes.</Description>
+    <Description>
+        Toggle the panel. Each <code>Enter*</code> / <code>Leave*</code> parameter is a string of
+        classes. On enter: <code>opacity-0</code> → <code>opacity-100</code>. On leave:
+        <code>opacity-100</code> → <code>opacity-0</code>. The element is unmounted after the
+        leave animation completes. Both versions use the same class names: the CSS version
+        defines them itself, the Tailwind version gets them from Tailwind.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <BitBhButton OnClick="() => showFade = !showFade"
@@ -31,7 +38,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Scale + Fade" Code="@_scaleCode">
-    <Description>Combine opacity and transform.</Description>
+    <Description>
+        Combine opacity and transform for a more dynamic entrance. The
+        <code>Enter</code> / <code>Leave</code> classes set the transition
+        properties and duration; <code>From</code> / <code>To</code> set the
+        start and end states.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <BitBhButton OnClick="() => showScale = !showScale"
@@ -53,7 +65,12 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Slide Down" Code="@_slideCode">
-    <Description>Use Tailwind's arbitrary value syntax for <code>max-h-[…]</code>.</Description>
+    <Description>
+        A slide-down reveal that animates <code>max-height</code> (0 to 10rem) and opacity
+        inside <code>overflow: hidden</code>. Useful for accordion-style content reveals. The CSS
+        version uses its own <code>slide-enter</code> / <code>slide-leave</code> classes, the Tailwind
+        version the <code>max-h-0</code> / <code>max-h-40</code> utilities.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <BitBhButton OnClick="() => showSlide = !showSlide"
@@ -75,7 +92,10 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="With Appear" Code="@_appearCode">
-    <Description><code>Appear="true"</code> runs the enter transition on first mount.</Description>
+    <Description>
+        Set <code>Appear="true"</code> to run the enter transition on initial mount.
+        Without it, elements that start with <code>Show="true"</code> appear instantly.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <BitBhButton OnClick="() => showAppear = !showAppear"
@@ -97,7 +117,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Lifecycle Callbacks" Code="@_callbackCode">
-    <Description>Logic for each phase of the transition.</Description>
+    <Description>
+        Use <code>BeforeEnter</code>, <code>AfterEnter</code>,
+        <code>BeforeLeave</code>, <code>AfterLeave</code> to run logic at
+        each phase of the transition. The log below records each call.
+    </Description>
     <LiveContent>
         <div class="flex flex-col gap-4 items-start">
             <BitBhButton OnClick="() => showCallbacks = !showCallbacks"

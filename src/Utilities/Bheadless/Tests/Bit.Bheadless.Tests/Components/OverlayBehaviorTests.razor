@@ -183,4 +183,28 @@
         cut.WaitForAssertion(() => Assert.IsNull(cut.Find("button").GetAttribute("aria-describedby")));
         cut.ShouldBeAccessible();
     }
+
+    [TestMethod]
+    public void A_tooltip_opens_at_once_while_another_one_of_its_provider_is_still_showing()
+    {
+        // The open one waits a moment for the pointer before it closes: the next trigger must not wait its delay.
+        var cut = Render(
+            @<BitBhTooltipProvider DelayDuration="300">
+                <BitBhTooltip>
+                    <BitBhTooltipTrigger>Save</BitBhTooltipTrigger>
+                    <BitBhTooltipContent>Save changes</BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip>
+                    <BitBhTooltipTrigger>Edit</BitBhTooltipTrigger>
+                    <BitBhTooltipContent>Edit the page</BitBhTooltipContent>
+                </BitBhTooltip>
+            </BitBhTooltipProvider>);
+
+        cut.FindAll("button")[0].PointerEnter();
+        cut.WaitForAssertion(() => Assert.AreEqual("delayed-open", cut.FindAll("[role=tooltip]")[0].GetAttribute("data-state")), TimeSpan.FromSeconds(3));
+
+        cut.FindAll("button")[0].PointerLeave();
+        cut.FindAll("button")[1].PointerEnter();
+        cut.WaitForAssertion(() => Assert.AreEqual("instant-open", cut.FindAll("[role=tooltip]")[1].GetAttribute("data-state")), TimeSpan.FromSeconds(3));
+    }
 }

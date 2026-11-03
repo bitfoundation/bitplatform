@@ -7,8 +7,9 @@
 <div class="bb-intro">
     <h1>Toast</h1>
     <p class="bb-subtitle">Short, non-blocking notifications — queued from anywhere, announced to screen readers, dismissed automatically.</p>
-    <SectionSwitcher Slug="toast" />
 </div>
+
+<SectionSwitcher Slug="toast" />
 
 <DemoBlock Title="Simple toast"
            Code="@_simpleCode"
@@ -19,7 +20,10 @@
         <code>role="region"</code> landmark labelled "Notifications (F8)"; press <code>F8</code>
         to jump to it. Every toast is announced through the shared live region, auto-dismisses
         after the viewport's <code>Duration</code> (paused while hovered or focused) and closes
-        with <code>Escape</code> or a <code>BitBhToastClose</code>.
+        with <code>Escape</code> or a <code>BitBhToastClose</code>. Toasts emit
+        <code>data-state="open|closed"</code> and the exit animation is awaited before removal: the CSS
+        version animates them with keyframes on <code>[data-state]</code>, the Tailwind version with
+        <code>starting:</code> and <code>data-state-closed:</code> transitions.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowSimple" class="btn">Show toast</BitBhButton>
@@ -32,7 +36,8 @@
     <Description>
         Pass a description and render it with <code>BitBhToastDescription</code>. Title and
         description are announced together ("Changes saved. Your profile is now visible…").
-        <code>Data</code> carries anything your template needs — here a variant that picks the icon.
+        <code>Data</code> carries anything your template needs — here a variant that picks the icon
+        and is set as <code>data-variant</code> on the toast.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowWithDescription" class="btn btn-primary">Save profile</BitBhButton>
@@ -79,7 +84,8 @@
     <Description>
         Toasts are background (<code>role="status"</code>, announced politely) by default. Set
         <code>Foreground = true</code> for the direct result of a user action that needs attention:
-        it is announced assertively and the toast gets <code>data-type="foreground"</code>.
+        it is announced assertively (<code>role="alert"</code>) and the toast gets
+        <code>data-type="foreground"</code>.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="ShowError" class="btn">Pay $49.00</BitBhButton>
@@ -111,8 +117,10 @@
         <code>BitBhToaster.Limit</code> (default 5) caps how many toasts are kept — the oldest is
         dropped when a new one arrives. This demo creates its own toaster with
         <code>Limit = 3</code> and renders it in a second viewport (passed through
-        <code>Toaster</code>, bottom-left, <code>Shift+F8</code>) styled as a stack that fans out
-        on hover or keyboard focus.
+        <code>Toaster</code>, bottom-left, <code>Shift+F8</code>) styled as a stack: the toasts overlap
+        in one grid cell and fan out on hover or keyboard focus. The CSS version offsets the older
+        toasts with <code>:nth-last-child</code>; the Tailwind version picks per-depth utilities from
+        each toast's position in <code>Toasts</code>.
     </Description>
     <LiveContent>
         <div class="toast-demo-row">
@@ -530,7 +538,13 @@
     outline: none;
 }
 
+/* On a phone both toasters span the screen: this one moves to the top, clear of the main one. */
+@media (max-width: 48rem) {
+    .toast-stack { top: 1rem; bottom: auto; }
+}
+
 .toast-stack > .toast {
+    position: relative;
     grid-area: 1 / 1;
     align-self: end;
     transform-origin: bottom center;
@@ -544,6 +558,6 @@
 .toast-stack:focus-within { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .toast-stack:hover > .toast,
-.toast-stack:focus-within > .toast { transform: none; opacity: 1; }
+.toast-stack:focus-within > .toast { align-self: stretch; transform: none; opacity: 1; }
 """;
 }

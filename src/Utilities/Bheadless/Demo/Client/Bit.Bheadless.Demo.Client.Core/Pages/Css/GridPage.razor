@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Grid / TreeGrid</h1>
     <p class="bb-subtitle">An interactive two-dimensional widget — data tables, spreadsheets-lite, file trees with columns, calendars — with roving cell focus, row selection, sorting and expandable rows.</p>
-    <SectionSwitcher Slug="grid" />
 </div>
+
+<SectionSwitcher Slug="grid" />
 
 <DemoBlock Title="Sortable data grid"
            Code="@_sortCode"
@@ -17,7 +18,9 @@
         The grid is a single tab stop: arrow keys move between cells, Home / End jump to the ends of the row,
         Ctrl + Home / End to the corners, PageUp / PageDown move by <code>PageSize</code> rows. Column headers are
         cells too — click one or press Enter on it and its <code>OnActivate</code> toggles the sort, which
-        <code>Sort</code> announces as <code>aria-sort</code>.
+        <code>Sort</code> announces as <code>aria-sort</code>. The ▲ indicator turns with it: the CSS version
+        uses a <code>th[aria-sort="descending"]</code> selector, the Tailwind version
+        <code>group-aria-[sort=descending]:rotate-180</code>.
     </Description>
     <LiveContent>
         <div class="datagrid-demo">
@@ -67,8 +70,9 @@
         <code>SelectionMode="BitBhGridSelectionMode.Multiple"</code> with <code>@@bind-SelectedKeys</code> (every
         data row needs a <code>Key</code>). Click toggles a row and Shift + click selects a range; Space toggles
         the focused row, Shift + Space or Shift + Up / Down extend the selection, Ctrl + A selects every row.
-        Rows get <code>aria-selected</code>, so the check boxes are pure CSS; the header box uses
-        <code>OnActivate</code> to select or clear everything.
+        Rows get <code>aria-selected</code>, so the check boxes are pure styling: the CSS version uses a
+        <code>tr[aria-selected="true"]</code> selector, the Tailwind version <code>group-aria-selected:</code>.
+        The header box uses <code>OnActivate</code> to select or clear everything.
     </Description>
     <LiveContent>
         <div class="datagrid-demo">
@@ -123,6 +127,8 @@
         <code>OnRowActivate</code> fires with the row's <code>Key</code> when the user presses Enter on any of its
         cells or double-clicks it — open a message, navigate to a record, start editing. Here
         <code>BitBhGridSelectionMode.Single</code> marks the current row, and opening a message marks it as read.
+        Unread rows carry a <code>data-unread</code> attribute set by the page: the CSS version bolds them with a
+        <code>tr[data-unread]</code> selector, the Tailwind version with <code>data-[unread]:font-semibold</code>.
     </Description>
     <LiveContent>
         <div class="datagrid-demo">
@@ -175,8 +181,11 @@
         <code>HasChildren</code> and <code>ParentKey</code>: rows under a collapsed folder get the
         <code>hidden</code> attribute and are skipped by the keyboard. On a row's first cell, Right expands it
         (then moves into the row) and Left collapses it (then jumps to the parent row). The chevron is a
-        <code>BitBhGridRowToggle</code>: a mouse shortcut, hidden from assistive tech, that toggles the row (synced through <code>@@bind-ExpandedKeys</code>); indentation comes from the
-        <code>--bit-bh-grid-level</code> variable on each row.
+        <code>BitBhGridRowToggle</code>: a mouse shortcut, hidden from assistive tech, that toggles the row
+        (synced through <code>@@bind-ExpandedKeys</code>); indentation comes from the
+        <code>--bit-bh-grid-level</code> variable on each row. Rows emit <code>data-state="open|closed"</code>:
+        the CSS version rotates the chevron with a <code>tr[data-state="open"]</code> selector, the Tailwind
+        version with <code>group-data-[state=open]:rotate-90</code>.
     </Description>
     <LiveContent>
         <div class="datagrid-demo">
@@ -231,10 +240,11 @@
     <Description>
         <code>BitBhGrid</code>, <code>BitBhGridRowGroup</code>, <code>BitBhGridRow</code> and <code>BitBhGridCell</code> render
         <code>&lt;div&gt;</code>s with <code>role="grid"</code> / <code>"rowgroup"</code> / <code>"row"</code> /
-        <code>"gridcell"</code> by default, so any layout works — here each row is a 7-column CSS grid. Arrow keys
-        move by day and week, Home / End go to the start / end of the week, and Enter or a click picks a date
-        through each cell's <code>OnActivate</code>. <code>aria-selected</code>, <code>aria-current</code> and
-        <code>aria-disabled</code> on the cells are plain attributes set by the page.
+        <code>"gridcell"</code> by default, so any layout works — here each row is a 7-column CSS grid
+        (<code>grid-template-columns</code> in the CSS version, <code>grid-cols-[repeat(7,2.25rem)]</code> in the
+        Tailwind version). Left / Right move by day within a week, Up / Down by week (a grid does not wrap from one row to the next), Home / End go to the start / end of the week, and
+        Enter or a click picks a date through each cell's <code>OnActivate</code>. <code>aria-selected</code>,
+        <code>aria-current</code> and <code>aria-disabled</code> on the cells are plain attributes set by the page.
     </Description>
     <LiveContent>
         <div class="datagrid-demo">

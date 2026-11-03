@@ -6,71 +6,95 @@
 <div class="bb-intro">
     <h1>Field / Input</h1>
     <p class="bb-subtitle">Form primitives with auto-wired ARIA labels, descriptions, and validation state.</p>
-    <SectionSwitcher Slug="field" />
 </div>
+
+<SectionSwitcher Slug="field" />
 
 <TwDemoBlock Title="Basic Field" Code="@_basicCode">
     <Description>
-        <code>BitBhField</code> auto-wires <code>for</code>, <code>id</code>, and <code>aria-describedby</code>.
+        Wrap a label, input, and description in a <code>BitBhField</code>. The label's
+        <code>for</code>, the input's <code>id</code>, and the description's
+        <code>aria-describedby</code> are all wired automatically — no manual id management.
     </Description>
     <LiveContent>
         <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
             <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
             <BitBhInput type="email" placeholder="you@example.com"
-                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
             <BitBhDescription class="m-0 text-xs text-zinc-500">We'll never share your email.</BitBhDescription>
         </BitBhField>
     </LiveContent>
 </TwDemoBlock>
 
 <TwDemoBlock Title="Textarea" Code="@_textareaCode">
-    <Description><code>BitBhTextarea</code> works identically.</Description>
+    <Description>
+        <code>BitBhTextarea</code> works identically to <code>BitBhInput</code> — same ARIA
+        wiring, same data attributes. Standard HTML attributes like <code>rows</code>
+        pass through.
+    </Description>
     <LiveContent>
         <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
             <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
-            <BitBhTextarea rows="3" placeholder="Tell us about yourself…"
-                        class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
+            <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…"
+                        class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
             <BitBhDescription class="m-0 text-xs text-zinc-500">Max 280 characters.</BitBhDescription>
         </BitBhField>
     </LiveContent>
 </TwDemoBlock>
 
 <TwDemoBlock Title="Select" Code="@_selectCode">
-    <Description><code>BitBhSelect</code> renders a native select with the same ARIA wiring.</Description>
+    <Description>
+        <code>BitBhSelect</code> renders a native <code>&lt;select&gt;</code> with the same
+        auto-wired ARIA. Place <code>&lt;option&gt;</code> elements inside.
+    </Description>
     <LiveContent>
         <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
             <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
-            <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed appearance-none pr-8">
-                <option value="">Choose…</option>
-                <option value="us">United States</option>
-                <option value="gb">United Kingdom</option>
-                <option value="fr">France</option>
-                <option value="de">Germany</option>
-            </BitBhSelect>
+            <div class="relative">
+                <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed w-full appearance-none pr-8">
+                    <option value="">Choose…</option>
+                    <option value="us">United States</option>
+                    <option value="gb">United Kingdom</option>
+                    <option value="fr">France</option>
+                    <option value="de">Germany</option>
+                </BitBhSelect>
+                <svg aria-hidden="true" viewBox="0 0 16 16" class="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-zinc-500"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
             <BitBhDescription class="m-0 text-xs text-zinc-500">Where you're based.</BitBhDescription>
         </BitBhField>
     </LiveContent>
 </TwDemoBlock>
 
 <TwDemoBlock Title="Disabled Field" Code="@_disabledCode">
-    <Description><code>data-disabled:</code> cascades to label and input.</Description>
+    <Description>
+        Set <code>Disabled="true"</code> on the <code>BitBhField</code> to disable all
+        children at once. The field, label, and input all receive <code>data-disabled</code>:
+        the CSS version styles them with <code>[data-disabled]</code> selectors, the Tailwind
+        version with the <code>data-disabled:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhField Disabled="true" class="flex w-full max-w-sm flex-col gap-1.5">
             <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
             <BitBhInput type="text" value="alice"
-                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
+                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
             <BitBhDescription class="m-0 text-xs text-zinc-500">Cannot be changed.</BitBhDescription>
         </BitBhField>
     </LiveContent>
 </TwDemoBlock>
 
 <TwDemoBlock Title="Invalid Field" Code="@_invalidCode">
-    <Description>The <code>aria-invalid:</code> Tailwind variant lets you style invalid fields without a custom selector.</Description>
+    <Description>
+        Set <code>Invalid="true"</code> on the <code>BitBhField</code> to mark the input
+        as invalid. The input receives <code>aria-invalid="true"</code> and
+        <code>data-invalid</code>. Use the description to show an error message. The CSS version
+        styles the input with a <code>[data-invalid]</code> selector, the Tailwind version with
+        Tailwind's built-in <code>aria-invalid:</code> variant.
+    </Description>
     <LiveContent>
         <BitBhField Invalid="true" class="flex w-full max-w-sm flex-col gap-1.5">
             <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Password</BitBhLabel>
             <BitBhInput type="password" value="123"
-                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
             <BitBhDescription class="m-0 text-xs text-red-600">
                 Password must be at least 8 characters.
             </BitBhDescription>
@@ -79,23 +103,26 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Multiple Fields (form layout)" Code="@_formCode">
-    <Description>Each <code>BitBhField</code> manages its own id namespace.</Description>
+    <Description>
+        Compose multiple <code>BitBhField</code> components into a form. Each field
+        manages its own id namespace — no collisions.
+    </Description>
     <LiveContent>
         <form class="flex w-full max-w-sm flex-col gap-4" @onsubmit:preventDefault>
             <BitBhField class="flex w-full flex-col gap-1.5">
                 <BitBhLabel class="text-sm font-semibold text-zinc-900">First name</BitBhLabel>
                 <BitBhInput type="text" placeholder="Alice"
-                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
             </BitBhField>
             <BitBhField class="flex w-full flex-col gap-1.5">
                 <BitBhLabel class="text-sm font-semibold text-zinc-900">Last name</BitBhLabel>
                 <BitBhInput type="text" placeholder="Anderson"
-                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
             </BitBhField>
             <BitBhField class="flex w-full flex-col gap-1.5">
                 <BitBhLabel class="text-sm font-semibold text-zinc-900">Email</BitBhLabel>
                 <BitBhInput type="email" placeholder="alice@example.com"
-                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
                 <BitBhDescription class="m-0 text-xs text-zinc-500">Your work email.</BitBhDescription>
             </BitBhField>
             <BitBhButton Type="submit"
@@ -108,9 +135,17 @@
 
 <TwDemoBlock Title="EditForm validation" Code="@_editFormCode">
     <Description>
-        Inside an <code>EditForm</code> with <code>DataAnnotationsValidator</code>, controls bound with <code>@@bind-Value</code> / <code>@@bind-Checked</code>
-        get <code>aria-invalid</code> (style with <code>aria-invalid:</code> / <code>data-invalid:</code>), and <code>BitBhErrorMessage</code> is wired into their <code>aria-describedby</code> automatically.
-        The radio group is labelled via <code>aria-labelledby</code> and focused by a label click. Plain child content means no <code>Context</code> clashes inside the form. Submit empty to see it.
+        Inside an <code>EditForm</code> with <code>DataAnnotationsValidator</code>, every control bound
+        with <code>@@bind-Value</code> / <code>@@bind-Checked</code> reports its validation state to its
+        <code>BitBhField</code>: the control gets <code>aria-invalid="true"</code> and
+        <code>data-invalid</code>, and <code>BitBhErrorMessage</code> appears with the messages and is
+        added to the control's <code>aria-describedby</code> — no ids to wire. Non-native controls work
+        too: the radio group is named by its <code>BitBhLabel</code> via <code>aria-labelledby</code>, and
+        clicking the label focuses the group. Because these components take plain child content, they
+        nest inside <code>EditForm</code> without <code>Context</code> clashes. Submit empty to see it.
+        The CSS version styles the invalid state with <code>[data-invalid]</code> /
+        <code>[aria-invalid]</code> selectors, the Tailwind version with the <code>data-invalid:</code> /
+        <code>aria-invalid:</code> variants.
     </Description>
     <LiveContent>
         <EditForm Model="signup" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="() => signupResult = null"
@@ -120,7 +155,7 @@
             <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
                 <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Full name</BitBhLabel>
                 <BitBhInput @bind-Value="signup.Name" autocomplete="name"
-                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
                 <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
             </BitBhField>
 
@@ -128,20 +163,20 @@
                 <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Email</BitBhLabel>
                 <BitBhDescription class="m-0 text-xs text-zinc-500">We'll send the receipt here.</BitBhDescription>
                 <BitBhInput type="email" @bind-Value="signup.Email" autocomplete="email"
-                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
                 <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
             </BitBhField>
 
             <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
                 <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Plan</BitBhLabel>
                 <BitBhRadioGroup @bind-Value="signup.Plan" Vertical="false" class="group/radios flex flex-wrap gap-2">
-                    <BitBhRadio Value="Free" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <BitBhRadio Value="Free" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                         <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Free
                     </BitBhRadio>
-                    <BitBhRadio Value="Pro" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <BitBhRadio Value="Pro" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                         <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Pro
                     </BitBhRadio>
-                    <BitBhRadio Value="Team" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <BitBhRadio Value="Team" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                         <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Team
                     </BitBhRadio>
                 </BitBhRadioGroup>
@@ -151,7 +186,7 @@
             <BitBhField class="flex w-full flex-col gap-1.5">
                 <div class="flex items-center gap-2">
                     <BitBhCheckbox @bind-Checked="signup.AcceptTerms"
-                                class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
+                                class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-500 bg-white text-white cursor-pointer transition-colors hover:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
                         <BitBhCheckboxIndicator class="text-sm leading-none">✓</BitBhCheckboxIndicator>
                     </BitBhCheckbox>
                     <BitBhLabel class="text-sm text-zinc-900 cursor-pointer">I accept the terms of service</BitBhLabel>
@@ -216,7 +251,7 @@
     <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
         <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Full name</BitBhLabel>
         <BitBhInput @bind-Value="signup.Name" autocomplete="name"
-                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
         @* Only rendered while invalid; referenced by the input's aria-describedby *@
         <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
     </BitBhField>
@@ -245,7 +280,7 @@
     <BitBhField class="flex w-full flex-col gap-1.5">
         <div class="flex items-center gap-2">
             <BitBhCheckbox @bind-Checked="signup.AcceptTerms"
-                        class="inline-flex h-[1.15rem] w-[1.15rem] items-center justify-center rounded border border-zinc-300 bg-white text-white data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
+                        class="inline-flex h-[1.15rem] w-[1.15rem] items-center justify-center rounded border border-zinc-500 bg-white text-white data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
                 <BitBhCheckboxIndicator class="text-sm leading-none">✓</BitBhCheckboxIndicator>
             </BitBhCheckbox>
             <BitBhLabel class="text-sm cursor-pointer">I accept the terms of service</BitBhLabel>
@@ -287,7 +322,7 @@
 <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
     <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
     <BitBhInput type="email" placeholder="you@example.com"
-             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
     <BitBhDescription class="m-0 text-xs text-zinc-500">We'll never share your email.</BitBhDescription>
 </BitBhField>
 """;
@@ -295,8 +330,8 @@
     private const string _textareaCode = """
 <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
     <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
-    <BitBhTextarea rows="3" placeholder="Tell us about yourself…"
-                class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
+    <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…"
+                class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
     <BitBhDescription class="m-0 text-xs text-zinc-500">Max 280 characters.</BitBhDescription>
 </BitBhField>
 """;
@@ -304,13 +339,16 @@
     private const string _selectCode = """
 <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
     <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
-    <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed appearance-none pr-8">
-        <option value="">Choose…</option>
-        <option value="us">United States</option>
-        <option value="gb">United Kingdom</option>
-        <option value="fr">France</option>
-        <option value="de">Germany</option>
-    </BitBhSelect>
+    <div class="relative">
+        <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed w-full appearance-none pr-8">
+            <option value="">Choose…</option>
+            <option value="us">United States</option>
+            <option value="gb">United Kingdom</option>
+            <option value="fr">France</option>
+            <option value="de">Germany</option>
+        </BitBhSelect>
+        <svg aria-hidden="true" viewBox="0 0 16 16" class="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-zinc-500"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </div>
     <BitBhDescription class="m-0 text-xs text-zinc-500">Where you're based.</BitBhDescription>
 </BitBhField>
 """;
@@ -319,7 +357,7 @@
 <BitBhField Disabled="true" class="flex w-full max-w-sm flex-col gap-1.5">
     <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
     <BitBhInput type="text" value="alice"
-             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
     <BitBhDescription class="m-0 text-xs text-zinc-500">Cannot be changed.</BitBhDescription>
 </BitBhField>
 """;
@@ -328,7 +366,7 @@
 <BitBhField Invalid="true" class="flex w-full max-w-sm flex-col gap-1.5">
     <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Password</BitBhLabel>
     <BitBhInput type="password" value="123"
-             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
     <BitBhDescription class="m-0 text-xs text-red-600">
         Password must be at least 8 characters.
     </BitBhDescription>
@@ -340,17 +378,17 @@
     <BitBhField class="flex w-full flex-col gap-1.5">
         <BitBhLabel class="text-sm font-semibold text-zinc-900">First name</BitBhLabel>
         <BitBhInput type="text" placeholder="Alice"
-                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
     </BitBhField>
     <BitBhField class="flex w-full flex-col gap-1.5">
         <BitBhLabel class="text-sm font-semibold text-zinc-900">Last name</BitBhLabel>
         <BitBhInput type="text" placeholder="Anderson"
-                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
     </BitBhField>
     <BitBhField class="flex w-full flex-col gap-1.5">
         <BitBhLabel class="text-sm font-semibold text-zinc-900">Email</BitBhLabel>
         <BitBhInput type="email" placeholder="alice@example.com"
-                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
         <BitBhDescription class="m-0 text-xs text-zinc-500">Your work email.</BitBhDescription>
     </BitBhField>
     <BitBhButton Type="submit"

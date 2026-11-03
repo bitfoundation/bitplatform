@@ -5,12 +5,14 @@
 <div class="bb-intro">
     <h1>Button</h1>
     <p class="bb-subtitle">A polymorphic, accessible button primitive with loading and disabled states.</p>
-    <SectionSwitcher Slug="button" />
 </div>
+
+<SectionSwitcher Slug="button" />
 
 <TwDemoBlock Title="Basic Button" Code="@_basicCode">
     <Description>
-        Renders a native <code>&lt;button&gt;</code> with no styling. All visuals come from Tailwind utility classes.
+        Renders a native <code>&lt;button&gt;</code> with no styling. All visuals come from
+        your own classes.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="HandleBasicClick"
@@ -23,7 +25,9 @@
 
 <TwDemoBlock Title="Disabled State" Code="@_disabledCode">
     <Description>
-        Sets the native <code>disabled</code> attribute and emits <code>data-disabled</code>. The <code>data-disabled:</code> variant styles the disabled look.
+        Sets the native <code>disabled</code> attribute and emits <code>data-disabled</code> for
+        styling. The CSS version styles it with a <code>[data-disabled]</code> selector, the
+        Tailwind version with the <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhButton Disabled="true" OnClick="HandleBasicClick"
@@ -35,7 +39,10 @@
 
 <TwDemoBlock Title="Loading State with Context" Code="@_loadingCode">
     <Description>
-        Uses <code>RenderFragment&lt;BitBhButtonContext&gt;</code> to drive a spinner from the button's own state.
+        Uses <code>RenderFragment&lt;BitBhButtonContext&gt;</code> so you can conditionally render
+        a spinner driven by the button's own state. While loading, the button emits
+        <code>data-loading</code>: the CSS version styles it with a <code>[data-loading]</code>
+        selector, the Tailwind version with the <code>data-loading:</code> variant.
     </Description>
     <LiveContent>
         <BitBhButton Loading="@isLoading" OnClick="HandleLoadingClick"
@@ -57,17 +64,20 @@
 
 <TwDemoBlock Title="Polymorphic Rendering" Code="@_polymorphicCode">
     <Description>
-        Set <code>As="a"</code> to render as an anchor while keeping all button semantics. Non-native elements receive <code>role="button"</code>, <code>tabindex="0"</code>, and Enter/Space handling.
+        Set <code>As="a"</code> to render as an anchor while retaining all button semantics.
+        Non-native elements automatically receive <code>role="button"</code>, <code>tabindex="0"</code>,
+        and Enter/Space keyboard handling.
     </Description>
     <LiveContent>
         <BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank"
                   class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-blue-600 underline underline-offset-2 transition-colors hover:bg-blue-50 hover:text-blue-700">
             I'm actually an &lt;a&gt; tag
         </BitBhButton>
-        <BitBhButton As="span" OnClick="HandleBasicClick"
+        <BitBhButton As="span" OnClick="() => spanClickCount++"
                   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100">
             I'm a &lt;span&gt; with role="button"
         </BitBhButton>
+        <span class="text-sm text-zinc-500">Clicked @spanClickCount times</span>
     </LiveContent>
 </TwDemoBlock>
 
@@ -88,7 +98,10 @@
 
 <TwDemoBlock Title="Styled via Data Attributes" Code="@_dataAttrCode">
     <Description>
-        Style entirely via the registered <code>data-disabled:</code> and <code>data-loading:</code> variants — no component API for visuals.
+        Style entirely from the <code>data-disabled</code> and <code>data-loading</code> attributes
+        the button emits. No component API for colors, sizes, or variants — that's your domain.
+        The CSS version uses <code>[data-*]</code> attribute selectors, the Tailwind version the
+        registered <code>data-disabled:</code> and <code>data-loading:</code> variants.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="HandleBasicClick"
@@ -108,6 +121,7 @@
 
 @code {
     private int basicClickCount;
+    private int spanClickCount;
     private bool isLoading;
     private bool isPressed;
 
@@ -176,14 +190,14 @@
     I'm actually an <a> tag
 </BitBhButton>
 
-<BitBhButton As="span" OnClick="HandleBasicClick"
+<BitBhButton As="span" OnClick="() => spanClickCount++"
           class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100">
     I'm a <span> with role="button"
 </BitBhButton>
+<span class="text-sm text-zinc-500">Clicked @spanClickCount times</span>
 
 @code {
-    private int basicClickCount;
-    private void HandleBasicClick() => basicClickCount++;
+    private int spanClickCount;
 }
 """;
 

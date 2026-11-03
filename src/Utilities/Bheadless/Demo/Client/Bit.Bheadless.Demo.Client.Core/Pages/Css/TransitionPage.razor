@@ -4,17 +4,20 @@
 
 <div class="bb-intro">
     <h1>Transition</h1>
-    <p class="bb-subtitle">CSS class-based enter/leave animations with automatic lifecycle management.</p>
-    <SectionSwitcher Slug="transition" />
+    <p class="bb-subtitle">Class-based enter/leave animations with automatic lifecycle management — the <code>Enter*</code> / <code>Leave*</code> parameters take your own CSS classes or Tailwind utilities.</p>
 </div>
+
+<SectionSwitcher Slug="transition" />
 
 <DemoBlock Title="Fade"
            Code="@_fadeCode"
            Css="@_fadeCss">
     <Description>
-        Toggle the panel. On enter: <code>opacity-0</code> → <code>opacity-100</code>.
-        On leave: <code>opacity-100</code> → <code>opacity-0</code>. The element is
-        unmounted after the leave animation completes.
+        Toggle the panel. Each <code>Enter*</code> / <code>Leave*</code> parameter is a string of
+        classes. On enter: <code>opacity-0</code> → <code>opacity-100</code>. On leave:
+        <code>opacity-100</code> → <code>opacity-0</code>. The element is unmounted after the
+        leave animation completes. Both versions use the same class names: the CSS version
+        defines them itself, the Tailwind version gets them from Tailwind.
     </Description>
     <LiveContent>
         <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
@@ -69,8 +72,10 @@
            Code="@_slideCode"
            Css="@_slideCss">
     <Description>
-        A slide-down reveal using <code>max-height</code> and <code>overflow: hidden</code>.
-        Useful for accordion-style content reveals.
+        A slide-down reveal that animates <code>max-height</code> (0 to 10rem) and opacity
+        inside <code>overflow: hidden</code>. Useful for accordion-style content reveals. The CSS
+        version uses its own <code>slide-enter</code> / <code>slide-leave</code> classes, the Tailwind
+        version the <code>max-h-0</code> / <code>max-h-40</code> utilities.
     </Description>
     <LiveContent>
         <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
@@ -126,7 +131,7 @@
     <Description>
         Use <code>BeforeEnter</code>, <code>AfterEnter</code>,
         <code>BeforeLeave</code>, <code>AfterLeave</code> to run logic at
-        each phase of the transition.
+        each phase of the transition. The log below records each call.
     </Description>
     <LiveContent>
         <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
@@ -251,8 +256,8 @@
 .ease-in        { transition-timing-function: ease-in; }
 .opacity-0      { opacity: 0; }
 .opacity-100    { opacity: 1; }
-.scale-95       { transform: scale(0.95); }
-.scale-100      { transform: scale(1); }
+.scale-95       { scale: 0.95; }
+.scale-100      { scale: 1; }
 """;
 
     private const string _slideCss = """
@@ -275,8 +280,8 @@
 .ease-in        { transition-timing-function: ease-in; }
 .opacity-0      { opacity: 0; }
 .opacity-100    { opacity: 1; }
-.translate-y-4  { transform: translateY(1rem); }
-.translate-y-0  { transform: translateY(0); }
+.translate-y-4  { translate: 0 1rem; }
+.translate-y-0  { translate: 0 0; }
 """;
 
     private const string _callbackCss = """

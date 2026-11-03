@@ -4,9 +4,10 @@
 
 <div class="bb-intro">
     <h1>Slider</h1>
-    <p class="bb-subtitle">Pick a value — or a range with several thumbs — within a minimum and maximum, by pointer or keyboard.</p>
-    <SectionSwitcher Slug="slider" />
+    <p class="bb-subtitle">Pick a value — or a range with several thumbs — within a minimum and maximum, by pointer or keyboard. Thumbs and the range receive their positioning inline; you size and color the parts.</p>
 </div>
+
+<SectionSwitcher Slug="slider" />
 
 <DemoBlock Title="Single value"
            Code="@_singleCode"
@@ -14,9 +15,11 @@
     <Description>
         Follows the WAI-ARIA Slider pattern: each <code>BitBhSliderThumb</code> is a
         <code>role="slider"</code> with <code>aria-valuenow</code>/<code>min</code>/<code>max</code>.
-        Click or drag anywhere on the track, or focus the thumb and use the arrow keys (± <code>Step</code>),
-        <kbd>PageUp</kbd> / <kbd>PageDown</kbd> or <kbd>Shift</kbd>+arrows (± <code>LargeStep</code>) and
-        <kbd>Home</kbd> / <kbd>End</kbd>.
+        Click or drag anywhere on the track, or focus the thumb and use the arrow keys (±
+        <code>Step</code>), <kbd>PageUp</kbd> / <kbd>PageDown</kbd> or <kbd>Shift</kbd>+arrows (±
+        <code>LargeStep</code>) and <kbd>Home</kbd> / <kbd>End</kbd>. The root's default layout styles
+        only apply when it has no <code>class</code> or <code>style</code>, so a styled root needs
+        <code>position: relative</code> itself — the thumbs are positioned against it.
     </Description>
     <LiveContent>
         <div class="slider-demo">
@@ -86,10 +89,12 @@
            Code="@_verticalCode"
            Css="@_verticalCss">
     <Description>
-        <code>Orientation="BitBhOrientation.Vertical"</code> measures the pointer along the height and sets
-        <code>aria-orientation</code>; <kbd>↑</kbd> / <kbd>→</kbd> increase, <kbd>↓</kbd> / <kbd>←</kbd>
-        decrease. Each band is uncontrolled via <code>DefaultValue</code>, with a negative
-        <code>Min</code>.
+        <code>Orientation="BitBhOrientation.Vertical"</code> measures the pointer along the height and
+        sets <code>aria-orientation</code>; <kbd>↑</kbd> / <kbd>→</kbd> increase, <kbd>↓</kbd> /
+        <kbd>←</kbd> decrease. Each band is uncontrolled via <code>DefaultValue</code>, with a negative
+        <code>Min</code>. The styles lay the root out as a column and center the thumb across the track:
+        the CSS version keys them off <code>[data-orientation="vertical"]</code>, the Tailwind version
+        applies <code>flex-col</code> and <code>left-1/2 -ml-2.5</code> directly.
     </Description>
     <LiveContent>
         <div class="slider-eq">
@@ -146,7 +151,9 @@
     <Description>
         <code>Disabled="true"</code> ignores pointer and keys, takes the thumbs out of the tab order
         (<code>tabindex="-1"</code>, <code>aria-disabled="true"</code>) and adds
-        <code>data-disabled</code> to every part. The range below is uncontrolled via
+        <code>data-disabled</code> to every part: the CSS version styles them with
+        <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant. The range below is uncontrolled via
         <code>DefaultValues</code>.
     </Description>
     <LiveContent>

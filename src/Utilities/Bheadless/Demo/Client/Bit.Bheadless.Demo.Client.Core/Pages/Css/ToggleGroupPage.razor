@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Toggle / Toggle Group</h1>
     <p class="bb-subtitle">Two-state buttons on their own, or grouped for formatting, alignment and view switchers.</p>
-    <SectionSwitcher Slug="toggle-group" />
 </div>
+
+<SectionSwitcher Slug="toggle-group" />
 
 <DemoBlock Title="Toggle button"
            Code="@_toggleCode"
@@ -15,7 +16,10 @@
         <code>BitBhToggle</code> is the APG Button pattern's toggle variant: a native
         <code>&lt;button&gt;</code> with <code>aria-pressed</code> and <code>data-state="on|off"</code>.
         <kbd>Space</kbd> / <kbd>Enter</kbd> or a click flips it. Use <code>@@bind-Pressed</code>,
-        <code>DefaultPressed</code> for uncontrolled use, and <code>Disabled</code>.
+        <code>DefaultPressed</code> for uncontrolled use, and <code>Disabled</code>. Either attribute
+        can drive the pressed look: the CSS version styles it with <code>[data-state="on"]</code> and
+        <code>[data-disabled]</code> selectors, the Tailwind version with the <code>aria-pressed:</code>
+        and <code>disabled:</code> variants.
     </Description>
     <LiveContent>
         <div class="toggle-row">
@@ -83,10 +87,11 @@
            Code="@_singleCode"
            Css="@_singleCss">
     <Description>
-        The default <code>Type="BitBhToggleGroupType.Single"</code> behaves like a radio group
-        (<code>role="radiogroup"</code> of <code>role="radio"</code> items with <code>aria-checked</code>);
-        the pressed item is the tab stop. Clicking the pressed item normally clears the value —
-        <code>AllowEmpty="false"</code> keeps one alignment selected at all times.
+        In the default <code>Type="BitBhToggleGroupType.Single"</code> one item is pressed at a time,
+        and clicking the pressed item clears the value. <code>AllowEmpty="false"</code> keeps one
+        alignment selected at all times, which makes the group a radio group: a
+        <code>role="radiogroup"</code> of <code>role="radio"</code> items with
+        <code>aria-checked</code>, where the pressed item is the tab stop.
     </Description>
     <LiveContent>
         <div class="toggle-demo">
@@ -117,10 +122,12 @@
            Code="@_verticalCode"
            Css="@_verticalCss">
     <Description>
-        <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to
-        <kbd>↑</kbd> / <kbd>↓</kbd> and sets <code>data-orientation="vertical"</code> for styling.
-        This group is uncontrolled (<code>DefaultValue</code>) and each item's <code>Template</code>
-        receives its pressed state to draw a check mark.
+        <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to <kbd>↑</kbd> /
+        <kbd>↓</kbd> and sets <code>data-orientation="vertical"</code> for styling: the CSS version
+        styles it with a <code>[data-orientation="vertical"]</code> selector, the Tailwind version with
+        the <code>data-orientation-vertical:</code> variant. This group is uncontrolled
+        (<code>DefaultValue</code>) and each item's <code>Template</code> receives its pressed state to
+        draw a check mark.
     </Description>
     <LiveContent>
         <BitBhToggleGroup Orientation="BitBhRovingOrientation.Vertical" DefaultValue="week"
@@ -143,7 +150,10 @@
            Css="@_disabledCss">
     <Description>
         <code>Disabled="true"</code> on an item renders the native <code>disabled</code> attribute and
-        <code>data-disabled</code>; arrow keys skip it. On the group it disables every item.
+        <code>data-disabled</code>; arrow keys skip it. On the group it disables every item, and the
+        group gets <code>data-disabled</code> too. The CSS version styles them with
+        <code>[data-disabled]</code> selectors, the Tailwind version with the
+        <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <div class="toggle-demo">
@@ -455,6 +465,7 @@
 /* Hooks emitted for disabled items / groups */
 .toggle-group[data-disabled]      { opacity: 0.6; }
 .toggle-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+.toggle-group[data-disabled] .toggle-item[data-disabled] { opacity: 1; }
 
 .toggle-demo { display: grid; gap: 1rem; width: 100%; justify-items: start; }
 """;

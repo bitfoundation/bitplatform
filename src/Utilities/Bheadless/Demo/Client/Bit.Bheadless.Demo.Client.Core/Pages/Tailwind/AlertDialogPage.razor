@@ -4,19 +4,25 @@
 
 <div class="bb-intro">
     <h1>Alert Dialog</h1>
-    <p class="bb-subtitle">A modal that interrupts the user and expects a deliberate response. No overlay-click dismiss.</p>
-    <SectionSwitcher Slug="alert-dialog" />
+    <p class="bb-subtitle">A modal dialog that interrupts the user with an important message and expects a deliberate response.</p>
 </div>
 
+<SectionSwitcher Slug="alert-dialog" />
+
 <TwDemoBlock Title="Basic Alert Dialog" Code="@_basicCode">
-    <Description>Overlay click does <strong>not</strong> dismiss. Focus lands on Cancel, Escape closes, focus returns to the trigger.</Description>
+    <Description>
+        Click the trigger to open. Unlike a Dialog, clicking the overlay does
+        <strong>not</strong> dismiss it — the user must choose <code>Cancel</code> or
+        <code>Action</code>. Focus lands on the Cancel button (the safe choice), is
+        trapped inside, and returns to the trigger on close. Escape closes.
+    </Description>
     <LiveContent>
         <BitBhAlertDialog>
             <BitBhAlertDialogTrigger class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
                 Delete account
             </BitBhAlertDialogTrigger>
-            <BitBhAlertDialogOverlay class="bg-black/50" />
-            <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+            <BitBhAlertDialogOverlay class="fixed inset-0 z-50 bg-black/50" />
+            <BitBhAlertDialogContent class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
                 <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Are you absolutely sure?</BitBhAlertDialogTitle>
                 <BitBhAlertDialogDescription class="text-sm text-zinc-500">
                     This action cannot be undone. This will permanently delete your
@@ -38,7 +44,11 @@
 </TwDemoBlock>
 
 <TwDemoBlock Title="Controlled state" Code="@_controlledCode">
-    <Description>Drive open state with <code>Open</code> + <code>OnOpenChange</code>.</Description>
+    <Description>
+        Drive the open state yourself with <code>Open</code> + <code>OnOpenChange</code>.
+        Useful when an external event (e.g. an unsaved-changes guard) needs to open the
+        alert — here the "Discard changes" button opens it.
+    </Description>
     <LiveContent>
         <BitBhButton OnClick="() => discardOpen = true"
                   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
@@ -46,8 +56,8 @@
         </BitBhButton>
         <span class="text-sm text-zinc-500">@discardResult</span>
         <BitBhAlertDialog Open="discardOpen" OnOpenChange="v => discardOpen = v">
-            <BitBhAlertDialogOverlay class="bg-black/50" />
-            <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+            <BitBhAlertDialogOverlay class="fixed inset-0 z-50 bg-black/50" />
+            <BitBhAlertDialogContent class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
                 <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Discard changes?</BitBhAlertDialogTitle>
                 <BitBhAlertDialogDescription class="text-sm text-zinc-500">
                     You have unsaved changes. If you leave now, they will be lost.
@@ -79,8 +89,8 @@
     <BitBhAlertDialogTrigger class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
         Delete account
     </BitBhAlertDialogTrigger>
-    <BitBhAlertDialogOverlay class="bg-black/50" />
-    <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+    <BitBhAlertDialogOverlay class="fixed inset-0 z-50 bg-black/50" />
+    <BitBhAlertDialogContent class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
         <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Are you absolutely sure?</BitBhAlertDialogTitle>
         <BitBhAlertDialogDescription class="text-sm text-zinc-500">
             This action cannot be undone. This will permanently delete your
@@ -109,8 +119,8 @@
     Discard changes
 </BitBhButton>
 <BitBhAlertDialog Open="isOpen" OnOpenChange="v => isOpen = v">
-    <BitBhAlertDialogOverlay class="bg-black/50" />
-    <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+    <BitBhAlertDialogOverlay class="fixed inset-0 z-50 bg-black/50" />
+    <BitBhAlertDialogContent class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
         <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Discard changes?</BitBhAlertDialogTitle>
         <BitBhAlertDialogDescription class="text-sm text-zinc-500">
             You have unsaved changes. If you leave now, they will be lost.

@@ -5,16 +5,17 @@
 <div class="bb-intro">
     <h1>Radio Group</h1>
     <p class="bb-subtitle">An accessible single-select group with roving tabindex and full keyboard support.</p>
-    <SectionSwitcher Slug="radiogroup" />
 </div>
+
+<SectionSwitcher Slug="radiogroup" />
 
 <DemoBlock Title="Basic Radio Group"
            Code="@_basicCode"
            Css="@_radioCss">
     <Description>
-        Click a radio or use Up / Down arrow keys (Left / Right when horizontal) to navigate
-        and select. Disabled radios are skipped. <code>aria-checked</code>,
-        <code>role="radiogroup"</code>, and <code>role="radio"</code> are wired automatically.
+        Click a radio or use the arrow keys to navigate and select. Disabled radios are
+        skipped. <code>aria-checked</code>, <code>role="radiogroup"</code>, and
+        <code>role="radio"</code> are wired automatically.
     </Description>
     <LiveContent>
         <BitBhRadioGroup DefaultValue="medium" class="radio-group">
@@ -50,9 +51,11 @@
            Code="@_horizontalCode"
            Css="@_horizontalCss">
     <Description>
-        Set <code>Vertical="false"</code> to lay radios out horizontally. Arrow-key
-        navigation switches to Left / Right and the group emits
-        <code>data-orientation="horizontal"</code> for CSS hooks.
+        Set <code>Vertical="false"</code> to lay radios out horizontally. The group then
+        emits <code>aria-orientation</code> / <code>data-orientation="horizontal"</code>;
+        all four arrow keys navigate in either orientation. The CSS version lays the row out
+        with a <code>[data-orientation="horizontal"]</code> selector, the Tailwind version
+        with the <code>data-orientation-horizontal:</code> variant.
     </Description>
     <LiveContent>
         <BitBhRadioGroup Vertical="false" DefaultValue="card" class="radio-group">
@@ -128,7 +131,9 @@
     <Description>
         Because the radio is the only interactive element, you can place rich content
         (titles, descriptions, prices) inside the <code>&lt;label&gt;</code> wrapper
-        and use the <code>data-state="checked"</code> hook to highlight the selected card.
+        and use the radio's <code>data-state="checked"</code> hook to highlight the selected card.
+        The CSS version does it with a <code>:has()</code> selector, the Tailwind version with
+        the <code>has-[[data-state=checked]]:</code> variant.
     </Description>
     <LiveContent>
         <BitBhRadioGroup DefaultValue="pro" class="plan-group">
@@ -227,7 +232,7 @@
         <form @onsubmit="HandleFormSubmit"
               @onsubmit:preventDefault="true"
               style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
-            <BitBhRadioGroup Name="size" DefaultValue="m" class="radio-group">
+            <BitBhRadioGroup Name="size" DefaultValue="m" OnValueChange="v => postedSize = v" class="radio-group">
                 <label class="radio-label">
                     <BitBhRadio Value="s" class="radio">
                         <Template Context="r">
@@ -267,10 +272,11 @@
 @code {
     private string? selectedColor = "green";
     private string? lastSubmitted;
+    private string? postedSize = "m";
 
     private void HandleFormSubmit()
     {
-        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+        lastSubmitted = $"Submitted: the form posts size={postedSize}";
     }
 
     // ── Source snippets shown alongside each live demo ─────────────────────────
@@ -448,7 +454,7 @@
 <form @onsubmit="HandleFormSubmit"
       @onsubmit:preventDefault="true"
       style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
-    <BitBhRadioGroup Name="size" DefaultValue="m" class="radio-group">
+    <BitBhRadioGroup Name="size" DefaultValue="m" OnValueChange="v => postedSize = v" class="radio-group">
         <label class="radio-label">
             <BitBhRadio Value="s" class="radio">
                 <Template Context="r">
@@ -485,10 +491,11 @@
 
 @code {
     private string? lastSubmitted;
+    private string? postedSize = "m";
 
     private void HandleFormSubmit()
     {
-        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+        lastSubmitted = $"Submitted: the form posts size={postedSize}";
     }
 }
 
@@ -528,7 +535,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -536,7 +543,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */
@@ -586,7 +593,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -594,7 +601,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */
@@ -643,7 +650,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -651,7 +658,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */
@@ -686,7 +693,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -694,7 +701,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */
@@ -776,7 +783,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -784,7 +791,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */
@@ -858,7 +865,7 @@
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
-    border: 1px solid #d4d4d8;
+    border: 1px solid #71717a;
     border-radius: 999px;
     background: #fff;
     cursor: pointer;
@@ -866,7 +873,7 @@
     flex-shrink: 0;
 }
 
-.radio:hover         { border-color: #a1a1af; }
+.radio:hover         { border-color: #52525b; }
 .radio:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 /* Hooks emitted by BitBhRadio */

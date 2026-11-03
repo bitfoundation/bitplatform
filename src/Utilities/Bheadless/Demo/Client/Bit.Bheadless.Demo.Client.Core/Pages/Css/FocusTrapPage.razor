@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>FocusTrap</h1>
     <p class="bb-subtitle">A low-level component that traps keyboard focus within a container. Used internally by Dialog but also useful standalone for custom modal-like patterns.</p>
-    <SectionSwitcher Slug="focus-trap" />
 </div>
+
+<SectionSwitcher Slug="focus-trap" />
 
 <DemoBlock Title="Basic Focus Trap"
            Code="@_basicCode"
@@ -16,7 +17,9 @@
         through the focusable elements inside the container without escaping to the
         rest of the page. Focus is automatically moved to the first focusable element
         when the trap activates, and restored to the previously-focused element when
-        it deactivates.
+        it deactivates. The active container gets <code>data-state="active"</code>, which
+        highlights it: the CSS version styles it with a <code>[data-state="active"]</code>
+        selector, the Tailwind version with the <code>data-state-active:</code> variant.
     </Description>
     <LiveContent>
         <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
@@ -50,28 +53,30 @@
 
         @if (panelOpen)
         {
-            <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
-            <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
-                <h3 class="slide-over-title">Settings</h3>
-                <p class="slide-over-description">
-                    Focus is trapped inside this panel. Try Tab and Shift+Tab.
-                </p>
+            <BitBhPortal>
+                <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
+                <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
+                    <h3 class="slide-over-title">Settings</h3>
+                    <p class="slide-over-description">
+                        Focus is trapped inside this panel. Try Tab and Shift+Tab.
+                    </p>
 
-                <label class="slide-over-field">
-                    <span>Username</span>
-                    <input type="text" class="focus-trap-input" value="alice" />
-                </label>
+                    <label class="slide-over-field">
+                        <span>Username</span>
+                        <input type="text" class="focus-trap-input" value="alice" />
+                    </label>
 
-                <label class="slide-over-field">
-                    <span>Email</span>
-                    <input type="email" class="focus-trap-input" value="alice@example.com" />
-                </label>
+                    <label class="slide-over-field">
+                        <span>Email</span>
+                        <input type="email" class="focus-trap-input" value="alice@example.com" />
+                    </label>
 
-                <div class="slide-over-actions">
-                    <button class="btn" @onclick="() => panelOpen = false">Cancel</button>
-                    <button class="btn btn-primary" @onclick="() => panelOpen = false">Save</button>
-                </div>
-            </BitBhFocusTrap>
+                    <div class="slide-over-actions">
+                        <button class="btn" @onclick="() => panelOpen = false">Cancel</button>
+                        <button class="btn btn-primary" @onclick="() => panelOpen = false">Save</button>
+                    </div>
+                </BitBhFocusTrap>
+            </BitBhPortal>
         }
     </LiveContent>
 </DemoBlock>
@@ -167,26 +172,28 @@
 
 @if (panelOpen)
 {
-    <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
-    <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
-        <h3>Settings</h3>
-        <p>Focus is trapped inside this panel.</p>
+    <BitBhPortal>
+        <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
+        <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
+            <h3>Settings</h3>
+            <p>Focus is trapped inside this panel.</p>
 
-        <label>
-            <span>Username</span>
-            <input type="text" value="alice" />
-        </label>
+            <label>
+                <span>Username</span>
+                <input type="text" value="alice" />
+            </label>
 
-        <label>
-            <span>Email</span>
-            <input type="email" value="alice@example.com" />
-        </label>
+            <label>
+                <span>Email</span>
+                <input type="email" value="alice@example.com" />
+            </label>
 
-        <div class="slide-over-actions">
-            <button @onclick="() => panelOpen = false">Cancel</button>
-            <button @onclick="() => panelOpen = false">Save</button>
-        </div>
-    </BitBhFocusTrap>
+            <div class="slide-over-actions">
+                <button @onclick="() => panelOpen = false">Cancel</button>
+                <button @onclick="() => panelOpen = false">Save</button>
+            </div>
+        </BitBhFocusTrap>
+    </BitBhPortal>
 }
 
 @code {

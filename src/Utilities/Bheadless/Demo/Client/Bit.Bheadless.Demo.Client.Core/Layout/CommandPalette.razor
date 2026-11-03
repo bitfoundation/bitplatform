@@ -330,7 +330,7 @@
     private string SearchLabel => SiteInfo.PaletteCtrlK ? $"Search docs {(_isApple ? "⌘" : "Ctrl")} K" : "Search docs /";
 
     /// <summary>The blank state: the reading order of the docs.</summary>
-    private static Hit[] Suggest() => Regroup(Pages().Take(12));
+    private Hit[] Suggest() => Regroup(Pages().Take(12));
 
     /// <summary>
     /// The rows in the order they are RENDERED - grouped by section, groups in first-appearance
@@ -346,7 +346,7 @@
     /// matched on its description or keywords. Ranking by position rather than by count keeps a
     /// page from being outranked by another that merely says the word four times.
     /// </summary>
-    private static Hit[] Find(string query)
+    private Hit[] Find(string query)
     {
         var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -357,8 +357,10 @@
             .Take(12));
     }
 
-    private static IEnumerable<Hit> Pages()
-        => DocsCatalog.Sections.SelectMany(section => section.Pages.Select(page =>
+    // The pages of the styling section the reader is in, as the nav panel lists them: from a Tailwind page a search
+    // goes to the Tailwind version of a component.
+    private IEnumerable<Hit> Pages()
+        => DocsCatalog.SectionsOf(DocsCatalog.FindByPath(DocsCatalog.PathOf(Nav))).SelectMany(section => section.Pages.Select(page =>
                new Hit(section.Title, page.Title, page.Description, page.Url,
                        $"{page.Title} {page.Description} {page.Keywords} {page.Url}")));
 

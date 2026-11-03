@@ -4,15 +4,22 @@
 
 <div class="bb-intro">
     <h1>Sortable</h1>
-    <p class="bb-subtitle">Pointer and keyboard reordering, styled with Tailwind's <code>*:</code>, <code>data-dragging:</code> and <code>aria-pressed:</code> variants.</p>
-    <SectionSwitcher Slug="sortable" />
+    <p class="bb-subtitle">Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
 </div>
+
+<SectionSwitcher Slug="sortable" />
 
 <TwDemoBlock Title="Reorderable task list" Code="@_tasksCode">
     <Description>
-        <code>@@bind-Items</code> with <code>ItemKey</code> and <code>ItemLabel</code>.
-        Drag a grip, or focus it and press Space / Enter to pick up, ↑ / ↓ to move, Space / Enter to drop and Escape to cancel — every step is announced.
-        The <code>&lt;li&gt;</code> items are rendered by the sortable, so they're styled from the list with <code>*:</code>.
+        Bind the list with <code>@@bind-Items</code>; <code>ItemKey</code> keeps each row's identity
+        stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
+        finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
+        <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
+        <kbd>Escape</kbd> to cancel. Each step is announced automatically. The moving item and the root
+        carry <code>data-dragging</code>, and a handle picked up with the keyboard gets
+        <code>aria-pressed="true"</code>. The sortable renders the <code>&lt;li&gt;</code> items itself,
+        so they're styled from the list: a <code>.sortable-list &gt; li</code> selector in the CSS
+        version, the <code>*:</code> variant in the Tailwind version.
     </Description>
     <LiveContent>
         <div class="grid w-full gap-4">
@@ -35,7 +42,9 @@
 
 <TwDemoBlock Title="OnReorder event log" Code="@_logCode">
     <Description>
-        <code>OnReorder</code> fires once per committed move with the item, old index and new index — use it to persist the order. Cancelled moves don't fire it.
+        <code>OnReorder</code> fires once per committed move with the item and its old and new
+        index — handy for persisting the order or sending a PATCH. Moves cancelled with
+        <kbd>Escape</kbd> (or dropped in place) don't fire it.
     </Description>
     <LiveContent>
         <div class="grid w-full grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] items-start gap-6">
@@ -65,13 +74,15 @@
 
 <TwDemoBlock Title="Horizontal orientation" Code="@_horizontalCode">
     <Description>
-        <code>Orientation="BitBhOrientation.Horizontal"</code>: siblings shift sideways and ← / → move a picked-up item. The whole chip is the handle.
+        Set <code>Orientation="BitBhOrientation.Horizontal"</code> for a row: pointer drags shift
+        siblings sideways and, once picked up, <kbd>←</kbd> / <kbd>→</kbd> move the item. Here the
+        whole chip is the <code>BitBhSortableHandle</code>, so its text becomes the accessible name.
     </Description>
     <LiveContent>
         <div class="grid w-full gap-4">
             <BitBhSortable TItem="string" @bind-Items="priorities"
                         Orientation="BitBhOrientation.Horizontal" aria-label="Priorities"
-                        class="m-0 flex list-none gap-2 p-0 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
+                        class="m-0 flex list-none gap-2 overflow-x-auto p-1 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
                         Context="s">
                 <BitBhSortableHandle TItem="string"
                                   class="inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-zinc-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:text-blue-700">
@@ -87,7 +98,10 @@
 
 <TwDemoBlock Title="Custom announcements" Code="@_announcementsCode">
     <Description>
-        A <code>BitBhSortableAnnouncements</code> rewords (or localizes) the handle instructions and the picked-up / moved / dropped / cancelled messages. The template's <code>Index</code> is the live position.
+        Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
+        hear: the <code>Instructions</code> every handle is described by, plus the
+        <code>PickedUp</code>, <code>Moved</code>, <code>Dropped</code> and <code>Cancelled</code>
+        messages. The template's <code>Index</code> is the live (preview) position.
     </Description>
     <LiveContent>
         <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
@@ -104,7 +118,11 @@
 
 <TwDemoBlock Title="Disabled" Code="@_disabledCode">
     <Description>
-        <code>Disabled="true"</code> blocks reordering; style the root and items with <code>data-disabled:</code> and the handles with <code>aria-disabled:</code>. The lock is a <code>BitBhToggle</code>.
+        <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every item get
+        <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>: the CSS version
+        styles them with <code>[data-disabled]</code> / <code>[aria-disabled="true"]</code> selectors,
+        the Tailwind version with the <code>data-disabled:</code> / <code>aria-disabled:</code>
+        variants. The lock below is a <code>BitBhToggle</code>.
     </Description>
     <LiveContent>
         <div class="grid w-full gap-4">
@@ -227,7 +245,7 @@
     private const string _horizontalCode = """
 <BitBhSortable TItem="string" @bind-Items="priorities"
             Orientation="BitBhOrientation.Horizontal" aria-label="Priorities"
-            class="m-0 flex list-none gap-2 p-0 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
+            class="m-0 flex list-none gap-2 overflow-x-auto p-1 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
             Context="s">
     @* The whole chip is the handle: pointer drags and keyboard both start here. *@
     <BitBhSortableHandle TItem="string"

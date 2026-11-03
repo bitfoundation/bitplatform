@@ -6,8 +6,9 @@
 <div class="bb-intro">
     <h1>Accessibility Utilities</h1>
     <p class="bb-subtitle">The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
-    <SectionSwitcher Slug="accessibility" />
 </div>
+
+<SectionSwitcher Slug="accessibility" />
 
 <DemoBlock Title="Visually hidden"
            Code="@_hiddenCode"
@@ -61,7 +62,8 @@
         <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
         assistive tech announces the boundary between groups of content. When the line is purely
         visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
-        <code>data-orientation</code> for styling.
+        <code>data-orientation</code>: the CSS version styles it with <code>[data-orientation]</code>
+        selectors, the Tailwind version with the <code>data-orientation-*:</code> variants.
     </Description>
     <LiveContent>
         <div class="a11y-stack">
@@ -159,6 +161,7 @@
         <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
         (like <code>shift+?</code>) are ignored while typing in a text field unless
         <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
+        Try <code>Ctrl+K</code> and <code>?</code> here.
     </Description>
     <LiveContent>
         <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />

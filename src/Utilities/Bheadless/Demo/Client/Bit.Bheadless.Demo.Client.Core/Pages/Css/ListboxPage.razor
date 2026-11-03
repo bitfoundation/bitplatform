@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Listbox</h1>
     <p class="bb-subtitle">An accessible custom select with single/multi-select, full keyboard navigation, and typeahead.</p>
-    <SectionSwitcher Slug="listbox" />
 </div>
+
+<SectionSwitcher Slug="listbox" />
 
 <DemoBlock Title="Basic Listbox"
            Code="@_basicCode"
@@ -44,7 +45,8 @@
            Css="@_multiCss">
     <Description>
         Set <code>Multiple="true"</code> to allow selecting many values. The panel stays
-        open after each selection. The button label here renders the joined names.
+        open after each selection. The button label here renders the joined names, and each
+        option draws its check mark from its render context's <code>IsSelected</code>.
     </Description>
     <LiveContent>
         <BitBhListbox TValue="string" Multiple="true"
@@ -81,13 +83,15 @@
            Css="@_disabledCss">
     <Description>
         Mark individual options with <code>Disabled="true"</code>. They render with
-        <code>data-disabled</code> for CSS, are skipped by arrow-key nav, and ignore typeahead matches.
+        <code>data-disabled</code>, are skipped by arrow-key nav, and ignore typeahead matches.
+        The CSS version styles them with a <code>[data-disabled]</code> selector, the Tailwind
+        version with the <code>data-disabled:</code> variant.
     </Description>
     <LiveContent>
         <BitBhListbox TValue="string" DefaultValue='@("standard")' class="listbox">
             <BitBhListboxButton aria-label="Plan" TValue="string" class="listbox-button">
                 <Template Context="b">
-                    <span>@(b.Value ?? "Pick a plan")</span>
+                    <span>@(b.Text ?? "Pick a plan")</span>
                     <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
                 </Template>
             </BitBhListboxButton>
@@ -213,7 +217,7 @@
             <BitBhListbox TValue="string" Name="role" DefaultValue='@("user")' class="listbox">
                 <BitBhListboxButton aria-label="Role" TValue="string" class="listbox-button">
                     <Template Context="b">
-                        <span>@(b.Value)</span>
+                        <span>@(b.Text)</span>
                         <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
                     </Template>
                 </BitBhListboxButton>
@@ -241,10 +245,13 @@
         For thousands of options, pass the data through <code>Items</code> and render each option
         with an <code>ItemTemplate</code>. <code>Virtualize="true"</code> renders only the options in
         view — give the panel a fixed height with <code>overflow-y: auto</code> and make every option
-        exactly <code>ItemSize</code> pixels tall. Options still get <code>aria-setsize</code> /
+        exactly <code>ItemSize</code> pixels tall (36px here). Options still get <code>aria-setsize</code> /
         <code>aria-posinset</code>, and arrow keys, Home / End and typeahead reach all 10,000. With no
         content, <code>BitBhListboxButton</code> shows the selected option's text or its
-        <code>Placeholder</code> (and emits <code>data-placeholder</code>).
+        <code>Placeholder</code> (and emits <code>data-placeholder</code>). The generated options carry
+        no class: the CSS version targets them by role with <code>[data-active]</code> /
+        <code>[data-selected]</code>, the Tailwind version styles a full-height inner element from the
+        template's <code>IsActive</code> / <code>IsSelected</code>.
     </Description>
     <LiveContent>
         <BitBhListbox TValue="string" @bind-Value="virtualPick" class="listbox-anchored">
@@ -479,7 +486,7 @@
 <BitBhListbox TValue="string" DefaultValue="standard" class="listbox">
     <BitBhListboxButton aria-label="Plan" TValue="string" class="listbox-button">
         <Template Context="b">
-            <span>@(b.Value ?? "Pick a plan")</span>
+            <span>@(b.Text ?? "Pick a plan")</span>
             <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
         </Template>
     </BitBhListboxButton>
@@ -544,7 +551,7 @@
     <BitBhListbox TValue="string" Name="role" DefaultValue="user" class="listbox">
         <BitBhListboxButton aria-label="Role" TValue="string" class="listbox-button">
             <Template Context="b">
-                <span>@(b.Value)</span>
+                <span>@(b.Text)</span>
                 <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
             </Template>
         </BitBhListboxButton>
