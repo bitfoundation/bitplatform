@@ -887,35 +887,90 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await Expect(ItemsOf(menu).Nth(2).Locator(".bit-mnb-sch")).ToHaveClassAsync(HasClass("bit-icon--ChevronRightMed"));
     }
 
+    // What a menu button squeezed by its container can get wrong: the root leaving the box that holds it, a part of
+    // the button leaving the root on either side (the root clips it), or a tap at either end of a half reaching
+    // something else. All of it is measured in one pass, so a re-layout between two reads (the icon font landing,
+    // a re-render) never compares a part with a stale root. None is a menu button laid out right.
+    private async Task AssertLaidOutInsideItsContainerAsync(string id)
+    {
+        await Root(id).ScrollIntoViewIfNeededAsync();
+
+        var problems = await Root(id).EvaluateAsync<string[]>("""
+            root => {
+                const problems = [];
+                const box = el => el.getBoundingClientRect();
+                const span = b => `${b.left.toFixed(1)}..${b.right.toFixed(1)}`;
+                const leaves = (inner, outer) => inner.left < outer.left - 0.5 || inner.right > outer.right + 0.5;
+                const r = box(root), container = box(root.parentElement);
+                if (leaves(r, container)) problems.push(`The root (${span(r)}) leaves its container (${span(container)}).`);
+                const parts = root.querySelectorAll('.bit-mnb-opb, .bit-mnb-chb, .bit-mnb-ico, .bit-mnb-chv');
+                if (parts.length === 0) problems.push('The button has no parts to measure.');
+                for (const part of parts) {
+                    const p = box(part);
+                    if (leaves(p, r)) problems.push(`${part.classList[0]} (${span(p)}) leaves the root (${span(r)}).`);
+                }
+                for (const half of root.querySelectorAll(':scope > .bit-mnb-opb, :scope > .bit-mnb-chb')) {
+                    const h = box(half);
+                    for (const x of [h.left + 2, h.right - 2]) {
+                        if (half.contains(document.elementFromPoint(x, h.top + h.height / 2)) === false) problems.push(`A tap at ${x.toFixed(1)} misses #${half.id}.`);
+                    }
+                }
+                return problems;
+            }
+            """);
+
+        Assert.AreEqual(0, problems.Length, string.Join(" ", problems));
+    }
+
+    private Task<bool> IsLabelEllipsizedAsync(string id)
+    {
+        return Opb(id).Locator(".bit-mnb-btl").EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth");
+    }
+
     [TestMethod]
     [DataRow("mnb-narrow-icononly")]
     [DataRow("mnb-narrow-split")]
     [DataRow("mnb-narrow-text")]
-    public async Task Layout_InAFlexRowTooNarrowForIt_KeepsItsButtonInsideTheRoot(string id)
+    [DataRow("mnb-narrow-rtl")]
+    public async Task Layout_InAFlexRowTooNarrowForIt_StopsAtItsIconAndChevronInsideTheRow(string id)
     {
         await OpenAsync(ItemsApi);
-        await Root(id).ScrollIntoViewIfNeededAsync();
 
-        // The root clips what lies outside it, so every part of the button has to end inside it.
-        var root = await Root(id).BoxAsync();
-        var parts = Root(id).Locator(".bit-mnb-opb, .bit-mnb-chb, .bit-mnb-ico, .bit-mnb-chv");
-        var count = await parts.CountAsync();
-        Assert.IsTrue(count > 0, "The button has parts to measure.");
-        for (var i = 0; i < count; i++)
-        {
-            var part = await parts.Nth(i).BoxAsync();
-            Assert.IsTrue(part.X + part.Width <= root.X + root.Width + 0.5,
-                          $"Part {i} ends at {part.X + part.Width}, past the root that ends at {root.X + root.Width}.");
-        }
+        // The row clips what overflows it, the way a card header does, so the taps also prove the root fits in it.
+        await AssertLaidOutInsideItsContainerAsync(id);
+    }
 
-        // And a tap at the far end of each half reaches that half.
-        foreach (var half in new[] { Opb(id), Chb(id) })
-        {
-            if (await half.CountAsync() == 0) continue;
+    [TestMethod]
+    public async Task Layout_InARowNarrowerThanItsLabel_TakesTheRowAndEllipsizesTheLabel()
+    {
+        await OpenAsync(ItemsApi);
 
-            Assert.IsTrue(await half.EvaluateAsync<bool>("el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.right - 2, r.top + r.height / 2)); }"),
-                          $"A tap at the far end of {await half.GetAttributeAsync("id")} reaches it.");
-        }
+        await AssertLaidOutInsideItsContainerAsync("mnb-long-label");
+        ButtonsE2EHelpers.AreClose(150, (await Root("mnb-long-label").BoxAsync()).Width, 0.5, "the root takes the row");
+        Assert.IsTrue(await IsLabelEllipsizedAsync("mnb-long-label"), "The label is ellipsized.");
+        await Expect(Opb("mnb-long-label").Locator(".bit-mnb-btx")).ToHaveTextAsync("A rather long label for the action");
+    }
+
+    [TestMethod]
+    [DataRow("mnb-fullwidth-grid", 100)]
+    [DataRow("mnb-fullwidth-flex", 140)]
+    public async Task Layout_FullWidthNarrowerThanItsLabel_ShrinksWithItsTrackOrRowAndEllipsizesTheLabel(string id, double width)
+    {
+        await OpenAsync(ItemsApi);
+
+        await AssertLaidOutInsideItsContainerAsync(id);
+        ButtonsE2EHelpers.AreClose(width, (await Root(id).BoxAsync()).Width, 0.5, "the root takes what its container leaves it");
+        Assert.IsTrue(await IsLabelEllipsizedAsync(id), "The label is ellipsized.");
+    }
+
+    [TestMethod]
+    public async Task Layout_MinWidthVariableAtZero_LetsARowShrinkTheButtonPastItsIconAndChevron()
+    {
+        await OpenAsync(ItemsApi);
+
+        await Expect(Root("mnb-narrow-text")).ToHaveCSSAsync("min-width", "min-content");
+        await Expect(Root("mnb-min-width-zero")).ToHaveCSSAsync("min-width", "0px");
+        ButtonsE2EHelpers.AreClose(40, (await Root("mnb-min-width-zero").BoxAsync()).Width, 0.5, "the root takes the row");
     }
 
     [TestMethod]
