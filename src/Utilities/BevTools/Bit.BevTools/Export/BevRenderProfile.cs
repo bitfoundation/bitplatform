@@ -25,10 +25,18 @@ internal sealed record BevGoneRenderTotals
     public double RenderMsSinceBaseline { get; set; }
 
     public double MaxRenderMsSinceBaseline { get; set; }
+
+    public long AllocatedBytes { get; set; }
+
+    public long AllocatedBytesSinceBaseline { get; set; }
 }
 
 /// <summary>What one component type rendered in a profile's window. <see cref="Type"/> is <see cref="BevRenderProfile.TypeKey"/>.</summary>
-internal sealed record BevProfileTypeTotals(string Type, string DisplayName, int Instances, int Renders, double RenderMs, double MaxRenderMs, double? P95RenderMs, int RetainedSamples);
+internal sealed record BevProfileTypeTotals(string Type, string DisplayName, int Instances, int Renders, double RenderMs, double MaxRenderMs, double? P95RenderMs, int RetainedSamples)
+{
+    /// <summary>Bytes its renders allocated in the window; null when the recording's runtime did not measure them.</summary>
+    public long? AllocatedBytes { get; init; }
+}
 
 /// <summary>
 /// What rendered, per component type, in the profiler's window: since the baseline when one was set, else since the
@@ -86,6 +94,7 @@ internal sealed class BevRenderProfile
             type.Renders += renders;
             type.Ms += since ? record.RenderMsSinceBaseline : record.TotalRenderMs;
             type.Max = Math.Max(type.Max, since ? record.MaxRenderMsSinceBaseline : record.MaxRenderMs);
+            type.Allocated += since ? record.AllocatedBytesSinceBaseline : record.TotalAllocatedBytes;
             var window = since ? record.BaselineAt : null;
             type.Samples.AddRange(record.Renders.Where(s => window is not { } at || s.At >= at).Select(s => s.DurationMs));
         }
@@ -103,6 +112,7 @@ internal sealed class BevRenderProfile
             type.Renders += renders;
             type.Ms += since ? gone.RenderMsSinceBaseline : gone.RenderMs;
             type.Max = Math.Max(type.Max, since ? gone.MaxRenderMsSinceBaseline : gone.MaxRenderMs);
+            type.Allocated += since ? gone.AllocatedBytesSinceBaseline : gone.AllocatedBytes;
         }
 
         return new BevRenderProfile
@@ -117,7 +127,10 @@ internal sealed class BevRenderProfile
             {
                 t.Value.Samples.Sort();
                 return new BevProfileTypeTotals(t.Key, t.Value.DisplayName, t.Value.Instances, t.Value.Renders, t.Value.Ms, t.Value.Max,
-                    t.Value.Samples.Count == 0 ? null : BevStats.Percentile(t.Value.Samples, 95), t.Value.Samples.Count);
+                    t.Value.Samples.Count == 0 ? null : BevStats.Percentile(t.Value.Samples, 95), t.Value.Samples.Count)
+                {
+                    AllocatedBytes = BevAllocations.IsMeasurable ? t.Value.Allocated : null,
+                };
             }).OrderByDescending(t => t.RenderMs).ToList(),
         };
     }
@@ -133,6 +146,8 @@ internal sealed class BevRenderProfile
         public double Ms { get; set; }
 
         public double Max { get; set; }
+
+        public long Allocated { get; set; }
 
         public List<double> Samples { get; } = [];
     }
@@ -164,6 +179,11 @@ internal sealed class BevRenderProfile
             }
 
             w.WriteNumber("retainedSamples", t.RetainedSamples);
+            if (t.AllocatedBytes is { } allocated)
+            {
+                w.WriteNumber("allocatedBytes", allocated);
+            }
+
             w.WriteEndObject();
         }
 
@@ -231,7 +251,10 @@ internal sealed class BevRenderProfile
                 RenderMode = renderMode,
                 Types = Items(profile, "types").Select(t => new BevProfileTypeTotals(
                     TypeKey(String(t, "type") ?? "?"), Line(String(t, "displayName") ?? String(t, "type")) ?? "?", Int(t, "instances"), Int(t, "renders"),
-                    Number(t, "renderMs") ?? 0, Number(t, "maxRenderMs") ?? 0, Number(t, "p95RenderMs"), Int(t, "retainedSamples"))).ToList(),
+                    Number(t, "renderMs") ?? 0, Number(t, "maxRenderMs") ?? 0, Number(t, "p95RenderMs"), Int(t, "retainedSamples"))
+                {
+                    AllocatedBytes = Number(t, "allocatedBytes") is { } allocated and >= 0 and < long.MaxValue ? (long)allocated : null,
+                }).ToList(),
             };
         }
 

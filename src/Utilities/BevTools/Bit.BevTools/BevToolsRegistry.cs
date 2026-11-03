@@ -47,6 +47,7 @@ public sealed class BevToolsRegistry
         if (isEnabled)
         {
             ActivityObserver.EnsureStarted();
+            BevUnobservedTasks.EnsureSubscribed();
         }
     }
 

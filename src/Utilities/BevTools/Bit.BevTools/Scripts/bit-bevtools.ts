@@ -36,6 +36,7 @@ interface BevAttachOptions {
     shortcut?: string;
     trackJsToDotNet?: boolean;
     trackTraffic?: boolean;
+    trackResponsiveness?: boolean;
     sensitivePatterns?: string[];
     sessionId?: number;
     /** The id the runtime knows this module by: over a circuit, every call .NET makes into it names that id. */
@@ -1023,6 +1024,150 @@ function reportTraffic() {
     notify({ type: "traffic" });
 }
 
+// ----- responsiveness -----
+
+/** A frame the main thread could not paint on time (long animation frame, or long task where that is all there is). */
+export interface BevLongFrame {
+    /** How long before the report it started, and how long it lasted: the browser's clock is not the runtime's. */
+    ageMs: number;
+    durationMs: number;
+    /** The part of it that kept input waiting: beyond 50 ms per task (long animation frames only; else duration − 50). */
+    blockingMs: number;
+    /** The longest scripts that ran in it (long animation frames only): what invoked them, where they are. */
+    scripts: { invoker: string; type: string; source: string; fn: string; durationMs: number }[];
+}
+
+/** One user interaction (Event Timing): from input to the next paint, in its three parts. */
+export interface BevInteraction {
+    ageMs: number;
+    name: string;
+    durationMs: number;
+    inputDelayMs: number;
+    processingMs: number;
+    presentationMs: number;
+    /** When its event handlers started and ended, as ages: what ran in between ran because of it. */
+    processingStartAgeMs: number;
+    processingEndAgeMs: number;
+    /** The element, by tag, id and class: never its text. Null once it left the page. */
+    target: string | null;
+}
+
+let perfObservers: PerformanceObserver[] = [];
+let pendingFrames: { start: number; duration: number; blocking: number; scripts: BevLongFrame["scripts"] }[] = [];
+const pendingInteractions = new Map<number, { start: number; end: number; processingStart: number; processingEnd: number; longestProcessing: number; name: string; target: string | null }>();
+// Interactions on BevTools' own UI: none of their entries is the application's.
+const ownInteractions = new Set<number>();
+let responsivenessTimer: ReturnType<typeof setInterval> | null = null;
+const MAX_PENDING = 100;
+
+/** Which of the browser's timing entries this browser has: long animation frames and long tasks are Chromium's, Event Timing is not in Safari. */
+export function responsivenessSupport() {
+    const types: string[] = typeof PerformanceObserver === "function" && (PerformanceObserver as any).supportedEntryTypes || [];
+    return { longAnimationFrame: types.includes("long-animation-frame"), longTask: types.includes("longtask"), eventTiming: types.includes("event") };
+}
+
+function sourceName(url: string) {
+    const clean = redactUrl(url).split(/[?#]/)[0];
+    return clean.slice(clean.lastIndexOf("/") + 1) || clean;
+}
+
+function onLongFrames(entries: PerformanceEntryList) {
+    for (const e of entries as any[]) {
+        if (e.duration < 50 || pendingFrames.length >= MAX_PENDING) continue;
+        const scripts = Array.isArray(e.scripts) ? e.scripts.slice().sort((a: any, b: any) => b.duration - a.duration).slice(0, 3).map((s: any) => ({
+            invoker: clip(String(s.invoker || ""), 200),
+            type: clip(String(s.invokerType || ""), 40),
+            source: clip(sourceName(String(s.sourceURL || "")), 200),
+            fn: clip(String(s.sourceFunctionName || ""), 200),
+            durationMs: s.duration,
+        })) : [];
+        pendingFrames.push({ start: e.startTime, duration: e.duration, blocking: typeof e.blockingDuration === "number" ? e.blockingDuration : e.duration - 50, scripts });
+    }
+}
+
+/**
+ * Discrete user interactions only. A click is pointerdown, pointerup and click - one interaction, which the browser
+ * reports as one entry per event: its latency runs from the first input to the next paint after all of them, and its
+ * processing spans every handler (a 400 ms click handler leaves the pointerdown entry with no processing and a 400 ms
+ * "presentation" of its own). Named after the event whose handlers took longest.
+ */
+function onEventTimings(entries: PerformanceEntryList) {
+    for (const e of entries as any[]) {
+        const id = e.interactionId;
+        if (!id) continue;
+        const element = e.target as Element | null;
+        // Interacting with BevTools is not the application's responsiveness.
+        if (ownInteractions.has(id) || inBevTools(element)) {
+            ownInteractions.add(id);
+            pendingInteractions.delete(id);
+            continue;
+        }
+        const processing = e.processingEnd - e.processingStart;
+        const name = clip(String(e.name || ""), 40);
+        const target = element && element.tagName ? describeElement(element) : null;
+        const known = pendingInteractions.get(id);
+        if (!known) {
+            if (pendingInteractions.size >= MAX_PENDING) continue;
+            pendingInteractions.set(id, { start: e.startTime, end: e.startTime + e.duration, processingStart: e.processingStart, processingEnd: e.processingEnd, longestProcessing: processing, name, target });
+            continue;
+        }
+        known.start = Math.min(known.start, e.startTime);
+        known.end = Math.max(known.end, e.startTime + e.duration);
+        known.processingStart = Math.min(known.processingStart, e.processingStart);
+        known.processingEnd = Math.max(known.processingEnd, e.processingEnd);
+        if (processing > known.longestProcessing) {
+            known.longestProcessing = processing;
+            known.name = name;
+            known.target = target ?? known.target;
+        }
+    }
+}
+
+function observeResponsiveness() {
+    if (typeof PerformanceObserver !== "function" || perfObservers.length) return;
+    const support = responsivenessSupport();
+    const frameType = support.longAnimationFrame ? "long-animation-frame" : support.longTask ? "longtask" : null;
+    const observe = (type: string, callback: (entries: PerformanceEntryList) => void, extra: object) => {
+        try {
+            const observer = new PerformanceObserver(list => { try { callback(list.getEntries()); } catch { /* a malformed entry */ } });
+            observer.observe({ type, ...extra } as any);
+            perfObservers.push(observer);
+        } catch { /* refused by this browser */ }
+    };
+    if (frameType) observe(frameType, onLongFrames, {});
+    // 16 ms is the lowest threshold the API takes: every interaction that cost a frame, so the slowest is the slowest.
+    if (support.eventTiming) observe("event", onEventTimings, { durationThreshold: 16 });
+    responsivenessTimer ??= setInterval(flushResponsiveness, 1000);
+}
+
+function stopObservingResponsiveness() {
+    for (const observer of perfObservers) { try { observer.disconnect(); } catch { /* ignore */ } }
+    perfObservers = [];
+    pendingFrames = [];
+    pendingInteractions.clear();
+    ownInteractions.clear();
+    if (responsivenessTimer) { clearInterval(responsivenessTimer); responsivenessTimer = null; }
+}
+
+/** Sends what was observed since the last report, with ages rather than the browser's timestamps. */
+export function flushResponsiveness() {
+    if (targets.size === 0 || (pendingFrames.length === 0 && pendingInteractions.size === 0)) return;
+    const now = performance.now();
+    const frames: BevLongFrame[] = pendingFrames.map(f => ({ ageMs: now - f.start, durationMs: f.duration, blockingMs: Math.max(0, f.blocking), scripts: f.scripts }));
+    const interactions: BevInteraction[] = Array.from(pendingInteractions.values()).map(i => ({
+        ageMs: now - i.start, name: i.name, durationMs: i.end - i.start,
+        inputDelayMs: Math.max(0, i.processingStart - i.start), processingMs: Math.max(0, i.processingEnd - i.processingStart),
+        presentationMs: Math.max(0, i.end - i.processingEnd),
+        processingStartAgeMs: now - i.processingStart, processingEndAgeMs: now - i.processingEnd, target: i.target,
+    }));
+    pendingFrames = [];
+    pendingInteractions.clear();
+    // Ids only grow; the last few are all an interaction still arriving can have.
+    if (ownInteractions.size > 50) ownInteractions.clear();
+    broadcast("ReportResponsiveness", frames, interactions);
+    notify({ type: "responsiveness" });
+}
+
 // ----- browser facts -----
 
 function snapshot() {
@@ -1038,6 +1183,7 @@ function snapshot() {
         navigationLoadMs: nav ? nav.loadEventEnd : null,
         domContentLoadedMs: nav ? nav.domContentLoadedEventEnd : null,
         resourceCount: performance.getEntriesByType ? performance.getEntriesByType("resource").length : null,
+        responsiveness: responsivenessSupport(),
     };
 }
 
@@ -1855,6 +2001,8 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         trafficTimer ??= setInterval(reportTraffic, 2000);
     }
 
+    if (!options || options.trackResponsiveness !== false) observeResponsiveness();
+
     exposeHook();
     targetsChanged();
     return { ...snapshot(), targetId: id };
@@ -1878,6 +2026,7 @@ export function detach(targetId?: string) {
         unwrapDotNet();
         unwrapWebSockets();
         stopObservingDom();
+        stopObservingResponsiveness();
         if (trafficTimer) { clearInterval(trafficTimer); trafficTimer = null; }
         for (const socket of Array.from(sockets.keys())) forgetSocket(socket);
         ownInvocations.clear();
@@ -2237,6 +2386,108 @@ export function getStorage(kind: string, patterns: string[] | null, previews?: b
         result.push({ key: "(error)", size: 0, preview: String(err), redacted: false });
     }
     return result;
+}
+
+/** The page's other storage, read on request: structure and sizes, never a cookie's value or a cached response. */
+export interface BevAppStorage {
+    /** Cookies script can read (HttpOnly ones are invisible to the page): names and sizes; the values are never read. */
+    cookies: { name: string; size: number }[];
+    /** IndexedDB databases by name and version; null where the browser cannot list them. The databases are not opened. */
+    indexedDb: { name: string; version: number }[] | null;
+    /** Cache Storage caches (a service worker's offline copy) and how many requests each holds. */
+    caches: { name: string; entries: number }[] | null;
+    serviceWorkers: { scope: string; active: string | null; activeState: string | null; waiting: string | null; installing: string | null }[] | null;
+    /** Whether a service worker controls this page, and which script. */
+    controller: string | null;
+    usageBytes: number | null;
+    quotaBytes: number | null;
+    /** Usage per kind of storage (Chromium): indexedDB, caches, serviceWorkerRegistrations, fileSystem. */
+    usageDetails: { [kind: string]: number } | null;
+    persisted: boolean | null;
+    errors: string[];
+}
+
+const MAX_STORAGE_ITEMS = 200;
+
+async function settle<T>(work: () => Promise<T>, errors: string[], what: string, timeoutMs = 3000): Promise<T | null> {
+    try {
+        return await Promise.race([work(), new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timed out")), timeoutMs))]);
+    } catch (err: any) {
+        errors.push(what + ": " + clip(String(err && err.message || err), 200));
+        return null;
+    }
+}
+
+export async function getAppStorage(): Promise<BevAppStorage> {
+    const errors: string[] = [];
+    const cookies: BevAppStorage["cookies"] = [];
+    try {
+        for (const part of String(document.cookie || "").split(";")) {
+            const trimmed = part.trim();
+            if (!trimmed || cookies.length >= MAX_STORAGE_ITEMS) continue;
+            const eq = trimmed.indexOf("=");
+            // The name and the value's length: a cookie is where a session id lives.
+            cookies.push({ name: clip(eq < 0 ? trimmed : trimmed.slice(0, eq), 200), size: eq < 0 ? 0 : trimmed.length - eq - 1 });
+        }
+    } catch (err) {
+        errors.push("cookies: " + clip(String(err), 200));
+    }
+
+    const idb: any = (window as any).indexedDB;
+    const indexedDb = idb && typeof idb.databases === "function"
+        ? await settle(async () => (await idb.databases() as any[]).slice(0, MAX_STORAGE_ITEMS).map(d => ({ name: clip(String(d.name || ""), 200), version: Number(d.version) || 0 })), errors, "IndexedDB")
+        : null;
+
+    const cacheStorage: any = (window as any).caches;
+    const caches = cacheStorage && typeof cacheStorage.keys === "function"
+        ? await settle(async () => {
+            const names: string[] = (await cacheStorage.keys()).slice(0, MAX_STORAGE_ITEMS);
+            const result: { name: string; entries: number }[] = [];
+            for (const name of names) {
+                const cache = await cacheStorage.open(name);
+                result.push({ name: clip(String(name), 200), entries: (await cache.keys()).length });
+            }
+            return result;
+        }, errors, "Cache Storage")
+        : null;
+
+    const sw: any = (navigator as any).serviceWorker;
+    const script = (worker: any) => worker && worker.scriptURL ? clip(redactUrl(String(worker.scriptURL)), 400) : null;
+    const serviceWorkers = sw && typeof sw.getRegistrations === "function"
+        ? await settle(async () => (await sw.getRegistrations() as any[]).slice(0, MAX_STORAGE_ITEMS).map(r => ({
+            scope: clip(redactUrl(String(r.scope || "")), 400),
+            active: script(r.active), activeState: r.active ? String(r.active.state) : null,
+            waiting: script(r.waiting), installing: script(r.installing),
+        })), errors, "service workers")
+        : null;
+
+    const storageManager: any = (navigator as any).storage;
+    const estimate: any = storageManager && typeof storageManager.estimate === "function" ? await settle(() => storageManager.estimate(), errors, "storage estimate") : null;
+    const persisted = storageManager && typeof storageManager.persisted === "function" ? await settle<boolean>(() => storageManager.persisted(), errors, "persistence") : null;
+
+    return {
+        cookies,
+        indexedDb,
+        caches,
+        serviceWorkers,
+        controller: sw ? script(sw.controller) : null,
+        usageBytes: estimate && typeof estimate.usage === "number" ? estimate.usage : null,
+        quotaBytes: estimate && typeof estimate.quota === "number" ? estimate.quota : null,
+        usageDetails: estimate && estimate.usageDetails ? { ...estimate.usageDetails } : null,
+        persisted: typeof persisted === "boolean" ? persisted : null,
+        errors,
+    };
+}
+
+/** The WebAssembly runtime's linear memory in bytes (it only grows); null where there is no such runtime on the page. */
+export function wasmMemory(): number | null {
+    try {
+        const runtime = typeof (globalThis as any).getDotnetRuntime === "function" ? (globalThis as any).getDotnetRuntime(0) : null;
+        const heap = runtime && runtime.Module && runtime.Module.HEAPU8;
+        return heap && typeof heap.length === "number" ? heap.length : null;
+    } catch {
+        return null;
+    }
 }
 
 export function loadPrefs() {

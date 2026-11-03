@@ -16,6 +16,9 @@ public enum BevToolsEventKind
     Browser,
     Diagnostic,
     Custom,
+
+    /// <summary>An entry an <c>ILogger</c> of the application wrote (Logs panel).</summary>
+    Log,
 }
 
 public enum BevToolsSeverity

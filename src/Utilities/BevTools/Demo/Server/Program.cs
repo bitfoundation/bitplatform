@@ -34,6 +34,9 @@ builder.Services.AddBitBevToolsServerServices(o =>
 {
     o.Enabled = true;
     o.ValueAccess = BevValueAccess.Full;
+    // Request and response bodies, redacted: the demo's data is made up. Outside Development a process that serves many
+    // users does not read them whatever this says; an application would leave it off unless it needs it.
+    o.CaptureHttpBodies = true;
     // The same extension the client registers, so its panel, rule and commands are there on either runtime.
     o.Extensions.Add(new DemoBevToolsExtension());
 });
@@ -91,7 +94,8 @@ api.MapGet("/orders/{id:int}", async (int id) =>
         : Results.NotFound();
 });
 api.MapGet("/flaky", () => Random.Shared.Next(3) == 0 ? Results.Ok("ok") : Results.Problem("The flaky endpoint failed (simulated).", statusCode: 500));
-api.MapGet("/profile", () => new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"));
+// Sent with its length (a chunked body is not read): the Network panel shows its body, the access token redacted.
+api.MapGet("/profile", () => Results.Bytes(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"), System.Text.Json.JsonSerializerOptions.Web), "application/json"));
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode(o => o.ContentSecurityFrameAncestorsPolicy = null)

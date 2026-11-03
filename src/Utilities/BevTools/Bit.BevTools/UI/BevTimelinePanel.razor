@@ -6,6 +6,7 @@
         <div class="bev-toolbar">
             <input type="text" aria-label="Filter timeline events" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <button type="button" @onclick="() => Session.Timeline.Clear()" title="Clear timeline">Clear</button>
+            <button type="button" title="Put a marker here, to find this moment again in the timeline, exports and traces (named markers: palette &gt;mark …)" @onclick="AddMarker">⚑ Mark</button>
             <label><input type="checkbox" checked="@_showLanes" @onchange='e => { _showLanes = e.Value is true; OnParametersSet(); }' /> lanes</label>
             <span class="bev-muted bev-nowrap">@_events.Count / @_all.Length</span>
         </div>
@@ -154,7 +155,7 @@
         ("state", [BevToolsEventKind.StateChange], "var(--bev-state)"),
         ("http", [BevToolsEventKind.Http], "var(--bev-http)"),
         ("js", [BevToolsEventKind.JsInterop], "var(--bev-js)"),
-        ("error", [BevToolsEventKind.Error, BevToolsEventKind.Diagnostic, BevToolsEventKind.Circuit, BevToolsEventKind.Browser, BevToolsEventKind.Lifecycle, BevToolsEventKind.Custom], "var(--bev-error)"),
+        ("error", [BevToolsEventKind.Error, BevToolsEventKind.Diagnostic, BevToolsEventKind.Circuit, BevToolsEventKind.Browser, BevToolsEventKind.Lifecycle, BevToolsEventKind.Custom, BevToolsEventKind.Log], "var(--bev-error)"),
     ];
 
     private const double WindowSeconds = 10;
@@ -281,6 +282,14 @@
         }
 
         _bars = bars;
+    }
+
+    private int _markers;
+
+    private void AddMarker()
+    {
+        Session.AddMarker("Marker " + ++_markers);
+        OnParametersSet();
     }
 
     private void OnQuery(string? value)

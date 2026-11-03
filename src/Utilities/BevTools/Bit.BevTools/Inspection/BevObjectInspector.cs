@@ -787,6 +787,43 @@ public sealed class BevObjectInspector
     private static bool OutOfBudget(Dictionary<string, string> result, int maxEntries, long deadline) =>
         result.Count >= maxEntries || Stopwatch.GetTimestamp() > deadline;
 
+    private void FlattenJson(Dictionary<string, string> result, string path, JsonElement json, int depth, int maxDepth, int maxItems, int maxEntries, List<object> ancestors, long deadline)
+    {
+        var i = 0;
+        if (json.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in json.EnumerateObject())
+            {
+                if (i++ >= maxItems || OutOfBudget(result, maxEntries, deadline))
+                {
+                    break;
+                }
+
+                var childPath = path.Length == 0 ? property.Name : path + "." + property.Name;
+                if (_redactor.IsSensitiveName(property.Name))
+                {
+                    result[childPath] = BevRedactor.RedactedValue;
+                    continue;
+                }
+
+                FlattenInto(result, childPath, property.Value, depth + 1, maxDepth, maxItems, maxEntries, ancestors, null, deadline);
+            }
+
+            return;
+        }
+
+        foreach (var item in json.EnumerateArray())
+        {
+            if (i >= maxItems || OutOfBudget(result, maxEntries, deadline))
+            {
+                break;
+            }
+
+            FlattenInto(result, path + "[" + i + "]", item, depth + 1, maxDepth, maxItems, maxEntries, ancestors, null, deadline);
+            i++;
+        }
+    }
+
     private void FlattenInto(Dictionary<string, string> result, string path, object? value, int depth, int maxDepth, int maxItems, int maxEntries, List<object> ancestors, MemberInfo? member, long deadline)
     {
         // The budget is checked before each child, not here: the node itself is always written, and a getter is never
@@ -795,6 +832,14 @@ public sealed class BevObjectInspector
         if (path.Length > 0)
         {
             result[path] = node.Display;
+        }
+
+        // JSON (a state provider that snapshots its state as JSON, a store's serialized slice) is shown as text but
+        // diffed member by member, like any object: each property by its name, sensitive names redacted.
+        if (value is JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } json && node.Kind is BevNodeKind.Special && depth < maxDepth)
+        {
+            FlattenJson(result, path, json, depth, maxDepth, maxItems, maxEntries, ancestors, deadline);
+            return;
         }
 
         if (value is null || depth >= maxDepth || !node.IsExpandable || node.Kind is BevNodeKind.Special)

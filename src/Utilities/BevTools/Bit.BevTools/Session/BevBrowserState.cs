@@ -75,6 +75,82 @@ public sealed class BevBrowserState
     public int ResourceLoadErrors { get; internal set; }
 
     public int CspViolations { get; internal set; }
+
+    /// <summary>Long frames and interactions the page's browser reported (Event Timing, long animation frames).</summary>
+    public BevResponsiveness Responsiveness { get; } = new();
+
+    /// <summary>The page's cookies, IndexedDB databases, caches, service workers and quota at the last storage read.</summary>
+    public BevAppStorage? AppStorage { get; internal set; }
+}
+
+/// <summary>
+/// The page's other storage, as the page hub read it on request: structure and sizes only. Cookie values are never
+/// read (a cookie is where a session id lives), IndexedDB databases are listed, not opened, and caches are counted,
+/// never their responses read.
+/// </summary>
+public sealed class BevAppStorage
+{
+    /// <summary>Cookies script can read: HttpOnly cookies (an ASP.NET Core authentication cookie) are invisible to the page.</summary>
+    public BevCookieInfo[] Cookies { get; set; } = [];
+
+    /// <summary>Null where the browser cannot list its databases.</summary>
+    public BevIndexedDbInfo[]? IndexedDb { get; set; }
+
+    public BevCacheInfo[]? Caches { get; set; }
+
+    public BevServiceWorkerInfo[]? ServiceWorkers { get; set; }
+
+    /// <summary>The script of the service worker that controls this page, null when none does.</summary>
+    public string? Controller { get; set; }
+
+    public double? UsageBytes { get; set; }
+
+    public double? QuotaBytes { get; set; }
+
+    /// <summary>Usage per kind of storage (Chromium): indexedDB, caches, serviceWorkerRegistrations, fileSystem.</summary>
+    public Dictionary<string, double>? UsageDetails { get; set; }
+
+    /// <summary>Whether the browser keeps this origin's storage under pressure (<c>navigator.storage.persist()</c> was granted).</summary>
+    public bool? Persisted { get; set; }
+
+    /// <summary>What could not be read, and why.</summary>
+    public string[] Errors { get; set; } = [];
+}
+
+public sealed class BevCookieInfo
+{
+    public string Name { get; set; } = "";
+
+    public int Size { get; set; }
+}
+
+public sealed class BevIndexedDbInfo
+{
+    public string Name { get; set; } = "";
+
+    public long Version { get; set; }
+}
+
+public sealed class BevCacheInfo
+{
+    public string Name { get; set; } = "";
+
+    public int Entries { get; set; }
+}
+
+/// <summary>A service worker registration: the script that runs, and one installed and waiting to take over, if any.</summary>
+public sealed class BevServiceWorkerInfo
+{
+    public string Scope { get; set; } = "";
+
+    public string? Active { get; set; }
+
+    public string? ActiveState { get; set; }
+
+    /// <summary>A new version installed and waiting: the page keeps running the old one until every tab of it closes, or the worker calls <c>skipWaiting</c>.</summary>
+    public string? Waiting { get; set; }
+
+    public string? Installing { get; set; }
 }
 
 /// <summary>One finding of the page's accessibility check (page hub), with the component that rendered the element.</summary>

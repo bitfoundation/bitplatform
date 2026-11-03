@@ -3,6 +3,7 @@ using Bit.BevTools;
 using Bit.BevTools.Demo.Client.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.BevTools.Demo.Client.Services;
 
@@ -139,9 +140,16 @@ public sealed class FilterState
     }
 }
 
-/// <summary>Shopping cart exposed to BevTools as a state provider with named actions.</summary>
-public sealed class CartState : IBevStateProvider
+/// <summary>
+/// Shopping cart exposed to BevTools as a state provider with named actions. It keeps a copy of itself after every
+/// change, so BevTools can ask it to go back to one (State → CartState → ⟲ restore): time travel through the
+/// provider's own contract, IBevStateRestorer.
+/// </summary>
+public sealed class CartState : IBevStateProvider, IBevStateRestorer
 {
+    private readonly Dictionary<int, (List<CartLine> Lines, string? Coupon)> _versions = [];
+    private int _version;
+
     public List<CartLine> Lines { get; } = [];
 
     public decimal Total => Lines.Sum(l => l.LineTotal);
@@ -170,26 +178,49 @@ public sealed class CartState : IBevStateProvider
             line.Quantity++;
         }
 
-        Changed?.Invoke(new BevStateChangeInfo("Add", product.Name));
+        Notify("Add", product.Name);
     }
 
     public void Remove(int productId)
     {
         Lines.RemoveAll(l => l.Product.Id == productId);
-        Changed?.Invoke(new BevStateChangeInfo("Remove", "product " + productId));
+        Notify("Remove", "product " + productId);
     }
 
     public void ApplyCoupon(string code)
     {
         CouponCode = code;
-        Changed?.Invoke(new BevStateChangeInfo("ApplyCoupon", code));
+        Notify("ApplyCoupon", code);
     }
 
     public void Clear()
     {
         Lines.Clear();
         CouponCode = null;
-        Changed?.Invoke(new BevStateChangeInfo("Clear"));
+        Notify("Clear", null);
+    }
+
+    public ValueTask RestoreAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (!int.TryParse(token, System.Globalization.CultureInfo.InvariantCulture, out var version) || !_versions.TryGetValue(version, out var saved))
+        {
+            throw new InvalidOperationException("Version " + token + " of the cart is no longer kept.");
+        }
+
+        Lines.Clear();
+        Lines.AddRange(saved.Lines.Select(l => new CartLine { Product = l.Product, Quantity = l.Quantity }));
+        CouponCode = saved.Coupon;
+        Notify("Restore", "to version " + version);
+        return ValueTask.CompletedTask;
+    }
+
+    private void Notify(string action, string? detail)
+    {
+        _version++;
+        _versions[_version] = (Lines.Select(l => new CartLine { Product = l.Product, Quantity = l.Quantity }).ToList(), CouponCode);
+        // The last hundred versions: what the State panel's history can show anyway.
+        _versions.Remove(_version - 100);
+        Changed?.Invoke(new BevStateChangeInfo(action, detail) { RestoreToken = _version.ToString(System.Globalization.CultureInfo.InvariantCulture) });
     }
 }
 
@@ -252,7 +283,7 @@ public sealed class AppState : IBevStateProvider
 }
 
 /// <summary>HTTP access through IHttpClientFactory so BevTools tracks every request automatically.</summary>
-public sealed class ProductApi(IHttpClientFactory factory, NavigationManager navigation)
+public sealed class ProductApi(IHttpClientFactory factory, NavigationManager navigation, ILogger<ProductApi> logger)
 {
     private HttpClient Client
     {
@@ -265,8 +296,14 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
         }
     }
 
-    public Task<List<Product>> GetProductsAsync(CancellationToken ct = default) =>
-        Client.GetFromJsonAsync<List<Product>>("api/products", ct)!;
+    // Structured, as an app should log: BevTools → Logs shows the template, its values and the component it ran for.
+    public async Task<List<Product>> GetProductsAsync(CancellationToken ct = default)
+    {
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        var products = await Client.GetFromJsonAsync<List<Product>>("api/products", ct) ?? [];
+        logger.LogInformation(new EventId(1001, "ProductsLoaded"), "Loaded {Count} products in {ElapsedMs:0} ms", products.Count, System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        return products;
+    }
 
     public Task<List<Product>> SearchAsync(string query, CancellationToken ct = default) =>
         Client.GetFromJsonAsync<List<Product>>("api/search?q=" + Uri.EscapeDataString(query), ct)!;
@@ -280,6 +317,11 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
     public async Task<string> GetFlakyAsync(CancellationToken ct = default)
     {
         var response = await Client.GetAsync("api/flaky", ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(new EventId(1002, "FlakyFailed"), "The flaky endpoint answered {StatusCode}", (int)response.StatusCode);
+        }
+
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync(ct);
     }

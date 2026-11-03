@@ -216,6 +216,10 @@
         <dl class="bev-kv">
             <dt>Renders</dt><dd>@Record.RenderCount</dd>
             <dt>Total / avg / max</dt><dd>@BevFmt.Ms(Record.TotalRenderMs) / @BevFmt.Ms(Record.RenderCount == 0 ? 0 : Record.TotalRenderMs / Record.RenderCount) / @BevFmt.Ms(Record.MaxRenderMs)</dd>
+            @if (BevAllocations.IsMeasurable && Record.RenderCount > 0)
+            {
+                <dt>Allocated</dt><dd title="Bytes BuildRenderTree allocated: strings, closures and collections it created. Its children count for themselves.">@BevFmt.Bytes(Record.TotalAllocatedBytes / Record.RenderCount) per render, max @BevFmt.Bytes(Record.MaxAllocatedBytes)@(Record.LastRender?.AllocatedBytes is { } last ? ", last " + BevFmt.Bytes(last) : "")</dd>
+            }
             <dt>Last render</dt><dd>@(Record.LastRenderAt is { } at ? BevFmt.Time(at) + " (" + BevFmt.Ago(at) + ")" : "never")</dd>
             @if (_typeMetrics is not null)
             {

@@ -225,6 +225,98 @@ describe('companion', () => {
         expect(document.querySelector('.bc-right').textContent).toContain('not captured (CaptureHttpCallers is off)');
         off.stop();
     });
+
+    it('shows what renders allocated, per component and per type, and no column for an export without it', async () => {
+        const { Companion, FileSource } = await loadCompanion();
+        const doc = session(9, 'WebAssembly', [
+            { ...counter, instanceId: 1, type: 'App.Row', displayName: 'Row', renders: 4, totalRenderMs: 2, allocatedBytes: 4096 },
+            { ...counter, instanceId: 2, type: 'App.Row', displayName: 'Row', renders: 4, totalRenderMs: 2, allocatedBytes: 4096 },
+        ]);
+        const companion = new Companion(new FileSource(doc, 'export.json'), document.body);
+        await companion.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Profiler')).click();
+        const headers = [...document.querySelectorAll('th')].map(th => th.textContent);
+        expect(headers).toContain('Allocated');
+        const cell = [...document.querySelectorAll('td')].find(td => td.title === '1.0 KB per render');
+        expect(cell, 'per render in the title').toBeTruthy();
+        companion.stop();
+
+        document.body.replaceChildren();
+        const old = new Companion(new FileSource(session(9, 'WebAssembly', [counter]), 'old.json'), document.body);
+        await old.start();
+        await flush();
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Profiler')).click();
+        expect([...document.querySelectorAll('th')].map(th => th.textContent)).not.toContain('Allocated');
+        old.stop();
+    });
+
+    it('opens a render batch from the profiler on a live page, as a tree and on a time axis', async () => {
+        const { Companion } = await loadCompanion();
+        const doc = session(3, 'Server', [counter]);
+        doc.timeline.push({ id: 2, timestamp: new Date().toISOString(), kind: 'RenderBatch', category: 'batch', title: 'Batch #7: 2 components', durationMs: 3, severity: 'Info', data: { batch: 7 } });
+        const source = liveSource({ t1: doc });
+        const answer = { batchId: 7, totalMs: 2.5, omitted: 0, rows: [
+            { instanceId: 7, name: 'Counter', instances: 1, depth: 0, renders: 1, selfMs: 0.5, totalMs: 2.5 },
+            { instanceId: 8, name: '<b>Row</b>', instances: 120, depth: 1, renders: 120, selfMs: 2, totalMs: 2 },
+        ], timeline: { spanMs: 2.5, depth: 2, omitted: 0, bars: [
+            { instanceId: 7, name: 'Counter', depth: 0, startMs: 0, durationMs: 0.5 },
+            { instanceId: 8, name: 'Row', depth: 1, startMs: 0.5, durationMs: 2 },
+        ] } };
+        const request = source.request;
+        source.request = async (targetId, method, params) => method === 'batch' ? (source.requests.push([targetId, method, params]), answer) : request(targetId, method, params);
+        const companion = new Companion(source, document.body);
+        await companion.start();
+        await flush();
+
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Profiler')).click();
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('Batch #7')).click();
+        await flush();
+        await flush();
+
+        expect(source.requests).toContainEqual(['t1', 'batch', { batchId: 7 }]);
+        expect(document.body.textContent).toContain('Batch #7 · 2.50 ms building');
+        expect(document.body.textContent).toContain('<b>Row</b> ×120 instances');
+        expect(document.querySelector('b'), 'names are text').toBeNull();
+        expect(document.querySelectorAll('.bc-batch-bar')).toHaveLength(2);
+        companion.stop();
+    });
+
+    it('lists log entries with a minimum level, and shows one with its values, scopes and sender as text', async () => {
+        const { Companion, FileSource } = await loadCompanion();
+        const doc = session(9, 'Server', [counter]);
+        doc.logCounts = { Information: 1, Warning: 1 };
+        doc.dbCommands = [{ commandText: 'SELECT "o"."Id" FROM "Orders" AS "o" WHERE "o"."Id" = @p0', executions: 25, failed: 0, totalMs: 50, maxMs: 4 }];
+        doc.logs = [
+            { id: 1, at: new Date().toISOString(), level: 'Information', category: 'Shop.Cache', eventId: 0, message: 'Cache hit for orders', messageTemplate: 'Cache hit for {Key}', properties: { Key: '"orders"' } },
+            { id: 2, at: new Date().toISOString(), level: 'Warning', category: 'Shop.Payments', eventId: 7, message: 'Retrying <b>2</b>', messageTemplate: 'Retrying {Attempt}', properties: { Attempt: '<b>2</b>' }, scopes: ['OrderId=42'], caller: 'Checkout.PayAsync', traceId: '4bf92f3577b34da6a3ce929d0e0e4736', spanId: '00f067aa0ba902b7' },
+        ];
+        const companion = new Companion(new FileSource(doc, 'export.json'), document.body);
+        await companion.start();
+        await flush();
+
+        const tab = [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Logs'));
+        expect(tab.textContent, 'the warnings counted on the tab').toContain('1');
+        tab.click();
+        expect(document.body.textContent).toContain('Cache hit for orders');
+        expect(document.body.textContent).toContain('Retrying <b>2</b>');
+        expect(document.body.textContent).toContain('Database commands');
+        expect(document.body.textContent).toContain('WHERE "o"."Id" = @p0');
+        expect(document.querySelector('b'), 'logged text is text').toBeNull();
+
+        const input = document.querySelector('.bc-toolbar input');
+        input.value = 'level:warning';
+        input.dispatchEvent(new Event('input'));
+        expect(document.body.textContent).not.toContain('Cache hit for orders');
+
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('Retrying')).click();
+        const detail = document.querySelector('.bc-right').textContent;
+        expect(detail).toContain('Retrying {Attempt}');
+        expect(detail).toContain('Checkout.PayAsync');
+        expect(detail).toContain('OrderId=42');
+        expect(detail).toContain('4bf92f3577b34da6a3ce929d0e0e4736');
+        companion.stop();
+    });
 });
 
 describe('components in the page', () => {

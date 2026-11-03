@@ -222,6 +222,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                     Changes = changes,
                     Snapshot = pending.Snapshot,
                     TriggerEventId = pending.TriggerEventId,
+                    RestoreToken = entry.Provider is IBevStateRestorer && pending.Info?.RestoreToken is { Length: > 0 and <= 200 } token ? token : null,
                 };
                 entry.History.Add(record);
 
@@ -240,6 +241,58 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
 
         _session.Overhead.AddInspection(Stopwatch.GetTimestamp() - start);
         _session.Touch();
+    }
+
+    /// <summary>
+    /// Asks the provider of a recorded change to restore the state it had right after that change. Only where restoring
+    /// is allowed (<see cref="BevToolsSession.AllowsStateRestore"/>), only for a provider that can (<see cref="IBevStateRestorer"/>),
+    /// and only with the token it gave; returns what happened, never throws. Call on the session's dispatcher.
+    /// </summary>
+    public async Task<string> RestoreAsync(long changeId)
+    {
+        if (!_session.AllowsStateRestore)
+        {
+            return "Restoring state is not allowed outside Development in a process that serves many users.";
+        }
+
+        BevStateProviderEntry? entry;
+        BevStateChangeRecord? change;
+        lock (_lock)
+        {
+            entry = _entries.FirstOrDefault(e => e.History.FindByKey(static c => c.Id, changeId) is not null);
+            change = entry?.History.FindByKey(static c => c.Id, changeId);
+        }
+
+        if (entry is null || change is null)
+        {
+            return "That change is no longer in the history.";
+        }
+
+        if (entry.Provider is not IBevStateRestorer restorer || change.RestoreToken is not { } token)
+        {
+            return entry.Name + " cannot restore this change: the provider gave it no restore token (IBevStateRestorer).";
+        }
+
+        try
+        {
+            await restorer.RestoreAsync(token);
+        }
+        catch (Exception ex)
+        {
+            _session.Errors.Record(ex, "bevtools", entry.Name + " failed to restore a change.");
+            return entry.Name + " could not restore it: " + ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
+        }
+
+        _session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Custom,
+            Category = "state-restore",
+            Title = "Restored " + entry.Name + " to after " + (change.Action ?? "a change") + " (" + BevFmt.Time(change.At) + ")",
+            Detail = "Restored from BevTools with the provider's token",
+            ParentEventId = change.TimelineEventId > 0 ? change.TimelineEventId : null,
+        });
+        _session.Touch();
+        return "Restored " + entry.Name + " to after " + (change.Action ?? "the change") + ".";
     }
 
     public void ClearHistory()

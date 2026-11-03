@@ -136,6 +136,8 @@ internal sealed class RenderTracker
         {
             var t0 = Stopwatch.GetTimestamp();
             var scope = BeginRender(record, component);
+            // Read right around the fragment, after BevTools' own work for the render: only what BuildRenderTree allocates.
+            var a1 = scope.Sample is not null && BevAllocations.IsMeasurable ? GC.GetAllocatedBytesForCurrentThread() : -1;
             var t1 = Stopwatch.GetTimestamp();
             try
             {
@@ -144,16 +146,19 @@ internal sealed class RenderTracker
             catch (Exception ex)
             {
                 var t2 = Stopwatch.GetTimestamp();
+                NoteAllocations(scope, a1);
                 EndRender(record, scope, t1, t2, ex);
                 _session.Overhead.AddInstrumentation((t1 - t0) + (Stopwatch.GetTimestamp() - t2));
                 throw;
             }
 
             var t3 = Stopwatch.GetTimestamp();
+            NoteAllocations(scope, a1);
             EndRender(record, scope, t1, t3, null);
             if (record.IsBevTools)
             {
                 _session.Overhead.AddBevToolsRender(t3 - t1);
+                NoteOwnRender(t1, t3);
             }
             else
             {
@@ -169,6 +174,46 @@ internal sealed class RenderTracker
     }
 
     private readonly record struct RenderScope(BevRenderSample? Sample, BevRenderBatchInfo? Batch);
+
+    // When BevTools' own UI rendered, recently: a long frame on WebAssembly - where the panel renders on the page's only
+    // thread - can be the panel's own work. A fixed array, written only for BevTools' renders, never allocating.
+    private readonly (long Start, long End)[] _ownRenders = new (long, long)[256];
+    private int _ownRenderNext;
+
+    internal void NoteOwnRender(long start, long end)
+    {
+        lock (_ownRenders)
+        {
+            _ownRenders[_ownRenderNext] = (start, end);
+            _ownRenderNext = (_ownRenderNext + 1) % _ownRenders.Length;
+        }
+    }
+
+    /// <summary>How long BevTools' own components spent rendering between two timestamps, as far as the last 256 of their renders reach.</summary>
+    internal double OwnRenderMsWithin(long from, long to)
+    {
+        long ticks = 0;
+        lock (_ownRenders)
+        {
+            foreach (var (start, end) in _ownRenders)
+            {
+                if (end > from && start < to)
+                {
+                    ticks += Math.Min(end, to) - Math.Max(start, from);
+                }
+            }
+        }
+
+        return ticks * 1000.0 / Stopwatch.Frequency;
+    }
+
+    private static void NoteAllocations(RenderScope scope, long before)
+    {
+        if (before >= 0)
+        {
+            scope.Sample!.AllocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
+        }
+    }
 
     private RenderScope BeginRender(BevComponentRecord record, ComponentBase component)
     {

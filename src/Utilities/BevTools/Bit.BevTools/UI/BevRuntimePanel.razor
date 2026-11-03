@@ -23,6 +23,34 @@
             </div>
         </div>
     }
+    @if (_memory.Length > 1)
+    {
+        var first = _memory[0];
+        var last = _memory[^1];
+        var max = Math.Max(1, _memory.Max(m => m.HeapBytes));
+        var span = Math.Max(1, (last.At - first.At).TotalSeconds);
+        <div class="bev-section">
+            <div class="bev-section-title">Memory over time <span class="bev-muted" style="font-weight:normal">@(Session.IsInMultiUserHost ? "the process's heap, shared by every circuit" : "this runtime") · last @BevFmt.Num(span / 60) min, read once a second</span></div>
+            <div class="bev-section-body">
+                <svg viewBox="0 0 600 60" preserveAspectRatio="none" style="width:100%;height:60px" role="img" aria-label="Managed heap from @BevFmt.Bytes(first.HeapBytes) to @BevFmt.Bytes(last.HeapBytes), peak @BevFmt.Bytes(max); @_collections.Length full collections">
+                    <polyline fill="none" stroke="var(--bev-accent)" stroke-width="1.5" points="@Points(_memory, first.At, span, max)" />
+                    @foreach (var c in _collections.Where(c => c.At >= first.At))
+                    {
+                        var x = (c.At - first.At).TotalSeconds / span * 600;
+                        <line x1="@x.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)" x2="@x.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)" y1="0" y2="60" stroke="var(--bev-warn)" stroke-dasharray="2 2"><title>Full collection: heap after @BevFmt.Bytes(c.HeapAfterBytes)</title></line>
+                    }
+                </svg>
+                <dl class="bev-kv">
+                    <dt>Managed heap</dt><dd>@BevFmt.Bytes(last.HeapBytes) now · @BevFmt.Bytes(_memory.Min(m => m.HeapBytes)) to @BevFmt.Bytes(max) in this window</dd>
+                    <dt>Full collections</dt><dd>@(last.FullCollections - first.FullCollections) in this window@(_collections.Length > 0 ? " · heap after the last: " + BevFmt.Bytes(_collections[^1].HeapAfterBytes) + (_collections[^1].Exact ? "" : " (the first reading after it)") : "") <span class="bev-muted">(dashed lines; each is a timeline event)</span></dd>
+                    @if (last.LinearMemoryBytes is { } linear)
+                    {
+                        <dt>WebAssembly memory</dt><dd>@BevFmt.Bytes(linear) <span class="bev-muted">(what the runtime got from the browser: it grows, never shrinks@(first.LinearMemoryBytes is { } was && was < linear ? "; " + BevFmt.Bytes(was) + " at the start of the window" : ""))</span></dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    }
     <div class="bev-section">
         <div class="bev-section-title">Disposed components still alive <span class="bev-muted" style="font-weight:normal">this session</span></div>
         <div class="bev-section-body">
@@ -73,11 +101,21 @@
 
     private BevRetainedComponents[] _retained = [];
 
+    private BevMemorySample[] _memory = [];
+
+    private BevFullCollection[] _collections = [];
+
     protected override void OnParametersSet()
     {
         _sections = BevRuntimeInfo.Build(Session);
         _retained = Session.Leaks.Retained();
+        _memory = Session.Memory.Samples;
+        _collections = Session.Memory.FullCollections;
     }
+
+    private static string Points(BevMemorySample[] samples, DateTimeOffset start, double span, long max) =>
+        string.Join(" ", samples.Select(s => ((s.At - start).TotalSeconds / span * 600).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + ","
+            + (58 - (double)s.HeapBytes / max * 56).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)));
 
     private string CollectTitle => !Session.AllowsForcedCollection
         ? "Not outside Development in a process that serves many users: a full collection pauses every circuit."

@@ -58,7 +58,7 @@ public class PanelInteractionTests : BunitContext
         var cut = RenderPanel();
         cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Browser", StringComparison.Ordinal)).Click();
 
-        var button = cut.FindAll(".bev-body button").First(b => b.TextContent.Contains("localStorage", StringComparison.Ordinal));
+        var button = cut.FindAll(".bev-body button").First(b => b.TextContent.Contains("Read storage", StringComparison.Ordinal));
         button.Click();
 
         Assert.IsNotNull(Session.Browser.LocalStorage);

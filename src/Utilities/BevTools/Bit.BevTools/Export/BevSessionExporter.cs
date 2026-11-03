@@ -130,6 +130,11 @@ public static class BevSessionExporter
                 WriteInterop(writer, session, options.IncludeInteropCalls);
             }
 
+            if (options.Includes("logs"))
+            {
+                WriteLogs(writer, session);
+            }
+
             if (options.Includes("state"))
             {
                 WriteState(writer, session, options.IncludeStateHistory);
@@ -158,6 +163,7 @@ public static class BevSessionExporter
             if (options.Includes("runtime"))
             {
                 WriteRuntime(writer, session);
+                WriteMemory(writer, session.Memory);
             }
 
             if (options.Includes("prerender"))
@@ -220,7 +226,8 @@ public static class BevSessionExporter
             .Append(session.Timeline.Count).Append(" timeline events · ")
             .Append(session.Errors.TotalOccurrences).Append(" error occurrences · ")
             .Append(session.Http.Count).Append(" HTTP requests (").Append(session.Http.FailedCount).Append(" failed) · ")
-            .Append(session.Interop.Count).Append(" JS interop calls").AppendLine();
+            .Append(session.Interop.Count).Append(" JS interop calls · ")
+            .Append(session.Logs.Total).Append(" log entries (").Append(session.Logs.CountOf(Microsoft.Extensions.Logging.LogLevel.Warning)).Append(" warnings)").AppendLine();
         sb.AppendLine();
 
         var findings = session.Diagnostics.Findings.Where(f => !f.Dismissed).ToArray();
@@ -302,8 +309,8 @@ public static class BevSessionExporter
         }
         else
         {
-            sb.AppendLine("| Component | Renders | Total | Avg | Max | Forced re-renders | Last cause |");
-            sb.AppendLine("|---|---:|---:|---:|---:|---:|---|");
+            sb.AppendLine("| Component | Renders | Total | Avg | Max | Allocated per render | Forced re-renders | Last cause |");
+            sb.AppendLine("|---|---:|---:|---:|---:|---:|---:|---|");
             foreach (var c in hot)
             {
                 sb.Append("| ").Append(c.DisplayName).Append(c.IsDisposed ? " †" : "")
@@ -311,6 +318,7 @@ public static class BevSessionExporter
                     .Append(" | ").Append(Ms(c.TotalRenderMs))
                     .Append(" | ").Append(Ms(c.TotalRenderMs / c.RenderCount))
                     .Append(" | ").Append(Ms(c.MaxRenderMs))
+                    .Append(" | ").Append(BevAllocations.IsMeasurable ? BevToolsHttpMessageHandler.FormatBytes(c.TotalAllocatedBytes / c.RenderCount) : "–")
                     .Append(" | ").Append(ForcedRenders(c))
                     .Append(" | ").Append(c.LastRender?.CauseDetail ?? "")
                     .AppendLine(" |");
@@ -354,6 +362,32 @@ public static class BevSessionExporter
             sb.AppendLine();
         }
 
+        var logs = session.Logs.Snapshot();
+        var notableLogs = logs.Where(l => l.Level >= Microsoft.Extensions.Logging.LogLevel.Warning).Reverse().Take(15).ToArray();
+        sb.Append("## Logged warnings and errors (").Append(notableLogs.Length).Append(" of ").Append(logs.Length).AppendLine(" entries)");
+        sb.AppendLine();
+        if (notableLogs.Length == 0)
+        {
+            sb.AppendLine("None.");
+        }
+
+        foreach (var l in notableLogs)
+        {
+            sb.Append("- ").Append(Time(l.At)).Append(" `").Append(l.LevelLabel).Append("` ").Append(l.Category).Append(": ").Append(l.Text.ReplaceLineEndings(" "));
+            if (l.ExceptionType is not null)
+            {
+                sb.Append(" (").Append(ErrorCenter.ShortTypeName(l.ExceptionType)).Append(')');
+            }
+
+            if (l.Caller is not null)
+            {
+                sb.Append(" — ").Append(l.Caller);
+            }
+
+            sb.AppendLine();
+        }
+
+        sb.AppendLine();
         var events = session.Timeline.Snapshot();
         var tail = events.Skip(Math.Max(0, events.Length - timelineTail)).ToArray();
         sb.Append("## Timeline (last ").Append(tail.Length).Append(" of ").Append(events.Length).AppendLine(" events)");
@@ -444,6 +478,11 @@ public static class BevSessionExporter
         w.WriteBoolean("trackHttp", o.TrackHttp);
         w.WriteBoolean("captureHttpHeaders", o.CaptureHttpHeaders);
         w.WriteBoolean("captureHttpCallers", o.CaptureHttpCallers);
+        w.WriteBoolean("captureHttpBodies", o.CaptureHttpBodies);
+        w.WriteBoolean("trackLogs", o.TrackLogs);
+        w.WriteString("minimumLogLevel", o.MinimumLogLevel.ToString());
+        w.WriteBoolean("captureLogCallers", o.CaptureLogCallers);
+        w.WriteBoolean("trackResponsiveness", o.TrackResponsiveness);
         w.WriteBoolean("trackJsInterop", o.TrackJsInterop);
         w.WriteBoolean("trackJsModuleReferences", o.TrackJsModuleReferences);
         w.WriteBoolean("enableBrowserBridge", o.EnableBrowserBridge);
@@ -464,6 +503,12 @@ public static class BevSessionExporter
         w.WriteNumber("slowJsInteropMs", d.SlowJsInteropMs);
         w.WriteNumber("excessiveJsInteropCount", d.ExcessiveJsInteropCount);
         w.WriteNumber("repeatedErrorCount", d.RepeatedErrorCount);
+        w.WriteNumber("logFloodCount", d.LogFloodCount);
+        w.WriteNumber("heavyRenderAllocationBytes", d.HeavyRenderAllocationBytes);
+        w.WriteNumber("slowInteractionMs", d.SlowInteractionMs);
+        w.WriteNumber("longFrameBlockingMs", d.LongFrameBlockingMs);
+        w.WriteNumber("dbPerItemCount", d.DbPerItemCount);
+        w.WriteNumber("slowDbCommandMs", d.SlowDbCommandMs);
         w.WriteBoolean("evaluateWhileClosed", d.EvaluateWhileClosed);
         w.WriteStartArray("disabledRules");
         foreach (var rule in d.DisabledRules)
@@ -559,6 +604,12 @@ public static class BevSessionExporter
             w.WriteNumber("totalRenderMs", Round(c.TotalRenderMs));
             w.WriteNumber("maxRenderMs", Round(c.MaxRenderMs));
             w.WriteNumber("lastRenderMs", Round(c.LastRenderMs));
+            if (BevAllocations.IsMeasurable)
+            {
+                w.WriteNumber("allocatedBytes", c.TotalAllocatedBytes);
+                w.WriteNumber("maxAllocatedBytes", c.MaxAllocatedBytes);
+            }
+
             if (c.LastRenderAt is { } lastRenderAt)
             {
                 w.WriteString("lastRenderAt", lastRenderAt);
@@ -576,6 +627,10 @@ public static class BevSessionExporter
             {
                 w.WriteNumber("rendersSinceBaseline", c.RendersSinceBaseline);
                 w.WriteNumber("renderMsSinceBaseline", Round(c.RenderMsSinceBaseline));
+                if (BevAllocations.IsMeasurable)
+                {
+                    w.WriteNumber("allocatedBytesSinceBaseline", c.AllocatedBytesSinceBaseline);
+                }
             }
 
             if (c.LastRender is { } last)
@@ -838,6 +893,32 @@ public static class BevSessionExporter
                 w.WriteString("callerMissing", missing);
             }
 
+            if (r.TraceId is { } traceId)
+            {
+                w.WriteString("traceId", traceId);
+                w.WriteString("spanId", r.SpanId);
+            }
+
+            if (r.Protocol is not null)
+            {
+                w.WriteString("protocol", r.Protocol);
+            }
+
+            if (r.GraphQlOperation is not null)
+            {
+                w.WriteString("graphQlOperation", r.GraphQlOperation);
+            }
+
+            if (r.RequestBody is not null || r.RequestBodyNote is not null)
+            {
+                w.WriteString(r.RequestBody is null ? "requestBodyNote" : "requestBody", r.RequestBody ?? r.RequestBodyNote);
+            }
+
+            if (r.ResponseBody is not null || r.ResponseBodyNote is not null)
+            {
+                w.WriteString(r.ResponseBody is null ? "responseBodyNote" : "responseBody", r.ResponseBody ?? r.ResponseBodyNote);
+            }
+
             if (r.TimelineEventId > 0)
             {
                 w.WriteNumber("timelineEventId", r.TimelineEventId);
@@ -868,6 +949,148 @@ public static class BevSessionExporter
         }
 
         w.WriteEndArray();
+    }
+
+    /// <summary>The log entries in the buffer, oldest first, and the session-long counts per level.</summary>
+    private static void WriteLogs(Utf8JsonWriter w, BevToolsSession session)
+    {
+        w.WriteStartObject("logCounts");
+        foreach (var level in (ReadOnlySpan<Microsoft.Extensions.Logging.LogLevel>)[Microsoft.Extensions.Logging.LogLevel.Trace, Microsoft.Extensions.Logging.LogLevel.Debug, Microsoft.Extensions.Logging.LogLevel.Information, Microsoft.Extensions.Logging.LogLevel.Warning, Microsoft.Extensions.Logging.LogLevel.Error, Microsoft.Extensions.Logging.LogLevel.Critical])
+        {
+            w.WriteNumber(level.ToString(), session.Logs.CountOf(level));
+        }
+
+        w.WriteEndObject();
+        w.WriteStartArray("logs");
+        foreach (var l in session.Logs.Snapshot())
+        {
+            w.WriteStartObject();
+            w.WriteNumber("id", l.Id);
+            w.WriteString("at", l.At);
+            w.WriteString("level", l.Level.ToString());
+            w.WriteString("category", l.Category);
+            w.WriteNumber("eventId", l.EventId);
+            if (l.EventName is not null)
+            {
+                w.WriteString("eventName", l.EventName);
+            }
+
+            if (l.Message is not null)
+            {
+                w.WriteString("message", l.Message);
+            }
+
+            if (l.MessageTemplate is not null)
+            {
+                w.WriteString("messageTemplate", l.MessageTemplate);
+            }
+
+            if (l.Properties.Count > 0)
+            {
+                w.WriteStartObject("properties");
+                foreach (var (name, value) in l.Properties)
+                {
+                    w.WriteString(name, value);
+                }
+
+                w.WriteEndObject();
+            }
+
+            if (l.Scopes.Count > 0)
+            {
+                WriteStrings(w, "scopes", l.Scopes);
+            }
+
+            if (l.ExceptionType is not null)
+            {
+                w.WriteString("exceptionType", l.ExceptionType);
+                w.WriteString("exceptionMessage", l.ExceptionMessage);
+            }
+
+            if (l.TraceId is not null)
+            {
+                w.WriteString("traceId", l.TraceId);
+                w.WriteString("spanId", l.SpanId);
+            }
+
+            if (l.Caller is not null)
+            {
+                w.WriteString("caller", l.Caller);
+            }
+
+            if (l.TriggerEventId is { } trigger)
+            {
+                w.WriteNumber("triggerEventId", trigger);
+            }
+
+            if (l.ErrorId is { } errorId)
+            {
+                w.WriteNumber("errorId", errorId);
+            }
+
+            if (l.DbCommand is { } command)
+            {
+                w.WriteStartObject("dbCommand");
+                if (command.CommandText is not null)
+                {
+                    w.WriteString("commandText", command.CommandText);
+                }
+
+                if (command.ElapsedMs is { } elapsed)
+                {
+                    w.WriteNumber("elapsedMs", elapsed);
+                }
+
+                w.WriteBoolean("failed", command.Failed);
+                w.WriteEndObject();
+            }
+
+            if (l.TimelineEventId > 0)
+            {
+                w.WriteNumber("timelineEventId", l.TimelineEventId);
+            }
+
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+        var commands = BevDbCommands.Summarize(session.Logs.Snapshot());
+        if (commands.Count > 0)
+        {
+            w.WriteStartArray("dbCommands");
+            foreach (var c in commands.Take(100))
+            {
+                w.WriteStartObject();
+                w.WriteString("commandText", c.CommandText);
+                w.WriteNumber("executions", c.Executions);
+                w.WriteNumber("failed", c.Failed);
+                w.WriteNumber("totalMs", c.TotalMs);
+                if (c.P95Ms is { } p95)
+                {
+                    w.WriteNumber("p95Ms", p95);
+                }
+
+                if (c.MaxMs is { } max)
+                {
+                    w.WriteNumber("maxMs", max);
+                }
+
+                w.WriteString("lastAt", c.LastAt);
+                w.WriteStartArray("senders");
+                foreach (var (component, executions) in c.Senders)
+                {
+                    w.WriteStartObject();
+                    w.WriteString("component", component);
+                    w.WriteNumber("executions", executions);
+                    w.WriteEndObject();
+                }
+
+                w.WriteEndArray();
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+        }
     }
 
     private static void WriteInterop(Utf8JsonWriter w, BevToolsSession session, bool includeCalls)
@@ -979,6 +1202,12 @@ public static class BevSessionExporter
                         w.WriteNumber("triggerEventId", trigger);
                     }
 
+                    if (change.RestoreToken is not null)
+                    {
+                        // Whether it can be restored, not the provider's token: the token means something only to the live app.
+                        w.WriteBoolean("restorable", true);
+                    }
+
                     w.WriteStartArray("diff");
                     foreach (var d in change.Changes)
                     {
@@ -1069,6 +1298,140 @@ public static class BevSessionExporter
             }
 
             w.WriteEndArray();
+        }
+
+        if (b.AppStorage is { } app)
+        {
+            w.WriteStartObject("storage");
+            if (b.StorageReadAt is { } readAt)
+            {
+                w.WriteString("readAt", readAt);
+            }
+
+            if (app.UsageBytes is { } usage)
+            {
+                w.WriteNumber("usageBytes", usage);
+            }
+
+            if (app.QuotaBytes is { } quota)
+            {
+                w.WriteNumber("quotaBytes", quota);
+            }
+
+            if (app.Persisted is { } persisted)
+            {
+                w.WriteBoolean("persisted", persisted);
+            }
+
+            w.WriteStartArray("cookies");
+            foreach (var c in app.Cookies)
+            {
+                w.WriteStartObject();
+                w.WriteString("name", c.Name);
+                w.WriteNumber("size", c.Size);
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            if (app.IndexedDb is { } databases)
+            {
+                w.WriteStartArray("indexedDb");
+                foreach (var d in databases)
+                {
+                    w.WriteStartObject();
+                    w.WriteString("name", d.Name);
+                    w.WriteNumber("version", d.Version);
+                    w.WriteEndObject();
+                }
+
+                w.WriteEndArray();
+            }
+
+            if (app.Caches is { } caches)
+            {
+                w.WriteStartArray("caches");
+                foreach (var c in caches)
+                {
+                    w.WriteStartObject();
+                    w.WriteString("name", c.Name);
+                    w.WriteNumber("entries", c.Entries);
+                    w.WriteEndObject();
+                }
+
+                w.WriteEndArray();
+            }
+
+            if (app.ServiceWorkers is { } workers)
+            {
+                w.WriteStartArray("serviceWorkers");
+                foreach (var sw in workers)
+                {
+                    w.WriteStartObject();
+                    w.WriteString("scope", sw.Scope);
+                    w.WriteString("active", sw.Active);
+                    w.WriteString("waiting", sw.Waiting);
+                    w.WriteString("installing", sw.Installing);
+                    w.WriteEndObject();
+                }
+
+                w.WriteEndArray();
+                w.WriteString("controller", app.Controller);
+            }
+
+            w.WriteEndObject();
+        }
+
+        var r = b.Responsiveness;
+        if (r.InteractionCount > 0 || r.LongFrameCount > 0)
+        {
+            w.WriteStartObject("responsiveness");
+            w.WriteNumber("interactions", r.InteractionCount);
+            if (r.InteractionToNextPaintMs is { } inp)
+            {
+                w.WriteNumber("interactionToNextPaintMs", Round(inp));
+            }
+
+            w.WriteNumber("longFrames", r.LongFrameCount);
+            w.WriteNumber("totalBlockingMs", Round(r.TotalBlockingMs));
+            w.WriteNumber("longestFrameMs", Round(r.LongestFrameMs));
+            w.WriteStartArray("recentInteractions");
+            foreach (var i in r.Interactions.Reverse().Take(50))
+            {
+                w.WriteStartObject();
+                w.WriteString("at", i.At);
+                w.WriteString("name", i.Name);
+                w.WriteString("target", i.Target);
+                w.WriteNumber("durationMs", Round(i.DurationMs));
+                w.WriteNumber("inputDelayMs", Round(i.InputDelayMs));
+                w.WriteNumber("processingMs", Round(i.ProcessingMs));
+                w.WriteNumber("presentationMs", Round(i.PresentationMs));
+                if (i.HandlerTitle is not null)
+                {
+                    w.WriteString("handler", i.HandlerTitle);
+                }
+
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteStartArray("recentLongFrames");
+            foreach (var f in r.Frames.Reverse().Take(50))
+            {
+                w.WriteStartObject();
+                w.WriteString("at", f.At);
+                w.WriteNumber("durationMs", Round(f.DurationMs));
+                w.WriteNumber("blockingMs", Round(f.BlockingMs));
+                if (f.OwnMs > 0)
+                {
+                    w.WriteNumber("bevToolsMs", Round(f.OwnMs));
+                }
+
+                w.WriteString("detail", BevResponsiveness.Describe(f));
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteEndObject();
         }
 
         if (b.Online is { } online)
@@ -1281,6 +1644,53 @@ public static class BevSessionExporter
             w.WriteString(key, value);
         }
 
+        w.WriteEndObject();
+    }
+
+    /// <summary>The memory trend, at most 120 readings evenly spread over the window, and the full collections.</summary>
+    private static void WriteMemory(Utf8JsonWriter w, BevMemoryTrend memory)
+    {
+        var samples = memory.Samples;
+        if (samples.Length == 0)
+        {
+            return;
+        }
+
+        w.WriteStartObject("memory");
+        w.WriteStartArray("samples");
+        var step = Math.Max(1, samples.Length / 120);
+        for (var i = 0; i < samples.Length; i += step)
+        {
+            var s = samples[i];
+            w.WriteStartObject();
+            w.WriteString("at", s.At);
+            w.WriteNumber("heapBytes", s.HeapBytes);
+            w.WriteNumber("fullCollections", s.FullCollections);
+            if (s.LinearMemoryBytes is { } linear)
+            {
+                w.WriteNumber("linearMemoryBytes", linear);
+            }
+
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+        w.WriteStartArray("fullCollections");
+        foreach (var c in memory.FullCollections)
+        {
+            w.WriteStartObject();
+            w.WriteString("at", c.At);
+            w.WriteNumber("heapAfterBytes", c.HeapAfterBytes);
+            w.WriteBoolean("exact", c.Exact);
+            if (c.PauseMs is { } pause)
+            {
+                w.WriteNumber("pauseMs", Round(pause));
+            }
+
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
         w.WriteEndObject();
     }
 

@@ -24,7 +24,372 @@ internal static class BuiltInRules
         new FormValidationRule(),
         new NavigationLoopRule(),
         new PageAccessibilityRule(),
+        new LogFloodRule(),
+        new HeavyRenderAllocationRule(),
+        new SlowInteractionRule(),
+        new LongFrameRule(),
+        new ServiceWorkerWaitingRule(),
+        new MemoryGrowthRule(),
+        new DbPerItemRule(),
+        new SlowDbCommandRule(),
     ];
+
+    /// <summary>
+    /// One SQL command executed over and over within two seconds - typically each row of a list loading its own data
+    /// (N+1). Read from Entity Framework Core's command logs, by the SQL as EF wrote it (parameters, not values).
+    /// </summary>
+    private sealed class DbPerItemRule : IBevDiagnosticRule
+    {
+        public string Id => "db.per-item";
+
+        public string Title => "One query per item";
+
+        public string Description => "The same SQL command executed many times within two seconds: the N+1 query pattern.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { Logs.Count: > 0 } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).DbPerItemCount;
+            var since = context.Now - TimeSpan.FromMinutes(2);
+            foreach (var group in session.Logs.Snapshot().Where(l => l.DbCommand is { CommandText: not null } && l.At >= since).GroupBy(l => BevDbCommands.Normalize(l.DbCommand!.CommandText!), StringComparer.Ordinal))
+            {
+                var executions = group.ToArray();
+                if (executions.Length < threshold || BevDbCommands.DensestRun(executions, TimeSpan.FromSeconds(2)) is not { } densest || densest.Run.Length < threshold)
+                {
+                    continue;
+                }
+
+                var run = densest.Run;
+                var senders = run.Where(l => l.CallerComponent is not null).GroupBy(l => l.CallerComponent!).OrderByDescending(g => g.Count()).Take(3).Select(g => g.Key + " ×" + g.Count()).ToList();
+                var trigger = run.Select(l => l.TriggerEventId).FirstOrDefault(t => t is not null) is { } triggerId ? session.Timeline.Find(triggerId)?.Title : null;
+                var sql = group.Key.Length <= 120 ? group.Key : group.Key[..119] + "…";
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Warning,
+                    $"\"{sql}\" ran {run.Length} times in {Ms(densest.Span.TotalMilliseconds)}",
+                    $"{run.Length} executions of one command, {Ms(run.Sum(l => l.DbCommand!.ElapsedMs ?? 0))} in the database"
+                        + (senders.Count > 0 ? ", sent from " + string.Join(", ", senders) : "")
+                        + (trigger is not null ? ", during " + trigger : "") + ".",
+                    "Load what the list needs in one query (Include, a join, or WHERE Id IN (…)) rather than one per row, or load an item's data when it is opened.",
+                    Fingerprint: $"{Id}:{group.Key}",
+                    RelatedEventIds: run.Where(l => l.TimelineEventId > 0).TakeLast(10).Select(l => l.TimelineEventId).ToList());
+            }
+        }
+    }
+
+    /// <summary>A database command slower than the threshold, as Entity Framework Core measured it.</summary>
+    private sealed class SlowDbCommandRule : IBevDiagnosticRule
+    {
+        public string Id => "db.slow";
+
+        public string Title => "Slow database command";
+
+        public string Description => "An Entity Framework Core command took longer than the slow threshold.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { Logs.Count: > 0 } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).SlowDbCommandMs;
+            foreach (var log in session.Logs.Snapshot().Where(l => l.At >= context.Now - TimeSpan.FromMinutes(1) && l.DbCommand is { ElapsedMs: { } ms } && ms >= threshold))
+            {
+                var sql = log.DbCommand!.CommandText is { } text ? BevDbCommands.Normalize(text) : "(SQL not read: value access None)";
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Info,
+                    $"A database command took {Ms(log.DbCommand.ElapsedMs!.Value)}",
+                    (sql.Length <= 200 ? sql : sql[..199] + "…") + (log.Caller is not null ? " — sent from " + log.Caller : ""),
+                    "Look at its query plan: a missing index, a large result loaded whole, or a lock it waited on.",
+                    Fingerprint: $"{Id}:{log.Id}",
+                    RelatedEventIds: log.TimelineEventId > 0 ? [log.TimelineEventId] : null);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The heap after full collections climbing collection after collection: what survives each one keeps growing, the
+    /// outside view of a leak. Read from what the memory trend saw (Runtime → Memory over time).
+    /// </summary>
+    private sealed class MemoryGrowthRule : IBevDiagnosticRule
+    {
+        public string Id => "memory.growth";
+
+        public string Title => "Memory keeps growing";
+
+        public string Description => "The managed heap after full garbage collections grew steadily over the last ten minutes.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { } session } || session.Memory.Growth(context.Now) is not { } growth)
+            {
+                yield break;
+            }
+
+            var minutes = Math.Max(1, (growth.Last.At - growth.First.At).TotalMinutes);
+            yield return new BevDiagnostic(
+                Id,
+                BevDiagnosticSeverity.Warning,
+                $"The heap after full collections grew from {BevFmt.Bytes(growth.First.HeapAfterBytes)} to {BevFmt.Bytes(growth.Last.HeapAfterBytes)} over {growth.Count} collections",
+                $"About {BevFmt.Bytes((long)((growth.Last.HeapAfterBytes - growth.First.HeapAfterBytes) / minutes))} a minute over {minutes:0.#} min; never back near where it started."
+                    + (session.IsInMultiUserHost ? " The heap is the process's: every circuit adds to it." : ""),
+                "Something keeps objects alive: Runtime → Disposed components still alive finds components a service or a timer holds; for anything else take two heap snapshots (dotnet-gcdump on a server, the browser's memory tool or the runtime's GC dump on WebAssembly) and compare them.",
+                Fingerprint: Id);
+        }
+    }
+
+    /// <summary>
+    /// A service worker installed and waiting: the page runs the previous version until every tab of the app closes, or
+    /// the new worker calls skipWaiting. The classic "I deployed and users still see the old app". From the last storage
+    /// read (Browser → Storage).
+    /// </summary>
+    private sealed class ServiceWorkerWaitingRule : IBevDiagnosticRule
+    {
+        public string Id => "pwa.update-waiting";
+
+        public string Title => "Service worker update waiting";
+
+        public string Description => "A new service worker is installed but not active, so the page still runs the previous version of the app.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session.Browser.AppStorage.ServiceWorkers: { } workers })
+            {
+                yield break;
+            }
+
+            foreach (var worker in workers.Where(w => w.Waiting is not null))
+            {
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Info,
+                    "An update is waiting for " + worker.Scope,
+                    "Active: " + (worker.Active ?? "none") + "; waiting: " + worker.Waiting + ". The page keeps running the active version until every tab of it closes.",
+                    "Prompt the user to reload and have the waiting worker call skipWaiting (Bit.Bswup does this through its update handler), or reload all tabs to see the new version.",
+                    Fingerprint: Id + ":" + worker.Scope + ":" + worker.Waiting);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Interactions whose next paint came late, one finding per kind of interaction and element, from what the browser
+    /// measured (Event Timing). Says which part was slow: input delay (the main thread busy with something else),
+    /// processing (the handlers) or presentation (rendering the frame), and on WebAssembly the UI event that ran.
+    /// </summary>
+    private sealed class SlowInteractionRule : IBevDiagnosticRule
+    {
+        public string Id => "browser.slow-interaction";
+
+        public string Title => "Slow interaction";
+
+        public string Description => "A click, tap or key press whose next paint came later than the slow threshold (Interaction to Next Paint).";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).SlowInteractionMs;
+            var since = context.Now - TimeSpan.FromMinutes(2);
+            foreach (var group in session.Browser.Responsiveness.Interactions.Where(i => i.At >= since && i.DurationMs >= threshold).GroupBy(i => (i.Name, i.Target)))
+            {
+                var slowest = group.MaxBy(i => i.DurationMs)!;
+                var part = new[] { ("input delay", slowest.InputDelayMs), ("processing", slowest.ProcessingMs), ("presentation", slowest.PresentationMs) }.MaxBy(p => p.Item2);
+                var count = group.Count();
+                yield return new BevDiagnostic(
+                    Id,
+                    slowest.DurationMs >= 500 ? BevDiagnosticSeverity.Error : BevDiagnosticSeverity.Warning,
+                    $"{group.Key.Name}{(group.Key.Target is null ? "" : " on " + group.Key.Target)}: next paint after {Ms(slowest.DurationMs)}" + (count > 1 ? $" ({count} times over {Ms(threshold)})" : ""),
+                    BevResponsiveness.Breakdown(slowest) + ". Mostly " + part.Item1 + ".",
+                    part.Item1 switch
+                    {
+                        "input delay" => "The main thread was busy when the input arrived: look for long frames before it (Browser → Responsiveness), a timer or a render storm.",
+                        "processing" => "Its handlers took the time: on WebAssembly that is the .NET event handler and the renders it caused (Profiler); await long work, show progress first, or move it off the UI thread.",
+                        _ => "Rendering the frame after it took the time: a large DOM update (a list without Virtualize, a render cascade) or expensive styles.",
+                    },
+                    Fingerprint: $"{Id}:{group.Key.Name}:{group.Key.Target}",
+                    RelatedEventIds: group.Where(i => i.TimelineEventId > 0).Select(i => i.TimelineEventId).TakeLast(10).ToList());
+            }
+        }
+    }
+
+    /// <summary>
+    /// Frames during which the browser's main thread was blocked: input waited, nothing painted. On WebAssembly it is the
+    /// thread .NET renders on, so the finding names the UI events and render batches that ran inside the frame.
+    /// </summary>
+    private sealed class LongFrameRule : IBevDiagnosticRule
+    {
+        public string Id => "browser.long-frame";
+
+        public string Title => "Blocked main thread";
+
+        public string Description => "Frames the browser could not paint because the main thread was busy past the blocking threshold.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).LongFrameBlockingMs;
+            // A frame BevTools' own panel mostly spent rendering is BevTools' cost (About → overhead), not the application's.
+            var frames = session.Browser.Responsiveness.Frames.Where(f => f.At >= context.Now - TimeSpan.FromMinutes(1) && f.BlockingMs >= threshold && !f.IsMostlyBevTools).ToArray();
+            if (frames.Length == 0)
+            {
+                yield break;
+            }
+
+            var longest = frames.MaxBy(f => f.BlockingMs)!;
+            yield return new BevDiagnostic(
+                Id,
+                longest.BlockingMs >= 500 ? BevDiagnosticSeverity.Error : BevDiagnosticSeverity.Warning,
+                $"The main thread was blocked for {Ms(frames.Sum(f => f.BlockingMs))} in {frames.Length} frame{(frames.Length == 1 ? "" : "s")} over the last minute",
+                "Longest: " + Ms(longest.DurationMs) + ", " + Ms(longest.BlockingMs) + " blocking; " + BevResponsiveness.Describe(longest) + ".",
+                session.Platform == "WebAssembly"
+                    ? "On WebAssembly .NET runs on this thread: split long handlers with await Task.Yield(), render less per batch (Virtualize, ShouldRender), or move CPU-bound work to a worker."
+                    : "Script on the page kept the thread busy: the scripts named are where the time went; a large render batch applied at once shows up here too.",
+                // One finding, renewed as frames arrive: the evidence is the last minute's.
+                Fingerprint: Id,
+                RelatedEventIds: frames.Where(f => f.TimelineEventId > 0).Select(f => f.TimelineEventId).TakeLast(10).ToList());
+        }
+    }
+
+    /// <summary>
+    /// A component whose render fragment allocates a lot on each render: what each render costs the garbage collector,
+    /// which on WebAssembly pauses the only thread the UI has. Read from the retained samples of the last thirty
+    /// seconds, so a component that stopped rendering stops being reported.
+    /// </summary>
+    private sealed class HeavyRenderAllocationRule : IBevDiagnosticRule
+    {
+        private const int MinRenders = 3;
+
+        public string Id => "render.allocations";
+
+        public string Title => "Render allocates heavily";
+
+        public string Description => "A component's BuildRenderTree allocates many bytes per render: strings, closures, collections it builds every time.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (!BevAllocations.IsMeasurable || context is not DiagnosticContext { Session: { } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).HeavyRenderAllocationBytes;
+            var since = context.Now - TimeSpan.FromSeconds(30);
+            foreach (var group in session.Components.All
+                .Where(c => !c.IsBevTools && !c.IsHidden && c.MaxAllocatedBytes >= threshold && c.LastRenderAt >= since)
+                .Select(c => (Record: c, Samples: c.Renders.Where(s => s.At >= since && s.AllocatedBytes is not null).ToArray()))
+                .Where(c => c.Samples.Length >= MinRenders)
+                .GroupBy(c => c.Record.TypeName))
+            {
+                var samples = group.SelectMany(c => c.Samples).ToArray();
+                var average = samples.Average(s => (double)s.AllocatedBytes!.Value);
+                if (average < threshold)
+                {
+                    continue;
+                }
+
+                var first = group.First().Record;
+                var instances = group.Count();
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Warning,
+                    $"{first.DisplayName} allocates {BevToolsHttpMessageHandler.FormatBytes((long)average)} per render",
+                    $"{samples.Length} renders in the last 30 s" + (instances > 1 ? $" of {instances} instances" : "") + $", up to {BevToolsHttpMessageHandler.FormatBytes(samples.Max(s => s.AllocatedBytes!.Value))} in one; its children are not counted.",
+                    "Build what the markup shows once - in OnParametersSet, or when the data changes - rather than in every render: LINQ chains, ToList, string formatting and per-item closures in BuildRenderTree are allocated again each time.",
+                    Fingerprint: $"{Id}:{group.Key}",
+                    ComponentInstanceId: first.InstanceId,
+                    RelatedEventIds: samples.Where(s => s.EventId > 0).TakeLast(5).Select(s => s.EventId).ToList());
+            }
+        }
+    }
+
+    /// <summary>
+    /// One message template written over and over in a short window: logging on a hot path (a render, a parameter
+    /// update, a list item), or a retry loop. Every entry costs its providers (the browser console is slow on WebAssembly)
+    /// and buries the entries that matter. Read from the log entries the session holds, by their own times, so a burst
+    /// that ended before the panel opened is still found.
+    /// </summary>
+    private sealed class LogFloodRule : IBevDiagnosticRule
+    {
+        public string Id => "log.flood";
+
+        public string Title => "Log flood";
+
+        public string Description => "The same log message, whatever values it carried, written many times within ten seconds.";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            if (context is not DiagnosticContext { Session: { Logs.Count: > 0 } session })
+            {
+                yield break;
+            }
+
+            var threshold = Opt(context).LogFloodCount;
+            var logs = session.Logs.Snapshot();
+            if (logs.Length < threshold)
+            {
+                yield break;
+            }
+
+            var window = TimeSpan.FromSeconds(10);
+            var since = context.Now - TimeSpan.FromMinutes(5);
+            foreach (var group in logs.Where(l => l.At >= since).GroupBy(l => (l.Category, Template: l.MessageTemplate ?? l.Text)))
+            {
+                var entries = group.ToArray();
+                if (entries.Length < threshold)
+                {
+                    continue;
+                }
+
+                // The densest ten seconds: entries are in the order they were logged.
+                var (best, start) = (0, 0);
+                for (int first = 0, last = 0; last < entries.Length; last++)
+                {
+                    while (entries[last].At - entries[first].At > window)
+                    {
+                        first++;
+                    }
+
+                    if (last - first + 1 > best)
+                    {
+                        (best, start) = (last - first + 1, first);
+                    }
+                }
+
+                if (best < threshold)
+                {
+                    continue;
+                }
+
+                var burst = entries.AsSpan(start, best).ToArray();
+                var senders = burst.Where(l => l.CallerComponent is not null).GroupBy(l => l.CallerComponent!).OrderByDescending(g => g.Count()).Take(3)
+                    .Select(g => g.Key + " ×" + g.Count()).ToList();
+                var level = burst[^1].Level;
+                yield return new BevDiagnostic(
+                    Id,
+                    BevDiagnosticSeverity.Warning,
+                    $"{group.Key.Category}: \"{Shorten(group.Key.Template)}\" logged {best} times in {Ms((burst[^1].At - burst[0].At).TotalMilliseconds)}",
+                    $"{best} {level} entries with this template within ten seconds" + (senders.Count > 0 ? ", sent from " + string.Join(", ", senders) : "") + ".",
+                    "Log once per operation rather than per render or item, or lower the entry's level below what the host records: every entry costs each logging provider, and the browser console is slow on WebAssembly.",
+                    Fingerprint: $"{Id}:{group.Key.Category}:{group.Key.Template}",
+                    RelatedEventIds: burst.Where(l => l.TimelineEventId > 0).TakeLast(10).Select(l => l.TimelineEventId).ToList());
+            }
+        }
+
+        private static string Shorten(string text) => text.Length <= 80 ? text : text[..79] + "…";
+    }
 
     /// <summary>The page's last accessibility check (Browser panel), one finding per check that failed, with the components.</summary>
     private sealed class PageAccessibilityRule : IBevDiagnosticRule

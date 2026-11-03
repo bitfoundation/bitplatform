@@ -27,6 +27,26 @@ public interface IBevStateProvider
 public sealed record BevStateChangeInfo(string? Action = null, string? Detail = null)
 {
     public static readonly BevStateChangeInfo Empty = new();
+
+    /// <summary>
+    /// What the provider calls the state right after this change (a version, an action index), for a provider that
+    /// implements <see cref="IBevStateRestorer"/>: BevTools offers to restore the change and hands the token back.
+    /// </summary>
+    public string? RestoreToken { get; init; }
+}
+
+/// <summary>
+/// A state provider that can put its state back to how it was right after an earlier change: time travel through the
+/// provider's own contract. BevTools never writes application state itself - restoring an arbitrary object graph is
+/// unsafe - so only a provider that knows how to restore itself (an immutable store keeping its versions, a reducer
+/// that replays its actions) implements this, gives each change a <see cref="BevStateChangeInfo.RestoreToken"/>, and
+/// decides what restoring means. BevTools offers it only where a forced collection is allowed too: Development, or a
+/// process that serves one user.
+/// </summary>
+public interface IBevStateRestorer
+{
+    /// <summary>Restores the state identified by <paramref name="token"/>; raise <see cref="IBevStateProvider.Changed"/> afterwards as for any change.</summary>
+    ValueTask RestoreAsync(string token, CancellationToken cancellationToken = default);
 }
 
 public interface IBevStateProviderRegistry

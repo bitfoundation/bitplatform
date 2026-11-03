@@ -6,8 +6,10 @@ namespace Bit.BevTools;
 /// <para>
 /// Resolution order: (1) an explicit ambient session pushed by <see cref="BevToolsSession.UseAmbient"/>;
 /// (2) the session whose renderer synchronization context is current — an O(1) lookup, which is the case for
-/// everything that runs on a Blazor dispatcher; (3) a scan comparing <c>Dispatcher.CheckAccess()</c>;
-/// (4) for single-user hosts (WebAssembly, WebView, tests) the only live session.
+/// everything that runs on a Blazor dispatcher; (3) a scan comparing <c>Dispatcher.CheckAccess()</c>; (4) the session
+/// whose UI event or navigation the current <c>Activity</c> descends from, for work that left the dispatcher after it
+/// began there (a library awaiting with <c>ConfigureAwait(false)</c>); (5) for single-user hosts (WebAssembly, WebView,
+/// tests) the only live session.
 /// </para>
 /// <para>
 /// The last fallback deliberately excludes every session of a server process (<see cref="BevToolsSession.IsInMultiUserHost"/>):
@@ -124,6 +126,12 @@ internal static class SessionResolver
             {
                 // dispatcher of a disposed renderer; ignore.
             }
+        }
+
+        // Evidence, not a guess: the activity flowed here from that session's own event.
+        if (liveCount > 0 && ActivityObserver.SessionOfCurrentActivity() is { IsDisposed: false } byActivity)
+        {
+            return byActivity;
         }
 
         // Single-user hosts (WebAssembly, WebView, tests) have no other candidate. A server process is excluded on

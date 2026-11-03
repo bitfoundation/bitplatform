@@ -54,6 +54,16 @@ public class ObjectInspectorTests
     }
 
     [TestMethod]
+    public void Json_is_flattened_member_by_member_with_sensitive_names_redacted()
+    {
+        var json = System.Text.Json.JsonDocument.Parse("{\"cart\":{\"items\":2,\"lines\":[{\"sku\":\"A\"}],\"token\":\"abc\"}}").RootElement;
+        var flat = Create().Flatten(json, maxDepth: 5);
+        Assert.AreEqual("2", flat["cart.items"]);
+        Assert.AreEqual("\"A\"", flat["cart.lines[0].sku"]);
+        Assert.AreEqual(BevRedactor.RedactedValue, flat["cart.token"]);
+    }
+
+    [TestMethod]
     public void ToString_is_not_shown_for_a_type_with_an_ignored_or_sensitive_member()
     {
         var inspector = Create();
