@@ -136,6 +136,250 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
+describe('the page\'s other storage', () => {
+    it('reads cookie names and sizes, never their values, and lists databases, caches, service workers and the quota', async () => {
+        installPage();
+        const hub = await loadHub();
+        document.cookie = 'theme=dark; session_id=s3cr3t-value; flag';
+        window.indexedDB = { databases: async () => [{ name: 'orders-cache', version: 3 }] };
+        const opened = [];
+        window.caches = {
+            keys: async () => ['bit-bswup-v2'],
+            open: async name => { opened.push(name); return { keys: async () => [{}, {}, {}] }; },
+        };
+        const worker = (url, state) => ({ scriptURL: url, state });
+        Object.defineProperty(globalThis, 'navigator', {
+            configurable: true,
+            value: {
+                onLine: true,
+                userAgent: 'node',
+                serviceWorker: {
+                    controller: worker('https://app.example/service-worker.js?v=1', 'activated'),
+                    getRegistrations: async () => [{ scope: 'https://app.example/', active: worker('https://app.example/service-worker.js?v=1', 'activated'), waiting: worker('https://app.example/service-worker.js?v=2', 'installed'), installing: null }],
+                },
+                storage: { estimate: async () => ({ usage: 2048, quota: 4096, usageDetails: { caches: 1024 } }), persisted: async () => false },
+            },
+        });
+
+        const storage = await hub.getAppStorage();
+        expect(storage.cookies).toEqual([{ name: 'theme', size: 4 }, { name: 'session_id', size: 12 }, { name: 'flag', size: 0 }]);
+        expect(JSON.stringify(storage)).not.toContain('s3cr3t');
+        expect(storage.indexedDb).toEqual([{ name: 'orders-cache', version: 3 }]);
+        expect(storage.caches).toEqual([{ name: 'bit-bswup-v2', entries: 3 }]);
+        expect(storage.serviceWorkers[0].waiting).toBe('https://app.example/service-worker.js?v=2');
+        expect(storage.controller).toBe('https://app.example/service-worker.js?v=1');
+        expect(storage).toMatchObject({ usageBytes: 2048, quotaBytes: 4096, usageDetails: { caches: 1024 }, persisted: false, errors: [] });
+    });
+
+    it('redacts a cookie name shaped like a credential, judged before it is cut', async () => {
+        installPage();
+        const hub = await loadHub();
+        document.cookie = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.' + 'c'.repeat(300) + '=1; theme=dark';
+        const storage = await hub.getAppStorage();
+        expect(storage.cookies).toEqual([{ name: '«redacted»', size: 1 }, { name: 'theme', size: 4 }]);
+    });
+
+    it('opens no cache that is gone by the time it is counted, and nothing once the inventory gave up', async () => {
+        installPage();
+        const hub = await loadHub();
+        let names = ['kept', 'deleted'];
+        const opened = [];
+        window.caches = {
+            keys: async () => { const now = names; names = ['kept']; return now; },
+            open: async name => { opened.push(name); return { keys: async () => [{}] }; },
+        };
+        expect((await hub.getAppStorage()).caches).toEqual([{ name: 'kept', entries: 1 }]);
+        expect(opened, 'open() would have created the deleted one again').toEqual(['kept']);
+
+        vi.useFakeTimers();
+        opened.length = 0;
+        window.caches = {
+            keys: async () => ['a', 'b'],
+            // Answers only after the inventory gave up on Cache Storage.
+            has: () => new Promise(resolve => setTimeout(() => resolve(true), 4000)),
+            open: async name => { opened.push(name); return { keys: async () => [] }; },
+        };
+        const pending = hub.getAppStorage();
+        await vi.advanceTimersByTimeAsync(3500);
+        const storage = await pending;
+        expect(storage.caches).toBeNull();
+        expect(storage.errors).toContain('Cache Storage: timed out');
+        await vi.advanceTimersByTimeAsync(10000);
+        expect(opened, 'nothing started after the timeout').toEqual([]);
+    });
+
+    it('says what it could not read instead of failing, and has nothing where a browser has no such API', async () => {
+        installPage();
+        const hub = await loadHub();
+        window.indexedDB = { databases: () => Promise.reject(new Error('denied')) };
+        delete window.caches;
+        const storage = await hub.getAppStorage();
+        expect(storage.indexedDb).toBeNull();
+        expect(storage.caches).toBeNull();
+        expect(storage.serviceWorkers).toBeNull();
+        expect(storage.errors).toEqual(['IndexedDB: denied']);
+    });
+});
+
+describe('webassembly memory', () => {
+    it("reads the runtime's linear memory, and nothing where there is no runtime", async () => {
+        installPage();
+        const hub = await loadHub();
+        expect(hub.wasmMemory()).toBeNull();
+        globalThis.getDotnetRuntime = () => ({ Module: { HEAPU8: { length: 84934656 } } });
+        try {
+            expect(hub.wasmMemory()).toBe(84934656);
+            globalThis.getDotnetRuntime = () => { throw new Error('not started'); };
+            expect(hub.wasmMemory()).toBeNull();
+        } finally {
+            delete globalThis.getDotnetRuntime;
+        }
+    });
+});
+
+describe('responsiveness', () => {
+    function fakeObservers(types) {
+        const observers = [];
+        const original = globalThis.PerformanceObserver;
+        class FakeObserver {
+            constructor(callback) { this.callback = callback; this.disconnected = false; observers.push(this); }
+            observe(options) { this.options = options; }
+            disconnect() { this.disconnected = true; }
+            emit(entries) { this.callback({ getEntries: () => entries }); }
+        }
+        FakeObserver.supportedEntryTypes = types;
+        globalThis.PerformanceObserver = FakeObserver;
+        return { observers, restore: () => { globalThis.PerformanceObserver = original; } };
+    }
+
+    const element = (tagName, id, inBevTools = false) => ({ nodeType: 1, tagName, id, className: '', closest: selector => (inBevTools && selector === '.bev-root' ? {} : null) });
+
+    it('reports long animation frames and interactions with ages, each interaction across its entries, and none of BevTools\' own', async () => {
+        installPage();
+        const fake = fakeObservers(['long-animation-frame', 'event', 'longtask']);
+        try {
+            const hub = await loadHub();
+            const wasm = runtime(1);
+            const attached = hub.attach(wasm, { platform: 'WebAssembly' });
+            expect(attached.responsiveness).toEqual({ longAnimationFrame: true, longTask: true, eventTiming: true });
+            const frames = fake.observers.find(o => o.options.type === 'long-animation-frame');
+            const events = fake.observers.find(o => o.options.type === 'event');
+            expect(fake.observers.some(o => o.options.type === 'longtask'), 'long tasks only where there are no long animation frames').toBe(false);
+            expect(events.options.durationThreshold).toBe(16);
+
+            const now = performance.now();
+            frames.emit([
+                { startTime: now - 400, duration: 30, blockingDuration: 0, scripts: [] },
+                { startTime: now - 300, duration: 220, blockingDuration: 170, scripts: [
+                    { invoker: 'BUTTON#save.onclick', invokerType: 'event-listener', sourceURL: 'https://app.example/_framework/dotnet.native.js?v=1', sourceFunctionName: 'invoke', duration: 40 },
+                    { invoker: 'Response.json.then', invokerType: 'resolve-promise', sourceURL: 'https://app.example/app.js', sourceFunctionName: 'load', duration: 150 },
+                ] },
+            ]);
+            events.emit([
+                { interactionId: 7, name: 'pointerdown', startTime: now - 250, duration: 40, processingStart: now - 248, processingEnd: now - 240, target: element('BUTTON', 'save') },
+                { interactionId: 7, name: 'click', startTime: now - 250, duration: 260, processingStart: now - 245, processingEnd: now - 40, target: element('BUTTON', 'save') },
+                { interactionId: 0, name: 'mousemove', startTime: now - 100, duration: 80, processingStart: now - 99, processingEnd: now - 90, target: null },
+                { interactionId: 9, name: 'pointerdown', startTime: now - 90, duration: 120, processingStart: now - 89, processingEnd: now - 88, target: element('BUTTON', 'bev-close', true) },
+                { interactionId: 9, name: 'click', startTime: now - 90, duration: 120, processingStart: now - 87, processingEnd: now - 10, target: element('SPAN', 'bev-icon') },
+            ]);
+            hub.flushResponsiveness();
+
+            const [, reportedFrames, reportedInteractions] = wasm.reported('ReportResponsiveness')[0];
+            expect(reportedFrames).toHaveLength(1);
+            expect(reportedFrames[0].blockingMs).toBe(170);
+            expect(reportedFrames[0].ageMs).toBeGreaterThanOrEqual(300);
+            expect(reportedFrames[0].scripts.map(s => s.source)).toEqual(['app.js', 'dotnet.native.js']);
+            expect(reportedInteractions).toHaveLength(1);
+            // pointerdown's handlers took 8 ms, click's 205 ms: one interaction, named after its slowest event, whose
+            // processing spans both, from the first input to the paint after the last.
+            const click = reportedInteractions[0];
+            expect(click.name).toBe('click');
+            expect(click.target).toBe('<button#save>');
+            expect(click.durationMs).toBeCloseTo(260);
+            expect(click.inputDelayMs).toBeCloseTo(2);
+            expect(click.processingMs).toBeCloseTo(208);
+            expect(click.presentationMs).toBeCloseTo(50);
+            expect(click.interactionId, 'what the runtime puts its parts back together by').toBe(7);
+
+            hub.flushResponsiveness();
+            expect(wasm.reported('ReportResponsiveness'), 'nothing new, nothing sent').toHaveLength(1);
+            hub.detach();
+            expect(fake.observers.every(o => o.disconnected)).toBe(true);
+        } finally {
+            fake.restore();
+        }
+    });
+
+    it('falls back to long tasks, and observes nothing when asked not to', async () => {
+        installPage();
+        const fake = fakeObservers(['longtask']);
+        try {
+            const hub = await loadHub();
+            hub.attach(runtime(1), { trackResponsiveness: false });
+            expect(fake.observers).toHaveLength(0);
+            hub.detach();
+            const wasm = runtime(2);
+            hub.attach(wasm, {});
+            expect(fake.observers.map(o => o.options.type)).toEqual(['longtask']);
+            fake.observers[0].emit([{ startTime: performance.now() - 100, duration: 90 }]);
+            hub.flushResponsiveness();
+            const [, frames] = wasm.reported('ReportResponsiveness')[0];
+            expect(frames[0].blockingMs, 'a long task blocks for what it took beyond 50 ms').toBe(40);
+            expect(frames[0].scripts).toEqual([]);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
+    it('stops observing once the runtimes left attached all opted out, and starts again for one that opts in', async () => {
+        installPage();
+        const fake = fakeObservers(['longtask']);
+        try {
+            const hub = await loadHub();
+            const { targetId: tracking } = hub.attach(runtime(1), {});
+            const { targetId: optedOut } = hub.attach(runtime(2), { trackResponsiveness: false });
+            expect(fake.observers).toHaveLength(1);
+            hub.detach(tracking);
+            expect(fake.observers[0].disconnected, 'only an opted-out runtime is left').toBe(true);
+
+            hub.attach(runtime(3), {});
+            expect(fake.observers).toHaveLength(2);
+            expect(fake.observers[1].disconnected).toBe(false);
+            hub.detach(optedOut);
+            expect(fake.observers[1].disconnected, 'a runtime that tracks is still attached').toBe(false);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
+    it('keeps the newest interactions with BevTools, and an older one\'s late entry without a target is still its own', async () => {
+        installPage();
+        const fake = fakeObservers(['event']);
+        try {
+            const hub = await loadHub();
+            const wasm = runtime(1);
+            hub.attach(wasm, { platform: 'WebAssembly' });
+            const events = fake.observers.find(o => o.options.type === 'event');
+            const now = performance.now();
+            const entry = (interactionId, target) => ({ interactionId, name: 'click', startTime: now - 100, duration: 80, processingStart: now - 99, processingEnd: now - 30, target });
+            // Sixty interactions with the panel and one with the application, reported.
+            events.emit([...Array.from({ length: 60 }, (_, i) => entry(i + 1, element('BUTTON', 'bev-' + i, true))), entry(61, element('BUTTON', 'save'))]);
+            hub.flushResponsiveness();
+            expect(wasm.reported('ReportResponsiveness')[0][2].map(i => i.interactionId)).toEqual([61]);
+
+            // Late entries whose elements left the page: two of the panel's - one still kept, one let go - and the application's.
+            events.emit([entry(30, null), entry(5, null), entry(62, null)]);
+            hub.flushResponsiveness();
+            expect(wasm.reported('ReportResponsiveness')[1][2].map(i => i.interactionId)).toEqual([62]);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+});
+
 describe('several runtimes on one page', () => {
     it('attach as separate targets, all hear page-level facts, and detach one at a time', async () => {
         const { win } = installPage();

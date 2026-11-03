@@ -95,7 +95,7 @@ public static class DocsCatalog
                 "install setup nuget package AddBitBevToolsServices AddBitBevToolsServerServices BevToolsPanel program.cs MetricsSupport interactive auto enabled development shortcut options panels tabs tour loader lazy load on demand production ValueAccess security",
                 typeof(GettingStarted)),
             new("/problems", "Problems to diagnose",
-                "Twenty-four real problems planted in this app, each with the panels and the steps that lead from the symptom to its cause.",
+                "Twenty-six real problems planted in this app, each with the panels and the steps that lead from the symptom to its cause.",
                 "problems index scenarios exercises planted bugs walkthrough diagnose symptoms causes",
                 typeof(Problems)),
         ]),

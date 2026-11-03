@@ -200,6 +200,16 @@ jobs:
     - name: dotnet pack BevTools.Server
       run: dotnet pack src/Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output . --configuration Release
 
+    - name: dotnet build BevTools.Cli
+      run: dotnet build src/Utilities/BevTools/Bit.BevTools.Cli/Bit.BevTools.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BevTools.Cli
+      run: dotnet pack src/Utilities/BevTools/Bit.BevTools.Cli/Bit.BevTools.Cli.csproj --output . --configuration Release
+
+    - name: dotnet build BevTools.Blex
+      run: dotnet build src/Utilities/BevTools/Bit.BevTools.Blex/Bit.BevTools.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BevTools.Blex
+      run: dotnet pack src/Utilities/BevTools/Bit.BevTools.Blex/Bit.BevTools.Blex.csproj --output . --configuration Release
+
     - name: dotnet build Bmotion
       run: dotnet build src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion

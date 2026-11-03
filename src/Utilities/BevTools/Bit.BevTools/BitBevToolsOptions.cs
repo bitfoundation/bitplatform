@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Extensions.Logging;
+
 namespace Bit.BevTools;
 
 /// <summary>Where the BevTools panel is docked.</summary>
@@ -89,6 +91,39 @@ public sealed class BevDiagnosticsOptions
     /// <summary>Occurrences of the same error that count as a repeated error.</summary>
     public int RepeatedErrorCount { get; set; } = 3;
 
+    /// <summary>
+    /// Log entries with one message template (whatever their values), from one category, within ten seconds that count
+    /// as a log flood: logging on a hot path, such as a render or a list item.
+    /// </summary>
+    public int LogFloodCount { get; set; } = 100;
+
+    /// <summary>
+    /// Bytes a component's render fragment allocates per render, on average over its renders of the last 30 seconds, that
+    /// count as a heavy render (rule <c>render.allocations</c>). Where the runtime counts allocations per thread.
+    /// </summary>
+    public long HeavyRenderAllocationBytes { get; set; } = 256 * 1024;
+
+    /// <summary>
+    /// A user interaction's time to the next paint that counts as slow (rule <c>browser.slow-interaction</c>): 200 ms is
+    /// where the Web Vitals' Interaction to Next Paint stops being good.
+    /// </summary>
+    public double SlowInteractionMs { get; set; } = 200;
+
+    /// <summary>
+    /// The blocking time of one frame (the part beyond 50 ms per task, input kept waiting) that counts as a blocked main
+    /// thread (rule <c>browser.long-frame</c>).
+    /// </summary>
+    public double LongFrameBlockingMs { get; set; } = 150;
+
+    /// <summary>
+    /// Executions of one SQL command (Entity Framework Core, read from its logs) within two seconds that count as one
+    /// query per item (rule <c>db.per-item</c>): the N+1 pattern of a list whose rows each load their own data.
+    /// </summary>
+    public int DbPerItemCount { get; set; } = 10;
+
+    /// <summary>A database command's elapsed time, as Entity Framework Core reported it, that counts as slow (rule <c>db.slow</c>).</summary>
+    public double SlowDbCommandMs { get; set; } = 500;
+
     /// <summary>Rule ids that are disabled.</summary>
     public HashSet<string> DisabledRules { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -163,6 +198,9 @@ public sealed class BitBevToolsOptions
 
     public int MaxJsInteropCalls { get; set; } = 1000;
 
+    /// <summary>Maximum number of log entries kept per session (Logs panel).</summary>
+    public int MaxLogs { get; set; } = 1000;
+
     public int MaxStateChangesPerProvider { get; set; } = 100;
 
     /// <summary>
@@ -185,8 +223,23 @@ public sealed class BitBevToolsOptions
     /// <summary>Track HTTP requests made through <c>IHttpClientFactory</c> clients.</summary>
     public bool TrackHttp { get; set; } = true;
 
-    /// <summary>Capture request/response header names and values (sensitive headers are always redacted). Bodies are never captured.</summary>
+    /// <summary>Capture request/response header names and values (sensitive headers are always redacted). Bodies are <see cref="CaptureHttpBodies"/>'s.</summary>
     public bool CaptureHttpHeaders { get; set; } = true;
+
+    /// <summary>
+    /// Capture request and response bodies (off by default). Text only - JSON, XML, forms, text, GraphQL - at most
+    /// <see cref="MaxHttpBodyBytes"/>, redacted (JSON and form values under a sensitive name, anything credential-shaped),
+    /// and never at the cost of the request: a stream is never read, and a response only when its length is known and
+    /// within the limit. Only where <see cref="ValueAccess"/> is Full, and in a process that serves many users only in
+    /// Development. Bodies are shown in the Network panel and written to exports: they routinely hold personal data.
+    /// A response's body is read before the response is handed on - a handler cannot tell how its caller will read it -
+    /// so a caller that asked for the headers only (<c>HttpCompletionOption.ResponseHeadersRead</c>) gets them once that
+    /// body, of a known length within the limit, has arrived.
+    /// </summary>
+    public bool CaptureHttpBodies { get; set; }
+
+    /// <summary>The most of a body <see cref="CaptureHttpBodies"/> reads (16 KB).</summary>
+    public int MaxHttpBodyBytes { get; set; } = 16 * 1024;
 
     /// <summary>
     /// Name the component (and the application method it called through) that sent each HTTP request, read from the
@@ -194,6 +247,24 @@ public sealed class BitBevToolsOptions
     /// UI event it ran in.
     /// </summary>
     public bool CaptureHttpCallers { get; set; } = true;
+
+    /// <summary>
+    /// Capture what the application's <c>ILogger</c>s write while this session's code runs (Logs panel): level, category,
+    /// event id, message and template, the template's values, scopes, exception, the activity's trace id, the UI event
+    /// it ran in and the component that logged. The host's logging configuration filters first, as for every provider
+    /// (the provider's alias is <c>BevTools</c>); <see cref="MinimumLogLevel"/> applies after it. An application entry at
+    /// Error or above is also an error (Errors panel). Off, only the warnings and errors Blazor itself logs are captured.
+    /// </summary>
+    public bool TrackLogs { get; set; } = true;
+
+    /// <summary>The lowest level <see cref="TrackLogs"/> records. Information by default; Debug and Trace are usually far more.</summary>
+    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Information;
+
+    /// <summary>
+    /// Name the component (and the application method in between) that wrote each log entry, read from the stack when it
+    /// is logged: a stack walk per recorded entry. Off, an entry is attributed only to the UI event it ran in.
+    /// </summary>
+    public bool CaptureLogCallers { get; set; } = true;
 
     /// <summary>Wrap <c>IJSRuntime</c> instances injected into components to attribute JS interop calls to components.</summary>
     public bool TrackJsInterop { get; set; } = true;
@@ -215,6 +286,15 @@ public sealed class BitBevToolsOptions
     /// and the time the browser takes to apply them. Only sizes and message kinds are read, never payloads.
     /// </summary>
     public bool TrackWebSockets { get; set; } = true;
+
+    /// <summary>
+    /// Have the browser bridge report the page's responsiveness: every user interaction's time to the next paint, split
+    /// into input delay, processing and presentation (Event Timing), and the frames the main thread could not paint on
+    /// time, with the scripts that ran in them (long animation frames; long tasks where that is all a browser has). On
+    /// WebAssembly, where .NET runs on that thread, each is linked to the UI event, navigation or render batch that ran
+    /// inside it. Only timings and element descriptions (tag, id, class) are read.
+    /// </summary>
+    public bool TrackResponsiveness { get; set; } = true;
 
     /// <summary>
     /// Register the frameworks own components ActivitySource and meters when the host has not already done so.

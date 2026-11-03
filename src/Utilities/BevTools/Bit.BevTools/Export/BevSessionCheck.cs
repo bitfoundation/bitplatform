@@ -42,8 +42,20 @@ public sealed record BevCheckedFinding
     /// <summary>What the rule suggests trying, when it does.</summary>
     public string? Suggestion { get; init; }
 
+    /// <summary>
+    /// What identifies the finding across evaluations (and dismissals), as the export recorded it; null in an export
+    /// that has none. Stable for the same problem, so a report can tell a finding it already knows from a new one.
+    /// </summary>
+    public string? Fingerprint { get; init; }
+
+    /// <summary>The component instance the finding is about, when the rule named one.</summary>
+    public long? ComponentInstanceId { get; init; }
+
     /// <summary>Whether it fails the check under the options it was checked with.</summary>
     public bool Fails { get; init; }
+
+    /// <summary>Whether someone dismissed it in the session; a dismissed finding never fails.</summary>
+    public bool Dismissed { get; init; }
 }
 
 /// <summary>The outcome of <see cref="BevSessionCheck.Check"/>.</summary>
@@ -54,6 +66,12 @@ public sealed class BevSessionCheckResult
 
     /// <summary>Findings someone dismissed in the session: counted, never failing.</summary>
     public int DismissedFindings { get; internal init; }
+
+    /// <summary>
+    /// Those dismissed findings themselves (<see cref="BevCheckedFinding.Dismissed"/>), for a report that keeps them
+    /// visible as suppressed rather than dropping them.
+    /// </summary>
+    public IReadOnlyList<BevCheckedFinding> Dismissed { get; internal init; } = [];
 
     /// <summary>Error occurrences the session recorded; null when the export has no errors section.</summary>
     public long? Errors { get; internal init; }
@@ -191,7 +209,7 @@ public static class BevSessionCheck
         }
 
         var findings = new List<BevCheckedFinding>();
-        var dismissed = 0;
+        var dismissed = new List<BevCheckedFinding>();
         foreach (var d in diagnostics.EnumerateArray())
         {
             if (d.ValueKind != JsonValueKind.Object)
@@ -199,22 +217,20 @@ public static class BevSessionCheck
                 continue;
             }
 
-            if (d.TryGetProperty("dismissed", out var isDismissed) && isDismissed.ValueKind == JsonValueKind.True)
-            {
-                dismissed++;
-                continue;
-            }
-
+            var isDismissed = d.TryGetProperty("dismissed", out var dismissedFlag) && dismissedFlag.ValueKind == JsonValueKind.True;
             var ruleId = String(d, "ruleId") ?? "?";
             var severity = SeverityOf(String(d, "severity"));
-            findings.Add(new BevCheckedFinding
+            (isDismissed ? dismissed : findings).Add(new BevCheckedFinding
             {
                 RuleId = ruleId,
                 Severity = severity,
                 Title = String(d, "title") ?? ruleId,
                 Evidence = String(d, "evidence") ?? "",
                 Suggestion = String(d, "suggestion"),
-                Fails = options.FailOn is { } threshold && severity >= threshold && !options.IgnoredRules.Contains(ruleId),
+                Fingerprint = String(d, "fingerprint"),
+                ComponentInstanceId = d.TryGetProperty("componentInstanceId", out var component) && component.ValueKind == JsonValueKind.Number && component.TryGetInt64(out var instanceId) ? instanceId : null,
+                Fails = !isDismissed && options.FailOn is { } threshold && severity >= threshold && !options.IgnoredRules.Contains(ruleId),
+                Dismissed = isDismissed,
             });
         }
 
@@ -224,7 +240,8 @@ public static class BevSessionCheck
         return new BevSessionCheckResult
         {
             Findings = findings.OrderByDescending(f => f.Severity).ThenByDescending(f => f.Fails).ToList(),
-            DismissedFindings = dismissed,
+            DismissedFindings = dismissed.Count,
+            Dismissed = dismissed.OrderByDescending(f => f.Severity).ToList(),
             Errors = errors,
             ErrorGroups = Section(root, "errorGroups")?.Count,
             Requests = http?.Count,

@@ -14,9 +14,10 @@ namespace Bit.BevTools;
 /// <item><term>snapshot</term><description><c>{ since?, timelineAfter?, sections? }</c>: the session as <c>bit-bevtools/1</c>, or <c>{ unchanged: true }</c> when nothing changed since <c>since</c>.</description></item>
 /// <item><term>inspect</term><description><c>{ instanceId }</c>: one component's parameters, cascading values, state, services, bindings, lifecycle and renders.</description></item>
 /// <item><term>expand</term><description><c>{ instanceId, section, name, path }</c>: the children of one inspected value.</description></item>
-/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss, collect (a full garbage collection, then the leak check).</description></item>
+/// <item><term>command</term><description><c>{ name, argument? }</c>: pause, resume, clear, baseline, evaluate, dismiss, collect (a full garbage collection, then the leak check), mark (a timeline marker named by the argument), restore (a state change, by its id, through the provider's <see cref="IBevStateRestorer"/>).</description></item>
 /// <item><term>export</term><description><c>{ format: json | markdown | trace, since? }</c>: a file, as the About panel offers it.</description></item>
 /// <item><term>locate</term><description><c>{ instanceId }</c>: where a component's output is in the page, as a path through Blazor's logical DOM (see <see cref="BevDomMap"/>).</description></item>
+/// <item><term>batch</term><description><c>{ batchId }</c>: what one render batch rendered, as the Profiler shows it - its cost tree (self and subtree time, same-type siblings grouped) and its renders on a time axis - built from the retained render samples.</description></item>
 /// <item><term>resolve</term><description><c>{ path, anchored, signature, ordinal, sameCount, includeHidden? }</c>: the component that rendered the node at the end of a path.</description></item>
 /// </list>
 /// </summary>
@@ -59,6 +60,7 @@ public static class BevToolsProtocol
                 "export" => Export(session, args),
                 "locate" => Locate(session, args),
                 "resolve" => Resolve(session, args),
+                "batch" => Batch(session, args),
                 _ => Error("Unknown method '" + method + "'."),
             };
         }
@@ -332,6 +334,15 @@ public static class BevToolsProtocol
                 session.Diagnostics.Evaluate(force: true);
                 done = "Diagnostics evaluated";
                 break;
+            case "restore" when long.TryParse(argument, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var changeId):
+                // Never waited for: blocking the dispatcher would deadlock a circuit and cannot be done on WebAssembly. A
+                // provider that restores in memory has finished by now; one that awaits reports through the timeline.
+                var restoring = session.State.RestoreAsync(changeId);
+                done = restoring.IsCompletedSuccessfully ? restoring.Result : "Restore started";
+                break;
+            case "mark":
+                done = session.AddMarker(argument ?? "") > 0 ? "Marker added" : "Capture is paused: no marker added";
+                break;
             case "dismiss" when argument is not null:
                 session.Diagnostics.Dismiss(argument);
                 done = "Finding dismissed";
@@ -352,6 +363,59 @@ public static class BevToolsProtocol
         {
             w.WriteString("done", done);
             w.WriteNumber("version", session.Version);
+        });
+    }
+
+    private const int MaxBatchRows = 300;
+
+    private static string Batch(BevToolsSession session, JsonElement args)
+    {
+        if (Long(args, "batchId") is not { } batchId)
+        {
+            return Error("batch takes { batchId }.");
+        }
+
+        session.RenderTracker.CloseBatch();
+        var tree = BevBatchCostTree.Build(session.Components.All, batchId, MaxBatchRows);
+        var timeline = BevBatchTimeline.Build(session.Components.All, batchId, MaxBatchRows);
+        return Write(w =>
+        {
+            w.WriteNumber("batchId", batchId);
+            w.WriteNumber("totalMs", Math.Round(tree.TotalMs, 3));
+            w.WriteNumber("omitted", tree.Omitted);
+            w.WriteStartArray("rows");
+            foreach (var row in tree.Rows)
+            {
+                w.WriteStartObject();
+                w.WriteNumber("instanceId", row.InstanceId);
+                w.WriteString("name", row.Name);
+                w.WriteNumber("instances", row.Instances);
+                w.WriteNumber("depth", row.Depth);
+                w.WriteNumber("renders", row.Renders);
+                w.WriteNumber("selfMs", Math.Round(row.SelfMs, 3));
+                w.WriteNumber("totalMs", Math.Round(row.TotalMs, 3));
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteStartObject("timeline");
+            w.WriteNumber("spanMs", Math.Round(timeline.SpanMs, 3));
+            w.WriteNumber("depth", timeline.Depth);
+            w.WriteNumber("omitted", timeline.Omitted);
+            w.WriteStartArray("bars");
+            foreach (var bar in timeline.Bars)
+            {
+                w.WriteStartObject();
+                w.WriteNumber("instanceId", bar.InstanceId);
+                w.WriteString("name", bar.Name);
+                w.WriteNumber("depth", bar.Depth);
+                w.WriteNumber("startMs", Math.Round(bar.StartMs, 3));
+                w.WriteNumber("durationMs", Math.Round(bar.DurationMs, 3));
+                w.WriteEndObject();
+            }
+
+            w.WriteEndArray();
+            w.WriteEndObject();
         });
     }
 

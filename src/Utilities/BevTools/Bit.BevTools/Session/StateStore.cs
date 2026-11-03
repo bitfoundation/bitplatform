@@ -43,11 +43,12 @@ public sealed class BevStateProviderEntry
     public string? Error { get; internal set; }
 }
 
-internal sealed record PendingStateChange(BevStateChangeInfo Info, DateTimeOffset At, long? TriggerEventId, Dictionary<string, string>? Snapshot, string? Error);
+internal sealed record PendingStateChange(BevStateChangeInfo Info, string? Detail, DateTimeOffset At, long? TriggerEventId, Dictionary<string, string>? Snapshot, string? Error);
 
 /// <summary>Tracks registered state providers, records changes and computes before/after diffs.</summary>
 internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
 {
+    private const int MaxArguments = 8;
     private readonly BevToolsSession _session;
     private readonly BitBevToolsOptions _options;
     private readonly object _lock = new();
@@ -87,6 +88,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         }
 
         var entry = new BevStateProviderEntry(provider, origin, _options.MaxStateChangesPerProvider);
+        string? duplicate = null;
         lock (_lock)
         {
             if (_handlers.ContainsKey(provider))
@@ -94,10 +96,25 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                 return NullDisposable.Instance;
             }
 
-            _entries.Add(entry);
-            Action<BevStateChangeInfo> handler = info => OnChanged(entry, info);
-            _handlers[provider] = handler;
-            provider.Changed += handler;
+            // The State panel, the protocol and exports name a provider by its name: a second one of the same name could
+            // be neither selected nor told apart (an integration registered twice, two adapters named alike).
+            if (_entries.Any(e => string.Equals(e.Name, provider.Name, StringComparison.Ordinal)))
+            {
+                duplicate = provider.Name;
+            }
+            else
+            {
+                _entries.Add(entry);
+                Action<BevStateChangeInfo> handler = info => OnChanged(entry, info);
+                _handlers[provider] = handler;
+                provider.Changed += handler;
+            }
+        }
+
+        if (duplicate is not null)
+        {
+            _session.Errors.Record(null, "bevtools", $"A state provider named '{BevRedactor.RedactText(duplicate)}' is already registered; this one ({TypeNames.Short(provider.GetType())}, {origin}) is not shown. Give it a name of its own.");
+            return NullDisposable.Instance;
         }
 
         try
@@ -170,6 +187,8 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         string? error = null;
         var at = DateTimeOffset.UtcNow;
         var triggerEventId = _session.CurrentTriggerEventId;
+        // Now, while the arguments are what the change was made with.
+        var detail = DescribeDetail(info);
         try
         {
             snapshot = _session.Inspector.Flatten(entry.Provider.GetSnapshot());
@@ -186,7 +205,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                 return;
             }
 
-            entry.PendingChanges[sequence] = new PendingStateChange(info, at, triggerEventId, snapshot, error);
+            entry.PendingChanges[sequence] = new PendingStateChange(info, detail, at, triggerEventId, snapshot, error);
             if (entry.PendingChanges.Count > _options.MaxStateChangesPerProvider)
             {
                 entry.Generation++;
@@ -218,10 +237,11 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                     At = entry.LastChangedAt.Value,
                     Provider = entry.Name,
                     Action = pending.Info?.Action,
-                    Detail = pending.Info?.Detail,
+                    Detail = pending.Detail,
                     Changes = changes,
                     Snapshot = pending.Snapshot,
                     TriggerEventId = pending.TriggerEventId,
+                    RestoreToken = entry.Provider is IBevStateRestorer && pending.Info?.RestoreToken is { Length: > 0 } token ? token : null,
                 };
                 entry.History.Add(record);
 
@@ -240,6 +260,76 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
 
         _session.Overhead.AddInspection(Stopwatch.GetTimestamp() - start);
         _session.Touch();
+    }
+
+    /// <summary>
+    /// The provider's detail, then the change's arguments as the inspector shows them ("count=2, password=«redacted»"),
+    /// by name only under <see cref="BevValueAccess.None"/>.
+    /// </summary>
+    private string? DescribeDetail(BevStateChangeInfo? info)
+    {
+        if (info?.Arguments is not { Count: > 0 } arguments)
+        {
+            return info?.Detail;
+        }
+
+        var inspector = _session.Inspector;
+        var text = string.Join(", ", arguments.Take(MaxArguments).Select(a => inspector.ValueAccess == BevValueAccess.None ? a.Key : a.Key + "=" + inspector.Describe(a.Key, a.Value).Display))
+            + (arguments.Count > MaxArguments ? $" … +{arguments.Count - MaxArguments}" : "");
+        text = text.Length <= 300 ? text : text[..299] + "…";
+        return string.IsNullOrEmpty(info.Detail) ? text : info.Detail + " · " + text;
+    }
+
+    /// <summary>
+    /// Asks the provider of a recorded change to restore the state it had right after that change. Only where restoring
+    /// is allowed (<see cref="BevToolsSession.AllowsStateRestore"/>), only for a provider that can (<see cref="IBevStateRestorer"/>),
+    /// and only with the token it gave; returns what happened, never throws. Call on the session's dispatcher.
+    /// </summary>
+    public async Task<string> RestoreAsync(long changeId)
+    {
+        if (!_session.AllowsStateRestore)
+        {
+            return "Restoring state is not allowed outside Development in a process that serves many users.";
+        }
+
+        BevStateProviderEntry? entry;
+        BevStateChangeRecord? change;
+        lock (_lock)
+        {
+            entry = _entries.FirstOrDefault(e => e.History.FindByKey(static c => c.Id, changeId) is not null);
+            change = entry?.History.FindByKey(static c => c.Id, changeId);
+        }
+
+        if (entry is null || change is null)
+        {
+            return "That change is no longer in the history.";
+        }
+
+        if (entry.Provider is not IBevStateRestorer restorer || change.RestoreToken is not { } token)
+        {
+            return entry.Name + " cannot restore this change: the provider gave it no restore token (IBevStateRestorer).";
+        }
+
+        try
+        {
+            await restorer.RestoreAsync(token);
+        }
+        catch (Exception ex)
+        {
+            _session.Errors.Record(ex, "bevtools", entry.Name + " failed to restore a change.");
+            return entry.Name + " could not restore it: " + ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
+        }
+
+        _session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Custom,
+            Category = "state-restore",
+            Title = "Restored " + entry.Name + " to after " + (change.Action ?? "a change") + " (" + BevFmt.Time(change.At) + ")",
+            Detail = "Restored from BevTools with the provider's token",
+            ParentEventId = change.TimelineEventId > 0 ? change.TimelineEventId : null,
+        });
+        _session.Touch();
+        return "Restored " + entry.Name + " to after " + (change.Action ?? "the change") + ".";
     }
 
     public void ClearHistory()

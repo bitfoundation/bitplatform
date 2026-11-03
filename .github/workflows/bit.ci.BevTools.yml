@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
     - 'src/Utilities/BevTools/**'
+    # Bit.BevTools.Blex and its tests build on Blex and its source generator.
+    - 'src/Utilities/Blex/Bit.Blex/**'
+    - 'src/Utilities/Blex/Bit.Blex.Generators/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

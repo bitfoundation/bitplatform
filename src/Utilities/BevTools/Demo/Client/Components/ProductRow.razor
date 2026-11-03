@@ -1,4 +1,5 @@
 ﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject Microsoft.Extensions.Logging.ILogger<ProductRow> Logger
 
 <tr class="product-row @(Highlight ? "highlight" : "")">
     <td>@Product.Name</td>
@@ -21,6 +22,18 @@
 
     /// <summary>The fix the Products page can switch on: skip a render when the row would show exactly what it shows.</summary>
     [Parameter] public bool SkipUnchanged { get; set; }
+
+    /// <summary>Problem 25: an entry per row per parameter update, the way a debugging line left in a hot path logs.</summary>
+    [Parameter] public bool LogRenders { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (LogRenders)
+        {
+            // Intentional: 120 rows, each logging on every keystroke - a log flood.
+            Logger.LogInformation("Updating row {ProductId} ({Name})", Product.Id, Product.Name);
+        }
+    }
 
     // Intentional while SkipUnchanged is off: every parent render re-renders all rows even when nothing changed.
     // Product is a record, so Equals compares its values: a search that returns the same product again is unchanged.
