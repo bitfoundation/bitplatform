@@ -1,0 +1,64 @@
+.hs-card-preview {
+    --hs-mark: #E0B54A;
+    --hs-mark-detail: #1E2124;
+
+    position: relative;
+    display: grid;
+    align-content: space-between;
+    gap: 14px;
+    aspect-ratio: 16 / 10;
+    padding: 16px 18px 18px;
+    overflow: hidden;
+    background: #1E2124;
+    border-bottom: 3px solid #E0B54A;
+    color: #F3F1EC;
+}
+
+.hs-card-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hs-card-board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+
+    i {
+        display: grid;
+        align-content: start;
+        height: 46px;
+        padding: 6px 8px;
+        border-radius: 3px;
+        font-style: normal;
+    }
+
+    b {
+        font-family: "Archivo", system-ui, sans-serif;
+        font-size: 1.125rem;
+        font-stretch: 64%;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .is-occupied {
+        background: #DCE3EC;
+        color: #22344B;
+    }
+
+    .is-dirty {
+        background: #F6E2BE;
+        color: #6B4300;
+    }
+
+    .is-arriving {
+        border: 1.5px dashed #E0B54A;
+        color: #E0B54A;
+    }
+
+    .is-clean {
+        background: #DCEEE2;
+        color: #1D5536;
+    }
+}

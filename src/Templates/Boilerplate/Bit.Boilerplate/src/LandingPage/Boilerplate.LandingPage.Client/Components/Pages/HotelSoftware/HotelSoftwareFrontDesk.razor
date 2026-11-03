@@ -1,0 +1,93 @@
+@inherits LandingComponentBase
+
+<div class="hs-desk">
+    <div class="hs-desk-top">
+        <div>
+            <p class="hs-desk-hotel">Hotel Brana <span>@H[nameof(HotelSoftwareStrings.DeskRooms)]</span></p>
+            <p class="hs-desk-date">@today</p>
+        </div>
+        <ul class="hs-desk-counts" aria-label="@H[nameof(HotelSoftwareStrings.DeskToday)]">
+            <li><b>@InHouse.ToString(CurrentCulture)</b> @H[nameof(HotelSoftwareStrings.DeskInHouse)]</li>
+            <li><b>@Arriving.ToString(CurrentCulture)</b> @H[nameof(HotelSoftwareStrings.DeskArriving)]</li>
+            <li><b>@Departing.ToString(CurrentCulture)</b> @H[nameof(HotelSoftwareStrings.DeskDeparting)]</li>
+            <li class="@(ToClean > 0 ? "is-alert" : null)"><b>@ToClean.ToString(CurrentCulture)</b> @H[nameof(HotelSoftwareStrings.DeskToClean)]</li>
+        </ul>
+    </div>
+
+    <div class="hs-desk-body">
+        <div class="hs-desk-lists">
+            <section class="hs-desk-list" aria-label="@H[nameof(HotelSoftwareStrings.DeskArrivals)]">
+                <p class="hs-desk-list-title">@H[nameof(HotelSoftwareStrings.DeskArrivals)]</p>
+                @foreach (var stay in arrivals)
+                {
+                    <div class="hs-stay @(stay.IsDone ? "is-done" : null)">
+                        <span class="hs-stay-room">@stay.Room</span>
+                        <span class="hs-stay-text"><strong>@stay.Guest</strong><br />@H[stay.Detail]</span>
+                        @if (stay.IsDone)
+                        {
+                            <span class="hs-stay-done"><BitIcon IconName="@BitIconName.CheckMark" /> @H[nameof(HotelSoftwareStrings.DeskCheckedIn)]</span>
+                        }
+                        else
+                        {
+                            <BitButton Size="BitSize.Small" AriaLabel="@H[nameof(HotelSoftwareStrings.DeskCheckInLabel), stay.Guest, stay.Room]" OnClick="() => CheckIn(stay)" Class="hs-stay-action">@H[nameof(HotelSoftwareStrings.DeskCheckIn)]</BitButton>
+                        }
+                    </div>
+                }
+            </section>
+            <section class="hs-desk-list" aria-label="@H[nameof(HotelSoftwareStrings.DeskDepartures)]">
+                <p class="hs-desk-list-title">@H[nameof(HotelSoftwareStrings.DeskDepartures)]</p>
+                @foreach (var stay in departures)
+                {
+                    <div class="hs-stay @(stay.IsDone ? "is-done" : null)">
+                        <span class="hs-stay-room">@stay.Room</span>
+                        <span class="hs-stay-text"><strong>@stay.Guest</strong><br />@H[stay.Detail]</span>
+                        @if (stay.IsDone)
+                        {
+                            <span class="hs-stay-done"><BitIcon IconName="@BitIconName.CheckMark" /> @H[nameof(HotelSoftwareStrings.DeskCheckedOut)]</span>
+                        }
+                        else
+                        {
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" AriaLabel="@H[nameof(HotelSoftwareStrings.DeskCheckOutLabel), stay.Guest, stay.Room]" OnClick="() => CheckOut(stay)" Class="hs-stay-action">@H[nameof(HotelSoftwareStrings.DeskCheckOut)]</BitButton>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        <section class="hs-desk-rooms" aria-label="@H[nameof(HotelSoftwareStrings.DeskRoomsLabel)]">
+            @foreach (var floor in new[] { "1", "2" })
+            {
+                <p class="hs-desk-floor">@H[nameof(HotelSoftwareStrings.DeskFloor), floor]</p>
+                <ul class="hs-room-grid">
+                    @foreach (var room in rooms.Where(r => r.Number.StartsWith(floor, StringComparison.Ordinal)))
+                    {
+                        <li class="hs-room @StatusClass(room.Status) @(room.Number == changedRoom ? "is-changed" : null)">
+                            <span class="hs-room-number">@room.Number</span>
+                            <span class="hs-room-kind">@H[room.Kind]</span>
+                            <span class="hs-room-state">@StatusName(room.Status)</span>
+                            @if (room.Guest is not null)
+                            {
+                                <span class="hs-room-guest">@room.Guest</span>
+                            }
+                            @if (room.Status is RoomStatus.Dirty)
+                            {
+                                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Broom" AriaLabel="@H[nameof(HotelSoftwareStrings.DeskMarkCleanLabel), room.Number]" OnClick="() => MarkClean(room)" Class="hs-room-action">@H[nameof(HotelSoftwareStrings.DeskMarkClean)]</BitButton>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    </div>
+
+    <p class="hs-desk-status" role="status">
+        @if (status is not null)
+        {
+            <BitIcon IconName="@BitIconName.CheckMark" /> @status
+        }
+        else
+        {
+            @H[nameof(HotelSoftwareStrings.DeskTonight), SoldTonight.ToString(CurrentCulture), Sellable.ToString(CurrentCulture)]
+        }
+    </p>
+</div>

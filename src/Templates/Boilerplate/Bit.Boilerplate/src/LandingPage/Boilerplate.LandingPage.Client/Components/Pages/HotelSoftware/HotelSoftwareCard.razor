@@ -1,0 +1,24 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card hs-card" href="@LocalUrl(HotelSoftwareSite.Path)">
+    <div class="hs-card-preview" aria-hidden="true">
+        <span class="hs-card-brand"><HotelSoftwareLogo /> <HotelSoftwareWordmark /></span>
+        <span class="hs-card-board">
+            @foreach (var (number, state) in tiles)
+            {
+                <i class="@state"><b>@number</b></i>
+            }
+        </span>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@R[nameof(HotelSoftwareStrings.CardIndustry)]</p>
+        <h2>Lodgeboard</h2>
+        <p>@R[nameof(HotelSoftwareStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeLaunched)]</li>
+            <li>@R[nameof(HotelSoftwareStrings.CardTag1)]</li>
+            <li>@R[nameof(HotelSoftwareStrings.CardTag2)]</li>
+            <li>@R[nameof(HotelSoftwareStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>
