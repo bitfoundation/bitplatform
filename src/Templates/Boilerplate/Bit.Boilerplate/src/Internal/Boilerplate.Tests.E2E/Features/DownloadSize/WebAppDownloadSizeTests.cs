@@ -24,9 +24,10 @@ public partial class WebAppDownloadSizeTests : AppPageTest
 
     /// <summary>
     /// AppConsentBanner opens from OnAfterFirstRenderAsync - the app's own "I am up" signal. It is the only bottom
-    /// panel in the app, so its position identifies it without depending on its localized text.
+    /// panel in the app, so its position identifies it without depending on its localized text. The landing page's
+    /// banner, .lp-consent, opens after its first render the same way.
     /// </summary>
-    private const string consentBannerSelector = ".bit-pnl-cnt.bit-pnl-bottom.bit-pnl-opn";
+    private const string consentBannerSelector = ".bit-pnl-cnt.bit-pnl-bottom.bit-pnl-opn, .lp-consent";
 
     /// <summary>
     /// Unlike every other test this one wants the banner, and leaving it unanswered downloads no more than refusing it.
@@ -48,6 +49,8 @@ public partial class WebAppDownloadSizeTests : AppPageTest
     [DataRow(DeployedApps.TodoOffline, 8.5, DisplayName = nameof(DeployedApps.TodoOffline))]
 
     [DataRow(DeployedApps.Sales, 5.6, DisplayName = nameof(DeployedApps.Sales))]
+
+    [DataRow(DeployedApps.LandingPage, 3.6, DisplayName = nameof(DeployedApps.LandingPage))]
     public async Task FirstVisitDownloadSize_Should_NotRegress(string url, double expectedMegabytes)
     {
         // Qualified because the inherited BrowserType property shadows the type of the same name.

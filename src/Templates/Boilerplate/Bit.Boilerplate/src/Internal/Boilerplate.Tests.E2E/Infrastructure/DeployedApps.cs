@@ -18,8 +18,9 @@ public enum App
 }
 
 /// <summary>
-/// The always-on demo apps that .github/workflows/{admin-sample,todo-sample,sales-module-demo}.cd.yml build from this
-/// very template and deploy, so these tests run against real deployments instead of a locally started server.
+/// The always-on demo apps that .github/workflows/{admin-sample,todo-sample,sales-module-demo,landingpage-demo}.cd.yml
+/// build from this very template and deploy, so these tests run against real deployments instead of a locally started
+/// server.
 /// </summary>
 public static class DeployedApps
 {
@@ -43,6 +44,9 @@ public static class DeployedApps
 
     /// <summary>Sales module, prerendered PWA served by Server.Web with an integrated API (Azure Web App + Cloudflare CDN).</summary>
     public const string Sales = "https://sales.bitplatform.dev/";
+
+    /// <summary>The landing page project's gallery of samples, prerendered and served by its own server (IIS).</summary>
+    public const string LandingPage = "https://landingpage.bitplatform.dev/";
 
     /// <summary>Standalone API of both admin panel apps (Azure Web App).</summary>
     public const string AdminPanelApi = "https://adminpanel-api.bitplatform.dev/";
