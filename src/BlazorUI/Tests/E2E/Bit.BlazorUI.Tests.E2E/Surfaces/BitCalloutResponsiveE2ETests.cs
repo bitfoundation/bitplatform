@@ -167,6 +167,31 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
         await Expect(Page.Locator("#res")).Not.ToHaveClassAsync(HasClass("bit-clo-opn"));
     }
 
+    [TestMethod]
+    public async Task Panel_WhileClosed_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync($"{Url}?mode=Panel");
+
+        var active = Page.Locator("#res-active");
+
+        // A closed panel is laid out beside the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(Callout).ToBeHiddenAsync();
+        await Expect(active).ToBeHiddenAsync();
+
+        await OpenPanelAsync();
+        await Expect(active).ToBeVisibleAsync();
+
+        var box = await BoxAsync(Callout);
+        await Page.Touchscreen.TapAsync((float)(box.X / 2), (float)(Height / 2));
+
+        // The dismissal hides it at once; the closed state it is handed back to once it has slid out hides it too.
+        await Expect(Page.Locator("#res")).Not.ToHaveClassAsync(HasClass("bit-clo-opn"));
+        await Expect(Callout).ToHaveCSSAsync("visibility", "hidden");
+        await Expect(Callout).ToBeHiddenAsync();
+        await Expect(active).ToBeHiddenAsync();
+    }
+
     private async Task OpenPanelAsync()
     {
         await Page.Locator("#res-trigger").TapAsync();

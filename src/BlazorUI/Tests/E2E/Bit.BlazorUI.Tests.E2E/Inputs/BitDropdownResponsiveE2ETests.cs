@@ -6,8 +6,8 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// The Responsive mode of BitDropdown on a phone (<c>/e2e/dropdown/responsive</c>, a 390x844 touch viewport): a tap
 /// opens a full-height side panel at the end of the screen carrying the label and a close button
 /// (ResponsiveCloseButtonAriaLabel), the close button, a pick and a swipe dismiss it, a closed panel is out of the
-/// accessibility tree and the tab order, an RTL panel slides in from the
-/// left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
+/// accessibility tree and the tab order (and out of the page once the screen widens), an open one hides with the part of
+/// the page it was opened from, an RTL panel slides in from the left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
 /// icons by name and by BitIconInfo), Enter in a multi select panel keeps it open, the search box takes the focus inside
 /// the panel, the panel's parts take Styles and Classes, and a dropdown that is not Responsive stays a plain callout.
 /// </summary>
@@ -114,6 +114,51 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         await Expect(callout).ToBeHiddenAsync();
         await Expect(close).ToHaveCountAsync(0);
         await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Responsive_APanelClosedBeforeTheScreenWidens_StaysClosedAndOpensAsAPlainCallout()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-rtl");
+        var close = callout.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true });
+
+        await close.TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToHaveCSSAsync("visibility", "hidden");
+
+        // The phone turned to landscape: wide enough for a plain callout, which is display:none while it is closed - the
+        // display the panel was opened with is not left behind to hold it in the page, invisible but there.
+        await Page.SetViewportSizeAsync(844, 390);
+
+        await Expect(callout).ToHaveCSSAsync("display", "none");
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+
+        // Nor is the fade the panel closed with left on the plain callout it opens as there.
+        await Trigger("dd-resp-rtl").TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(callout).ToBeVisibleAsync();
+        await Expect(callout).ToHaveCSSAsync("opacity", "1");
+        await Expect(Options(callout)).ToHaveCountAsync(3);
+    }
+
+    [TestMethod]
+    public async Task Responsive_AnOpenPanel_HidesWithThePartOfThePageItWasOpenedFrom()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-rtl");
+
+        // The open panel is moved to the body inside a copy of every element around it, and the copy of a section the
+        // page hides hides the panel with it, as that section would where the panel was rendered.
+        await Trigger("dd-resp-rtl").EvaluateAsync("el => el.closest('section').style.visibility = 'hidden'");
+        await Expect(callout).ToBeHiddenAsync();
+
+        await Trigger("dd-resp-rtl").EvaluateAsync("el => el.closest('section').style.visibility = ''");
+        await Expect(callout).ToBeVisibleAsync();
     }
 
     [TestMethod]

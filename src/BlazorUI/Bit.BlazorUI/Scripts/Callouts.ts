@@ -136,14 +136,14 @@
             // It is watched from the open to the close, in the same calls, so it costs no round trip of its own.
             nestedEscape: boolean = false,
         ) {
-            component ??= document.getElementById(componentId);
-            if (component == null) return false;
-
             callout ??= document.getElementById(calloutId);
             if (callout == null) return false;
 
             const arrow = arrowId ? document.getElementById(arrowId) : null;
 
+            // A close has no use for the component, so it is only looked up for an open: an anchor the page has
+            // removed since the callout opened (a BitCallout's AnchorId) must not keep it on the screen, in its
+            // chain and on the stack.
             if (!isCalloutOpen) {
                 const windowWidth = window.innerWidth;
                 const slidesOut = windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode;
@@ -168,6 +168,9 @@
                 Callouts.remove(calloutId, false);
                 return false;
             }
+
+            component ??= document.getElementById(componentId);
+            if (component == null) return false;
 
             Callouts.makeOverlayTappable(overlayId ? document.getElementById(overlayId) : null);
 
@@ -404,9 +407,10 @@
                 // A panel is sized against the screen rather than placed against the component, so it is
                 // never the detached one the placement below can hide - including when the screen only
                 // just became narrow enough for the panel, with the callout already hidden as detached.
-                // Visible outright rather than left to the stylesheet, which hides a closed panel (see
-                // concealPanel): this is what tells the open one apart from it.
-                callout.style.visibility = 'visible';
+                // Inherited rather than left to the stylesheet, which hides a closed panel (see concealPanel): this
+                // is what tells the open one apart from it. Inherited rather than visible, so an open panel still
+                // hides with the part of the page it was opened from, as every other callout does.
+                callout.style.visibility = 'inherit';
 
                 // A callout shown as a panel is sized against the screen rather than placed against the
                 // component, so there is nothing left for an arrow to point at.
@@ -1577,12 +1581,16 @@
         }
 
         // A closed panel is never display:none - it is laid out off the screen, for the slide that brings it in -
-        // so its opacity and its transform alone took it out of sight, and left its content in the accessibility
-        // tree and its controls in the tab order: every responsive component on a narrow page added another set
-        // of options and another close button for a screen reader to find. The stylesheet of each component hides
-        // its closed panel with visibility instead, which keeps the layout the slide needs; the open one is made
-        // visible inline (see position), and that is taken back here once it has slid out of sight.
+        // so the stylesheet of each component declares its closed state, hidden with visibility as well as with
+        // its opacity (the responsive-panel-closed mixin), which takes its content out of the accessibility tree
+        // and its controls out of the tab order. What position wrote inline to show the open one - and the
+        // opacity the close faded it out with - is taken back here once it has slid out of sight, all of it, so
+        // that state is the one the panel is left in at every width: a panel closed on a narrow screen that then
+        // widens goes back to the display:none of its plain popup instead of being held in the page by the
+        // display of the open panel, and opens there as a popup that is not still faded out.
         export function concealPanel(callout: HTMLElement) {
+            callout.style.display = '';
+            callout.style.opacity = '';
             callout.style.visibility = '';
         }
 

@@ -1436,16 +1436,10 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 
 .bit-drp-res {
     @include lt-sm {
+        @include responsive-panel-closed;
         top: 0;
         right: 0;
-        opacity: 0;
         height: 100%;
-        display: block;
-        // Out of the accessibility tree and the tab order while it is closed, which the opacity and the
-        // transform alone left its options and its close button in - one more set of them for every
-        // responsive dropdown on the page. Visibility rather than display, so it is still laid out for the
-        // slide that brings it in; the open panel is made visible inline (see Callouts.concealPanel).
-        visibility: hidden;
         overflow: hidden;
         max-height: unset;
         // Capped at the viewport so a wider panel than the screen it opens on cannot push its close

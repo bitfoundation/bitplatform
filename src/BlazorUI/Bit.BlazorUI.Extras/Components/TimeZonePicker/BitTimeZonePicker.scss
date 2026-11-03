@@ -512,11 +512,10 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
 
 .bit-tzp-res {
     @include lt-sm {
+        @include responsive-panel-closed;
         top: 0;
         right: 0;
-        opacity: 0;
         height: 100%;
-        display: block;
         overflow: hidden;
         max-height: unset;
         animation-name: unset;
