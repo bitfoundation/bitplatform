@@ -32,7 +32,7 @@ jobs:
     # Only .NET 11: the sample and the suite target net11.0 alone, and build only that target of the multi-targeted
     # libraries; bit.ci.BevTools.yml adds .NET 10 to run the net10.0 unit tests.
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -85,7 +85,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
