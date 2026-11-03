@@ -21,12 +21,14 @@ public partial class AuthStatePropagationTests
             .ReturnsLazily(() => ++subscribeCalls is 2 ? Task.FromException(new TooManyRequestsException()) : Task.CompletedTask);
 
         await using var server = new AppTestServer();
-        await server.Build().Start(TestContext.CancellationToken);
+        await server.Build(configureTestWebAppServices: services =>
+        {
+            services.AddScoped(_ => pushNotificationService);
+            services.AddScoped(_ => A.Fake<IUserController>());
+        }).Start(TestContext.CancellationToken);
 
         await using var ctx = server.CreateBunitContext();
 
-        ctx.Services.AddScoped(_ => pushNotificationService);
-        ctx.Services.AddScoped(_ => A.Fake<IUserController>());
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
 
         var cut = ctx.Render<AppClientCoordinator>();
