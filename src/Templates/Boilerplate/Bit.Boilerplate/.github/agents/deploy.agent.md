@@ -19,8 +19,8 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
   secrets, and its own database, storage and keys.
 - **A merge deploys only after the first deployment.** A new project's CDs run only by hand, so the merges made before
-  there is anywhere to deploy to spend no Actions minutes and leave no run waiting for a runner. Section 9 turns each
-  one on, once that environment's first deployment has worked.
+  there is anywhere to deploy to spend no Actions minutes and leave no run waiting for a runner. Section 9 turns on each
+  one's `push` trigger, once that environment's first deployment has worked.
 - **Built on GitHub, run on the VM.** A push to an environment's branch starts its CD workflow. Its build job runs on
   a GitHub-hosted runner: Aspire publishes the AppHost for Docker Compose, and the app's images go to GitHub Container
   Registry (GHCR), tagged with the commit. Its deploy job runs on that environment's self-hosted runner on the VM,
@@ -249,7 +249,7 @@ them to GHCR, and `deploy_server` runs on the environment's own runner, migrates
 project up, and fails unless every container is healthy and the public address answers. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
-  the Test CD runs on `develop` and the Production CD on `main`, on a push only once section 9 has turned it on.
+  the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
 - Set every variable and secret the CD reads for this project's options (section 6).
 - Carry what section 4 decided into the settings: prerendering and the caching flags go into the apps' settings
   secrets.
@@ -291,7 +291,8 @@ project up, and fails unless every container is healthy and the public address a
 
 - Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, and run the
   Test CD by hand (`gh workflow run cd-test.yml --ref develop`), since a merge doesn't deploy yet. Watch the run. The
-  deploy job already fails when a container isn't healthy or the public address doesn't answer; when it does, read that container's logs
+  deploy job already
+  fails when a container isn't healthy or the public address doesn't answer; when it does, read that container's logs
   (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
@@ -306,14 +307,18 @@ project up, and fails unless every container is healthy and the public address a
 - Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
   launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**
   skill (`.github/agents/landing-page.agent.md`) describes, so every deployment empties it.
-- Once Test works, turn on its deployments with `gh variable set TEST_DEPLOY_ON_PUSH --body true`, and tell the user
-  that from now on every merge into `develop` that changes the app deploys. It is a variable of the repository, not of
-  the environment, since the workflow reads it before it reaches the environment.
+- Once Test works, uncomment the `push` block of `.github/workflows/cd-test.yml` and merge that through ai-dlc's phase
+  7. Uncomment all of it, since `paths` without `branches` runs the CD on every branch. The workflow is in its own
+  `paths`, so this merge is the first deployment that starts by itself: watch it, and fix whatever it shows before going
+  on. Then tell the user that from now on every merge into `develop` that changes the app deploys.
 - Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead, then the Production CD by
   hand on the same go-ahead (`gh workflow run cd-production.yml --ref main`), since that merge doesn't deploy yet. Check
   it the way you checked Test.
-- Once Production works, turn on its deployments with `gh variable set PRODUCTION_DEPLOY_ON_PUSH --body true`, and tell
-  the user that from now on merging a release into `main` deploys it.
+- Once Production works, uncomment the `push` block of `.github/workflows/cd-production.yml` the same way, on a branch
+  merged into `develop`. It reaches `main` with the next release, and since GitHub reads a push's workflow from the
+  pushed commit, that release's merge is the first deployment to Production that starts by itself. Offer the user that
+  release now, so this is proven before they rely on it, merge it only on their go-ahead, and watch the run. Tell them
+  that from then on merging a release into `main` deploys it.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).
 - After the first deployment to Production, unless the database already has a backup, end with a warning the user
