@@ -3057,4 +3057,46 @@
     <data name="HomeWhyManyAppsText" xml:space="preserve">
         <value>Añade aquí tus distintas apps, cada una con su propio tema, igual que este Workbench mantiene una página de destino con su propio aspecto junto a las páginas de la app.</value>
     </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Tu privacidad</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>Nos gustaría medir lo rápido que es este sitio y cómo se usa, para poder mejorarlo. No se recoge nada de eso hasta que aceptes, y no usamos cookies. Los errores se notifican en cualquier caso, sin revelar quién eres.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Rendimiento y diagnóstico</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>La rapidez con que cargan y responden las páginas, y los detalles que ayudan a corregir los errores de los visitantes.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Estadísticas de uso</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Qué páginas se leen y qué botones se pulsan, sin revelar quién eres.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Guardar mis opciones</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Aceptar</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>No, gracias</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Déjame elegir</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>Esta página no está en el Workbench. Pide a tu agente que la traiga aquí.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Aviso de consentimiento</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Ya decidido</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>Primera visita</value>
+    </data>
 </root>

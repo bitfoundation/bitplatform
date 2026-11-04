@@ -3057,4 +3057,46 @@
     <data name="HomeWhyManyAppsText" xml:space="preserve">
         <value>Ajoutez ici vos différentes applications, chacune avec son propre thème, comme ce Workbench garde une page d'accueil avec son propre style à côté des pages de l'application.</value>
     </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Votre vie privée</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>Nous aimerions mesurer la rapidité de ce site et la façon dont il est utilisé, afin de l'améliorer. Rien de tout cela n'est collecté tant que vous n'avez pas accepté, et nous n'utilisons pas de cookies. Les erreurs sont signalées dans tous les cas, sans révéler qui vous êtes.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Performances et diagnostic</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>La vitesse de chargement et de réponse des pages, et les détails qui aident à corriger les erreurs rencontrées par les visiteurs.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Statistiques d'utilisation</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Quelles pages sont lues et quels boutons sont utilisés, sans révéler qui vous êtes.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Enregistrer mes choix</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Accepter</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>Non merci</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Laissez-moi choisir</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>Cette page n'est pas dans le Workbench. Demandez à votre agent de l'y ajouter.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Bandeau de consentement</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Déjà choisi</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>Première visite</value>
+    </data>
 </root>

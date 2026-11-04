@@ -22,6 +22,7 @@ public class TourUITests : WorkbenchPageTest
     public async Task TheTour_Should_ShowEachFeatureAndPutTheViewsBack(WorkbenchSurface surface)
     {
         await Page.GotoAsync(Server.Address.ToString());
+        await WaitUntilInteractive();
         await Press(Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }));
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
@@ -110,6 +111,35 @@ public class TourUITests : WorkbenchPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task TheLandingPageStep_Should_GoBackAStepAndLeaveForThePageItStartedFrom(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("pos-dashboard", "?device=desktop-1536");
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows, WorkbenchStrings.HomeWhyManyAppsTitle })
+        {
+            await Advance(title);
+        }
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
+        await Expect(View().Locator(".lp-minimal")).ToBeVisibleAsync();
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
+
+        await Expect(Popover.GetByText(WorkbenchStrings.Flows, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+
+        await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard.*device=desktop-1536"));
+    }
+
+    [TestMethod, OnDesktops]
     public async Task LeavingTheTourOnTheFlowsPage_Should_GoBackToTheViewsItStartedFrom(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts", "?device=desktop-1536&theme=dark");
@@ -150,6 +180,7 @@ public class TourUITests : WorkbenchPageTest
     public async Task TheTourOnAPhone_Should_ShowEachFeatureAboveItsCardAndGiveThePhoneLayoutBack(WorkbenchSurface surface)
     {
         await Page.GotoAsync(Server.Address.ToString());
+        await WaitUntilInteractive();
         await Press(Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }));
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();

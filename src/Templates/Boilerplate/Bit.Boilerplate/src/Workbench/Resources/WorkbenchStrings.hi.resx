@@ -3057,4 +3057,46 @@
     <data name="HomeWhyManyAppsText" xml:space="preserve">
         <value>अपने अलग-अलग ऐप्स यहाँ जोड़ें, हर एक की अपनी थीम के साथ, जैसे यह Workbench ऐप के पेजों के बगल में एक लैंडिंग पेज को उसकी अपनी शक्ल में रखता है।</value>
     </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>आपकी निजता</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>हम जानना चाहते हैं कि यह साइट कितनी तेज़ है और इसका उपयोग कैसे होता है, ताकि इसे बेहतर बना सकें। आपकी सहमति तक इसमें से कुछ भी इकट्ठा नहीं होता, और हम कुकीज़ का उपयोग नहीं करते। त्रुटियों की रिपोर्ट हर हाल में होती है, यह बताए बिना कि आप कौन हैं।</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>प्रदर्शन और निदान</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>पेज कितनी तेज़ी से खुलते और जवाब देते हैं, और वे विवरण जो आगंतुकों की त्रुटियाँ ठीक करने में मदद करते हैं।</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>उपयोग के आँकड़े</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>कौन से पेज पढ़े जाते हैं और कौन से बटन दबाए जाते हैं, यह बताए बिना कि आप कौन हैं।</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>मेरे विकल्प सहेजें</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>स्वीकार करें</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>नहीं, धन्यवाद</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>मुझे चुनने दें</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>यह पेज Workbench में नहीं है। अपने एजेंट से इसे यहाँ लाने को कहें।</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>सहमति बैनर</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>पहले ही चुना जा चुका</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>पहली विज़िट</value>
+    </data>
 </root>

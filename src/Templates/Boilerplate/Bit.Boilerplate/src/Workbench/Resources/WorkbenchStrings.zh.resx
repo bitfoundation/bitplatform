@@ -3055,6 +3055,48 @@
         <value>一个设计器，多个应用</value>
     </data>
     <data name="HomeWhyManyAppsText" xml:space="preserve">
-        <value>把你的不同应用都添加到这里，每个应用都有自己的主题，就像这个 Workbench 把外观独立的着陆页放在应用页面旁边一样。</value>
+        <value>把您的不同应用都添加到这里，每个应用都有自己的主题，就像这个 Workbench 把外观独立的着陆页放在应用页面旁边一样。</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>你的隐私</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>我们想了解本站的速度和使用情况，以便加以改进。在你同意之前不会收集任何此类数据，我们也不使用 Cookie。无论如何都会报告错误，但不会透露你的身份。</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>性能与诊断</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>页面加载和响应的速度，以及有助于修复访客遇到的错误的详细信息。</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>使用统计</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>哪些页面被阅读、哪些按钮被点击，但不会透露你的身份。</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>保存我的选择</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>接受</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>不用了，谢谢</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>让我自己选择</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>此页面不在 Workbench 中。请让您的智能体把它加入这里。</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>同意横幅</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>已做出选择</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>首次访问</value>
     </data>
 </root>

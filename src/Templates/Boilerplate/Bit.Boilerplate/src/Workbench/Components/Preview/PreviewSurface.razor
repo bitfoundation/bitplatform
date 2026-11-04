@@ -7,7 +7,9 @@
 
 @if (Page.HasAppShell is false)
 {
-    <PreviewPageView Page="Page" />
+    <div class="wb-no-shell">
+        <PreviewPageView Page="Page" />
+    </div>
 }
 else if (Scenario.Chrome)
 {
@@ -17,7 +19,7 @@ else if (Scenario.Chrome)
 }
 else
 {
-    <div class="bare-surface">
+    <div class="bare-surface wb-no-shell">
         <PreviewPageView Page="Page" />
     </div>
 }

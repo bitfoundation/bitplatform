@@ -59,6 +59,9 @@ public partial class MinimalLandingPage
     /// <summary>A link to a section of this page in this view; the host page's base address would lead a plain hash to the Workbench's home page.</summary>
     private string SectionUrl(string id) => $"{NavigationManager.Uri.Split('#')[0]}#{id}";
 
+    /// <summary>The site's other pages aren't here, so a link to one says so instead of doing nothing.</summary>
+    private void ShowMissingPage() => SnackBarService.Info(Localizer[nameof(WorkbenchStrings.LandingMissingPage)]);
+
     private async Task ToggleTheme()
     {
         var theme = await bitThemeManager.ToggleDarkLightAsync();
