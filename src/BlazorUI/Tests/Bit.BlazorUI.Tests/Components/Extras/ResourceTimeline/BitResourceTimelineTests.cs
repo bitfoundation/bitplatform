@@ -44,6 +44,9 @@ public class BitResourceTimelineTests : BunitTestContext
 
     private IReadOnlyList<JSRuntimeInvocation> Calls(string identifier) => Context.JSInterop.Invocations[identifier];
 
+    // The token the last windowed load handed the engine, which its window requests carry back.
+    private long WindowSession() => (long)Calls(BeginWindowedFn).Last().Arguments[4]!;
+
     // Makes the browser side answer setup with a layout, which is what starts the engine (without one, as in a
     // prerender, the timeline renders its shell and waits).
     private void PlanStart(object? layout = null) => Context.JSInterop.PlanLayout(SetupFn).Return(layout ?? Layout());
@@ -903,6 +906,8 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreSame(config.Allocations, apply.Arguments[2]);
         Assert.AreEqual(600_000L, apply.Arguments[3]);
         Assert.AreEqual(1_800_000L, apply.Arguments[4]);
+        // The window is applied with the token the engine started the windowed mode with.
+        Assert.AreEqual(WindowSession(), apply.Arguments[5]);
 
         Assert.AreSame(config.Allocations[0], (await ResolveAsync(component, "a1")).Single());
     }
@@ -941,9 +946,9 @@ public class BitResourceTimelineTests : BunitTestContext
             return Task.FromResult(result);
         }), config);
 
-        var kept = (await ResolveAsync(component, "a2")).Single();
+        Assert.AreEqual(1, (await ResolveAsync(component, "a2")).Count);
 
-        await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 3_000_000, 7_200_000));
+        await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 3_000_000, 7_200_000, WindowSession()));
 
         Assert.AreEqual(DateTimeOffset.FromUnixTimeMilliseconds(3_000_000), windows[1].Start);
         Assert.AreEqual(DateTimeOffset.FromUnixTimeMilliseconds(7_200_000), windows[1].End);
@@ -953,12 +958,57 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(3_000_000L, apply.Arguments[3]);
         Assert.AreEqual(7_200_000L, apply.Arguments[4]);
 
-        // The bars of the new window resolve, a bar of the old one still overlapping the new keeps its instance, and
-        // one outside it is forgotten.
+        // The loaded bars are exactly the new window's: a1 lies outside it, and a2, though its old position overlaps
+        // the window, is no longer in what the app returned for it (deleted, or moved away) - both are forgotten.
         var resolved = await ResolveAsync(component, "a1", "a2", "a3");
-        Assert.AreEqual(2, resolved.Count);
-        Assert.AreSame(kept, resolved[0]);
-        Assert.AreSame(later, resolved[1]);
+        Assert.AreEqual(1, resolved.Count);
+        Assert.AreSame(later, resolved[0]);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldDropAWindowOfTheConfigBeforeANewOne()
+    {
+        Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);
+
+        var pending = new Queue<TaskCompletionSource<IReadOnlyList<BitResourceTimelineAllocation>>>();
+        var asked = 0;
+
+        var component = RenderLoaded(p => p.Add(x => x.LoadAllocationsAsync, _ =>
+        {
+            // The initial window of each load answers at once; the scroll of the first load is left fetching.
+            if (++asked != 2) return Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>>([Allocation("current" + asked, "r1", 0, 60_000)]);
+
+            var fetch = new TaskCompletionSource<IReadOnlyList<BitResourceTimelineAllocation>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            pending.Enqueue(fetch);
+            return fetch.Task;
+        }));
+
+        var firstSession = WindowSession();
+
+        // A scroll asks for request 5 of the first load, which is still fetching when the app assigns a new Config.
+        var stale = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(5, 0, 2_000_000, firstSession));
+        await WaitUntil(() => pending.Count == 1);
+
+        component.Render(p => p.Add(x => x.Config, SampleConfig()));
+        await WaitUntil(() => Calls(BeginWindowedFn).Count == 2);
+
+        var secondSession = WindowSession();
+        Assert.AreNotEqual(firstSession, secondSession);
+
+        // The old fetch answers only now that the new load has begun (its initial window waits its turn behind it).
+        pending.Dequeue().SetResult([Allocation("stale", "r1", 0, 60_000)]);
+        await stale;
+        WaitForLoads(component, 2);
+
+        // The old fetch reaches neither the engine nor the bars the component resolves, though its id is higher than
+        // the new load's initial window.
+        Assert.AreEqual(2, Calls(ApplyAllocationWindowFn).Count);
+        Assert.AreEqual(secondSession, Calls(ApplyAllocationWindowFn)[1].Arguments[5]);
+        Assert.AreEqual("current3", (await ResolveAsync(component, "stale", "current3")).Single().Id);
+
+        // And a request the first load's engine sent is not fetched at all once the second one started.
+        await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(6, 0, 2_000_000, firstSession));
+        Assert.AreEqual(3, asked);
     }
 
     [TestMethod]
@@ -979,8 +1029,8 @@ public class BitResourceTimelineTests : BunitTestContext
         }));
 
         // The first request is fetching when a scroll asks for a newer window, which waits its turn.
-        var first = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000_000));
-        var second = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(2, 0, 2_000_000));
+        var first = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000_000, WindowSession()));
+        var second = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(2, 0, 2_000_000, WindowSession()));
         await component.InvokeAsync(() => { });
 
         Assert.AreEqual(1, pending.Count);
@@ -1003,7 +1053,7 @@ public class BitResourceTimelineTests : BunitTestContext
     {
         var component = RenderLoaded();
 
-        await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000));
+        await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000, 1));
 
         Assert.AreEqual(0, Calls(ApplyAllocationWindowFn).Count);
     }
@@ -2202,7 +2252,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         await component.InvokeAsync(async () =>
         {
-            await timeline._RequestAllocationWindow(1, 0, 7_200_000);
+            await timeline._RequestAllocationWindow(1, 0, 7_200_000, 1);
             invoked.Add(nameof(timeline._RequestAllocationWindow));
 
             timeline._OnResourceRowsChanged(Json(GroupRows));

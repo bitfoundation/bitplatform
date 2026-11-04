@@ -324,3 +324,41 @@ test('_weekStartDay follows the viewer locale while no Locale is set', () => {
     const expected = info && info.firstDay != null ? (info.firstDay === 7 ? 0 : info.firstDay) : 1;
     assert.equal(engine._weekStartDay(), expected);
 });
+
+test('a DST change that skips midnight still starts every day, and the day walk advances', () => {
+    // America/Santiago springs forward at local midnight: 2025-09-07 00:00 never happens there, and the day starts at
+    // 01:00 (-03), 04:00 UTC. Its earlier reading, 23:00 of the day before, made startOfDay and nextDay hand back the
+    // same instant again and again, which hung every loop stepping a day at a time over the visible range.
+    const z = new ZonedTime('America/Santiago');
+    const gapDay = z.startOfDay(Date.parse('2025-09-07T12:00:00Z'));
+    assert.equal(gapDay, Date.parse('2025-09-07T04:00:00Z'));
+    const g = z.parts(gapDay);
+    assert.deepEqual([g.year, g.month, g.day, g.hour, g.minute], [2025, 9, 7, 1, 0]);
+
+    // A wall-clock time inside the gap moves forward by the gap's hour, as Temporal's 'compatible' resolution does.
+    assert.equal(z.wallClockToTs(2025, 9, 7, 0, 30, 0), gapDay + 30 * 60000);
+
+    for (const zone of ['America/Santiago', 'America/Havana', 'America/Asuncion']) {
+        const zt = new ZonedTime(zone);
+        let ts = zt.startOfDay(Date.parse('2025-01-01T12:00:00Z'));
+        let prevDay = zt.parts(ts).day;
+        for (let i = 0; i < 400; i++) {
+            const next = zt.nextDay(ts);
+            assert.ok(next > ts, `${zone}: the day walk is stuck at ${new Date(ts).toISOString()}`);
+            const p = zt.parts(next);
+            assert.notEqual(p.day, prevDay, `${zone}: ${new Date(next).toISOString()} starts no new day`);
+            assert.ok(p.hour <= 1, `${zone}: a day starts at ${p.hour}:${p.minute}`);
+            prevDay = p.day;
+            ts = next;
+        }
+    }
+});
+
+test('continuous editing (EditSnapMinutes 0) snaps to whole milliseconds', () => {
+    // An edited instant reaches .NET as a long, which System.Text.Json refuses a fraction for.
+    const engine = makeZonedEngine('UTC');
+    engine.config.editSnapMinutes = 0;
+    assert.equal(engine._snapTime(1767340800123.457), 1767340800123);
+    engine.config.editSnapMinutes = 0.1;
+    assert.ok(Number.isInteger(engine._snapTime(1767340800123.457)));
+});

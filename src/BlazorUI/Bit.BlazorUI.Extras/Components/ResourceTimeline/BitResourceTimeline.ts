@@ -58,8 +58,8 @@
             ResourceTimeline._instances.get(id)?.engine.endData();
         }
 
-        public static beginWindowed(id: string, resources: any[], start: number, end: number) {
-            ResourceTimeline._instances.get(id)?.engine.beginWindowed(resources, start, end);
+        public static beginWindowed(id: string, resources: any[], start: number, end: number, session: number) {
+            ResourceTimeline._instances.get(id)?.engine.beginWindowed(resources, start, end, session);
         }
 
         public static getVisibleWindow(id: string) {
@@ -68,8 +68,8 @@
             return instance ? instance.engine.getVisibleWindow() : null;
         }
 
-        public static applyAllocationWindow(id: string, requestId: number, allocations: any[], start: number, end: number) {
-            ResourceTimeline._instances.get(id)?.engine.applyAllocationWindow(requestId, allocations, start, end);
+        public static applyAllocationWindow(id: string, requestId: number, allocations: any[], start: number, end: number, session: number) {
+            ResourceTimeline._instances.get(id)?.engine.applyAllocationWindow(requestId, allocations, start, end, session);
         }
 
         // Resolves once the engine has painted the frame of what it was last given, so the loading overlay of the

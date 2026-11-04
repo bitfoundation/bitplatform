@@ -49,7 +49,17 @@
     // rects, all the hour labels. Keeping each pool to a single tag is what makes
     // reuse work: a pool fed a varying mix of tags mismatches as soon as the scene
     // shifts by one element, and then rebuilds most of its nodes every frame.
+    //
+    // Each pool keeps its elements in a container of its own, appended to the
+    // parent it is given as the pool is created: an HTML <div> with display:
+    // contents (it generates no box, so the elements are still positioned against
+    // the parent's), or an SVG <g>. Pools sharing a parent - a bar's edges, rects,
+    // sections, outlines, icons and labels - therefore stack in the order they
+    // were created, which is the paint order, however each one grows. Appending to
+    // the shared parent itself put every new element after all the others, so a
+    // bar-rect pool growing on a busier frame covered the labels and outlines.
     export class ResourceTimelineNodePool<TNode extends ResourceTimelinePooledNode = ResourceTimelinePooledNode> {
+        /** The pool's own container, a child of the parent it was created with. */
         public parent: Element;
         public namespace: string | null;
         public onHide: ((node: TNode) => void) | null;
@@ -60,7 +70,16 @@
         // `onHide` is called for each element retired at the end of a frame, for
         // pools whose elements carry identity that must not linger (bar ids).
         constructor(parent: Element, namespace: string | null = null, onHide: ((node: TNode) => void) | null = null) {
-            this.parent = parent;
+            let container: Element;
+            if (namespace) {
+                container = document.createElementNS(namespace, 'g');
+            } else {
+                const div = document.createElement('div');
+                div.style.display = 'contents';
+                container = div;
+            }
+            parent.appendChild(container);
+            this.parent = container;
             this.namespace = namespace;
             this.onHide = onHide;
             this.nodes = [];
@@ -129,6 +148,7 @@
             }
             this.nodes.length = 0;
             this.used = 0;
+            this.parent.parentNode?.removeChild(this.parent);
         }
 
         // Applies style properties, writing only those that changed since this element

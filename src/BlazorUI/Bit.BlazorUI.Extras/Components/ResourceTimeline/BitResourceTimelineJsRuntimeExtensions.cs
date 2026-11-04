@@ -118,9 +118,10 @@ internal static class BitResourceTimelineJsRuntimeExtensions
                                                              string id,
                                                              IReadOnlyList<BitResourceTimelineResource> resources,
                                                              long start,
-                                                             long end)
+                                                             long end,
+                                                             long session)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.beginWindowed", id, resources, start, end);
+        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.beginWindowed", id, resources, start, end, session);
     }
 
     public static ValueTask<long[]?> BitResourceTimelineGetVisibleWindow(this IJSRuntime jsRuntime, string id)
@@ -137,9 +138,10 @@ internal static class BitResourceTimelineJsRuntimeExtensions
                                                                      long requestId,
                                                                      IReadOnlyList<BitResourceTimelineAllocation> allocations,
                                                                      long start,
-                                                                     long end)
+                                                                     long end,
+                                                                     long session)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.applyAllocationWindow", id, requestId, allocations, start, end);
+        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.applyAllocationWindow", id, requestId, allocations, start, end, session);
     }
 
     public static ValueTask BitResourceTimelineWhenRendered(this IJSRuntime jsRuntime, string id)

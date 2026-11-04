@@ -365,3 +365,124 @@ test('a marquee that matches the existing selection does not notify', () => {
     assert.deepEqual([...engine.selectedBars], ['high']);
     assert.equal(engine._selectionEquals(drag.baseSelection, engine.selectedBars), true);
 });
+
+// A dotNetRef that records the calls of the given callbacks, by name.
+function recordingRef(names) {
+    const calls = Object.fromEntries(names.map(n => [n, []]));
+    return {
+        calls,
+        invokeMethodAsync: (name, ...args) => {
+            if (calls[name]) calls[name].push(args);
+            return Promise.resolve();
+        }
+    };
+}
+
+test('a data load that drops the selection reports it', () => {
+    const engine = makeIndexedEngine([{ id: 'a', resourceId: 'r0', startTime: 0, endTime: 100 }]);
+    engine._relayout = () => {};
+    engine._hideTooltip = () => {};
+    const ref = engine.dotNetRef = recordingRef(['OnSelectionUpdated']);
+    const resources = [res('r0')];
+    const reported = ref.calls.OnSelectionUpdated;
+
+    engine.selectedBars.add('a');
+    engine.setData(resources, 0, 1000, [{ id: 'a', resourceId: 'r0', startTime: 0, endTime: 100 }]);
+    assert.deepEqual(reported, [[[]]], 'setData');
+
+    // Nothing selected, nothing to report.
+    engine.beginData(resources, 0, 1000, 0);
+    assert.equal(reported.length, 1);
+
+    engine.selectedBars.add('a');
+    engine.beginData(resources, 0, 1000, 0);
+    assert.equal(reported.length, 2, 'beginData');
+
+    engine.selectedBars.add('a');
+    engine.beginWindowed(resources, 0, 1000, 3);
+    assert.equal(reported.length, 3, 'beginWindowed');
+    assert.equal(engine.selectedBars.size, 0);
+});
+
+test('the rows are reported to .NET only when they change', () => {
+    const engine = makeIndexedEngine([{ id: 'a', resourceId: 'r0', startTime: 0, endTime: 100 }]);
+    engine._relayout = () => {};
+    engine.render = () => {};
+    engine._syncResourceOverlay = () => {};
+    const ref = engine.dotNetRef = recordingRef(['OnResourceRowsChanged']);
+    const sent = ref.calls.OnResourceRowsChanged;
+
+    engine.enableResourceTemplate(null);
+    assert.equal(sent.length, 1);
+
+    // A re-index (an edit, a zoom tick) that changes no row sends nothing.
+    engine._indexAllocations();
+    engine._reportResourceRows();
+    assert.equal(sent.length, 1);
+
+    // A bar stacking onto the row makes it taller, which is sent.
+    engine.upsertAllocations([{ id: 'b', resourceId: 'r0', startTime: 0, endTime: 100 }]);
+    assert.equal(sent.length, 2);
+    assert.ok(sent[1][0][0].height > sent[0][0][0].height);
+
+    // Switching the template back on, or a new resource list, sends the rows whatever they are.
+    engine.disableResourceTemplate();
+    engine.enableResourceTemplate(null);
+    assert.equal(sent.length, 3);
+    engine.resources = [res('r0')];
+    engine._rebuildResourceStructure();
+    engine._reportResourceRows();
+    assert.equal(sent.length, 4);
+});
+
+test('a windowed relayout checks the loaded window, once the initial one has landed', () => {
+    // A resize, a new PixelsPerHour or the first layout of a timeline hidden while it loaded changes the visible span
+    // as a scroll does.
+    const engine = makeIndexedEngine([]);
+    engine.timeRange = { start: 0, end: 10 * 86400000 };
+    engine.renderer = { resize() {} };
+    engine._contentDiv = { isConnected: true, style: {} };
+    engine._paintNow = () => {};
+    engine._syncAxisSplitterChrome = () => {};
+    let checks = 0;
+    engine._scheduleWindowCheck = () => { checks++; };
+
+    engine._windowAppliedId = -1;
+    engine._relayout();
+    assert.equal(checks, 0, 'the initial window is .NET\'s to fetch');
+
+    engine._windowAppliedId = 0;
+    engine._relayout();
+    assert.equal(checks, 1);
+
+    // Nothing is checked while there is no viewport to lay out.
+    engine._viewportW = 0;
+    engine._flushRenderedResolvers = () => {};
+    engine._relayout();
+    assert.equal(checks, 1);
+});
+
+test('whenRendered resolves without an animation frame', async () => {
+    // Frames do not run in a background tab, and .NET awaits this while it holds its load gate.
+    const engine = makeBareEngine();
+    engine._renderedResolvers = [];
+    engine.animationFrame = null;
+
+    const hadDocument = 'document' in globalThis;
+    const previous = globalThis.document;
+    globalThis.document = { visibilityState: 'hidden' };
+    try {
+        engine._renderPending = true;
+        await engine.whenRendered();
+        assert.equal(engine._renderedResolvers.length, 0, 'a hidden document waits for no paint at all');
+    } finally {
+        if (hadDocument) globalThis.document = previous;
+        else delete globalThis.document;
+    }
+
+    // A visible one waits for the paint, and resolves anyway once the paint is overdue.
+    engine._renderPending = true;
+    const started = Date.now();
+    await engine.whenRendered();
+    assert.ok(Date.now() - started < 5000);
+});

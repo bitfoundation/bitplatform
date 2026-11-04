@@ -49,16 +49,16 @@ claim is a no-op unless a test gives it one.
 
 | File | Area |
 | --- | --- |
-| `time-axis.test.mjs` | Zoned hour boundaries, DST transitions, tick density, `addDays` calendar steps, wall-clock snap, `Hour12`, `FirstDayOfWeek` |
-| `allocation-index.test.mjs` | Per-resource index, stacking lanes (time overlap, label clearance, and label/delay-bar collisions across zoom levels), incremental re-index on edit, invalid-row sanitize, `MaxStackLanes` overflow, windowed merge by id |
-| `engine-state.test.mjs` | Resource hierarchy, coordinate mapping, row heights, options, selection, resource-axis resize clamp, upper-lane marquee, Shift-range select, selection-changed notify |
+| `time-axis.test.mjs` | Zoned hour boundaries, DST transitions, tick density, `addDays` calendar steps, day walks through a DST change that skips midnight, wall-clock and continuous snap, `Hour12`, `FirstDayOfWeek` |
+| `allocation-index.test.mjs` | Per-resource index, stacking lanes (time overlap, label clearance, and label/delay-bar collisions across zoom levels), incremental re-index on edit, invalid-row sanitize, `MaxStackLanes` overflow, windowed merge by id (the payload is what stays loaded), a window of another session dropped, the relayout after one, the needed range within the fetched one |
+| `engine-state.test.mjs` | Resource hierarchy, coordinate mapping, row heights, options, selection, resource-axis resize clamp, upper-lane marquee, Shift-range select, selection-changed notify, a data load reporting the selection it drops, the rows reported only when they change, the windowed relayout checking the loaded window, `whenRendered` without an animation frame |
 | `scene.test.mjs` | Scene building, and the stale state pooled/refilled bar nodes can leak between frames |
 | `bar-sections.test.mjs` | Bar sections: time/percent bounds and their precedence, clamping to the bar, text and icon placement and fit |
 | `view-scroll.test.mjs` | Where the viewport lands on the first load and across reloads, the `panByDays` day/week steps (24-hour, `panToDayStart`, and per-call override), `zoomToDays` fitting N days into the viewport, the "now" indicator's refresh timer, `OnViewChanged`, and `scrollToAllocation` |
 | `tooltip.test.mjs` | Show delay, subject switching and viewport-edge flipping, the `bit-rtm-ttp` class that styles the element and `setStyle`, against a minimal DOM stub; what a hover resolves to and the text it asks for, including `+N` overflow markers |
 | `hit-test.test.mjs` | `_barAt` click tolerance, resize handle vs move, locked bars, stacked-lane Y, overflow hits, `_pointerHit` regions, double-click pairing, click-select notify |
 | `renderer-contract.test.mjs` | `buildScene()` bar ids, non-overlap within a row, weekend/off-hour bands, surface stripes (days, shifts, rows, checker, bands), `Hour12` tick labels |
-| `edit-commit.test.mjs` | Move/resize commit, overlap refuse, delete, multi-move accept/reject |
+| `edit-commit.test.mjs` | Move/resize commit, overlap refuse, delete, multi-move accept/reject (re-filed and laid out once per move and per revert), whole-millisecond previews of a continuous drag, a held keyboard edit waiting for the host |
 | `texts-theme.test.mjs` | The `texts` option (built-in English fallback, key-by-key override, unknown-key warning, composite formats, announcements), the `BitResourceTimeline` console prefix, and `setTheme` layering: theme colors under explicit option colors, the theme's font family only for fonts no option set |
 | `disabled-escape.test.mjs` | `disabled`: no press, click, edit, marquee, context menu or keyboard selection, paging still works, switching it on cancels a marquee; the `data-bit-esc="claim"` the wrapper carries exactly while a selection exists; keys pressed during an IME composition |
 

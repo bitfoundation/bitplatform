@@ -318,3 +318,83 @@ test('multi-move keeps relative gaps; reject restores all', async () => {
     assert.equal(b.startTime, 500);
     assert.equal(b.startTime - a.startTime, 300);
 });
+
+test('a continuous drag previews whole milliseconds', () => {
+    // EditSnapMinutes 0: the pointer delta divided by the scale is a fraction, and the preview is what .NET is asked
+    // about (OnAllocationChanging, OnAllocationCreating), as a long.
+    const engine = makeEditEngine([alloc('a', 'r0', 100, 200)]);
+    engine.config.editSnapMinutes = 0;
+    engine._pixelsPerMs = 0.37;
+    const a = engine.allocations[0];
+    for (const mode of ['move', 'resize-start', 'resize-end', 'create']) {
+        engine.edit = { ...preview(engine, a, { start: 100, end: 200, mode }), grabX: 0, moved: false };
+        engine._applyEditPreview({ x: 10, y: 0 }, 0);
+        assert.ok(Number.isInteger(engine.edit.previewStart), `${mode}: start ${engine.edit.previewStart}`);
+        assert.ok(Number.isInteger(engine.edit.previewEnd), `${mode}: end ${engine.edit.previewEnd}`);
+    }
+});
+
+test('a held keyboard edit waits for the host before the next one starts', async () => {
+    const engine = makeEditEngine([alloc('a', 'r0', 100, 200)]);
+    const a = engine.allocations[0];
+    engine._focusAlloc = a;
+    engine._focusResource = 0;
+    engine._announceEdit = () => {};
+    const asked = [];
+    const answers = [];
+    engine.dotNetRef = {
+        invokeMethodAsync: (name, ...args) => {
+            if (name !== 'OnAllocationChanging') return Promise.resolve();
+            asked.push(args);
+            return new Promise(resolve => answers.push(resolve));
+        }
+    };
+
+    const first = engine._keyboardEdit('move-time', 1);
+    // The key repeats before the host answered: it starts no edit from the unconfirmed preview.
+    await engine._keyboardEdit('move-time', 1);
+    assert.equal(asked.length, 1);
+
+    answers[0](false);
+    await first;
+    assert.equal(a.startTime, 100, 'the refused edit is put back');
+    assert.equal(a.endTime, 200);
+
+    // The next press, once the host answered, starts from where the bar actually is.
+    const third = engine._keyboardEdit('move-time', 1);
+    assert.equal(asked.length, 2);
+    assert.deepEqual(asked[1].slice(4, 7), ['r0', 100, 200]);
+    answers[1](true);
+    await third;
+    assert.ok(a.startTime > 100);
+});
+
+test('a multi-bar move re-files every bar before one pass over the row metrics, and so does its revert', async () => {
+    const bars = [];
+    for (let i = 0; i < 20; i++) bars.push(alloc('b' + i, 'r' + (i % 3), i * 1000, i * 1000 + 500));
+    const engine = makeEditEngine(bars);
+    for (const b of engine.allocations) engine.selectedBars.add(b.id);
+    const original = bars.map(b => [b.resourceId, b.startTime, b.endTime]);
+    let metrics = 0;
+    let reports = 0;
+    let relayouts = 0;
+    const recompute = engine._recomputeRowMetrics;
+    engine._recomputeRowMetrics = function () { metrics++; return recompute.call(this); };
+    engine._reportResourceRows = () => { reports++; };
+    engine._relayout = () => { relayouts++; };
+    engine.dotNetRef = {
+        invokeMethodAsync: async (name) => name === 'OnAllocationsChanging' ? false : undefined
+    };
+
+    const a = engine.allocations.find(x => x.id === 'b0');
+    const ed = preview(engine, a, { start: a.startTime + 100, end: a.endTime + 100, mode: 'move' });
+    ed.companions = engine._companionEdits(a);
+    assert.equal(ed.companions.length, 19);
+    await engine._commitEdit(ed);
+
+    assert.equal(metrics, 2, 'once for the move, once for its revert');
+    assert.equal(reports, 2);
+    assert.equal(relayouts, 2);
+    assert.deepEqual(bars.map(b => [b.resourceId, b.startTime, b.endTime]), original, 'every bar is back');
+    assert.deepEqual(indexViolations(engine), []);
+});

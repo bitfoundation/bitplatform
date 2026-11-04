@@ -94,18 +94,28 @@
 
         // Converts a wall-clock time in this zone to an instant. Two-pass so it
         // resolves correctly across a DST offset change.
+        //
+        // A wall-clock time inside a spring-forward gap has no instant at all.
+        // Neither offset round-trips then, and the time resolves to the later
+        // candidate - moved forward by the length of the gap, as Temporal's
+        // 'compatible' disambiguation does. That matters most for midnight: in
+        // zones whose DST change skips it (America/Santiago, America/Havana,
+        // America/Asuncion), it resolves to the first instant of the day, where
+        // the earlier candidate, 23:00 of the previous day, would make startOfDay
+        // and nextDay hand back the same instant again and again.
         public wallClockToTs(year: number, month: number, day: number, hour: number, minute: number, second: number): number {
             const guess = Date.UTC(year, month - 1, day, hour, minute, second);
             const offset1 = this.offsetMs(guess);
-            let ts = guess - offset1;
-            const offset2 = this.offsetMs(ts);
-            if (offset2 !== offset1) {
-                ts = guess - offset2;
-            }
-            return ts;
+            const ts1 = guess - offset1;
+            const offset2 = this.offsetMs(ts1);
+            if (offset2 === offset1) return ts1;
+            const ts2 = guess - offset2;
+            if (this.offsetMs(ts2) === offset2) return ts2;
+            return Math.max(ts1, ts2);
         }
 
-        // Local midnight of the day containing the given instant.
+        // Start of the day containing the given instant: local midnight, or the
+        // first instant of the day where a DST change skips midnight.
         public startOfDay(ts: number): number {
             const p = this.parts(ts);
             return this.wallClockToTs(p.year, p.month, p.day, 0, 0, 0);
@@ -122,9 +132,13 @@
                 next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0, 0);
         }
 
-        // First local midnight strictly after the given day start.
+        // First local midnight strictly after the given day start. Always later
+        // than `dayStart`, so a loop stepping a day at a time over the visible
+        // range always ends; a zone whose day could not be advanced (no such
+        // zone is known) steps a plain 24 hours rather than standing still.
         public nextDay(dayStart: number): number {
-            return this.addDays(dayStart, 1);
+            const next = this.addDays(dayStart, 1);
+            return next > dayStart ? next : dayStart + 86400000;
         }
 
         // Hour boundaries within [visStart, visEnd] that land on a multiple of

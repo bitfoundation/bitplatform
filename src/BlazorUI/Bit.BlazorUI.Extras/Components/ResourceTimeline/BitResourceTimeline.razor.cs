@@ -32,6 +32,10 @@ public partial class BitResourceTimeline : BitComponentBase
     private IReadOnlyList<BitResourceTimelineResourceRow> _resourceRows = [];
     private Dictionary<string, BitResourceTimelineResource> _resourcesById = [];
 
+    // The version of what the rows of the ResourceTemplate overlay render from - the parameters, the reported rows and
+    // the layout - which lets them render again (see _BitResourceTimelineRenderGate). Bumped by every change of one.
+    private long _resourceRowsRenderKey;
+
     // The instances of the loaded Config by id. The interop exchanges ids only - it keeps the payloads small (a large
     // marquee selection would otherwise pass the message size limit of a Blazor Server circuit) - and the ids are
     // resolved back to the app's own instances here, so they can be compared by reference against its own data.
@@ -72,6 +76,11 @@ public partial class BitResourceTimeline : BitComponentBase
     // superseded is dropped instead of being pushed to the engine.
     private readonly SemaphoreSlim _windowGate = new(1, 1);
     private long _latestWindowRequestId;
+
+    // The token of the current data load, handed to the engine with a windowed one and carried back by every window
+    // request. The request ids start over with each windowed load, so this is what tells a fetch of an earlier Config
+    // (still running when a new one was assigned) from one of the current load: such a fetch is dropped on both sides.
+    private long _windowSession;
 
 
 
@@ -507,6 +516,9 @@ public partial class BitResourceTimeline : BitComponentBase
         // The cascade is applied before anything reads the parameters it may fill in.
         CascadingParameters?.UpdateParameters(this);
 
+        // A template, a class, a style, a text or the disabled state the rows render with may have changed.
+        _resourceRowsRenderKey++;
+
         base.OnParametersSet();
     }
 
@@ -612,6 +624,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
         _started = true;
         _layout = l;
+        _resourceRowsRenderKey++;
         StateHasChanged();
 
         // The Options, Texts or Disabled the parent changed while the engine was starting: the passes of
@@ -648,6 +661,7 @@ public partial class BitResourceTimeline : BitComponentBase
         if (layout is { } l)
         {
             _layout = l;
+            _resourceRowsRenderKey++;
             StateHasChanged();
         }
     }
@@ -746,6 +760,10 @@ public partial class BitResourceTimeline : BitComponentBase
 
         var startedAt = DateTime.UtcNow;
 
+        // Every load starts a new session, so a window fetch of an earlier windowed load still running is dropped
+        // whatever this one loads.
+        var session = ++_windowSession;
+
         try
         {
             var allocations = config.Allocations;
@@ -761,7 +779,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
                 // The rows and the whole range first, then the visible window alone; the next windows arrive through
                 // RequestAllocationWindow.
-                await _js.BitResourceTimelineBeginWindowed(UniqueId, config.Resources, start, end);
+                await _js.BitResourceTimelineBeginWindowed(UniqueId, config.Resources, start, end, session);
 
                 var window = await _js.BitResourceTimelineGetVisibleWindow(UniqueId);
 
@@ -769,12 +787,12 @@ public partial class BitResourceTimeline : BitComponentBase
 
                 if (window is { Length: 2 })
                 {
-                    await FetchAndApplyWindowAsync(0, window[0], window[1]);
+                    await FetchAndApplyWindowAsync(session, 0, window[0], window[1]);
                 }
 
                 if (IsDisposing) return;
 
-                await _js.BitResourceTimelineWhenRendered(UniqueId);
+                await WhenRenderedAsync();
 
                 _loadedConfig = config;
                 _dataLoaded = true;
@@ -807,7 +825,7 @@ public partial class BitResourceTimeline : BitComponentBase
             if (IsDisposing) return;
 
             // The overlay is hidden once the renderer has painted the bars.
-            await _js.BitResourceTimelineWhenRendered(UniqueId);
+            await WhenRenderedAsync();
 
             var byId = new Dictionary<string, BitResourceTimelineAllocation>(allocations.Count);
 
@@ -839,9 +857,21 @@ public partial class BitResourceTimeline : BitComponentBase
         }
     }
 
-    // Fetches the allocations of a window from the app and pushes them to the engine, unless a newer request superseded
-    // this one in the meantime.
-    private async Task FetchAndApplyWindowAsync(long requestId, long startMs, long endMs)
+    // Waits for the engine to paint what it was last given, which is when the loading overlay goes. It only ever delays
+    // the overlay, so an interop timeout here (a paint the browser held back) ends the wait rather than the load, and
+    // never escapes into the lifecycle method that started it.
+    private async Task WhenRenderedAsync()
+    {
+        try
+        {
+            await _js.BitResourceTimelineWhenRendered(UniqueId);
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    // Fetches the allocations of a window from the app and pushes them to the engine, unless a newer request (or a newer
+    // load) superseded this one in the meantime.
+    private async Task FetchAndApplyWindowAsync(long session, long requestId, long startMs, long endMs)
     {
         if (LoadAllocationsAsync is null) return;
 
@@ -850,7 +880,7 @@ public partial class BitResourceTimeline : BitComponentBase
         try
         {
             // Superseded while queued behind the gate (or nothing left to render into): the stale fetch is skipped.
-            if (IsDisposing || requestId < _latestWindowRequestId) return;
+            if (IsDisposing || IsCurrentWindow(session, requestId) is false) return;
 
             var window = new BitResourceTimelineWindow
             {
@@ -860,12 +890,13 @@ public partial class BitResourceTimeline : BitComponentBase
 
             var allocations = await LoadAllocationsAsync(window) ?? [];
 
-            // A newer request arrived while the app was working, or the component was removed: the result is dropped.
-            if (IsDisposing || requestId < _latestWindowRequestId) return;
+            // A newer request or load arrived while the app was working, or the component was removed: the result is
+            // dropped.
+            if (IsDisposing || IsCurrentWindow(session, requestId) is false) return;
 
-            MergeWindowAllocations(allocations, startMs, endMs);
+            MergeWindowAllocations(allocations);
 
-            await _js.BitResourceTimelineApplyAllocationWindow(UniqueId, requestId, allocations, startMs, endMs);
+            await _js.BitResourceTimelineApplyAllocationWindow(UniqueId, requestId, allocations, startMs, endMs, session);
         }
         finally
         {
@@ -873,41 +904,22 @@ public partial class BitResourceTimeline : BitComponentBase
         }
     }
 
-    // A window fetch upserts the incoming ids and drops the ids that are neither in the payload nor overlapping the loaded
-    // range any more. The survivors keep their instances, so an edit of one still resolves.
-    private void MergeWindowAllocations(IReadOnlyList<BitResourceTimelineAllocation> incoming, long startMs, long endMs)
+    private bool IsCurrentWindow(long session, long requestId) =>
+        session == _windowSession && requestId >= _latestWindowRequestId;
+
+    // The loaded window becomes the fetched one, and the app returns every allocation overlapping it, so what is loaded
+    // afterwards is exactly the payload: an id it no longer holds was deleted or moved out of the window, and is dropped
+    // even where its old position overlaps the window - the engine does the same.
+    private void MergeWindowAllocations(IReadOnlyList<BitResourceTimelineAllocation> incoming)
     {
-        var incomingIds = new HashSet<string>(incoming.Count, StringComparer.Ordinal);
+        var byId = new Dictionary<string, BitResourceTimelineAllocation>(incoming.Count, StringComparer.Ordinal);
 
         foreach (var allocation in incoming)
         {
-            incomingIds.Add(allocation.Id);
-            _allocationsById[allocation.Id] = allocation;
+            byId[allocation.Id] = allocation;
         }
 
-        var windowStart = DateTimeOffset.FromUnixTimeMilliseconds(startMs);
-        var windowEnd = DateTimeOffset.FromUnixTimeMilliseconds(endMs);
-
-        List<string>? drop = null;
-
-        foreach (var pair in _allocationsById)
-        {
-            if (incomingIds.Contains(pair.Key)) continue;
-
-            var allocation = pair.Value;
-
-            if (allocation.StartTime < windowEnd && allocation.EndTime > windowStart) continue;
-
-            drop ??= [];
-            drop.Add(pair.Key);
-        }
-
-        if (drop is null) return;
-
-        foreach (var id in drop)
-        {
-            _allocationsById.Remove(id);
-        }
+        _allocationsById = byId;
     }
 
     // Collapses or expands a group from the button of its row in the overlay.
@@ -1027,14 +1039,17 @@ public partial class BitResourceTimeline : BitComponentBase
     /// <param name="requestId">The increasing id of the request; a fetch is dropped when a newer request arrives meanwhile.</param>
     /// <param name="startMs">The start of the needed window, as Unix time in milliseconds.</param>
     /// <param name="endMs">The end of the needed window, as Unix time in milliseconds.</param>
+    /// <param name="session">The token of the data load the request belongs to; a request of an earlier load is ignored.</param>
     [JSInvokable("RequestAllocationWindow")]
-    public async Task _RequestAllocationWindow(long requestId, long startMs, long endMs)
+    public async Task _RequestAllocationWindow(long requestId, long startMs, long endMs, long session)
     {
         if (IsDisposing || IsStarted() is false || LoadAllocationsAsync is null) return;
 
+        if (session != _windowSession) return;
+
         _latestWindowRequestId = Math.Max(_latestWindowRequestId, requestId);
 
-        await FetchAndApplyWindowAsync(requestId, startMs, endMs);
+        await FetchAndApplyWindowAsync(session, requestId, startMs, endMs);
     }
 
     /// <summary>
@@ -1062,6 +1077,7 @@ public partial class BitResourceTimeline : BitComponentBase
             _resourcesById = byId;
         }
 
+        _resourceRowsRenderKey++;
         StateHasChanged();
     }
 

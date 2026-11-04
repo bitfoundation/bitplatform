@@ -22,6 +22,9 @@
     // Consecutive render failures logged before the engine goes quiet about them.
     const MAX_RENDER_ERROR_LOGS = 3;
 
+    // Longest whenRendered() waits for a paint before it resolves anyway (see there).
+    const WHEN_RENDERED_TIMEOUT_MS = 1000;
+
     // Hidden bars listed individually in a +N marker's tooltip before the rest are
     // summarized as a count.
     const MAX_OVERFLOW_TOOLTIP_BARS = 8;
@@ -481,10 +484,13 @@
         public drag: ResourceTimelineMarqueeDrag | null;
         private _marqueeDirty: boolean;
         public edit: ResourceTimelineEditGesture | null;
+        // A keyboard edit is waiting for the host's answer (see _keyboardEdit).
+        private _keyboardEditPending: boolean;
         private _tooltip: ResourceTimelineTooltip | null;
 
         // Windowed loading
         private _windowed: boolean;
+        private _windowSession: number;
         private _loadedStart: number;
         private _loadedEnd: number;
         private _windowRequestId: number;
@@ -496,6 +502,8 @@
 
         // DOM chrome around the surface
         private _resourceOverlay: HTMLElement | null;
+        // The rows last reported to .NET, serialized (see _reportResourceRows).
+        private _reportedRowsKey: string | null;
         private _axisSplitter: HTMLElement | null;
         private _axisResize: { pointerId: number; startX: number; startWidth: number } | null;
         private _axisResizeCursorLocked!: boolean;
@@ -592,6 +600,14 @@
         private _onPointerEnter: () => void;
         private _onWheel: (e: WheelEvent) => void;
         private _onContextMenu: (e: MouseEvent) => void;
+        // Wheel and touch input over the ResourceTemplate overlay, forwarded to the
+        // viewport (see _bindOverlayScroll).
+        private _overlayHost: HTMLElement | null;
+        private _overlayTouch: { x: number; y: number } | null;
+        private _onOverlayWheel: (e: WheelEvent) => void;
+        private _onOverlayTouchStart: (e: TouchEvent) => void;
+        private _onOverlayTouchMove: (e: TouchEvent) => void;
+        private _onOverlayTouchEnd: () => void;
         private _onKeyDown: (e: KeyboardEvent) => void;
         private _onFocusIn: () => void;
         private _onFocusOut: () => void;
@@ -884,6 +900,7 @@
             // the change can be drawn as a ghost and committed (or discarded) on
             // pointer up. See handlePointerDown/Move/Up and _buildGhostScene.
             this.edit = null;
+            this._keyboardEditPending = false;
 
             // Hover tooltip, created on first hover (see _ensureTooltip). Owns its
             // own element, timer and positioning - see ResourceTimelineTooltip.
@@ -893,7 +910,12 @@
             // fetched per time window from .NET rather than supplied all at once.
             // _loadedStart/_loadedEnd bound the currently loaded window; the ids and
             // pending flags drop stale responses and avoid duplicate requests.
+            // _windowSession is the token .NET hands each windowed load: every
+            // request carries it back, and a window of another session (a fetch of
+            // the previous Config still running when a new one was assigned) is
+            // dropped on both sides, since the request ids start over per session.
             this._windowed = false;
+            this._windowSession = 0;
             this._loadedStart = 0;
             this._loadedEnd = 0;
             this._windowRequestId = 0;
@@ -906,6 +928,7 @@
             // HTML resource-column overlay inner element (set via
             // enableResourceTemplate); translated to follow vertical scroll.
             this._resourceOverlay = null;
+            this._reportedRowsKey = null;
 
             // DOM handle on the resource-axis divider (created lazily). Pointer
             // capture lives on it so a drag keeps tracking outside the column,
@@ -1069,6 +1092,15 @@
             this._onPointerEnter = () => { this._surfaceRect = null; };
             this._onWheel = (e) => this.handleWheel(e);
             this._onContextMenu = (e) => this.handleContextMenu(e);
+            this._overlayHost = null;
+            this._overlayTouch = null;
+            this._onOverlayWheel = (e) => this._forwardOverlayWheel(e);
+            this._onOverlayTouchStart = (e) => {
+                const t = e.touches.length === 1 ? e.touches[0] : null;
+                this._overlayTouch = t ? { x: t.clientX, y: t.clientY } : null;
+            };
+            this._onOverlayTouchMove = (e) => this._forwardOverlayTouch(e);
+            this._onOverlayTouchEnd = () => { this._overlayTouch = null; };
             this._onKeyDown = (e) => this.handleKeyDown(e);
             this._onFocusIn = () => { this._hasFocus = true; this.render(); };
             this._onFocusOut = () => { this._hasFocus = false; this.render(); };
@@ -1569,6 +1601,12 @@
             // reflows on selection empty↔non-empty and the ResizeObserver runs).
             this._paintNow();
             this._syncAxisSplitterChrome();
+
+            // In windowed mode a new visible span - a resize, a new PixelsPerHour,
+            // the first layout of a timeline that was hidden while it loaded - can
+            // uncover what the loaded window does not hold, as a scroll or a zoom
+            // can. The initial window is .NET's to fetch, so this waits for it.
+            if (this._windowAppliedId >= 0) this._scheduleWindowCheck();
         }
 
         // Cancels any pending rAF paint and paints the current scene immediately.
@@ -2059,8 +2097,10 @@
             ctx.font = c.dateLabelFont;
 
             let dayStart = this._time.startOfDay(this.visibleTimeRange!.start);
-            while (dayStart <= this.visibleTimeRange!.end) {
+            // A stuck nextDay (a zone that cannot advance) must not hang the frame.
+            for (let guard = 0; dayStart <= this.visibleTimeRange!.end && guard < 10000; guard++) {
                 const dayEnd = this._time.nextDay(dayStart);
+                if (!(dayEnd > dayStart)) break;
                 const dayStartX = this.getTimeToX(dayStart);
                 const dayEndX = this.getTimeToX(dayEnd);
 
@@ -2718,8 +2758,10 @@
             const daySet = hasDays ? new Set(days.map(d => d | 0)) : null;
 
             let dayStart = this._time.startOfDay(visStart);
-            while (dayStart < visEnd) {
+            // A stuck nextDay (a zone that cannot advance) must not hang the frame.
+            for (let guard = 0; dayStart < visEnd && guard < 10000; guard++) {
                 const dayEnd = this._time.nextDay(dayStart);
+                if (!(dayEnd > dayStart)) break;
                 const p = this._time.parts(dayStart);
                 const weekday = new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay();
                 const left = this.getTimeToX(Math.max(dayStart, visStart));
@@ -3332,6 +3374,14 @@
         }
 
         public handlePointerDown(e: PointerEvent): void {
+            // Every gesture starts from a fresh rect (see _surfaceRect): the page
+            // can move the surface without resizing or scrolling anything - an
+            // OnSelectionChanged handler rendering a strip above the timeline -
+            // while the pointer never leaves it, and a press mapped through the
+            // old rect would hit the bar of another row. One read per press is
+            // cheap; it is pointermove that the cache is for.
+            this._surfaceRect = null;
+
             // A disabled timeline is view-only: a press selects, drags, edits and
             // reports nothing. Nothing is prevented either, so the browser's own
             // focus handling and touch panning take the press as they would.
@@ -3421,7 +3471,7 @@
                         e.preventDefault();
                         const content = this._canvasToContent(canvasX, canvasY);
                         const start = this._snapTime(this.getXToTime(canvasX));
-                        const minDuration = Math.max(1, (this.config.editMinDurationMinutes || 0) * 60000);
+                        const minDuration = Math.max(1, Math.round((this.config.editMinDurationMinutes || 0) * 60000));
                         const end = start + minDuration;
                         const resourceId = this._rows[rowIndex].resource.id;
                         this.edit = {
@@ -4303,16 +4353,20 @@
             return m > 0 ? m * 60000 : 0;
         }
 
+        // Always a whole millisecond, continuous editing (EditSnapMinutes 0)
+        // included: an edited instant reaches .NET as a long (OnAllocationChanging,
+        // OnAllocationEdited, OnAllocationCreating), which System.Text.Json refuses
+        // a fraction for - and a pointer delta divided by the scale is one.
         private _snapTime(t: number): number {
             const minutes = this.config.editSnapMinutes;
-            if (!(minutes > 0)) return t;
+            if (!(minutes > 0)) return Math.round(t);
             if (this.config.snapToTimeZone === false) {
-                const s = minutes * 60000;
+                const s = Math.max(1, Math.round(minutes * 60000));
                 return Math.round(t / s) * s;
             }
             const time = this._time;
             if (!time) {
-                const s = minutes * 60000;
+                const s = Math.max(1, Math.round(minutes * 60000));
                 return Math.round(t / s) * s;
             }
             const p = time.parts(t);
@@ -4352,13 +4406,22 @@
         // Keyboard-driven move/resize of the focused allocation, mirroring the
         // pointer editing rules (snap, minimum duration, range and row clamping).
         // kind: 'move-time' | 'resize-end' | 'move-resource'; dir is -1 or +1.
+        //
+        // One keyboard edit at a time. A held Alt+Arrow repeats faster than the
+        // host answers OnAllocationChanging, and an edit started from the
+        // unconfirmed preview of the one before would record that preview as its
+        // previous position: refusing both would then restore (here and in the
+        // app's own instance) a position the host had refused as well. So the
+        // repeats arriving while an answer is out are dropped, and the next one
+        // starts from where the bar actually is.
         private async _keyboardEdit(kind: string, dir: number): Promise<void> {
+            if (this._keyboardEditPending) return;
             const alloc = this._focusAlloc;
             if (!alloc) return;
 
             const c = this.config;
             const step = this._editStepMs();
-            const minDuration = Math.max(1, (c.editMinDurationMinutes || 0) * 60000);
+            const minDuration = Math.max(1, Math.round((c.editMinDurationMinutes || 0) * 60000));
             const duration = alloc.endTime - alloc.startTime;
             const rangeStart = this.timeRange.start!;
             const rangeEnd = this.timeRange.end!;
@@ -4422,8 +4485,14 @@
             this.render();
 
             const changeKind = kind === 'move-time' || kind === 'move-resource' ? 'move' : 'resize';
-            const allowed = await this._askHostChanging(
-                alloc, prevResourceId, prevStartTime, prevEndTime, changeKind);
+            let allowed: boolean;
+            this._keyboardEditPending = true;
+            try {
+                allowed = await this._askHostChanging(
+                    alloc, prevResourceId, prevStartTime, prevEndTime, changeKind);
+            } finally {
+                this._keyboardEditPending = false;
+            }
             if (!allowed) {
                 this._revertEdit(alloc, prevResourceId, prevStartTime, prevEndTime);
                 this._announce(this._text('editRefused'));
@@ -4454,7 +4523,7 @@
             const c = this.config;
             const duration = ed.origEnd - ed.origStart;
             const deltaTime = this._pixelsPerMs > 0 ? (content.x - ed.grabX) / this._pixelsPerMs : 0;
-            const minDuration = Math.max(1, (c.editMinDurationMinutes || 0) * 60000);
+            const minDuration = Math.max(1, Math.round((c.editMinDurationMinutes || 0) * 60000));
             const rangeStart = this.timeRange.start!;
             const rangeEnd = this.timeRange.end!;
 
@@ -4565,12 +4634,21 @@
             this._notifyEdit(alloc);
         }
 
+        // The other selected bars a press on a selected one moves along with it.
+        // Runs on every such press, so the bars are looked up through one id map
+        // built here - one pass over the allocations - rather than one search of
+        // them per selected id.
         private _companionEdits(primary: ResourceTimelineAllocation): ResourceTimelineEditCompanion[] {
             if (!this.selectedBars.has(primary.id) || this.selectedBars.size < 2) return [];
+            const byId = new Map<string, ResourceTimelineAllocation>();
+            for (let i = 0; i < this.allocations.length; i++) {
+                const a = this.allocations[i];
+                if (this.selectedBars.has(a.id)) byId.set(a.id, a);
+            }
             const out = [];
             for (const id of this.selectedBars) {
                 if (id === primary.id) continue;
-                const alloc = this.allocations.find(a => a.id === id);
+                const alloc = byId.get(id);
                 if (!alloc || alloc.locked) continue;
                 const idx = this._rowIndexById.get(alloc.resourceId);
                 if (idx === undefined) continue;
@@ -4622,19 +4700,25 @@
                     return;
                 }
             }
+            // Re-filed as one batch, and laid out once, however many bars move.
+            const moved = new Set<ResourceTimelineRowIndex>();
             for (const m of moves) {
                 const resource = this._rows[m.resourceIndex] && this._rows[m.resourceIndex].resource;
                 m.alloc.startTime = m.start;
                 m.alloc.endTime = m.end;
                 if (resource) m.alloc.resourceId = resource.id;
-                this._reindexAllocation(m.alloc, m.prevResourceId, m.prevStart);
+                this._reindexAllocation(m.alloc, m.prevResourceId, m.prevStart, moved);
             }
+            this._finishReindex(moved);
             this._relayout();
             const allowed = await this._askHostChangingMany(moves, 'move');
             if (!allowed) {
+                const reverted = new Set<ResourceTimelineRowIndex>();
                 for (const m of moves) {
-                    this._revertEdit(m.alloc, m.prevResourceId, m.prevStart, m.prevEnd);
+                    this._revertEdit(m.alloc, m.prevResourceId, m.prevStart, m.prevEnd, reverted);
                 }
+                this._finishReindex(reverted);
+                this._relayout();
                 this._announce(this._text('editRefused'));
                 return;
             }
@@ -4692,18 +4776,21 @@
             return false;
         }
 
-        private _revertEdit(alloc: ResourceTimelineAllocation, prevResourceId: string, prevStartTime: number, prevEndTime: number): void {
+        // Puts an edited bar back where it was. With a `batch` (see
+        // _reindexAllocation) the caller finishes the re-index and lays out once,
+        // after every bar of a multi-bar edit has been put back.
+        private _revertEdit(alloc: ResourceTimelineAllocation, prevResourceId: string, prevStartTime: number, prevEndTime: number, batch?: Set<ResourceTimelineRowIndex>): void {
             const currentResourceId = alloc.resourceId;
             const currentStartTime = alloc.startTime;
             alloc.startTime = prevStartTime;
             alloc.endTime = prevEndTime;
             alloc.resourceId = prevResourceId;
-            this._reindexAllocation(alloc, currentResourceId, currentStartTime);
+            this._reindexAllocation(alloc, currentResourceId, currentStartTime, batch);
             if (this._focusAlloc === alloc) {
                 const idx = this._rowIndexById.get(prevResourceId);
                 if (idx !== undefined) this._focusResource = idx;
             }
-            this._relayout();
+            if (!batch) this._relayout();
         }
 
         private async _askHostChanging(alloc: ResourceTimelineAllocation, prevResourceId: string, prevStart: number, prevEnd: number, kind: string): Promise<boolean> {
@@ -4891,6 +4978,19 @@
             if (this.selectedBars.size === 0) return;
             this.selectedBars.clear();
             this.render();
+            this._notifySelection();
+        }
+
+        // A data load (setData, beginData, beginWindowed) replaces every bar, so
+        // the selection goes with them - and is reported like any other change of
+        // it, or the app would keep showing and acting on ids that are gone. The
+        // load paints on its own, so nothing is rendered here.
+        private _resetSelectionForLoad(): void {
+            if (this.selectedBars.size === 0) {
+                this._syncEscapeClaim();
+                return;
+            }
+            this.selectedBars.clear();
             this._notifySelection();
         }
 
@@ -5199,6 +5299,8 @@
             this.config.resourceTemplate = true;
             this._configGen++;
             this._resourceOverlay = overlayInner || null;
+            this._bindOverlayScroll(overlayInner ? (overlayInner.parentElement || overlayInner) : null);
+            this._reportedRowsKey = null;
             this._reportResourceRows();
             this._syncResourceOverlay();
             this.render();
@@ -5212,7 +5314,74 @@
             this._configGen++;
             if (this._resourceOverlay) this._resourceOverlay.style.transform = '';
             this._resourceOverlay = null;
+            this._bindOverlayScroll(null);
             this.render();
+        }
+
+        // The overlay of the ResourceTemplate sits over the resource column as a
+        // sibling of the scroll viewport, not inside it, so the browser would
+        // scroll the page under a wheel or a touch pan over it. Its input is
+        // forwarded to the viewport instead, so the rows scroll there exactly as
+        // they do over the column the renderer draws without a template.
+        private _bindOverlayScroll(host: HTMLElement | null): void {
+            const prev = this._overlayHost;
+            if (prev === host) return;
+            if (prev) {
+                prev.removeEventListener('wheel', this._onOverlayWheel);
+                prev.removeEventListener('touchstart', this._onOverlayTouchStart);
+                prev.removeEventListener('touchmove', this._onOverlayTouchMove);
+                prev.removeEventListener('touchend', this._onOverlayTouchEnd);
+                prev.removeEventListener('touchcancel', this._onOverlayTouchEnd);
+            }
+            this._overlayHost = host;
+            this._overlayTouch = null;
+            if (!host) return;
+            host.addEventListener('wheel', this._onOverlayWheel, { passive: false });
+            host.addEventListener('touchstart', this._onOverlayTouchStart, { passive: true });
+            host.addEventListener('touchmove', this._onOverlayTouchMove, { passive: false });
+            host.addEventListener('touchend', this._onOverlayTouchEnd, { passive: true });
+            host.addEventListener('touchcancel', this._onOverlayTouchEnd, { passive: true });
+        }
+
+        // A wheel over the overlay: Ctrl/Cmd zooms as it does over the surface,
+        // anything else scrolls the viewport (Shift turning a vertical wheel
+        // horizontal, as the browser does).
+        private _forwardOverlayWheel(e: WheelEvent): void {
+            if (e.ctrlKey || e.metaKey) {
+                this.handleWheel(e);
+                return;
+            }
+            const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? this._viewportH : 1;
+            let dx = e.deltaX * unit;
+            let dy = e.deltaY * unit;
+            if (e.shiftKey && !dx) {
+                dx = dy;
+                dy = 0;
+            }
+            if (this._scrollViewportBy(dx, dy)) e.preventDefault();
+        }
+
+        // A one-finger pan over the overlay drags the viewport along with it.
+        private _forwardOverlayTouch(e: TouchEvent): void {
+            const last = this._overlayTouch;
+            if (!last || e.touches.length !== 1) return;
+            const t = e.touches[0];
+            this._overlayTouch = { x: t.clientX, y: t.clientY };
+            if (this._scrollViewportBy(last.x - t.clientX, last.y - t.clientY) && e.cancelable) {
+                e.preventDefault();
+            }
+        }
+
+        // Scrolls the viewport by a delta in CSS pixels, and says whether it moved:
+        // input it cannot take (at an edge) is left to the page, as the browser's
+        // own scroll chaining would leave it.
+        private _scrollViewportBy(dx: number, dy: number): boolean {
+            const w = this.wrapper;
+            const left = w.scrollLeft;
+            const top = w.scrollTop;
+            if (dx) w.scrollLeft = left + dx;
+            if (dy) w.scrollTop = top + dy;
+            return w.scrollLeft !== left || w.scrollTop !== top;
         }
 
         public enableTooltipTemplate(): void {
@@ -5235,7 +5404,12 @@
         }
 
         // Reports the ordered visible rows to .NET (id, name, depth, group state) so
-        // the HTML overlay can render one template per row. Cheap: rows are bounded.
+        // the HTML overlay can render one template per row. Every edit, upsert,
+        // removal and zoom tick that can change a row height passes here, so the
+        // rows are sent only when they differ from the ones sent last: .NET renders
+        // every row's template again for each report. The record is dropped where
+        // .NET needs them again whatever they are - a new resource list (it maps
+        // the rows to the Config's instances) and a template switched back on.
         private _reportResourceRows(): void {
             if (!this.dotNetRef || !this.config.resourceTemplate) return;
             const rows = this._rows.map((r, i) => ({
@@ -5246,8 +5420,15 @@
                 collapsed: this._collapsed.has(r.resource.id),
                 height: this._rowHeight(i)
             }));
+            const key = JSON.stringify(rows);
+            if (key === this._reportedRowsKey) return;
+            this._reportedRowsKey = key;
             this.dotNetRef.invokeMethodAsync('OnResourceRowsChanged', rows)
-                .catch((error) => console.error('BitResourceTimeline rows callback failed:', error));
+                .catch((error) => {
+                    // Not received, so not what .NET holds: the next report resends.
+                    if (this._reportedRowsKey === key) this._reportedRowsKey = null;
+                    console.error('BitResourceTimeline rows callback failed:', error);
+                });
         }
 
         // Translates the overlay's inner element to mirror vertical scroll (done in
@@ -5378,6 +5559,9 @@
         // collapsed set from resource flags, then flattens to the visible rows.
         // Called whenever the resource list is replaced.
         private _rebuildResourceStructure(): void {
+            // .NET maps the reported rows to the new list's instances, so they are
+            // reported again even where they look the same (see _reportResourceRows).
+            this._reportedRowsKey = null;
             const childrenById = new Map<string, ResourceTimelineResource[]>();
             const roots: ResourceTimelineResource[] = [];
             const byId = new Map<string, ResourceTimelineResource>();
@@ -5954,7 +6138,12 @@
         // its resource, instead of re-sorting and re-indexing the entire dataset.
         // Only the one or two rows it touches have their lanes recomputed, which is
         // what makes held-down keyboard editing viable on large timelines.
-        private _reindexAllocation(alloc: ResourceTimelineAllocation, prevResourceId: string, prevStartTime: number): void {
+        //
+        // An edit of many bars at once (a multi-bar move, its revert) passes a
+        // `batch`: the rows touched are collected there instead, and _finishReindex
+        // stacks each of them and recomputes the row metrics once for all the bars,
+        // rather than once per bar.
+        private _reindexAllocation(alloc: ResourceTimelineAllocation, prevResourceId: string, prevStartTime: number, batch?: Set<ResourceTimelineRowIndex>): void {
             const changedRow = alloc.resourceId !== prevResourceId;
             const changedTime = alloc.startTime !== prevStartTime;
             if (!changedRow && !changedTime) {
@@ -5962,6 +6151,10 @@
                 // and span bound still depend on it.
                 const row = this._rowIndexFor(alloc.resourceId);
                 this._widenRowBounds(row, alloc);
+                if (batch) {
+                    batch.add(row);
+                    return;
+                }
                 this._assignStackLanes(row.items, row);
                 this._recomputeRowMetrics();
                 this._reportResourceRows();
@@ -5990,8 +6183,21 @@
             // conservative (still correct, merely wider) scan window until the next
             // full re-index - cheaper than rescanning the row to tighten it.
             this._widenRowBounds(to, alloc);
+            if (batch) {
+                batch.add(to);
+                if (changedRow && from) batch.add(from);
+                return;
+            }
             this._assignStackLanes(to.items, to);
             if (changedRow && from) this._assignStackLanes(from.items, from);
+            this._recomputeRowMetrics();
+            this._reportResourceRows();
+        }
+
+        // Completes a batch of _reindexAllocation calls: stacks every row they
+        // touched, then recomputes the row metrics and reports the rows once.
+        private _finishReindex(batch: Set<ResourceTimelineRowIndex>): void {
+            for (const row of batch) this._assignStackLanes(row.items, row);
             this._recomputeRowMetrics();
             this._reportResourceRows();
         }
@@ -6069,8 +6275,7 @@
             this.timeRange = { start, end };
             this.allocations = this._sanitizeAllocations(allocations).sort((a, b) => a.startTime - b.startTime);
             this._indexAllocations();
-            this.selectedBars.clear();
-            this._syncEscapeClaim();
+            this._resetSelectionForLoad();
             this.drag = null;
             this.edit = null;
             this._hideTooltip();
@@ -6188,8 +6393,7 @@
             this.timeRange = { start, end };
             this.allocations = [];
             this.allocationsByResource = new Map();
-            this.selectedBars.clear();
-            this._syncEscapeClaim();
+            this._resetSelectionForLoad();
             this.drag = null;
             this.edit = null;
             this._hideTooltip();
@@ -6456,15 +6660,16 @@
         // Puts the engine into windowed mode: resources and overall range are set,
         // an empty grid is painted, and allocations arrive later per fetched window
         // (see getVisibleWindow / applyAllocationWindow / _requestWindowIfNeeded).
-        public beginWindowed(resources: ResourceTimelineResource[] | null, start: number, end: number): void {
+        // `session` is the token of this load (see _windowSession): the requests
+        // carry it, and only a window applied with it is taken.
+        public beginWindowed(resources: ResourceTimelineResource[] | null, start: number, end: number, session: number = 0): void {
             this._prepareLoadScroll();
             this.resources = resources || [];
             this._rebuildResourceStructure();
             this.timeRange = { start, end };
             this.allocations = [];
             this.allocationsByResource = new Map();
-            this.selectedBars.clear();
-            this._syncEscapeClaim();
+            this._resetSelectionForLoad();
             this.drag = null;
             this.edit = null;
             this._hideTooltip();
@@ -6472,11 +6677,16 @@
             this._focusAlloc = null;
 
             this._windowed = true;
+            this._windowSession = session;
             this._loadedStart = 0;
             this._loadedEnd = 0;
             this._windowRequestId = 0;
             this._windowAppliedId = -1;
             this._windowPending = false;
+            // The initial window is .NET's to fetch (getVisibleWindow); a check
+            // scheduled by an earlier session must not ask for it a second time.
+            clearTimeout(this._windowCheckTimer as number);
+            this._windowCheckTimer = null;
 
             this._renderPending = true;
             this._relayout();
@@ -6493,8 +6703,12 @@
             return this._windowRange(this.config.windowBufferFactor);
         }
 
+        // Never wider than what a fetch loads: a threshold above the buffer factor
+        // would leave every fetched window short of the range it was needed for,
+        // and ask for the next one at once.
         private _windowNeededRange(): number[] {
-            return this._windowRange(this.config.windowRefetchThreshold);
+            const c = this.config;
+            return this._windowRange(Math.min(c.windowRefetchThreshold || 0, c.windowBufferFactor || 0));
         }
 
         // Visible time range widened by `factor` viewports on each side, clamped to
@@ -6531,19 +6745,30 @@
             if (this._windowPending && this._pendingStart <= fs && this._pendingEnd >= fe) return;
 
             const id = ++this._windowRequestId;
+            const session = this._windowSession;
             this._windowPending = true;
             this._pendingStart = fs;
             this._pendingEnd = fe;
-            this.dotNetRef.invokeMethodAsync('RequestAllocationWindow', id, fs, fe)
+            this.dotNetRef.invokeMethodAsync('RequestAllocationWindow', id, fs, fe, session)
                 .catch((error) => {
-                    this._windowPending = false;
+                    if (session === this._windowSession) this._windowPending = false;
                     console.error('BitResourceTimeline window request failed:', error);
                 });
         }
 
-        // Applies a fetched window's allocations. Ignores responses older than the
-        // last applied one so a slow fetch can't overwrite a newer window.
-        public applyAllocationWindow(requestId: number, allocations: ResourceTimelineAllocation[] | null, loadedStart: number, loadedEnd: number): void {
+        // Applies a fetched window's allocations. Ignores a window of another
+        // session (a load of an earlier Config, see _windowSession), and responses
+        // older than the last applied one so a slow fetch can't overwrite a newer
+        // window.
+        //
+        // The loaded window becomes [loadedStart, loadedEnd], and the app returns
+        // every allocation overlapping it: so what is loaded afterwards is exactly
+        // the payload. A bar the payload no longer holds was deleted, or moved out
+        // of the window, and is dropped even where its old position overlaps the
+        // window. A bar it still holds keeps its object (patched in place), so the
+        // selection, the focus and an edit in progress keep pointing at it.
+        public applyAllocationWindow(requestId: number, allocations: ResourceTimelineAllocation[] | null, loadedStart: number, loadedEnd: number, session: number = 0): void {
+            if (!this._windowed || session !== this._windowSession) return;
             if (requestId < this._windowAppliedId) return;
             this._windowAppliedId = requestId;
             if (requestId >= this._windowRequestId) this._windowPending = false;
@@ -6560,9 +6785,6 @@
                 const inc = incomingById.get(alloc.id);
                 if (inc) {
                     this._patchAlloc(alloc, inc);
-                    next.push(alloc);
-                    kept.add(alloc.id);
-                } else if (alloc.startTime < loadedEnd && alloc.endTime > loadedStart) {
                     next.push(alloc);
                     kept.add(alloc.id);
                 } else {
@@ -6585,7 +6807,9 @@
             }
             if (selectionChanged) this._notifySelection();
             this._renderPending = true;
-            this.render();
+            // Stacking the new bars can change row heights, so the scroll spacer is
+            // sized again (as upsertAllocations does), not just repainted.
+            this._relayout();
         }
 
         // Returns the ids of the currently selected bars, in selection order.
@@ -6730,12 +6954,30 @@
         // Resolves after the next render's paint completes. Lets the host hide a
         // loading overlay only once the bars are actually on screen. If no render
         // is pending (nothing to draw), resolves on the next frame.
+        //
+        // Animation frames do not run in a background tab, and the host awaits
+        // this while it holds its load gate, so it never waits on one alone: in a
+        // hidden document it resolves at once (nothing is on screen to wait for),
+        // and otherwise after WHEN_RENDERED_TIMEOUT_MS at the latest.
         public whenRendered(): Promise<void> {
             return new Promise((resolve) => {
+                if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+                    resolve();
+                    return;
+                }
+                let done = false;
+                let timer: ReturnType<typeof setTimeout> | null = null;
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    if (timer !== null) clearTimeout(timer);
+                    resolve();
+                };
+                timer = setTimeout(finish, WHEN_RENDERED_TIMEOUT_MS);
                 if (this.animationFrame || this._renderPending) {
-                    this._renderedResolvers.push(resolve);
+                    this._renderedResolvers.push(finish);
                 } else {
-                    requestAnimationFrame(() => resolve());
+                    requestAnimationFrame(finish);
                 }
             });
         }
@@ -6769,6 +7011,7 @@
             this.wrapper.removeAttribute('data-bit-esc');
             this._escClaimed = false;
             this._unbindSurfaceEvents();
+            this._bindOverlayScroll(null);
             this._teardownAxisSplitter();
             if (this.renderer) {
                 this.renderer.dispose();

@@ -32,10 +32,14 @@
         </div>
     }
 
+    @* The rows render behind a gate (_BitResourceTimelineRenderGate), so a render of the timeline for state none of them
+       depends on - the hovered bar of the TooltipTemplate, the loading overlay - does not run every row's template again.
+       The script forwards a wheel or a touch pan over the overlay to the viewport, which it is not inside of. *@
     @if (ResourceTemplate is not null)
     {
         <div class="bit-rtm-rov @Classes?.ResourceOverlay" style="@JoinStyles(GetResourceOverlayStyle(), Styles?.ResourceOverlay)">
             <div class="bit-rtm-roi" @ref="_resourceOverlayInnerRef">
+                <_BitResourceTimelineRenderGate RenderKey="_resourceRowsRenderKey">
                 @foreach (var row in _resourceRows)
                 {
                     <div @key="row.Id" class="bit-rtm-rrw @Classes?.ResourceRow" style="@JoinStyles(GetResourceRowStyle(row), Styles?.ResourceRow)">
@@ -58,6 +62,7 @@
                         </div>
                     </div>
                 }
+                </_BitResourceTimelineRenderGate>
             </div>
         </div>
     }

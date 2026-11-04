@@ -462,20 +462,29 @@ test('MaxStackLanes 3 on 10 overlapping bars yields 3 lanes and overflow 7', () 
     assert.equal(overflow, 7);
 });
 
+// An engine in the windowed mode of session 7, as beginWindowed leaves it.
+function makeWindowedEngine(allocations) {
+    const engine = makeIndexedEngine(allocations);
+    engine._relayouts = 0;
+    engine._relayout = () => { engine._relayouts++; };
+    engine.render = () => {};
+    engine._hideTooltip = () => {};
+    engine._windowed = true;
+    engine._windowSession = 7;
+    engine._windowAppliedId = -1;
+    engine._windowRequestId = 1;
+    return engine;
+}
+
 test('windowed apply keeps overlapping ids and object identity', () => {
     const a1 = alloc('1', 'r0', 0, 50);
     const a2 = alloc('2', 'r0', 80, 150);
-    const engine = makeIndexedEngine([a1, a2]);
-    engine._relayout = () => {};
-    engine.render = () => {};
-    engine._hideTooltip = () => {};
-    engine._windowAppliedId = -1;
-    engine._windowRequestId = 1;
+    const engine = makeWindowedEngine([a1, a2]);
     engine.selectedBars.add('2');
     engine._focusAlloc = a2;
 
     const a3 = alloc('3', 'r0', 140, 200);
-    engine.applyAllocationWindow(1, [a2, a3], 80, 200);
+    engine.applyAllocationWindow(1, [{ ...a2 }, a3], 80, 200, 7);
 
     assert.equal(engine.allocations.some(a => a.id === '1'), false);
     assert.equal(engine.allocations.find(a => a.id === '2'), a2);
@@ -483,4 +492,65 @@ test('windowed apply keeps overlapping ids and object identity', () => {
     assert.ok(engine.selectedBars.has('2'));
     assert.equal(engine._focusAlloc, a2);
     assert.deepEqual(indexViolations(engine), []);
+});
+
+test('windowed apply drops a bar the payload no longer holds, even where it overlaps the window', () => {
+    // The app returns every allocation overlapping the window, so one missing from it was deleted or moved away.
+    const kept = alloc('kept', 'r0', 100, 150);
+    const gone = alloc('gone', 'r0', 120, 180);
+    const engine = makeWindowedEngine([kept, gone]);
+    engine.selectedBars.add('gone');
+    let notified = 0;
+    engine._notifySelection = () => { notified++; };
+
+    engine.applyAllocationWindow(1, [{ ...kept }], 0, 1000, 7);
+
+    assert.deepEqual(engine.allocations.map(a => a.id), ['kept']);
+    assert.equal(engine.allocations[0], kept);
+    assert.equal(engine.selectedBars.has('gone'), false);
+    assert.equal(notified, 1);
+    assert.deepEqual(indexViolations(engine), []);
+});
+
+test('windowed apply ignores a window of another session, whatever its id', () => {
+    const engine = makeWindowedEngine([alloc('current', 'r0', 0, 50)]);
+
+    // A fetch of the previous Config, still running when this session began: its id outranks the new session's.
+    engine.applyAllocationWindow(5, [alloc('stale', 'r0', 0, 50)], 0, 1000, 6);
+    assert.deepEqual(engine.allocations.map(a => a.id), ['current']);
+    assert.equal(engine._windowAppliedId, -1, 'the stale window does not outrank the new session\'s ones');
+
+    engine.applyAllocationWindow(0, [alloc('fresh', 'r0', 0, 50)], 0, 1000, 7);
+    assert.deepEqual(engine.allocations.map(a => a.id), ['fresh']);
+
+    // Nor is a window applied once the engine left the windowed mode.
+    engine._windowed = false;
+    engine.applyAllocationWindow(2, [alloc('late', 'r0', 0, 50)], 0, 1000, 7);
+    assert.deepEqual(engine.allocations.map(a => a.id), ['fresh']);
+});
+
+test('windowed apply lays the rows out again, since stacking the bars changes their heights', () => {
+    const engine = makeWindowedEngine([]);
+    engine._rows = [{ resource: { id: 'r0', name: 'r0' }, depth: 0, hasChildren: false }];
+    engine._rowIndexById = new Map([['r0', 0]]);
+
+    engine.applyAllocationWindow(0, [alloc('a', 'r0', 0, 100), alloc('b', 'r0', 0, 100)], 0, 1000, 7);
+
+    assert.equal(engine._relayouts, 1);
+    assert.ok(engine._rowHeight(0) > engine.config.resourceHeight, 'the two overlapping bars stack');
+});
+
+test('the window a fetch is needed for never reaches past what one loads', () => {
+    const engine = makeWindowedEngine([]);
+    engine.timeRange = { start: 0, end: 100 * 3600000 };
+    engine._pixelsPerMs = 50 / 3600000;
+    engine.scrollX = 2000;
+    engine.config.windowBufferFactor = 0.5;
+    engine.config.windowRefetchThreshold = 2;
+
+    // A threshold above the buffer would leave every fetched window short of the range it was needed for, and ask for
+    // the next one at once.
+    const [ns, ne] = engine._windowNeededRange();
+    const [fs, fe] = engine._windowFetchRange();
+    assert.ok(fs <= ns && fe >= ne);
 });
