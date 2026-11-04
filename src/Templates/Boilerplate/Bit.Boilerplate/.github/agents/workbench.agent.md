@@ -146,7 +146,11 @@ has a look of its own, and the **landing-page** skill (`.github/agents/landing-p
 
 ## 7. Settle it with the user
 
-- Show the result per device and state, as links or images, and change it until the user approves it.
+- Open the page in the user's own browser, with the views they need to decide on side by side, rather than only handing
+  over a link or looking at it in a browser you drive. From a session that can't reach their screen, hand over a link
+  the way section 6 says.
+- Show the rest per device and state, as links or images, and change it until the user approves it. Approval is the user
+  telling you to go ahead: an answer or a review comment is not, and nothing of the page goes into the app before it.
 - The user pins comments on the page in Comment mode. The comments reach you as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
   user says the review is over. Tell the user you are listening.
 - For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick
