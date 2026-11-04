@@ -1616,7 +1616,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
 
     $usedSkill = {
         param($name)
-        [bool]($calls | Where-Object { ($_.Name -eq 'Skill' -and $_.Input -like "*`"skill`":`"$name`"*") -or $_.Input -like "*agents/$name.agent.md*" -or $_.Input -like "*skills/$name/*" })
+        [bool]($calls | Where-Object { ($_.Name -eq 'Skill' -and $_.Input -like "*`"skill`":`"$name`"*") -or (($_.Name -eq 'Read' -or ($_.Name -eq 'Bash' -and $_.Input -notmatch 'git')) -and ($_.Input -like "*agents/$name.agent.md*" -or $_.Input -like "*skills/$name/*")) })
     }
 
     switch ($check.PSObject.Properties.Name | Where-Object { $_ -notin 'afterTurn', 'handoff', 'long' } | Select-Object -First 1) {
