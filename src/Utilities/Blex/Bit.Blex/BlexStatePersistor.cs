@@ -146,10 +146,9 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         }
     }
 
-    /// <summary>Marks hydration complete, releasing anything awaiting <see cref="WhenHydratedAsync"/>.</summary>
+    /// <summary>Announces hydration complete, releasing anything awaiting <see cref="WhenHydratedAsync"/>.</summary>
     private void CompleteHydration()
     {
-        HasHydrated = true;
         ReleaseHydrationWaiters();
         _manager.InvokeIsolated<object?>(Hydrated, null, "persistence", "hydrated handler");
     }
@@ -196,14 +195,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         }
 
         if (!_options.SkipHydration)
-            await RehydrateAsync(cancellationToken).ConfigureAwait(false);
+            await RehydrateCoreAsync(startListening: true, cancellationToken).ConfigureAwait(false);
 
-        if (!_subscribed)
-        {
-            _manager.ActionDispatched += OnAction;
-            _manager.StoreRestored += OnStoreRestored;
-            _subscribed = true;
-        }
+        // Already listening once the hydration above completed; this is for a start that skips it.
+        Subscribe();
 
         await StartWatchingAsync(cancellationToken).ConfigureAwait(false);
 
@@ -212,6 +207,17 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         // for it (on Blazor Server every interop call is one), or the first actions after the page turns
         // interactive land before the history is recording them.
         WatchSuspensionInBackground(cancellationToken);
+    }
+
+    /// <summary>Starts saving after every action and restore. Does nothing when already listening.</summary>
+    private void Subscribe()
+    {
+        if (_subscribed)
+            return;
+
+        _manager.ActionDispatched += OnAction;
+        _manager.StoreRestored += OnStoreRestored;
+        _subscribed = true;
     }
 
     private void WatchSuspensionInBackground(CancellationToken cancellationToken)
@@ -437,7 +443,14 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     /// A corrupt or non-migratable payload is reported, discarded and skipped; exceptions from the
     /// storage provider itself propagate so the host can retry later.
     /// </remarks>
-    public async Task RehydrateAsync(CancellationToken cancellationToken = default)
+    public Task RehydrateAsync(CancellationToken cancellationToken = default)
+        => RehydrateCoreAsync(startListening: false, cancellationToken);
+
+    /// <summary>
+    /// <see cref="RehydrateAsync"/>, and with <paramref name="startListening"/> the subscription
+    /// <see cref="StartAsync"/> makes, taken before anyone hears that hydration is done.
+    /// </summary>
+    private async Task RehydrateCoreAsync(bool startListening, CancellationToken cancellationToken)
     {
         // Suspend saving while we restore so rehydration doesn't immediately rewrite storage.
         var wasSuspended = _suspended;
@@ -457,11 +470,21 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             _suspended = wasSuspended;
         }
 
-        CompleteHydration();
+        HasHydrated = true;
 
         // A store that registered while the loop above was reading storage is not in its snapshot of
-        // the registry, and until now it was too early to hydrate it on arrival.
+        // the registry, and until now it was too early to hydrate it on arrival. Its saves are held from
+        // here, ahead of the listening below: an action dispatched on it next must not write its defaults
+        // over the state still to be read.
         CatchUpLateStores();
+
+        // Here rather than once this returns: what awaits WhenHydratedAsync, or handles Hydrated, may
+        // dispatch at once, while StartAsync resumes only later (from the thread pool, under a Blazor
+        // Server circuit's dispatcher) -- and that action would never be saved.
+        if (startListening)
+            Subscribe();
+
+        CompleteHydration();
     }
 
     /// <summary>

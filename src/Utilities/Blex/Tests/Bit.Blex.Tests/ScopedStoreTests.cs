@@ -240,6 +240,38 @@ public class ScopedStoreTests
     }
 
     [TestMethod]
+    public async Task A_store_registered_during_startup_hydration_is_held_before_Hydrated_handlers_run()
+    {
+        var manager = new BlexManager();
+        manager.Register(new SettingsStore());
+        var storage = new GatedStorage();
+        storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        storage.ReadGate = startupRead;
+        var start = persistor.StartAsync();   // reading "settings"
+
+        using var scope = manager.CreateScope(new SettingsStore(), "dialog");   // not in the startup read's snapshot
+        persistor.Hydrated += () => scope.Store.SetTheme("early");
+
+        var lateRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        storage.ReadGate = lateRead;
+        startupRead.SetResult();
+        await start;
+
+        // The persistor listens by the time Hydrated is raised; writing "early" now would overwrite the stored
+        // "dark" before anyone read it.
+        Assert.IsEmpty(storage.Writes);
+
+        lateRead.SetResult();
+        await persistor.FlushAsync();
+
+        Assert.AreEqual("dark", scope.Store.Theme);
+        Assert.IsEmpty(storage.Writes);
+    }
+
+    [TestMethod]
     public async Task An_instance_leaving_mid_hydration_does_not_release_the_hold_of_the_next()
     {
         var manager = new BlexManager();

@@ -129,6 +129,44 @@ public class PersistenceHydrationTests
     }
 
     [TestMethod]
+    public async Task WhenHydratedAsync_AnActionDispatchedTheMomentItCompletes_IsSaved()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        // Awaited on a dispatcher that runs it as soon as hydration releases it, ahead of the rest of
+        // StartAsync -- an order a Blazor Server circuit's dispatcher can produce.
+        var dispatched = RunOn(new InlineContext(), async () =>
+        {
+            await persistor.WhenHydratedAsync();
+            store.SetTheme("dark");
+        });
+
+        await persistor.StartAsync();
+        await dispatched.WaitAsync(TimeSpan.FromSeconds(5));
+        await persistor.FlushAsync();
+
+        Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
+        StringAssert.Contains(saved, "dark");
+    }
+
+    [TestMethod]
+    public async Task HydratedEvent_AnActionItsHandlerDispatches_IsSaved()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+        persistor.Hydrated += () => store.SetTheme("dark");
+
+        await persistor.StartAsync();
+        await persistor.FlushAsync();
+
+        Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
+        StringAssert.Contains(saved, "dark");
+    }
+
+    [TestMethod]
     public async Task Merge_CanKeepALiveValueThePayloadWouldOverwrite()
     {
         var (manager, store) = Setup();
@@ -212,5 +250,37 @@ public class PersistenceHydrationTests
         Assert.AreEqual("light", store.Theme);
         Assert.ContainsSingle(errors);
         Assert.AreEqual("persistence", errors[0].Source);
+    }
+
+    private static Task RunOn(SynchronizationContext context, Func<Task> work)
+    {
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            return work();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+    }
+
+    /// <summary>A dispatcher that runs whatever is posted to it at once.</summary>
+    private sealed class InlineContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            var previous = Current;
+            SetSynchronizationContext(this);
+            try
+            {
+                d(state);
+            }
+            finally
+            {
+                SetSynchronizationContext(previous);
+            }
+        }
     }
 }
