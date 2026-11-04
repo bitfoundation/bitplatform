@@ -130,7 +130,7 @@ public static class WebApplicationBuilderExtensions
             services.AddResponseCompression(opts =>
             {
                 opts.EnableForHttps = true;
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream", "image/svg+xml"]).ToArray();
                 //#if (framework == 'net11.0')
                 opts.Providers.Add<ZstandardCompressionProvider>();
                 //#endif
@@ -193,6 +193,8 @@ public static class WebApplicationBuilderExtensions
             return builder;
         }
 
+        // [mirror] OpenTelemetry setup - keep in sync with:
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs (AddLandingOpenTelemetry)
         private TBuilder ConfigureOpenTelemetry()
         {
             builder.Logging.AddOpenTelemetry(options =>

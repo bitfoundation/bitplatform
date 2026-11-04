@@ -1,0 +1,7 @@
+@inherits LandingComponentBase
+
+<main class="lp-error" role="alert">
+    <h1>@Localizer[nameof(LandingStrings.ErrorPageTitle)]</h1>
+    <p>@Localizer[nameof(LandingStrings.ErrorPageBody)]</p>
+    <BitButton IconName="@BitIconName.Refresh" OnClick="@(() => NavigationManager.Refresh(forceReload: true))">@Localizer[nameof(LandingStrings.ErrorPageReload)]</BitButton>
+</main>

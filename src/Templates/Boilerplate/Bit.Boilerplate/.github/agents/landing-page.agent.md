@@ -112,8 +112,7 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 
 ## 6. Settings and services
 
-- `Site:Url` is the public address canonical links, the sitemap, shared links and QR codes are built from.
-  `Site:AllowIndexing` is on only in `appsettings.Production.json`, so Development and Test stay out of search
+- `Site:AllowIndexing` is on only in `appsettings.Production.json`, so Development and Test stay out of search
   results. The search engines' verification codes go into `Site:GoogleSiteVerification` and
   `Site:BingSiteVerification`.
 - `AI:OpenAI` holds the chat's model and key, the same setting as the app's server. The chat answers only from the

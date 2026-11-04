@@ -44,7 +44,7 @@ public static class SeoEndpoints
                 .ToString();
 
             return Results.Text(robots, "text/plain; charset=utf-8");
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription().CacheOutput(LandingOutputCaches.SeoFiles);
 
         app.MapGet("/sitemap.xml", (HttpContext context) =>
         {
@@ -65,7 +65,7 @@ public static class SeoEndpoints
                 urls));
 
             return Results.Text($"{document.Declaration}{document.ToString(SaveOptions.DisableFormatting)}", "application/xml; charset=utf-8");
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription().CacheOutput(LandingOutputCaches.SeoFiles);
 
         app.MapGet("/llms.txt", (HttpContext context) =>
         {
@@ -90,7 +90,7 @@ public static class SeoEndpoints
             }
 
             return Results.Text(llms.ToString(), "text/plain; charset=utf-8");
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription().CacheOutput(LandingOutputCaches.SeoFiles);
     }
 
     public static string Absolute(Uri siteUrl, string page, CultureInfo culture)

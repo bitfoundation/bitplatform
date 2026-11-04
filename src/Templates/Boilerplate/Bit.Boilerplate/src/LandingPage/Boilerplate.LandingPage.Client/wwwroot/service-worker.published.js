@@ -20,6 +20,7 @@ self.externalAssets = [
 self.serverHandledUrls = [
     /\/api\//,
     /\/alive/,
+    /\/health/,
     /\/download/,
     /\/sitemap.xml/,
     /\/robots.txt/,

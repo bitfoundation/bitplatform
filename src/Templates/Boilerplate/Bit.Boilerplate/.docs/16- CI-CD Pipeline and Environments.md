@@ -122,7 +122,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
 | `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
-| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `Site__Url`, `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
+| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
 | `LANDING_PAGE_ADDRESS` | variable, optional | The landing page's public address, which the deployment checks answers |
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |

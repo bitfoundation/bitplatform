@@ -1,3 +1,5 @@
+// [mirror] SMTP health check - keep in sync with:
+// - src/LandingPage/Boilerplate.LandingPage.Server/Features/Email/SmtpHealthCheck.cs
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;

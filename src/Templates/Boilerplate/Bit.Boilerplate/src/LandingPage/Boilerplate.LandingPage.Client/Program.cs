@@ -17,6 +17,16 @@ public static class Program
 
         builder.Services.AddLandingPageClientServices(builder.Configuration);
 
-        await builder.Build().RunAsync();
+        var host = builder.Build();
+
+        var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Boilerplate.LandingPage.Client");
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => logger.LogError(e.ExceptionObject as Exception, "An unhandled exception.");
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            logger.LogError(e.Exception, "An unobserved task exception.");
+            e.SetObserved();
+        };
+
+        await host.RunAsync();
     }
 }

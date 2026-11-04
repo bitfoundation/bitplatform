@@ -1,0 +1,19 @@
+.lp-error {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    min-height: 80dvh;
+    padding: var(--lp-gutter);
+    text-align: center;
+
+    h1 {
+        font-size: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+        letter-spacing: -.02em;
+    }
+
+    p {
+        margin: 0;
+        color: var(--lp-fg-muted);
+    }
+}

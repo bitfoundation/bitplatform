@@ -1,4 +1,5 @@
 using Boilerplate.LandingPage.Server.Features.StoreListing;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.LandingPage.Tests.Features;
 
@@ -46,6 +47,37 @@ public class ServiceTests
     }
 
     [TestMethod]
+    [DataRow(2, "2 ratings</span>")]
+    [DataRow(1, "1 rating</span>")]
+    public async Task AFewRatings_Should_ShowTheRatingInsteadOfTheVersion(int ratingCount, string expectedCount)
+    {
+        var html = await SampleWithRatings(ratingCount);
+
+        Assert.Contains("4.7 on the App Store", html);
+        Assert.Contains(expectedCount, html);
+        Assert.DoesNotContain("3.2.0", html);
+    }
+
+    [TestMethod]
+    public async Task AnAppWithoutRatings_Should_ShowNoRating()
+    {
+        var html = await SampleWithRatings(0);
+
+        Assert.DoesNotContain("lp-rating", html);
+        Assert.DoesNotContain("3.2.0", html);
+    }
+
+    [TestMethod]
+    public async Task TwoRatingsOnOnePage_Should_BothKeepTheirListingForTheBrowser()
+    {
+        var log = new RecordingErrorLog();
+
+        await SampleWithRatings(2, builder => builder.Logging.AddProvider(log));
+
+        Assert.IsEmpty(log.Errors, string.Join(Environment.NewLine, log.Errors));
+    }
+
+    [TestMethod]
     public async Task AQuestion_Should_BeAnsweredInStreamedFrames()
     {
         using var socket = await Connect(server.Address.GetLeftPart(UriPartial.Authority));
@@ -76,6 +108,20 @@ public class ServiceTests
 
         using var plain = await client.GetAsync("api/chat");
         Assert.AreEqual(HttpStatusCode.BadRequest, plain.StatusCode, "The chat only speaks WebSocket.");
+    }
+
+    private static async Task<string> SampleWithRatings(int ratingCount, Action<WebApplicationBuilder>? before = null)
+    {
+        if (LandingSites.Find("ecommerce") is not { } sample)
+        {
+            Assert.Inconclusive("The sample that shows the rating is gone.");
+            return string.Empty;
+        }
+
+        await using var store = await new LandingTestServer().Start(before, services => services.AddHttpClient<AppStoreListingService>().ConfigurePrimaryHttpMessageHandler(() => new FakeAppStore { RatingCount = ratingCount }));
+        using var storeClient = store.CreateClient();
+
+        return await storeClient.GetStringAsync(sample.Path.Length is 0 ? LandingRoutes.Home : sample.Path);
     }
 
     private static async Task<ClientWebSocket> Connect(string origin)

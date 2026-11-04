@@ -1,5 +1,6 @@
 using System.Net.Mail;
 using FluentEmail.Core;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.LandingPage.Server.Features.Email;
@@ -46,8 +47,13 @@ public static class LandingEmailServiceCollectionExtensions
         services.AddScoped<HtmlRenderer>();
         services.AddScoped<LandingEmailService>();
 
+        var healthChecks = services.AddHealthChecks();
+
         if (configuration.GetConnectionString("smtp") is not { Length: > 0 } connectionString)
+        {
+            healthChecks.AddCheck("smtp", () => HealthCheckResult.Degraded("ConnectionStrings:smtp is not set."));
             return services;
+        }
 
         // [mirror] smtp connection string parsing - keep in sync with:
         // - src/Server/Boilerplate.Server.Api/Program.Services.cs (GetSmtpSettings)
@@ -61,6 +67,8 @@ public static class LandingEmailServiceCollectionExtensions
         var userName = values.GetValueOrDefault("UserName");
         var password = values.GetValueOrDefault("Password");
         var enableSsl = values.GetValueOrDefault("EnableSsl", port is 465 or 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
+
+        healthChecks.AddCheck("smtp", new SmtpHealthCheck(new(endpoint.Host, port, userName ?? string.Empty, password ?? string.Empty, enableSsl)));
 
         services.AddFluentEmail(settings.Email.DefaultFromEmail)
             .AddSmtpSender(() =>

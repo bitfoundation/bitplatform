@@ -1,23 +1,12 @@
 @inherits LandingComponentBase
 
-@if (Listing is not null)
+@if (Listing is { AverageRating: { } rating, RatingCount: { } count } && count > 0)
 {
     <a class="lp-rating @Class" href="@Listing.Url" rel="noopener" target="_blank">
-        @if (Listing is { AverageRating: { } rating, RatingCount: { } count } && count >= MinimumRatings)
-        {
-            <BitRating Value="rating" Max="5" Precision="0.1" ReadOnly />
-            <span class="lp-rating-text">
-                <strong>@Localizer[nameof(LandingStrings.AppStoreRating), rating.ToString("0.0", CurrentCulture)]</strong>
-                <span>@Localizer[nameof(LandingStrings.RatingsCount), count.ToString("N0", CurrentCulture)]</span>
-            </span>
-        }
-        else if (Listing.Version is not null)
-        {
-            <BitIcon IconName="@BitIconName.CloudDownload" Class="lp-rating-icon" />
-            <span class="lp-rating-text">
-                <strong>@Localizer[nameof(LandingStrings.StoreListingVersion), Listing.Version]</strong>
-                <span>@Localizer[nameof(LandingStrings.StoreListingUpdated), Listing.ReleasedOn?.ToString("d MMMM yyyy", CurrentCulture) ?? string.Empty]</span>
-            </span>
-        }
+        <BitRating Value="rating" Max="5" Precision="0.1" ReadOnly />
+        <span class="lp-rating-text">
+            <strong>@Localizer[nameof(LandingStrings.AppStoreRating), rating.ToString("0.0", CurrentCulture)]</strong>
+            <span>@Localizer[count is 1 ? nameof(LandingStrings.RatingsCountOne) : nameof(LandingStrings.RatingsCount), count.ToString("N0", CurrentCulture)]</span>
+        </span>
     </a>
 }
