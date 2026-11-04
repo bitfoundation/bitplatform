@@ -33,11 +33,15 @@ public static class BitDataGridQueryableProcessor
     /// <summary>
     /// Translates the grid-wide quick search into a single OR of case-insensitive <c>Contains</c>
     /// predicates over the searchable <b>string</b> columns, so the provider runs it at the source
-    /// (e.g. one SQL <c>WHERE … LIKE … OR … LIKE …</c>). Non-string columns are skipped: their text is
-    /// produced by .NET formatting the provider cannot reproduce, so matching them would need the rows
-    /// in memory; when a searchable column exists but none of them translate, the search is left off
-    /// rather than silently emptying the grid. With <b>no</b> searchable column at all there is
-    /// nothing a term could ever match, so it matches no row - the same contract as
+    /// (e.g. one SQL <c>WHERE … LIKE … OR … LIKE …</c>). An <b>enum</b> column (other than a flags one)
+    /// is matched by the text its cells show its members by - its <c>ValueText</c> or their
+    /// <c>[Display]</c> names - worked out here for each member and sent as the members that match
+    /// (SQL <c>IN</c>). Other columns are skipped: their text is produced by .NET formatting the
+    /// provider cannot reproduce, so matching them would need the rows in memory; when a searchable
+    /// column exists but none of them translate, the search is left off rather than silently emptying
+    /// the grid. A string column is matched by its stored text, even one with a <c>ValueText</c>, which
+    /// a provider cannot run. With <b>no</b> searchable column at all there is nothing a term could
+    /// ever match, so it matches no row - the same contract as
     /// <see cref="BitDataGridDataProcessor.Search"/> over an in-memory source.
     /// </summary>
     public static IQueryable<TItem> ApplySearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
@@ -47,7 +51,8 @@ public static class BitDataGridQueryableProcessor
     {
         if (string.IsNullOrWhiteSpace(search)) return source;
 
-        var term = search.Trim().ToLower();
+        var needle = search.Trim();
+        var term = needle.ToLower();
         var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
         var contains = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) })!;
 
@@ -60,16 +65,43 @@ public static class BitDataGridQueryableProcessor
             anySearchable = true;
             if (column.Accessor is null) continue;
             var lambda = column.Accessor.PropertyLambda;
-            if (lambda.Body.Type != typeof(string)) continue;
 
-            // Every column accessor builds its lambda over its own parameter instance, so rebind the
-            // member expressions onto one shared parameter before OR-ing them into a single predicate.
-            param ??= lambda.Parameters[0];
-            var member = ReplaceParameter(lambda.Body, lambda.Parameters[0], param);
+            Expression match;
+            if (lambda.Body.Type == typeof(string))
+            {
+                // Every column accessor builds its lambda over its own parameter instance, so rebind the
+                // member expressions onto one shared parameter before OR-ing them into a single predicate.
+                param ??= lambda.Parameters[0];
+                var member = ReplaceParameter(lambda.Body, lambda.Parameters[0], param);
 
-            var match = Expression.AndAlso(
-                Expression.NotEqual(member, Expression.Constant(null, typeof(string))),
-                Expression.Call(Expression.Call(member, toLower), contains, Expression.Constant(term)));
+                match = Expression.AndAlso(
+                    Expression.NotEqual(member, Expression.Constant(null, typeof(string))),
+                    Expression.Call(Expression.Call(member, toLower), contains, Expression.Constant(term)));
+            }
+            else if (column.EnumValuesMatching(needle) is { } values)
+            {
+                // An enum has a member list to read its text off here, so the search sends the members whose text
+                // matches; none matching is a column that matches no row, not one left out.
+                param ??= lambda.Parameters[0];
+                var member = ReplaceParameter(lambda.Body, lambda.Parameters[0], param);
+
+                if (values.Count == 0)
+                {
+                    match = Expression.Constant(false);
+                }
+                else
+                {
+                    var array = Array.CreateInstance(member.Type, values.Count);
+                    for (int i = 0; i < values.Count; i++) array.SetValue(values[i], i);
+                    match = Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [member.Type],
+                        Expression.Constant(array, array.GetType()), member);
+                }
+            }
+            else
+            {
+                continue;
+            }
+
             body = body is null ? match : Expression.OrElse(body, match);
         }
 
