@@ -89,6 +89,31 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAShortPhoneWithAHomeIndicator_ThePanelEndsAboveItAndScrollsTheRest()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Route);
+        await Page.SetViewportSizeAsync(390, 400);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var pid = await TapOpenAsync("dp-resp");
+        await Expect(Callout(pid)).ToHaveCSSAsync("transform", "matrix(1, 0, 0, 1, 0, 0)");
+
+        var container = Callout(pid).Locator(".bit-dtp-cac");
+        Assert.IsTrue(await container.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"),
+            "The calendar fits the short screen, which leaves the panel nothing to end above the home indicator for.");
+
+        // The calendar grows the panel, which comes down from the top edge, all the way down to the bottom one, where it
+        // ends above the home indicator (and an app shell's bottom bar) rather than under it, and its container scrolls
+        // the rest of the calendar into view.
+        var box = await BoxAsync(Callout(pid));
+        Assert.AreEqual(0, box.Y, 1);
+        Assert.AreEqual(400 - 34, box.Y + box.Height, 1, "The panel does not end at the home indicator.");
+        Assert.AreEqual(400 - 34, (await BoxAsync(container)).Height, 1, "The container is not capped with the panel.");
+    }
+
+    [TestMethod]
     public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTree()
     {
         await OpenAsync(Route);

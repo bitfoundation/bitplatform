@@ -492,7 +492,7 @@ $cnp-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
         // The panel runs from the top edge of the screen to the bottom one: the header and the close button start below
         // the safe area at the top, drawn as the top border of the panel, and Callouts.position ends the list above the
         // one at the bottom. The insets of the device are the ones the package publishes, which an app adjusts them with.
-        @include responsive-panel-safe-area(cnp, $bottom: true,
+        @include responsive-panel-safe-area(cnp,
             $device-top: ($bit-env-inset-top, $bit-env-max-inset-top),
             $device-bottom: ($bit-env-inset-bottom, $bit-env-max-inset-bottom));
         top: 0;

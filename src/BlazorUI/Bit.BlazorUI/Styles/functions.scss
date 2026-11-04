@@ -545,7 +545,7 @@ $html-font-size: 16px;
 }
 
 /*
- * responsive-panel-safe-area($prefix, $bottom, $device-top, $device-bottom)
+ * responsive-panel-safe-area($prefix, $device-top, $device-bottom)
  * --------------------------------------------------
  * The room a popup shown as a panel on a narrow screen makes for the safe areas of the screen edges it runs to:
  * the status bar and the notch of a phone at the top, its home indicator at the bottom, and the bars of a
@@ -562,11 +562,13 @@ $html-font-size: 16px;
  *     border is painted by the background of its own box, so the surface still runs to the edge; it moves down
  *     every part placed against the top of that box, which a padding would not; and no padding a consumer gives
  *     that box takes it away.
- *   - The bottom one ($bottom: true, for a panel that runs down to the bottom edge) is handed to
- *     Callouts.position, which caps the scrollable list that far short of the bottom of the screen while the
- *     on-screen keyboard is down - a keyboard covers that edge, and its inset with it. It is a registered,
- *     non-inherited length (general.scss), so the script reads it resolved, and no other callout - one nested
- *     in the panel, a BitCallout its consumer pads - is ever capped by it.
+ *   - The bottom one is handed to Callouts.position, since every panel can reach the bottom edge: one that
+ *     runs down to it always, and one coming down from the top edge once its content grows it that far. The
+ *     script ends the scrollable list of the panel - or the panel itself, when it has no separate list and its
+ *     container scrolls instead - that far short of the bottom of the screen while the on-screen keyboard is
+ *     down - a keyboard covers that edge, and its inset with it. It is a registered, non-inherited length
+ *     (general.scss), so the script reads it resolved, and no other callout - one nested in the panel, a
+ *     BitCallout its consumer pads - is ever capped by it.
  *   - The side insets are left out: a phone turned on its side, the only screen that has them, is wider than
  *     a panel is shown on.
  * $device-top and $device-bottom are the insets of the device each edge is inset by besides; the Extras package
@@ -577,17 +579,14 @@ $html-font-size: 16px;
  *   .bit-xyz-res {
  *       @include lt-sm {
  *           @include responsive-panel-closed;
- *           @include responsive-panel-safe-area(xyz, $bottom: true);
+ *           @include responsive-panel-safe-area(xyz);
  *           border-top: var(--bit-xyz-sa-top) solid transparent;
  *       }
  *   }
  */
-@mixin responsive-panel-safe-area($prefix, $bottom: false,
+@mixin responsive-panel-safe-area($prefix,
     $device-top: (env(safe-area-inset-top, 0px), env(safe-area-max-inset-top, 0px)),
     $device-bottom: (env(safe-area-inset-bottom, 0px), env(safe-area-max-inset-bottom, 0px))) {
     --bit-#{$prefix}-sa-top: max(var(--bit-AppShell-safe-area-top, 0px), #{$device-top});
-
-    @if $bottom {
-        --bit-callout-sa-bottom: max(var(--bit-AppShell-safe-area-bottom, 0px), #{$device-bottom});
-    }
+    --bit-callout-sa-bottom: max(var(--bit-AppShell-safe-area-bottom, 0px), #{$device-bottom});
 }

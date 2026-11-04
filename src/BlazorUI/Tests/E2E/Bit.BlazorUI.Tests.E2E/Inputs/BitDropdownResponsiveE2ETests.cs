@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// the page it was opened from, an RTL panel slides in from the left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
 /// icons by name and by BitIconInfo), Enter in a multi select panel keeps it open, the search box takes the focus inside
 /// the panel, the panel's parts take Styles and Classes, a long list ends short of the bottom of the screen and clear of
-/// a phone's safe areas, and a dropdown that is not Responsive stays a plain callout.
+/// a phone's safe areas and scrolls to its last item, and a dropdown that is not Responsive stays a plain callout.
 /// </summary>
 [TestClass]
 public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
@@ -309,6 +309,18 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
 
         var box = await BoxAsync(list);
         Assert.AreEqual(844 - 10, box.Y + box.Height, 1.5, "The list keeps its gap from the bottom of a screen with no safe area.");
+
+        // The cap is only half of it: the user still reaches the last item by scrolling the list itself. Wheeled over
+        // the list rather than scrolled into view from script, which would move a list that clips its overflow too.
+        var last = callout.GetByRole(AriaRole.Option, new() { Name = "Item 60", Exact = true });
+
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.WheelAsync(0, 10000);
+        await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
+
+        var item = await BoxAsync(last);
+        Assert.IsTrue(item.Y >= box.Y - 0.5 && item.Y + item.Height <= box.Y + box.Height + 0.5,
+            $"The last item ({item.Y}..{item.Y + item.Height}px) is not within the visible part of the list ({box.Y}..{box.Y + box.Height}px).");
     }
 
     [TestMethod]

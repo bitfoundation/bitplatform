@@ -14,35 +14,40 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// the safe area a page gives an app shell, the inset of the device and the maximum the device reports for it. Each
 /// panel draws the top one as a transparent top border of its surface - painted by the background of that surface,
 /// moving everything placed against the top of the box it borders, and left alone by any padding a consumer gives it -
-/// and the panels that run down to the bottom edge hand the bottom one to Callouts.position, which ends their list above
-/// it, in a registered length no other callout inherits.
+/// and hands the bottom one to Callouts.position, which ends its list above it (or the panel itself, when it has no list
+/// of its own: one coming down from the top edge reaches the bottom one once its content grows it that far), in a
+/// registered length no other callout inherits.
 /// </summary>
 /// <remarks>
 /// A panel pinned to the top edge with <c>top: 0</c> alone put the month header and the close buttons under an app
 /// shell's top bar, which nothing the page renders can paint over, and a panel running to the bottom edge put the
-/// last items of its list under the bottom one.
+/// last items of its list - or the actions of a picker grown that far - under the bottom one.
 /// </remarks>
 [TestClass]
 public sealed class BitResponsivePanelSafeAreaContractTests
 {
     // Every panel whose content the component lays out itself: the package, the stylesheet under its Components
-    // folder, the class prefix, the edges of the screen the panel runs to, and the rule inside the lt-sm block of the
-    // responsive class that draws the band ("" for that block itself, the callout).
+    // folder, the class prefix, and the rule inside the lt-sm block of the responsive class that draws the band ("" for
+    // that block itself, the callout).
     public static IEnumerable<object[]> Panels =>
     [
-        ["Bit.BlazorUI", "Inputs/DatePicker/BitDatePicker.scss", "dtp", "top", ".bit-dtp-cac"],
-        ["Bit.BlazorUI", "Inputs/DateRangePicker/BitDateRangePicker.scss", "dtrp", "top", ".bit-dtrp-cac"],
-        ["Bit.BlazorUI", "Inputs/TimePicker/BitTimePicker.scss", "tpc", "top", ".bit-tpc-cac"],
-        ["Bit.BlazorUI", "Inputs/CircularTimePicker/BitCircularTimePicker.scss", "ctp", "top", ".bit-ctp-tlb, .bit-ctp-chd"],
-        ["Bit.BlazorUI", "Inputs/Dropdown/BitDropdown.scss", "drp", "top,bottom", ""],
-        ["Bit.BlazorUI.Extras", "TimeZonePicker/BitTimeZonePicker.scss", "tzp", "top,bottom", ""],
-        ["Bit.BlazorUI.Extras", "CountryPicker/BitCountryPicker.scss", "cnp", "top,bottom", ""],
-        ["Bit.BlazorUI.Extras", "PhoneInput/BitPhoneInput.scss", "phi", "top,bottom", ""],
+        ["Bit.BlazorUI", "Inputs/DatePicker/BitDatePicker.scss", "dtp", ".bit-dtp-cac"],
+        ["Bit.BlazorUI", "Inputs/DateRangePicker/BitDateRangePicker.scss", "dtrp", ".bit-dtrp-cac"],
+        ["Bit.BlazorUI", "Inputs/TimePicker/BitTimePicker.scss", "tpc", ".bit-tpc-cac"],
+        ["Bit.BlazorUI", "Inputs/CircularTimePicker/BitCircularTimePicker.scss", "ctp", ".bit-ctp-tlb, .bit-ctp-chd"],
+        ["Bit.BlazorUI", "Inputs/Dropdown/BitDropdown.scss", "drp", ""],
+        ["Bit.BlazorUI.Extras", "TimeZonePicker/BitTimeZonePicker.scss", "tzp", ""],
+        ["Bit.BlazorUI.Extras", "CountryPicker/BitCountryPicker.scss", "cnp", ""],
+        ["Bit.BlazorUI.Extras", "PhoneInput/BitPhoneInput.scss", "phi", ""],
     ];
 
     // The panels that hold the consumer's own content, which the consumer pads through the public padding variable
-    // of the callout rather than the component laying it out.
-    private static readonly string[] ConsumerContentPanels = ["BitCallout.scss", "BitDropMenu.scss"];
+    // of the callout rather than the component laying it out: the package and the stylesheet under its Components folder.
+    private static readonly (string Project, string Path)[] ConsumerContentPanels =
+    [
+        ("Bit.BlazorUI", "Surfaces/Callout/BitCallout.scss"),
+        ("Bit.BlazorUI", "Navs/DropMenu/BitDropMenu.scss"),
+    ];
 
     // The absolutely positioned parts of the CircularTimePicker that are laid out against its dial rather than against
     // the container its band does not border (see APanelShouldKeepWhatItPlacesAgainstTheTopOfItsBoxBelowTheBand).
@@ -87,21 +92,25 @@ public sealed class BitResponsivePanelSafeAreaContractTests
             "Callouts.position does not read the safe area a panel names for the bottom of the screen.");
         Assert.IsTrue(Regex.IsMatch(position, @"keyboardUp\s*\?\s*0\s*:"),
             "Callouts.position keeps the bottom safe area while the on-screen keyboard covers the bottom edge.");
+        Assert.IsTrue(Regex.IsMatch(position, @"bottomGap\s*=\s*Math\.max\(10,\s*bottomSafeArea\(\)\)"),
+            "Callouts.position does not end the list of a panel above the bottom safe area.");
+        // A panel coming down from the top edge has no list of its own, and its content can still grow it down to the
+        // bottom one, where the actions of a picker would sit under the home indicator.
+        Assert.IsTrue(Regex.IsMatch(position, @"callout\.style\.maxHeight\s*=\s*\(scrollContainerId\s*\?\s*visualHeight\s*:\s*Math\.max\(0,\s*visualHeight\s*-\s*bottomSafeArea\(\)\)\)"),
+            "Callouts.position does not end a panel with no list of its own above the bottom safe area.");
         Assert.IsFalse(position.Contains("calloutStyle.paddingBottom", StringComparison.Ordinal),
             "Callouts.position reads the padding of the callout, which a consumer pads a callout of its own with.");
     }
 
     [TestMethod]
     [DynamicData(nameof(Panels))]
-    public void APanelShouldNameTheSafeAreaOfTheEdgesItRunsToThroughTheMixin(string project, string path, string prefix, string edges, string band)
+    public void APanelShouldNameTheSafeAreasOfTheScreenThroughTheMixin(string project, string path, string prefix, string band)
     {
         var panel = GetPanel(GetRules(project, path), prefix);
         var include = panel.Declarations.Select(Normalize).SingleOrDefault(d => d.StartsWith("@include responsive-panel-safe-area(", StringComparison.Ordinal));
 
         Assert.IsNotNull(include, $"{path} does not name the safe areas of its panel through responsive-panel-safe-area.");
-        StringAssert.StartsWith(include, $"@include responsive-panel-safe-area({prefix}", $"{path} names the safe areas under another prefix.");
-        Assert.AreEqual(edges.Contains("bottom", StringComparison.Ordinal), include.Contains("$bottom: true", StringComparison.Ordinal),
-            $"{path} hands Callouts.position the bottom safe area {(edges.Contains("bottom", StringComparison.Ordinal) ? "not at all" : "of an edge its panel never reaches")}.");
+        Assert.IsTrue(Regex.IsMatch(include, $@"^@include responsive-panel-safe-area\({Regex.Escape(prefix)}\s*[,)]"), $"{path} names the safe areas under another prefix.");
 
         // The Extras package publishes the insets of the device in variables an app adjusts them for the whole package with.
         if (project == "Bit.BlazorUI.Extras")
@@ -117,7 +126,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
 
     [TestMethod]
     [DynamicData(nameof(Panels))]
-    public void APanelShouldDrawTheTopSafeAreaAsATransparentBorderOfItsSurface(string project, string path, string prefix, string edges, string band)
+    public void APanelShouldDrawTheTopSafeAreaAsATransparentBorderOfItsSurface(string project, string path, string prefix, string band)
     {
         var rules = GetRules(project, path);
         var panel = GetPanel(rules, prefix);
@@ -140,7 +149,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
 
     [TestMethod]
     [DynamicData(nameof(Panels))]
-    public void APanelShouldKeepWhatItPlacesAgainstTheTopOfItsBoxBelowTheBand(string project, string path, string prefix, string edges, string band)
+    public void APanelShouldKeepWhatItPlacesAgainstTheTopOfItsBoxBelowTheBand(string project, string path, string prefix, string band)
     {
         var rules = GetRules(project, path);
 
@@ -181,21 +190,32 @@ public sealed class BitResponsivePanelSafeAreaContractTests
     [TestMethod]
     public void EveryResponsivePanelShouldBeCovered()
     {
-        var covered = Panels.Select(p => Path.GetFileName((string)p[1])).Concat(ConsumerContentPanels).ToHashSet(StringComparer.Ordinal);
+        // Keyed by the package and the path under its Components folder, so a stylesheet that only shares the name of a
+        // covered one is still caught.
+        var covered = Panels.Select(p => Key((string)p[0], (string)p[1]))
+                            .Concat(ConsumerContentPanels.Select(p => Key(p.Project, p.Path)))
+                            .ToHashSet(StringComparer.Ordinal);
 
         var panels = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
-            .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project, "Components"), "*.scss", SearchOption.AllDirectories))
-            .Where(file => SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Contains("@include responsive-panel-closed;", StringComparison.Ordinal))
-            .Select(Path.GetFileName)
+            .SelectMany(project =>
+            {
+                var components = SourceFiles.GetDirectory(project, "Components");
+
+                return Directory.EnumerateFiles(components, "*.scss", SearchOption.AllDirectories)
+                                .Where(file => SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Contains("@include responsive-panel-closed;", StringComparison.Ordinal))
+                                .Select(file => Key(project, Path.GetRelativePath(components, file)));
+            })
             .ToArray();
 
         Assert.IsTrue(panels.Length >= covered.Count, $"Only {panels.Length} stylesheets draw a responsive panel; the scan no longer finds them.");
 
-        var missing = panels.Where(name => covered.Contains(name!) is false).ToArray();
+        var missing = panels.Where(key => covered.Contains(key) is false).ToArray();
 
         Assert.AreEqual(0, missing.Length,
             "A stylesheet draws a responsive panel that is not pinned here; make it name the safe areas of the edges of the " +
             "screen it runs to through responsive-panel-safe-area and add it to Panels: " + string.Join(", ", missing));
+
+        static string Key(string project, string path) => $"{project}/{path.Replace('\\', '/')}";
     }
 
     private static IReadOnlyList<SourceFiles.ScssRule> GetRules(string project, string path)
