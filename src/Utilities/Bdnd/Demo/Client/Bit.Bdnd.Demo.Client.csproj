@@ -22,6 +22,12 @@
         <ProjectReference Include="..\..\Bit.Bdnd\Bit.Bdnd.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow, Balette and
+             Bheadless demos share. -->
+        <Compile Include="..\..\..\Shared\Demo\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <!--
         Generates a compiled lookup (DemoSources.g.cs) that maps each routable demo page's
         @page route to the .razor sources its "View code" snippet shows: the page itself, then

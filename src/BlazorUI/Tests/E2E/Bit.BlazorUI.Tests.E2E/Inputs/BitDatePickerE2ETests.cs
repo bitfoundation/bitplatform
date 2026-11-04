@@ -1137,7 +1137,8 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
         await Expect(templated.Locator("#desc-tpl")).ToBeVisibleAsync();
         await Expect(templated.Locator("#error-tpl")).ToBeVisibleAsync();
         await Expect(templated).ToHaveClassAsync(HasClass("bit-inv"));
-        await Expect(templated.Locator("[role=status]")).ToHaveTextAsync("");
+        // A template has no text of its own, so the region says the value was rejected instead of staying silent.
+        await Expect(templated.Locator("[role=status]")).ToHaveTextAsync("Invalid input");
     }
 
     [TestMethod]

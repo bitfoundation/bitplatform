@@ -23,7 +23,8 @@ public static class BitDataGridDataProcessor
                 continue;
             var f = filter;
             var col = column;
-            query = query.Where(item => Matches(col.Accessor!.GetValue(item), f));
+            var text = column.FilterText;
+            query = query.Where(item => Matches(col.Accessor!.GetValue(item), f, text));
         }
         return query.ToList();
     }
@@ -42,7 +43,7 @@ public static class BitDataGridDataProcessor
         {
             var filter = filters[i];
             if (!columns.TryGetValue(filter.ColumnId, out var column) || column.Accessor is null) continue;
-            if (!Matches(column.Accessor.GetValue(item), filter)) return false;
+            if (!Matches(column.Accessor.GetValue(item), filter, column.FilterText)) return false;
         }
         return true;
     }
@@ -63,15 +64,15 @@ public static class BitDataGridDataProcessor
         {
             var column = columns[i];
             if (!column.IsSearchable) continue;
-            if (column.GetFormattedExportValue(item).Contains(needle, StringComparison.OrdinalIgnoreCase)) return true;
+            if (column.GetSearchText(item).Contains(needle, StringComparison.OrdinalIgnoreCase)) return true;
         }
         return false;
     }
 
     /// <summary>
     /// Applies the grid-wide quick-search term: a row matches when <b>any</b> searchable column's
-    /// formatted display text contains the term (case-insensitively), so the user searches exactly
-    /// what the grid renders. A blank term matches every row; a term with no searchable column to
+    /// formatted display text (its <c>ValueText</c>, an enum member's <c>[Display]</c> name) contains
+    /// the term (case-insensitively), so the user searches exactly what the grid renders. A blank term matches every row; a term with no searchable column to
     /// read matches none - the same contract <see cref="BitDataGridQueryableProcessor.ApplySearch"/>
     /// applies over an <see cref="IQueryable{T}"/> source.
     /// </summary>
@@ -93,10 +94,10 @@ public static class BitDataGridDataProcessor
         {
             foreach (var column in searchable)
             {
-                // GetFormattedExportValue is the column's "value as text": the ExportValue selector
-                // when one is supplied (which is what makes a template-only column searchable), and
-                // the formatted field value otherwise.
-                if (column.GetFormattedExportValue(item).Contains(needle, StringComparison.OrdinalIgnoreCase))
+                // GetSearchText is the column's "value as text": the ExportValue selector when one is
+                // supplied (which is what makes a template-only column searchable), and the text the
+                // cell shows the field value by otherwise (its ValueText, an enum's [Display] name).
+                if (column.GetSearchText(item).Contains(needle, StringComparison.OrdinalIgnoreCase))
                 {
                     result.Add(item);
                     break;
@@ -234,18 +235,16 @@ public static class BitDataGridDataProcessor
             // no field accessor); built-in aggregations require both a type and a bound field.
             if (column.AggregateBy is null && (column.Aggregate == BitDataGridAggregateType.None || column.Accessor is null)) continue;
             var value = column.AggregateBy is not null ? column.AggregateBy(source) : ComputeAggregate(source, column);
-            var format = column.AggregateFormat ?? column.Format;
-            var formatted = value is IFormattable fmt && !string.IsNullOrEmpty(format)
-                ? fmt.ToString(format, CultureInfo.CurrentCulture)
-                : value?.ToString() ?? string.Empty;
+            // An AggregateBy value isn't the product of the declarative Aggregate function (which
+            // may even be None), so report it as Custom instead of echoing a type it didn't run.
+            var type = column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate;
             results.Add(new BitDataGridAggregateResult
             {
                 ColumnId = column.Id,
-                // An AggregateBy value isn't the product of the declarative Aggregate function (which
-                // may even be None), so report it as Custom instead of echoing a type it didn't run.
-                Type = column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate,
+                Type = type,
                 Value = value,
-                FormattedValue = formatted
+                // A Min or Max is one of the column's own values, written the way its cells write it.
+                FormattedValue = column.FormatAggregateValue(type, value)
             });
         }
         return results;
@@ -296,7 +295,9 @@ public static class BitDataGridDataProcessor
         catch { return false; }
     }
 
-    private static bool Matches(object? value, BitDataGridFilterDescriptor filter)
+    // valueText is the text the column shows a value by (its ValueText), which the text operators match in place of the
+    // value's own text; null for a column that shows a value by its own text.
+    private static bool Matches(object? value, BitDataGridFilterDescriptor filter, Func<object?, string>? valueText = null)
     {
         switch (filter.Operator)
         {
@@ -399,8 +400,9 @@ public static class BitDataGridDataProcessor
         if (filter.Value is null)
             return true;
 
-        // String operators
-        var text = value?.ToString() ?? string.Empty;
+        // String operators: the user types what the cell shows, so a column whose ValueText writes its values matches
+        // that text rather than the stored one.
+        var text = valueText is not null ? valueText(value) : value?.ToString() ?? string.Empty;
         var term = filter.Value.ToString() ?? string.Empty;
         return filter.Operator switch
         {

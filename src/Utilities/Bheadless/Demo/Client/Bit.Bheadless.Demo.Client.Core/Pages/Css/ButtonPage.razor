@@ -1,122 +1,130 @@
 ﻿@page "/button"
 
-<PageTitle>Button — bit Bheadless</PageTitle>
+<PageTitle>Button · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Button</h1>
-        <p>A polymorphic, accessible button primitive with loading and disabled states.</p>
-        <SectionSwitcher Slug="button" />
-    </header>
-
-    <DemoBlock Title="Basic Button"
-               Code="@_basicCode"
-               Css="@_btnCss">
-        <Description>
-            Renders a native <code>&lt;button&gt;</code> with no styling. All visuals come from you.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="HandleBasicClick" class="btn">
-                Click me
-            </BitBhButton>
-            <span class="demo-output">Clicked @basicClickCount times</span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled State"
-               Code="@_disabledCode"
-               Css="@_btnDisabledCss">
-        <Description>
-            Sets the native <code>disabled</code> attribute and emits <code>data-disabled</code> for CSS hooks.
-        </Description>
-        <LiveContent>
-            <BitBhButton Disabled="true" OnClick="HandleBasicClick" class="btn">
-                Can't click me
-            </BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Loading State with Context"
-               Code="@_loadingCode"
-               Css="@_btnLoadingCss">
-        <Description>
-            Uses <code>RenderFragment&lt;BitBhButtonContext&gt;</code> so you can conditionally render
-            a spinner driven by the button's own state.
-        </Description>
-        <LiveContent>
-            <BitBhButton Loading="@isLoading" OnClick="HandleLoadingClick" class="btn">
-                <Template Context="btn">
-                    @if (btn.Loading)
-                    {
-                        <span class="spinner"></span>
-                        <span>Saving…</span>
-                    }
-                    else
-                    {
-                        <span>Save Changes</span>
-                    }
-                </Template>
-            </BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Polymorphic Rendering"
-               Code="@_polymorphicCode"
-               Css="@_btnLinkCss">
-        <Description>
-            Set <code>As="a"</code> to render as an anchor while retaining all button semantics.
-            Non-native elements automatically receive <code>role="button"</code>, <code>tabindex="0"</code>,
-            and Enter/Space keyboard handling.
-        </Description>
-        <LiveContent>
-            <BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="btn btn-link">
-                I'm actually an &lt;a&gt; tag
-            </BitBhButton>
-            <BitBhButton As="span" OnClick="HandleBasicClick" class="btn">
-                I'm a &lt;span&gt; with role="button"
-            </BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Toggle Button"
-               Code="@_toggleCode"
-               Css="@_btnToggleCss">
-        <Description>
-            Combine <code>BitBhButton</code> with your own state to build a toggle. Pass
-            <code>aria-pressed</code> via standard HTML attributes — they merge automatically.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="TogglePressed"
-                     class="@ToggleClass"
-                     aria-pressed="@isPressed.ToString().ToLowerInvariant()">
-                @(isPressed ? "ON" : "OFF")
-            </BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Styled via Data Attributes"
-               Code="@_dataAttrCode"
-               Css="@_dataAttrCss">
-        <Description>
-            Style entirely via CSS attribute selectors. No component API for colors, sizes, or
-            variants — that's your domain.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="HandleBasicClick" class="btn-data">
-                Styled via [data-*]
-            </BitBhButton>
-            <BitBhButton Disabled="true" class="btn-data">
-                Disabled via [data-disabled]
-            </BitBhButton>
-            <BitBhButton Loading="true" class="btn-data">
-                Loading via [data-loading]
-            </BitBhButton>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Button</h1>
+    <p class="bb-subtitle">A polymorphic, accessible button primitive with loading and disabled states.</p>
 </div>
+
+<SectionSwitcher Slug="button" />
+
+<DemoBlock Title="Basic Button"
+           Code="@_basicCode"
+           Css="@_btnCss">
+    <Description>
+        Renders a native <code>&lt;button&gt;</code> with no styling. All visuals come from
+        your own classes.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="HandleBasicClick" class="btn">
+            Click me
+        </BitBhButton>
+        <span class="demo-output">Clicked @basicClickCount times</span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled State"
+           Code="@_disabledCode"
+           Css="@_btnDisabledCss">
+    <Description>
+        Sets the native <code>disabled</code> attribute and emits <code>data-disabled</code> for
+        styling. The CSS version styles it with a <code>[data-disabled]</code> selector, the
+        Tailwind version with the <code>data-disabled:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhButton Disabled="true" OnClick="HandleBasicClick" class="btn">
+            Can't click me
+        </BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Loading State with Context"
+           Code="@_loadingCode"
+           Css="@_btnLoadingCss">
+    <Description>
+        Uses <code>RenderFragment&lt;BitBhButtonContext&gt;</code> so you can conditionally render
+        a spinner driven by the button's own state. While loading, the button emits
+        <code>data-loading</code>: the CSS version styles it with a <code>[data-loading]</code>
+        selector, the Tailwind version with the <code>data-loading:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhButton Loading="@isLoading" OnClick="HandleLoadingClick" class="btn">
+            <Template Context="btn">
+                @if (btn.Loading)
+                {
+                    <span class="spinner"></span>
+                    <span>Saving…</span>
+                }
+                else
+                {
+                    <span>Save Changes</span>
+                }
+            </Template>
+        </BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Polymorphic Rendering"
+           Code="@_polymorphicCode"
+           Css="@_btnLinkCss">
+    <Description>
+        Set <code>As="a"</code> to render as an anchor while retaining all button semantics.
+        Non-native elements automatically receive <code>role="button"</code>, <code>tabindex="0"</code>,
+        and Enter/Space keyboard handling.
+    </Description>
+    <LiveContent>
+        <BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="btn btn-link">
+            I'm actually an &lt;a&gt; tag
+        </BitBhButton>
+        <BitBhButton As="span" OnClick="() => spanClickCount++" class="btn">
+            I'm a &lt;span&gt; with role="button"
+        </BitBhButton>
+        <span class="demo-output">Clicked @spanClickCount times</span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Toggle Button"
+           Code="@_toggleCode"
+           Css="@_btnToggleCss">
+    <Description>
+        Combine <code>BitBhButton</code> with your own state to build a toggle. Pass
+        <code>aria-pressed</code> via standard HTML attributes — they merge automatically.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="TogglePressed"
+                 class="@ToggleClass"
+                 aria-pressed="@isPressed.ToString().ToLowerInvariant()">
+            @(isPressed ? "ON" : "OFF")
+        </BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Styled via Data Attributes"
+           Code="@_dataAttrCode"
+           Css="@_dataAttrCss">
+    <Description>
+        Style entirely from the <code>data-disabled</code> and <code>data-loading</code> attributes
+        the button emits. No component API for colors, sizes, or variants — that's your domain.
+        The CSS version uses <code>[data-*]</code> attribute selectors, the Tailwind version the
+        registered <code>data-disabled:</code> and <code>data-loading:</code> variants.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="HandleBasicClick" class="btn-data">
+            Styled via [data-*]
+        </BitBhButton>
+        <BitBhButton Disabled="true" class="btn-data">
+            Disabled via [data-disabled]
+        </BitBhButton>
+        <BitBhButton Loading="true" class="btn-data">
+            Loading via [data-loading]
+        </BitBhButton>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private int basicClickCount;
+    private int spanClickCount;
     private bool isLoading;
     private bool isPressed;
 
@@ -191,14 +199,13 @@
 <BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="btn btn-link">
     I'm actually an <a> tag
 </BitBhButton>
-<BitBhButton As="span" OnClick="HandleBasicClick" class="btn">
+<BitBhButton As="span" OnClick="() => spanClickCount++" class="btn">
     I'm a <span> with role="button"
 </BitBhButton>
+<span class="demo-output">Clicked @spanClickCount times</span>
 
 @code {
-    private int basicClickCount;
-
-    private void HandleBasicClick() => basicClickCount++;
+    private int spanClickCount;
 }
 """;
 

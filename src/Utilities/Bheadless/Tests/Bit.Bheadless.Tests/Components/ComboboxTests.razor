@@ -452,4 +452,63 @@
         cut.Find("[aria-label=Number]").Press("Escape");
         Assert.IsFalse(open);
     }
+
+    private RenderFragment Tags(Func<string> query, Action<string> setQuery) =>
+        @<BitBhCombobox TValue="string" Multiple="true" OnQueryChange="setQuery">
+            <BitBhComboboxInput TValue="string" aria-label="Fruits" />
+            <BitBhComboboxOptions TValue="string">
+                @foreach (var f in Fruits.Where(f => BitBhFilter.Contains(f, query())))
+                {
+                    <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                }
+            </BitBhComboboxOptions>
+        </BitBhCombobox>;
+
+    [TestMethod]
+    public void A_multi_select_keeps_its_search_while_open_and_starts_over_when_it_closes()
+    {
+        var query = string.Empty;
+        var cut = Render(Tags(() => query, q => query = q));
+        cut.Find("input").Input("ap");
+        cut.Find("input").Press("Enter");
+
+        // A pick keeps the panel open on the same search, for the next pick.
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-expanded"));
+        Assert.AreEqual("ap", query);
+        Assert.AreEqual("ap", cut.Find("input").GetAttribute("value"));
+
+        cut.Find("input").Press("Escape");
+        Assert.AreEqual("false", cut.Find("input").GetAttribute("aria-expanded"));
+        Assert.AreEqual(string.Empty, query);
+        Assert.AreEqual(string.Empty, cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void A_new_query_scrolls_the_highlight_into_view_once_the_options_rendered()
+    {
+        // The list changes under the highlight: the panel's scroll position belongs to the list before.
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("b");
+        cut.Find("input").Press("ArrowDown");
+        var active = cut.Find("input").GetAttribute("aria-activedescendant");
+        var before = JSInterop.Invocations.Count(i => i.Identifier == "dom.scrollIntoView");
+
+        cut.Find("input").Input("bl");
+        Assert.AreEqual(active, cut.Find("input").GetAttribute("aria-activedescendant"));
+        cut.WaitForAssertion(() =>
+        {
+            var scrolls = JSInterop.Invocations.Where(i => i.Identifier == "dom.scrollIntoView").ToArray();
+            Assert.IsGreaterThan(before, scrolls.Length);
+            Assert.AreEqual(active, scrolls[^1].Arguments[0]);
+        });
+    }
+
+    [TestMethod]
+    public async Task FocusAsync_focuses_the_input()
+    {
+        var cut = Render(Combobox(new Harness()));
+        await cut.InvokeAsync(() => cut.FindComponent<BitBhCombobox<string>>().Instance.FocusAsync());
+        Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "focus.focus" && Equals(i.Arguments[0], cut.Find("input").Id)));
+    }
 }

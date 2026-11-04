@@ -10,6 +10,29 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later
 before it updates, or stays on 10.x of the packages.
 
+### An error message template is announced in place of the message it hides ([#14563](https://github.com/bitfoundation/bitplatform/issues/14563))
+
+`BitTextField`, `BitSearchBox`, `BitNumberField`, `BitDatePicker`, `BitTimePicker`, `BitDropdown` and `BitToggle`
+announce their error message through a live region. Given both an `ErrorMessage` and an `ErrorMessageTemplate`, they
+announced the plain `ErrorMessage`, which the template replaces on screen, and given a template alone all but
+`BitNumberField` announced nothing, leaving a rejected value sounding accepted. The live region now announces what is
+on screen: a template as a bare "Invalid input", or as the text of the new `ErrorMessageAriaLabel` parameter (also in
+their `Bit*Params`), which the field is described by on every later focus too. `ErrorMessageAriaLabel` also makes the
+forced `Invalid` state announce it. **An app that set the plain message next to a template to have it announced**,
+as the docs of `BitToggle` advised, moves that text to `ErrorMessageAriaLabel`:
+
+```razor
+@* before: the hidden message was announced *@
+<BitToggle Label="Public profile" ErrorMessage="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+
+@* after *@
+<BitToggle Label="Public profile" ErrorMessageAriaLabel="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+```
+
 ### A `BitDropdown` or `BitChoiceGroup` of options of another `TValue` throws ([#14383](https://github.com/bitfoundation/bitplatform/issues/14383))
 
 An option finds its `BitDropdown` or `BitChoiceGroup` through a cascade typed by its own `TValue`, so the options of

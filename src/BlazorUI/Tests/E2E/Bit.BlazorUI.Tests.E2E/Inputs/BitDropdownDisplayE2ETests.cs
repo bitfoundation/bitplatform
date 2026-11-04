@@ -110,8 +110,9 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         await Expect(Page.Locator("#dd-error-tpl #error-tpl-content")).ToHaveTextAsync("Templated rejection");
         await Expect(Root("dd-error-tpl")).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Trigger("dd-error-tpl")).ToHaveAttributeAsync("aria-invalid", "true");
-        // The live region announces text only, never a template.
-        await Expect(Root("dd-error-tpl").Locator(".bit-drp-lvr")).ToHaveTextAsync("");
+        // The live region announces text only, never a template - which has none of its own, so the region says
+        // the selection was rejected instead of staying silent.
+        await Expect(Root("dd-error-tpl").Locator(".bit-drp-lvr")).ToHaveTextAsync("Invalid input");
 
         await Expect(Root("dd-invalid")).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Trigger("dd-invalid")).ToHaveAttributeAsync("aria-invalid", "true");

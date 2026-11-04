@@ -295,10 +295,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the dropdown references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every dropdown under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the dropdown invalid in the same way. Only the plain text is announced by the live region, since a template is free to render anything at all.",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the dropdown invalid in the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {
@@ -361,7 +368,7 @@ public partial class BitDropdownDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the dropdown as invalid without an EditContext having said so, which is what a rejection the app decided on its own (a server response, a rule spanning two fields) needs. It gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does. Setting ErrorMessage implies it.",
+            Description = "Marks the dropdown as invalid without an EditContext having said so, which is what a rejection the app decided on its own (a server response, a rule spanning two fields) needs. It gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does. Setting ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {

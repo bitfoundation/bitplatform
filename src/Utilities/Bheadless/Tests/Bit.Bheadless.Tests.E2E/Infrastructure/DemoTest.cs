@@ -13,6 +13,13 @@ public abstract partial class DemoTest
     /// <summary>The longest a single expectation waits; also the deadline of <see cref="PollAsync{T}(Func{Task{T}}, Func{T, bool}, string)"/>.</summary>
     public const int ExpectTimeout = 15_000;
 
+    /// <summary>
+    /// The page itself, without the site's chrome: the docs layout's content column, which holds the page's heading and
+    /// its examples. The chrome lives inside <c>main</c> too - the docs navigation, the breadcrumb bar with its "Browse
+    /// docs" toggle, the pager, the "on this page" rail - so a locator or an audit scoped to <c>main</c> would reach it.
+    /// </summary>
+    public const string Content = ".bb-docs-content";
+
     private readonly List<string> _errors = [];
     private IBrowserContext? _context;
     private PlaywrightSession.Session? _session;
@@ -112,10 +119,10 @@ public abstract partial class DemoTest
     /// long before anything handles a key; neither the load event nor an idle network says when that changes. Two
     /// signals do:
     /// <list type="bullet">
-    /// <item>the h1 has <c>tabindex="-1"</c>: Routes.razor's <c>FocusOnNavigate</c> focuses it, and gives it that attribute,
-    /// from <c>OnAfterRenderAsync</c>, which runs only after the router's first interactive render - on WebAssembly once
-    /// the runtime has loaded and rendered the whole page over its prerendered markup, on Blazor Server once the circuit
-    /// has. A prerender never runs it.</item>
+    /// <item>the site shell's <c>.page</c> says <c>data-interactive="true"</c>: MainLayout renders it from
+    /// <c>RendererInfo.IsInteractive</c>, which a prerender reports false, so it turns true with the first interactive
+    /// render - on WebAssembly once the runtime has loaded and rendered the whole page over its prerendered markup, on
+    /// Blazor Server once the circuit has - in the same batch that attaches the page's event handlers.</item>
     /// <item><c>[data-bit-bh-live-region]</c> exists: the library's JS initializer has installed its document-level
     /// behaviours (declarative key handling, dismissable layers, the announcer's live regions).</item>
     /// </list>
@@ -124,7 +131,7 @@ public abstract partial class DemoTest
         """
         () => !!window.Blazor
            && document.querySelector('[data-bit-bh-live-region]') !== null
-           && document.querySelector('h1')?.getAttribute('tabindex') === '-1'
+           && document.querySelector('.page')?.dataset.interactive === 'true'
         """, null, new PageWaitForFunctionOptions { Timeout = 90_000 });
 
     /// <summary>The page's script errors so far, minus favicon and 404 noise, which the test no longer reports at cleanup.</summary>
@@ -138,7 +145,7 @@ public abstract partial class DemoTest
         }
     }
 
-    /// <summary>axe-core finds nothing in <c>main</c> (see <see cref="Axe"/>).</summary>
+    /// <summary>axe-core finds nothing in the page's content (<see cref="Content"/>, see <see cref="Axe"/>).</summary>
     protected static async Task ExpectAccessibleAsync(IPage page)
     {
         var violations = await Axe.ViolationsAsync(page);

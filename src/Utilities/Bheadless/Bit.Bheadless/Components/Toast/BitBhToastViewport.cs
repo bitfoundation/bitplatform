@@ -51,6 +51,9 @@ public class BitBhToastViewport : BitBhComponentBase, IDisposable
 
     internal BitBhToaster EffectiveToaster => _toaster!;
 
+    /// <summary>Focuses the toast list itself (as the hotkey does).</summary>
+    internal ValueTask<bool> FocusListAsync() => Interop.FocusAsync(ComponentId);
+
     protected override void OnParametersSet()
     {
         var next = Toaster ?? CascadedToaster ?? GetService<BitBhToaster>() ?? _toaster ?? new BitBhToaster();

@@ -284,10 +284,17 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every DatePicker under it, so set it there only as a generic replacement for \"Invalid input\"."
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the error message, which replaces ErrorMessage and marks the DatePicker invalid the same way."
+            Description = "The custom content of the error message, which replaces ErrorMessage and marks the DatePicker invalid the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set."
         },
         new()
         {
@@ -484,7 +491,7 @@ public partial class BitDatePickerDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the DatePicker invalid without an EditContext having said so: the same look and aria-invalid a failing validation gives it. ErrorMessage implies it."
+            Description = "Marks the DatePicker invalid without an EditContext having said so: the same look and aria-invalid a failing validation gives it. ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce."
         },
         new()
         {

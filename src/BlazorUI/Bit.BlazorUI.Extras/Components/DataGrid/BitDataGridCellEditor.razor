@@ -13,8 +13,8 @@
                 aria-describedby="@ErrorId"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
-            <option value="true">@Grid.Strings.BooleanTrueText</option>
-            <option value="false">@Grid.Strings.BooleanFalseText</option>
+            <option value="true">@(Column.BooleanText(true) ?? Grid.Strings.BooleanTrueText)</option>
+            <option value="false">@(Column.BooleanText(false) ?? Grid.Strings.BooleanFalseText)</option>
         </select>
         break;
 
@@ -77,9 +77,9 @@
             {
                 <option value="">@string.Empty</option>
             }
-            @foreach (var name in Enum.GetNames(Column.Accessor.UnderlyingType))
+            @foreach (var (name, text) in Column.EnumOptions())
             {
-                <option value="@name">@name</option>
+                <option value="@name">@text</option>
             }
         </select>
         break;

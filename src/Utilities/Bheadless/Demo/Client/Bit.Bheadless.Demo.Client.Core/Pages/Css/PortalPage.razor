@@ -1,145 +1,152 @@
 ﻿@page "/portal"
 
-<PageTitle>Portal — bit Bheadless</PageTitle>
+<PageTitle>Portal · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Portal</h1>
-        <p>Renders children into a different part of the DOM tree (a body-level container by default). Useful for tooltips, dropdowns, and modals that need to escape overflow or z-index stacking contexts.</p>
-        <SectionSwitcher Slug="portal" />
-    </header>
+<div class="bb-intro">
+    <h1>Portal</h1>
+    <p class="bb-subtitle">
+        Renders children into a different part of the DOM tree (the <code>BitBhPortalOutlet</code>,
+        or a container appended to <code>&lt;body&gt;</code>, by default). Useful for tooltips,
+        dropdowns, and modals that need to escape overflow or z-index stacking contexts.
+    </p>
+</div>
 
-    <DemoBlock Title="Basic Portal"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            Toggle the portal on and off. When enabled, the content is teleported to a
-            container appended to <code>&lt;body&gt;</code>, escaping any overflow or
-            z-index constraints of its parent. Inspect the DOM to see the element move.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
-                      class="@($"btn {(basicEnabled ? "btn-primary" : "")}")">
-                @(basicEnabled ? "Disable portal" : "Enable portal")
-            </BitBhButton>
+<SectionSwitcher Slug="portal" />
+
+<DemoBlock Title="Basic Portal"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Toggle the portal on and off. When enabled, the content moves to the app's
+        <code>BitBhPortalOutlet</code> (or, without one, a container appended to
+        <code>&lt;body&gt;</code>), escaping any overflow or z-index constraints of its parent.
+        Inspect the DOM to see the element move.
+        While portalled it is pinned to the bottom-right corner of the window (<code>position: fixed</code>),
+        so you can see it outside the box.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+                  class="@($"btn {(basicEnabled ? "btn-primary" : "")}")">
+            @(basicEnabled ? "Disable portal" : "Enable portal")
+        </BitBhButton>
+
+        <div class="portal-overflow-box">
+            <p class="portal-label">This box has <code>overflow: hidden</code>.</p>
+
+            <BitBhPortal Enabled="basicEnabled">
+                <div class="@(basicEnabled ? "portal-content portal-content-floating" : "portal-content")">
+                    <p>I'm portalled content!</p>
+                    <p class="portal-hint">
+                        @(basicEnabled
+                            ? "✓ I'm rendered at the end of <body>, outside the overflow box."
+                            : "I'm rendered in place (portal disabled).")
+                    </p>
+                </div>
+            </BitBhPortal>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Tooltip escaping stacking context"
+           Code="@_tooltipCode"
+           Css="@_tooltipCss">
+    <Description>
+        A common use case: a tooltip that needs to escape a parent with
+        <code>overflow: hidden</code> or a restrictive <code>z-index</code>.
+        The portal moves the tooltip out of that parent so it's always visible.
+    </Description>
+    <LiveContent>
+        <div class="portal-stacking-parent">
+            <p>This container has <code>overflow: hidden</code> and <code>z-index: 1</code>.</p>
+
+            <div class="portal-tooltip-trigger"
+                 @onmouseenter="() => tooltipVisible = true"
+                 @onmouseleave="() => tooltipVisible = false">
+                Hover me for a tooltip
+            </div>
+
+            @if (tooltipVisible)
+            {
+                <BitBhPortal>
+                    <div class="portal-tooltip">
+                        This tooltip escapes the stacking context via Portal!
+                    </div>
+                </BitBhPortal>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Portal Group (shared target)"
+           Code="@_groupCode"
+           Css="@_groupCss">
+    <Description>
+        Use <code>BitBhPortalGroup</code> to direct all nested portals into a shared
+        container element instead of the default target. This is useful
+        when you want portalled content to land in a specific region of your layout.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="() => groupShowA = !groupShowA"
+                  class="@($"btn {(groupShowA ? "btn-primary" : "")}")">
+            Toggle Portal A
+        </BitBhButton>
+        <BitBhButton OnClick="() => groupShowB = !groupShowB"
+                  class="@($"btn {(groupShowB ? "btn-primary" : "")}")">
+            Toggle Portal B
+        </BitBhButton>
+
+        <BitBhPortalGroup class="portal-group-target">
+            <p class="portal-group-label">Portal Group target container (portals land here):</p>
+
+            @if (groupShowA)
+            {
+                <BitBhPortal>
+                    <div class="portal-group-item portal-group-item-a">
+                        Portal A content
+                    </div>
+                </BitBhPortal>
+            }
+
+            @if (groupShowB)
+            {
+                <BitBhPortal>
+                    <div class="portal-group-item portal-group-item-b">
+                        Portal B content
+                    </div>
+                </BitBhPortal>
+            }
+        </BitBhPortalGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled portal (render in place)"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Enabled="false"</code> to render content in its natural DOM
+        position without teleportation. This is useful for conditional portalling
+        based on viewport size or other runtime conditions.
+        While portalled it is pinned to the bottom-left corner of the window, outside the box.
+    </Description>
+    <LiveContent>
+        <div class="portal-toggle-demo">
+            <label class="portal-toggle-label">
+                <input type="checkbox" @bind="disabledPortalEnabled" />
+                Portal enabled
+            </label>
 
             <div class="portal-overflow-box">
-                <p class="portal-label">This box has <code>overflow: hidden</code>.</p>
+                <p class="portal-label">Container with <code>overflow: hidden</code>.</p>
 
-                <BitBhPortal Enabled="basicEnabled">
-                    <div class="portal-content">
-                        <p>I'm portalled content!</p>
-                        <p class="portal-hint">
-                            @(basicEnabled
-                                ? "✓ I'm rendered at the end of <body>, escaping the overflow box."
-                                : "I'm rendered in place (portal disabled).")
-                        </p>
+                <BitBhPortal Enabled="disabledPortalEnabled">
+                    <div class="@(disabledPortalEnabled ? "portal-content portal-content-alt portal-content-floating" : "portal-content portal-content-alt")">
+                        <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
                     </div>
                 </BitBhPortal>
             </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Tooltip escaping stacking context"
-               Code="@_tooltipCode"
-               Css="@_tooltipCss">
-        <Description>
-            A common use case: a tooltip that needs to escape a parent with
-            <code>overflow: hidden</code> or a restrictive <code>z-index</code>.
-            The portal moves the tooltip to body level so it's always visible.
-        </Description>
-        <LiveContent>
-            <div class="portal-stacking-parent">
-                <p>This container has <code>overflow: hidden</code> and <code>z-index: 1</code>.</p>
-
-                <div class="portal-tooltip-trigger"
-                     @onmouseenter="() => tooltipVisible = true"
-                     @onmouseleave="() => tooltipVisible = false">
-                    Hover me for a tooltip
-                </div>
-
-                @if (tooltipVisible)
-                {
-                    <BitBhPortal>
-                        <div class="portal-tooltip">
-                            This tooltip escapes the stacking context via Portal!
-                        </div>
-                    </BitBhPortal>
-                }
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Portal Group (shared target)"
-               Code="@_groupCode"
-               Css="@_groupCss">
-        <Description>
-            Use <code>BitBhPortalGroup</code> to direct all nested portals into a shared
-            container element instead of the default body-level root. This is useful
-            when you want portalled content to land in a specific region of your layout.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="() => groupShowA = !groupShowA"
-                      class="@($"btn {(groupShowA ? "btn-primary" : "")}")">
-                Toggle Portal A
-            </BitBhButton>
-            <BitBhButton OnClick="() => groupShowB = !groupShowB"
-                      class="@($"btn {(groupShowB ? "btn-primary" : "")}")">
-                Toggle Portal B
-            </BitBhButton>
-
-            <BitBhPortalGroup class="portal-group-target">
-                <p class="portal-group-label">Portal Group target container (portals land here):</p>
-
-                @if (groupShowA)
-                {
-                    <BitBhPortal>
-                        <div class="portal-group-item portal-group-item-a">
-                            Portal A content
-                        </div>
-                    </BitBhPortal>
-                }
-
-                @if (groupShowB)
-                {
-                    <BitBhPortal>
-                        <div class="portal-group-item portal-group-item-b">
-                            Portal B content
-                        </div>
-                    </BitBhPortal>
-                }
-            </BitBhPortalGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled portal (render in place)"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Enabled="false"</code> to render content in its natural DOM
-            position without teleportation. This is useful for conditional portalling
-            based on viewport size or other runtime conditions.
-        </Description>
-        <LiveContent>
-            <div class="portal-toggle-demo">
-                <label class="portal-toggle-label">
-                    <input type="checkbox" @bind="disabledPortalEnabled" />
-                    Portal enabled
-                </label>
-
-                <div class="portal-overflow-box">
-                    <p class="portal-label">Container with <code>overflow: hidden</code>.</p>
-
-                    <BitBhPortal Enabled="disabledPortalEnabled">
-                        <div class="portal-content portal-content-alt">
-                            <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
-                        </div>
-                    </BitBhPortal>
-                </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool basicEnabled = true;
@@ -249,6 +256,20 @@
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
 }
+/* While portalled: pinned to a corner of the window, where the reader can see it */
+.portal-content-floating {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+    max-width: min(20rem, calc(100vw - 2rem));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.portal-content-floating.portal-content-alt {
+    right: auto;
+    left: 1rem;
+}
 """;
 
     private const string _tooltipCss = """
@@ -264,6 +285,7 @@
     font-size: 0.85rem;
     z-index: 9999;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
 }
 """;
 
@@ -319,6 +341,20 @@
 .portal-content-alt {
     background: #fef3c7;
     border-color: #f59e0b;
+}
+/* While portalled: pinned to a corner of the window, where the reader can see it */
+.portal-content-floating {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+    max-width: min(20rem, calc(100vw - 2rem));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.portal-content-floating.portal-content-alt {
+    right: auto;
+    left: 1rem;
 }
 """;
 }

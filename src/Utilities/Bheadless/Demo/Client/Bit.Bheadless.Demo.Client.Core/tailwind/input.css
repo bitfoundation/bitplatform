@@ -64,9 +64,30 @@
     code.bg-zinc-100 { color: var(--color-zinc-700); }
 }
 
+/* One keyboard focus ring for every sample, under its utilities: an element's own focus-visible:,
+   outline-* or ring classes still win. Without it a control with no focus classes gets the browser's
+   ring, which Firefox and Safari draw in the text colour - white on a filled button, so invisible on
+   the panel around it. Like the site's own ring, it leaves out what only scripts focus (tabindex=-1:
+   a dialog panel, a menu item the arrow keys move to). */
+@layer base {
+    :focus-visible:where(:not([tabindex="-1"])) {
+        outline: 2px solid var(--color-blue-600);
+        outline-offset: 2px;
+    }
+}
+
+/* Tailwind paints a ring offset white unless a ring-offset-* colour says otherwise, which on the dark
+   theme leaves a white band between a control and its ring. Set on every element, since Tailwind
+   registers the property as not inherited; in the base layer, so a ring-offset-* utility still wins. */
+@layer base {
+    :root[bit-theme="dark"] * {
+        --tw-ring-offset-color: var(--background-color-white);
+    }
+}
+
 /* ------------------------------------------------------------
    Dark theme.
-   wwwroot/theme.js sets <html data-theme="dark">. Rather than adding dark:
+   The site kit's theme.js (Server/wwwroot) sets <html bit-theme="dark">. Rather than adding dark:
    variants to every demo (which would double the classes you read in each
    Razor tab), the palette itself is remapped: neutrals flip, tints become
    dark washes, solid brand fills stay put so white text on them stays legible.
@@ -108,7 +129,7 @@
 }
 
 @layer theme {
-    :root[data-theme="dark"] {
+    :root[bit-theme="dark"] {
         /* Neutrals: inverted, with white surfaces mapped to zinc-900. */
         --color-zinc-50: oklch(23.5% 0.006 286);
         --color-zinc-100: oklch(27.4% 0.006 286.033);

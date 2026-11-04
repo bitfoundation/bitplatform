@@ -1,207 +1,210 @@
 ﻿@page "/tabs"
 
-<PageTitle>Tabs — bit Bheadless</PageTitle>
+<PageTitle>Tabs · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Tabs</h1>
-        <p>An accessible tab group with roving tabindex, full keyboard navigation, and zero visual opinion.</p>
-        <SectionSwitcher Slug="tabs" />
-    </header>
-
-    <DemoBlock Title="Basic Tabs"
-               Code="@_basicCode"
-               Css="@_tabsCss">
-        <Description>
-            Click a tab or use Left / Right arrow keys, Home, and End to navigate. Disabled tabs are skipped automatically.
-            ARIA roles, <code>aria-selected</code>, <code>aria-controls</code>, and <code>aria-labelledby</code> are wired automatically.
-        </Description>
-        <LiveContent>
-            <BitBhTabGroup class="tabs">
-                <BitBhTabList class="tab-list">
-                    <BitBhTab class="tab">Account</BitBhTab>
-                    <BitBhTab class="tab">Profile</BitBhTab>
-                    <BitBhTab class="tab">Notifications</BitBhTab>
-                </BitBhTabList>
-                <BitBhTabPanels class="tab-panels">
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>Account</h3>
-                        <p>Manage your account settings and preferences.</p>
-                    </BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>Profile</h3>
-                        <p>Update your public profile information.</p>
-                    </BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>Notifications</h3>
-                        <p>Choose what alerts you'd like to receive.</p>
-                    </BitBhTabPanel>
-                </BitBhTabPanels>
-            </BitBhTabGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Vertical Orientation"
-               Code="@_verticalCode"
-               Css="@_verticalCss">
-        <Description>
-            Set <code>Vertical="true"</code> to render tabs in a column.
-            Arrow-key navigation switches to Up / Down, and the root and tablist
-            both emit <code>data-orientation="vertical"</code> for CSS layout hooks.
-        </Description>
-        <LiveContent>
-            <BitBhTabGroup Vertical="true" class="tabs tabs-vertical">
-                <BitBhTabList class="tab-list">
-                    <BitBhTab class="tab">General</BitBhTab>
-                    <BitBhTab class="tab">Security</BitBhTab>
-                    <BitBhTab class="tab">Integrations</BitBhTab>
-                </BitBhTabList>
-                <BitBhTabPanels class="tab-panels">
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>General</h3>
-                        <p>Application-wide settings.</p>
-                    </BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>Security</h3>
-                        <p>Two-factor auth, sessions, and audit log.</p>
-                    </BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel">
-                        <h3>Integrations</h3>
-                        <p>Connect third-party services.</p>
-                    </BitBhTabPanel>
-                </BitBhTabPanels>
-            </BitBhTabGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Manual Activation"
-               Code="@_manualCode"
-               Css="@_manualCss">
-        <Description>
-            With <code>Manual="true"</code> arrow keys only move keyboard focus; press
-            Space or Enter to activate the focused tab. Useful when activating a tab is
-            expensive (loads data, navigates, etc.) — try it: focus a tab, then arrow
-            without selecting.
-        </Description>
-        <LiveContent>
-            <BitBhTabGroup Manual="true" class="tabs">
-                <BitBhTabList class="tab-list">
-                    <BitBhTab class="tab">Inbox</BitBhTab>
-                    <BitBhTab class="tab">Sent</BitBhTab>
-                    <BitBhTab class="tab">Drafts</BitBhTab>
-                    <BitBhTab class="tab">Archive</BitBhTab>
-                </BitBhTabList>
-                <BitBhTabPanels class="tab-panels">
-                    <BitBhTabPanel class="tab-panel"><p>Inbox content</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Sent content</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Drafts content</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Archive content</p></BitBhTabPanel>
-                </BitBhTabPanels>
-            </BitBhTabGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled Tab"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> on individual tabs. Arrow-key navigation
-            skips disabled tabs, and the disabled tab still receives <code>data-disabled</code>
-            for CSS hooks.
-        </Description>
-        <LiveContent>
-            <BitBhTabGroup class="tabs">
-                <BitBhTabList class="tab-list">
-                    <BitBhTab class="tab">Free</BitBhTab>
-                    <BitBhTab class="tab">Pro</BitBhTab>
-                    <BitBhTab class="tab" Disabled="true">Enterprise (coming soon)</BitBhTab>
-                </BitBhTabList>
-                <BitBhTabPanels class="tab-panels">
-                    <BitBhTabPanel class="tab-panel"><p>Free plan features.</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Pro plan features.</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Enterprise plan features.</p></BitBhTabPanel>
-                </BitBhTabPanels>
-            </BitBhTabGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Render Context (state-driven content)"
-               Code="@_renderContextCode"
-               Css="@_renderContextCss">
-        <Description>
-            <code>BitBhTab</code> exposes a <code>BitBhTabRenderContext</code> via
-            <code>Context="t"</code> so you can render badges, icons, or active
-            indicators driven by the tab's own state.
-        </Description>
-        <LiveContent>
-            <BitBhTabGroup class="tabs">
-                <BitBhTabList class="tab-list">
-                    <BitBhTab class="tab">
-                        <Template Context="t">
-                            <span>Messages</span>
-                            <span class="badge @(t.IsSelected ? "badge-active" : "")">12</span>
-                        </Template>
-                    </BitBhTab>
-                    <BitBhTab class="tab">
-                        <Template Context="t">
-                            <span>Mentions</span>
-                            <span class="badge @(t.IsSelected ? "badge-active" : "")">3</span>
-                        </Template>
-                    </BitBhTab>
-                    <BitBhTab class="tab">
-                        <Template Context="t">
-                            <span>All</span>
-                        </Template>
-                    </BitBhTab>
-                </BitBhTabList>
-                <BitBhTabPanels class="tab-panels">
-                    <BitBhTabPanel class="tab-panel"><p>Direct messages</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Mentions of you</p></BitBhTabPanel>
-                    <BitBhTabPanel class="tab-panel"><p>Everything together</p></BitBhTabPanel>
-                </BitBhTabPanels>
-            </BitBhTabGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive selection externally with <code>SelectedIndex</code> and
-            <code>OnSelectedIndexChange</code>. The buttons below select tabs programmatically.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
-                <div class="demo-row">
-                    @for (var i = 0; i < 3; i++)
-                    {
-                        var captured = i;
-                        <BitBhButton OnClick="() => selectedIndex = captured"
-                                 class="@(selectedIndex == captured ? "btn btn-primary" : "btn")">
-                            Select tab @(captured + 1)
-                        </BitBhButton>
-                    }
-                    <span class="demo-output">SelectedIndex: <strong>@selectedIndex</strong></span>
-                </div>
-
-                <BitBhTabGroup SelectedIndex="@selectedIndex"
-                           OnSelectedIndexChange="i => selectedIndex = i"
-                           class="tabs">
-                    <BitBhTabList class="tab-list">
-                        <BitBhTab class="tab">Tab 1</BitBhTab>
-                        <BitBhTab class="tab">Tab 2</BitBhTab>
-                        <BitBhTab class="tab">Tab 3</BitBhTab>
-                    </BitBhTabList>
-                    <BitBhTabPanels class="tab-panels">
-                        <BitBhTabPanel class="tab-panel"><p>First panel</p></BitBhTabPanel>
-                        <BitBhTabPanel class="tab-panel"><p>Second panel</p></BitBhTabPanel>
-                        <BitBhTabPanel class="tab-panel"><p>Third panel</p></BitBhTabPanel>
-                    </BitBhTabPanels>
-                </BitBhTabGroup>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Tabs</h1>
+    <p class="bb-subtitle">An accessible tab group with roving tabindex, full keyboard navigation, and zero visual opinion.</p>
 </div>
+
+<SectionSwitcher Slug="tabs" />
+
+<DemoBlock Title="Basic Tabs"
+           Code="@_basicCode"
+           Css="@_tabsCss">
+    <Description>
+        Click a tab or use Left / Right arrow keys, Home, and End to navigate. Disabled tabs are skipped automatically.
+        ARIA roles, <code>aria-selected</code>, <code>aria-controls</code>, and <code>aria-labelledby</code> are wired automatically.
+    </Description>
+    <LiveContent>
+        <BitBhTabGroup class="tabs">
+            <BitBhTabList class="tab-list">
+                <BitBhTab class="tab">Account</BitBhTab>
+                <BitBhTab class="tab">Profile</BitBhTab>
+                <BitBhTab class="tab">Notifications</BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels class="tab-panels">
+                <BitBhTabPanel class="tab-panel">
+                    <h3>Account</h3>
+                    <p>Manage your account settings and preferences.</p>
+                </BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel">
+                    <h3>Profile</h3>
+                    <p>Update your public profile information.</p>
+                </BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel">
+                    <h3>Notifications</h3>
+                    <p>Choose what alerts you'd like to receive.</p>
+                </BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Vertical Orientation"
+           Code="@_verticalCode"
+           Css="@_verticalCss">
+    <Description>
+        Set <code>Vertical="true"</code> to render tabs in a column.
+        Arrow-key navigation switches to Up / Down, and the root and tablist
+        both emit <code>data-orientation="vertical"</code>. The CSS version keys its column layout off
+        <code>[data-orientation="vertical"]</code>; the Tailwind version writes the column layout
+        straight into the classes (<code>flex-col</code>, <code>border-r-2</code>).
+    </Description>
+    <LiveContent>
+        <BitBhTabGroup Vertical="true" class="tabs tabs-vertical">
+            <BitBhTabList class="tab-list">
+                <BitBhTab class="tab">General</BitBhTab>
+                <BitBhTab class="tab">Security</BitBhTab>
+                <BitBhTab class="tab">Integrations</BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels class="tab-panels">
+                <BitBhTabPanel class="tab-panel">
+                    <h3>General</h3>
+                    <p>Application-wide settings.</p>
+                </BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel">
+                    <h3>Security</h3>
+                    <p>Two-factor auth, sessions, and audit log.</p>
+                </BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel">
+                    <h3>Integrations</h3>
+                    <p>Connect third-party services.</p>
+                </BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Manual Activation"
+           Code="@_manualCode"
+           Css="@_manualCss">
+    <Description>
+        With <code>Manual="true"</code> arrow keys only move keyboard focus; press
+        Space or Enter to activate the focused tab. Useful when activating a tab is
+        expensive (loads data, navigates, etc.) — try it: focus a tab, then arrow
+        without selecting.
+    </Description>
+    <LiveContent>
+        <BitBhTabGroup Manual="true" class="tabs">
+            <BitBhTabList class="tab-list">
+                <BitBhTab class="tab">Inbox</BitBhTab>
+                <BitBhTab class="tab">Sent</BitBhTab>
+                <BitBhTab class="tab">Drafts</BitBhTab>
+                <BitBhTab class="tab">Archive</BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels class="tab-panels">
+                <BitBhTabPanel class="tab-panel"><p>Inbox content</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Sent content</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Drafts content</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Archive content</p></BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled Tab"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> on individual tabs. Arrow-key navigation
+        skips disabled tabs, and the disabled tab still receives <code>data-disabled</code>: the CSS
+        version dims it with a <code>[data-disabled]</code> selector, the Tailwind version with the
+        <code>data-disabled:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhTabGroup class="tabs">
+            <BitBhTabList class="tab-list">
+                <BitBhTab class="tab">Free</BitBhTab>
+                <BitBhTab class="tab">Pro</BitBhTab>
+                <BitBhTab class="tab" Disabled="true">Enterprise (coming soon)</BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels class="tab-panels">
+                <BitBhTabPanel class="tab-panel"><p>Free plan features.</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Pro plan features.</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Enterprise plan features.</p></BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Render Context (state-driven content)"
+           Code="@_renderContextCode"
+           Css="@_renderContextCss">
+    <Description>
+        <code>BitBhTab</code> exposes a <code>BitBhTabRenderContext</code> via
+        <code>Context="t"</code> so you can render badges, icons, or active
+        indicators driven by the tab's own state — here <code>t.IsSelected</code> highlights the
+        count badges.
+    </Description>
+    <LiveContent>
+        <BitBhTabGroup class="tabs">
+            <BitBhTabList class="tab-list">
+                <BitBhTab class="tab">
+                    <Template Context="t">
+                        <span>Messages</span>
+                        <span class="badge @(t.IsSelected ? "badge-active" : "")">12</span>
+                    </Template>
+                </BitBhTab>
+                <BitBhTab class="tab">
+                    <Template Context="t">
+                        <span>Mentions</span>
+                        <span class="badge @(t.IsSelected ? "badge-active" : "")">3</span>
+                    </Template>
+                </BitBhTab>
+                <BitBhTab class="tab">
+                    <Template Context="t">
+                        <span>All</span>
+                    </Template>
+                </BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels class="tab-panels">
+                <BitBhTabPanel class="tab-panel"><p>Direct messages</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Mentions of you</p></BitBhTabPanel>
+                <BitBhTabPanel class="tab-panel"><p>Everything together</p></BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive selection externally with <code>SelectedIndex</code> and
+        <code>OnSelectedIndexChange</code>. The buttons below select tabs programmatically.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
+            <div class="demo-row">
+                @for (var i = 0; i < 3; i++)
+                {
+                    var captured = i;
+                    <BitBhButton OnClick="() => selectedIndex = captured"
+                             class="@(selectedIndex == captured ? "btn btn-primary" : "btn")">
+                        Select tab @(captured + 1)
+                    </BitBhButton>
+                }
+                <span class="demo-output">SelectedIndex: <strong>@selectedIndex</strong></span>
+            </div>
+
+            <BitBhTabGroup SelectedIndex="@selectedIndex"
+                       OnSelectedIndexChange="i => selectedIndex = i"
+                       class="tabs">
+                <BitBhTabList class="tab-list">
+                    <BitBhTab class="tab">Tab 1</BitBhTab>
+                    <BitBhTab class="tab">Tab 2</BitBhTab>
+                    <BitBhTab class="tab">Tab 3</BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="tab-panels">
+                    <BitBhTabPanel class="tab-panel"><p>First panel</p></BitBhTabPanel>
+                    <BitBhTabPanel class="tab-panel"><p>Second panel</p></BitBhTabPanel>
+                    <BitBhTabPanel class="tab-panel"><p>Third panel</p></BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private int selectedIndex;

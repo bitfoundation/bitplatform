@@ -94,10 +94,17 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the switch references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every toggle under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the toggle invalid in the same way. Only the plain ErrorMessage is announced.",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the toggle invalid in the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {
@@ -118,7 +125,7 @@ public partial class BitToggleDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading EditContext the same look and the same aria-invalid attribute a failing data annotation gives it.",
+            Description = "Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading EditContext the same look and the same aria-invalid attribute a failing data annotation gives it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {

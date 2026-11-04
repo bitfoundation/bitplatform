@@ -1,137 +1,156 @@
 ﻿@page "/tw/tooltip"
 
-<PageTitle>Tooltip — bit Bheadless · Tailwind</PageTitle>
+<PageTitle>Tooltip (Tailwind) · Bheadless</PageTitle>
 
-<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
-    <header class="mb-12">
-        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Tooltip</h1>
-        <p class="mt-2 text-zinc-500">A small popup that surfaces information about a control on hover or focus.</p>
-        <TwSectionSwitcher Slug="tooltip" />
-    </header>
+<div class="bb-intro">
+    <h1>Tooltip</h1>
+    <p class="bb-subtitle">A small popup that surfaces information about a control on hover or focus.</p>
+</div>
 
-    <TwDemoBlock Title="Basic Tooltip" Code="@_basicCode">
-        <Description>Hover or focus the trigger to open. Escape, blur, or pointer leave closes.</Description>
-        <LiveContent>
-            <BitBhTooltipProvider DelayDuration="200">
-                <BitBhTooltip class="inline-block">
-                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        + Add to library
-                    </BitBhTooltipTrigger>
-                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md relative">
-                        Adds the item to your library
-                        <BitBhTooltipArrow class="fill-zinc-900 absolute left-1/2 -translate-x-1/2 -bottom-1 data-anchor-bottom:rotate-180 data-anchor-bottom:top-[-4px] data-anchor-bottom:bottom-auto" />
-                    </BitBhTooltipContent>
-                </BitBhTooltip>
-            </BitBhTooltipProvider>
-        </LiveContent>
-    </TwDemoBlock>
+<SectionSwitcher Slug="tooltip" />
 
-    <TwDemoBlock Title="Provider configuration" Code="@_providerCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhTooltipProvider</code> sets <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DelayDuration</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">SkipDelayDuration</code>. Move quickly between triggers — the next one opens instantly.
-        </Description>
-        <LiveContent>
-            <BitBhTooltipProvider DelayDuration="500" SkipDelayDuration="500">
-                <div class="flex items-center gap-2">
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                            Save
-                        </BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
-                            Save changes
-                        </BitBhTooltipContent>
-                    </BitBhTooltip>
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                            Edit
-                        </BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
-                            Edit this item
-                        </BitBhTooltipContent>
-                    </BitBhTooltip>
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                            Delete
-                        </BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
-                            Permanently delete
-                        </BitBhTooltipContent>
-                    </BitBhTooltip>
-                </div>
-            </BitBhTooltipProvider>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Show instantly" Code="@_instantCode">
-        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DelayDuration="0"</code> opens immediately.</Description>
-        <LiveContent>
-            <BitBhTooltip DelayDuration="0" class="inline-block">
+<TwDemoBlock Title="Basic Tooltip" Code="@_basicCode">
+    <Description>
+        Hover or focus the trigger to open the tooltip. Pointer leave, blur, or pressing Escape closes
+        it. <code>aria-describedby</code> wires the content to the trigger automatically.
+        <code>BitBhTooltipArrow</code> draws the pointer: the CSS version adds one to every example on
+        this page, the Tailwind version only to this one.
+    </Description>
+    <LiveContent>
+        <BitBhTooltipProvider DelayDuration="200">
+            <BitBhTooltip class="inline-block">
                 <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                    No delay
+                    + Add to library
                 </BitBhTooltipTrigger>
                 <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                  class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
-                    I open instantly
+                                  class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md relative">
+                    Adds the item to your library
+                    <BitBhTooltipArrow class="fill-zinc-900" />
                 </BitBhTooltipContent>
             </BitBhTooltip>
-        </LiveContent>
-    </TwDemoBlock>
+        </BitBhTooltipProvider>
+    </LiveContent>
+</TwDemoBlock>
 
-    <TwDemoBlock Title="Anchor sides and alignment" Code="@_sidesCode">
-        <Description>The engine flips and shifts to keep the tooltip in view.</Description>
-        <LiveContent>
-            <BitBhTooltipProvider DelayDuration="200">
-                <div class="flex items-center gap-2">
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Top</BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Top</BitBhTooltipContent>
-                    </BitBhTooltip>
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Right</BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Right</BitBhTooltipContent>
-                    </BitBhTooltip>
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Bottom</BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Bottom</BitBhTooltipContent>
-                    </BitBhTooltip>
-                    <BitBhTooltip class="inline-block">
-                        <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Left</BitBhTooltipTrigger>
-                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 6 })"
-                                          class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Left</BitBhTooltipContent>
-                    </BitBhTooltip>
-                </div>
-            </BitBhTooltipProvider>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-        <Description>External <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnOpenChange</code>.</Description>
-        <LiveContent>
+<TwDemoBlock Title="Provider configuration" Code="@_providerCode">
+    <Description>
+        Use <code>BitBhTooltipProvider</code> to set <code>DelayDuration</code> and
+        <code>SkipDelayDuration</code> globally. Hover one trigger then move
+        quickly to the next — the second tooltip opens instantly because
+        the recently-closed window is still active.
+    </Description>
+    <LiveContent>
+        <BitBhTooltipProvider DelayDuration="500" SkipDelayDuration="500">
             <div class="flex items-center gap-2">
-                <BitBhButton OnClick="ToggleControlled"
-                          class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
-                    @(controlledOpen ? "Hide tooltip" : "Show tooltip")
-                </BitBhButton>
-                <BitBhTooltip Open="controlledOpen" OnOpenChange="v => controlledOpen = v" class="inline-block">
-                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">
-                        Target
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Save
                     </BitBhTooltipTrigger>
                     <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
                                       class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
-                        Driven from outside
+                        Save changes
+                    </BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Edit
+                    </BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
+                        Edit this item
+                    </BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Delete
+                    </BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
+                        Permanently delete
                     </BitBhTooltipContent>
                 </BitBhTooltip>
             </div>
-        </LiveContent>
-    </TwDemoBlock>
-</div>
+        </BitBhTooltipProvider>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Show instantly" Code="@_instantCode">
+    <Description>
+        Set <code>DelayDuration="0"</code> on a tooltip to have it open
+        immediately on hover or focus.
+    </Description>
+    <LiveContent>
+        <BitBhTooltip DelayDuration="0" class="inline-block">
+            <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                No delay
+            </BitBhTooltipTrigger>
+            <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                              class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
+                I open instantly
+            </BitBhTooltipContent>
+        </BitBhTooltip>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Anchor sides and alignment" Code="@_sidesCode">
+    <Description>
+        The <code>Anchor</code> on <code>BitBhTooltipContent</code> supports
+        <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code>
+        with optional <code>start</code> / <code>end</code> alignment. The
+        engine flips and shifts to keep the tooltip in view.
+    </Description>
+    <LiveContent>
+        <BitBhTooltipProvider DelayDuration="200">
+            <div class="flex items-center gap-2">
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Top</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Top</BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Right</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Right</BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Bottom</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Bottom</BitBhTooltipContent>
+                </BitBhTooltip>
+                <BitBhTooltip class="inline-block">
+                    <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">Left</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 6 })"
+                                      class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">Left</BitBhTooltipContent>
+                </BitBhTooltip>
+            </div>
+        </BitBhTooltipProvider>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Controlled" Code="@_controlledCode">
+    <Description>
+        Drive the open state externally with <code>Open</code> and
+        <code>OnOpenChange</code>. Useful for guided tours or programmatic
+        highlighting.
+    </Description>
+    <LiveContent>
+        <div class="flex items-center gap-2">
+            <BitBhButton OnClick="ToggleControlled"
+                      class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
+                @(controlledOpen ? "Hide tooltip" : "Show tooltip")
+            </BitBhButton>
+            <BitBhTooltip Open="controlledOpen" OnOpenChange="v => controlledOpen = v" class="inline-block">
+                <BitBhTooltipTrigger class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400">
+                    Target
+                </BitBhTooltipTrigger>
+                <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                  class="z-50 rounded-md bg-zinc-900 px-2.5 py-1 text-xs text-zinc-50 shadow-md">
+                    Driven from outside
+                </BitBhTooltipContent>
+            </BitBhTooltip>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
 @code {
     private bool controlledOpen;

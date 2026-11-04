@@ -448,6 +448,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             Description = "Cascaded description",
             DigitsNormalizer = normalizer,
             EnterKeyHint = "done",
+            ErrorMessageAriaLabel = "Cascaded error",
             FullWidth = true,
             HideInput = true,
             Icon = BitIconInfo.Bi("hash"),
@@ -513,6 +514,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded description", instance.Description);
         Assert.AreEqual((Func<string?, string?>)normalizer, instance.DigitsNormalizer);
         Assert.AreEqual("done", instance.EnterKeyHint);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
         Assert.IsTrue(instance.FullWidth);
         Assert.IsTrue(instance.HideInput);
         Assert.AreEqual(@params.Icon, instance.Icon);

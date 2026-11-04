@@ -40,6 +40,8 @@
     color: var(--color-muted);
 }
 
+.sortable-list[data-disabled] .sortable-title { color: var(--color-muted); }
+
 /* ---- Drag handle (BitBhSortableHandle renders a <button>) ----------------- */
 
 .sortable-handle {
@@ -141,7 +143,8 @@
     display: flex;
     gap: 0.5rem;
     margin: 0;
-    padding: 0;
+    padding: 0.25rem;
+    overflow-x: auto;
     list-style: none;
 }
 

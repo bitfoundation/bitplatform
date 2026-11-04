@@ -80,7 +80,12 @@ public class BitBhTooltip : BitBhComponentBase, IDisposable
 
     protected override void OnInitialized() => _open = DefaultOpen;
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        // A tooltip removed while open must not keep the others opening without their delay.
+        ProviderContext?.NotifyDisposed(this);
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -134,8 +139,9 @@ public class BitBhTooltip : BitBhComponentBase, IDisposable
             Timer.Cancel();
             return Task.CompletedTask;
         }
-        // Skip the delay when another tooltip closed a moment ago.
-        var delay = ProviderContext?.IsRecentlyClosed() == true ? 0 : EffectiveDelay;
+        // Skip the delay when another tooltip is still open (its close waits for the pointer a moment) or
+        // closed a moment ago.
+        var delay = ProviderContext?.SkipsDelay() == true ? 0 : EffectiveDelay;
         Timer.Schedule(delay, () => SetOpenAsync(true, delayed: delay > 0));
         return Task.CompletedTask;
     }
@@ -161,8 +167,10 @@ public class BitBhTooltip : BitBhComponentBase, IDisposable
         _delayedOpen = value && delayed;
         if (!IsProvided(nameof(Open)))
             _open = value;
-        if (!value)
-            ProviderContext?.NotifyClosed();
+        if (value)
+            ProviderContext?.NotifyOpened(this);
+        else
+            ProviderContext?.NotifyClosed(this);
 
         await OpenChanged.InvokeAsync(value);
         await OnOpenChange.InvokeAsync(value);

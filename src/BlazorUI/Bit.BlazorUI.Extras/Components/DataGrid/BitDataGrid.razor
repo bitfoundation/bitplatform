@@ -696,15 +696,18 @@
     {
         var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
         var collapsed = IsGroupCollapsed(group);
+        // Written on every render, like the cells, rather than read off the KeyText the view was built with: a new
+        // ValueText or a new UI culture for a translated enum name reaches the header together with the cells.
+        var keyText = groupCol is null ? group.KeyText : groupCol.FormatValue(group.Key);
         <div class="bit-dtg-row bit-dtg-group-row" role="row" aria-rowindex="@GroupAriaRowIndex(group)" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
             <div class="bit-dtg-group-cell @Classes?.GroupRow" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
                 <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn"
-                        aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, group.KeyText))"
+                        aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, keyText))"
                         aria-expanded="@(collapsed ? "false" : "true")"
                         @onclick="() => ToggleGroup(group)">
                     <span class="@(collapsed ? "bit-dtg-dir-glyph" : null)" aria-hidden="true">@(collapsed ? "▸" : "▾")</span>
                 </button>
-                <strong class="bit-dtg-group-title">@(groupCol?.DisplayTitle): @group.KeyText</strong>
+                <strong class="bit-dtg-group-title">@(groupCol?.DisplayTitle): @keyText</strong>
                 <span class="bit-dtg-group-count">(@group.Count)</span>
                 @foreach (var agg in group.Aggregates)
                 {
@@ -909,8 +912,8 @@
             <select disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString()?.ToLowerInvariant())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">@Strings.FilterAllText</option>
-                <option value="true">@Strings.BooleanTrueText</option>
-                <option value="false">@Strings.BooleanFalseText</option>
+                <option value="true">@(column.BooleanText(true) ?? Strings.BooleanTrueText)</option>
+                <option value="false">@(column.BooleanText(false) ?? Strings.BooleanFalseText)</option>
             </select>
         }
         else if (type is BitDataGridColumnDataType.Enum)
@@ -918,9 +921,9 @@
             <select disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">@Strings.FilterAllText</option>
-                @foreach (var name in EnumNames(column))
+                @foreach (var (name, text) in column.EnumOptions())
                 {
-                    <option value="@name">@name</option>
+                    <option value="@name">@text</option>
                 }
             </select>
         }
@@ -1067,12 +1070,6 @@
                (op, value) => SetFilterAsync(column, op, value),
                (from, toExclusive) => SetRangeFilterAsync(column, from, toExclusive),
                () => ClearFilterAsync(column.Id));
-
-    private static IEnumerable<string> EnumNames(BitDataGridColumn<TItem> column)
-    {
-        var t = column.Accessor?.UnderlyingType;
-        return t is { IsEnum: true } ? Enum.GetNames(t) : Enumerable.Empty<string>();
-    }
 
     private static string? FormatFilterNumber(object? value)
         => value is IFormattable f ? f.ToString(null, System.Globalization.CultureInfo.InvariantCulture) : value?.ToString();

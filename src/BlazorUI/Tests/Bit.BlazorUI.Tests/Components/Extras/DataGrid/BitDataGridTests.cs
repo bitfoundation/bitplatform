@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -4990,5 +4991,460 @@ public class BitDataGridTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(reads + 1, component.Instance.Reads));
         Assert.AreEqual(0, component.Instance.Grid!.ActiveSorts.Count);
+    }
+
+
+    // ------------------------------------------------------------ Enum text
+
+    public enum Fruit
+    {
+        [Display(Name = "Green apple")] Apple,
+        Banana,
+        [Display(Name = nameof(FruitTexts.Cherry), ResourceType = typeof(FruitTexts))] Cherry,
+    }
+
+    // Stands in for a strongly typed resource class: what a [Display] with a ResourceType reads its name from.
+    public static class FruitTexts
+    {
+        public static string Cherry => "Cherry";
+    }
+
+    public enum Tide
+    {
+        [Display(Name = nameof(TideTexts.High), ResourceType = typeof(TideTexts))] High,
+        Low,
+    }
+
+    // A resource whose text the one test reading a name off it in another "culture" changes, so no other test reads it.
+    public static class TideTexts
+    {
+        public static string High { get; set; } = "High";
+    }
+
+    public enum Broken
+    {
+        // A resource class whose property is not public, which a [Display] cannot read a name off.
+        [Display(Name = "Hidden", ResourceType = typeof(HiddenTexts))] Hidden,
+        // A resource class without the property named.
+        [Display(Name = "Missing", ResourceType = typeof(FruitTexts))] Missing,
+        [Display(Name = "")] Blank,
+    }
+
+    public static class HiddenTexts
+    {
+        private static string Hidden => "Hidden text";
+    }
+
+    [Flags]
+    public enum Access
+    {
+        None = 0,
+        [Display(Name = "Read access")] Read = 1,
+        [Display(Name = "Write access")] Write = 2,
+        Delete = 4,
+    }
+
+    public enum Switch
+    {
+        Off = 0,
+        [Display(Name = "Active")] Active = 1,
+        Enabled = 1,
+    }
+
+    public class EnumRow<TValue>
+    {
+        public int Id { get; set; }
+        public TValue Kind { get; set; } = default!;
+        public string Code { get; set; } = string.Empty;
+    }
+
+    private IRenderedComponent<BitDataGrid<EnumRow<TValue>>> RenderEnumGrid<TValue>(
+        IEnumerable<TValue> values,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<EnumRow<TValue>>>>? configure = null,
+        IReadOnlyDictionary<string, object?>? column = null,
+        bool queryable = false)
+    {
+        var rows = values.Select((v, i) => new EnumRow<TValue> { Id = i + 1, Kind = v, Code = $"C{i + 1}" }).ToList();
+
+        return RenderComponent<BitDataGrid<EnumRow<TValue>>>(parameters =>
+        {
+            parameters.Add(p => p.Items, queryable ? rows.AsQueryable() : rows);
+            parameters.Add(p => p.ChildContent, KindColumn<TValue>(column));
+            configure?.Invoke(parameters);
+        });
+    }
+
+    private static RenderFragment KindColumn<TValue>(IReadOnlyDictionary<string, object?>? parameters) => builder =>
+    {
+        builder.OpenComponent<BitDataGridColumn<EnumRow<TValue>>>(0);
+        builder.AddComponentParameter(1, "Field", "Kind");
+        foreach (var (name, value) in parameters ?? new Dictionary<string, object?>())
+        {
+            builder.AddComponentParameter(2, name, value);
+        }
+        builder.CloseComponent();
+    };
+
+    private IRenderedComponent<BitDataGrid<EnumRow<Fruit>>> RenderFruitGrid(
+        Func<object, string?>? valueText = null,
+        Action<ComponentParameterCollectionBuilder<BitDataGrid<EnumRow<Fruit>>>>? configure = null)
+        => RenderEnumGrid([Fruit.Apple, Fruit.Banana, Fruit.Cherry], configure,
+                          valueText is null ? null : new Dictionary<string, object?> { ["ValueText"] = valueText });
+
+    private static string[] CellTexts<TItem>(IRenderedComponent<BitDataGrid<TItem>> component)
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row):not(.bit-dtg-group-row)")
+            .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
+            .ToArray();
+
+    private static string[] GroupTitles<TItem>(IRenderedComponent<BitDataGrid<TItem>> component)
+        => component.FindAll(".bit-dtg-group-title").Select(t => t.TextContent.Trim()).ToArray();
+
+    private static string[] OptionTexts(IElement select)
+        => select.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+
+    private static string[] OptionValues(IElement select)
+        => select.QuerySelectorAll("option").Select(o => o.GetAttribute("value") ?? string.Empty).ToArray();
+
+    private static async Task<string> SheetXmlAsync<TItem>(IRenderedComponent<BitDataGrid<TItem>> component)
+    {
+        byte[] bytes = null!;
+        await component.InvokeAsync(async () => bytes = await component.Instance.ToExcelAsync());
+        using var stream = new System.IO.MemoryStream(bytes);
+        using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
+        using var reader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        return reader.ReadToEnd();
+    }
+
+    [TestMethod]
+    public void EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheCellsAndTheFilter()
+    {
+        var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Filterable, true));
+
+        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, CellTexts(component));
+
+        var filter = component.Find("select.bit-dtg-filter-input");
+        CollectionAssert.AreEqual(new[] { "All", "Green apple", "Banana", "Cherry" }, OptionTexts(filter));
+        // The values stay the members' names, which is what the filter parses back.
+        CollectionAssert.AreEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
+
+        filter.Change("Apple");
+
+        CollectionAssert.AreEqual(new[] { "Green apple" }, CellTexts(component));
+        Assert.AreEqual(Fruit.Apple, component.Instance.ActiveFilters.Single().Value);
+    }
+
+    [TestMethod]
+    public void EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheInlineEditor()
+    {
+        var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Editable, true));
+
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+
+        var editor = component.Find("select.bit-dtg-editor");
+        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, OptionTexts(editor));
+        CollectionAssert.AreEqual(new[] { "Apple", "Banana", "Cherry" }, OptionValues(editor));
+        Assert.AreEqual("Apple", editor.GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheTooltipsAndTheRowLabels()
+    {
+        var component = RenderFruitGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCellTooltips, true);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+        });
+
+        var cells = component.FindAll(".bit-dtg-body .bit-dtg-cell[title]");
+        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, cells.Select(c => c.GetAttribute("title")).ToArray());
+
+        var checkboxes = component.FindAll(".bit-dtg-body input[type=checkbox]");
+        Assert.AreEqual("Select row: Green apple", checkboxes[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task EnumColumnShouldShowItsMembersByTheirDisplayNamesInTheGroupHeaders()
+    {
+        var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Groupable, true));
+
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
+
+        CollectionAssert.AreEqual(new[] { "Kind: Green apple", "Kind: Banana", "Kind: Cherry" }, GroupTitles(component));
+        StringAssert.Contains(component.Find(".bit-dtg-group-cell button").GetAttribute("aria-label"), "Green apple");
+    }
+
+    [TestMethod]
+    public void MinAndMaxAggregatesOfAnEnumColumnShouldShowTheMembersTheWayTheCellsDo()
+    {
+        var min = RenderEnumGrid([Fruit.Banana, Fruit.Apple, Fruit.Cherry], parameters => parameters.Add(p => p.ShowFooter, true),
+            column: new Dictionary<string, object?> { ["Aggregate"] = BitDataGridAggregateType.Min });
+
+        Assert.AreEqual("min Green apple", min.Find(".bit-dtg-footer-row").TextContent.Trim());
+
+        var max = RenderEnumGrid([Fruit.Banana, Fruit.Apple], parameters => parameters.Add(p => p.ShowFooter, true),
+            column: new Dictionary<string, object?>
+            {
+                ["Aggregate"] = BitDataGridAggregateType.Max,
+                ["ValueText"] = (Func<object, string?>)(v => $"Fruit:{v}"),
+            });
+
+        Assert.AreEqual("max Fruit:Banana", max.Find(".bit-dtg-footer-row").TextContent.Trim());
+    }
+
+    [TestMethod, DoNotParallelize]
+    public async Task EnumDisplayNameReadOffAResourceTypeShouldFollowTheResource()
+    {
+        var original = TideTexts.High;
+
+        try
+        {
+            var component = RenderEnumGrid([Tide.High, Tide.Low], parameters =>
+            {
+                parameters.Add(p => p.Filterable, true);
+                parameters.Add(p => p.Groupable, true);
+            });
+            await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
+
+            Assert.AreEqual("High", CellTexts(component)[0]);
+            Assert.AreEqual("Kind: High", GroupTitles(component)[0]);
+
+            // A resource answers in the UI culture of the moment, so the name is read again on every render: the cells,
+            // the options and the group headers alike.
+            TideTexts.High = "Hoch";
+            component.Render();
+
+            Assert.AreEqual("Hoch", CellTexts(component)[0]);
+            Assert.AreEqual("Hoch", OptionTexts(component.Find("select.bit-dtg-filter-input"))[1]);
+            Assert.AreEqual("Kind: Hoch", GroupTitles(component)[0]);
+        }
+        finally
+        {
+            TideTexts.High = original;
+        }
+    }
+
+    [TestMethod]
+    public void EnumMemberWhoseDisplayNameCannotBeReadShouldKeepItsOwnName()
+    {
+        var component = RenderEnumGrid([Broken.Hidden, Broken.Missing, Broken.Blank], parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        });
+
+        CollectionAssert.AreEqual(new[] { "Hidden", "Missing", "Blank" }, CellTexts(component));
+        CollectionAssert.AreEqual(new[] { "All", "Hidden", "Missing", "Blank" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
+        StringAssert.Contains(component.Instance.ToCsv(), "Hidden");
+
+        component.Find(".bit-dtg-search-input").Input("hid");
+        CollectionAssert.AreEqual(new[] { "Hidden" }, CellTexts(component));
+    }
+
+    [TestMethod]
+    public void FlagsEnumColumnShouldNameEachMemberOfACombination()
+    {
+        var component = RenderEnumGrid([Access.None, Access.Read, Access.Read | Access.Write, Access.Read | Access.Delete, (Access)8]);
+
+        CollectionAssert.AreEqual(new[] { "None", "Read access", "Read access, Write access", "Read access, Delete", "8" }, CellTexts(component));
+    }
+
+    [TestMethod]
+    public void AliasedEnumMembersShouldKeepTheirOwnTextsInTheOptions()
+    {
+        var component = RenderEnumGrid([Switch.Off, Switch.Active], parameters => parameters.Add(p => p.Filterable, true));
+
+        var filter = component.Find("select.bit-dtg-filter-input");
+        // Two members of one value: each option shows its own member, or the two could not be told apart.
+        CollectionAssert.AreEquivalent(new[] { "All", "Off", "Active", "Enabled" }, OptionTexts(filter));
+        CollectionAssert.AreEquivalent(new[] { "", "Off", "Active", "Enabled" }, OptionValues(filter));
+    }
+
+    [TestMethod]
+    public void FormatShouldWriteAnEnumValueInPlaceOfItsDisplayName()
+    {
+        var component = RenderEnumGrid([Fruit.Apple, Fruit.Cherry], parameters => parameters.Add(p => p.Filterable, true),
+            new Dictionary<string, object?> { ["Format"] = "D" });
+
+        CollectionAssert.AreEqual(new[] { "0", "2" }, CellTexts(component));
+
+        var filter = component.Find("select.bit-dtg-filter-input");
+        CollectionAssert.AreEqual(new[] { "All", "0", "1", "2" }, OptionTexts(filter));
+        CollectionAssert.AreEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
+    }
+
+    [TestMethod]
+    public async Task EnumColumnShouldExportItsMembersByTheirOwnNames()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
+
+        foreach (var valueText in new Func<object, string?>?[] { null, v => $"Fruit:{v}" })
+        {
+            var component = RenderFruitGrid(valueText, parameters => parameters.Add(p => p.ClipboardCopy, true));
+
+            // The cells show the members by their text, while a file keeps the values an app reads back.
+            Assert.AreEqual(valueText is null ? "Green apple" : "Fruit:Apple", CellTexts(component)[0]);
+
+            Assert.AreEqual("Kind\r\nApple\r\nBanana\r\nCherry\r\n", component.Instance.ToCsv());
+
+            var row = component.Instance.Items!.First();
+            await component.InvokeAsync(() => component.Instance.CopyToClipboardAsync(row));
+            var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Last().Arguments[0]!;
+            Assert.AreEqual("Kind\r\nApple\r\n", payload);
+
+            var sheet = await SheetXmlAsync(component);
+            StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Apple</t>");
+            Assert.IsFalse(sheet.Contains("Green apple") || sheet.Contains("Fruit:"), "an export must keep the members' names");
+        }
+    }
+
+    [TestMethod]
+    public async Task ValueTextShouldNotBeHandedTheExportValue()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
+
+        // A ValueText written for the column's own values: handed anything else, it would throw.
+        var component = RenderEnumGrid([Fruit.Apple, Fruit.Banana], parameters =>
+        {
+            parameters.Add(p => p.ClipboardCopy, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        }, new Dictionary<string, object?>
+        {
+            ["ValueText"] = (Func<object, string?>)(v => ((Fruit)v).ToString().ToUpperInvariant()),
+            ["ExportValue"] = (Func<EnumRow<Fruit>, object?>)(r => r.Code),
+        });
+
+        CollectionAssert.AreEqual(new[] { "APPLE", "BANANA" }, CellTexts(component));
+        Assert.AreEqual("Kind\r\nC1\r\nC2\r\n", component.Instance.ToCsv());
+
+        await component.InvokeAsync(() => component.Instance.CopyToClipboardAsync(component.Instance.Items!.First()));
+        Assert.AreEqual("Kind\r\nC1\r\n", (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!);
+        StringAssert.Contains(await SheetXmlAsync(component), "<t xml:space=\"preserve\">C2</t>");
+
+        // The quick search of a column with an ExportValue matches that value.
+        component.Find(".bit-dtg-search-input").Input("c2");
+        CollectionAssert.AreEqual(new[] { "BANANA" }, CellTexts(component));
+    }
+
+    [TestMethod]
+    public void ValueTextShouldWriteTheValueWhereverTheGridShowsIt()
+    {
+        string? Translate(object value) => value is Fruit.Banana ? null : $"Fruit:{value}";
+
+        var component = RenderFruitGrid(Translate, parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        });
+
+        // Banana is left to the default text by the null the delegate returns for it.
+        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Banana", "Fruit:Cherry" }, CellTexts(component));
+        CollectionAssert.AreEqual(new[] { "All", "Fruit:Apple", "Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
+
+        // The quick search matches the text the cells show, not the members' names.
+        component.Find(".bit-dtg-search-input").Input("fruit:ch");
+        CollectionAssert.AreEqual(new[] { "Fruit:Cherry" }, CellTexts(component));
+    }
+
+    [TestMethod]
+    public void ValueTextShouldWriteTheOptionsOfTheEnumEditor()
+    {
+        var component = RenderFruitGrid(value => $"Fruit:{value}", parameters => parameters.Add(p => p.Editable, true));
+
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+
+        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Fruit:Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-editor")));
+    }
+
+    [TestMethod]
+    public async Task AnotherValueTextShouldReachTheGroupHeadersAndTheQuickSearch()
+    {
+        var component = RenderFruitGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        });
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
+        Assert.AreEqual("Kind: Green apple", GroupTitles(component)[0]);
+
+        // Nothing shows "fruit:b" yet.
+        component.Find(".bit-dtg-search-input").Input("fruit:b");
+        Assert.AreEqual(0, GroupTitles(component).Length);
+
+        // The search the view was worked out with is worked out again with the new text, and the header writes it.
+        component.Render(parameters => parameters.Add(p => p.ChildContent,
+            KindColumn<Fruit>(new Dictionary<string, object?> { ["ValueText"] = (Func<object, string?>)(v => $"Fruit:{v}") })));
+
+        CollectionAssert.AreEqual(new[] { "Kind: Fruit:Banana" }, GroupTitles(component));
+    }
+
+    [TestMethod]
+    public void QueryableQuickSearchShouldMatchTheMembersOfAnEnumColumnByTheirText()
+    {
+        var component = RenderEnumGrid([Fruit.Apple, Fruit.Banana, Fruit.Cherry], parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        }, queryable: true);
+
+        component.Find(".bit-dtg-search-input").Input("green");
+        CollectionAssert.AreEqual(new[] { "Green apple" }, CellTexts(component));
+
+        component.Find(".bit-dtg-search-input").Input("an");
+        CollectionAssert.AreEqual(new[] { "Banana" }, CellTexts(component));
+
+        // A term no member's text holds matches no row, rather than leaving the search off.
+        component.Find(".bit-dtg-search-input").Input("zzz");
+        Assert.AreEqual(0, CellTexts(component).Length);
+    }
+
+    [TestMethod]
+    public void BooleanColumnShouldOfferTheValueTextOfTrueAndFalse()
+    {
+        var yesNo = new Dictionary<string, object?> { ["ValueText"] = (Func<object, string?>)(v => (bool)v ? "Yes" : "No") };
+
+        var filtered = RenderEnumGrid([true, false], parameters => parameters.Add(p => p.Filterable, true), yesNo);
+        CollectionAssert.AreEqual(new[] { "Yes", "No" }, CellTexts(filtered));
+        CollectionAssert.AreEqual(new[] { "All", "Yes", "No" }, OptionTexts(filtered.Find("select.bit-dtg-filter-input")));
+
+        var edited = RenderEnumGrid(new bool?[] { true, null }, parameters => parameters.Add(p => p.Editable, true), yesNo);
+        edited.FindAll(".bit-dtg-cell-command button")[0].Click();
+        CollectionAssert.AreEqual(new[] { "", "Yes", "No" }, OptionTexts(edited.Find("select.bit-dtg-editor-tristate")));
+    }
+
+    [TestMethod]
+    public async Task TextFilterOfAnInMemorySourceShouldMatchTheValueText()
+    {
+        var component = RenderEnumGrid(["X1", "Y2"], column: new Dictionary<string, object?>
+        {
+            ["ValueText"] = (Func<object, string?>)(v => (string)v == "X1" ? "Express" : null),
+        });
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Kind", BitDataGridFilterOperator.Contains, "express"));
+        CollectionAssert.AreEqual(new[] { "Express" }, CellTexts(component));
+
+        // A value the delegate leaves to its own text is matched by it.
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Kind", BitDataGridFilterOperator.StartsWith, "y"));
+        CollectionAssert.AreEqual(new[] { "Y2" }, CellTexts(component));
+    }
+
+    [TestMethod]
+    public void EnumDisplayNamesShouldBeReadOnceAndSafely()
+    {
+        Assert.AreEqual("Green apple", Fruit.Apple.FindDisplayName());
+        Assert.IsNull(Fruit.Banana.FindDisplayName());
+        Assert.AreEqual("Banana", Fruit.Banana.GetDisplayName());
+
+        Assert.IsNull(Broken.Hidden.FindDisplayName(), "a resource property that is not public gives no name, rather than throwing");
+        Assert.IsNull(Broken.Missing.FindDisplayName(), "a resource type without the property gives no name, rather than throwing");
+        Assert.IsNull(Broken.Blank.FindDisplayName(), "an empty name is no name");
+        Assert.AreEqual("Blank", Broken.Blank.GetDisplayName());
+
+        Assert.AreEqual("Read access, Write access", (Access.Read | Access.Write).FindDisplayName());
+        Assert.IsNull((Access.Delete | (Access)8).FindDisplayName(), "a value Enum writes as a number has no member to name");
+        Assert.AreSame(EnumExtensions.GetEnumMembers(typeof(Fruit)), EnumExtensions.GetEnumMembers(typeof(Fruit)), "the members of a type are read once");
     }
 }

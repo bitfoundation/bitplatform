@@ -101,7 +101,16 @@ public class BitBhDisclosure : BitBhComponentBase
 
     private Task ToggleAsync() => Disabled ? Task.CompletedTask : SetOpenAsync(!IsOpen);
 
-    private Task CloseAsync() => IsOpen ? SetOpenAsync(false) : Task.CompletedTask;
+    // Closing from inside (a close button in the panel) hides the focused element, which would drop the
+    // focus to <body>: it goes back to the button instead, as it would for a dialog.
+    private async Task CloseAsync()
+    {
+        if (!IsOpen) return;
+        var focusInside = await Interop.ContainsFocusAsync($"{ComponentId}-panel");
+        await SetOpenAsync(false);
+        if (focusInside)
+            await Interop.FocusAsync($"{ComponentId}-button");
+    }
 
     private async Task SetOpenAsync(bool value)
     {

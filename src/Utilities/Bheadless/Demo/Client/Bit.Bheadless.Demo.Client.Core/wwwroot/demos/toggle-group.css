@@ -82,6 +82,7 @@
 }
 
 .toggle-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+.toggle-group[data-disabled] .toggle-item[data-disabled] { opacity: 1; }
 
 .toggle-group[data-orientation="vertical"] .toggle-item { justify-content: flex-start; }
 

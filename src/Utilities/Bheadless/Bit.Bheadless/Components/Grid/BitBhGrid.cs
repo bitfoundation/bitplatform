@@ -108,6 +108,10 @@ public class BitBhGrid : BitBhComponentBase
         if (DefaultExpandedKeys is not null) _expanded = new HashSet<string>(DefaultExpandedKeys, StringComparer.Ordinal);
     }
 
+    // A render from the parent may have re-sorted the rows: @key moves their elements without re-registering
+    // them, so the keyboard would walk the old order.
+    protected override void OnParametersSet() => Context.Rows.Invalidate();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await Context.Rows.EnsureOrderAsync(Interop);

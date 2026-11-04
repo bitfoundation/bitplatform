@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Bit.Blow.Demo.Client.Examples;
+namespace Bit.Utilities.Demo;
 
 public static partial class SyntaxHighlighter
 {

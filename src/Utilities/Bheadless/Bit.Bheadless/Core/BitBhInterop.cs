@@ -269,6 +269,14 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
 
     // ── Hotkeys ──────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Whether the browser runs on an Apple platform, where a <c>"mod"</c> hotkey is Cmd rather than Ctrl - for
+    /// labelling a shortcut the way the reader's keyboard says it (⌘K or Ctrl+K). False before the page is
+    /// interactive (prerendering has no browser to ask).
+    /// </summary>
+    public ValueTask<bool> IsApplePlatformAsync()
+        => InvokeAsync<bool>("keys.isApple");
+
     internal ValueTask<int> HotkeyRegisterAsync(object dotNetRef, string[] combos, bool allowInInputs)
         => InvokeAsync<int>("hotkeys.register", dotNetRef, combos, new Dictionary<string, object?> { ["allowInInputs"] = allowInInputs });
 
