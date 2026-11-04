@@ -160,10 +160,17 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for an ErrorMessageTemplate, which is free to render anything at all and so has no text of its own. It is announced through the live region the moment the template shows up, in place of the default \"Invalid input\", and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every search box under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way.",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {

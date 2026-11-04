@@ -3677,6 +3677,7 @@ public class BitDatePickerTests : BunitTestContext
             DateFormat = "yyyy/MM/dd",
             DisableFuture = true,
             DropDirection = BitDropDirection.All,
+            ErrorMessageAriaLabel = "Cascaded error",
             FirstDayOfWeek = DayOfWeek.Monday,
             FixedWeeks = true,
             GoToTodayTitle = "Cascaded today",
@@ -3753,6 +3754,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual("yyyy/MM/dd", instance.DateFormat);
         Assert.IsTrue(instance.DisableFuture);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
         Assert.AreEqual(DayOfWeek.Monday, instance.FirstDayOfWeek);
         Assert.IsTrue(instance.FixedWeeks);
         Assert.AreEqual("Cascaded today", instance.GoToTodayTitle);
@@ -4754,6 +4756,70 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual("Taken", component.Find(".bit-dtp-erm .custom-error").TextContent);
         Assert.IsTrue(component.Find(".bit-dtp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-dtp-inp").GetAttribute("aria-invalid"));
+
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // staying silent and leaving the field sounding accepted.
+        Assert.AreEqual("Invalid input", component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-dtp-erm").Id, component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "این روز تعطیل است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class=\"warning-icon\"></i>");
+        });
+
+        var label = component.Find($"#{component.Find(".bit-dtp-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("این روز تعطیل است", component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.AreEqual("این روز تعطیل است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-dtp-sdt"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-dtp-erm").Id, component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitDatePickerBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class=\"warning-icon\"></i>");
+        });
+
+        Assert.AreEqual("Invalid input", component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-dtp-erm").Id, component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerInvalidShouldOnlyBeAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.AreEqual(string.Empty, component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-dtp-inp").HasAttribute("aria-describedby"));
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "تاریخ نامعتبر"));
+
+        Assert.AreEqual("تاریخ نامعتبر", component.Find(".bit-dtp > [role=status]").TextContent.Trim());
+        Assert.AreEqual("تاریخ نامعتبر", component.Find($"#{component.Find(".bit-dtp-inp").GetAttribute("aria-describedby")}").TextContent);
     }
 
     [TestMethod]

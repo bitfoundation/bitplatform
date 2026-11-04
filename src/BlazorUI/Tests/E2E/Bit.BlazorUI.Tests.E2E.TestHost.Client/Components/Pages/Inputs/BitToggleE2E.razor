@@ -182,7 +182,8 @@
                    @bind-Value="_twoFactor" />
     </div>
     <BitToggle Id="tg-invalid" Label="Marked invalid, explained elsewhere" Invalid />
-    <BitToggle Id="tg-error-tpl" Label="Public profile" OnText="Anyone can see it">
+    <BitToggle Id="tg-error-tpl" Label="Public profile" OnText="Anyone can see it"
+               ErrorMessageAriaLabel="This conflicts with your privacy settings.">
         <ErrorMessageTemplate>
             This conflicts with your <a id="error-tpl-link" href="#validation">privacy settings</a>.
         </ErrorMessageTemplate>

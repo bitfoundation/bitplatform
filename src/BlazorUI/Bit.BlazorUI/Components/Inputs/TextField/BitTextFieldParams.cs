@@ -157,6 +157,17 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     public string? EnterKeyHint { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every text field the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// fields announce it too. A reason that fits one field alone belongs on that field.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Forces the text field fill 100% of its container width.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -518,6 +529,11 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         if (EnterKeyHint.HasValue())
         {
             bitTextField.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint, static t => t.EnterKeyHint, static (t, v) => t.EnterKeyHint = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitTextField.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static t => t.ErrorMessageAriaLabel, static (t, v) => t.ErrorMessageAriaLabel = v);
         }
 
         if (FullWidth.HasValue)

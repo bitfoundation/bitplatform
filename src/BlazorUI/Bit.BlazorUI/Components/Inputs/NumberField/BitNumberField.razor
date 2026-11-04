@@ -405,6 +405,13 @@
         </div>
     }
 
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-nfl-dsc">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription)
     {
         <div id="@_descriptionId"
@@ -431,6 +438,9 @@
     @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
        typed, only be announced once the reader is done with the current sentence. It is rendered whether or
        not it has anything to say, because a live region that arrives with its text already in it is the one
-       thing screen readers are known to miss. *@
-    <span role="status" class="bit-nfl-dsc">@LiveText</span>
+       thing screen readers are known to miss.
+       The text sits in a keyed element so that a rejection can be announced again while its text stays the
+       same (see OnParametersSet): replacing the element is a change of the region, rewriting a text with the
+       same text is not. *@
+    <span role="status" class="bit-nfl-dsc"><span @key="_liveTextKey">@LiveText</span></span>
 </div>

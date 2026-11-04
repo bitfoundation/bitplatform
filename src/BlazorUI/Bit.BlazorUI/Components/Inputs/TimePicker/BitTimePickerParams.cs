@@ -155,6 +155,9 @@ public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentP
     /// <inheritdoc cref="BitTimePicker.DropDirection"/>
     public BitDropDirection? DropDirection { get; set; }
 
+    /// <inheritdoc cref="BitTimePicker.ErrorMessageAriaLabel"/>
+    public string? ErrorMessageAriaLabel { get; set; }
+
     /// <inheritdoc cref="BitTimePicker.HasBorder"/>
     public bool? HasBorder { get; set; }
 
@@ -516,6 +519,11 @@ public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentP
         if (DropDirection.HasValue)
         {
             bitTimePicker.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static t => t.DropDirection, static (t, v) => t.DropDirection = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitTimePicker.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static t => t.ErrorMessageAriaLabel, static (t, v) => t.ErrorMessageAriaLabel = v);
         }
 
         if (HasBorder.HasValue)

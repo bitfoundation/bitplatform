@@ -396,8 +396,9 @@
             any <BitLink Href="#example10">description</BitLink>. A message implies <b>Invalid</b>, so the
             flag on its own is for marking a toggle whose explanation lives somewhere else. It is announced
             by a live region the moment it appears, rather than waiting for the next focus.
-            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead; set the plain message alongside
-            it to keep the announcement.
+            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no text a screen
+            reader can be handed, so it is announced as a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b>
+            says what it shows - which is also what the switch is described by on every later focus.
         </div>
         <br />
         <div style="max-width:32rem">
@@ -409,7 +410,8 @@
             <br />
             <BitToggle Label="Marked invalid, explained elsewhere" Invalid />
             <br />
-            <BitToggle Label="Public profile" OnText="Anyone can see it">
+            <BitToggle Label="Public profile" OnText="Anyone can see it"
+                       ErrorMessageAriaLabel="This conflicts with your privacy settings.">
                 <ErrorMessageTemplate>
                     This conflicts with your
                     <BitLink Href="https://bitplatform.dev" Target="_blank">privacy settings</BitLink>.

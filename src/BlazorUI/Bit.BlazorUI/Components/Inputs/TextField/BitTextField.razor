@@ -274,6 +274,13 @@
         </div>
     }
 
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-tfl-dsc">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription || ShowCount)
     {
         <div style="@Styles?.Footer" class="bit-tfl-ftr @Classes?.Footer">

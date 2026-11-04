@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -2653,6 +2654,69 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-erm").InnerHtml.MarkupMatches("<b>nope</b>");
         Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
+
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // falling back to the time, which would leave the picker sounding accepted.
+        Assert.AreEqual("Invalid input", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-tpc-erm").Id, component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.ErrorMessageAriaLabel, "این ساعت رزرو شده است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, builder => builder.AddMarkupContent(0, "<i class=\"warning-icon\"></i>"));
+        });
+
+        var label = component.Find($"#{component.Find(".bit-tpc-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("این ساعت رزرو شده است", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.AreEqual("این ساعت رزرو شده است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-tpc-vhd"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-tpc-erm").Id, component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitTimePickerBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, builder => builder.AddMarkupContent(0, "<b>nope</b>"));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-tpc-erm").Id, component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerInvalidShouldOnlyBeAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        // The flag on its own has nothing to say, so the region keeps saying what the picker holds.
+        Assert.AreEqual("10:30", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-tpc-inp").HasAttribute("aria-describedby"));
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "ساعت نامعتبر"));
+
+        Assert.AreEqual("ساعت نامعتبر", component.Find("div.bit-tpc-vhd[aria-live]").TextContent.Trim());
+        Assert.AreEqual("ساعت نامعتبر", component.Find($"#{component.Find(".bit-tpc-inp").GetAttribute("aria-describedby")}").TextContent);
     }
 
     [TestMethod]

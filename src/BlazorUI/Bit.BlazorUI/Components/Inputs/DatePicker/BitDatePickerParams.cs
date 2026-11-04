@@ -232,6 +232,17 @@ public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComp
     public BitDropDirection? DropDirection { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every DatePicker the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// DatePickers announce it too. A reason that fits one DatePicker alone belongs on that DatePicker.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Overrides the first day of the week of the day picker. If not set, the first day of the week
     /// of the <see cref="Culture"/> is used.
     /// </summary>
@@ -1024,6 +1035,11 @@ public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComp
         if (DropDirection.HasValue)
         {
             bitDatePicker.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static d => d.DropDirection, static (d, v) => d.DropDirection = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitDatePicker.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static d => d.ErrorMessageAriaLabel, static (d, v) => d.ErrorMessageAriaLabel = v);
         }
 
         if (FirstDayOfWeek.HasValue)

@@ -126,6 +126,17 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
     public BitEnterKeyHint? EnterKeyHint { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for an error message template, which has no text of its own, in place of
+    /// the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every search box the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page. A reason that fits one search box alone
+    /// belongs on that search box.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Forces the suggest callout width to be always fixed at the component's width.
     /// </summary>
     public bool? FixedCalloutWidth { get; set; }
@@ -433,6 +444,11 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
         if (EnterKeyHint.HasValue)
         {
             bitSearchBox.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint.Value, static s => s.EnterKeyHint, static (s, v) => s.EnterKeyHint = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitSearchBox.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static s => s.ErrorMessageAriaLabel, static (s, v) => s.ErrorMessageAriaLabel = v);
         }
 
         if (FixedCalloutWidth.HasValue)

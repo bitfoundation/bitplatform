@@ -239,6 +239,17 @@ public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     public string? EmptyText { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every dropdown the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// dropdowns announce it too. A reason that fits one dropdown alone belongs on that dropdown.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Decides whether the text committed in the ComboBox mode already stands for one of the selected
     /// items, in place of the default comparison of that text with the item texts, ignoring case. It
     /// receives the selected items and the committed text, and returning true stops the commit, so the
@@ -828,6 +839,11 @@ public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         if (EmptyText.HasValue())
         {
             bitDropdown.TakeFromCascade(nameof(EmptyText), EmptyText, static d => d.EmptyText, static (d, v) => d.EmptyText = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitDropdown.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static d => d.ErrorMessageAriaLabel, static (d, v) => d.ErrorMessageAriaLabel = v);
         }
 
         if (ExistsSelectedItemFunction is not null)
