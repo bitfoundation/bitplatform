@@ -102,8 +102,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "DecrementAriaLabel",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
+            DefaultValue = "\"Decrease value\"",
+            Description = "Accessible label text for the decrement button (for screen reader users). The button is icon-only, so it is always given a name: without this parameter it is the English \"Decrease value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
         },
         new()
         {
@@ -222,8 +222,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "IncrementAriaLabel",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label text for the increment button (for screen reader users).",
+            DefaultValue = "\"Increase value\"",
+            Description = "Accessible label text for the increment button (for screen reader users). The button is icon-only, so it is always given a name: without this parameter it is the English \"Increase value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
         },
         new()
         {
@@ -321,8 +321,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "LoadingAriaLabel",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "What a screen reader announces while Loading is on, in place of the default \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
+            DefaultValue = "\"Loading\"",
+            Description = "What a screen reader announces while Loading is on, in place of the default, English \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
         },
         new()
         {
@@ -537,8 +537,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "ClearButtonAriaLabel",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label text for the clear button (for screen reader users), useful for localization.",
+            DefaultValue = "\"Clear value\"",
+            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. The button is icon-only, so it is always given a name: without this parameter it is the English \"Clear value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
         },
         new()
         {

@@ -202,6 +202,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
+    /// Defaults to <c>Decrease value</c>: the button is icon-only, so it is always given a name, and a page in
+    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
     /// </summary>
     [Parameter] public string? DecrementAriaLabel { get; set; }
 
@@ -342,6 +344,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Accessible label text for the increment button (for screen reader users).
+    /// Defaults to <c>Increase value</c>: the button is icon-only, so it is always given a name, and a page in
+    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
     /// </summary>
     [Parameter] public string? IncrementAriaLabel { get; set; }
 
@@ -657,6 +661,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
+    /// Defaults to <c>Clear value</c>: the button is icon-only, so it is always given a name, and a page in
+    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
     /// </summary>
     [Parameter] public string? ClearButtonAriaLabel { get; set; }
 

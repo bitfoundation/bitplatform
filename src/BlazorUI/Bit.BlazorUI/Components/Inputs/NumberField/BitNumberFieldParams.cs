@@ -82,6 +82,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
+    /// Without it the button is named <c>Clear value</c>, in English.
     /// </summary>
     public string? ClearButtonAriaLabel { get; set; }
 
@@ -114,7 +115,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
-    /// Accessible label text for the decrement button (for screen reader users).
+    /// Accessible label text for the decrement button (for screen reader users), useful for localization.
+    /// Without it the button is named <c>Decrease value</c>, in English.
     /// </summary>
     public string? DecrementAriaLabel { get; set; }
 
@@ -187,7 +189,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Accessible label text for the increment button (for screen reader users).
+    /// Accessible label text for the increment button (for screen reader users), useful for localization.
+    /// Without it the button is named <c>Increase value</c>, in English.
     /// </summary>
     public string? IncrementAriaLabel { get; set; }
 
