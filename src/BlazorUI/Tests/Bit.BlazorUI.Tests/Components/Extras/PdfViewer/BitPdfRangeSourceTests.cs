@@ -295,7 +295,7 @@ public class BitPdfRangeSourceTests
                 throw new HttpRequestException("Temporary PDF range failure.");
             }
             var requested = request.Headers.Range!.Ranges.Single();
-            int from = (int)requested.From!.Value, to = (int)Math.Min(Bytes.Length - 1, requested.To!.Value);
+            int from = (int)requested.From!.Value, to = (int)Math.Min(Bytes.Length - 1, requested.To ?? Bytes.Length - 1);
             if (Problem == "200") { from = 0; to = Bytes.Length - 1; }
             byte[] data = Bytes[from..(to + 1)];
             if (Problem == "short") data = data[..^1];

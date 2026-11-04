@@ -124,7 +124,7 @@ public class BitPdfRangeViewerTests : BunitTestContext
     [DataRow("properties", true)]
     public async Task DetailVersionErrorShouldReleaseItsGateBeforeTheHostReloads(string trigger, bool detailsOnLoaded)
     {
-        using var handler = new RangeHandler(SpacedPages());
+        using var handler = new RangeHandler(SpacedPages(metadata: trigger == "properties"));
         Services.AddSingleton(new HttpClient(handler));
         var errors = new List<string>();
         bool recovering = false, recovered = false;
@@ -419,14 +419,15 @@ public class BitPdfRangeViewerTests : BunitTestContext
     private static BitPdfSource Definition() => BitPdfSource.FromUrl("https://pdf.test/document")
         .WithRangeLoading(new() { CacheSize = 128 * 1024, ChunkSize = 4096 });
 
-    internal static byte[] SpacedPages(bool attachment = false, bool namedTitle = false, bool essentials = false)
+    internal static byte[] SpacedPages(bool attachment = false, bool namedTitle = false, bool essentials = false, bool metadata = false)
     {
         var text = new StringBuilder("%PDF-1.7\n");
-        int size = essentials ? 24 : attachment ? 14 : 11;
+        int size = metadata ? 25 : essentials ? 24 : attachment ? 14 : 11;
         var offsets = new int[size];
         void Obj(int n, string value) { offsets[n] = text.Length; text.Append($"{n} 0 obj\n{value}\nendobj\n"); }
-        Obj(1, essentials ? "<< /Type /Catalog /Pages 2 0 R /Outlines 20 0 R /OCProperties << /OCGs [22 0 R] >> /PageLabels 23 0 R >>"
-            : attachment ? "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles 13 0 R >> >>" : "<< /Type /Catalog /Pages 2 0 R >>");
+        string catalog = essentials ? "<< /Type /Catalog /Pages 2 0 R /Outlines 20 0 R /OCProperties << /OCGs [22 0 R] >> /PageLabels 23 0 R >>"
+            : attachment ? "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles 13 0 R >> >>" : "<< /Type /Catalog /Pages 2 0 R >>";
+        Obj(1, metadata ? catalog.Replace("/Pages 2 0 R", "/Pages 2 0 R /Metadata 24 0 R", StringComparison.Ordinal) : catalog);
         Obj(2, "<< /Type /Pages /Count 3 /Kids [3 0 R 5 0 R 7 0 R] >>");
         Obj(9, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
         Obj(10, namedTitle ? "<< /Title /NamedTitle >>" : "<< /Title (Range title) >>");
@@ -439,6 +440,11 @@ public class BitPdfRangeViewerTests : BunitTestContext
         {
             if (attachment && i == 1) Obj(11, "<< /Type /EmbeddedFile /Length 200000 >>\nstream\n" + new string('a', 200000) + "\nendstream");
             if (i > 0) text.Append($"{50 + i} 0 obj\n<< /Length 300000 >>\nstream\n").Append(' ', 300000).Append("\nendstream\nendobj\n");
+            if (metadata && i == 1)
+            {
+                string xmp = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"/>";
+                Obj(24, $"<< /Type /Metadata /Subtype /XML /Length {xmp.Length} >>\nstream\n{xmp}\nendstream");
+            }
             if (essentials && i == 1)
             {
                 Obj(20, "<< /Type /Outlines /First 21 0 R >>");

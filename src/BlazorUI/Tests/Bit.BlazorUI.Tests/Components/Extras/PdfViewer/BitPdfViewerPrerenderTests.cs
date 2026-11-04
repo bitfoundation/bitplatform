@@ -25,6 +25,27 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
     private static IDocument Parse(string html) => new HtmlParser().ParseDocument(html);
 
     [TestMethod]
+    public async Task RangeSourceShouldPrerenderItsFirstPageWithoutAFullDownload()
+    {
+        using var handler = new BitPdfRangeSourceTests.RangeHandler(BitPdfRangeViewerTests.SpacedPages());
+        var errors = new List<string>();
+        var html = await Prerenderer.RenderAsync<BitPdfViewer>(new Dictionary<string, object?>
+        {
+            [nameof(BitPdfViewer.Source)] = BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading(),
+            [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string>(this, errors.Add),
+        }, services => services.AddSingleton(new HttpClient(handler)));
+
+        var pages = Parse(html).QuerySelectorAll(".bit-pdv-page").ToArray();
+        Assert.AreEqual(3, pages.Length);
+        StringAssert.Contains(pages[0].TextContent, "Range page 1");
+        Assert.IsNull(pages[0].QuerySelector(".bit-pdv-page-placeholder"));
+        Assert.IsTrue(pages.Skip(1).All(p => p.QuerySelector(".bit-pdv-page-placeholder") is not null));
+        Assert.IsTrue(handler.Requests.All(r => r?.StartsWith("bytes=", StringComparison.Ordinal) is true));
+        Assert.IsTrue(handler.LastBody!.Reads < 10);
+        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldPrerenderTheCurrentPage()
     {
         var html = await Prerenderer.RenderAsync<BitPdfViewer>(new Dictionary<string, object?>

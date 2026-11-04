@@ -444,25 +444,30 @@
                     navigation. The layout and dependencies of each file still determine how many ranges are needed.
                     <br /><br />
                     <b>CacheSize</b> defaults to 16 MiB of raw bytes, including pinned windows and in-flight buffers.
+                    Each page's raw working set, including its largest single stream, must fit in this budget.
                     <b>ChunkSize</b> is at least 4 KiB and defaults to 64 KiB. Decoded resources and explicit caller-owned copies are separate.
                     <b>MaxFallbackSize</b> defaults to null (unlimited); zero disables buffered fallback. Its declared
                     and actual byte limits apply before publication. A first full response is reused for fallback.
                     <br /><br />
-                    The endpoint must return byte <b>206</b> responses with a correct <b>Content-Range</b>, total length
-                    and a quoted strong <b>ETag</b>. Every later request sends that exact tag as <b>If-Range</b>, and
-                    every response is validated. Missing, weak or inaccessible validators cause a safe initial full
-                    download. Last-Modified dates are not used as validators. All server/CDN nodes must send the same
-                    ETag for the same bytes. Avoid HTTP content compression that changes byte coordinates.
-                    <br /><br />
-                    For cross-origin WebAssembly, expose <b>Content-Range</b> and <b>ETag</b> in
-                    <b>Access-Control-Expose-Headers</b>, and allow <b>Range</b>, <b>If-Range</b> and any
-                    <b>Authorization</b> header in the CORS preflight. The viewer uses the registered HttpClient and
-                    the source's headers. After publication, a failed range reports an error; a version change
+                    Server requirements:
+                    <ul>
+                        <li>Byte <b>206</b> responses with a correct <b>Content-Range</b> and total length.</li>
+                        <li>A quoted strong <b>ETag</b>, identical on every server/CDN node serving the same bytes.</li>
+                        <li>No HTTP content compression that changes byte coordinates.</li>
+                        <li>For cross-origin WebAssembly, expose <b>Content-Range</b> and <b>ETag</b> through
+                            <b>Access-Control-Expose-Headers</b>. Allow <b>Range</b>, <b>If-Range</b> and any
+                            <b>Authorization</b> header in the CORS preflight.</li>
+                    </ul>
+                    Every later request sends the exact strong tag as <b>If-Range</b>, and every response is validated.
+                    Missing, weak or inaccessible validators cause a safe initial full download. Last-Modified dates
+                    are not used as validators. The viewer uses the registered HttpClient and the source's headers.
+                    After publication, a failed range reports an error; a version change
                     discards the document and raises <b>OnError</b>. Assign a new source to reload it.
                     <br /><br />
                     <b>OnDocumentLoaded</b> means the document is open and loading has cleared. A page that cannot render reports <b>OnError</b> separately. The title is
                     available then; bookmarks, layers and page labels load in the background after the first page.
-                    Metadata/XMP, forms and tagged structure load through <b>LoadDocumentDetailsAsync()</b>;
+                    Properties loads only metadata/XMP. <b>LoadDocumentDetailsAsync()</b> loads all deferred details,
+                    including forms and tagged structure;
                     attachments scan when their panel opens or details are requested. Deferred viewer properties
                     return null/empty and never start network reads. Direct <b>Document</b> reads require cached bytes
                     and otherwise throw <b>BitPdfMissingDataException</b>. Use the async rendering/text helpers.
@@ -471,6 +476,9 @@
                     meaning and only runs on buffered fallback. <b>GetBytes()</b> returns null in Range mode;
                     <b>GetBytesAsync()</b> returns an unretained caller-owned copy. Download and whole-document
                     search/print can acquire the remaining bytes.
+                    <br /><br />
+                    During prerendering, a URL reachable by the server uses the same Range path to render the current
+                    page. A browser-only URL keeps the loading state until interactive rendering can fetch it.
                 </div>
                 <br />
                 <BitButton Disabled="rangeSource is not null" OnClick="() => rangeSource = CreateArticleSource().WithRangeLoading()">Load document</BitButton>

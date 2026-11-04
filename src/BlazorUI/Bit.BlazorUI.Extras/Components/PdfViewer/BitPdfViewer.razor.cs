@@ -635,6 +635,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// The files embedded in the document (the <c>/EmbeddedFiles</c> name tree plus
     /// any <c>/FileAttachment</c> annotation), empty when it carries none.
+    /// In Range mode, a file whose raw body exceeds the cache budget is omitted
+    /// so other attachments remain available.
     /// </summary>
     /// <remarks>Deferred Range information returns its empty/null value until loaded.
     /// Use <see cref="LoadDocumentDetailsAsync"/> to await all document details.</remarks>

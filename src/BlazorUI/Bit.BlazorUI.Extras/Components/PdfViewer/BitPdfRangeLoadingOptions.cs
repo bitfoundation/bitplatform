@@ -5,7 +5,10 @@ public sealed class BitPdfRangeLoadingOptions
 {
     /// <summary>The raw-byte cache budget, in bytes. Default is 16 MiB.
     /// Includes pinned windows and in-flight buffers; decoded resources and
-    /// explicit caller-owned copies are separate allocations.</summary>
+    /// explicit caller-owned copies are separate allocations. A page's raw
+    /// working set, including its largest single stream (such as a full-page
+    /// scan), must fit. Otherwise that page fails, or the initial load falls
+    /// back to buffered loading.</summary>
     public int CacheSize { get; init; } = 16 * 1024 * 1024;
 
     /// <summary>The minimum request size and byte alignment. At least 4 KiB; default is 64 KiB.

@@ -957,7 +957,7 @@ public partial class BitPdfViewerDemo
                     Name = "FromStreamFactory",
                     Type = "static BitPdfSource FromStreamFactory(Func<CancellationToken, Task<Stream>> streamFactory, string? fileName = null)",
                     DefaultValue = "",
-                    Description = "Opens a fresh owned readable, seekable stream per load, without buffering the full PDF. Captures its initial position as the origin; the remaining stable length must fit Int32. Password retries reuse the stream. Cancellation is signalled on replacement/disposal. For files/server blobs; For HTTP Range loading, use FromUrl with WithRangeLoading.",
+                    Description = "Opens a fresh owned readable, seekable stream per load, without buffering the full PDF. Captures its initial position as the origin; the remaining stable length must fit Int32. Password retries reuse the stream. Cancellation is signalled on replacement/disposal. For files/server blobs; for HTTP Range loading, use FromUrl with WithRangeLoading.",
                 },
                 new()
                 {

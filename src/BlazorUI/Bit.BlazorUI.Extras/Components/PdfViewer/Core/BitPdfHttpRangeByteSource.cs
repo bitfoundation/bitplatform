@@ -27,18 +27,32 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         internal void CountRequest()
         {
             for (Operation? owner = this; owner is not null; owner = owner._previous)
+            {
                 if (Interlocked.Increment(ref owner.Requests) > 1024)
-                    throw new BitPdfByteSourceIOException("The PDF operation exceeded its range-request limit.");
+                {
+                    throw new BitPdfRangeLimitException("The PDF operation exceeded its range-request limit.");
+                }
+            }
         }
+
         internal void Pin(Block block)
         {
-            if (!Released && Pins.Add(block)) { block.Pins++; PinnedBytes += block.Bytes.Length; }
+            if (!Released && Pins.Add(block))
+            {
+                block.Pins++;
+                PinnedBytes += block.Bytes.Length;
+            }
         }
+
         public void Dispose()
         {
             lock (source._gate)
             {
-                if (Released) return;
+                if (Released)
+                {
+                    return;
+                }
+
                 Released = true;
                 source.ReleasePins(this);
                 source._operation.Value = _previous;
@@ -67,7 +81,6 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     private int _requestCount;
     private int _restartCount;
     private long _fetchedBytes;
-
     private BitPdfHttpRangeByteSource(HttpClient http, BitPdfSource source, int length, string etag, CancellationToken token)
     {
         _http = http;
@@ -81,12 +94,37 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
 
     public int Length { get; }
     internal int ChunkSize => _options.ChunkSize;
-    internal int AccountedBytes { get { lock (_gate) return _accounted; } }
-    internal int PeakBytes { get { lock (_gate) return _peak; } }
+
+    int IBitPdfPartialByteSource.ChunkSize => _options.ChunkSize;
+
+    internal int AccountedBytes
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _accounted;
+            }
+        }
+    }
+
+    internal int PeakBytes
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _peak;
+            }
+        }
+    }
+
     internal int RequestCount => Volatile.Read(ref _requestCount);
     internal int RestartCount => Volatile.Read(ref _restartCount);
+
     internal void RecordRestart() => Interlocked.Increment(ref _restartCount);
     internal long FetchedBytes => Interlocked.Read(ref _fetchedBytes);
+
     internal Operation BeginOperation()
     {
         CheckRead();
@@ -100,7 +138,10 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         using var request = CreateRequest(source, 0, source.RangeLoading!.ChunkSize - 1, null);
         var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.OK)
+        {
             throw new BitPdfRangeFallbackException("The server returned a complete PDF instead of a byte range.", response);
+        }
+
         BitPdfHttpRangeByteSource? opened = null;
         int initialReservation = 0;
         bool initialCommitted = false;
@@ -111,7 +152,11 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             opened = new(http, source, length, etag, token);
             opened._requestCount = 1;
             int count = Math.Min(source.RangeLoading.ChunkSize, length);
-            lock (opened._gate) opened.Reserve(count);
+            lock (opened._gate)
+            {
+                opened.Reserve(count);
+            }
+
             initialReservation = count;
             await opened.ReadResponseAsync(response, 0, count, null, token).ConfigureAwait(false);
             initialCommitted = true;
@@ -121,85 +166,182 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         {
             if (opened is not null)
             {
-                if (!initialCommitted) { lock (opened._gate) opened._accounted -= initialReservation; }
+                if (!initialCommitted)
+                {
+                    lock (opened._gate)
+                    {
+                        opened._accounted -= initialReservation;
+                    }
+                }
+
                 await opened.DisposeAsync().ConfigureAwait(false);
             }
-            if (ex is BitPdfRangeFallbackException or OperationCanceledException or ObjectDisposedException) throw;
+
+            if (ex is BitPdfRangeFallbackException or OperationCanceledException or ObjectDisposedException)
+            {
+                throw;
+            }
+
             throw new BitPdfRangeFallbackException(ex.Message);
         }
-        finally { response.Dispose(); }
+        finally
+        {
+            response.Dispose();
+        }
     }
 
-    private static HttpRequestMessage CreateRequest(BitPdfSource source, int start, int end, string? etag)
+    private static HttpRequestMessage CreateRequest(BitPdfSource source, int start, int? end, string? etag)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, source.Url);
         if (source.Headers is { } headers)
-            foreach (var header in headers) request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        {
+            foreach (var header in headers)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+
         // Byte identity and transport coordinates belong to the source, not custom headers.
         request.Headers.Remove("Range");
         request.Headers.Remove("If-Range");
         request.Headers.Range = new RangeHeaderValue(start, end);
-        if (etag is not null) request.Headers.TryAddWithoutValidation("If-Range", etag);
+        if (etag is not null)
+        {
+            request.Headers.TryAddWithoutValidation("If-Range", etag);
+        }
+
+        request.Options.Set(new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse"), true);
         return request;
     }
 
     private static string? ReadStrongTag(HttpResponseMessage response)
     {
-        if (!response.Headers.TryGetValues("ETag", out var values)) return null;
+        if (!response.Headers.TryGetValues("ETag", out var values))
+        {
+            return null;
+        }
+
         string[] tags = values.ToArray();
-        if (tags.Length != 1) return null;
+        if (tags.Length != 1)
+        {
+            return null;
+        }
+
         string value = tags[0].Trim();
-        return value.StartsWith('"') && value.EndsWith('"')
-            && EntityTagHeaderValue.TryParse(value, out var tag) && !tag.IsWeak ? value : null;
+        return value.StartsWith('"')
+            && value.EndsWith('"')
+            && EntityTagHeaderValue.TryParse(value, out var tag)
+            && !tag.IsWeak ? value : null;
     }
 
     private static int ValidateHeaders(HttpResponseMessage response, int start, int end, int? length, string? etag)
     {
         if (response.StatusCode == HttpStatusCode.OK && etag is not null)
+        {
             throw new BitPdfRangeVersionException("The PDF server no longer honored If-Range. Assign a new source to reload the document.");
+        }
+
         if (response.StatusCode != HttpStatusCode.PartialContent)
+        {
             throw new BitPdfByteSourceIOException($"The PDF range request returned HTTP {(int)response.StatusCode}.");
+        }
+
         var range = response.Content.Headers.ContentRange;
-        if (range is null || !range.HasLength || !range.HasRange || !StringComparer.OrdinalIgnoreCase.Equals(range.Unit, "bytes")
-            || range.Length is not > 0 || range.Length > int.MaxValue)
-            throw new BitPdfByteSourceIOException("The PDF response has no usable byte Content-Range and total length.");
+        if (range is null
+            || !range.HasLength
+            || !range.HasRange
+            || !StringComparer.OrdinalIgnoreCase.Equals(range.Unit, "bytes")
+            || range.Length is not > 0
+            || range.Length > int.MaxValue)
+        {
+            throw new BitPdfRangePermanentException("The PDF response has no usable byte Content-Range and total length.");
+        }
+
         int total = (int)range.Length.Value;
         string? tag = ReadStrongTag(response);
         if (etag is not null && ((tag is not null && !StringComparer.Ordinal.Equals(tag, etag)) || total != length))
+        {
             throw new BitPdfRangeVersionException("The PDF changed while it was open. Assign a new source to reload the document.");
-        if (tag is null) throw new BitPdfByteSourceIOException("HTTP Range loading requires an exposed, strong ETag on every response.");
+        }
+
+        if (tag is null)
+        {
+            throw new BitPdfRangePermanentException("HTTP Range loading requires an exposed, strong ETag on every response.");
+        }
+
         int requestedEnd = Math.Min(end, total - 1);
-        if (range.From != start || range.To != requestedEnd
-            || (response.Content.Headers.ContentLength is long actual && actual != (long)requestedEnd - start + 1))
-            throw new BitPdfByteSourceIOException("The PDF Content-Range or body length does not match the requested bytes.");
+        if (range.From != start
+            || range.To != requestedEnd
+            || (response.Content.Headers.ContentLength is long actual
+            && actual != (long)requestedEnd - start + 1))
+        {
+            throw new BitPdfRangePermanentException("The PDF Content-Range or body length does not match the requested bytes.");
+        }
+
         if (response.Content.Headers.ContentEncoding.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, "identity")))
-            throw new BitPdfByteSourceIOException("Compressed HTTP PDF responses cannot be addressed with byte ranges.");
+        {
+            throw new BitPdfRangePermanentException("Compressed HTTP PDF responses cannot be addressed with byte ranges.");
+        }
+
         return total;
     }
 
-    public void ThrowIfDisposed() { ObjectDisposedException.ThrowIf(_disposed, this); }
+    public void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
     public void CheckRead()
     {
         ThrowIfDisposed();
-        if (_failure is { } failure) throw failure;
+        if (_failure is { } failure)
+        {
+            throw failure;
+        }
+
         _token.ThrowIfCancellationRequested();
     }
-    public bool TryGetContiguous(out ReadOnlyMemory<byte> memory) { CheckRead(); memory = default; return false; }
+
+    public bool TryGetContiguous(out ReadOnlyMemory<byte> memory)
+    {
+        CheckRead();
+        memory = default;
+        return false;
+    }
+
     private void ValidateRange(int offset, int length)
     {
-        if ((uint)offset > (uint)Length) throw new ArgumentOutOfRangeException(nameof(offset));
-        if (length < 0 || length > Length - offset) throw new ArgumentOutOfRangeException(nameof(length));
-    }
-    private int StartOf(int offset) => offset / _options.ChunkSize * _options.ChunkSize;
+        if ((uint)offset > (uint)Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
 
+        if (length < 0 || length > Length - offset)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length));
+        }
+    }
+
+    private int StartOf(int offset) => offset / _options.ChunkSize * _options.ChunkSize;
     public bool IsDataAvailable(int offset, int length)
     {
-        CheckRead(); ValidateRange(offset, length);
-        if (length == 0) return true;
+        CheckRead();
+        ValidateRange(offset, length);
+        if (length == 0)
+        {
+            return true;
+        }
+
         lock (_gate)
         {
             for (long start = StartOf(offset); start < (long)offset + length; start += _options.ChunkSize)
-                if (!_blocks.ContainsKey((int)start)) return false;
+            {
+                if (!_blocks.ContainsKey((int)start))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
     }
@@ -209,30 +351,48 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         var blocks = new List<Block>();
         for (long start = StartOf(offset); start < (long)offset + length; start += _options.ChunkSize)
         {
-            if (!_blocks.TryGetValue((int)start, out var block)) throw new BitPdfMissingDataException(offset, length);
+            if (!_blocks.TryGetValue((int)start, out var block))
+            {
+                throw new BitPdfMissingDataException(offset, length);
+            }
+
             blocks.Add(block);
         }
+
         foreach (var block in blocks)
         {
             _operation.Value?.Pin(block);
-            _lru.Remove(block.Node!); _lru.AddFirst(block.Node!);
+            _lru.Remove(block.Node!);
+            _lru.AddFirst(block.Node!);
         }
+
         return blocks;
     }
 
     public BitPdfByteSourceWindow GetMemory(int offset, int length)
     {
-        CheckRead(); ValidateRange(offset, length);
-        if (length == 0) return new(ReadOnlyMemory<byte>.Empty);
+        CheckRead();
+        ValidateRange(offset, length);
+        if (length == 0)
+        {
+            return new(ReadOnlyMemory<byte>.Empty);
+        }
+
         lock (_gate)
         {
             var blocks = GetBlocks(offset, length);
             if (blocks.Count == 1)
             {
-                var block = blocks[0]; block.Pins++;
+                var block = blocks[0];
+                block.Pins++;
                 return new(block.Bytes.AsMemory(offset - block.Start, length), new BitPdfByteSourceLease(() => Unpin(block)));
             }
-            foreach (var block in blocks) block.Pins++;
+
+            foreach (var block in blocks)
+            {
+                block.Pins++;
+            }
+
             try
             {
                 Reserve(length);
@@ -240,11 +400,28 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 {
                     var bytes = new byte[length];
                     Copy(blocks, offset, bytes);
-                    return new(bytes, new BitPdfByteSourceLease(() => { lock (_gate) { _accounted -= length; Pulse(); } }));
+                    return new(bytes, new BitPdfByteSourceLease(() =>
+                    {
+                        lock (_gate)
+                        {
+                            _accounted -= length;
+                            Pulse();
+                        }
+                    }));
                 }
-                catch { _accounted -= length; throw; }
+                catch
+                {
+                    _accounted -= length;
+                    throw;
+                }
             }
-            finally { foreach (var block in blocks) Unpin(block); }
+            finally
+            {
+                foreach (var block in blocks)
+                {
+                    Unpin(block);
+                }
+            }
         }
     }
 
@@ -255,77 +432,145 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             int from = Math.Max(offset - block.Start, 0);
             int count = Math.Min(block.Bytes.Length - from, destination.Length);
             block.Bytes.AsSpan(from, count).CopyTo(destination);
-            destination = destination[count..]; offset += count;
+            destination = destination[count..];
+            offset += count;
         }
     }
+
     private void ReadExactly(int offset, Span<byte> destination)
     {
-        CheckRead(); ValidateRange(offset, destination.Length);
-        if (destination.IsEmpty) return;
-        lock (_gate) Copy(GetBlocks(offset, destination.Length), offset, destination);
-    }
-    private int ReadByte(int offset)
-    {
-        CheckRead(); ValidateRange(offset, 0);
-        if (offset == Length) return -1;
+        CheckRead();
+        ValidateRange(offset, destination.Length);
+        if (destination.IsEmpty)
+        {
+            return;
+        }
+
         lock (_gate)
         {
-            if (!_blocks.TryGetValue(StartOf(offset), out var block)) throw new BitPdfMissingDataException(offset, 1);
+            Copy(GetBlocks(offset, destination.Length), offset, destination);
+        }
+    }
+
+    private int ReadByte(int offset)
+    {
+        CheckRead();
+        ValidateRange(offset, 0);
+        if (offset == Length)
+        {
+            return -1;
+        }
+
+        lock (_gate)
+        {
+            if (!_blocks.TryGetValue(StartOf(offset), out var block))
+            {
+                throw new BitPdfMissingDataException(offset, 1);
+            }
+
             _operation.Value?.Pin(block);
+            _lru.Remove(block.Node!);
+            _lru.AddFirst(block.Node!);
             return block.Bytes[offset - block.Start];
         }
     }
 
     private static TaskCompletionSource NewSignal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private void Pulse() { var signal = _changed; _changed = NewSignal(); signal.TrySetResult(); }
+    private void Pulse()
+    {
+        var signal = _changed;
+        _changed = NewSignal();
+        signal.TrySetResult();
+    }
+
     private void Remove(Block block)
     {
-        _blocks.Remove(block.Start); _lru.Remove(block.Node!); _accounted -= block.Bytes.Length;
+        _blocks.Remove(block.Start);
+        _lru.Remove(block.Node!);
+        _accounted -= block.Bytes.Length;
     }
+
     private void Unpin(Block block)
     {
         lock (_gate)
         {
             block.Pins--;
-            if (_disposed && block.Pins == 0) Remove(block);
+            if (_disposed && block.Pins == 0)
+            {
+                Remove(block);
+            }
+
             Pulse();
         }
     }
+
     private void ReleasePins(Operation operation)
     {
-        foreach (var block in operation.Pins) Unpin(block);
-        operation.Pins.Clear(); operation.PinnedBytes = 0; Pulse();
+        foreach (var block in operation.Pins)
+        {
+            Unpin(block);
+        }
+
+        operation.Pins.Clear();
+        operation.PinnedBytes = 0;
+        Pulse();
     }
+
     private bool EvictFor(int count)
     {
         while (count > _options.CacheSize - _accounted)
         {
             var node = _lru.Last;
-            while (node is not null && node.Value.Pins != 0) node = node.Previous;
-            if (node is null) return false;
+            while (node is not null && node.Value.Pins != 0)
+            {
+                node = node.Previous;
+            }
+
+            if (node is null)
+            {
+                return false;
+            }
+
             Remove(node.Value);
         }
+
         return true;
     }
+
     private void Reserve(int count)
     {
         CheckRead();
-        if (!EvictFor(count)) throw new BitPdfRangeBudgetException();
-        _accounted += count; _peak = Math.Max(_peak, _accounted);
+        if (!EvictFor(count))
+        {
+            throw new BitPdfRangeBudgetException();
+        }
+
+        _accounted += count;
+        _peak = Math.Max(_peak, _accounted);
     }
 
     internal async Task EnsureAsync(int offset, int length, CancellationToken cancellationToken = default)
     {
-        CheckRead(); ValidateRange(offset, length);
-        if (length == 0) return;
+        CheckRead();
+        ValidateRange(offset, length);
+        if (length == 0)
+        {
+            return;
+        }
+
         int alignedStart = StartOf(offset);
         long alignedEnd = Math.Min(Length, ((long)offset + length + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
-        if (alignedEnd - alignedStart > _options.CacheSize) throw new BitPdfRangeBudgetException();
+        if (alignedEnd - alignedStart > _options.CacheSize)
+        {
+            throw new BitPdfRangeBudgetException();
+        }
+
         var owner = _operation.Value;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(_token, cancellationToken);
         while (true)
         {
-            CheckRead(); linked.Token.ThrowIfCancellationRequested();
+            CheckRead();
+            linked.Token.ThrowIfCancellationRequested();
             Task pending;
             TaskCompletionSource? completion = null;
             int first = alignedStart, count = 0;
@@ -336,36 +581,77 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                     owner?.Pin(_blocks[first]);
                     first = (int)Math.Min(alignedEnd, (long)first + _options.ChunkSize);
                 }
-                if (first >= alignedEnd) return;
-                if (_fetches.TryGetValue(first, out var active)) pending = active;
+
+                if (first >= alignedEnd)
+                {
+                    return;
+                }
+
+                if (_fetches.TryGetValue(first, out var active))
+                {
+                    pending = active;
+                }
                 else
                 {
                     int limit = (int)Math.Min(alignedEnd, (long)first + Math.Max(_options.ChunkSize, Math.Min(1024 * 1024, _options.CacheSize)));
                     long end = first;
                     while (end < limit && !_blocks.ContainsKey((int)end) && !_fetches.ContainsKey((int)end))
+                    {
                         end = Math.Min(alignedEnd, end + _options.ChunkSize);
+                    }
+
                     count = (int)end - first;
                     if (!EvictFor(count))
                     {
                         if (owner is null || owner.PinnedBytes + (long)count > _options.CacheSize)
+                        {
                             throw new BitPdfRangeBudgetException();
+                        }
+
                         // Abandon this retry's pins before waiting for another operation.
                         // Never turn ordinary capacity contention into a failed page.
                         ReleasePins(owner);
-                        if (EvictFor(count)) { Pulse(); }
-                        else { pending = _changed.Task; count = 0; goto WaitForCapacity; }
+                        if (EvictFor(count))
+                        {
+                            Pulse();
+                        }
+                        else
+                        {
+                            pending = _changed.Task;
+                            count = 0;
+                            goto WaitForCapacity;
+                        }
                     }
+
                     Reserve(count);
-                    completion = NewSignal(); pending = completion.Task;
+                    completion = NewSignal();
+                    pending = completion.Task;
                     for (long start = first; start < (long)first + count; start += _options.ChunkSize)
+                    {
                         _fetches.Add((int)start, pending);
+                    }
                 }
-                WaitForCapacity:;
+
+WaitForCapacity:
+                ;
             }
-            if (completion is not null) _ = FillAsync(first, count, owner, completion, linked.Token);
-            try { await pending.WaitAsync(linked.Token).ConfigureAwait(false); }
-            catch (OperationCanceledException) when (_failure is not null) { throw _failure; }
-            catch (OperationCanceledException) when (!linked.IsCancellationRequested) { }
+
+            if (completion is not null)
+            {
+                _ = FillAsync(first, count, owner, completion, linked.Token);
+            }
+
+            try
+            {
+                await pending.WaitAsync(linked.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_failure is not null)
+            {
+                throw _failure;
+            }
+            catch (OperationCanceledException) when (!linked.IsCancellationRequested)
+            {
+            }
         }
     }
 
@@ -379,16 +665,19 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         var merged = new List<(int Offset, int Length)>();
         foreach (var range in ordered)
         {
-            if (merged.Count > 0 && range.Offset <= (long)merged[^1].Offset + merged[^1].Length
-                && Math.Min(Length, (Math.Max((long)range.Offset + range.Length, (long)merged[^1].Offset + merged[^1].Length)
-                    + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize)
-                    - StartOf(merged[^1].Offset) <= Math.Min(_options.CacheSize, 1024 * 1024))
+            if (merged.Count > 0
+                && range.Offset <= (long)merged[^1].Offset + merged[^1].Length
+                && Math.Min(Length, (Math.Max((long)range.Offset + range.Length, (long)merged[^1].Offset + merged[^1].Length) + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize) - StartOf(merged[^1].Offset) <= Math.Min(_options.CacheSize, 1024 * 1024))
             {
                 var last = merged[^1];
                 merged[^1] = (last.Offset, (int)(Math.Max((long)range.Offset + range.Length, (long)last.Offset + last.Length) - last.Offset));
             }
-            else merged.Add(range);
+            else
+            {
+                merged.Add(range);
+            }
         }
+
         await Task.WhenAll(merged.Select(r => EnsureAsync(r.Offset, r.Length, token))).ConfigureAwait(false);
     }
 
@@ -397,7 +686,8 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         bool entered = false, committed = false;
         try
         {
-            await _requests.WaitAsync(token).ConfigureAwait(false); entered = true;
+            await _requests.WaitAsync(token).ConfigureAwait(false);
+            entered = true;
             owner?.CountRequest();
             using var request = CreateRequest(_source, start, start + count - 1, _etag);
             Interlocked.Increment(ref _requestCount);
@@ -409,21 +699,41 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         }
         catch (BitPdfRangeVersionException ex)
         {
-            _failure = ex; _cancellation.Cancel(); completion.TrySetException(ex);
+            _failure = ex;
+            _cancellation.Cancel();
+            completion.TrySetException(ex);
         }
         // A cancelled producer lets other shared waiters acquire the range again.
         // HttpClient timeouts do not cancel our token and must surface as I/O failures.
-        catch (OperationCanceledException) when (token.IsCancellationRequested) { completion.TrySetCanceled(token); }
-        catch (Exception ex) { completion.TrySetException(ex is BitPdfByteSourceIOException ? ex : new BitPdfByteSourceIOException("Reading the PDF range failed.", ex)); }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            completion.TrySetCanceled(token);
+        }
+        catch (Exception ex)
+        {
+            completion.TrySetException(ex is BitPdfByteSourceIOException ? ex : new BitPdfByteSourceIOException("Reading the PDF range failed.", ex));
+        }
         finally
         {
             lock (_gate)
             {
-                for (long offset = start; offset < (long)start + count; offset += _options.ChunkSize) _fetches.Remove((int)offset);
-                if (!committed) _accounted -= count;
+                for (long offset = start; offset < (long)start + count; offset += _options.ChunkSize)
+                {
+                    _fetches.Remove((int)offset);
+                }
+
+                if (!committed)
+                {
+                    _accounted -= count;
+                }
+
                 Pulse();
             }
-            if (entered) _requests.Release();
+
+            if (entered)
+            {
+                _requests.Release();
+            }
         }
     }
 
@@ -438,62 +748,110 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             while (got < bytes.Length)
             {
                 int read = await body.ReadAsync(bytes.AsMemory(got), token).ConfigureAwait(false);
-                if (read == 0) throw new BitPdfByteSourceIOException("The PDF range body ended prematurely.");
+                if (read == 0)
+                {
+                    throw new BitPdfByteSourceIOException("The PDF range body ended prematurely.");
+                }
+
                 got += read;
             }
-            blocks.Add(new(start + consumed, bytes)); consumed += bytes.Length;
+
+            blocks.Add(new(start + consumed, bytes));
+            consumed += bytes.Length;
         }
+
         // Read the EOF probe into existing storage: an invalid extra byte is never committed.
         var last = blocks[^1].Bytes;
         if (await body.ReadAsync(last.AsMemory(last.Length - 1, 1), token).ConfigureAwait(false) != 0)
+        {
             throw new BitPdfByteSourceIOException("The PDF range body exceeds its declared range.");
-        CheckRead(); token.ThrowIfCancellationRequested();
+        }
+
+        CheckRead();
+        token.ThrowIfCancellationRequested();
         lock (_gate)
         {
             CheckRead();
             foreach (var block in blocks)
             {
-                block.Node = _lru.AddFirst(block); _blocks.Add(block.Start, block); owner?.Pin(block);
+                block.Node = _lru.AddFirst(block);
+                _blocks.Add(block.Start, block);
+                owner?.Pin(block);
             }
         }
+
         Interlocked.Add(ref _fetchedBytes, count);
     }
 
     internal async Task<byte[]> ReadAllAsync(CancellationToken token)
     {
         CheckRead();
-        if (Length > Array.MaxLength) throw new InvalidOperationException("The PDF is too large for a single managed byte array.");
+        if (Length > Array.MaxLength)
+        {
+            throw new InvalidOperationException("The PDF is too large for a single managed byte array.");
+        }
+
+        using var operation = BeginOperation();
+        await using var stream = OpenReadStream();
         var bytes = new byte[Length];
         for (int start = 0; start < Length;)
         {
-            using var operation = BeginOperation();
-            int count = Math.Min(_options.ChunkSize, Length - start);
-            await EnsureAsync(start, count, token).ConfigureAwait(false);
-            ReadExactly(start, bytes.AsSpan(start, count)); start += count;
+            start += await stream.ReadAsync(bytes.AsMemory(start), token).ConfigureAwait(false);
         }
-        CheckRead(); token.ThrowIfCancellationRequested(); return bytes;
+
+        CheckRead();
+        token.ThrowIfCancellationRequested();
+        return bytes;
     }
 
     public BitPdfBaseStream CreateStream(int start = 0, int? length = null)
     {
-        CheckRead(); ValidateRange(start, length ?? Length - start);
+        CheckRead();
+        ValidateRange(start, length ?? Length - start);
         return new Cursor(this, start, length ?? Length - start);
     }
-    internal Stream OpenReadStream() { CheckRead(); return new DownloadStream(this); }
+
+    internal Stream OpenReadStream()
+    {
+        CheckRead();
+        return new DownloadStream(this);
+    }
+
     public ValueTask DisposeAsync()
     {
-        lock (_gate) return new(_disposeTask ??= CloseAsync());
-    }
-    private async Task CloseAsync()
-    {
-        _disposed = true; _cancellation.Cancel();
-        Task[] pending;
-        lock (_gate) { pending = _fetches.Values.Distinct().ToArray(); Pulse(); }
-        try { await Task.WhenAll(pending).ConfigureAwait(false); } catch { }
         lock (_gate)
         {
-            foreach (var block in _blocks.Values.Where(b => b.Pins == 0).ToArray()) Remove(block);
+            return new(_disposeTask ??= CloseAsync());
         }
+    }
+
+    private async Task CloseAsync()
+    {
+        _disposed = true;
+        _cancellation.Cancel();
+        Task[] pending;
+        lock (_gate)
+        {
+            pending = _fetches.Values.Distinct().ToArray();
+            Pulse();
+        }
+
+        try
+        {
+            await Task.WhenAll(pending).ConfigureAwait(false);
+        }
+        catch
+        {
+        }
+
+        lock (_gate)
+        {
+            foreach (var block in _blocks.Values.Where(b => b.Pins == 0).ToArray())
+            {
+                Remove(block);
+            }
+        }
+
         _cancellation.Dispose();
     }
 
@@ -501,67 +859,277 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     {
         private readonly BitPdfHttpRangeByteSource _source;
         internal override IBitPdfByteSource ByteSource => _source;
+
         internal Cursor(BitPdfHttpRangeByteSource source, int start, int length)
-        { _source = source; Start = Pos = start; End = start + length; }
+        {
+            _source = source;
+            Start = Pos = start;
+            End = start + length;
+        }
+
         public override int GetByte()
         {
             BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
-            if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos));
-            if (Pos == End) return -1;
-            try { int value = _source.ReadByte(Pos); Pos++; return value; }
-            catch (BitPdfMissingDataException) when (Dict is not null) { throw new BitPdfMissingDataException(Start, Length); }
+            if (Pos < Start || Pos > End)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Pos));
+            }
+
+            if (Pos == End)
+            {
+                return -1;
+            }
+
+            try
+            {
+                int value = _source.ReadByte(Pos);
+                Pos++;
+                return value;
+            }
+            catch (BitPdfMissingDataException) when (Dict is not null)
+            {
+                throw new BitPdfMissingDataException(Start, Length);
+            }
         }
+
         public override byte[] GetBytes(int length = 0)
         {
             BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
-            if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos));
+            if (Pos < Start || Pos > End)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Pos));
+            }
+
             int count = length <= 0 ? End - Pos : Math.Min(length, End - Pos);
             byte[] bytes = new byte[count];
-            try { _source.ReadExactly(Pos, bytes); }
-            catch (BitPdfMissingDataException) when (Dict is not null) { throw new BitPdfMissingDataException(Start, Length); }
-            Pos += count; return bytes;
+            try
+            {
+                _source.ReadExactly(Pos, bytes);
+            }
+            catch (BitPdfMissingDataException) when (Dict is not null)
+            {
+                throw new BitPdfMissingDataException(Start, Length);
+            }
+
+            Pos += count;
+            return bytes;
         }
+
         public override byte[] GetByteRange(int begin, int end)
         {
-            begin = Math.Clamp(begin, Start, End); end = Math.Clamp(end, Start, End);
-            var bytes = new byte[Math.Max(0, end - begin)]; _source.ReadExactly(begin, bytes); return bytes;
+            begin = Math.Clamp(begin, Start, End);
+            end = Math.Clamp(end, Start, End);
+            var bytes = new byte[Math.Max(0, end - begin)];
+            _source.ReadExactly(begin, bytes);
+            return bytes;
         }
-        public override void Skip(int n = 1) { BitPdfXRef.TrackPartialStream(this); base.Skip(n); }
-        public override void Reset() { BitPdfXRef.TrackPartialStream(this); _source.ThrowIfDisposed(); Pos = Start; }
-        public override void MoveStart() { BitPdfXRef.TrackPartialStream(this); _source.CheckRead(); if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos)); Start = Pos; }
+
+        public override void Skip(int n = 1)
+        {
+            BitPdfXRef.TrackPartialStream(this);
+            base.Skip(n);
+        }
+
+        public override void Reset()
+        {
+            BitPdfXRef.TrackPartialStream(this);
+            _source.ThrowIfDisposed();
+            Pos = Start;
+        }
+
+        public override void MoveStart()
+        {
+            BitPdfXRef.TrackPartialStream(this);
+            _source.CheckRead();
+            if (Pos < Start || Pos > End)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Pos));
+            }
+
+            Start = Pos;
+        }
+
         public override BitPdfBaseStream MakeSubStream(int start, int length, BitPdfDict? dict = null)
-        { var stream = _source.CreateStream(start, length); stream.Dict = dict; return stream; }
+        {
+            var stream = _source.CreateStream(start, length);
+            stream.Dict = dict;
+            return stream;
+        }
     }
 
     private sealed class DownloadStream(BitPdfHttpRangeByteSource source) : Stream
     {
+        // Copies own their response and bypass the LRU. A single validated,
+        // open-ended range preserves the reader's cache and costs one round trip.
+        private readonly CancellationTokenSource _cancellation = CancellationTokenSource.CreateLinkedTokenSource(source._token);
+        private readonly byte[] _probe = new byte[1];
+        private HttpResponseMessage? _response;
+        private Stream? _body;
         private int _position;
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
+        private bool _disposed;
+        public override bool CanRead => !_disposed;
+        public override bool CanSeek => !_disposed;
         public override bool CanWrite => false;
         public override long Length => source.Length;
-        public override long Position { get => _position; set { if (value < 0 || value > Length) throw new ArgumentOutOfRangeException(nameof(value)); _position = (int)value; } }
+
+        public override long Position
+        {
+            get => _position;
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (value < 0 || value > Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                if (value == _position)
+                {
+                    return;
+                }
+
+                CloseResponse();
+                _position = (int)value;
+            }
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             ArgumentNullException.ThrowIfNull(buffer);
             var destination = buffer.AsSpan(offset, count);
+            ObjectDisposedException.ThrowIf(_disposed, this);
             count = Math.Min(count, source.Length - _position);
-            source.ReadExactly(_position, destination[..count]); _position += count; return count;
+            // Synchronous reads remain cache-only and never start HTTP work.
+            source.ReadExactly(_position, destination[..count]);
+            if (count > 0)
+            {
+                CloseResponse();
+            }
+
+            _position += count;
+            return count;
         }
+
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            using var operation = source.BeginOperation();
-            int count = Math.Min(Math.Min(buffer.Length, source._options.ChunkSize), source.Length - _position);
-            await source.EnsureAsync(_position, count, cancellationToken).ConfigureAwait(false);
-            source.ReadExactly(_position, buffer.Span[..count]); _position += count; return count;
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            source.CheckRead();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (buffer.IsEmpty || _position == source.Length)
+            {
+                return 0;
+            }
+
+            using var readCancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellation.Token, cancellationToken);
+            // ResponseHeadersRead limits HttpClient.Timeout to the headers.
+            // Apply the same timeout to each body read, including the EOF probe.
+            if (source._http.Timeout != Timeout.InfiniteTimeSpan)
+            {
+                readCancellation.CancelAfter(source._http.Timeout);
+            }
+
+            using var registration = readCancellation.Token.Register(() => _cancellation.Cancel());
+            try
+            {
+                if (_body is null)
+                {
+                    source._operation.Value?.CountRequest();
+                    using var request = CreateRequest(source._source, _position, null, source._etag);
+                    Interlocked.Increment(ref source._requestCount);
+                    var response = await source._http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellation.Token).ConfigureAwait(false);
+                    try
+                    {
+                        ValidateHeaders(response, _position, source.Length - 1, source.Length, source._etag);
+                        var body = await response.Content.ReadAsStreamAsync(readCancellation.Token).ConfigureAwait(false);
+                        source.CheckRead();
+                        _response = response;
+                        _body = body;
+                    }
+                    catch
+                    {
+                        response.Dispose();
+                        throw;
+                    }
+                }
+
+                int count = Math.Min(buffer.Length, source.Length - _position);
+                int read = await _body.ReadAsync(buffer[..count], readCancellation.Token).ConfigureAwait(false);
+                if (read == 0)
+                {
+                    throw new BitPdfRangePermanentException("The PDF range body ended prematurely.");
+                }
+
+                if (_position + read == source.Length && await _body.ReadAsync(_probe, readCancellation.Token).ConfigureAwait(false) != 0)
+                {
+                    throw new BitPdfRangePermanentException("The PDF range body exceeds its declared range.");
+                }
+
+                source.CheckRead();
+                readCancellation.Token.ThrowIfCancellationRequested();
+                _position += read;
+                Interlocked.Add(ref source._fetchedBytes, read);
+                return read;
+            }
+            catch (BitPdfRangeVersionException ex)
+            {
+                source._failure = ex;
+                source._cancellation.Cancel();
+                throw;
+            }
+            catch (OperationCanceledException) when (source._failure is not null)
+            {
+                throw source._failure;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || source._token.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or OperationCanceledException
+                && ex is not BitPdfByteSourceIOException)
+            {
+                throw new BitPdfByteSourceIOException("Reading the PDF copy failed.", ex);
+            }
         }
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
-        public override long Seek(long offset, SeekOrigin origin) { Position = checked((origin switch { SeekOrigin.Begin => 0L, SeekOrigin.Current => Position, SeekOrigin.End => Length, _ => throw new ArgumentOutOfRangeException(nameof(origin)) }) + offset); return Position; }
-        public override void Flush() { }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            Position = checked((origin switch
+            {
+                SeekOrigin.Begin => 0L,
+                SeekOrigin.Current => Position,
+                SeekOrigin.End => Length,
+                _ => throw new ArgumentOutOfRangeException(nameof(origin))
+            }) + offset);
+            return Position;
+        }
+
+        public override void Flush()
+        {
+        }
+
         public override void SetLength(long value) => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        private void CloseResponse()
+        {
+            _body = null;
+            _response?.Dispose();
+            _response = null;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _disposed = true;
+                _cancellation.Cancel();
+                CloseResponse();
+                _cancellation.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

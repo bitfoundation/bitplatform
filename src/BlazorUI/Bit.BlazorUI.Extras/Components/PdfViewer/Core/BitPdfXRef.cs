@@ -454,6 +454,10 @@ public sealed partial class BitPdfXRef : IBitPdfXRef
                 ? FetchCompressed(entry)
                 : FetchUncompressed(reference, entry);
             (_attemptCache ?? _cache)[(reference.Num, reference.Gen)] = result;
+            if (IsPartial && result is BitPdfDict dictionary)
+            {
+                (_attemptReferences ?? _references).TryAdd(dictionary, reference);
+            }
             return result;
         }
         finally
@@ -669,6 +673,13 @@ public sealed partial class BitPdfXRef : IBitPdfXRef
 
             (_attemptObjectStreams ?? _objStmCache)[streamNum] = result;
             return result;
+        }
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
+        {
+            // Remember a malformed stream just as buffered loading did before
+            // partial attempts: another reference must not repeat its decode.
+            (_attemptObjectStreams ?? _objStmCache)[streamNum] = result;
+            throw;
         }
         finally { _pendingObjectStreams.Remove(streamNum); }
     }
@@ -949,7 +960,7 @@ public sealed partial class BitPdfXRef : IBitPdfXRef
         int searchStart = Math.Max(0, _reader.Length - 2048);
         // A classic xref commonly begins in the preceding chunk. Acquire the
         // bounded tail in one request, while keeping the same startxref search.
-        int acquireStart = _source is BitPdfHttpRangeByteSource ranges
+        int acquireStart = _source is IBitPdfPartialByteSource ranges
             ? Math.Max(0, _reader.Length - Math.Max(2048, Math.Min(64 * 1024, ranges.ChunkSize))) : searchStart;
         using var window = _source.GetMemory(acquireStart, _reader.Length - acquireStart);
         var tail = window.Span[(searchStart - acquireStart)..];
