@@ -223,6 +223,21 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A WebAssembly demo or sample started from its build output answers its `_framework` files with empty 200s
      outside Development, since its static web assets come from the build's development manifest. A probe of
      your own starts it with `ASPNETCORE_ENVIRONMENT=Development`, as the suites do.
+   - A job cancelled with no runner and no steps never ran: `gh api repos/bitfoundation/bitplatform/check-runs/<job-id>/annotations`
+     says "The job was not acquired by Runner of type hosted", usually for macOS when GitHub has no capacity. Re-run it
+     once its run ends.
+   - A Prerelease run that stops at `dotnet pack` with CP0002 met a public API that a merge changed without its
+     `CompatibilitySuppressions.xml`. `dotnet build` the project with `-p:GeneratePackageOnBuild=false` first, as the
+     workflow does, or the pack fails with NU5026, then pack with `-p:ApiCompatGenerateSuppressionFile=true` and put
+     back the BOM it drops. Only packing validates: All CD and a demo's Release build still go through.
+   - A template conditional that stays in a generated project at random, and only in CI, comes from the template
+     engine's one conditional switch for all `.cs` files: a file that ends with it off leaves it off for the next one,
+     unless that one starts with `//+:cnd:noEmit`. A template in a folder is read in the file system's order, which on
+     a Linux runner changes from run to run, while Windows reads by name and never shows it. To reproduce it, plant a
+     file that leaves it off right before the one that failed.
+   - A Workbench test on a phone whose tap does nothing can be a tap on the shell's floating Tools button: it lies
+     outside the view's iframe, so Playwright's check of what the tap would hit doesn't see it. A screenshot right
+     after the tap shows the Tools panel. The Workbench's tests exist only in a project made with `--advancedTests`.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
