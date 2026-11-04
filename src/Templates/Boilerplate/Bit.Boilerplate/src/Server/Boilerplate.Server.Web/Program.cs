@@ -92,6 +92,8 @@ public static partial class Program
     /// while reducing the client's size through invariant culture.
     /// https://learn.microsoft.com/en-us/dotnet/core/runtime-config/globalization#invariant-mode
     /// </summary>
+    // [mirror] the server keeps its cultures under -p:InvariantGlobalization=true - keep in sync with:
+    // - src/LandingPage/Boilerplate.LandingPage.Server/Program.cs
     private static void ConfigureGlobalization()
     {
         Environment.SetEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "false");

@@ -11,6 +11,11 @@
     @if (OmitScripts is false)
     {
         <BelemetryScript />
+        <script>
+            @* iOS Safari zooms in when a field under 16px gets the focus *@
+            (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
+                (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover');
+        </script>
     }
 
     @if (string.IsNullOrWhiteSpace(settings.Site.GoogleSiteVerification) is false)
@@ -22,11 +27,6 @@
         <meta name="msvalidate.01" content="@settings.Site.BingSiteVerification" />
     }
 
-    @if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-    {
-        @* A plain link, since <Link> would add a version query and the stylesheet asks for the font without one *@
-        <link rel="preload" href="fonts/vazirmatn/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin />
-    }
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
@@ -48,12 +48,10 @@
                 const start = Blazor.start;
                 Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
 
-                @* A first install starts the app at once, while an update waits for the tab to be hidden before it reloads *@
+                @* A first install and an update both start at once: the browser keeps the scroll position, and these pages have little to lose *@
                 window.bitBswupHandler = (message, data) => {
-                    if (message === 'DOWNLOAD_FINISHED' && data?.firstInstall) {
+                    if ((message === 'DOWNLOAD_FINISHED' && data?.firstInstall) || message === 'UPDATE_READY') {
                         data.reload();
-                    } else if (message === 'UPDATE_READY') {
-                        document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && data.reload());
                     }
                 };
             })();

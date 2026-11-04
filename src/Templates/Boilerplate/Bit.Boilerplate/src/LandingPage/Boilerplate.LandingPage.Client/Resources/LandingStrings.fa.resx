@@ -699,6 +699,42 @@
     <data name="GalleryHowResultBody" xml:space="preserve">
         <value>agentتان با skillهای پروژه آن را سر هم می‌کند، به هر دو زبان، و همراه بقیه‌ی پروژه منتشر می‌شود.</value>
     </data>
+    <data name="GalleryScoresTitle" xml:space="preserve">
+        <value>نمره‌ی کامل، روی گوشی</value>
+    </data>
+    <data name="GalleryScoreMobile" xml:space="preserve">
+        <value>موبایل</value>
+    </data>
+    <data name="GalleryScorePerformance" xml:space="preserve">
+        <value>عملکرد</value>
+    </data>
+    <data name="GalleryScoreAccessibility" xml:space="preserve">
+        <value>دسترس‌پذیری</value>
+    </data>
+    <data name="GalleryScoreBestPractices" xml:space="preserve">
+        <value>بهترین شیوه‌ها</value>
+    </data>
+    <data name="GalleryScoreSeo" xml:space="preserve">
+        <value>سئو</value>
+    </data>
+    <data name="GalleryScoreAgentic" xml:space="preserve">
+        <value>مرور با عامل هوشمند</value>
+    </data>
+    <data name="GalleryScoreSource" xml:space="preserve">
+        <value>منبع:</value>
+    </data>
+    <data name="GalleryScoreTested" xml:space="preserve">
+        <value>، موبایل، سنجیده‌شده در {0}</value>
+    </data>
+    <data name="ErrorPageTitle" xml:space="preserve">
+        <value>مشکلی از سمت ما پیش آمد</value>
+    </data>
+    <data name="ErrorPageBody" xml:space="preserve">
+        <value>معمولا با بارگذاری دوباره‌ی صفحه درست می‌شود.</value>
+    </data>
+    <data name="ErrorPageReload" xml:space="preserve">
+        <value>بارگذاری دوباره</value>
+    </data>
     <data name="GalleryFooter" xml:space="preserve">
         <value>همه‌ی کسب‌وکارها، آدم‌ها و عددهای این نمونه‌ها ساختگی‌اند.</value>
     </data>

@@ -183,10 +183,10 @@ public static class WaitlistEndpoints
     }
 }
 
-public sealed partial class DirectWaitlistClient(WaitlistService service, NavigationManager navigationManager, LandingServerSettings settings) : IWaitlistClient
+public sealed partial class DirectWaitlistClient(WaitlistService service, NavigationManager navigationManager) : IWaitlistClient
 {
     public Task<WaitlistJoinResult> JoinAsync(WaitlistJoinRequest request, CancellationToken cancellationToken)
-        => service.JoinAsync(request, settings.Site.Url ?? new Uri(navigationManager.BaseUri), cancellationToken);
+        => service.JoinAsync(request, new Uri(navigationManager.BaseUri), cancellationToken);
 
     public Task<WaitlistConfirmResult> ConfirmAsync(string token, CancellationToken cancellationToken)
         => Wrap(() => service.ConfirmAsync(token, cancellationToken));

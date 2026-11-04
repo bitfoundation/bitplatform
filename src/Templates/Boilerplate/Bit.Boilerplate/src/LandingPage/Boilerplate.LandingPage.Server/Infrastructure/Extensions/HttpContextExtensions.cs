@@ -42,9 +42,7 @@ public static class HttpContextExtensions
 
         public Uri GetSiteUrl()
         {
-            var settings = context.RequestServices.GetRequiredService<LandingServerSettings>();
-
-            return settings.Site.Url ?? new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}/");
+            return new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}/");
         }
     }
 }

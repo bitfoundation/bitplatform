@@ -3,6 +3,15 @@
         "Boilerplate.LandingPage.Server": {
             "commandName": "Project",
             "launchBrowser": true,
+            //#if (framework == 'net10.0')
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
+            //#endif
             "applicationUrl": "http://localhost:7030",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using Boilerplate.LandingPage.Client.Infrastructure.Services;
 
 namespace Boilerplate.LandingPage.Tests.Features;
 
@@ -288,26 +289,148 @@ public class PageTests
     }
 
     [TestMethod]
-    public async Task ThePublicAddress_Should_BuildTheCanonicalLinksAndTheSitemap()
+    public async Task ThePublicAddress_Should_ComeFromTheRequest()
     {
-        await using var configured = await new LandingTestServer().Start(before: builder =>
+        await using var indexed = await new LandingTestServer().Start(before: builder =>
         {
-            builder.Configuration["Site:Url"] = "https://www.example.com/";
+            builder.Configuration["Site:Url"] = "https://ignored.example.com/";
             builder.Configuration["Site:AllowIndexing"] = "true";
         });
-        using var configuredClient = configured.CreateClient();
-        var path = LandingSites.All[0].Path.Length is 0 ? LandingRoutes.Home : LandingSites.All[0].Path;
+        using var indexedClient = indexed.CreateClient();
+        var path = SamplePath();
 
-        using var response = await configuredClient.GetAsync(path);
+        using var response = await GetFrom(indexedClient, "www.example.com", path);
+        using var sitemapResponse = await GetFrom(indexedClient, "www.example.com", "sitemap.xml");
         var html = await response.Content.ReadAsStringAsync();
-        var sitemap = await configuredClient.GetStringAsync("sitemap.xml");
+        var sitemap = await sitemapResponse.Content.ReadAsStringAsync();
 
-        Assert.Contains($"rel=\"canonical\" href=\"https://www.example.com{path}\"", html);
+        Assert.Contains($"rel=\"canonical\" href=\"http://www.example.com{path}\"", html);
         Assert.IsFalse(response.Headers.Contains("X-Robots-Tag"));
-        Assert.IsTrue(XDocument.Parse(sitemap).Descendants(sitemapNamespace + "loc").All(loc => loc.Value.StartsWith("https://www.example.com/", StringComparison.Ordinal)));
+        Assert.IsTrue(XDocument.Parse(sitemap).Descendants(sitemapNamespace + "loc").All(loc => loc.Value.StartsWith("http://www.example.com/", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task TheSeoFiles_Should_ComeFromTheOutputCache_ForEachHost()
+    {
+        await using var cached = await new LandingTestServer().Start();
+        using var cachedClient = cached.CreateClient();
+
+        foreach (var file in new[] { "robots.txt", "sitemap.xml", "llms.txt" })
+        {
+            using var first = await GetFrom(cachedClient, "one.example.com", file);
+            using var second = await GetFrom(cachedClient, "one.example.com", file);
+            using var otherHost = await GetFrom(cachedClient, "two.example.com", file);
+
+            Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
+            Assert.IsFalse(first.Headers.Age.HasValue, $"{file} should be rendered the first time.");
+            Assert.IsTrue(second.Headers.Age.HasValue, $"{file} should come from the output cache the second time.");
+            Assert.Contains("two.example.com", await otherHost.Content.ReadAsStringAsync(), $"{file} must not hand one host's addresses to another.");
+        }
+    }
+
+    [TestMethod]
+    public async Task APage_Should_SayItsLanguageInTheResponse()
+    {
+        using var english = await client.GetAsync(SamplePath());
+
+        Assert.AreEqual("en-US", english.Content.Headers.ContentLanguage.Single());
+
+        if (LandingCultures.InvariantGlobalization)
+        {
+            Assert.Inconclusive("The landing page is in English only.");
+            return;
+        }
+
+        using var persian = await client.GetAsync($"/fa-IR{SamplePath()}");
+
+        Assert.AreEqual("fa-IR", persian.Content.Headers.ContentLanguage.Single());
+    }
+
+    [TestMethod]
+    public async Task TheHealthEndpoint_Should_SayDegraded_WithoutAnSmtpServer()
+    {
+        using var response = await client.GetAsync("health");
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("Degraded", await response.Content.ReadAsStringAsync());
+    }
+
+    [TestMethod]
+    public async Task TheHealthEndpoint_Should_FailWhenTheSmtpServerDoes_AndLeaveAliveAlone()
+    {
+        await using var noMail = await new LandingTestServer().Start(before: builder => builder.Configuration["ConnectionStrings:smtp"] = "Endpoint=smtp://127.0.0.1:1");
+        using var noMailClient = noMail.CreateClient();
+
+        using var health = await noMailClient.GetAsync("health");
+        using var alive = await noMailClient.GetAsync("alive");
+
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, health.StatusCode);
+        Assert.AreEqual("Unhealthy", await health.Content.ReadAsStringAsync(), "The answer stays the bare status: this endpoint is public.");
+        Assert.AreEqual(HttpStatusCode.OK, alive.StatusCode, "Deployments check /alive, and a mail outage must not restart the site.");
+    }
+
+    [TestMethod]
+    [DataRow("Email:DefaultFromEmail", "not-an-email")]
+    [DataRow("Email:DefaultFromName", "")]
+    [DataRow("AI:OpenAI:ChatModel", "")]
+    public async Task InvalidSettings_Should_StopTheStart(string key, string value)
+    {
+        await using var invalid = new LandingTestServer();
+
+        await Assert.ThrowsAsync<Microsoft.Extensions.Options.OptionsValidationException>(() => invalid.Start(before: builder => builder.Configuration[key] = value));
+    }
+
+    [TestMethod]
+    public async Task AFailureWhilePrerendering_Should_AnswerAnErrorThatNoCdnKeeps()
+    {
+        if (LandingSites.Find("ecommerce") is not { } sample)
+        {
+            Assert.Inconclusive("The sample that shows the rating is gone.");
+            return;
+        }
+
+        await using var failing = await new LandingTestServer().Start(after: services => services.AddScoped<IStoreListingClient, FailingStoreListingClient>(), environment: "Production");
+        using var failingClient = failing.CreateClient();
+
+        using var response = await failingClient.GetAsync(sample.Path);
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("Something went wrong on our side", html);
+        Assert.DoesNotContain("lp-error", html, "The plain page, not the panel of a page answering 200.");
+        Assert.IsFalse(response.Headers.CacheControl?.Public ?? false, "A CDN must not keep it.");
+    }
+
+    [TestMethod]
+    public async Task TheHome_Should_ShowItsScoresWithTheirSource()
+    {
+        var html = await client.GetStringAsync(LandingRoutes.Home);
+
+        if (html.Contains("gallery-hero", StringComparison.Ordinal) is false)
+        {
+            Assert.Inconclusive("The home page is a sample, not the gallery.");
+            return;
+        }
+
+        Assert.AreEqual(4, Regex.Count(html, "class=\"score-ring\""));
+        Assert.Contains("https://pagespeed.web.dev", html);
+        Assert.Contains("4 November 2026", html);
+    }
+
+    private sealed class FailingStoreListingClient : IStoreListingClient
+    {
+        public Task<Client.Infrastructure.Models.StoreListing?> GetAppStoreListingAsync(string appleAppId, CancellationToken cancellationToken) => throw new InvalidOperationException("The App Store lookup failed.");
     }
 
     private static string SamplePath() => LandingSites.All[0].Path.Length is 0 ? LandingRoutes.Home : LandingSites.All[0].Path;
+
+    private static async Task<HttpResponseMessage> GetFrom(HttpClient httpClient, string host, string url)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Host = host;
+
+        return await httpClient.SendAsync(request);
+    }
 
     private static async Task<HttpResponseMessage> GetAs(HttpClient httpClient, string userAgent, string url)
     {

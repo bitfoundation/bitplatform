@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using Microsoft.AspNetCore.Localization;
 using Boilerplate.LandingPage.Server.Features.Pwa;
 using Boilerplate.LandingPage.Server.Features.Seo;
@@ -18,8 +19,23 @@ public static partial class Program
 
             app.UseLandingForwardedHeaders();
 
+            //#if (framework == 'net10.0')
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            if (env.IsDevelopment())
+            {
+                app.UseWebAssemblyDebugging();
+            }
+
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
+
             if (env.IsDevelopment() is false)
             {
+                app.UseLandingExceptionHandler();
                 app.UseHttpsRedirection();
                 app.UseResponseCompression();
                 app.UseLandingSecurityHeaders();
@@ -32,12 +48,15 @@ public static partial class Program
                 SupportedCultures = [.. LandingCultures.Supported.Select(s => s.Culture)],
                 SupportedUICultures = [.. LandingCultures.Supported.Select(s => s.Culture)],
                 DefaultRequestCulture = new RequestCulture(LandingCultures.Default),
-                RequestCultureProviders = [new LandingUrlCultureProvider()]
+                RequestCultureProviders = [new LandingUrlCultureProvider()],
+                ApplyCurrentCultureToResponseHeaders = true
             });
 
             app.UseLandingStaticFiles();
 
             app.UseRouting();
+
+            app.UseOutputCache();
 
             app.UseWebSockets(new() { KeepAliveInterval = TimeSpan.FromSeconds(20) });
 
@@ -46,6 +65,7 @@ public static partial class Program
             app.UseAntiforgery();
 
             app.MapGet("/alive", () => Results.Ok()).ExcludeFromDescription();
+            app.MapHealthChecks("/health").CacheOutput(LandingOutputCaches.Health);
 
             app.MapLandingSeo();
             app.MapLandingWebManifests();

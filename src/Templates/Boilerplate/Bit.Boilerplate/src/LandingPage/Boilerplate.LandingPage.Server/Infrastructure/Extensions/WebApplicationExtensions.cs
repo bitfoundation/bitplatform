@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Localization;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -115,6 +117,40 @@ public static class WebApplicationExtensions
                 }
 
                 await next.Invoke();
+            });
+
+            return app;
+        }
+
+        // Plain HTML, since Blazor may be what failed; a 500 gets no cache header, so a CDN doesn't keep it
+        public WebApplication UseLandingExceptionHandler()
+        {
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                ExceptionHandler = async context =>
+                {
+                    var path = context.Features.Get<IExceptionHandlerPathFeature>()?.Path ?? string.Empty;
+                    var culture = LandingCultures.Find(path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()) ?? LandingCultures.Default;
+                    LandingCultures.Apply(culture);
+
+                    var localizer = context.RequestServices.GetRequiredService<IStringLocalizer<LandingStrings>>();
+
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    await context.Response.WriteAsync($"""
+                        <!DOCTYPE html>
+                        <html lang="{culture.Name}" dir="{(culture.TextInfo.IsRightToLeft ? "rtl" : "ltr")}">
+                        <meta charset="utf-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1" />
+                        <meta name="color-scheme" content="light dark" />
+                        <title>{localizer[nameof(LandingStrings.ErrorPageTitle)]}</title>
+                        <body style="display:grid;place-content:center;gap:8px;min-height:90vh;margin:0;padding:16px;text-align:center;font-family:system-ui,sans-serif">
+                        <h1 style="margin:0;font-size:1.5rem">{localizer[nameof(LandingStrings.ErrorPageTitle)]}</h1>
+                        <p style="margin:0">{localizer[nameof(LandingStrings.ErrorPageBody)]}</p>
+                        <p><a href="">{localizer[nameof(LandingStrings.ErrorPageReload)]}</a></p>
+                        </body>
+                        </html>
+                        """);
+                }
             });
 
             return app;

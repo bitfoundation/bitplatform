@@ -229,8 +229,8 @@ there, and the setting or secret that carries it. Every environment gets its own
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
-- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: its public address (`Site__Url`), the
-  `smtp` connection string its waitlist emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: the `smtp` connection string its waitlist
+  emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.

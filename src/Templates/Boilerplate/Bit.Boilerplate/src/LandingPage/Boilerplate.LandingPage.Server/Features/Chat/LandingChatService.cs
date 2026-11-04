@@ -98,7 +98,8 @@ public static partial class LandingChatEndpoints
                 Endpoint = settings.AI.OpenAI.ChatEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIChatClient())
-            .UseLogging();
+            .UseLogging()
+            .UseOpenTelemetry();
         }
 
         return services;
