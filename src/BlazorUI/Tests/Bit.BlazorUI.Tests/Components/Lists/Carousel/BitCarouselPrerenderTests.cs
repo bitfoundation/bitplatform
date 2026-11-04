@@ -68,9 +68,9 @@ public class BitCarouselPrerenderTests
     {
         var html = await RenderAsync(itemsCount: 3, []);
 
-        // The button that goes back is the one on the left of a left-to-right carousel.
-        Assert.IsTrue(Regex.IsMatch(html, @"class=""bit-csl-rbt[^""]*""\s+style=""display:none"));
-        Assert.IsFalse(Regex.IsMatch(html, @"class=""bit-csl-lbt[^""]*""\s+style=""display:none"));
+        // The previous button is the one that goes back, whichever edge the direction puts it at.
+        Assert.IsTrue(Regex.IsMatch(html, @"class=""bit-csl-pbt[^""]*""\s+style=""display:none"));
+        Assert.IsFalse(Regex.IsMatch(html, @"class=""bit-csl-nbt[^""]*""\s+style=""display:none"));
     }
 
 

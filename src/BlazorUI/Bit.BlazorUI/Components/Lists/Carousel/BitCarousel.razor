@@ -95,17 +95,15 @@
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
            the controls before the content they control), and the stylesheet places them over the slides.
            The previous button comes first, since it sits at the start of the reading order in either
-           direction, so the focus does not run backwards across the carousel. What a page gives a button (its
-           label, its icon, its parts) is named after what it does and stays on it, while the direction picks
-           its edge: bit-csl-lbt is the right edge (the bottom of a vertical carousel) and bit-csl-rbt the left
-           one (the top), so the next button sits at the left edge of a right-to-left carousel. *@
+           direction, so the focus does not run backwards across the carousel. Each button keeps its class
+           (bit-csl-pbt, bit-csl-nbt) and what a page gives it (its label, its icon, its parts) in either
+           direction, and the stylesheet places it off the direction class of the root (bit-csl-rtl): the next
+           button sits at the right edge of a left-to-right carousel, at the left edge of a right-to-left one
+           and at the bottom of a vertical one. *@
         @if (HideNextPrev is false)
         {
-            var isRtl = Vertical is false && _IsRtl;
-
-            // The default chevrons point to the edge their button sits at.
-            var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (Vertical ? "ChevronDown" : isRtl ? "ChevronRight bit-ico-r180" : "ChevronRight"));
-            var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? (Vertical ? "ChevronUp" : isRtl ? "ChevronRight" : "ChevronRight bit-ico-r180"));
+            var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? GetDefaultNextIconName());
+            var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? GetDefaultPrevIconName());
 
             // The styles of a part are joined with JoinStyles, which puts the semicolon between two of them: the
             // display:none of a button at the end it cannot pass would otherwise run into a style the page gives
@@ -118,11 +116,11 @@
                     aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
                     disabled="@(Disabled)"
                     aria-disabled="@(Disabled ? "true" : null)"
-                    class="@(isRtl ? "bit-csl-lbt" : "bit-csl-rbt") @Classes?.Buttons @Classes?.PrevButton"
+                    class="bit-csl-pbt @Classes?.Buttons @Classes?.PrevButton"
                     style="@JoinStyles(JoinStyles(_prevButtonStyle, Styles?.Buttons), Styles?.PrevButton)">
                 <i aria-hidden="true"
                    style="@JoinStyles(Styles?.ButtonIcons, Styles?.PrevButtonIcon)"
-                   class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
+                   class="@prevIcon?.GetCssClasses() @GetCustomIconMirrorClass(PrevIcon, PrevIconName) @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
             </button>
 
             <button @ref="_nextButtonRef"
@@ -133,11 +131,11 @@
                     aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
                     disabled="@(Disabled)"
                     aria-disabled="@(Disabled ? "true" : null)"
-                    class="@(isRtl ? "bit-csl-rbt" : "bit-csl-lbt") @Classes?.Buttons @Classes?.NextButton"
+                    class="bit-csl-nbt @Classes?.Buttons @Classes?.NextButton"
                     style="@JoinStyles(JoinStyles(_nextButtonStyle, Styles?.Buttons), Styles?.NextButton)">
                 <i aria-hidden="true"
                    style="@JoinStyles(Styles?.ButtonIcons, Styles?.NextButtonIcon)"
-                   class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
+                   class="@nextIcon?.GetCssClasses() @GetCustomIconMirrorClass(NextIcon, NextIconName) @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
             </button>
         }
 

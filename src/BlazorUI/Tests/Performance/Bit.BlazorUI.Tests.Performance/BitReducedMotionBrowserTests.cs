@@ -242,7 +242,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
             let moved = 0;
             for (const carousel of document.querySelectorAll('[data-probe=carousel]')) {
                 if (carousel.querySelector('.bit-crsi[style*=""transition""]')) { moved++; continue; }
-                carousel.querySelectorAll(':is(.bit-csl-lbt, .bit-csl-rbt)').forEach(b => getComputedStyle(b).display !== 'none' && b.click());
+                carousel.querySelectorAll(':is(.bit-csl-nbt, .bit-csl-pbt)').forEach(b => getComputedStyle(b).display !== 'none' && b.click());
             }
             return moved === 3;
         }", null, new() { Timeout = DefaultTimeout, PollingInterval = 250 });

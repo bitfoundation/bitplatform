@@ -330,8 +330,9 @@ public partial class BitCarousel : BitComponentBase
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
     /// For built-in Fluent UI icons, use <see cref="NextIconName"/> instead.
     /// <br />
-    /// A custom icon is drawn as it is given in either direction. When none is set, the default chevron points
-    /// to the edge the button sits at, which is the left one in a right-to-left carousel.
+    /// The icon is given for a left-to-right carousel, where the button sits at the right edge, and is mirrored in a
+    /// right-to-left one, where the button sits at the left edge. When none is set, the default chevron points to
+    /// the edge the button sits at.
     /// </remarks>
     /// <example>
     /// Bootstrap: NextIcon="BitIconInfo.Bi("chevron-right")"
@@ -347,6 +348,8 @@ public partial class BitCarousel : BitComponentBase
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronRight</c>).
     /// <br />
     /// For external icon libraries, use <see cref="NextIcon"/> instead.
+    /// <br />
+    /// Like <see cref="NextIcon"/>, the icon is given for a left-to-right carousel and is mirrored in a right-to-left one.
     /// </remarks>
     [Parameter] public string? NextIconName { get; set; }
 
@@ -441,8 +444,9 @@ public partial class BitCarousel : BitComponentBase
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
     /// For built-in Fluent UI icons, use <see cref="PrevIconName"/> instead.
     /// <br />
-    /// A custom icon is drawn as it is given in either direction. When none is set, the default chevron points
-    /// to the edge the button sits at, which is the right one in a right-to-left carousel.
+    /// The icon is given for a left-to-right carousel, where the button sits at the left edge, and is mirrored in a
+    /// right-to-left one, where the button sits at the right edge. When none is set, the default chevron points to
+    /// the edge the button sits at.
     /// </remarks>
     /// <example>
     /// Bootstrap: PrevIcon="BitIconInfo.Bi("chevron-left")"
@@ -458,6 +462,8 @@ public partial class BitCarousel : BitComponentBase
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronLeft</c>).
     /// <br />
     /// For external icon libraries, use <see cref="PrevIcon"/> instead.
+    /// <br />
+    /// Like <see cref="PrevIcon"/>, the icon is given for a left-to-right carousel and is mirrored in a right-to-left one.
     /// </remarks>
     [Parameter] public string? PrevIconName { get; set; }
 
@@ -793,6 +799,10 @@ public partial class BitCarousel : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => Vertical ? "bit-csl-vrt" : string.Empty);
+
+        // The direction the slides are laid out in (see _IsRtl), which the stylesheet places the next/prev buttons by:
+        // the class follows the slides rather than the page, so the buttons never sit at the edges they do not go to.
+        ClassBuilder.Register(() => _IsRtl ? "bit-csl-rtl" : string.Empty);
 
         ClassBuilder.Register(() => DotsPlacement switch
         {
@@ -1160,7 +1170,14 @@ public partial class BitCarousel : BitComponentBase
 
         if (rtl is not null)
         {
-            _resolvedRtl = await rtl;
+            var resolvedRtl = await rtl;
+
+            if (_resolvedRtl != resolvedRtl)
+            {
+                _resolvedRtl = resolvedRtl;
+
+                ClassBuilder.Reset();
+            }
         }
 
         if (IsDisposed) return;
@@ -1367,6 +1384,32 @@ public partial class BitCarousel : BitComponentBase
         }
     }
 
+    // The default chevrons point to the edge their button sits at, and the direction the slides are laid out in (see
+    // _IsRtl) moves the next button to the left edge of a right-to-left carousel and the previous one to its right edge.
+    private string GetDefaultNextIconName()
+    {
+        if (Vertical) return "ChevronDown";
+
+        return _IsRtl ? "ChevronRight bit-ico-r180" : "ChevronRight";
+    }
+
+    private string GetDefaultPrevIconName()
+    {
+        if (Vertical) return "ChevronUp";
+
+        return _IsRtl ? "ChevronRight" : "ChevronRight bit-ico-r180";
+    }
+
+    // A custom icon is given for the edge its button sits at in a left-to-right carousel, and it goes along with the
+    // button to the other edge of a right-to-left one, so it is mirrored there to keep pointing outwards (bit-csl-mir).
+    // A page cannot do it itself, since a direction Dir does not name is only known once the carousel has measured it.
+    private string? GetCustomIconMirrorClass(BitIconInfo? icon, string? iconName)
+    {
+        if (Vertical || _IsRtl is false) return null;
+
+        return (icon is { IsEmpty: false } || iconName.HasValue()) ? "bit-csl-mir" : null;
+    }
+
     private void SetNavigationButtonsVisibility()
     {
         var itemsCount = _allItems.Count;
@@ -1397,9 +1440,12 @@ public partial class BitCarousel : BitComponentBase
         return _currentIndices.Length > 0 && _currentIndices[0] > 0;
     }
 
-    private async Task GoLeft() => await ((Vertical is false && _IsRtl) ? Prev() : Next());
+    // The moves the physical gestures ask for (an arrow key, a drag, a sideways scroll), named after the way the view
+    // travels along the slides: to the right (down a vertical carousel) is the next slide of a left-to-right carousel
+    // and the previous one of a right-to-left one, whose slides run the other way.
+    private async Task GoRightOrDown() => await ((Vertical is false && _IsRtl) ? Prev() : Next());
 
-    private async Task GoRight() => await ((Vertical is false && _IsRtl) ? Next() : Prev());
+    private async Task GoLeftOrUp() => await ((Vertical is false && _IsRtl) ? Next() : Prev());
 
     // Everything the person reading the page does to the carousel by hand goes through here first, so the
     // auto scrolling can step aside for them when it was asked to.
@@ -1413,18 +1459,18 @@ public partial class BitCarousel : BitComponentBase
         UpdateAutoPlayTimer();
     }
 
-    private async Task HandleGoLeft()
+    private async Task HandleGoRightOrDown()
     {
         HandleInteraction();
 
-        await GoLeft();
+        await GoRightOrDown();
     }
 
-    private async Task HandleGoRight()
+    private async Task HandleGoLeftOrUp()
     {
         HandleInteraction();
 
-        await GoRight();
+        await GoLeftOrUp();
     }
 
     // The buttons are handled apart from the keys, the drag and the wheel that also go back and forth,
@@ -1829,12 +1875,12 @@ public partial class BitCarousel : BitComponentBase
         {
             case "ArrowRight" when Vertical is false:
             case "ArrowDown" when Vertical:
-                await HandleGoLeft();
+                await HandleGoRightOrDown();
                 break;
 
             case "ArrowLeft" when Vertical is false:
             case "ArrowUp" when Vertical:
-                await HandleGoRight();
+                await HandleGoLeftOrUp();
                 break;
 
             case "Home":
@@ -1930,7 +1976,7 @@ public partial class BitCarousel : BitComponentBase
         {
             // A horizontal scroll is a physical motion along the slides, so it maps to the visual
             // direction of the carousel (which is what flips it for right-to-left).
-            await (delta > 0 ? HandleGoLeft() : HandleGoRight());
+            await (delta > 0 ? HandleGoRightOrDown() : HandleGoLeftOrUp());
         }
     }
 
@@ -1956,13 +2002,14 @@ public partial class BitCarousel : BitComponentBase
 
         await EndDrag();
 
+        // The slides are grabbed, so pulling them to the left (or up) brings in the ones to their right (or below).
         if (along < 0)
         {
-            await HandleGoLeft();
+            await HandleGoRightOrDown();
         }
         else
         {
-            await HandleGoRight();
+            await HandleGoLeftOrUp();
         }
     }
 

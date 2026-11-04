@@ -124,8 +124,8 @@ $csl-private-properties:
     user-select: auto;
 }
 
-.bit-csl-lbt,
-.bit-csl-rbt,
+.bit-csl-nbt,
+.bit-csl-pbt,
 .bit-csl-ppb {
     border: 0;
     padding: 0;
@@ -170,8 +170,8 @@ $csl-private-properties:
 // The next/prev buttons are rendered before the slides (see the comment in the markup) and the slide
 // of the Fade effect carries a z-index of its own, so they are stacked above it explicitly; equal
 // z-indexes would leave the slide, the later element, painting over them.
-.bit-csl-lbt,
-.bit-csl-rbt {
+.bit-csl-nbt,
+.bit-csl-pbt {
     top: 0;
     bottom: 0;
     z-index: 2;
@@ -189,16 +189,45 @@ $csl-private-properties:
     }
 }
 
-.bit-csl-lbt {
+// The next button sits at the edge the slides move in from, the right one of a left-to-right carousel and the left one
+// of a right-to-left carousel, and the previous button at the other edge. The direction is the one the slides are laid
+// out in, which the root carries in bit-csl-rtl (resolved with their measurement when Dir names none), so the buttons
+// always agree with the slides; a :dir() would follow the page ahead of them. The :where keeps the swap as light as the
+// rule it overrides, so a class a page gives a button through Classes still places it, and the child combinators keep
+// it off the buttons of a carousel nested in the slides.
+.bit-csl-nbt {
     right: 0;
 }
 
-.bit-csl-rbt {
+.bit-csl-pbt {
     left: 0;
 }
 
+:where(.bit-csl-rtl > .bit-csl-cnt) > .bit-csl-nbt {
+    left: 0;
+    right: auto;
+}
+
+:where(.bit-csl-rtl > .bit-csl-cnt) > .bit-csl-pbt {
+    left: auto;
+    right: 0;
+}
+
+// A custom icon of a next/prev button is given for a left-to-right carousel, and is mirrored along with its button in
+// a right-to-left one (the default chevrons are picked for the edge instead). The scale composes with a transform of
+// the icon's own (a rotation an icon library applies), which a transform of this rule would replace.
+.bit-csl-mir {
+    scale: -1 1;
+}
+
+@supports not (scale: -1 1) {
+    .bit-csl-mir {
+        transform: scaleX(-1);
+    }
+}
+
 // A vertical carousel scrolls along its height, so the buttons move to the edges it actually scrolls
-// towards: the "left" (next) button to the bottom and the "right" (prev) button to the top.
+// towards: the next button to the bottom and the previous one to the top, in either direction.
 .bit-csl-vrt {
     .bit-crsi {
         top: unset;
@@ -213,8 +242,8 @@ $csl-private-properties:
         touch-action: pan-x;
     }
 
-    .bit-csl-lbt,
-    .bit-csl-rbt {
+    .bit-csl-nbt,
+    .bit-csl-pbt {
         top: unset;
         bottom: unset;
         left: 0;
@@ -223,11 +252,11 @@ $csl-private-properties:
         height: var(--bit-Carousel-button-width, 10%);
     }
 
-    .bit-csl-lbt {
+    .bit-csl-nbt {
         bottom: 0;
     }
 
-    .bit-csl-rbt {
+    .bit-csl-pbt {
         top: 0;
     }
 }

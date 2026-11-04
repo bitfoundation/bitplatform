@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -33,10 +34,10 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsNotNull(container);
 
         // next/prev buttons should exist by default and be real buttons
-        var leftBtn = component.Find("button.bit-csl-lbt");
-        var rightBtn = component.Find("button.bit-csl-rbt");
-        Assert.IsNotNull(leftBtn);
-        Assert.IsNotNull(rightBtn);
+        var nextButton = component.Find("button.bit-csl-nbt");
+        var prevButton = component.Find("button.bit-csl-pbt");
+        Assert.IsNotNull(nextButton);
+        Assert.IsNotNull(prevButton);
 
         // the dots appear once the carousel has been laid out and knows its pages count
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
@@ -84,8 +85,8 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.PrevAriaLabel, "Go back");
         });
 
-        Assert.AreEqual("Go forwards", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
-        Assert.AreEqual("Go back", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Go forwards", component.Find(".bit-csl-nbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Go back", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
 
         component.WaitForAssertion(() =>
         {
@@ -94,8 +95,8 @@ public partial class BitCarouselTests : BunitTestContext
         });
     }
 
-    // The buttons swap sides in right-to-left, and what a page names them goes along: the next button is the one at
-    // the left edge there, and it is the one that goes forward.
+    // The buttons swap edges in right-to-left, and what a page names them goes along: the next button sits at the left
+    // edge there (the stylesheet places it off the bit-csl-rtl class of the root), and it is the one that goes forward.
     [TestMethod]
     public async Task BitCarouselShouldKeepCustomAriaLabelsOnTheButtonsTheyNameInRtl()
     {
@@ -108,10 +109,12 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        var next = component.Find(".bit-csl-rbt");
+        Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
+
+        var next = component.Find(".bit-csl-nbt");
 
         Assert.AreEqual("Next", next.GetAttribute("aria-label"));
-        Assert.AreEqual("Previous", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Previous", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
 
         await next.ClickAsync(new MouseEventArgs());
 
@@ -132,8 +135,9 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.PrevAriaLabel, "Previous");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual("Next", component.Find(".bit-csl-rbt").GetAttribute("aria-label")));
-        Assert.AreEqual("Previous", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
+        Assert.AreEqual("Next", component.Find(".bit-csl-nbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Previous", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -141,30 +145,43 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        Assert.AreEqual("Next slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
-        Assert.AreEqual("Previous slide", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Next slide", component.Find(".bit-csl-nbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Previous slide", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
     }
 
+    // Each button keeps its class and its name in either direction, and the direction class of the root is what moves
+    // the next button to the left edge of a right-to-left carousel.
     [TestMethod]
-    public void BitCarouselShouldFlipNavigationAriaLabelsInRtl()
+    public void BitCarouselShouldPlaceTheButtonsByTheDirectionInRtl()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        Assert.AreEqual("Previous slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
-        Assert.AreEqual("Next slide", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+        Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
+        Assert.AreEqual("Next slide", component.Find(".bit-csl-nbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Previous slide", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotMarkALeftToRightCarouselAsRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
     }
 
     // A Dir that names no direction leaves it to the page (unset) or to the content (Auto): the slides are placed with
     // physical transforms, so the carousel reads the direction its container is laid out in with every measurement
-    // and lays itself out - the buttons, their names, the slides - the way it reads.
+    // and lays itself out - the buttons, their icons, the slides - the way it reads.
     [TestMethod,
         DataRow(null),
         DataRow(BitDir.Auto)
     ]
-    public void BitCarouselShouldFlipNavigationAriaLabelsInAResolvedRtl(BitDir? dir)
+    public void BitCarouselShouldPlaceTheButtonsByTheDirectionInAResolvedRtl(BitDir? dir)
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
         var component = RenderComponent<BitCarouselTest>(parameters =>
@@ -172,8 +189,9 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual("Previous slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label")));
-        Assert.AreEqual("Next slide", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
+        Assert.AreEqual("Next slide", component.Find(".bit-csl-nbt").GetAttribute("aria-label"));
+        Assert.AreEqual("Previous slide", component.Find(".bit-csl-pbt").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -187,7 +205,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        Assert.AreEqual("Next slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+        Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
     }
 
@@ -223,11 +241,11 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.HideNextPrev, true);
         });
 
-        var left = component.FindAll(".bit-csl-lbt");
-        var right = component.FindAll(".bit-csl-rbt");
+        var next = component.FindAll(".bit-csl-nbt");
+        var prev = component.FindAll(".bit-csl-pbt");
 
-        Assert.AreEqual(0, left.Count);
-        Assert.AreEqual(0, right.Count);
+        Assert.AreEqual(0, next.Count);
+        Assert.AreEqual(0, prev.Count);
     }
 
     [TestMethod]
@@ -372,8 +390,8 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsFalse(root.HasAttribute("tabindex"));
 
-        Assert.IsTrue(component.Find(".bit-csl-lbt").HasAttribute("disabled"));
-        Assert.IsTrue(component.Find(".bit-csl-rbt").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find(".bit-csl-nbt").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find(".bit-csl-pbt").HasAttribute("disabled"));
     }
 
     [TestMethod]
@@ -671,10 +689,48 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(2, component.Instance.Carousel.CurrentPage);
-            Assert.Contains("display:none", component.Find(".bit-csl-lbt").GetAttribute("style") ?? "");
+            Assert.Contains("display:none", component.Find(".bit-csl-nbt").GetAttribute("style") ?? "");
         });
 
         Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 1, 1000));
+        Assert.AreEqual(ButtonReferenceId(component, "_prevButtonRef"), FocusedReferenceId(0));
+    }
+
+    // The buttons swap edges in a right-to-left carousel, but the one a key hides is still the one it moved towards,
+    // and the focus it held still goes to the other one: the next button, now at the left edge, hands it to the previous
+    // one at the right edge, and the other way around.
+    [TestMethod]
+    public async Task BitCarouselShouldHandTheFocusOverWhenAKeyHidesTheFocusedButtonInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        await PressKey(component, "End", "next");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(2, component.Instance.Carousel.CurrentPage);
+            Assert.Contains("display:none", component.Find(".bit-csl-nbt").GetAttribute("style") ?? "");
+            Assert.DoesNotContain("display:none", component.Find(".bit-csl-pbt").GetAttribute("style") ?? "");
+        });
+
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 1, 1000));
+        Assert.AreEqual(ButtonReferenceId(component, "_prevButtonRef"), FocusedReferenceId(0));
+
+        await PressKey(component, "Home", "prev");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+            Assert.Contains("display:none", component.Find(".bit-csl-pbt").GetAttribute("style") ?? "");
+        });
+
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => FocusCalls() == 2, 1000));
+        Assert.AreEqual(ButtonReferenceId(component, "_nextButtonRef"), FocusedReferenceId(1));
     }
 
     [TestMethod]
@@ -853,8 +909,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        var leftButton = component.Find(".bit-csl-lbt");
-        await leftButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        var nextButton = component.Find(".bit-csl-nbt");
+        await nextButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Carousel.IsPaused));
     }
@@ -928,7 +984,7 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
-        component.WaitForAssertion(() => Assert.AreEqual("Previous slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label")));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
 
         var carousel = component.Instance.Carousel;
 
@@ -1324,12 +1380,12 @@ public partial class BitCarouselTests : BunitTestContext
         // The carousel pattern of the ARIA authoring practices puts the controls before the content
         // they control, so the next/prev buttons have to come before the slides in the DOM. Between
         // the two buttons, the one at the start of the reading order comes first, so tabbing through
-        // the carousel does not run backwards over it: the "right" (previous) button sits at the left
-        // edge of a left-to-right carousel and is therefore the one reached first.
+        // the carousel does not run backwards over it: the previous button sits at the left edge of a
+        // left-to-right carousel and is therefore the one reached first.
         var container = component.Find(".bit-csl-cnt");
 
-        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-rbt"));
-        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-lbt"));
+        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-pbt"));
+        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-nbt"));
         Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
 
         Assert.AreEqual("false", container.GetAttribute("aria-atomic"));
@@ -1343,12 +1399,12 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        // The buttons keep their physical sides in right-to-left, which is read the other way around,
-        // so the "left" button (the one at the right edge, which goes back there) comes first.
+        // The buttons swap edges in right-to-left, which is read the other way around, so the previous
+        // button, now at the right edge, is still at the start of the reading order and still comes first.
         var container = component.Find(".bit-csl-cnt");
 
-        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-lbt"));
-        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-rbt"));
+        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-pbt"));
+        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-nbt"));
         Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
     }
 
@@ -1364,8 +1420,9 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl-cnt").Children[0].ClassList.Contains("bit-csl-lbt")));
-        Assert.IsTrue(component.Find(".bit-csl-cnt").Children[1].ClassList.Contains("bit-csl-rbt"));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
+        Assert.IsTrue(component.Find(".bit-csl-cnt").Children[0].ClassList.Contains("bit-csl-pbt"));
+        Assert.IsTrue(component.Find(".bit-csl-cnt").Children[1].ClassList.Contains("bit-csl-nbt"));
 
         // The container keeps the direction it inherits rather than being handed one: only an explicit Dir writes it.
         Assert.IsFalse((component.Find(".bit-csl-cnt").GetAttribute("style") ?? "").Contains("direction:rtl"));
@@ -1582,11 +1639,11 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.PrevIconName, "Remove");
         });
 
-        var leftIcon = component.Find(".bit-csl-lbt i");
-        var rightIcon = component.Find(".bit-csl-rbt i");
+        var nextIcon = component.Find(".bit-csl-nbt i");
+        var prevIcon = component.Find(".bit-csl-pbt i");
 
-        Assert.IsTrue(leftIcon.ClassList.Contains("bit-icon--Add"));
-        Assert.IsTrue(rightIcon.ClassList.Contains("bit-icon--Remove"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon--Add"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--Remove"));
     }
 
     [TestMethod]
@@ -1612,8 +1669,8 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         // The next button sits at the left edge of a right-to-left carousel.
-        var next = component.Find(".bit-csl-rbt");
-        var prev = component.Find(".bit-csl-lbt");
+        var next = component.Find(".bit-csl-nbt");
+        var prev = component.Find(".bit-csl-pbt");
 
         Assert.IsTrue(next.ClassList.Contains("next-button"));
         Assert.IsTrue(next.QuerySelector("i")!.ClassList.Contains("next-icon"));
@@ -1626,7 +1683,8 @@ public partial class BitCarouselTests : BunitTestContext
         StringAssert.Contains(prev.GetAttribute("style"), "color: blue");
     }
 
-    // The default chevrons point to the edge their button sits at, whichever way the button goes.
+    // The default chevrons point to the edge their button sits at, whichever way the button goes: the next button sits
+    // at the right edge of a left-to-right carousel and at the left edge of a right-to-left one.
     [TestMethod,
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Rtl)
@@ -1638,13 +1696,94 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        var rightEdgeIcon = component.Find(".bit-csl-lbt i");
-        var leftEdgeIcon = component.Find(".bit-csl-rbt i");
+        AssertDefaultIconsPointTo(component.Find(".bit-csl-nbt i"), component.Find(".bit-csl-pbt i"), dir is BitDir.Rtl);
+    }
 
-        Assert.IsTrue(rightEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
-        Assert.IsFalse(rightEdgeIcon.ClassList.Contains("bit-ico-r180"));
-        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
-        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-ico-r180"));
+    // A direction Dir does not name is only known once the carousel has measured its slides, and the chevrons turn with
+    // the buttons then, the way their names and their reading order do.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitCarouselShouldPointTheDefaultIconsToTheEdgesOfTheirButtonsInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
+
+        AssertDefaultIconsPointTo(component.Find(".bit-csl-nbt i"), component.Find(".bit-csl-pbt i"), rtl: true);
+    }
+
+    // A custom icon is given for a left-to-right carousel, and goes along with its button to the other edge of a
+    // right-to-left one, so it is mirrored there to keep pointing outwards.
+    [TestMethod,
+        DataRow(BitDir.Ltr),
+        DataRow(BitDir.Rtl)
+    ]
+    public void BitCarouselShouldMirrorCustomIconsInRtl(BitDir dir)
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.NextIcon, BitIconInfo.Css("next-icon"));
+            parameters.Add(p => p.PrevIconName, "Remove");
+        });
+
+        var nextIcon = component.Find(".bit-csl-nbt i");
+        var prevIcon = component.Find(".bit-csl-pbt i");
+
+        Assert.IsTrue(nextIcon.ClassList.Contains("next-icon"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--Remove"));
+        Assert.AreEqual(dir is BitDir.Rtl, nextIcon.ClassList.Contains("bit-csl-mir"));
+        Assert.AreEqual(dir is BitDir.Rtl, prevIcon.ClassList.Contains("bit-csl-mir"));
+    }
+
+    // A page cannot mirror its icons for a direction Dir does not name, which only the carousel learns with its measurement.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitCarouselShouldMirrorCustomIconsInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.NextIcon, BitIconInfo.Css("next-icon"));
+            parameters.Add(p => p.PrevIconName, "Remove");
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl-nbt i").ClassList.Contains("bit-csl-mir")));
+        Assert.IsTrue(component.Find(".bit-csl-pbt i").ClassList.Contains("bit-csl-mir"));
+    }
+
+    // The default chevrons are picked for the edge rather than mirrored, and a vertical carousel keeps its buttons at
+    // the top and the bottom in either direction, so neither is mirrored.
+    [TestMethod]
+    public void BitCarouselShouldNotMirrorTheDefaultIconsOrTheIconsOfAVerticalCarousel()
+    {
+        var horizontal = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.IsFalse(horizontal.Find(".bit-csl-nbt i").ClassList.Contains("bit-csl-mir"));
+        Assert.IsFalse(horizontal.Find(".bit-csl-pbt i").ClassList.Contains("bit-csl-mir"));
+
+        var vertical = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.NextIcon, BitIconInfo.Css("next-icon"));
+            parameters.Add(p => p.PrevIconName, "Remove");
+        });
+
+        Assert.IsFalse(vertical.Find(".bit-csl-nbt i").ClassList.Contains("bit-csl-mir"));
+        Assert.IsFalse(vertical.Find(".bit-csl-pbt i").ClassList.Contains("bit-csl-mir"));
     }
 
     [TestMethod]
@@ -1655,13 +1794,13 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Vertical, true);
         });
 
-        // The "left" (next) button moves to the bottom of a vertical carousel and the "right"
-        // (prev) one to the top, so their default chevrons point down and up.
-        var leftIcon = component.Find(".bit-csl-lbt i");
-        var rightIcon = component.Find(".bit-csl-rbt i");
+        // The next button moves to the bottom of a vertical carousel and the previous one to the
+        // top, so their default chevrons point down and up.
+        var nextIcon = component.Find(".bit-csl-nbt i");
+        var prevIcon = component.Find(".bit-csl-pbt i");
 
-        Assert.IsTrue(leftIcon.ClassList.Contains("bit-icon--ChevronDown"));
-        Assert.IsTrue(rightIcon.ClassList.Contains("bit-icon--ChevronUp"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--ChevronUp"));
     }
 
     [TestMethod]
@@ -1858,8 +1997,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         Assert.IsFalse(string.IsNullOrEmpty(containerId));
 
-        Assert.AreEqual(containerId, component.Find(".bit-csl-lbt").GetAttribute("aria-controls"));
-        Assert.AreEqual(containerId, component.Find(".bit-csl-rbt").GetAttribute("aria-controls"));
+        Assert.AreEqual(containerId, component.Find(".bit-csl-nbt").GetAttribute("aria-controls"));
+        Assert.AreEqual(containerId, component.Find(".bit-csl-pbt").GetAttribute("aria-controls"));
 
         component.WaitForAssertion(() =>
         {
@@ -2364,7 +2503,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         var carousel = component.Instance.Carousel;
 
-        await component.Find(".bit-csl-lbt").ClickAsync(new MouseEventArgs());
+        await component.Find(".bit-csl-nbt").ClickAsync(new MouseEventArgs());
 
         component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPaused));
 
@@ -2459,16 +2598,16 @@ public partial class BitCarouselTests : BunitTestContext
         // The first page cannot go back, so the button that would is out of the way.
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-rbt").GetAttribute("style") ?? "", "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
+            StringAssert.Contains(component.Find(".bit-csl-pbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true);
         });
 
         component.FindAll(".bit-csl-dot")[2].Click();
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-lbt").GetAttribute("style") ?? "", "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
+            StringAssert.Contains(component.Find(".bit-csl-nbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 
@@ -2482,8 +2621,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.IsFalse(component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.IsFalse(component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 
@@ -2700,8 +2839,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
-        Assert.AreEqual("next", component.Find(".bit-csl-lbt").GetAttribute("data-bit-key-origin"));
-        Assert.AreEqual("prev", component.Find(".bit-csl-rbt").GetAttribute("data-bit-key-origin"));
+        Assert.AreEqual("next", component.Find(".bit-csl-nbt").GetAttribute("data-bit-key-origin"));
+        Assert.AreEqual("prev", component.Find(".bit-csl-pbt").GetAttribute("data-bit-key-origin"));
         Assert.IsTrue(component.FindAll(".bit-csl-dot").All(d => d.GetAttribute("data-bit-key-origin") == "dot"));
         Assert.IsTrue(component.FindAll(".bit-crsi").All(s => s.GetAttribute("data-bit-key-origin") == "slide"));
     }
@@ -2717,12 +2856,12 @@ public partial class BitCarouselTests : BunitTestContext
         component.Find(".bit-csl").FocusIn();
 
         // A move that leaves the button in place keeps the focus where it is.
-        component.Find(".bit-csl-lbt").Click();
+        component.Find(".bit-csl-nbt").Click();
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
         Assert.AreEqual(0, FocusCalls());
 
         // The move onto the last page hides the button that made it, so the focus goes to the other one.
-        component.Find(".bit-csl-lbt").Click();
+        component.Find(".bit-csl-nbt").Click();
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
@@ -2735,10 +2874,10 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
 
         // A click (or a tap in Safari) that does not focus the button leaves the focus outside the carousel.
-        component.Find(".bit-csl-lbt").Click();
+        component.Find(".bit-csl-nbt").Click();
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
 
-        component.Find(".bit-csl-lbt").Click();
+        component.Find(".bit-csl-nbt").Click();
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
 
         Assert.IsFalse(System.Threading.SpinWait.SpinUntil(() => FocusCalls() > 0, 300));
@@ -3037,6 +3176,32 @@ public partial class BitCarouselTests : BunitTestContext
     private static Task PressKey(IRenderedComponent<BitCarouselTest> component, string key, string? origin = null, string? originId = null)
     {
         return component.InvokeAsync(() => component.Instance.Carousel._OnNavigationKey(key, origin, originId));
+    }
+
+    // The default chevron of the button at the right edge points right, and the one of the button at the left edge (the
+    // right chevron turned) points left: the next button sits at the right edge unless the carousel is right to left.
+    private static void AssertDefaultIconsPointTo(AngleSharp.Dom.IElement nextIcon, AngleSharp.Dom.IElement prevIcon, bool rtl)
+    {
+        var (rightEdgeIcon, leftEdgeIcon) = rtl ? (prevIcon, nextIcon) : (nextIcon, prevIcon);
+
+        Assert.IsTrue(rightEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsFalse(rightEdgeIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsTrue(leftEdgeIcon.ClassList.Contains("bit-ico-r180"));
+    }
+
+    // The markup drops the reference of an element a re-render keeps, and the carousel renders again as it lays itself
+    // out, so the button a focus call was handed is told by the reference the carousel holds to it.
+    private static string ButtonReferenceId(IRenderedComponent<BitCarouselTest> component, string field)
+    {
+        var reference = typeof(BitCarousel).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(component.Instance.Carousel);
+
+        return ((ElementReference)reference!).Id;
+    }
+
+    private string FocusedReferenceId(int call)
+    {
+        return ((ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][call].Arguments[0]!).Id;
     }
 
     // The focus call lands on the renderer's thread while the test polls for it, so a read that races a write
