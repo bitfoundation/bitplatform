@@ -438,6 +438,39 @@ public class TemplateConfigurationTests
             $"configuration's generated project does not compile:{Environment.NewLine}{string.Join(Environment.NewLine, unsafeUsings)}");
     }
 
+    [TestMethod]
+    public void EveryCSharpFileWithAConditional_Should_TurnConditionalsOnFirst()
+    {
+        var (templateRoot, _) = LoadTemplateJson();
+
+        List<string> unguarded = [];
+        var guarded = 0;
+
+        foreach (var file in EnumerateTemplateFiles(templateRoot).Where(file => Path.GetExtension(file) is ".cs"))
+        {
+            foreach (var line in File.ReadLines(file).Where(line => line.TrimStart().StartsWith("//", StringComparison.Ordinal)))
+            {
+                if (line.Contains("+:cnd", StringComparison.Ordinal))
+                {
+                    guarded++;
+                    break;
+                }
+
+                if (line.Contains("-:cnd", StringComparison.Ordinal))
+                    break;
+
+                if (conditionalDirective.IsMatch(line))
+                {
+                    unguarded.Add(Path.GetRelativePath(templateRoot, file));
+                    break;
+                }
+            }
+        }
+
+        Assert.IsGreaterThan(100, guarded, $"Only {guarded} files turn conditionals on - the scan is not reaching the template's C# files.");
+        Assert.IsEmpty(unguarded, "The template engine keeps one conditional switch for every .cs file, and a file that ends with it off leaves it off for whichever file comes next, in the order of the file system. These files have to turn it on on their first line, or their conditionals stay in some generated projects: " + string.Join(", ", unguarded));
+    }
+
     /// <summary>
     /// True when <paramref name="condition"/> cannot hold unless <paramref name="symbol"/> is true - i.e. it is an
     /// AND-chain one of whose terms is <c>symbol == true</c>. Any <c>||</c> makes it satisfiable without the symbol.

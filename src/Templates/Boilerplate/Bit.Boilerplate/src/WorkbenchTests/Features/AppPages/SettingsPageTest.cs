@@ -6,7 +6,7 @@ namespace Boilerplate.WorkbenchTests.Features.AppPages;
 public abstract class SettingsPageTest : AppViewPageTest
 {
     /// <summary>The button that opens and closes a section.</summary>
-    protected ILocator SectionHeader(string title) => View().GetByRole(AriaRole.Button, new() { Name = title, Exact = true });
+    protected ILocator SectionHeader(string title) => View().GetByRole(AriaRole.Heading, new() { Name = title, Exact = true }).GetByRole(AriaRole.Button);
 
     /// <summary>An open section's content.</summary>
     protected ILocator Section(string title) => View().GetByRole(AriaRole.Region, new() { Name = title, Exact = true });

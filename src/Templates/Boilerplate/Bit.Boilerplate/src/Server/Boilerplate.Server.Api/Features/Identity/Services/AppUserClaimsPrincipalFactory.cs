@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
