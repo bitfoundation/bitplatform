@@ -2,9 +2,9 @@ name: bit platform CI - BlazorUI E2E
 
 # The full end-to-end suite of bit BlazorUI (src/BlazorUI/Tests/E2E): every non-legacy component of Bit.BlazorUI and
 # Bit.BlazorUI.Extras driven by Playwright against a test host that renders each page either on the server
-# (InteractiveServer) or in the browser (InteractiveWebAssembly). One job per browser engine and render mode; the
-# suite is long, so it only runs when started by hand (Actions > this workflow > Run workflow).
-# See src/BlazorUI/Tests/E2E/README.md for running it locally.
+# (InteractiveServer) or in the browser (InteractiveWebAssembly). One job per browser engine and render mode, the wasm
+# ones split in three (see plan); the suite is long, so it only runs when started by hand (Actions > this workflow >
+# Run workflow). See src/BlazorUI/Tests/E2E/README.md for running it locally.
 
 on:
   workflow_dispatch:
@@ -51,32 +51,51 @@ permissions:
 jobs:
 
   # Turns the inputs into the job matrix, so a run can be narrowed to one engine or one render mode.
+  #
+  # In wasm mode every test boots the .NET WebAssembly runtime afresh, in a browser context of its own: about a second
+  # a page on a fast machine and several on a runner, whatever the build - the boot is the runtime starting, not the
+  # download, so neither a warm cache nor a trimmed client takes it away. The whole suite then runs about five times
+  # longer than on the server, well past what one job is given, so a wasm job runs one of three shards of about 2,500
+  # tests, split by namespace. The last shard takes every namespace the first two do not name, so a new one is never
+  # left out. A run given a filter of its own is not split, so no shard of it ends up with no test to run.
   plan:
     name: plan the E2E matrix
     runs-on: ubuntu-26.04
     outputs:
-      browsers: ${{ steps.matrix.outputs.browsers }}
-      modes: ${{ steps.matrix.outputs.modes }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
     - id: matrix
       env:
         BROWSERS: ${{ inputs.browsers }}
         MODES: ${{ inputs.render-modes }}
+        FILTER: ${{ inputs.filter }}
       run: |
-        if [ "$BROWSERS" = "all" ]; then echo 'browsers=["chromium","firefox","webkit"]' >> "$GITHUB_OUTPUT"; else echo "browsers=[\"$BROWSERS\"]" >> "$GITHUB_OUTPUT"; fi
-        if [ "$MODES" = "all" ]; then echo 'modes=["server","wasm"]' >> "$GITHUB_OUTPUT"; else echo "modes=[\"$MODES\"]" >> "$GITHUB_OUTPUT"; fi
+        if [ "$BROWSERS" = "all" ]; then browsers='["chromium","firefox","webkit"]'; else browsers=$(jq -cn --arg b "$BROWSERS" '[$b]'); fi
+        if [ "$MODES" = "all" ]; then modes='["server","wasm"]'; else modes=$(jq -cn --arg m "$MODES" '[$m]'); fi
+        ns=Bit.BlazorUI.Tests.E2E
+        first="FullyQualifiedName~$ns.Inputs.|FullyQualifiedName~$ns.Surfaces."
+        second="FullyQualifiedName~$ns.Extras.|FullyQualifiedName~$ns.Utilities."
+        rest="FullyQualifiedName!~$ns.Inputs.&FullyQualifiedName!~$ns.Surfaces.&FullyQualifiedName!~$ns.Extras.&FullyQualifiedName!~$ns.Utilities."
+        matrix=$(jq -cn --argjson browsers "$browsers" --argjson modes "$modes" --arg filter "$FILTER" \
+                        --arg first "$first" --arg second "$second" --arg rest "$rest" '
+          [{"shard": "inputs-surfaces", "shard-filter": $first},
+           {"shard": "extras-utilities", "shard-filter": $second},
+           {"shard": "others", "shard-filter": $rest}] as $shards
+          | {"include": [$browsers[] as $browser | $modes[] as $mode
+                       | (if $mode == "wasm" and $filter == "" then $shards[] else {"shard": "", "shard-filter": ""} end)
+                       | {browser: $browser, mode: $mode} + .]}')
+        echo "$matrix" | jq .
+        echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   e2e-BlazorUI:
     needs: plan
-    name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}
+    name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}${{ matrix.shard && format(' / {0}', matrix.shard) || '' }}
     runs-on: ubuntu-26.04
     timeout-minutes: 180
 
     strategy:
       fail-fast: false
-      matrix:
-        browser: ${{ fromJSON(needs.plan.outputs.browsers) }}
-        mode: ${{ fromJSON(needs.plan.outputs.modes) }}
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
     env:
       E2E_DIR: src/BlazorUI/Tests/E2E
@@ -101,9 +120,11 @@ jobs:
         node-version: 24
 
     # The host builds the libraries it references (and their scripts and styles through npm) and the WebAssembly
-    # client that holds the pages; the test project only needs Playwright and MSTest.
+    # client that holds the pages; the test project only needs Playwright and MSTest. In Release: the WebAssembly
+    # client of a Debug build also has every test's browser download the symbols of every assembly and the hot reload
+    # agent, and run the IL unoptimized.
     - name: Build the E2E test host
-      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -f net11.0
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -c Release -f net11.0
 
     - name: Build the E2E tests
       run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E -f net11.0
@@ -115,28 +136,34 @@ jobs:
     # kept for the artifacts below.
     - name: Start the E2E test host
       run: |
-        nohup dotnet run --project $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost --no-build --framework net11.0 --urls $E2E_HOST_URL > host.log 2>&1 &
+        nohup dotnet run --project $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -c Release --no-build --framework net11.0 --urls $E2E_HOST_URL > host.log 2>&1 &
         for i in $(seq 1 120); do
           if curl -s -o /dev/null -w "%{http_code}" $E2E_HOST_URL/ | grep -q 200; then echo "host is up"; exit 0; fi
           sleep 1
         done
         echo "the host did not come up"; cat host.log; exit 1
 
-    # dotnet exec on the built assembly: the MSTest runner reports "zero tests ran" through dotnet test here.
+    # dotnet exec on the built assembly: the MSTest runner reports "zero tests ran" through dotnet test here. The run
+    # stops itself (--timeout) a while before the job's timeout-minutes, which leaves the steps before it and the
+    # upload below their time: a run that stops itself still writes the TRX of every test it finished, where a job
+    # the runner cancels writes none.
     - name: Run the E2E tests
       env:
         FILTER: ${{ inputs.filter }}
+        SHARD_FILTER: ${{ matrix.shard-filter }}
       run: |
         cd $E2E_DIR/Bit.BlazorUI.Tests.E2E
-        args=(--report-trx --results-directory "$GITHUB_WORKSPACE/e2e-results")
-        if [ -n "$FILTER" ]; then args+=(--filter "$FILTER"); fi
+        args=(--report-trx --results-directory "$GITHUB_WORKSPACE/e2e-results" --timeout 165m)
+        # A job has a shard only when the run has no filter of its own (see plan).
+        filter="${SHARD_FILTER:-$FILTER}"
+        if [ -n "$filter" ]; then args+=(--filter "$filter"); fi
         dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}"
 
     - name: Upload the test results
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: e2e-results-${{ matrix.browser }}-${{ matrix.mode }}
+        name: e2e-results-${{ matrix.browser }}-${{ matrix.mode }}${{ matrix.shard && format('-{0}', matrix.shard) || '' }}
         path: |
           e2e-results
           host.log

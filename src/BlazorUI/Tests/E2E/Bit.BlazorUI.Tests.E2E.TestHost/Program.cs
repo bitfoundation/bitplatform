@@ -14,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Every error the host logs is kept for the tests to read (/api/server-errors): a component that throws while it is
 // disposed, or a circuit an unhandled exception tears down, shows nothing on the page itself.
 builder.Logging.AddProvider(new ServerErrorLog());
+// ASP.NET Core logs every request it serves at Information, and in wasm mode every test has its browser fetch the
+// WebAssembly runtime and every assembly afresh - over 200 requests a test, well over a million in a full run, a host
+// log of gigabytes and the time to write it. Nothing reads them; ServerErrorLog keeps only the warnings and errors.
+builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
 // Which pages each circuit was on, so a test reads the errors of its own pages alone (?paths=...).
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitPaths>();
 

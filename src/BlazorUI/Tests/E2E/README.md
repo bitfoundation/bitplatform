@@ -118,10 +118,15 @@ Every page runs in both modes: the tests put an `e2e-render-mode` cookie on each
 `E2E_RENDER_MODE`) and the host renders the page with that mode. A test that genuinely differs between the two branches
 on `IsWasm`; everything else is written once. In `wasm` mode there is no circuit: an unhandled exception shows
 `#blazor-error-ui` and logs a console error (which fails the test), and the host only prerenders. Each browser context
-downloads the WebAssembly runtime, so a `wasm` run takes several times longer than a `server` one.
+boots the WebAssembly runtime afresh - about a second a page on a fast machine, whatever the build, and not much less
+from a warm cache - so a `wasm` run takes about five times longer than a `server` one.
 
 ## CI
 
 `.github/workflows/bit.ci.BlazorUI.e2e.yml` runs the whole suite on demand only (Actions > "bit platform CI - BlazorUI
 E2E" > Run workflow): one job per browser engine and render mode, narrowed through its inputs (engines, modes, an
-optional test filter). The test results (TRX) and the host's log are uploaded as artifacts of each job.
+optional test filter). The host is built in Release. A `wasm` job would not finish the whole suite in the time a job
+is given, so without a filter each engine's `wasm` run is split by namespace into three jobs (`inputs-surfaces`,
+`extras-utilities`, and `others` for every namespace the first two do not name). The run stops itself
+(`--timeout`) before the job's own limit, so the test results (TRX) are written even for a run that overruns; they
+and the host's log are uploaded as artifacts of each job.
