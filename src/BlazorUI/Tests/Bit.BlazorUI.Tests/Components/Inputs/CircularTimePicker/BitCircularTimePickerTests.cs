@@ -3201,6 +3201,49 @@ public class BitCircularTimePickerTests : BunitTestContext
         // the dial, not the field: an opened picker is the one the arrow keys have to move
         Assert.AreEqual(before + 1, invocations.Count);
         Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
+
+        // and brought into view: an open through a parameter may be of a picker the person has to be taken to
+        Assert.AreEqual(false, invocations.Last().Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldNotFocusTheDialOfACalloutClosedWhileItWasOpening()
+    {
+        IRenderedComponent<BitCircularTimePicker>? component = null;
+
+        component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            // closed again before the open has got as far as handing the focus to the dial
+            parameters.Add(p => p.OnOpen, () => component!.Instance.DismissCallout());
+        });
+
+        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-wrp").Click());
+
+        // the dial is in a panel on its way out, so the focus stays where the close left it
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldFocusTheDialOfAStandalonePickerWithoutScrollingWhenItsLabelIsClicked()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Label, "Time");
+        });
+
+        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await component.InvokeAsync(() => component.Find(".bit-ctp-lbl").Click());
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        // the click is what says the picker is in view, so the focus moves without a jump of the page
+        Assert.AreEqual(before + 1, invocations.Count);
+        Assert.AreEqual(true, invocations.Last().Arguments[1]);
     }
 
     [TestMethod]

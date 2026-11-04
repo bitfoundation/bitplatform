@@ -59,11 +59,20 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         return callout;
     }
 
+    // Opens the picker with a click on its field and waits for the focus the opening hands over, which arrives a round
+    // trip after the callout shows: a key pressed before it lands is answered by the field instead (WebKit gets there
+    // first often enough). The focus goes to the dial, or stays on the field where it is editable (AllowTextInput).
     private async Task<ILocator> OpenCalloutAsync(string scope)
     {
-        await Field(scope).ClickAsync();
+        var field = Field(scope);
+        await field.ClickAsync();
 
-        return await CalloutOfAsync(scope);
+        var callout = await CalloutOfAsync(scope);
+
+        var editable = await field.EvaluateAsync<bool>("el => el.classList.contains('bit-ctp-ein')");
+        await Expect(editable ? field : Dial(callout)).ToBeFocusedAsync();
+
+        return callout;
     }
 
     // The callout fades and slides in; its box is read once that entry has run out. A transition a render replaces
@@ -156,7 +165,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(Page.Locator($"[id='{calloutId}']")).ToHaveCountAsync(0);
 
         await Page.ClickAsync("#btn-toggle-mounted");
-        var callout = await OpenCalloutAsync("lifecycle");
+        await OpenCalloutAsync("lifecycle");
         await Page.Keyboard.PressAsync("ArrowUp");
         await Expect(Out("lifecycle-value")).ToHaveTextAsync("16:20:10");
 
@@ -313,9 +322,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await root.DispatchEventAsync("click");
         await Expect(Out("disabled-click-count")).ToHaveTextAsync("1");
 
-        var callout = await OpenCalloutAsync("disabled");
-        // The dial takes the focus through a round trip; the key waits for it.
-        await Expect(callout.Locator(":focus")).ToHaveCountAsync(1);
+        await OpenCalloutAsync("disabled");
         await Page.Keyboard.PressAsync("ArrowUp");
         await Expect(Out("disabled-value")).ToHaveTextAsync("11:10:00");
     }
