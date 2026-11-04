@@ -757,6 +757,8 @@ $tpc-private-properties: rl-clr, rl-fg, rl-txt, rl-hover, rl-active, rl-focus, i
 .bit-tpc-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel comes down from the top edge of the screen, so the picker starts below the safe area there.
+        @include responsive-panel-safe-area(tpc);
         top: 0;
         left: 0;
         width: 100%;
@@ -765,6 +767,14 @@ $tpc-private-properties: rl-clr, rl-fg, rl-txt, rl-hover, rl-active, rl-focus, i
         transform: translateY(-100%);
         box-shadow: $box-shadow-sheet;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        // The container is the surface of the panel - its background is the one a consumer restyles it with - so the
+        // safe area is drawn as its border, and it is the box capped at the height Callouts.position gives the panel: a
+        // screen an on-screen keyboard has shortened scrolls the picker in it rather than cutting its bottom off.
+        .bit-tpc-cac {
+            max-height: inherit;
+            border-top: var(--bit-tpc-sa-top) solid transparent;
+        }
 
         .bit-tpc-tdv {
             font-size: calc(#{$tg-fs-4xl} * 1.75);

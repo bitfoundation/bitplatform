@@ -543,3 +543,50 @@ $html-font-size: 16px;
     display: block;
     visibility: hidden;
 }
+
+/*
+ * responsive-panel-safe-area($prefix, $device-top, $device-bottom)
+ * --------------------------------------------------
+ * The room a popup shown as a panel on a narrow screen makes for the safe areas of the screen edges it runs to:
+ * the status bar and the notch of a phone at the top, its home indicator at the bottom, and the bars of a
+ * BitAppShell, which paint over every popup there. Included in the lt-sm block of the component's responsive
+ * class, beside responsive-panel-closed, by every panel whose content the component lays out itself.
+ *   - Each edge is inset by the largest of what can cover it: the safe area a page gives an app shell
+ *     (--bit-AppShell-safe-area-*, which a hybrid app whose web view reports no env() insets maps its native
+ *     ones onto, on :root or on the shell - both reach a relocated popup), the inset the device reports, and
+ *     the maximum it reports for that edge, which an app shell asked for StableInsets sizes its bars by. The
+ *     popup lies against the physical edge whatever a page does with its own layout, so anything smaller than
+ *     the largest of them leaves a part of it covered.
+ *   - The top one is named --bit-{prefix}-sa-top for the component to make the room with. A panel draws it as
+ *     a transparent border-top of the box its content and its absolutely positioned parts are laid out in: a
+ *     border is painted by the background of its own box, so the surface still runs to the edge; it moves down
+ *     every part placed against the top of that box, which a padding would not; and no padding a consumer gives
+ *     that box takes it away.
+ *   - The bottom one is handed to Callouts.position, since every panel can reach the bottom edge: one that
+ *     runs down to it always, and one coming down from the top edge once its content grows it that far. The
+ *     script ends the scrollable list of the panel - or the panel itself, when it has no separate list and its
+ *     container scrolls instead - that far short of the bottom of the screen while the on-screen keyboard is
+ *     down - a keyboard covers that edge, and its inset with it. It is a registered, non-inherited length
+ *     (general.scss), so the script reads it resolved, and no other callout - one nested in the panel, a
+ *     BitCallout its consumer pads - is ever capped by it.
+ *   - The side insets are left out: a phone turned on its side, the only screen that has them, is wider than
+ *     a panel is shown on.
+ * $device-top and $device-bottom are the insets of the device each edge is inset by besides; the Extras package
+ * passes the variables it publishes them through (extra-variables.scss), which an app adjusts the insets of the
+ * whole package with.
+ *
+ * Usage:
+ *   .bit-xyz-res {
+ *       @include lt-sm {
+ *           @include responsive-panel-closed;
+ *           @include responsive-panel-safe-area(xyz);
+ *           border-top: var(--bit-xyz-sa-top) solid transparent;
+ *       }
+ *   }
+ */
+@mixin responsive-panel-safe-area($prefix,
+    $device-top: (env(safe-area-inset-top, 0px), env(safe-area-max-inset-top, 0px)),
+    $device-bottom: (env(safe-area-inset-bottom, 0px), env(safe-area-max-inset-bottom, 0px))) {
+    --bit-#{$prefix}-sa-top: max(var(--bit-AppShell-safe-area-top, 0px), #{$device-top});
+    --bit-callout-sa-bottom: max(var(--bit-AppShell-safe-area-bottom, 0px), #{$device-bottom});
+}
