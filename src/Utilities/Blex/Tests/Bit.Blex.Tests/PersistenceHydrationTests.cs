@@ -19,8 +19,16 @@ public class PersistenceHydrationTests
     {
         public Dictionary<string, string> Data { get; } = new();
 
-        public ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
-            => new(Data.TryGetValue(key, out var v) ? v : null);
+        /// <summary>When set, reads wait on it -- storage that is slow to answer.</summary>
+        public TaskCompletionSource? ReadGate { get; set; }
+
+        public async ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
+        {
+            if (ReadGate is { } gate)
+                await gate.Task;
+
+            return Data.TryGetValue(key, out var v) ? v : null;
+        }
 
         public ValueTask SetAsync(string key, string value, CancellationToken cancellationToken = default)
         {
@@ -126,6 +134,120 @@ public class PersistenceHydrationTests
         // flag still reports that hydration never happened.
         await waiting.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.IsFalse(persistor.HasHydrated);
+
+        // Nor callers that only start waiting once it is gone.
+        Assert.IsTrue(persistor.WhenHydratedAsync().IsCompleted);
+    }
+
+    [TestMethod]
+    public async Task WhenHydratedAsync_AnActionDispatchedTheMomentItCompletes_IsSaved()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        var dispatched = DispatchOnceHydrated();
+
+        async Task DispatchOnceHydrated()
+        {
+            await persistor.WhenHydratedAsync();
+            store.SetTheme("dark");
+        }
+
+        // The waiter resumes on the thread pool once released. Holding the announcement until it has dispatched
+        // lets it get there before StartAsync takes another step, as a thread-pool continuation may.
+        persistor.Hydrated += () => dispatched.Wait(TimeSpan.FromSeconds(5));
+
+        await persistor.StartAsync();
+        await dispatched.WaitAsync(TimeSpan.FromSeconds(5));
+        await persistor.FlushAsync();
+
+        Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
+        StringAssert.Contains(saved, "dark");
+    }
+
+    [TestMethod]
+    public async Task OverlappingHydrations_LeaveSavingOn()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        storage.Data["blex:settings"] = """{"Theme":"dark"}""";
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        storage.ReadGate = startupRead;
+        var start = persistor.StartAsync();
+
+        // A second hydration starts while the first is reading storage, and finishes after it.
+        var laterRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        storage.ReadGate = laterRead;
+        var rehydrate = persistor.RehydrateAsync();
+
+        startupRead.SetResult();
+        await start;
+        laterRead.SetResult();
+        await rehydrate;
+
+        store.SetTheme("after");
+        await persistor.FlushAsync();
+
+        StringAssert.Contains(storage.Data["blex:settings"], "after", "Saving stayed suspended after both hydrations finished.");
+    }
+
+    [TestMethod]
+    public async Task RehydrateAsync_KeepsAChangeTheDebounceStillHolds()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        storage.Data["blex:settings"] = """{"Theme":"dark"}""";
+        var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
+        await persistor.StartAsync();
+
+        store.SetTheme("edited");   // not written yet
+        await persistor.RehydrateAsync();
+
+        Assert.AreEqual("edited", store.Theme, "The older stored state was read back over the change.");
+        StringAssert.Contains(storage.Data["blex:settings"], "edited");
+    }
+
+    [TestMethod]
+    public async Task APersistorDisposedWhileItHydrates_NeitherAnnouncesNorSaves()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+        var announced = false;
+        persistor.Hydrated += () => announced = true;
+
+        var read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        storage.ReadGate = read;
+        var start = persistor.StartAsync();
+        await persistor.DisposeAsync();
+
+        read.SetResult();
+        await start;
+
+        store.SetTheme("after");
+        await persistor.FlushAsync();
+
+        Assert.IsFalse(announced);
+        Assert.IsFalse(persistor.HasHydrated);
+        Assert.IsEmpty(storage.Data, "A disposed persistor saved a change.");
+    }
+
+    [TestMethod]
+    public async Task HydratedEvent_AnActionItsHandlerDispatches_IsSaved()
+    {
+        var (manager, store) = Setup();
+        var storage = new InMemoryStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+        persistor.Hydrated += () => store.SetTheme("dark");
+
+        await persistor.StartAsync();
+        await persistor.FlushAsync();
+
+        Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
+        StringAssert.Contains(saved, "dark");
     }
 
     [TestMethod]

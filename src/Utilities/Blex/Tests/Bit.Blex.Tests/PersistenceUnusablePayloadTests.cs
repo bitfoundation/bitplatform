@@ -103,6 +103,25 @@ public class PersistenceUnusablePayloadTests
     }
 
     [TestMethod]
+    public async Task A_debounced_save_made_as_hydration_is_announced_is_written_when_the_page_is_hidden()
+    {
+        var (manager, store, errors) = Setup();
+        var storage = new MemoryStorage();
+        await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
+        persistor.Hydrated += () =>
+        {
+            store.SetTheme("dark");
+            storage.Suspend();   // the page goes at once
+        };
+
+        await persistor.StartAsync();
+
+        Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The page went before anything watched for it.");
+        Assert.Contains("dark", saved);
+        Assert.IsEmpty(errors);
+    }
+
+    [TestMethod]
     public async Task A_disposed_persistor_stops_listening_for_the_page_going_away()
     {
         var (manager, store, _) = Setup();
