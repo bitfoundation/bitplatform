@@ -17,9 +17,4 @@
         color: var(--lp-fg-muted);
         font-size: .875rem;
     }
-
-    // The code is for desktop visitors to scan with a phone, so touch and narrow screens don't show it
-    @media (hover: none), (max-width: 959px) {
-        display: none;
-    }
 }

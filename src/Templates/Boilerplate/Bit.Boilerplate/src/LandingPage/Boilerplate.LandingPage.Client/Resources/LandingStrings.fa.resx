@@ -273,6 +273,9 @@
     <data name="RatingsCount" xml:space="preserve">
         <value>{0} امتیاز</value>
     </data>
+    <data name="RatingsCountOne" xml:space="preserve">
+        <value>{0} امتیاز</value>
+    </data>
     <data name="WaitlistEmailLabel" xml:space="preserve">
         <value>ایمیل</value>
     </data>
@@ -632,12 +635,6 @@
     </data>
     <data name="LegalAccessibility3Body" xml:space="preserve">
         <value>اگر استفاده از بخشی از این‌جا سخت است، به {1} ایمیل بزنید. ظرف پنج روز کاری پاسخ می‌دهیم.</value>
-    </data>
-    <data name="StoreListingVersion" xml:space="preserve">
-        <value>نسخه‌ی {0} در App Store</value>
-    </data>
-    <data name="StoreListingUpdated" xml:space="preserve">
-        <value>به‌روزرسانی {0}</value>
     </data>
     <data name="GalleryTitle" xml:space="preserve">
         <value>لندینگ‌پیج‌هایی آماده که مال شما شوند</value>

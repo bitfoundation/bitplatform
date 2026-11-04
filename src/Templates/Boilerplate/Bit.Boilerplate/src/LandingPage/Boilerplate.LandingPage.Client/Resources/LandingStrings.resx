@@ -273,6 +273,9 @@
     <data name="RatingsCount" xml:space="preserve">
         <value>{0} ratings</value>
     </data>
+    <data name="RatingsCountOne" xml:space="preserve">
+        <value>{0} rating</value>
+    </data>
     <data name="WaitlistEmailLabel" xml:space="preserve">
         <value>Email</value>
     </data>
@@ -632,12 +635,6 @@
     </data>
     <data name="LegalAccessibility3Body" xml:space="preserve">
         <value>If anything here is hard to use, write to {1}. We answer within five working days.</value>
-    </data>
-    <data name="StoreListingVersion" xml:space="preserve">
-        <value>Version {0} on the App Store</value>
-    </data>
-    <data name="StoreListingUpdated" xml:space="preserve">
-        <value>Updated {0}</value>
     </data>
     <data name="GalleryTitle" xml:space="preserve">
         <value>Landing pages, ready to become yours</value>

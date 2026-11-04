@@ -50,9 +50,9 @@ fits its business:
   the unsubscribe link every email carries. A hidden field and a minimum fill time keep bots out, and the server
   limits how often one visitor can try.
 - **After launch, the stores**: the official App Store, Google Play and Microsoft Store badges, ordered for the
-  visitor's own device; a QR code for desktop visitors; one link, `/<sample>/download`, that sends each phone to its
-  own store with the campaign it came from; and the App Store rating, read from Apple and shown once there are enough
-  ratings for it to mean something.
+  visitor's own device; a QR code that opens the right store on the phone that scans it; one link,
+  `/<sample>/download`, that sends each phone to its own store with the campaign it came from; and the App Store
+  rating, read from Apple and shown once the app has one.
 - **A chat** that answers visitors' questions about the product, in three looks: a bubble, a panel inside the page,
   and a concierge. It is built on Bit.BlazorUI.AI and talks to the server over a WebSocket; neither is downloaded
   until a visitor opens it.

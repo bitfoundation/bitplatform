@@ -149,6 +149,8 @@ business, and only what the project doesn't answer by itself.
   from the edge.
 - Blazor Server is for development only in this template, and so is Auto, which runs on Blazor Server until
   WebAssembly has loaded: offer neither for a deployment.
+- Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
+  `InvariantGlobalization` is on in `src/Directory.Build.props`.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
   keep the setting names for a technical user and for the files.
 

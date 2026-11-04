@@ -190,6 +190,15 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task TheDownloadQr_Should_NotBeHiddenOnAnyScreen()
+    {
+        var styles = await client.GetStringAsync("Boilerplate.LandingPage.Client.bundle.scp.css");
+
+        Assert.Contains(".lp-qr", styles);
+        Assert.DoesNotMatchRegex(new Regex(@"\.lp-qr[^{,]*\{[^}]*display:\s*none"), styles);
+    }
+
+    [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
         using var response = await client.GetAsync(LandingSites.All[0].Path);
