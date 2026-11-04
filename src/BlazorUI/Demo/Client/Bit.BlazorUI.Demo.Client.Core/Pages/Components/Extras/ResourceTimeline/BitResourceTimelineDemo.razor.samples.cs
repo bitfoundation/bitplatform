@@ -405,7 +405,7 @@ private static BitResourceTimelineConfig CreateRendererConfig()
     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomToDaysAsync(7)">7 days</BitButton>
     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.SetPixelsPerHourAsync(120)">120 px/h</BitButton>
     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ResetZoomAsync()">Reset zoom</BitButton>
-    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ScrollToTimeAsync(BitResourceTimelineDemoData.Today.AddDays(1).AddHours(12))">Tomorrow noon</BitButton>
+    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ScrollToTimeAsync(new DateTimeOffset(DateTime.Today.AddDays(1).AddHours(12)))">Tomorrow noon</BitButton>
 </div>
 <br />
 <div class="timeline">
@@ -1535,8 +1535,11 @@ public static class BitResourceTimelineDemoData
     public static List<BitResourceTimelineAllocation> Flights(IReadOnlyList<BitResourceTimelineResource> resources, DateTimeOffset from, DateTimeOffset to, bool labeled = false)
     {
         var groups = resources.Where(r => r.ParentId is not null).Select(r => r.ParentId).ToHashSet();
-        var firstDay = (int)Math.Floor((from - Today).TotalDays);
-        var lastDay = (int)Math.Ceiling((to - Today).TotalDays);
+        // Counted in local calendar days rather than elapsed 24 hours, which a daylight saving change in between would
+        // throw off by one: the day the window starts on, through the day it ends on unless it ends at its midnight.
+        var localTo = to.LocalDateTime;
+        var firstDay = (int)(from.LocalDateTime.Date - DateTime.Today).TotalDays;
+        var lastDay = (int)(localTo.Date - DateTime.Today).TotalDays + (localTo.TimeOfDay > TimeSpan.Zero ? 1 : 0);
         var flights = new List<BitResourceTimelineAllocation>();
 
         for (var r = 0; r < resources.Count; r++)

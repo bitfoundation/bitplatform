@@ -55,6 +55,11 @@ public partial class BitResourceTimeline : BitComponentBase
     private double _hoverClientX;
     private double _hoverClientY;
 
+    // The overlay of the TooltipTemplate, placed by the script once it has rendered (see PlaceTooltipOverlayAsync), and
+    // whether the hover it renders has not been placed yet.
+    private ElementReference _tooltipOverlayRef;
+    private bool _tooltipOverlayUnplaced;
+
     // Serializes the data loads, so a rapid swap of the Config cannot interleave two of them and race _isLoading and
     // _loadedConfig.
     private readonly SemaphoreSlim _loadGate = new(1, 1);
@@ -81,14 +86,17 @@ public partial class BitResourceTimeline : BitComponentBase
     // again the other way.
     private bool _loadedWindowed;
 
-    // Serializes the window fetches of the windowed mode, and tracks the newest request so a slow fetch a newer one has
-    // superseded is dropped instead of being pushed to the engine.
+    // Serializes the applies of the window fetches of the windowed mode (never the fetches themselves, see
+    // FetchAndApplyWindowAsync), and tracks the newest request so a slow fetch a newer one has superseded is dropped
+    // instead of being pushed to the engine.
     private readonly SemaphoreSlim _windowGate = new(1, 1);
     private long _latestWindowRequestId;
 
-    // The token of the current data load, handed to the engine with a windowed one and carried back by every window
-    // request. The request ids start over with each windowed load, so this is what tells a fetch of an earlier Config
-    // (still running when a new one was assigned) from one of the current load: such a fetch is dropped on both sides.
+    // The token of the current data load, advanced by every load and by a clear. It is handed to the engine with a
+    // windowed load and carried back by every window request: the request ids start over with each windowed load, so this
+    // is what tells a fetch of an earlier Config (still running when a new one was assigned) from one of the current
+    // load, and such a fetch is dropped on both sides. The callbacks that write to _allocationsById after awaiting the app
+    // (a create, a paste, a delete) capture it the same way, and drop an answer that arrives after the data was replaced.
     private long _windowSession;
 
 
@@ -129,8 +137,15 @@ public partial class BitResourceTimeline : BitComponentBase
     /// <see cref="BitResourceTimelineConfig.Allocations"/>: the timeline calls this with the time window it currently
     /// needs (the visible range plus a buffer) and expects every allocation overlapping it, across all the resources. It
     /// is called again as the user scrolls or zooms near the edge of the loaded window, which keeps the memory and the
-    /// interop bounded for effectively unbounded data. The <see cref="Config"/> still supplies the resources and the
-    /// overall time range. Leave it null to load all the allocations up front (the default).
+    /// interop bounded for effectively unbounded data. A call can start while an earlier one is still running - the view
+    /// moved on in the meantime, and the result of the earlier call is then dropped - so the data source behind it has to
+    /// serve overlapping calls; one that cannot (a shared EF Core DbContext, say) serializes them itself. The
+    /// <see cref="Config"/> still supplies the resources and the overall time range. Leave it null to load all the
+    /// allocations up front (the default).
+    /// <br />
+    /// Setting or clearing it loads the Config again the other way. Replacing one delegate with another does not reload
+    /// anything: the bars loaded through the previous one stay on the timeline until the next window fetched through the
+    /// new one replaces them. Call <see cref="ReloadAsync"/> to fetch the current window from the new one at once.
     /// </summary>
     [Parameter]
     public Func<BitResourceTimelineWindow, Task<IReadOnlyList<BitResourceTimelineAllocation>>>? LoadAllocationsAsync { get; set; }
@@ -598,6 +613,10 @@ public partial class BitResourceTimeline : BitComponentBase
             {
                 // A template assigned (or taken away) after the start: its overlay is in the markup only now.
                 await SyncTemplatesAsync();
+
+                if (IsDisposing) return;
+
+                await PlaceTooltipOverlayAsync();
             }
         }
         catch (JSDisconnectedException) { } // the circuit is gone; there is no browser side left to talk to
@@ -652,7 +671,24 @@ public partial class BitResourceTimeline : BitComponentBase
         return FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
     }
 
+    // Where the overlay of the TooltipTemplate is drawn until the script has measured it (PlaceTooltipOverlayAsync): at
+    // the pointer, offset by the translate of the stylesheet.
     private string GetTooltipOverlayStyle() => FormattableString.Invariant($"left:{_hoverClientX}px;top:{_hoverClientY}px");
+
+    // Places the overlay of the TooltipTemplate the way the built-in tooltip places itself, once the hovered bar has
+    // rendered into it and it can be measured: beside the pointer, flipped to its other side where it would overflow the
+    // viewport, and kept within it. Only a new hover is placed; a render of the timeline for anything else leaves the
+    // overlay where it is (the style it renders with does not change, so Blazor does not write it again).
+    private async Task PlaceTooltipOverlayAsync()
+    {
+        if (_tooltipOverlayUnplaced is false) return;
+
+        _tooltipOverlayUnplaced = false;
+
+        if (_hoverAllocation is null || TooltipTemplate is null) return;
+
+        await _js.BitResourceTimelinePlaceTooltipOverlay(UniqueId, _tooltipOverlayRef, _hoverClientX, _hoverClientY);
+    }
 
     // Starts the browser side: the engine against the viewport, the layout it works with, the overlays it reports to and
     // the initial data. Every await is a point the component may have been removed at (a route change, a re-keyed
@@ -829,6 +865,12 @@ public partial class BitResourceTimeline : BitComponentBase
         var windowed = IsWindowed;
         _loadedWindowed = windowed;
 
+        // The resources the rows and the pointer events resolve to are this Config's from now on. The engine reports its
+        // rows again only when they change, so a Config whose rows read the same as the previous one's would otherwise
+        // leave the instances of the previous one in the map (and in the rows of the ResourceTemplate, rendered again).
+        _resourcesById = IndexResources(config.Resources);
+        _resourceRowsRenderKey++;
+
         try
         {
             var allocations = config.Allocations;
@@ -976,26 +1018,28 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     // Fetches the allocations of a window from the app and pushes them to the engine, unless a newer request (or a newer
-    // load) superseded this one in the meantime.
+    // load) superseded this one in the meantime. The gate is not held across the app's call: a newer request starts its
+    // own fetch at once rather than waiting out a slow one it has superseded (LoadAllocationsAsync documents that its
+    // calls can overlap), and only the applies are serialized.
     private async Task FetchAndApplyWindowAsync(long session, long requestId, long startMs, long endMs)
     {
-        if (LoadAllocationsAsync is null) return;
+        var loader = LoadAllocationsAsync;
+
+        // Superseded already (or nothing left to render into): no fetch is started.
+        if (loader is null || IsDisposing || IsCurrentWindow(session, requestId) is false) return;
+
+        var window = new BitResourceTimelineWindow
+        {
+            Start = DateTimeOffset.FromUnixTimeMilliseconds(startMs),
+            End = DateTimeOffset.FromUnixTimeMilliseconds(endMs),
+        };
+
+        var allocations = await loader(window) ?? [];
 
         await _windowGate.WaitAsync();
 
         try
         {
-            // Superseded while queued behind the gate (or nothing left to render into): the stale fetch is skipped.
-            if (IsDisposing || IsCurrentWindow(session, requestId) is false) return;
-
-            var window = new BitResourceTimelineWindow
-            {
-                Start = DateTimeOffset.FromUnixTimeMilliseconds(startMs),
-                End = DateTimeOffset.FromUnixTimeMilliseconds(endMs),
-            };
-
-            var allocations = await LoadAllocationsAsync(window) ?? [];
-
             // A newer request or load arrived while the app was working, or the component was removed: the result is
             // dropped.
             if (IsDisposing || IsCurrentWindow(session, requestId) is false) return;
@@ -1048,6 +1092,19 @@ public partial class BitResourceTimeline : BitComponentBase
             HasChildren = row.HasChildren,
             Collapsed = row.Collapsed,
         };
+    }
+
+    // The resources of a Config by id: the instances the ResourceTemplate and the pointer events hand the app.
+    private static Dictionary<string, BitResourceTimelineResource> IndexResources(List<BitResourceTimelineResource> resources)
+    {
+        var byId = new Dictionary<string, BitResourceTimelineResource>(resources.Count);
+
+        foreach (var resource in resources)
+        {
+            byId[resource.Id] = resource;
+        }
+
+        return byId;
     }
 
     // The instances of the loaded Config for ids the engine reported, in their order. An unknown id (of a Config swapped
@@ -1173,14 +1230,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
         if (Config is not null)
         {
-            var byId = new Dictionary<string, BitResourceTimelineResource>(Config.Resources.Count);
-
-            foreach (var resource in Config.Resources)
-            {
-                byId[resource.Id] = resource;
-            }
-
-            _resourcesById = byId;
+            _resourcesById = IndexResources(Config.Resources);
         }
 
         _resourceRowsRenderKey++;
@@ -1236,6 +1286,7 @@ public partial class BitResourceTimeline : BitComponentBase
         _hoverAllocation = next;
         _hoverClientX = clientX;
         _hoverClientY = clientY;
+        _tooltipOverlayUnplaced = next is not null;
 
         StateHasChanged();
     }
@@ -1395,7 +1446,13 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         if (IsDisposing) return false;
 
+        // The load the ids were picked from: one replacing the data while the app decides (a new Config, a ReloadAsync)
+        // drops the answer, since the same ids may name its bars now.
+        var session = _windowSession;
+
         if (OnAllocationsDeleting is not null && await OnAllocationsDeleting(ids) is false) return false;
+
+        if (session != _windowSession) return false;
 
         foreach (var id in ids)
         {
@@ -1432,6 +1489,9 @@ public partial class BitResourceTimeline : BitComponentBase
 
         if (sources.Length == 0) return null;
 
+        // The load the copies are made of: one replacing the data while the app builds them drops the result.
+        var session = _windowSession;
+
         var created = await OnAllocationsCopying(new BitResourceTimelineCopyRequest
         {
             Allocations = sources,
@@ -1439,7 +1499,7 @@ public partial class BitResourceTimeline : BitComponentBase
             ResourceId = resourceId,
         });
 
-        if (IsDisposing || created is null || created.Count == 0) return null;
+        if (IsDisposing || session != _windowSession || created is null || created.Count == 0) return null;
 
         var accepted = new List<BitResourceTimelineAllocation>(created.Count);
 
@@ -1478,6 +1538,9 @@ public partial class BitResourceTimeline : BitComponentBase
             return null;
         }
 
+        // The load the bar was drawn on: one replacing the data while the app builds it drops the result.
+        var session = _windowSession;
+
         var created = await OnAllocationCreating(new BitResourceTimelineCreateRequest
         {
             ResourceId = resourceId,
@@ -1485,7 +1548,7 @@ public partial class BitResourceTimeline : BitComponentBase
             EndTime = DateTimeOffset.FromUnixTimeMilliseconds(endTime),
         });
 
-        if (IsDisposing || created is null || string.IsNullOrEmpty(created.Id)) return null;
+        if (IsDisposing || session != _windowSession || created is null || string.IsNullOrEmpty(created.Id)) return null;
 
         _allocationsById[created.Id] = created;
 

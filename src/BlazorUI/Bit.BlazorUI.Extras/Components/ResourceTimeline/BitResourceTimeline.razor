@@ -68,9 +68,10 @@
         </div>
     }
 
+    @* Rendered at the pointer, then measured and placed within the viewport by the script (PlaceTooltipOverlayAsync). *@
     @if (TooltipTemplate is not null && _hoverAllocation is not null)
     {
-        <div class="bit-rtm-tov @Classes?.TooltipOverlay" style="@JoinStyles(GetTooltipOverlayStyle(), Styles?.TooltipOverlay)">
+        <div @ref="_tooltipOverlayRef" class="bit-rtm-tov @Classes?.TooltipOverlay" style="@JoinStyles(GetTooltipOverlayStyle(), Styles?.TooltipOverlay)">
             @TooltipTemplate(_hoverAllocation)
         </div>
     }

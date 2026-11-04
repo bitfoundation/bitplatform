@@ -398,3 +398,115 @@ test('a multi-bar move re-files every bar before one pass over the row metrics, 
     assert.deepEqual(bars.map(b => [b.resourceId, b.startTime, b.endTime]), original, 'every bar is back');
     assert.deepEqual(indexViolations(engine), []);
 });
+
+// A host that answers `held` only when the test says so, and records every
+// other call the engine makes to it.
+function holdHost(engine, held) {
+    const answers = [];
+    const told = [];
+    engine.dotNetRef = {
+        invokeMethodAsync: (name, ...args) => {
+            if (name === held) return new Promise(resolve => answers.push(resolve));
+            told.push(name);
+            return Promise.resolve();
+        }
+    };
+    return { answers, told };
+}
+
+// Replaces the data with fresh copies of the same bars, as a new Config of the
+// app does: the same ids, other objects.
+function replaceData(engine, bars) {
+    engine._hideTooltip = () => {};
+    engine.setData([{ id: 'r0', name: 'r0' }], 0, 1_000_000, bars.map(b => ({ ...b })));
+}
+
+function loaded(engine) {
+    return engine.allocations.map(a => [a.id, a.resourceId, a.startTime, a.endTime]);
+}
+
+const BARS = [alloc('a', 'r0', 100, 200), alloc('b', 'r0', 400, 500)];
+const LOADED = [['a', 'r0', 100, 200], ['b', 'r0', 400, 500]];
+
+test('a pointer edit the host answers after the data was replaced is neither reverted nor reported', async () => {
+    const engine = makeEditEngine(BARS.map(b => ({ ...b })));
+    const host = holdHost(engine, 'OnAllocationChanging');
+
+    const commit = engine._commitEdit(preview(engine, engine.allocations[0], { start: 150, end: 250 }));
+    replaceData(engine, BARS);
+    host.answers[0](false);
+    await commit;
+
+    // The refused bar is not put back into the new data, nor announced as refused.
+    assert.deepEqual(loaded(engine), LOADED);
+    assert.deepEqual(indexViolations(engine), []);
+    assert.deepEqual(engine._announcements, []);
+});
+
+test('a keyboard edit the host accepts after the data was replaced is not reported, and the next one can start', async () => {
+    const engine = makeEditEngine(BARS.map(b => ({ ...b })));
+    engine._focusAlloc = engine.allocations[0];
+    engine._focusResource = 0;
+    engine._announceEdit = () => { engine._announcements.push('edited'); };
+    const host = holdHost(engine, 'OnAllocationChanging');
+
+    const edit = engine._keyboardEdit('move-time', 1);
+    replaceData(engine, BARS);
+    host.answers[0](true);
+    await edit;
+
+    assert.equal(host.told.includes('OnAllocationEdited'), false);
+    assert.deepEqual(engine._announcements, []);
+    assert.equal(engine._keyboardEditPending, false);
+    assert.deepEqual(loaded(engine), LOADED);
+});
+
+test('a multi-bar move the host answers after the data was replaced leaves the new data alone', async () => {
+    const engine = makeEditEngine(BARS.map(b => ({ ...b })));
+    engine.selectedBars.add('a');
+    engine.selectedBars.add('b');
+    const a = engine.allocations[0];
+    const host = holdHost(engine, 'OnAllocationsChanging');
+
+    const ed = preview(engine, a, { start: 200, end: 300, mode: 'move' });
+    ed.companions = engine._companionEdits(a);
+    const commit = engine._commitEdit(ed);
+    replaceData(engine, BARS);
+    host.answers[0](false);
+    await commit;
+
+    assert.deepEqual(loaded(engine), LOADED);
+    assert.deepEqual(indexViolations(engine), []);
+    assert.deepEqual(engine._announcements, []);
+});
+
+test('a bar created, a paste or a delete the host answers after the data was replaced changes nothing', async () => {
+    const created = makeEditEngine(BARS.map(b => ({ ...b })));
+    const createHost = holdHost(created, 'OnAllocationCreating');
+    const create = created._commitCreate({ mode: 'create', previewStart: 600, previewEnd: 800, previewResourceIndex: 0 });
+    replaceData(created, BARS);
+    createHost.answers[0]({ id: 'new-1', resourceId: 'r0', startTime: 600, endTime: 800 });
+    await create;
+    assert.deepEqual(loaded(created), LOADED);
+    assert.equal(createHost.told.includes('OnAllocationEdited'), false);
+
+    const pasted = makeEditEngine(BARS.map(b => ({ ...b })));
+    pasted._copyClipboard = ['a'];
+    const pasteHost = holdHost(pasted, 'OnAllocationsCopying');
+    const paste = pasted._pasteClipboard();
+    replaceData(pasted, BARS);
+    pasteHost.answers[0]([{ id: 'a2', resourceId: 'r0', startTime: 600, endTime: 700 }]);
+    await paste;
+    assert.deepEqual(loaded(pasted), LOADED);
+
+    const deleted = makeEditEngine(BARS.map(b => ({ ...b })));
+    deleted.selectedBars.add('a');
+    const deleteHost = holdHost(deleted, 'OnAllocationsDeleting');
+    const remove = deleted._deleteSelection();
+    replaceData(deleted, BARS);
+    deleteHost.answers[0](true);
+    await remove;
+    // The new data's own a is not deleted on the strength of an answer about the old one.
+    assert.deepEqual(loaded(deleted), LOADED);
+    assert.deepEqual(deleted._announcements, []);
+});

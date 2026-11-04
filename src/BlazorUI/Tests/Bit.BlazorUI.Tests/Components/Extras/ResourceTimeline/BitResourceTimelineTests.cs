@@ -1059,7 +1059,7 @@ public class BitResourceTimelineTests : BunitTestContext
         var secondSession = WindowSession();
         Assert.AreNotEqual(firstSession, secondSession);
 
-        // The old fetch answers only now that the new load has begun (its initial window waits its turn behind it).
+        // The old fetch answers only now that the new load has begun (whose initial window did not wait for it).
         pending.Dequeue().SetResult([Allocation("stale", "r1", 0, 60_000)]);
         await stale;
         WaitForLoads(component, 2);
@@ -1092,18 +1092,21 @@ public class BitResourceTimelineTests : BunitTestContext
             return fetch.Task;
         }));
 
-        // The first request is fetching when a scroll asks for a newer window, which waits its turn.
+        // The first request is fetching when a scroll asks for a newer window, whose fetch starts at once rather than
+        // waiting the slow one out.
         var first = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000_000, WindowSession()));
         var second = component.InvokeAsync(() => component.Instance._RequestAllocationWindow(2, 0, 2_000_000, WindowSession()));
-        await component.InvokeAsync(() => { });
+        await WaitUntil(() => pending.Count == 2);
 
-        Assert.AreEqual(1, pending.Count);
+        var older = pending.Dequeue();
+        var newer = pending.Dequeue();
 
-        pending.Dequeue().SetResult([Allocation("old", "r1", 0, 60_000)]);
+        // The superseded fetch answering first is dropped all the same.
+        older.SetResult([Allocation("old", "r1", 0, 60_000)]);
         await first;
+        Assert.AreEqual(1, Calls(ApplyAllocationWindowFn).Count);
 
-        await WaitUntil(() => pending.Count == 1);
-        pending.Dequeue().SetResult([Allocation("new", "r1", 0, 60_000)]);
+        newer.SetResult([Allocation("new", "r1", 0, 60_000)]);
         await second;
 
         // The window of the superseded request never reaches the engine, nor the bars the component resolves.
@@ -1796,6 +1799,41 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.IsNull(created);
     }
 
+    [TestMethod]
+    public async Task BitResourceTimelineShouldDropTheAnswersOfTheAppGivenAfterTheDataWasReplaced()
+    {
+        var deleting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var copying = new TaskCompletionSource<IReadOnlyList<BitResourceTimelineAllocation>?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var creating = new TaskCompletionSource<BitResourceTimelineAllocation?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderLoaded(p =>
+        {
+            p.Add(x => x.OnAllocationsDeleting, _ => deleting.Task);
+            p.Add(x => x.OnAllocationsCopying, _ => copying.Task);
+            p.Add(x => x.OnAllocationCreating, _ => creating.Task);
+        });
+
+        var delete = component.InvokeAsync(() => component.Instance._OnAllocationsDeleting(["a1"]));
+        var paste = component.InvokeAsync(() => component.Instance._OnAllocationsCopying(["a1"], 0, null));
+        var create = component.InvokeAsync(() => component.Instance._OnAllocationCreating("r1", 0, 60_000));
+
+        // The app assigns a new Config, holding a bar of the same id, while it decides.
+        var next = SampleConfig();
+        component.Render(p => p.Add(x => x.Config, next));
+        WaitForLoads(component, 2);
+
+        deleting.SetResult(true);
+        copying.SetResult([Allocation("c1", "r1", 0, 60_000)]);
+        creating.SetResult(Allocation("n1", "r1", 0, 60_000));
+
+        Assert.IsFalse(await delete);
+        Assert.IsNull(await paste);
+        Assert.IsNull(await create);
+
+        // The a1 of the new Config was not deleted, and neither new bar joined the ones the component resolves.
+        Assert.AreSame(next.Allocations[0], (await ResolveAsync(component, "a1", "c1", "n1")).Single());
+    }
+
 
 
     // ---------------------------------------------------------------- pointer, selection and view callbacks
@@ -2021,6 +2059,43 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldResolveTheResourcesOfTheConfigItLoaded()
+    {
+        var config = SampleConfig();
+        var contexts = new Dictionary<string, BitResourceTimelineRowContext>();
+        BitResourceTimelinePointerArgs? args = null;
+
+        RenderFragment<BitResourceTimelineRowContext> template = ctx => b =>
+        {
+            contexts[ctx.Resource.Id] = ctx;
+            b.AddContent(0, ctx.Resource.Name);
+        };
+
+        var component = RenderLoaded(p =>
+        {
+            p.Add(x => x.ResourceTemplate, template);
+            p.Add(x => x.OnClick, (BitResourceTimelinePointerArgs a) => args = a);
+        }, config);
+
+        await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("""
+            [{ "id": "r1", "name": "Resource 1", "depth": 0, "hasChildren": false, "collapsed": false, "height": 0 }]
+            """)));
+
+        Assert.AreSame(config.Resources[0], contexts["r1"].Resource);
+
+        // A new Config whose rows read the same as the previous one's, which the engine therefore does not report again.
+        var next = SampleConfig();
+        component.Render(p => p.Add(x => x.Config, next));
+        WaitForLoads(component, 2);
+
+        await component.InvokeAsync(() => component.Instance._OnTimelineClick(null, null, "r1", null, "resourceAxis", 0, 0, 0, 0,
+                                                                              false, false, false, false));
+
+        Assert.AreSame(next.Resources[0], args!.Resource);
+        Assert.AreSame(next.Resources[0], contexts["r1"].Resource);
+    }
+
+    [TestMethod]
     public async Task BitResourceTimelineShouldNameItsGroupButtonsThroughItsTexts()
     {
         var component = RenderTimeline(p => p.Add(x => x.ResourceTemplate, ctx => b => b.AddContent(0, ctx.Resource.Name)));
@@ -2193,6 +2268,30 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 100, 200));
         await component.InvokeAsync(() => component.Instance._OnBarHover("unknown", 0, 0));
         Assert.AreEqual(0, component.FindAll(".bit-rtm-tov").Count);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldHaveTheScriptPlaceTheTooltipOverlayOfEveryHover()
+    {
+        var component = RenderLoaded(p => p.Add(x => x.TooltipTemplate, a => b => b.AddContent(0, a.Id)));
+
+        await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 100, 200));
+        await WaitUntil(() => Calls(PlaceTooltipOverlayFn).Count == 1);
+
+        // Once rendered, so it is measured with the hovered bar in it, at the pointer the engine reported.
+        var place = Calls(PlaceTooltipOverlayFn).Single();
+        Assert.IsInstanceOfType<ElementReference>(place.Arguments[1]);
+        Assert.AreEqual(100d, place.Arguments[2]);
+        Assert.AreEqual(200d, place.Arguments[3]);
+
+        // A render for anything else leaves the placed overlay where it is, and nothing hovered places nothing.
+        component.Render();
+        await component.InvokeAsync(() => component.Instance._OnBarHover(null, 0, 0));
+        Assert.AreEqual(1, Calls(PlaceTooltipOverlayFn).Count);
+
+        await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 300, 40));
+        await WaitUntil(() => Calls(PlaceTooltipOverlayFn).Count == 2);
+        Assert.AreEqual(300d, Calls(PlaceTooltipOverlayFn)[1].Arguments[2]);
     }
 
 

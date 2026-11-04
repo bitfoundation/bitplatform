@@ -141,14 +141,23 @@
         private _position(): void {
             const el = this._el;
             if (!el) return;
-            const pad = 12;
             const rect = el.getBoundingClientRect();
-            let left = this._clientX + pad;
-            let top = this._clientY + pad;
-            if (left + rect.width > window.innerWidth - 4) left = this._clientX - rect.width - pad;
-            if (top + rect.height > window.innerHeight - 4) top = this._clientY - rect.height - pad;
-            el.style.left = Math.max(4, left) + 'px';
-            el.style.top = Math.max(4, top) + 'px';
+            const { left, top } = ResourceTimelineTooltip.place(rect.width, rect.height, this._clientX, this._clientY, 12, 12);
+            el.style.left = left + 'px';
+            el.style.top = top + 'px';
+        }
+
+        // Where a box of the given size goes beside the pointer, in viewport
+        // coordinates: `gapX` / `gapY` past it, flipped to its other side where it
+        // would overflow the viewport, and kept 4px inside its top and left edges.
+        // Shared with the overlay of the TooltipTemplate, so both tooltips land
+        // the same way.
+        public static place(width: number, height: number, clientX: number, clientY: number, gapX: number, gapY: number): { left: number; top: number } {
+            let left = clientX + gapX;
+            let top = clientY + gapY;
+            if (left + width > window.innerWidth - 4) left = clientX - width - gapX;
+            if (top + height > window.innerHeight - 4) top = clientY - height - gapY;
+            return { left: Math.max(4, left), top: Math.max(4, top) };
         }
     }
 }

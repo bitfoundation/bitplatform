@@ -88,8 +88,14 @@ public partial class BitResourceTimelineTextsTests
             {
                 StringAssert.Contains(value, "{0}", $"{property.Name} is a format without a placeholder.");
 
-                // The markup formats the group button labels with string.Format, the engine the rest with the same syntax.
-                _ = string.Format(CultureInfo.InvariantCulture, value, "a", "b", "c", "d");
+                // The markup formats the group button labels with string.Format and the name of the group alone, so a
+                // placeholder past {0} there throws; the engine formats the rest with the same syntax and up to four.
+                object[] arguments = property.Name is nameof(BitResourceTimelineTexts.ExpandGroupFormat)
+                                                    or nameof(BitResourceTimelineTexts.CollapseGroupFormat)
+                                     ? ["a"]
+                                     : ["a", "b", "c", "d"];
+
+                _ = string.Format(CultureInfo.InvariantCulture, value, arguments);
             }
             else
             {

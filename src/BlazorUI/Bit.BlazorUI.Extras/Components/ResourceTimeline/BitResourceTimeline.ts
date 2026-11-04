@@ -42,6 +42,40 @@
             ResourceTimeline._instances.get(id)?.engine.disableTooltipTemplate();
         }
 
+        // Places the overlay of the TooltipTemplate, rendered at the pointer, the way the built-in tooltip places itself
+        // (ResourceTimelineTooltip.place): beside the pointer, flipped to its other side where it would overflow the
+        // viewport, and kept within it. The gap from the pointer is the translate of its stylesheet (.bit-rtm-tov), or
+        // whatever an app's style puts there instead, so it is read rather than assumed; and the box is measured as it
+        // is laid out, so a containing block other than the viewport (a transformed ancestor) is accounted for as well.
+        public static placeTooltipOverlay(id: string, overlay: HTMLElement, clientX: number, clientY: number) {
+            if (!ResourceTimeline._instances.has(id) || !overlay || !overlay.isConnected) return;
+
+            const style = overlay.style;
+            style.left = clientX + 'px';
+            style.top = clientY + 'px';
+
+            let gapX = 0;
+            let gapY = 0;
+            try {
+                const transform = getComputedStyle(overlay).transform;
+                if (transform && transform !== 'none') {
+                    const matrix = new DOMMatrixReadOnly(transform);
+                    gapX = matrix.m41;
+                    gapY = matrix.m42;
+                }
+            } catch { /* an unparsable transform: placed without a gap */ }
+
+            // How far from where its left and top ask for it the overlay is drawn: the translate, plus the offset of its
+            // containing block.
+            const rect = overlay.getBoundingClientRect();
+            const shiftX = rect.left - clientX;
+            const shiftY = rect.top - clientY;
+
+            const { left, top } = ResourceTimelineTooltip.place(rect.width, rect.height, clientX, clientY, gapX, gapY);
+            style.left = (left - shiftX) + 'px';
+            style.top = (top - shiftY) + 'px';
+        }
+
         public static setData(id: string, resources: any[], start: number, end: number, allocations: any[]) {
             ResourceTimeline._instances.get(id)?.engine.setData(resources, start, end, allocations);
         }

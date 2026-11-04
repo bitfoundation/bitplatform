@@ -67,8 +67,11 @@ public static class BitResourceTimelineDemoData
     public static List<BitResourceTimelineAllocation> Flights(IReadOnlyList<BitResourceTimelineResource> resources, DateTimeOffset from, DateTimeOffset to, bool labeled = false)
     {
         var groups = resources.Where(r => r.ParentId is not null).Select(r => r.ParentId).ToHashSet();
-        var firstDay = (int)Math.Floor((from - Today).TotalDays);
-        var lastDay = (int)Math.Ceiling((to - Today).TotalDays);
+        // Counted in local calendar days rather than elapsed 24 hours, which a daylight saving change in between would
+        // throw off by one: the day the window starts on, through the day it ends on unless it ends at its midnight.
+        var localTo = to.LocalDateTime;
+        var firstDay = (int)(from.LocalDateTime.Date - DateTime.Today).TotalDays;
+        var lastDay = (int)(localTo.Date - DateTime.Today).TotalDays + (localTo.TimeOfDay > TimeSpan.Zero ? 1 : 0);
         var flights = new List<BitResourceTimelineAllocation>();
 
         for (var r = 0; r < resources.Count; r++)

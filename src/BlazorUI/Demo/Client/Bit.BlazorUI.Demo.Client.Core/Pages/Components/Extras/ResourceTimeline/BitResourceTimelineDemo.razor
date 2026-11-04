@@ -146,7 +146,7 @@
                     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomToDaysAsync(7)">7 days</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.SetPixelsPerHourAsync(120)">120 px/h</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ResetZoomAsync()">Reset zoom</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ScrollToTimeAsync(BitResourceTimelineDemoData.Today.AddDays(1).AddHours(12))">Tomorrow noon</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ScrollToTimeAsync(new DateTimeOffset(DateTime.Today.AddDays(1).AddHours(12)))">Tomorrow noon</BitButton>
                 </div>
                 <br />
                 <div class="timeline">

@@ -30,7 +30,7 @@ public partial class BitResourceTimelineDemo
             Name = "LoadAllocationsAsync",
             Type = "Func<BitResourceTimelineWindow, Task<IReadOnlyList<BitResourceTimelineAllocation>>>?",
             DefaultValue = "null",
-            Description = "On-demand loading: called with the window the view needs (the visible range plus a buffer) for every allocation overlapping it, and again as a scroll or zoom nears its edge. The Config still supplies the resources and the range. Null loads everything up front.",
+            Description = "On-demand loading: called with the window the view needs (the visible range plus a buffer) for every allocation overlapping it, and again as a scroll or zoom nears its edge. Calls can overlap - a newer one does not wait for an older one, whose result is dropped. Swapping one delegate for another reloads nothing until the next window is fetched (ReloadAsync fetches it at once). The Config still supplies the resources and the range. Null loads everything up front.",
             LinkType = LinkType.Link,
             Href = "#timeline-window",
         },

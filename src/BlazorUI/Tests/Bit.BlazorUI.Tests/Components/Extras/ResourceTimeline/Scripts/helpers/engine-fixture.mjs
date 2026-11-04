@@ -201,6 +201,9 @@ export function makeBareEngine(overrides = {}) {
     engine._selectionAnchorId = null;
     engine._copyClipboard = [];
     engine._lastHoverId = undefined;
+    // What a host callback compares against once it is answered (a load that
+    // replaced the data in between drops the answer).
+    engine._dataGeneration = 0;
 
     Object.assign(engine, overrides.engine || {});
     return engine;

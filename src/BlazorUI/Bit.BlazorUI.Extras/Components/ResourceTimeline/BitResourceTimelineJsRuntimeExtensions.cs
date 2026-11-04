@@ -73,6 +73,11 @@ internal static class BitResourceTimelineJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.disableTooltipTemplate", id);
     }
 
+    public static ValueTask BitResourceTimelinePlaceTooltipOverlay(this IJSRuntime jsRuntime, string id, ElementReference overlay, double clientX, double clientY)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.placeTooltipOverlay", id, overlay, clientX, clientY);
+    }
+
     [DynamicDependency(All, typeof(BitResourceTimelineResource))]
     [DynamicDependency(All, typeof(BitResourceTimelineAllocation))]
     [DynamicDependency(All, typeof(BitResourceTimelineBarIcon))]

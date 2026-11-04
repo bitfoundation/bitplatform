@@ -486,6 +486,12 @@
         public edit: ResourceTimelineEditGesture | null;
         // A keyboard edit is waiting for the host's answer (see _keyboardEdit).
         private _keyboardEditPending: boolean;
+        // Advanced by every load that replaces the allocations (setData, the
+        // batched beginData / endData, beginWindowed, clearData). A host callback
+        // of an edit, a create, a paste or a delete captures it before it awaits
+        // the host, and an answer arriving after the data was replaced is dropped:
+        // the bars it speaks of are gone, and the same ids may name new ones.
+        private _dataGeneration: number;
         private _tooltip: ResourceTimelineTooltip | null;
 
         // Windowed loading
@@ -904,6 +910,7 @@
             // pointer up. See handlePointerDown/Move/Up and _buildGhostScene.
             this.edit = null;
             this._keyboardEditPending = false;
+            this._dataGeneration = 0;
 
             // Hover tooltip, created on first hover (see _ensureTooltip). Owns its
             // own element, timer and positioning - see ResourceTimelineTooltip.
@@ -4518,6 +4525,7 @@
             this.render();
 
             const changeKind = kind === 'move-time' || kind === 'move-resource' ? 'move' : 'resize';
+            const generation = this._dataGeneration;
             let allowed: boolean;
             this._keyboardEditPending = true;
             try {
@@ -4526,6 +4534,9 @@
             } finally {
                 this._keyboardEditPending = false;
             }
+            // The data was replaced while the host answered: the bar is no longer
+            // loaded, so there is nothing to revert or to report.
+            if (generation !== this._dataGeneration) return;
             if (!allowed) {
                 this._revertEdit(alloc, prevResourceId, prevStartTime, prevEndTime);
                 this._announce(this._text('editRefused'));
@@ -4657,8 +4668,11 @@
             // changed; relayout rather than a plain repaint.
             this._relayout();
 
+            const generation = this._dataGeneration;
             const allowed = await this._askHostChanging(
                 alloc, prevResourceId, prevStartTime, prevEndTime, kind);
+            // Replaced while the host answered: see _keyboardEdit.
+            if (generation !== this._dataGeneration) return;
             if (!allowed) {
                 this._revertEdit(alloc, prevResourceId, prevStartTime, prevEndTime);
                 this._announce(this._text('editRefused'));
@@ -4744,7 +4758,10 @@
             }
             this._finishReindex(moved);
             this._relayout();
+            const generation = this._dataGeneration;
             const allowed = await this._askHostChangingMany(moves, 'move');
+            // Replaced while the host answered: see _keyboardEdit.
+            if (generation !== this._dataGeneration) return;
             if (!allowed) {
                 const reverted = new Set<ResourceTimelineRowIndex>();
                 for (const m of moves) {
@@ -4775,6 +4792,7 @@
                 this.render();
                 return;
             }
+            const generation = this._dataGeneration;
             let created: ResourceTimelineAllocation | null;
             try {
                 created = await this.dotNetRef.invokeMethodAsync<ResourceTimelineAllocation | null>(
@@ -4784,6 +4802,8 @@
                 this.render();
                 return;
             }
+            // The bar was drawn on data replaced while the host built it.
+            if (generation !== this._dataGeneration) return;
             if (!created || !created.id) {
                 this.render();
                 return;
@@ -6322,6 +6342,7 @@
         }
 
         public setData(resources: ResourceTimelineResource[] | null, start: number, end: number, allocations: ResourceTimelineAllocation[] | null): void {
+            this._dataGeneration++;
             this._prepareLoadScroll();
             this._windowed = false;
             this.resources = resources || [];
@@ -6347,6 +6368,7 @@
         // content pane rather than the last frame being left on screen. A
         // windowed load ends with it, so no window is asked for or taken any more.
         public clearData(): void {
+            this._dataGeneration++;
             this._windowed = false;
             this._windowPending = false;
             clearTimeout(this._windowCheckTimer as number);
@@ -6460,6 +6482,7 @@
         // so structure appears while the batches arrive; sorting and indexing run
         // once at endData.
         public beginData(resources: ResourceTimelineResource[] | null, start: number, end: number, total: number): void {
+            this._dataGeneration++;
             this._prepareLoadScroll();
             // The batches still to arrive will grow the rows that stacking makes
             // taller, so endData re-applies this once the layout has settled.
@@ -6495,6 +6518,7 @@
         }
 
         public endData(): void {
+            this._dataGeneration++;
             const buffer = this._loadBuffer || [];
             this._loadBuffer = null;
             this._loadExpected = 0;
@@ -6740,6 +6764,7 @@
         // `session` is the token of this load (see _windowSession): the requests
         // carry it, and only a window applied with it is taken.
         public beginWindowed(resources: ResourceTimelineResource[] | null, start: number, end: number, session: number = 0): void {
+            this._dataGeneration++;
             this._prepareLoadScroll();
             this.resources = resources || [];
             this._rebuildResourceStructure();
@@ -6976,6 +7001,7 @@
                 : (this._focusResource >= 0 && this._rows[this._focusResource]
                     ? this._rows[this._focusResource].resource.id
                     : null);
+            const generation = this._dataGeneration;
             let created: ResourceTimelineAllocation[] | null;
             try {
                 created = await this.dotNetRef.invokeMethodAsync<ResourceTimelineAllocation[] | null>(
@@ -6984,6 +7010,8 @@
                 console.error('BitResourceTimeline copy callback failed:', error);
                 return;
             }
+            // The copies were made of data replaced while the host built them.
+            if (generation !== this._dataGeneration) return;
             if (!created || !created.length) return;
             this.upsertAllocations(created);
             this._announce(this._text('pastedFormat', created.length));
@@ -6995,8 +7023,12 @@
                 : (this._focusAlloc ? [this._focusAlloc.id] : []);
             if (!ids.length) return;
             if (this.dotNetRef) {
+                const generation = this._dataGeneration;
                 try {
                     const allowed = await this.dotNetRef.invokeMethodAsync<boolean>('OnAllocationsDeleting', ids);
+                    // Replaced while the host answered: the same ids may name new
+                    // bars now, which nobody asked to delete.
+                    if (generation !== this._dataGeneration) return;
                     if (allowed === false) {
                         this._announce(this._text('deleteRefused'));
                         return;

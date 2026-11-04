@@ -5,8 +5,10 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Optional color overrides for the timeline. Every value is a CSS color string
 /// (for example <c>"#ffffff"</c>, <c>"white"</c> or <c>"rgba(0,0,0,.1)"</c>).
-/// Any property left <c>null</c> keeps the renderer's default, so a partial
-/// instance only changes the colors it sets. Useful for theming (e.g. dark mode).
+/// Any property left <c>null</c> keeps the color already in force - the renderer's
+/// or the bit theme's default on the first apply, and the one an earlier options
+/// instance set on a later one - so a partial instance only changes the colors it
+/// sets. Useful for theming (e.g. dark mode).
 /// </summary>
 public class BitResourceTimelineColors
 {
