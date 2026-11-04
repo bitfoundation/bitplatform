@@ -31,7 +31,7 @@ In the same step, look at the branch you are on and what it holds that `develop`
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
 - When the feature rests on rules from outside the codebase - a tax, an invoicing or payroll regulation, a retention period, a payment provider's API - research them from primary sources, with a citation for each, and note where sources disagree. They go into the spec as input for the user to decide on, and what is still undecided under its open questions
-- Write the agreed requirements and acceptance criteria into the specs of the features the request touches (`specs/README.md`), and settle the open questions there that this work depends on
+- Write each requirement and its acceptance criteria into the specs of the features the request touches (`specs/README.md`) in the turn the user settles it, not once every question is answered, and settle the open questions there that this work depends on
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
@@ -126,7 +126,7 @@ The features below were switched **off** when this project was generated from th
 *   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and `BitDataGrid` CRUD pages with their controllers, one editing its rows in a modal popup and one on a page of its own.
 <!--#endif-->
 
-When the user asks for one of these, or the task needs it, tell them it is a first-class option that simply was not selected when the project was created, and bring it in with the **template-diff** skill (`.github/agents/template-diff.agent.md`), ahead of the work that builds on it.
+When the user asks for one of these, or the task needs it, tell them it is a first-class option that simply was not selected when the project was created, and once they agree, bring it in with the **template-diff** skill (`.github/agents/template-diff.agent.md`), ahead of the work that builds on it. Bringing it in waits for their go-ahead as a plan does, whether you do it yourself or hand it to another agent.
 <!--#endif-->
 
 ## Staying on the Newest bit Platform
