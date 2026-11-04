@@ -305,7 +305,10 @@
            The text is bound rather than written as a value next to an input handler: a binding hands the
            renderer the text each input event carries, so the render of an older keystroke - a round trip
            behind the typing - writes nothing over the newer text already in the field. Written by hand, the
-           render that empties the field after a separator lands on the keys typed since and takes them away. *@
+           render that empties the field after a separator lands on the keys typed since and takes them away.
+           It is also what puts back the text the component did not keep - a cut to the MaxLength, a word
+           turned into a tag, a text set from code - since the renderer compares that with the text typed
+           rather than with the one it rendered last, so nothing has to be pushed into the element by hand. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"

@@ -34,6 +34,15 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     // collapse applied to the first of them would flicker the rail shut and open again on every arrow key.
     private const int FOCUS_OUT_DELAY_MS = 250;
 
+    // How far a finger may travel between touching the overlay and lifting off it for the touch to still be a tap,
+    // in CSS pixels: about the slop the browsers give a tap before they take it for a drag.
+    private const double OverlayTapSlop = 10;
+
+    // Where the one finger on the overlay came down, or null once the touch is no tap (see HandleOverlayTouchEnd).
+    private (double X, double Y)? _overlayTouch;
+    // Bound to a receiver that is not the component: a touch that only notes where it began has nothing to render.
+    private EventCallback<TouchEventArgs> _onOverlayTouchStart;
+
     private bool _isHovered;
     private bool _isDrawer;
     private bool _isFocused;
@@ -736,6 +745,8 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     protected override async Task OnInitializedAsync()
     {
+        _onOverlayTouchStart = EventCallback.Factory.Create<TouchEventArgs>(new object(), HandleOverlayTouchStart);
+
         _searchText = SearchText;
 
         SearchNavItems(_searchText);
@@ -895,6 +906,35 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (Disabled) return;
 
         await ClosePanel();
+    }
+
+    private void HandleOverlayTouchStart(TouchEventArgs e)
+    {
+        _overlayTouch = e.Touches.Length == 1 && e.ChangedTouches.Length > 0
+            ? (e.ChangedTouches[0].ClientX, e.ChangedTouches[0].ClientY)
+            : null;
+    }
+
+    // Only a touch that is a tap closes the panel, which is all that ever made a click before: one finger, lifted where
+    // it came down. A touchend also ends a drag, a scroll attempt or a pinch begun on the overlay, none of which did.
+    private async Task HandleOverlayTouchEnd(TouchEventArgs e)
+    {
+        if (_overlayTouch is not { } start) return;
+
+        // A finger still down is a gesture of more than one, which no lift of one of them turns into a tap.
+        if (e.Touches.Length > 0 || e.ChangedTouches.Length == 0)
+        {
+            _overlayTouch = null;
+            return;
+        }
+
+        _overlayTouch = null;
+
+        var end = e.ChangedTouches[0];
+
+        if (Math.Abs(end.ClientX - start.X) > OverlayTapSlop || Math.Abs(end.ClientY - start.Y) > OverlayTapSlop) return;
+
+        await HandleOverlayClick();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)

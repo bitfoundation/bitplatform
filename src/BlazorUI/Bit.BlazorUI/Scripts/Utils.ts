@@ -305,6 +305,20 @@
                 return null;
             }
         }
+
+        // Calls .NET the way invokeMethodAsync does, except that a failure always comes back as the promise's
+        // rejection. Over a connection that is already closed invokeMethodAsync throws before it has a promise to
+        // reject - which Firefox runs into as it leaves or reloads the page, since it keeps running the page's
+        // scripts (a blur, a key up, a last resize) after closing that connection - and a throw out of a listener
+        // skips whatever the caller does once the call has settled. Every script of the packages that calls .NET
+        // without awaiting the answer goes through here, and lets go of the rejection itself.
+        export function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T> {
+            try {
+                return dotnetObj.invokeMethodAsync<T>(method, ...args);
+            } catch (e) {
+                return Promise.reject(e);
+            }
+        }
     }
 }
 

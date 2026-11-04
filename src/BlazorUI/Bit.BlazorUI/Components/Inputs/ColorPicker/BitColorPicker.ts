@@ -50,10 +50,11 @@
 
             // A .NET handler that throws - or a consumer callback behind it that does - rejects the promise
             // this returns. Nothing awaits it, so an unhandled rejection is all the page would see of it,
-            // reported without the call that raised it; the .NET side handles the exception either way.
+            // reported without the call that raised it; the .NET side handles the exception either way. A call
+            // over a connection that is already closed fails the same way rather than throwing (Utils.invokeDotNet).
             const invoke = (method: string, ...args: any[]) => {
-                dotnetObj.invokeMethodAsync(method, ...args)
-                         .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
+                Utils.invokeDotNet(dotnetObj, method, ...args)
+                     .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
             };
 
             const flushMove = () => {

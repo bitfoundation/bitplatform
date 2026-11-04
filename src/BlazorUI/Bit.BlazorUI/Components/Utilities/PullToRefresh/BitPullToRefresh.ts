@@ -113,6 +113,8 @@
         private diff = 0;
         private refreshing = false;
         private pointerId = -1;
+        // Whether the pointer being followed is a pen, whose touches may yet take the pull over (see onTouchStart).
+        private penPull = false;
 
         // The pull is reported to .NET at most once per frame, and never twice with the same rendered pixel:
         // a move event arrives far more often than a frame, and every report is an interop round trip that
@@ -284,6 +286,18 @@
             // Anything but a single finger is a pinch or a two-finger scroll, never a pull.
             if (e.touches.length !== 1) return this.abandon();
 
+            // A pen raises both kinds of event on most touch screens - its pointer events first, then the touch events
+            // of the same contact - and the two are followed in different coordinates. Its touches take over the pull
+            // its pointerdown has just started: the start is read again in the coordinates of the touches, and letting
+            // go of the pointer leaves its pointer events to the listeners below to ignore. A pen that raises no touch
+            // events (Windows) is followed through its pointer events from start to end.
+            if (this.penPull && this.startY !== -1) {
+                this.releasePointer();
+                this.startX = e.touches[0].screenX;
+                this.startY = e.touches[0].screenY;
+                return;
+            }
+
             this.start(e.touches[0].screenX, e.touches[0].screenY, e.target);
         };
 
@@ -308,6 +322,7 @@
             // finger, and the screen position of a mouse is not always there to read - WebKit gives the mouse
             // events it synthesizes none (0, 0), which would read as a pull that never moves.
             this.pointerId = e.pointerId;
+            this.penPull = e.pointerType === 'pen';
             this.start(e.clientX, e.clientY, e.target);
         };
 
@@ -491,6 +506,8 @@
         }
 
         private releasePointer() {
+            this.penPull = false;
+
             if (this.pointerId === -1) return;
 
             const pointerId = this.pointerId;

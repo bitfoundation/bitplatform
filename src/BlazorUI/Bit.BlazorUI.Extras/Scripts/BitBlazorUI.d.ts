@@ -13,4 +13,5 @@ declare namespace BitBlazorUI.Utils {
     function isInNestedSurface(node: Node | null, boundary: Element): boolean;
     function isInteractive(el: Element): boolean;
     function isRtl(element: HTMLElement): boolean;
+    function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T>;
 }

@@ -469,6 +469,8 @@ public partial class BitColorPicker : BitInputBase<string?>
 
     protected override async Task OnInitializedAsync()
     {
+        _onSliderPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HoldSliderValues);
+
         // The cascade is read here as well as in OnParametersSet, since DefaultInputsMode is only acted on
         // while the picker initializes and a cascaded one applied there alone would arrive one lifecycle
         // step after the mode it is the default for has already been settled.
@@ -795,11 +797,40 @@ public partial class BitColorPicker : BitInputBase<string?>
     // last move of the drag - which is where the render of an earlier step lands, a round trip behind the pointer - so
     // OnChangeEnd would be lost there; a slider under the pointer is therefore not written to until the press is over.
     // The thumb it draws is its own, so it follows the pointer in the meantime all the same.
-    private (string Hue, string Alpha)? _pressedSliderValues;
+    // A press released off the slider can reach it with neither a pointerup nor a change, so the color the press itself
+    // last left the picker on is kept with the values: once the color has moved by anything else - a Value pushed in, a
+    // hex typed, the saturation area dragged - the press is over, and the hold is let go of (see HeldSliderValues).
+    private PressedSliderValues? _pressedSliderValues;
+
+    // Bound to a receiver that is not the component, so the press costs no render: nothing changes until it moves.
+    private EventCallback<PointerEventArgs> _onSliderPointerDown;
+
+    private string _HueSliderValue => HeldSliderValues()?.Hue ?? _HueValue;
+
+    private string _AlphaSliderValue => HeldSliderValues()?.Alpha ?? _AlphaValue;
+
+    private PressedSliderValues? HeldSliderValues()
+    {
+        if (_pressedSliderValues is { } held && (held.Hsv != _color.Hsv || held.A != _color.A))
+        {
+            _pressedSliderValues = null;
+        }
+
+        return _pressedSliderValues;
+    }
 
     private void HoldSliderValues()
     {
-        _pressedSliderValues ??= (_HueValue, _AlphaValue);
+        _pressedSliderValues ??= new(_HueValue, _AlphaValue, _color.Hsv, _color.A);
+    }
+
+    // A move of the slider under the press is the press's own, and keeps the hold.
+    private void FollowSliderPress()
+    {
+        if (_pressedSliderValues is { } held)
+        {
+            _pressedSliderValues = held with { Hsv = _color.Hsv, A = _color.A };
+        }
     }
 
     // The re-render this causes is what writes into the sliders the values the press held back.
@@ -807,6 +838,8 @@ public partial class BitColorPicker : BitInputBase<string?>
     {
         _pressedSliderValues = null;
     }
+
+    private readonly record struct PressedSliderValues(string Hue, string Alpha, (double Hue, double Saturation, double Value) Hsv, double A);
 
     private string _AlphaPercentValue => Math.Round(_color.A * 100).ToString(CultureInfo.InvariantCulture);
 
@@ -1163,6 +1196,7 @@ public partial class BitColorPicker : BitInputBase<string?>
         var before = _color.Hsv;
 
         _color.Update(hue, before.Saturation, before.Value, _color.A);
+        FollowSliderPress();
 
         await ChangeAsync(final, notifyChange: _color.Hsv != before);
     }
@@ -1182,6 +1216,7 @@ public partial class BitColorPicker : BitInputBase<string?>
         var before = _color.A;
 
         _color.A = alpha;
+        FollowSliderPress();
 
         await ChangeAsync(final, notifyChange: _color.A != before);
     }

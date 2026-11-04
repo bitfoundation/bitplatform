@@ -6,11 +6,21 @@ internal static class ElementReferenceExtensions
     /// Moves the focus to the element the way a component does it on its own behalf (after a key press, a click
     /// or a render), where failing to move it only leaves the focus where it already is.
     /// </summary>
-    internal static async ValueTask FocusSafelyAsync(this ElementReference element, bool preventScroll = false)
+    internal static ValueTask FocusSafelyAsync(this ElementReference element, bool preventScroll = false)
+    {
+        return FocusSafelyAsync(() => element.FocusAsync(preventScroll));
+    }
+
+    /// <summary>
+    /// Runs a call that moves the focus some other way than <see cref="ElementReference.FocusAsync(bool)"/> does - a
+    /// script of a component's own - with the same failures let go of as <see cref="FocusSafelyAsync(ElementReference, bool)"/>
+    /// lets go of, since failing to move it there too only leaves the focus where it already is.
+    /// </summary>
+    internal static async ValueTask FocusSafelyAsync(Func<ValueTask> focus)
     {
         try
         {
-            await element.FocusAsync(preventScroll);
+            await focus();
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
         catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal

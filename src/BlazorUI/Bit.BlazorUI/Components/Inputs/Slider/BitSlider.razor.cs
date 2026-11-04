@@ -47,12 +47,20 @@ public partial class BitSlider : BitInputBase<double>
     private double? _rawB;
     private double? _rawBar;
 
-    // The value attributes the inputs were rendered with when a pointer pressed one of them, held for as long as the
-    // press lasts. WebKit fires no change event at the release of a range input whose value was written after the
-    // last move of the drag - which is where the render of an earlier step lands, a round trip behind the pointer -
-    // so OnChangeEnd would be lost there; an input under the pointer is therefore not written to until the press is
-    // over. Nothing is drawn from those values in the meantime: the thumbs follow the value the component holds.
-    private (string? Value, string Lower, string Upper, string Track)? _pressedValueAttributes;
+    // The inputs a pointer is pressing, held for as long as the press lasts. The value of each input is bound, so the
+    // renderer compares the value it renders with the one the input's last event carried rather than with the one it
+    // rendered last: the render of an earlier step - a round trip behind the pointer or the keys - writes nothing over
+    // the step the input has taken since. What the component makes of a step can still differ from it (a snap to a
+    // mark, a constraint), and that is not written to an input under the pointer either: WebKit fires no change event
+    // at the release of a range input whose value was written after the last move of the drag, so OnChangeEnd would be
+    // lost there. Each pressed input is rendered with the value its last event carried until the press is over, which
+    // writes nothing; nothing is drawn from it in the meantime, since the thumbs follow the value the component holds.
+    // A press released off the input can reach it with neither a pointerup nor a change, so the values the press itself
+    // last left the slider on are kept as well: once they have moved by anything else - a value pushed in by the parent
+    // above all - the press is over, and the hold is let go of (see GetRenderedValueAttributes).
+    private SliderPress? _press;
+    // Set while an input event of the press is handled, whose renders are the press's own (see BeginInput).
+    private bool _handlingPressInput;
     private EventCallback<PointerEventArgs> _onPointerEnd;
 
     // The keydown handler exists only to note where the next change is coming from, and a render per keystroke
@@ -1393,9 +1401,10 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     private void HandleOnKeyDown(KeyboardEventArgs e)
     {
-        // A press released off the input raises no pointerup on it, and one that moved nothing no change either;
-        // the key that comes after it is the input's own again, and is stepped from what it was rendered with.
-        _pressedValueAttributes = null;
+        // A press released off the input raises no pointerup on it, and one that moved nothing no change either; a key
+        // is no part of it in any case, and what the key moves - a LargeStep jump, a snap to a mark - has to be written
+        // to the input. No render is needed for that here: the input event the key raises renders the values.
+        _press = null;
 
         var isArrow = e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown";
         var isPage = e.Key is "PageUp" or "PageDown";
@@ -1418,15 +1427,91 @@ public partial class BitSlider : BitInputBase<double>
         _keyboardChange = false;
         _largeStepChange = false;
 
-        _pressedValueAttributes ??= GetValueAttributes();
+        _press ??= new(PressValues);
     }
+
+    /// <summary>
+    /// What a press that moves the slider changes, and nothing else should while it lasts.
+    /// </summary>
+    private (double Value, double A, double B) PressValues => (CurrentValue, _thumbA, _thumbB);
+
+    /// <summary>
+    /// The value attributes the inputs are rendered with: the ones the component holds (see GetValueAttributes), except
+    /// that an input a press is moving keeps the value its last event carried until the press is over (see _press).
+    /// </summary>
+    private (string? Value, string Lower, string Upper, string Track) GetRenderedValueAttributes()
+    {
+        var current = GetValueAttributes();
+
+        if (_press is not { } press) return current;
+
+        if (_handlingPressInput)
+        {
+            _press = press with { Values = PressValues };
+        }
+        else if (press.Values != PressValues)
+        {
+            _press = null;
+            return current;
+        }
+
+        return (press.Value ?? current.Value, press.Lower ?? current.Lower, press.Upper ?? current.Upper, press.Track ?? current.Track);
+    }
+
+    /// <summary>
+    /// Takes the value an input event carried, and marks the event as a move of the press under way - if there is one -
+    /// until the returned scope is disposed: the values it moves the slider to, in the renders it causes and once it is
+    /// done, are the press's own and keep the hold rather than end it.
+    /// </summary>
+    private PressInputScope BeginInput(SliderInput input, string? value)
+    {
+        if (_press is { } press)
+        {
+            _press = input switch
+            {
+                SliderInput.Value => press with { Value = value },
+                SliderInput.Lower => press with { Lower = value },
+                SliderInput.Upper => press with { Upper = value },
+                _ => press with { Track = value },
+            };
+
+            _handlingPressInput = true;
+        }
+
+        return new(this);
+    }
+
+    private readonly struct PressInputScope(BitSlider slider) : IDisposable
+    {
+        public void Dispose()
+        {
+            slider._handlingPressInput = false;
+
+            if (slider._press is { } press)
+            {
+                slider._press = press with { Values = slider.PressValues };
+            }
+        }
+    }
+
+    private enum SliderInput { Value, Lower, Upper, Track }
+
+    /// <summary>
+    /// A press of the inputs: the values it last left the slider on, and the value the last event of each input it
+    /// moved carried (null for one it has not moved).
+    /// </summary>
+    private readonly record struct SliderPress((double Value, double A, double B) Values,
+                                               string? Value = null,
+                                               string? Lower = null,
+                                               string? Upper = null,
+                                               string? Track = null);
 
     /// <summary>
     /// The end of a press of one of the inputs, which hands the inputs back the values the component holds.
     /// </summary>
     private void HandleOnPointerEnd(PointerEventArgs e)
     {
-        _pressedValueAttributes = null;
+        _press = null;
     }
 
     /// <summary>
@@ -1461,8 +1546,10 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     private static double ClampInto(double value, double min, double max) => max < min ? min : Math.Clamp(value, min, max);
 
-    private async Task HandleOnInput(ChangeEventArgs e)
+    private async Task HandleOnInput(string? value)
     {
+        using var press = BeginInput(SliderInput.Value, value);
+
         // Read and cleared before the change is refused as well as before it is taken, so that a slider which
         // is turned interactive again does not begin with a keystroke somebody made while it was not.
         var fromKeyboard = _keyboardChange;
@@ -1474,11 +1561,11 @@ public partial class BitSlider : BitInputBase<double>
 
         if (RestrictToMarks is false && largeStep is false)
         {
-            await SetCurrentValueAsStringAsync(e.Value?.ToString());
+            await SetCurrentValueAsStringAsync(value);
             return;
         }
 
-        if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
+        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
 
         var incoming = ResolveIncoming(parsed, CurrentValue, largeStep);
 
@@ -1492,7 +1579,7 @@ public partial class BitSlider : BitInputBase<double>
     private async Task HandleOnChange(ChangeEventArgs e)
     {
         // The change that ends a drag ends its press as well, released off the input or not.
-        _pressedValueAttributes = null;
+        _press = null;
 
         if (_IsInteractive is false) return;
 
@@ -1501,8 +1588,10 @@ public partial class BitSlider : BitInputBase<double>
         await ResyncInputAsync(e.Value?.ToString(), CurrentValue, v => _rawValue = v);
     }
 
-    private async Task HandleOnRangeInput(ChangeEventArgs e, bool isLower)
+    private async Task HandleOnRangeInput(string? value, bool isLower)
     {
+        using var press = BeginInput(isLower ? SliderInput.Lower : SliderInput.Upper, value);
+
         var fromKeyboard = _keyboardChange;
         var largeStep = _largeStepChange;
         _keyboardChange = false;
@@ -1511,7 +1600,7 @@ public partial class BitSlider : BitInputBase<double>
         if (_IsInteractive is false) return;
         if (InvalidRangeBinding()) return;
 
-        if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
+        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
 
         parsed = ResolveIncoming(parsed, isLower ? _thumbA : _thumbB, largeStep);
 
@@ -1589,7 +1678,7 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnRangeChange(ChangeEventArgs e, bool isLower)
     {
-        _pressedValueAttributes = null;
+        _press = null;
 
         if (_IsInteractive is false) return;
 
@@ -1605,12 +1694,14 @@ public partial class BitSlider : BitInputBase<double>
     /// the value the input carries - the lower end - is all there is to read, and every distance constraint
     /// is satisfied throughout by construction.
     /// </summary>
-    private async Task HandleOnTrackInput(ChangeEventArgs e)
+    private async Task HandleOnTrackInput(string? value)
     {
+        using var press = BeginInput(SliderInput.Track, value);
+
         if (_IsInteractive is false) return;
         if (InvalidRangeBinding()) return;
 
-        if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
+        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
 
         var width = _RangeWidth;
 
@@ -1632,7 +1723,7 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnTrackChange(ChangeEventArgs e)
     {
-        _pressedValueAttributes = null;
+        _press = null;
 
         if (_IsInteractive is false) return;
 
@@ -1665,7 +1756,7 @@ public partial class BitSlider : BitInputBase<double>
     /// </remarks>
     private Task HandleOnTrackPointerEndAsync(PointerEventArgs e)
     {
-        _pressedValueAttributes = null;
+        _press = null;
 
         return ReleaseBandFocusAsync();
     }

@@ -26,7 +26,7 @@
                     // after Blazor has rendered the freshly appended rows; reading scrollHeight in the
                     // synchronous continuation would otherwise observe stale layout. The disposed guard
                     // is preserved so a circuit teardown between callback and frame stops the loop.
-                    invokeDotNet(dotNetRef, 'OnInfiniteScrollNearEndAsync')
+                    Utils.invokeDotNet<boolean>(dotNetRef, 'OnInfiniteScrollNearEndAsync')
                         .then(
                             (more) => { pending = false; if (!disposed && more) requestAnimationFrame(check); },
                             () => { pending = false; }
@@ -71,7 +71,7 @@
                 if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
                 lastLeft = left;
                 lastWidth = width;
-                invokeDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width).catch(() => { });
+                Utils.invokeDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width).catch(() => { });
             };
             const onScroll = () => {
                 if (!ticking) {
@@ -166,9 +166,9 @@
                 if (to != null && to !== from) {
                     // Swallow rejections: the circuit may be tearing down mid-drop.
                     if (kind === 'row') {
-                        invokeDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
+                        Utils.invokeDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
                     } else {
-                        invokeDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to).catch(() => { });
+                        Utils.invokeDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to).catch(() => { });
                     }
                 }
             };
@@ -343,7 +343,9 @@
             let away: { cell: HTMLElement, version: number } | null = null;
             // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
             let pressed: Node | null = null;
-            const commit = (version: number) => invokeDotNet(dotNetRef, 'OnCellEditBlurAsync', version);
+            // A commit nobody waits for: one that fails is an edit whose grid (or whose page) went away under it, which
+            // the focus moving on cannot do anything about.
+            const commit = (version: number) => { Utils.invokeDotNet(dotNetRef, 'OnCellEditBlurAsync', version).catch(() => { }); };
             const onFocusOut = (e: FocusEvent) => {
                 const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
                 if (!cell || cell.closest('.bit-dtg') !== root) return;
@@ -737,21 +739,10 @@
     // leave .NET on the stale one for as long as the user's clicks happen to agree with the script's.
     type NestedTargetWatch = { dotNetRef: DotNetObject, nested?: boolean, onControl?: boolean };
     const nestedTargetWatches = new WeakMap<HTMLElement, NestedTargetWatch>();
-    // A call to .NET over a connection that is already closed throws before it has a promise to reject - which Firefox
-    // runs into as it leaves the page, since it keeps running the page's scripts after closing that connection - so it
-    // is handed back as the rejection every caller here already lets go of.
-    function invokeDotNet(dotNetRef: DotNetObject, method: string, ...args: any[]): Promise<any> {
-        try {
-            return dotNetRef.invokeMethodAsync(method, ...args);
-        } catch (e) {
-            return Promise.reject(e);
-        }
-    }
-
     function tellNestedTarget(watch: NestedTargetWatch, field: 'nested' | 'onControl', method: string, value: boolean) {
         if (watch[field] === value) return;
         watch[field] = value;
-        invokeDotNet(watch.dotNetRef, method, value).catch(() => { watch[field] = undefined; });
+        Utils.invokeDotNet(watch.dotNetRef, method, value).catch(() => { watch[field] = undefined; });
     }
 
     // A click on a control in a cell - a button, a link or an input of a template, the grid's own checkbox and

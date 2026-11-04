@@ -174,10 +174,9 @@ public class BitSplitterE2ETests : E2ETestBase
         await Gutter(root).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
         await PollAsync(() => HeightAsync(First(root)), h => Math.Abs(h - 205) < 1, "ArrowDown");
-        // Each step is let land before the next: on a loaded circuit the render of one comes back after the key pressed
-        // since, which then steps from the size the first had not reached yet.
+        // Pressed without waiting for the first to land: while the end of a key move is unanswered, the next press steps
+        // from where the last one put the gutter, not from a size an older render may still put back on the panels.
         await Page.Keyboard.PressAsync("ArrowUp");
-        await PollAsync(() => HeightAsync(First(root)), h => Math.Abs(h - 195) < 1, "the first ArrowUp");
         await Page.Keyboard.PressAsync("ArrowUp");
         await PollAsync(() => HeightAsync(First(root)), h => Math.Abs(h - 185) < 1, "ArrowUp");
         await Page.Keyboard.PressAsync("ArrowRight");

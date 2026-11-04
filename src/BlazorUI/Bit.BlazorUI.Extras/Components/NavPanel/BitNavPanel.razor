@@ -12,12 +12,14 @@
        nothing left can dismiss is a page that cannot be used any more.
        A tap is answered on its touchend as well: WebKit (iOS) makes no click of a tap on an element that
        only a listener of the document answers, which every Blazor one is. The click the other engines make
-       of the tap is cancelled with it, so a tap closes the panel once and lands on nothing under it. *@
+       of the tap is cancelled with it, so a tap closes the panel once and lands on nothing under it. Only a
+       tap, though - one finger lifted where it came down: a touch that ends a drag or a pinch is no tap. *@
     <div style="@Styles?.Overlay"
          class="bit-npn-ovl @_ShapeClass @Classes?.Overlay"
          aria-hidden="true"
          @onclick="HandleOverlayClick"
-         @ontouchend="HandleOverlayClick"
+         @ontouchstart="_onOverlayTouchStart"
+         @ontouchend="HandleOverlayTouchEnd"
          @ontouchend:preventDefault="true"></div>
 }
 

@@ -723,44 +723,6 @@ public class BitFooterE2ETests : E2ETestBase
 
     private Task WheelWindowAsync(int deltaY) => WheelInPagesAsync("window", deltaY);
 
-    // Wheels the scroller to where one wheel of that delta takes it in Chromium: as far as asked, or to the end it has
-    // when the wheel starts. Firefox moves a scroller by no more than a page for one wheel event however large its
-    // delta is, so the way there is wheeled a page at a time, each step let come to rest.
-    private async Task WheelInPagesAsync(string selector, int deltaY)
-    {
-        var range = await Page.EvaluateAsync<double[]>(@"s => {
-            const el = s === 'window' ? document.scrollingElement : document.querySelector(s);
-            return [el.scrollTop, el.scrollHeight - el.clientHeight, el.clientHeight * 0.8];
-        }", selector);
-        var target = Math.Clamp(range[0] + deltaY, 0, range[1]);
-        for (var now = range[0]; Math.Abs(target - now) >= 1;)
-        {
-            await Page.Mouse.WheelAsync(0, (int)(Math.Sign(target - now) * Math.Min(Math.Abs(target - now), Math.Max(1, range[2]))));
-            var after = await WaitForScrollToSettleAsync(selector, now);
-            if (after == now) break;
-            now = after;
-        }
-    }
-
-    // Waits for a wheel scroll to have moved the element and come to rest: a wheel scroll is animated, and a second
-    // wheel sent while the first is still running only moves the target of the same animation.
-    private Task<double> WaitForScrollToSettleAsync(string selector, double before)
-    {
-        return Page.EvaluateAsync<double>(@"([selector, before]) => new Promise(resolve => {
-            const el = selector === 'window' ? document.scrollingElement : document.querySelector(selector);
-            let last = el.scrollTop, stable = 0, frames = 0;
-            const tick = () => {
-                frames++;
-                const now = el.scrollTop;
-                if (now === last) stable++; else { stable = 0; last = now; }
-                if ((now !== before && stable >= 5) || frames > 120) return resolve(now);
-                requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        })", new object[] { selector, before });
-    }
-
-
     private async Task SyncAsync()
     {
         await NextFramesAsync();

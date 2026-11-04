@@ -492,12 +492,11 @@
 
                 // And the same number for the page that has to place something in C# rather than in CSS.
                 // It is sent on the change rather than per frame, and a failed send is a shell that has
-                // gone away between the measurement and the call, which is nothing this can act on.
-                // A connection that is already closed throws before there is a promise to reject, which Firefox
-                // runs into as it leaves the page, still running its scripts after closing that connection.
-                try {
-                    state.dotnetObj?.invokeMethodAsync('OnKeyboardInset', inset).catch(() => { });
-                } catch { }
+                // gone away between the measurement and the call (or a connection already closed as Firefox
+                // leaves the page, see Utils.invokeDotNet), which is nothing this can act on.
+                if (state.dotnetObj) {
+                    Utils.invokeDotNet(state.dotnetObj, 'OnKeyboardInset', inset).catch(() => { });
+                }
             };
 
             state.handler = () => {

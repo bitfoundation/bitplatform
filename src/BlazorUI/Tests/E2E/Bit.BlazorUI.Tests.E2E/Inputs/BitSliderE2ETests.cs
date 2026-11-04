@@ -357,14 +357,12 @@ public class BitSliderE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("End");
         await ExpectTextAsync("range-value", "0-10");
 
-        // Each step is let round trip before the next: on a loaded circuit the render of one comes back after the key
-        // pressed since and puts the older value back on the thumb, for the next press to step from.
+        // Pressed without waiting for each step to come back: the value of the input is bound, so the render of a step
+        // that lands after the key pressed since writes nothing over it, and the next press steps from where the last
+        // one left the thumb.
         await Lower("sld-range").FocusAsync();
-        for (var i = 1; i <= 3; i++)
-        {
-            await Page.Keyboard.PressAsync("ArrowRight");
-            await ExpectTextAsync("range-value", $"{i}-10");
-        }
+        for (var i = 0; i < 3; i++) await Page.Keyboard.PressAsync("ArrowRight");
+        await ExpectTextAsync("range-value", "3-10");
 
         await Expect(Fill("sld-range")).ToHaveAttributeAsync("style", new Regex("^inset-inline-start:30%;width:70%"));
         await Expect(ValueLabels("sld-range").Nth(0)).ToHaveTextAsync("3");

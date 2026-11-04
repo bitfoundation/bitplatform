@@ -154,13 +154,16 @@ $flg-private-properties: crp-x, crp-y, crp-w, crp-h;
 // In the flow, its height of 100% is resolved against the height the ratio works out by Blink and Gecko
 // but not by WebKit, which gives the picture a height of its own instead - and a frame with a ratio grows
 // to hold content taller than the ratio, so a Bordered 4rem flag of 2:1 came out 34px tall there, not 32.
-// The cut-to-the-flag frame below places its picture itself, at the same weight and later.
+// The cut-to-the-flag frame below places its picture itself, at the same weight and later. Only the top
+// and the left are pinned (the size is already the frame's): a right of 0 as well would over-constrain the
+// picture across, and a right-to-left frame resolves that by dropping the left the cut frame moves it by.
 .bit-flg-asp {
     width: auto;
 
     > .bit-flg-img {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
     }
 }
 

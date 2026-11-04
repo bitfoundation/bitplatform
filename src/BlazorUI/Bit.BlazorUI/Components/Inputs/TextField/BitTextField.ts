@@ -59,6 +59,13 @@
                         // page in WebKit - even though the notification it held back would only have been ignored.
                         cancelAnimationFrame(frame);
                         frame = requestAnimationFrame(() => {
+                            frame = 0;
+
+                            // The observer may have been let go of since the frame was asked for - the auto growing
+                            // turned off, the feature set up again, the field disposed - and a height written now
+                            // would be one nothing clears any more.
+                            if (signal.aborted) return;
+
                             TextField.resize(inputElement, TextField._maxRows[id]);
 
                             // Growing the element can take a scrollbar away, which widens it again. Reading the
@@ -67,6 +74,10 @@
                             lastWidth = inputElement.clientWidth;
                         });
                     });
+
+                    // Every way the observer is let go of (setting the feature up again, disposeFeature, dispose)
+                    // aborts this feature's signal too, which takes a frame still waiting along with it.
+                    signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true });
 
                     observer.observe(inputElement);
                     TextField._resizeObservers[id] = observer;

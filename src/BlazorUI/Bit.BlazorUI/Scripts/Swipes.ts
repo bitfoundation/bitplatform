@@ -42,6 +42,10 @@
             let bcr = element.getBoundingClientRect();
             // Whether the gesture under way is a mouse's or a pen's rather than a finger's.
             let isPointerGesture = false;
+            // The events the gesture under way is followed through: 'touch' for the touch events, or the pointerType
+            // of the pointer events. A gesture is only ever followed through one of the two, since a pen raises both
+            // on most touch screens and the two read different coordinates (see getX).
+            let gestureSource: string | null = null;
 
             // The physical edge the surface is pinned to: the logical pair is read against the direction it is
             // laid out in, the physical pair stays where it is named in both.
@@ -61,6 +65,7 @@
 
                 rtl = isRtl ?? Utils.isRtl(element);
                 isPointerGesture = isTouch(e) === false;
+                gestureSource = isTouch(e) ? 'touch' : e.pointerType;
 
                 startX = getX(e);
                 startY = getY(e);
@@ -191,6 +196,7 @@
                 if (startX === -1 || startY === -1) return;
 
                 startX = startY = -1;
+                gestureSource = null;
                 element.style.transitionDuration = '';
                 try {
                     if (onLeftEdge() && diffX < 0) {
@@ -246,6 +252,7 @@
             // the consumer hears the gesture end where it began.
             const abort = () => {
                 startX = startY = -1;
+                gestureSource = null;
                 diffX = diffY = 0;
                 orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
@@ -295,14 +302,38 @@
 
                 e.stopPropagation();
             };
-            const onPointerStart = (e: PointerEvent) => { if (e.pointerType !== 'touch') void onStart(e); };
-            const onPointerMove = (e: PointerEvent) => { if (e.pointerType !== 'touch') void onMove(e); };
-            const onPointerEnd = (e: PointerEvent) => { if (e.pointerType !== 'touch') void onEnd(e); };
+            // A pen raises both on most touch screens - its pointer events first, then the touch events of the same
+            // contact - so its touches take over the gesture its pointerdown has just started, read again in the
+            // coordinates the touch events are followed in, and its pointer events are left alone from there on: its
+            // pointer events stop the moment the browser pans under it, where its touch events go on. A pen that raises
+            // no touch events (Windows) is followed through its pointer events from start to end.
+            const onTouchStart = (e: TouchEvent) => {
+                if (gestureSource === 'pen' && startX !== -1 && startY !== -1) {
+                    gestureSource = 'touch';
+                    isPointerGesture = false;
+                    startX = getX(e);
+                    startY = getY(e);
+                    return;
+                }
+
+                void onStart(e);
+            };
+            const ownsTouches = () => gestureSource === null || gestureSource === 'touch';
+            const onTouchMove = (e: TouchEvent) => { if (ownsTouches()) void onMove(e); };
+            const onTouchEnd = (e: TouchEvent) => { if (ownsTouches()) void onEnd(e); };
+            const ownsPointer = (e: PointerEvent) => e.pointerType !== 'touch' && e.pointerType === gestureSource;
+            const onPointerStart = (e: PointerEvent) => {
+                if (e.pointerType === 'touch' || (gestureSource === 'touch' && startX !== -1)) return;
+
+                void onStart(e);
+            };
+            const onPointerMove = (e: PointerEvent) => { if (ownsPointer(e)) void onMove(e); };
+            const onPointerEnd = (e: PointerEvent) => { if (ownsPointer(e)) void onEnd(e); };
 
             scrollContainer?.addEventListener('touchstart', onScrollContainerTouchStart);
-            element.addEventListener('touchstart', onStart);
-            element.addEventListener('touchmove', onMove);
-            element.addEventListener('touchend', onEnd);
+            element.addEventListener('touchstart', onTouchStart);
+            element.addEventListener('touchmove', onTouchMove);
+            element.addEventListener('touchend', onTouchEnd);
             element.addEventListener('pointerdown', onPointerStart);
             element.addEventListener('pointermove', onPointerMove);
             element.addEventListener('pointerup', onPointerEnd);
@@ -311,9 +342,9 @@
             const swipe = new BitSwipe(id, element, trigger, dotnetObj);
             swipe.setDisposer(() => {
                 scrollContainer?.removeEventListener('touchstart', onScrollContainerTouchStart);
-                element.removeEventListener('touchstart', onStart);
-                element.removeEventListener('touchmove', onMove);
-                element.removeEventListener('touchend', onEnd);
+                element.removeEventListener('touchstart', onTouchStart);
+                element.removeEventListener('touchmove', onTouchMove);
+                element.removeEventListener('touchend', onTouchEnd);
                 element.removeEventListener('pointerdown', onPointerStart);
                 element.removeEventListener('pointermove', onPointerMove);
                 element.removeEventListener('pointerup', onPointerEnd);

@@ -1790,16 +1790,13 @@
         }
 
         // Fire-and-forget interop: a call landing after the circuit (or the component) is
-        // gone rejects, and an unhandled rejection surfaces as a console error. Over a
-        // connection that is already closed the call throws before it has a promise to
-        // reject - which Firefox runs into as it leaves or reloads the page, since it keeps
-        // running the page's scripts (a blur, a last draft save) after closing that connection.
+        // gone rejects, and an unhandled rejection surfaces as a console error. So does one
+        // over a connection that is already closed (see Utils.invokeDotNet) - a blur or a last
+        // draft save as Firefox leaves or reloads the page.
         private invoke(method: string, ...args: unknown[]) {
-            try {
-                this.dotnetObj?.invokeMethodAsync(method, ...args).catch(() => { });
-            } catch {
-                // the connection is gone along with the page
-            }
+            if (!this.dotnetObj) return;
+
+            Utils.invokeDotNet(this.dotnetObj, method, ...args).catch(() => { });
         }
 
         private notifyChange() {

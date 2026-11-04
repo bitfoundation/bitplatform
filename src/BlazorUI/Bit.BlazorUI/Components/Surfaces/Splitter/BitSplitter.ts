@@ -144,6 +144,8 @@
             // last one can still land and put that older size back on the panels, so the next press steps from where
             // the last one put the gutter (keyPercent) rather than from what the panels show.
             let unansweredKeyEnds = 0;
+            // Whether keyPercent is still where the gutter was last put: only a key move sets it.
+            let keyPercentHeld = false;
             let snapshot: (string)[] = [];
             let rafId = 0;
 
@@ -158,7 +160,7 @@
             const invoke = (method: string, ...args: any[]) => {
                 if (signal.aborted) return;
 
-                entry.dotnetObj.invokeMethodAsync(method, ...args)
+                Utils.invokeDotNet(entry.dotnetObj, method, ...args)
                      .catch(e => console.error('BitBlazorUI.Splitter:', method, e));
             };
 
@@ -174,6 +176,7 @@
                 // reporting one would pin the splitter to the position it was already in.
                 if (moved === false) {
                     moved = true;
+                    forgetKeyPercent();
                     invoke('HandleResizeStart', startPercent);
                 }
 
@@ -263,20 +266,27 @@
                 keyTimer = 0;
                 keyResizing = false;
 
-                if (signal.aborted === false) invoke('HandleResizeEnd', keyPercent, false);
+                endKeyResize(keyPercent);
             };
 
+            // Every end of a key move is counted until .NET has answered it, the one a key up sends for a held key
+            // included: the press after it steps from keyPercent for as long as one of them is out.
             const endKeyResize = (percent: number) => {
                 if (signal.aborted) return;
 
                 unansweredKeyEnds++;
-                entry.dotnetObj.invokeMethodAsync('HandleResizeEnd', percent, false)
+                Utils.invokeDotNet(entry.dotnetObj, 'HandleResizeEnd', percent, false)
                      .catch(e => console.error('BitBlazorUI.Splitter:', 'HandleResizeEnd', e))
                      .finally(() => unansweredKeyEnds--);
             };
 
+            // Anything but a key that moves the gutter - a drag, a fold, a reset - leaves keyPercent behind, so the next
+            // press steps from what the panels show again however many key ends are still out.
+            const forgetKeyPercent = () => { keyPercentHeld = false; };
+
             const notifyKeyResize = (percent: number, repeat: boolean, from: number) => {
                 keyPercent = percent;
+                keyPercentHeld = true;
 
                 // A move made with the keyboard is a resize like a drag is, so it is opened the same way,
                 // with where the gutter stood before the key moved it. A run of repeats is one resize rather
@@ -337,6 +347,7 @@
                     if (e.timeStamp - lastToggle < Splitter.DOUBLE_CLICK_WINDOW) return;
 
                     lastToggle = e.timeStamp;
+                    forgetKeyPercent();
                     invoke('HandleToggleCollapse');
                     return;
                 }
@@ -440,6 +451,7 @@
                 // The reset itself is left to .NET: a splitter whose position the page owns is not the
                 // gutter's to give away, and what comes back is a sync call that puts the panels wherever
                 // the page decided they belong.
+                forgetKeyPercent();
                 invoke('HandleReset');
             }, { signal });
 
@@ -468,6 +480,7 @@
 
                     // Handed over as the fold it asks for, which .NET applies to the state it holds: the one here is a
                     // round trip behind a press made just before, and a toggle decided from it would undo that press.
+                    forgetKeyPercent();
                     invoke('HandleSetCollapsed', collapse);
                     return;
                 }
@@ -482,6 +495,7 @@
                 if (e.key === 'Enter') {
                     if (entry.options.collapsible === false) return;
                     e.preventDefault();
+                    forgetKeyPercent();
                     invoke('HandleToggleCollapse');
                     return;
                 }
@@ -523,7 +537,7 @@
                 // Home and End are the two ends of the range the panel may move through, so they are taken
                 // as they are rather than put on the grid a step gives the drag: a rounded limit is one the
                 // key was pressed to reach and stopped short of.
-                const from = unansweredKeyEnds > 0 ? keyPercent / 100 * bounds.total : bounds.current;
+                const from = unansweredKeyEnds > 0 && keyPercentHeld ? keyPercent / 100 * bounds.total : bounds.current;
                 const target = home
                     ? bounds.min
                     : end

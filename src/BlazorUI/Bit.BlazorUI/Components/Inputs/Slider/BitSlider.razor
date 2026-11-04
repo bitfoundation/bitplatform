@@ -69,9 +69,10 @@
     var upperAriaMin = interactive ? upperInputMin : min;
     var upperAriaMax = interactive ? upperInputMax : max;
 
-    @* The value each input is rendered with (see GetValueAttributes), held at what it was when a pointer pressed
-       one of them for as long as the press lasts (see _pressedValueAttributes). *@
-    var (valueAttr, lowerValueAttr, upperValueAttr, trackValueAttr) = _pressedValueAttributes ?? GetValueAttributes();
+    @* The value each input is rendered with (see GetValueAttributes), bound so that the render of an older step
+       writes nothing over a newer one the input has taken since, and held at what the input's last event carried
+       while a pointer presses it (see _press). *@
+    var (valueAttr, lowerValueAttr, upperValueAttr, trackValueAttr) = GetRenderedValueAttributes();
 
     @* The draggable band, and the room it has left to travel: its value is the lower end of the range, and
        the highest lower end there is room for is the one that puts the upper end at the end of the scale. *@
@@ -229,7 +230,9 @@
                 {
                     <input @ref="_lowerInputRef"
                            @attributes="InputHtmlAttributes"
-                           @oninput="@(e => HandleOnRangeInput(e, true))"
+                           @bind:get="lowerValueAttr"
+                           @bind:set="@(v => HandleOnRangeInput(v, true))"
+                           @bind:event="oninput"
                            @onchange="@(e => HandleOnRangeChange(e, true))"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
@@ -259,11 +262,12 @@
                            aria-valuetext="@GetAriaValueText(_thumbA)"
                            min="@ToInvariant(lowerInputMin)"
                            max="@ToInvariant(lowerInputMax)"
-                           step="@ToInvariant(step)"
-                           value="@lowerValueAttr" />
+                           step="@ToInvariant(step)" />
 
                     <input @ref="_upperInputRef"
-                           @oninput="@(e => HandleOnRangeInput(e, false))"
+                           @bind:get="upperValueAttr"
+                           @bind:set="@(v => HandleOnRangeInput(v, false))"
+                           @bind:event="oninput"
                            @onchange="@(e => HandleOnRangeChange(e, false))"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
@@ -291,8 +295,7 @@
                            aria-valuetext="@GetAriaValueText(_thumbB)"
                            min="@ToInvariant(upperInputMin)"
                            max="@ToInvariant(upperInputMax)"
-                           step="@ToInvariant(step)"
-                           value="@upperValueAttr" />
+                           step="@ToInvariant(step)" />
 
                     @if (canDragTrack)
                     {
@@ -310,7 +313,9 @@
                            as the gesture ends, however it ends - left on an element outside the accessibility
                            tree it would go on moving the whole range on every arrow key with nothing to
                            announce it. *@
-                        <input @oninput="HandleOnTrackInput"
+                        <input @bind:get="trackValueAttr"
+                               @bind:set="HandleOnTrackInput"
+                               @bind:event="oninput"
                                @onchange="HandleOnTrackChange"
                                @onpointerdown="_onTrackPointerDown"
                                @onpointerup="_onTrackPointerEnd"
@@ -322,15 +327,16 @@
                                class="bit-sld-inp bit-sld-inp-bar @Classes?.TrackInput"
                                min="@ToInvariant(min)"
                                max="@ToInvariant(trackInputMax)"
-                               step="@ToInvariant(step)"
-                               value="@trackValueAttr" />
+                               step="@ToInvariant(step)" />
                     }
                 }
                 else
                 {
                     <input @ref="_lowerInputRef"
                            @attributes="InputHtmlAttributes"
-                           @oninput="HandleOnInput"
+                           @bind:get="valueAttr"
+                           @bind:set="HandleOnInput"
+                           @bind:event="oninput"
                            @onchange="HandleOnChange"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
@@ -360,8 +366,7 @@
                            aria-valuetext="@GetAriaValueText(value)"
                            min="@ToInvariant(valueInputMin)"
                            max="@ToInvariant(valueInputMax)"
-                           step="@ToInvariant(step)"
-                           value="@valueAttr" />
+                           step="@ToInvariant(step)" />
                 }
             </div>
 
