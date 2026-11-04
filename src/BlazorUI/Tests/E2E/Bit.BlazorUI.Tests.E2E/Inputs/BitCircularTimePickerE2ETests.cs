@@ -157,6 +157,8 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-toggle-mounted");
         var callout = await OpenCalloutAsync("lifecycle");
+        // The key is the dial's, which takes the focus a round trip after the callout shows.
+        await Expect(Dial(callout)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("ArrowUp");
         await Expect(Out("lifecycle-value")).ToHaveTextAsync("16:20:10");
 
@@ -1364,6 +1366,9 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var callout = await OpenCalloutAsync("keyboard");
+        // The dial takes the focus only once the callout shows, a round trip later: a key pressed before that lands on
+        // the field it was opened from (WebKit gets there first often enough).
+        await Expect(Dial(callout)).ToBeFocusedAsync();
         await Page.Keyboard.TypeAsync("9");
         await Expect(Out("keyboard-value")).ToHaveTextAsync("09:00:00");
 

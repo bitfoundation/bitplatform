@@ -2057,19 +2057,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     }
 
     // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
-    // is editable, where the text the person came to type has to keep it.
+    // is editable, where the text the person came to type has to keep it. It is not scrolled into view: the
+    // callout has just been placed to open at its top, and a panel taller than a short screen - one that makes
+    // room for the safe areas of a phone - would otherwise be scrolled down to the dial, taking its toolbar and
+    // the close button laid over it up under the status bar.
     private async Task FocusClock()
     {
         if (AllowTextInput) return;
 
-        await FocusDial();
+        await FocusDial(preventScroll: true);
     }
 
-    private async Task FocusDial()
+    private async Task FocusDial(bool preventScroll = false)
     {
         if (IsRendered is false || IsDisposed) return;
 
-        await _clockRef.FocusSafelyAsync();
+        await _clockRef.FocusSafelyAsync(preventScroll);
     }
 
     private string? GetHourButtonStyle()

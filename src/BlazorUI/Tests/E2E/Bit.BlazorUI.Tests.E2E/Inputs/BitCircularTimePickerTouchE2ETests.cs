@@ -163,6 +163,38 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAShortScreenWithSafeAreas_OpensAtItsTopWithTheDialFocused()
+    {
+        // The safe areas an app shell is given, which every engine reads, unlike the ones of a device.
+        await OpenAsync(Url);
+        await Page.SetViewportSizeAsync(390, 400);
+        await Page.EvaluateAsync(@"() => {
+            document.documentElement.style.setProperty('--bit-AppShell-safe-area-top', '47px');
+            document.documentElement.style.setProperty('--bit-AppShell-safe-area-bottom', '34px');
+        }");
+
+        var callout = await OpenCalloutAsync("responsive");
+        await Expect(callout).ToHaveCSSAsync("transform", new System.Text.RegularExpressions.Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
+        await SettleAsync(callout);
+
+        // The panel ends above the bottom safe area, which leaves the dial more than the room there is for it.
+        var container = callout.Locator(".bit-ctp-cac");
+        Assert.AreEqual(400 - 34, (await callout.BoundingBoxAsync())!.Height, 1, "The panel does not end above the bottom safe area.");
+        Assert.IsTrue(await container.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"),
+            "The dial fits the short screen, which leaves the focus nothing to scroll.");
+
+        // The dial takes the focus without the panel being scrolled down to it, so the toolbar, its read-out and the
+        // close button laid over its corner stay where they open: below the top safe area rather than under it.
+        await Expect(callout.Locator(".bit-ctp-clf")).ToBeFocusedAsync();
+        Assert.AreEqual(0, await container.EvaluateAsync<double>("el => el.scrollTop"), "Opening scrolled the panel.");
+
+        var readOut = (await callout.Locator(".bit-ctp-hmc").BoundingBoxAsync())!;
+        Assert.IsTrue(readOut.Y >= 47, $"The read-out sits under the top safe area ({readOut.Y}px).");
+        var close = (await callout.Locator(".bit-ctp-cbn").BoundingBoxAsync())!;
+        Assert.IsTrue(close.Y >= 47, $"The close button sits under the top safe area ({close.Y}px).");
+    }
+
+    [TestMethod]
     public async Task Responsive_AClosedSheet_IsOutOfTheAccessibilityTree()
     {
         await OpenAsync(Url);
