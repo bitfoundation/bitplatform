@@ -88,6 +88,11 @@ public abstract class BitBhMenuItemBase : BitBhComponentBase, IBitBhCollectionIt
             On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
         builder.AddAttribute(32, "onpointerleave",
             On<PointerEventArgs>("onpointerleave", HandlePointerLeave));
+        // The panel keeps the focus (aria-activedescendant names the item): a press focusing the item itself -
+        // a checkable or disabled one, which leaves the menu open - would take the keys away from the panel,
+        // and arrows and Space would scroll the page.
+        builder.AddAttribute(33, "onmousedown", On<MouseEventArgs>("onmousedown", static () => { }));
+        builder.AddEventPreventDefaultAttribute(34, "onmousedown", true);
         builder.AddElementReferenceCapture(40, CaptureElement);
         RenderContent(builder, 50);
         builder.CloseElement();

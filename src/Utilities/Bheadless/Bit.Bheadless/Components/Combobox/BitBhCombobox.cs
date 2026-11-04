@@ -379,6 +379,12 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
                 await SetSingleAsync(default, hasValue: false);
             await SetQueryAsync(string.Empty, userTyped: false);
         }
+        else if (Multiple && _query.Length > 0)
+        {
+            // A multi-select's input only ever holds a search (the picks are shown elsewhere): it stays while the
+            // panel is open, for several picks from one search, and starts over with the next open.
+            await SetQueryAsync(string.Empty, userTyped: false);
+        }
 
         StateHasChanged();
         await OnOpenChange.InvokeAsync(false);
@@ -389,6 +395,7 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     internal async Task HandleInputAsync(string text)
     {
         await SetQueryAsync(text, userTyped: true);
+        State.ScrollToActiveAfterRender();
         if (!_open)
         {
             _open = true;
@@ -516,6 +523,12 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     internal Task HandleFocusAsync() => OpenOnFocus && !_open ? OpenAsync(BitBhMenuFocus.None) : Task.CompletedTask;
 
     internal ValueTask FocusInputAsync() => new(Interop.FocusAsync(InputId).AsTask());
+
+    /// <summary>
+    /// Focuses the input - for example after a chip's remove button, rendered outside the combobox's own
+    /// parts, took itself and the focus away.
+    /// </summary>
+    public Task FocusAsync() => Interop.FocusAsync(InputId).AsTask();
 
     public void Dispose() => _binding?.Dispose();
 }

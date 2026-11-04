@@ -1,264 +1,266 @@
 ﻿@page "/popover"
 
-<PageTitle>Popover — bit Bheadless</PageTitle>
+<PageTitle>Popover · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Popover</h1>
-        <p>A non-modal floating panel with focus management, Escape-to-close, and group coordination.</p>
-        <SectionSwitcher Slug="popover" />
-    </header>
+<div class="bb-intro">
+    <h1>Popover</h1>
+    <p class="bb-subtitle">A non-modal floating panel with focus management, Escape-to-close, and group coordination.</p>
+</div>
 
-    <DemoBlock Title="Basic Popover"
-               Code="@_basicCode"
-               Css="@_popoverCss">
-        <Description>
-            Click the button to open the panel. Focus moves into the panel automatically.
-            Press Escape or click outside to close — focus returns to the button.
-            Unlike a Dialog, the rest of the page stays interactive.
-        </Description>
-        <LiveContent>
+<SectionSwitcher Slug="popover" />
+
+<DemoBlock Title="Basic Popover"
+           Code="@_basicCode"
+           Css="@_popoverCss">
+    <Description>
+        Click the button to open the panel. Focus moves into the panel automatically.
+        Press Escape to close it and give the focus back to the button; a click outside closes it too,
+        leaving the focus where you clicked.
+        Unlike a Dialog, the rest of the page stays interactive.
+    </Description>
+    <LiveContent>
+        <BitBhPopover class="popover">
+            <BitBhPopoverButton class="popover-button">
+                <Template Context="b">
+                    Learn more
+                    <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhPopoverButton>
+            <BitBhPopoverPanel class="popover-panel">
+                <Template Context="p">
+                    <h3 class="popover-title">bit Bheadless</h3>
+                    <p class="popover-body">
+                        A headless component library for Blazor. Zero styles, full accessibility,
+                        complete control over your design.
+                    </p>
+                    <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="popover-link">
+                        View on GitHub →
+                    </a>
+                    <BitBhPopoverButton class="popover-close-btn">Close</BitBhPopoverButton>
+                </Template>
+            </BitBhPopoverPanel>
+        </BitBhPopover>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Popover Group (mutual exclusion)"
+           Code="@_groupCode"
+           Css="@_groupCss">
+    <Description>
+        Wrap multiple popovers in a <code>BitBhPopoverGroup</code> so opening one
+        automatically closes the others. Useful for navigation bars.
+    </Description>
+    <LiveContent>
+        <BitBhPopoverGroup class="popover-group">
             <BitBhPopover class="popover">
                 <BitBhPopoverButton class="popover-button">
                     <Template Context="b">
-                        Learn more
+                        Products
                         <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
                     </Template>
                 </BitBhPopoverButton>
                 <BitBhPopoverPanel class="popover-panel">
-                    <Template Context="p">
-                        <h3 class="popover-title">bit Bheadless</h3>
-                        <p class="popover-body">
-                            A headless component library for Blazor. Zero styles, full accessibility,
-                            complete control over your design.
-                        </p>
-                        <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="popover-link">
-                            View on GitHub →
-                        </a>
-                        <BitBhPopoverButton class="popover-close-btn">Close</BitBhPopoverButton>
-                    </Template>
+                    <h3 class="popover-title">Products</h3>
+                    <ul class="popover-nav-list">
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Analytics</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Automation</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Commerce</a></li>
+                    </ul>
                 </BitBhPopoverPanel>
             </BitBhPopover>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Popover Group (mutual exclusion)"
-               Code="@_groupCode"
-               Css="@_groupCss">
-        <Description>
-            Wrap multiple popovers in an <code>BitBhPopoverGroup</code> so opening one
-            automatically closes the others. Useful for navigation bars.
-        </Description>
-        <LiveContent>
-            <BitBhPopoverGroup class="popover-group">
-                <BitBhPopover class="popover">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Products
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel class="popover-panel">
-                        <h3 class="popover-title">Products</h3>
-                        <ul class="popover-nav-list">
-                            <li><a href="#" class="popover-nav-link">Analytics</a></li>
-                            <li><a href="#" class="popover-nav-link">Automation</a></li>
-                            <li><a href="#" class="popover-nav-link">Commerce</a></li>
-                        </ul>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-
-                <BitBhPopover class="popover">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Solutions
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel class="popover-panel">
-                        <h3 class="popover-title">Solutions</h3>
-                        <ul class="popover-nav-list">
-                            <li><a href="#" class="popover-nav-link">Marketing</a></li>
-                            <li><a href="#" class="popover-nav-link">Engineering</a></li>
-                            <li><a href="#" class="popover-nav-link">Finance</a></li>
-                        </ul>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-
-                <BitBhPopover class="popover">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Company
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel class="popover-panel">
-                        <h3 class="popover-title">Company</h3>
-                        <ul class="popover-nav-list">
-                            <li><a href="#" class="popover-nav-link">About</a></li>
-                            <li><a href="#" class="popover-nav-link">Blog</a></li>
-                            <li><a href="#" class="popover-nav-link">Careers</a></li>
-                        </ul>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-            </BitBhPopoverGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive the open state externally with <code>Open</code> and
-            <code>OnOpenChange</code>. The button below opens or closes the popover
-            programmatically.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
-                <div class="demo-row">
-                    <BitBhButton OnClick="ToggleControlled" class="btn">
-                        Toggle from outside
-                    </BitBhButton>
-                    <span class="demo-output">Open: <strong>@controlledOpen.ToString().ToLowerInvariant()</strong></span>
-                </div>
-
-                <BitBhPopover Open="controlledOpen"
-                          OnOpenChange="v => controlledOpen = v"
-                          class="popover">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Internal trigger
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel class="popover-panel">
-                        <p class="popover-body">
-                            Either trigger updates the same state — fully controlled.
-                        </p>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Anchor Positioning"
-               Code="@_anchorCode"
-               Css="@_anchorCss">
-        <Description>
-            Set <code>Anchor</code> on <code>BitBhPopoverPanel</code> to automatically position
-            the panel relative to the button. The panel uses <code>position: fixed</code>,
-            flips when there's not enough space, and auto-updates on scroll/resize.
-            No <code>position: relative</code> on the parent or <code>position: absolute</code>
-            on the panel needed.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
-                <BitBhPopover class="popover-anchored">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Bottom Start
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 8 })"
-                                   class="popover-panel-anchored">
-                        <Template Context="p">
-                            <p class="popover-body">
-                                This panel is anchored to <strong>bottom start</strong> with an 8px gap.
-                                It will flip to the top if there's not enough space below.
-                            </p>
-                        </Template>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-
-                <BitBhPopover class="popover-anchored">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Top End
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "top end", Gap = 8 })"
-                                   class="popover-panel-anchored">
-                        <Template Context="p">
-                            <p class="popover-body">
-                                This panel is anchored to <strong>top end</strong>. It flips to the
-                                bottom if there's not enough space above.
-                            </p>
-                        </Template>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-
-                <BitBhPopover class="popover-anchored">
-                    <BitBhPopoverButton class="popover-button">
-                        <Template Context="b">
-                            Right
-                            <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhPopoverButton>
-                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })"
-                                   class="popover-panel-anchored">
-                        <Template Context="p">
-                            <p class="popover-body">
-                                This panel is anchored to the <strong>right</strong> side.
-                            </p>
-                        </Template>
-                    </BitBhPopoverPanel>
-                </BitBhPopover>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Rich panel content"
-               Code="@_richCode"
-               Css="@_richCss">
-        <Description>
-            The panel can contain any content — forms, images, links, nested interactive
-            elements. Tab navigates freely inside and out (no focus trap).
-        </Description>
-        <LiveContent>
             <BitBhPopover class="popover">
                 <BitBhPopoverButton class="popover-button">
                     <Template Context="b">
-                        Notifications
-                        <span class="popover-badge">3</span>
+                        Solutions
                         <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
                     </Template>
                 </BitBhPopoverButton>
-                <BitBhPopoverPanel class="popover-panel popover-panel-wide">
-                    <div class="popover-header">
-                        <h3 class="popover-title">Notifications</h3>
-                        <span class="popover-badge">3 new</span>
-                    </div>
-                    <ul class="notification-list">
-                        <li class="notification-item">
-                            <span class="notification-dot"></span>
-                            <div>
-                                <strong>Alice commented on your post</strong>
-                                <span>2 minutes ago</span>
-                            </div>
-                        </li>
-                        <li class="notification-item">
-                            <span class="notification-dot"></span>
-                            <div>
-                                <strong>Your export is ready</strong>
-                                <span>15 minutes ago</span>
-                            </div>
-                        </li>
-                        <li class="notification-item">
-                            <span class="notification-dot"></span>
-                            <div>
-                                <strong>New team member joined</strong>
-                                <span>1 hour ago</span>
-                            </div>
-                        </li>
+                <BitBhPopoverPanel class="popover-panel">
+                    <h3 class="popover-title">Solutions</h3>
+                    <ul class="popover-nav-list">
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Marketing</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Engineering</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Finance</a></li>
                     </ul>
-                    <a href="#" class="popover-footer-link">View all notifications →</a>
                 </BitBhPopoverPanel>
             </BitBhPopover>
-        </LiveContent>
-    </DemoBlock>
-</div>
+
+            <BitBhPopover class="popover">
+                <BitBhPopoverButton class="popover-button">
+                    <Template Context="b">
+                        Company
+                        <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="popover-panel">
+                    <h3 class="popover-title">Company</h3>
+                    <ul class="popover-nav-list">
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">About</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Blog</a></li>
+                        <li><a href="#" @onclick:preventDefault class="popover-nav-link">Careers</a></li>
+                    </ul>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </BitBhPopoverGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive the open state externally with <code>Open</code> and
+        <code>OnOpenChange</code>. The button below opens or closes the popover
+        programmatically.
+        The outside button carries <code>data-bit-bh-dismiss-ignore</code>: without it, pressing it would
+        first dismiss the open surface as an outside press, and its click would then open it again.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
+            <div class="demo-row">
+                <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore class="btn">
+                    Toggle from outside
+                </BitBhButton>
+                <span class="demo-output">Open: <strong>@controlledOpen.ToString().ToLowerInvariant()</strong></span>
+            </div>
+
+            <BitBhPopover Open="controlledOpen"
+                      OnOpenChange="v => controlledOpen = v"
+                      class="popover">
+                <BitBhPopoverButton class="popover-button">
+                    <Template Context="b">
+                        Internal trigger
+                        <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="popover-panel">
+                    <p class="popover-body">
+                        Either trigger updates the same state — fully controlled.
+                    </p>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Anchor Positioning"
+           Code="@_anchorCode"
+           Css="@_anchorCss">
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhPopoverPanel</code> to automatically position
+        the panel relative to the button. The panel uses <code>position: fixed</code>,
+        flips when there's not enough space, shifts to stay within the viewport, and
+        auto-updates on scroll/resize. No <code>position: relative</code> on the parent or
+        <code>position: absolute</code> on the panel needed.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+            <BitBhPopover class="popover-anchored">
+                <BitBhPopoverButton class="popover-button">
+                    <Template Context="b">
+                        Bottom Start
+                        <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 8 })"
+                               class="popover-panel-anchored">
+                    <Template Context="p">
+                        <p class="popover-body">
+                            This panel is anchored to <strong>bottom start</strong> with an 8px gap.
+                            It will flip to the top if there's not enough space below.
+                        </p>
+                    </Template>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+
+            <BitBhPopover class="popover-anchored">
+                <BitBhPopoverButton class="popover-button">
+                    <Template Context="b">
+                        Top End
+                        <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "top end", Gap = 8 })"
+                               class="popover-panel-anchored">
+                    <Template Context="p">
+                        <p class="popover-body">
+                            This panel is anchored to <strong>top end</strong>. It flips to the
+                            bottom if there's not enough space above.
+                        </p>
+                    </Template>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+
+            <BitBhPopover class="popover-anchored">
+                <BitBhPopoverButton class="popover-button">
+                    <Template Context="b">
+                        Right
+                        <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })"
+                               class="popover-panel-anchored">
+                    <Template Context="p">
+                        <p class="popover-body">
+                            This panel is anchored to the <strong>right</strong> side.
+                        </p>
+                    </Template>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Rich panel content"
+           Code="@_richCode"
+           Css="@_richCss">
+    <Description>
+        The panel can contain any content — forms, images, links, nested interactive
+        elements. Tab navigates freely inside and out (no focus trap).
+    </Description>
+    <LiveContent>
+        <BitBhPopover class="popover">
+            <BitBhPopoverButton class="popover-button">
+                <Template Context="b">
+                    Notifications
+                    <span class="popover-badge">3</span>
+                    <span class="popover-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhPopoverButton>
+            <BitBhPopoverPanel class="popover-panel popover-panel-wide">
+                <div class="popover-header">
+                    <h3 class="popover-title">Notifications</h3>
+                    <span class="popover-badge">3 new</span>
+                </div>
+                <ul class="notification-list">
+                    <li class="notification-item">
+                        <span class="notification-dot"></span>
+                        <div>
+                            <strong>Alice commented on your post</strong>
+                            <span>2 minutes ago</span>
+                        </div>
+                    </li>
+                    <li class="notification-item">
+                        <span class="notification-dot"></span>
+                        <div>
+                            <strong>Your export is ready</strong>
+                            <span>15 minutes ago</span>
+                        </div>
+                    </li>
+                    <li class="notification-item">
+                        <span class="notification-dot"></span>
+                        <div>
+                            <strong>New team member joined</strong>
+                            <span>1 hour ago</span>
+                        </div>
+                    </li>
+                </ul>
+                <a href="#" @onclick:preventDefault class="popover-footer-link">View all notifications →</a>
+            </BitBhPopoverPanel>
+        </BitBhPopover>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool controlledOpen;
@@ -352,7 +354,7 @@
     private const string _controlledCode = """
 <div style="display:flex; flex-direction:column; gap:1rem; align-items:flex-start;">
     <div class="demo-row">
-        <BitBhButton OnClick="ToggleControlled" class="btn">
+        <BitBhButton OnClick="ToggleControlled" data-bit-bh-dismiss-ignore class="btn">
             Toggle from outside
         </BitBhButton>
         <span class="demo-output">Open: <strong>@controlledOpen.ToString().ToLowerInvariant()</strong></span>
@@ -480,6 +482,7 @@
 .popover-panel-anchored {
     z-index: 31;
     min-width: 16rem;
+    max-width: 24rem;
     background: #fff;
     border: 1px solid #e4e4e7;
     border-radius: 0.5rem;
@@ -543,6 +546,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 """;
 
     private const string _groupCss = """
@@ -600,6 +605,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 
 /* Wrap popovers in a flex row for a nav-bar layout */
 .popover-group {
@@ -666,6 +673,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+.popover-close-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 0.2rem; }
 
 /* Controlled mode adds no new CSS hooks — data-state simply reflects
    whatever Open value you bind to. */

@@ -1,280 +1,287 @@
 ﻿@page "/tree"
 
-<PageTitle>Tree View — bit Bheadless</PageTitle>
+<PageTitle>Tree View · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Tree View</h1>
-        <p>A hierarchical list — file explorers, navigation, nested settings — with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
-        <SectionSwitcher Slug="tree" />
-    </header>
-
-    <DemoBlock Title="File explorer"
-               Code="@_explorerCode"
-               Css="@_explorerCss">
-        <Description>
-            The WAI-ARIA Tree View pattern. Click a row to select it (<code>@@bind-SelectedValue</code>) or
-            the chevron (<code>BitBhTreeItemToggle</code>) to expand without selecting. Keyboard: Up / Down move,
-            Right expands or enters a folder, Left collapses or returns to the parent, Home / End jump,
-            <code>*</code> expands every sibling, Enter (or double click) fires <code>OnItemActivate</code>,
-            and typing a name jumps to it (typeahead, matched against <code>Label</code>).
-            <code>aria-level</code>, <code>aria-setsize</code>, <code>aria-posinset</code> and the roving
-            <code>tabindex</code> are computed for you; disabled items are skipped.
-        </Description>
-        <LiveContent>
-            <div class="tree-demo">
-                <BitBhTree TValue="string" aria-label="Project files" class="tree"
-                        @bind-SelectedValue="selectedFile"
-                        DefaultExpandedValues="@(new[] { "src/", "src/components/" })"
-                        OnItemActivate="v => openedFile = v">
-                    <BitBhTreeItem TValue="string" Value="@("src/")" Label="src" class="tree-item">
-                        <Template Context="srcDir">
-                            <div class="tree-row">
-                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                <span class="tree-icon">@(srcDir.IsExpanded ? "📂" : "📁")</span>
-                                <span>src</span>
-                            </div>
-                            <BitBhTreeGroup TValue="string" class="tree-group">
-                                <BitBhTreeItem TValue="string" Value="@("src/components/")" Label="components" class="tree-item">
-                                    <Template Context="componentsDir">
-                                        <div class="tree-row">
-                                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                            <span class="tree-icon">@(componentsDir.IsExpanded ? "📂" : "📁")</span>
-                                            <span>components</span>
-                                        </div>
-                                        <BitBhTreeGroup TValue="string" class="tree-group">
-                                            <BitBhTreeItem TValue="string" Value="@("src/components/Button.razor")" Label="Button.razor" class="tree-item">
-                                                <div class="tree-row">
-                                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                                    <span class="tree-icon">📄</span>
-                                                    <span>Button.razor</span>
-                                                </div>
-                                            </BitBhTreeItem>
-                                            <BitBhTreeItem TValue="string" Value="@("src/components/Tree.razor")" Label="Tree.razor" class="tree-item">
-                                                <div class="tree-row">
-                                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                                    <span class="tree-icon">📄</span>
-                                                    <span>Tree.razor</span>
-                                                </div>
-                                            </BitBhTreeItem>
-                                        </BitBhTreeGroup>
-                                    </Template>
-                                </BitBhTreeItem>
-                                <BitBhTreeItem TValue="string" Value="@("src/services/")" Label="services" class="tree-item">
-                                    <Template Context="servicesDir">
-                                        <div class="tree-row">
-                                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                            <span class="tree-icon">@(servicesDir.IsExpanded ? "📂" : "📁")</span>
-                                            <span>services</span>
-                                        </div>
-                                        <BitBhTreeGroup TValue="string" class="tree-group">
-                                            <BitBhTreeItem TValue="string" Value="@("src/services/ApiClient.cs")" Label="ApiClient.cs" class="tree-item">
-                                                <div class="tree-row">
-                                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                                    <span class="tree-icon">📄</span>
-                                                    <span>ApiClient.cs</span>
-                                                </div>
-                                            </BitBhTreeItem>
-                                            <BitBhTreeItem TValue="string" Value="@("src/services/AuthService.cs")" Label="AuthService.cs" class="tree-item">
-                                                <div class="tree-row">
-                                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                                    <span class="tree-icon">📄</span>
-                                                    <span>AuthService.cs</span>
-                                                </div>
-                                            </BitBhTreeItem>
-                                        </BitBhTreeGroup>
-                                    </Template>
-                                </BitBhTreeItem>
-                                <BitBhTreeItem TValue="string" Value="@("src/Program.cs")" Label="Program.cs" class="tree-item">
-                                    <div class="tree-row">
-                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                        <span class="tree-icon">📄</span>
-                                        <span>Program.cs</span>
-                                    </div>
-                                </BitBhTreeItem>
-                            </BitBhTreeGroup>
-                        </Template>
-                    </BitBhTreeItem>
-                    <BitBhTreeItem TValue="string" Value="@("wwwroot/")" Label="wwwroot" class="tree-item">
-                        <Template Context="wwwDir">
-                            <div class="tree-row">
-                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                <span class="tree-icon">@(wwwDir.IsExpanded ? "📂" : "📁")</span>
-                                <span>wwwroot</span>
-                            </div>
-                            <BitBhTreeGroup TValue="string" class="tree-group">
-                                <BitBhTreeItem TValue="string" Value="@("wwwroot/app.css")" Label="app.css" class="tree-item">
-                                    <div class="tree-row">
-                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                        <span class="tree-icon">🎨</span>
-                                        <span>app.css</span>
-                                    </div>
-                                </BitBhTreeItem>
-                                <BitBhTreeItem TValue="string" Value="@("wwwroot/favicon.png")" Label="favicon.png" class="tree-item">
-                                    <div class="tree-row">
-                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                        <span class="tree-icon">🖼️</span>
-                                        <span>favicon.png</span>
-                                    </div>
-                                </BitBhTreeItem>
-                            </BitBhTreeGroup>
-                        </Template>
-                    </BitBhTreeItem>
-                    <BitBhTreeItem TValue="string" Value="@("secrets.json")" Label="secrets.json" Disabled="true" class="tree-item">
-                        <div class="tree-row">
-                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                            <span class="tree-icon">🔒</span>
-                            <span>secrets.json</span>
-                            <span class="tree-meta">locked</span>
-                        </div>
-                    </BitBhTreeItem>
-                    <BitBhTreeItem TValue="string" Value="@("README.md")" Label="README.md" class="tree-item">
-                        <div class="tree-row">
-                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                            <span class="tree-icon">📄</span>
-                            <span>README.md</span>
-                        </div>
-                    </BitBhTreeItem>
-                </BitBhTree>
-
-                <p class="tree-output">
-                    Selected: <strong>@(selectedFile ?? "(none)")</strong> ·
-                    Last activated: <strong>@(openedFile ?? "—")</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Data-driven (recursive)"
-               Code="@_recursiveCode"
-               Css="@_recursiveCss">
-        <Description>
-            Render the tree from a model with a recursive <code>RenderFragment&lt;Node&gt;</code> helper. Each
-            <code>BitBhTreeItem</code> works out its depth from where it is rendered, so the markup is the same at
-            every level. Supplying <code>@@bind-ExpandedValues</code> makes expansion controlled, so plain
-            buttons can expand or collapse everything.
-        </Description>
-        <LiveContent>
-            <div class="tree-demo">
-                <div class="tree-actions">
-                    <button type="button" class="tree-button" @onclick="ExpandAllDocs">Expand all</button>
-                    <button type="button" class="tree-button" @onclick="CollapseAllDocs">Collapse all</button>
-                </div>
-
-                <BitBhTree TValue="string" aria-label="Documentation" class="tree"
-                        @bind-SelectedValue="selectedDoc"
-                        @bind-ExpandedValues="expandedDocs">
-                    @foreach (var node in docs)
-                    {
-                        @DocItem(node)
-                    }
-                </BitBhTree>
-
-                <p class="tree-output">
-                    Selected: <strong>@(selectedDoc ?? "(none)")</strong> ·
-                    Expanded: <strong>@expandedDocs.Count</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Multiple selection"
-               Code="@_multiCode"
-               Css="@_multiCss">
-        <Description>
-            <code>SelectionMode="BitBhTreeSelectionMode.Multiple"</code> sets <code>aria-multiselectable</code> and
-            binds with <code>@@bind-SelectedValues</code>. Click selects one item, Ctrl / ⌘ + click toggles,
-            Shift + click selects a range. Keyboard: Space toggles the focused item, Shift + Up / Down extends
-            the selection, Ctrl + A selects everything.
-        </Description>
-        <LiveContent>
-            <div class="tree-demo">
-                <BitBhTree TValue="string" aria-label="Mailboxes" class="tree"
-                        SelectionMode="BitBhTreeSelectionMode.Multiple"
-                        @bind-SelectedValues="selectedBoxes"
-                        DefaultExpandedValues="@(new[] { "Inbox", "Projects" })">
-                    @foreach (var (icon, name, children) in mailboxes)
-                    {
-                        <BitBhTreeItem TValue="string" Value="@name" Label="@name" class="tree-item">
-                            <div class="tree-row">
-                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                <span class="tree-icon">@icon</span>
-                                <span>@name</span>
-                                <span class="tree-count">@children.Length</span>
-                            </div>
-                            <BitBhTreeGroup TValue="string" class="tree-group">
-                                @foreach (var child in children)
-                                {
-                                    <BitBhTreeItem TValue="string" Value="@($"{name}/{child}")" Label="@child" class="tree-item">
-                                        <div class="tree-row">
-                                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
-                                            <span class="tree-icon">📁</span>
-                                            <span>@child</span>
-                                        </div>
-                                    </BitBhTreeItem>
-                                }
-                            </BitBhTreeGroup>
-                        </BitBhTreeItem>
-                    }
-                </BitBhTree>
-
-                <p class="tree-output">
-                    @selectedBoxes.Count selected: <strong>@(selectedBoxes.Count == 0 ? "—" : string.Join(", ", selectedBoxes))</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Hierarchical checkboxes"
-               Code="@_checkboxCode"
-               Css="@_checkboxCss">
-        <Description>
-            <code>Checkboxes="true"</code> turns the tree into a hierarchical picker: checking a parent checks all
-            of its descendants, and a parent whose leaves are only partly checked reports
-            <code>aria-checked="mixed"</code>. Every item also emits <code>data-checked="true|false|mixed"</code>,
-            so the box below is drawn with CSS alone. Click a row or press Space to toggle it.
-        </Description>
-        <LiveContent>
-            <div class="tree-demo">
-                <BitBhTree TValue="string" aria-label="Features to install" class="tree"
-                        Checkboxes="true"
-                        @bind-SelectedValues="checkedFeatures"
-                        DefaultExpandedValues="@(new[] { "app", "app-themes" })">
-                    @foreach (var node in features)
-                    {
-                        @FeatureItem(node)
-                    }
-                </BitBhTree>
-
-                <p class="tree-output">
-                    Installing: <strong>@(InstalledFeatures.Any() ? string.Join(", ", InstalledFeatures) : "nothing")</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Lazy loading"
-               Code="@_lazyCode"
-               Css="@_lazyCss">
-        <Description>
-            Mark folders whose children are not loaded yet with <code>HasChildren="true"</code> and supply
-            <code>LoadChildren</code>. It runs the first time a folder expands; meanwhile the item reports
-            <code>aria-busy="true"</code> (and <code>IsLoading</code> in its <code>Template</code>) so you can show
-            a spinner. The folder opens once the children are rendered.
-        </Description>
-        <LiveContent>
-            <div class="tree-demo">
-                <BitBhTree TValue="string" aria-label="Cloud storage" class="tree"
-                        LoadChildren="LoadChildrenAsync">
-                    @foreach (var bucket in buckets)
-                    {
-                        @RemoteItem(bucket)
-                    }
-                </BitBhTree>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Tree View</h1>
+    <p class="bb-subtitle">A hierarchical list — file explorers, navigation, nested settings — with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
 </div>
+
+<SectionSwitcher Slug="tree" />
+
+<DemoBlock Title="File explorer"
+           Code="@_explorerCode"
+           Css="@_explorerCss">
+    <Description>
+        The WAI-ARIA Tree View pattern. Click a row to select it (<code>@@bind-SelectedValue</code>) or
+        the chevron (<code>BitBhTreeItemToggle</code>) to expand without selecting. Keyboard: Up / Down move,
+        Right expands or enters a folder, Left collapses or returns to the parent, Home / End jump,
+        <code>*</code> expands every sibling, Enter (or double click) fires <code>OnItemActivate</code>,
+        and typing a name jumps to it (typeahead, matched against <code>Label</code>).
+        <code>aria-level</code>, <code>aria-setsize</code>, <code>aria-posinset</code> and the roving
+        <code>tabindex</code> are computed for you; disabled items are skipped. Each item's
+        <code>&lt;li&gt;</code> wraps its children, so state is styled on the item's own row through a child
+        combinator — the CSS version with <code>.tree-item[aria-selected="true"] &gt; .tree-row</code>, the
+        Tailwind version with <code>[&amp;_[aria-selected=true]&gt;div]:</code> on the tree root — which keeps a
+        selected folder from tinting its children.
+    </Description>
+    <LiveContent>
+        <div class="tree-demo">
+            <BitBhTree TValue="string" aria-label="Project files" class="tree"
+                    @bind-SelectedValue="selectedFile"
+                    DefaultExpandedValues="@(new[] { "src/", "src/components/" })"
+                    OnItemActivate="v => openedFile = v">
+                <BitBhTreeItem TValue="string" Value="@("src/")" Label="src" class="tree-item">
+                    <Template Context="srcDir">
+                        <div class="tree-row">
+                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                            <span class="tree-icon">@(srcDir.IsExpanded ? "📂" : "📁")</span>
+                            <span>src</span>
+                        </div>
+                        <BitBhTreeGroup TValue="string" class="tree-group">
+                            <BitBhTreeItem TValue="string" Value="@("src/components/")" Label="components" class="tree-item">
+                                <Template Context="componentsDir">
+                                    <div class="tree-row">
+                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                        <span class="tree-icon">@(componentsDir.IsExpanded ? "📂" : "📁")</span>
+                                        <span>components</span>
+                                    </div>
+                                    <BitBhTreeGroup TValue="string" class="tree-group">
+                                        <BitBhTreeItem TValue="string" Value="@("src/components/Button.razor")" Label="Button.razor" class="tree-item">
+                                            <div class="tree-row">
+                                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                                <span class="tree-icon">📄</span>
+                                                <span>Button.razor</span>
+                                            </div>
+                                        </BitBhTreeItem>
+                                        <BitBhTreeItem TValue="string" Value="@("src/components/Tree.razor")" Label="Tree.razor" class="tree-item">
+                                            <div class="tree-row">
+                                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                                <span class="tree-icon">📄</span>
+                                                <span>Tree.razor</span>
+                                            </div>
+                                        </BitBhTreeItem>
+                                    </BitBhTreeGroup>
+                                </Template>
+                            </BitBhTreeItem>
+                            <BitBhTreeItem TValue="string" Value="@("src/services/")" Label="services" class="tree-item">
+                                <Template Context="servicesDir">
+                                    <div class="tree-row">
+                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                        <span class="tree-icon">@(servicesDir.IsExpanded ? "📂" : "📁")</span>
+                                        <span>services</span>
+                                    </div>
+                                    <BitBhTreeGroup TValue="string" class="tree-group">
+                                        <BitBhTreeItem TValue="string" Value="@("src/services/ApiClient.cs")" Label="ApiClient.cs" class="tree-item">
+                                            <div class="tree-row">
+                                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                                <span class="tree-icon">📄</span>
+                                                <span>ApiClient.cs</span>
+                                            </div>
+                                        </BitBhTreeItem>
+                                        <BitBhTreeItem TValue="string" Value="@("src/services/AuthService.cs")" Label="AuthService.cs" class="tree-item">
+                                            <div class="tree-row">
+                                                <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                                <span class="tree-icon">📄</span>
+                                                <span>AuthService.cs</span>
+                                            </div>
+                                        </BitBhTreeItem>
+                                    </BitBhTreeGroup>
+                                </Template>
+                            </BitBhTreeItem>
+                            <BitBhTreeItem TValue="string" Value="@("src/Program.cs")" Label="Program.cs" class="tree-item">
+                                <div class="tree-row">
+                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                    <span class="tree-icon">📄</span>
+                                    <span>Program.cs</span>
+                                </div>
+                            </BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </Template>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("wwwroot/")" Label="wwwroot" class="tree-item">
+                    <Template Context="wwwDir">
+                        <div class="tree-row">
+                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                            <span class="tree-icon">@(wwwDir.IsExpanded ? "📂" : "📁")</span>
+                            <span>wwwroot</span>
+                        </div>
+                        <BitBhTreeGroup TValue="string" class="tree-group">
+                            <BitBhTreeItem TValue="string" Value="@("wwwroot/app.css")" Label="app.css" class="tree-item">
+                                <div class="tree-row">
+                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                    <span class="tree-icon">🎨</span>
+                                    <span>app.css</span>
+                                </div>
+                            </BitBhTreeItem>
+                            <BitBhTreeItem TValue="string" Value="@("wwwroot/favicon.png")" Label="favicon.png" class="tree-item">
+                                <div class="tree-row">
+                                    <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                    <span class="tree-icon">🖼️</span>
+                                    <span>favicon.png</span>
+                                </div>
+                            </BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </Template>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("secrets.json")" Label="secrets.json" Disabled="true" class="tree-item">
+                    <div class="tree-row">
+                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                        <span class="tree-icon">🔒</span>
+                        <span>secrets.json</span>
+                        <span class="tree-meta">locked</span>
+                    </div>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("README.md")" Label="README.md" class="tree-item">
+                    <div class="tree-row">
+                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                        <span class="tree-icon">📄</span>
+                        <span>README.md</span>
+                    </div>
+                </BitBhTreeItem>
+            </BitBhTree>
+
+            <p class="tree-output">
+                Selected: <strong>@(selectedFile ?? "(none)")</strong> ·
+                Last activated: <strong>@(openedFile ?? "—")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Data-driven (recursive)"
+           Code="@_recursiveCode"
+           Css="@_recursiveCss">
+    <Description>
+        Render the tree from a model with a recursive <code>RenderFragment&lt;Node&gt;</code> helper. Each
+        <code>BitBhTreeItem</code> works out its depth from where it is rendered, so the markup is the same at
+        every level. Supplying <code>@@bind-ExpandedValues</code> makes expansion controlled, so plain
+        buttons can expand or collapse everything.
+    </Description>
+    <LiveContent>
+        <div class="tree-demo">
+            <div class="tree-actions">
+                <button type="button" class="tree-button" @onclick="ExpandAllDocs">Expand all</button>
+                <button type="button" class="tree-button" @onclick="CollapseAllDocs">Collapse all</button>
+            </div>
+
+            <BitBhTree TValue="string" aria-label="Documentation" class="tree"
+                    @bind-SelectedValue="selectedDoc"
+                    @bind-ExpandedValues="expandedDocs">
+                @foreach (var node in docs)
+                {
+                    @DocItem(node)
+                }
+            </BitBhTree>
+
+            <p class="tree-output">
+                Selected: <strong>@(selectedDoc ?? "(none)")</strong> ·
+                Expanded: <strong>@expandedDocs.Count</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Multiple selection"
+           Code="@_multiCode"
+           Css="@_multiCss">
+    <Description>
+        <code>SelectionMode="BitBhTreeSelectionMode.Multiple"</code> sets <code>aria-multiselectable</code> and
+        binds with <code>@@bind-SelectedValues</code>. Click selects one item, Ctrl / ⌘ + click toggles,
+        Shift + click selects a range. Keyboard: Space toggles the focused item, Shift + Up / Down extends
+        the selection, Ctrl + A selects everything.
+    </Description>
+    <LiveContent>
+        <div class="tree-demo">
+            <BitBhTree TValue="string" aria-label="Mailboxes" class="tree"
+                    SelectionMode="BitBhTreeSelectionMode.Multiple"
+                    @bind-SelectedValues="selectedBoxes"
+                    DefaultExpandedValues="@(new[] { "Inbox", "Projects" })">
+                @foreach (var (icon, name, children) in mailboxes)
+                {
+                    <BitBhTreeItem TValue="string" Value="@name" Label="@name" class="tree-item">
+                        <div class="tree-row">
+                            <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                            <span class="tree-icon">@icon</span>
+                            <span>@name</span>
+                            <span class="tree-count">@children.Length</span>
+                        </div>
+                        <BitBhTreeGroup TValue="string" class="tree-group">
+                            @foreach (var child in children)
+                            {
+                                <BitBhTreeItem TValue="string" Value="@($"{name}/{child}")" Label="@child" class="tree-item">
+                                    <div class="tree-row">
+                                        <BitBhTreeItemToggle TValue="string" class="tree-toggle">▸</BitBhTreeItemToggle>
+                                        <span class="tree-icon">📁</span>
+                                        <span>@child</span>
+                                    </div>
+                                </BitBhTreeItem>
+                            }
+                        </BitBhTreeGroup>
+                    </BitBhTreeItem>
+                }
+            </BitBhTree>
+
+            <p class="tree-output">
+                @selectedBoxes.Count selected: <strong>@(selectedBoxes.Count == 0 ? "—" : string.Join(", ", selectedBoxes))</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Hierarchical checkboxes"
+           Code="@_checkboxCode"
+           Css="@_checkboxCss">
+    <Description>
+        <code>Checkboxes="true"</code> turns the tree into a hierarchical picker: checking a parent checks all
+        of its descendants, and a parent whose leaves are only partly checked reports
+        <code>aria-checked="mixed"</code>. Click a row or press Space to toggle it. The two versions draw the
+        box differently: the CSS version reads the <code>data-checked="true|false|mixed"</code> every item
+        emits (<code>.tree-item[data-checked="mixed"] &gt; .tree-row .tree-check</code>), while the Tailwind
+        version takes <code>Checked</code> (true / false / null = mixed) from the item's <code>Template</code>,
+        mirrors it onto the box's own <code>data-checked</code> and styles it with
+        <code>data-[checked=mixed]:</code>.
+    </Description>
+    <LiveContent>
+        <div class="tree-demo">
+            <BitBhTree TValue="string" aria-label="Features to install" class="tree"
+                    Checkboxes="true"
+                    @bind-SelectedValues="checkedFeatures"
+                    DefaultExpandedValues="@(new[] { "app", "app-themes" })">
+                @foreach (var node in features)
+                {
+                    @FeatureItem(node)
+                }
+            </BitBhTree>
+
+            <p class="tree-output">
+                Installing: <strong>@(InstalledFeatures.Any() ? string.Join(", ", InstalledFeatures) : "nothing")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Lazy loading"
+           Code="@_lazyCode"
+           Css="@_lazyCss">
+    <Description>
+        Mark folders whose children are not loaded yet with <code>HasChildren="true"</code> and supply
+        <code>LoadChildren</code>. It runs the first time a folder expands; meanwhile the item reports
+        <code>aria-busy="true"</code> (and <code>IsLoading</code> in its <code>Template</code>) so you can show
+        a spinner. The folder opens once the children are rendered.
+    </Description>
+    <LiveContent>
+        <div class="tree-demo">
+            <BitBhTree TValue="string" aria-label="Cloud storage" class="tree"
+                    LoadChildren="LoadChildrenAsync">
+                @foreach (var bucket in buckets)
+                {
+                    @RemoteItem(bucket)
+                }
+            </BitBhTree>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── File explorer ────────────────────────────────────────────────────────

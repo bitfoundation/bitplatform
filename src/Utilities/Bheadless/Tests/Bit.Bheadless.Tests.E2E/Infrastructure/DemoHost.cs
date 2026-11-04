@@ -37,7 +37,7 @@ public sealed class DemoHost : IAsyncDisposable
         var assembly = RepoLayout.DemoServerAssembly(directory);
         if (File.Exists(assembly) is false)
             throw new FileNotFoundException($"{directory} holds no published demo server. Publish it with 'dotnet publish " +
-                                            $"src/Utilities/Bheadless/Demo/{RepoLayout.DemoServerName}/{RepoLayout.DemoServerName}.csproj -c Release -o <folder>'.", assembly);
+                                            $"src/Utilities/Bheadless/Demo/Server/{RepoLayout.DemoServerName}.csproj -c Release -o <folder>'.", assembly);
 
         var baseUrl = $"http://127.0.0.1:{ChildProcess.FreePort()}";
 

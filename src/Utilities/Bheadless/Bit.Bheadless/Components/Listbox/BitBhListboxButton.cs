@@ -139,8 +139,14 @@ public class BitBhListboxButton<TValue> : BitBhComponentBase, IDisposable
         return attrs;
     }
 
-    private Task HandleClick(MouseEventArgs _)
-        => IsDisabled ? Task.CompletedTask : ListboxContext?.Listbox.ToggleAsync() ?? Task.CompletedTask;
+    private async Task HandleClick(MouseEventArgs _)
+    {
+        if (IsDisabled || ListboxContext is null) return;
+        // Safari doesn't focus a <button> it clicks, and the button owns the keyboard while the panel is open
+        // (aria-activedescendant points into the panel from it).
+        await Interop.FocusAsync(ListboxContext.ButtonId);
+        await ListboxContext.Listbox.ToggleAsync();
+    }
 
     private Task HandleKeyDown(KeyboardEventArgs args)
         => ListboxContext?.Listbox.HandleKeyDownAsync(args) ?? Task.CompletedTask;

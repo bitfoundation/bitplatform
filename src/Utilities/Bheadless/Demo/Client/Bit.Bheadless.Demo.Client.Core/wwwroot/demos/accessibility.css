@@ -282,6 +282,7 @@
 /* ---- Direction ---- */
 .a11y-segments {
     display: inline-flex;
+    align-self: flex-start;
     padding: 0.2rem;
     border-radius: 0.6rem;
     background: var(--color-fill);

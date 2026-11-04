@@ -1,136 +1,152 @@
 ﻿@page "/tw/switch"
 
-<PageTitle>Switch — bit Bheadless · Tailwind</PageTitle>
+<PageTitle>Switch (Tailwind) · Bheadless</PageTitle>
 
-<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
-    <header class="mb-12">
-        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Switch</h1>
-        <p class="mt-2 text-zinc-500">An accessible on/off toggle styled entirely with Tailwind utilities.</p>
-        <TwSectionSwitcher Slug="switch" />
-    </header>
-
-    <TwDemoBlock Title="Basic Switch (Uncontrolled)" Code="@_basicCode">
-        <Description>
-            Renders a native <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;button&gt;</code> with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="switch"</code>. The track and thumb are styled with the custom <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-state-checked:</code> variant.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false"
-                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-            </BitBhSwitch>
-
-            <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true"
-                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-            </BitBhSwitch>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
-        <Description>
-            Drive the state externally with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Checked</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnCheckedChange</code>.
-        </Description>
-        <LiveContent>
-            <div class="flex items-center gap-4">
-                <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn" OnCheckedChange="v => notificationsOn = v"
-                          class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-                </BitBhSwitch>
-                <span class="text-sm text-zinc-500">
-                    Notifications: <strong class="text-zinc-900">@(notificationsOn ? "on" : "off")</strong>
-                </span>
-                <BitBhButton OnClick="() => notificationsOn = !notificationsOn"
-                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
-                    Toggle from outside
-                </BitBhButton>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Disabled" Code="@_disabledCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> dims the track and disables interaction.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true"
-                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-            </BitBhSwitch>
-            <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true"
-                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-            </BitBhSwitch>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="With label" Code="@_labelCode">
-        <Description>Wrap in a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;label&gt;</code> to make the text clickable.</Description>
-        <LiveContent>
-            <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
-                <BitBhSwitch DefaultChecked="true"
-                          class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-                </BitBhSwitch>
-                <span>Email me about updates</span>
-            </label>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="As a non-native element" Code="@_polymorphicCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">As="div"</code> renders a div while keeping ARIA, tabindex, and keyboard handling intact.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false"
-                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-            </BitBhSwitch>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Form Submission" Code="@_formCode">
-        <Description>
-            Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Name</code> to render an adjacent hidden input.
-        </Description>
-        <LiveContent>
-            <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
-                  class="flex flex-wrap items-center gap-4">
-                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
-                    <BitBhSwitch Name="newsletter" Value="yes" DefaultChecked="false"
-                              class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-                        <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
-                    </BitBhSwitch>
-                    <span>Subscribe to newsletter</span>
-                </label>
-                <button type="submit"
-                        class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
-                    Submit
-                </button>
-                @if (lastSubmittedValue is not null)
-                {
-                    <span class="text-sm text-zinc-500">Posted value: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">@lastSubmittedValue</code></span>
-                }
-            </form>
-        </LiveContent>
-    </TwDemoBlock>
+<div class="bb-intro">
+    <h1>Switch</h1>
+    <p class="bb-subtitle">An accessible on/off toggle with full keyboard support and zero visual opinion.</p>
 </div>
+
+<SectionSwitcher Slug="switch" />
+
+<TwDemoBlock Title="Basic Switch (Uncontrolled)" Code="@_basicCode">
+    <Description>
+        Renders a native <code>&lt;button&gt;</code> with <code>role="switch"</code> and
+        <code>aria-checked</code>. Click or press Space/Enter to toggle. <code>DefaultChecked</code>
+        seeds the initial state. The switch and its thumb both carry <code>data-state</code>: the CSS
+        version styles the on look with a <code>[data-state="checked"]</code> selector, the Tailwind
+        version with the custom <code>data-state-checked:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false"
+                  class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        </BitBhSwitch>
+
+        <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true"
+                  class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        </BitBhSwitch>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Controlled" Code="@_controlledCode">
+    <Description>
+        Drive the state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
+        Clicking either control updates the same state.
+    </Description>
+    <LiveContent>
+        <div class="flex items-center gap-4">
+            <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn" OnCheckedChange="v => notificationsOn = v"
+                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+            </BitBhSwitch>
+            <span class="text-sm text-zinc-500">
+                Notifications: <strong class="text-zinc-900">@(notificationsOn ? "on" : "off")</strong>
+            </span>
+            <BitBhButton OnClick="() => notificationsOn = !notificationsOn"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                Toggle from outside
+            </BitBhButton>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Disabled" Code="@_disabledCode">
+    <Description>
+        Set <code>Disabled="true"</code> to block interaction. The button receives the native
+        <code>disabled</code> attribute and a <code>data-disabled</code> hook: the CSS version styles it
+        with a <code>[data-disabled]</code> selector, the Tailwind version with the
+        <code>data-disabled:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true"
+                  class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        </BitBhSwitch>
+        <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true"
+                  class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        </BitBhSwitch>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="With label" Code="@_labelCode">
+    <Description>
+        Wrap the switch in a <code>&lt;label&gt;</code> to make the label clickable.
+        Clicking the label text toggles the switch — standard HTML behaviour.
+    </Description>
+    <LiveContent>
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhSwitch DefaultChecked="true"
+                      class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+            </BitBhSwitch>
+            <span>Email me about updates</span>
+        </label>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="As a non-native element" Code="@_polymorphicCode">
+    <Description>
+        Set <code>As="div"</code> to render as a div. The component automatically adds
+        <code>role="switch"</code>, <code>tabindex="0"</code>, and Space/Enter keyboard
+        handling so the switch remains fully accessible.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false"
+                  class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        </BitBhSwitch>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Form Submission" Code="@_formCode">
+    <Description>
+        Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
+        so the switch participates in plain form posts. The hidden input is only present
+        when the switch is checked, mirroring native checkbox behaviour.
+    </Description>
+    <LiveContent>
+        <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
+              class="flex flex-wrap items-center gap-4">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                <BitBhSwitch Name="newsletter" Value="yes" OnCheckedChange="v => newsletterOn = v" DefaultChecked="false"
+                          class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+                </BitBhSwitch>
+                <span>Subscribe to newsletter</span>
+            </label>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+                Submit
+            </button>
+            @if (lastSubmittedValue is not null)
+            {
+                <span class="text-sm text-zinc-500">Posted value: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">@lastSubmittedValue</code></span>
+            }
+        </form>
+    </LiveContent>
+</TwDemoBlock>
 
 @code {
     private bool notificationsOn = true;
     private string? lastSubmittedValue;
+    private bool newsletterOn;
 
     private void HandleFormSubmit() =>
-        lastSubmittedValue = "(submitted — check the network tab in a real form)";
+        // The hidden input exists only while the switch is on.
+        lastSubmittedValue = newsletterOn ? "newsletter=yes" : "(nothing - the switch is off)";
 
     private const string _basicCode = """
 <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false"
           class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
 </BitBhSwitch>
 
 <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true"
           class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
 </BitBhSwitch>
 """;
 
@@ -138,7 +154,7 @@
 <div class="flex items-center gap-4">
     <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn" OnCheckedChange="v => notificationsOn = v"
               class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-        <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
     </BitBhSwitch>
     <span class="text-sm text-zinc-500">
         Notifications: <strong class="text-zinc-900">@(notificationsOn ? "on" : "off")</strong>
@@ -157,12 +173,12 @@
     private const string _disabledCode = """
 <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true"
           class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
 </BitBhSwitch>
 
 <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true"
           class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
 </BitBhSwitch>
 """;
 
@@ -170,7 +186,7 @@
 <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
     <BitBhSwitch DefaultChecked="true"
               class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-        <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+        <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
     </BitBhSwitch>
     <span>Email me about updates</span>
 </label>
@@ -179,7 +195,7 @@
     private const string _polymorphicCode = """
 <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false"
           class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+    <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
 </BitBhSwitch>
 """;
 
@@ -187,9 +203,9 @@
 <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
       class="flex flex-wrap items-center gap-4">
     <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
-        <BitBhSwitch Name="newsletter" Value="yes" DefaultChecked="false"
+        <BitBhSwitch Name="newsletter" Value="yes" OnCheckedChange="v => newsletterOn = v" DefaultChecked="false"
                   class="relative inline-block w-10 h-5 rounded-full bg-zinc-300 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-state-checked:bg-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
-            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
+            <BitBhSwitchThumb class="absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-[#fff] shadow transition-[left] data-state-checked:left-[calc(100%-1.125rem)]" />
         </BitBhSwitch>
         <span>Subscribe to newsletter</span>
     </label>
@@ -199,15 +215,17 @@
     </button>
     @if (lastSubmittedValue is not null)
     {
-        <span class="text-sm text-zinc-500">Posted value: <code>@lastSubmittedValue</code></span>
+        <span class="text-sm text-zinc-500">Posted value: <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-xs">@lastSubmittedValue</code></span>
     }
 </form>
 
 @code {
     private string? lastSubmittedValue;
+    private bool newsletterOn;
 
     private void HandleFormSubmit() =>
-        lastSubmittedValue = "(submitted — check the network tab in a real form)";
+        // The hidden input exists only while the switch is on.
+        lastSubmittedValue = newsletterOn ? "newsletter=yes" : "(nothing - the switch is off)";
 }
 """;
 }

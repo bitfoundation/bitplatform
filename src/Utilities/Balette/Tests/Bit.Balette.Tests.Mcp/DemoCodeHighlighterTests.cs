@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Bit.Balette.Demo.Client.Shared;
 using Bit.Balette.Demo.Server.Services;
+using Bit.Utilities.Demo;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;

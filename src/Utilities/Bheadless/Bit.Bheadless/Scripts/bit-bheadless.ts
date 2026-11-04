@@ -190,6 +190,8 @@ function createRuntime() {
 
     const keys = {
         matches: matchesKeyToken,
+        /** Whether "mod" in a hotkey is Cmd (Apple platforms) rather than Ctrl. */
+        isApple: () => isApple,
     };
 
     // ─── interaction ─────────────────────────────────────────────────────────────
@@ -270,6 +272,9 @@ function createRuntime() {
         document.addEventListener('keydown', onLayerKeyDownCapture, true);
         document.addEventListener('keydown', onLayerKeyDown, false);
         document.addEventListener('pointerdown', onLayerPointerDown, true);
+        document.addEventListener('pointerup', onLayerPressEnd, true);
+        document.addEventListener('pointercancel', onLayerPressEnd, true);
+        document.addEventListener('pointerdown', recordPress, true);
         document.addEventListener('click', onLayerClick, true);
         document.addEventListener('focusin', onLayerFocusIn, true);
 
@@ -460,6 +465,10 @@ function createRuntime() {
                 pos.x = Math.max(vp.left + padding, Math.min(pos.x, vp.right - padding - w));
             } else {
                 pos.y = Math.max(vp.top + padding, Math.min(pos.y, vp.bottom - padding - h));
+                // Wider than the room on either side (a submenu on a phone): overlap the reference rather than
+                // run off the screen. A panel above or below keeps clear of its reference and gets the space
+                // left for a max-height instead.
+                pos.x = Math.max(vp.left + padding, Math.min(pos.x, vp.right - padding - w));
             }
         }
 
@@ -501,8 +510,13 @@ function createRuntime() {
             const center = p.ref.top + p.ref.height / 2 - p.y - arrowSize.height / 2;
             offset = Math.max(arrowPadding, Math.min(center, p.h - arrowSize.height - arrowPadding));
             arrow.style.top = Math.round(offset) + 'px';
-            if (p.side === 'right') arrow.style.right = '100%';
-            else arrow.style.left = '100%';
+            // A quarter turn leaves the arrow's box at its unrotated size: placing the box against the edge would
+            // leave a gap of half the size difference. Offsetting it past the edge by half its width plus half its
+            // height brings the rotated base onto the edge - from the far side, so the box keeps the content's
+            // width to lay out in (a 'right: 100%' leaves it none, and an SVG with max-width: 100% shrinks).
+            const outside = -(arrowSize.width + arrowSize.height) / 2 + 'px';
+            if (p.side === 'right') arrow.style.left = outside;
+            else arrow.style.right = outside;
         }
         // Rotate the default (downward pointing) arrow to face the reference.
         arrow.style.transform = `rotate(${ARROW_ROTATION[p.side]}deg)`;
@@ -705,7 +719,18 @@ function createRuntime() {
         }
     }
 
+    // The element a pointer press is on, until the press ends. Safari does not focus a button it presses, so the
+    // focus moves to the button's focusable ancestor - outside a layer whose trigger the button is. A focus that
+    // a press moves to an ancestor of the pressed element is judged by where the press is, which the press itself
+    // already was; focus going anywhere else (into a menu the press opened) is judged by itself.
+    let pressTarget: EventTarget | null = null;
+
+    function onLayerPressEnd() {
+        pressTarget = null;
+    }
+
     function onLayerPointerDown(e: PointerEvent) {
+        pressTarget = e.target;
         if (!layerStack.length) return;
         if (e.pointerType === 'touch') {
             pendingTouchDismiss = e.target;
@@ -727,7 +752,9 @@ function createRuntime() {
 
     function onLayerFocusIn(e: FocusEvent) {
         if (!layerStack.length) return;
-        processOutside(e.target, 'focus-outside');
+        const pressed = pressTarget;
+        const toAncestor = isElement(pressed) && pressed.isConnected && isElement(e.target) && e.target !== pressed && e.target.contains(pressed);
+        processOutside(toAncestor ? pressed : e.target, 'focus-outside');
     }
 
     // Hover-driven layers (tooltips, hover cards) must be dismissable with Escape
@@ -903,6 +930,26 @@ function createRuntime() {
         focusElement(fallback);
     }
 
+    // The focusable element the last pointer press landed on. Safari does not focus a button it clicks, so a
+    // scope a click opens would remember the button's focusable ancestor - or <body> - as the place to give the
+    // focus back to; the press says where the user really was. Listened for from the start: the press that
+    // opens the first scope comes before it (install).
+    let lastPress: { el: HTMLElement; time: number } | null = null;
+
+    function recordPress(e: PointerEvent) {
+        const target = isElement(e.target) ? e.target.closest<HTMLElement>('button, a[href], input, select, textarea, summary, [tabindex]') : null;
+        lastPress = target ? { el: target, time: performance.now() } : null;
+    }
+
+    /** Where the focus is - or, right after a press the browser did not move it for, the element pressed. */
+    function focusOrigin() {
+        const active = document.activeElement;
+        const press = lastPress;
+        if (!press || press.el === active || !press.el.isConnected || performance.now() - press.time > 3000) return active;
+        if (press.el.matches(':disabled')) return active;
+        return !active || active === document.body || active.contains(press.el) ? press.el : active;
+    }
+
     let scopeListenersInstalled = false;
 
     function ensureScopeListeners() {
@@ -978,7 +1025,7 @@ function createRuntime() {
                 loop: !!options.loop,
                 restore: options.restore !== false,
                 returnFocusId: options.returnFocusId || null,
-                previous: document.activeElement,
+                previous: focusOrigin(),
                 layer: options.layer || 0,
                 lastFocused: null,
             };
@@ -1526,14 +1573,16 @@ function createRuntime() {
         /**
          * Returns [id, text] for every element tagged [data-bit-bh-item="key"], in document
          * order. The text (data-bit-bh-text, else the item's own text - nested items of the
-         * same collection, like child tree items, excluded) feeds typeahead.
+         * same collection, like child tree items, excluded, and so is what assistive technology
+         * does not read either: an aria-hidden check mark or chevron) feeds typeahead.
          */
         order(key: string) {
             const selector = `[data-bit-bh-item="${CSS.escape(key)}"]`;
+            const excluded = `${selector}, [aria-hidden="true"]`;
             const ownText = (el: Element) => {
-                if (!el.querySelector(selector)) return el.textContent ?? '';
+                if (!el.querySelector(excluded)) return el.textContent ?? '';
                 const clone = el.cloneNode(true) as Element;
-                clone.querySelectorAll(selector).forEach((nested) => nested.remove());
+                clone.querySelectorAll(excluded).forEach((nested) => nested.remove());
                 return clone.textContent ?? '';
             };
             return Array.from(document.querySelectorAll(selector))
@@ -1553,16 +1602,31 @@ function createRuntime() {
         return null;
     }
 
+    // A scroll container's padding-top (where its first item starts) and its scroll-padding (how far from the
+    // edges an item scrolled into view stays).
+    function scrollInsets(el: Element) {
+        const style = getComputedStyle(el);
+        return {
+            paddingTop: parseFloat(style.paddingTop) || 0,
+            top: parseFloat(style.scrollPaddingTop) || 0,
+            bottom: parseFloat(style.scrollPaddingBottom) || 0,
+        };
+    }
+
     const dom = {
         scrollIntoView(id: ElementLike, block?: ScrollLogicalPosition) {
             const el = byId(id);
             if (!el) return;
             const parent = scrollParent(el);
             if (parent) {
-                const pr = parent.getBoundingClientRect();
+                // What the container shows is its padding box (inside the borders), less its scroll-padding.
+                const insets = scrollInsets(parent);
+                const top = parent.getBoundingClientRect().top + parent.clientTop;
+                const visibleTop = top + insets.top;
+                const visibleBottom = top + parent.clientHeight - insets.bottom;
                 const er = el.getBoundingClientRect();
-                if (er.top < pr.top) parent.scrollTop -= pr.top - er.top;
-                else if (er.bottom > pr.bottom) parent.scrollTop += er.bottom - pr.bottom;
+                if (er.top < visibleTop) parent.scrollTop -= visibleTop - er.top;
+                else if (er.bottom > visibleBottom) parent.scrollTop += er.bottom - visibleBottom;
             } else {
                 el.scrollIntoView({ block: block || 'nearest', inline: 'nearest' });
             }
@@ -1573,9 +1637,11 @@ function createRuntime() {
             if (!container) return;
             const el = itemId ? document.getElementById(itemId) : null;
             if (el) { dom.scrollIntoView(itemId); return; }
-            const top = index * itemSize;
-            if (top < container.scrollTop) container.scrollTop = top;
-            else if (top + itemSize > container.scrollTop + container.clientHeight) container.scrollTop = top + itemSize - container.clientHeight;
+            const insets = scrollInsets(container);
+            const top = insets.paddingTop + index * itemSize;
+            if (top - insets.top < container.scrollTop) container.scrollTop = top - insets.top;
+            else if (top + itemSize + insets.bottom > container.scrollTop + container.clientHeight)
+                container.scrollTop = top + itemSize + insets.bottom - container.clientHeight;
         },
         click(id: ElementLike) {
             byId(id)?.click();
@@ -1618,16 +1684,23 @@ function createRuntime() {
         return liveRoot.querySelector(`[data-bit-bh-politeness="${politeness === 'assertive' ? 'assertive' : 'polite'}"]`);
     }
 
+    // Which announcement a region holds: the timers of an earlier one - even of the same text - must not
+    // set or clear the region once a newer announcement has taken it over.
+    const liveGeneration = new WeakMap<Element, number>();
+
     const announcer = {
         announce(message: string, politeness: string, clearAfterMs: number) {
             const region = liveRegion(politeness);
             if (!region) return;
+            const generation = (liveGeneration.get(region) ?? 0) + 1;
+            liveGeneration.set(region, generation);
             region.textContent = '';
             // A short delay ensures screen readers notice the change even when the
             // same message is announced twice in a row.
             setTimeout(() => {
+                if (liveGeneration.get(region) !== generation) return;
                 region.textContent = message;
-                if (clearAfterMs > 0) setTimeout(() => { if (region.textContent === message) region.textContent = ''; }, clearAfterMs);
+                if (clearAfterMs > 0) setTimeout(() => { if (liveGeneration.get(region) === generation) region.textContent = ''; }, clearAfterMs);
             }, 50);
         },
         clear() {

@@ -97,7 +97,10 @@ public abstract class BitBhMenuContentBase : BitBhFloatingContentBase
 
         builder.AddAttribute(40, "onkeydown",
             On<KeyboardEventArgs>("onkeydown", e => Level.HandleKeyDownAsync(e)));
-        builder.AddEventStopPropagationAttribute(41, "onkeydown", IsOpen);
+        // Always, not just while open: on WebAssembly the handler runs - and re-renders the panel closed - before
+        // Blazor reads this flag, so an Escape or ArrowLeft that closes a submenu would reach the parent menu's
+        // handler too and close or move it as well. The panel only exists while open (or animating out).
+        builder.AddEventStopPropagationAttribute(41, "onkeydown", true);
         builder.AddAttribute(42, "onfocus",
             On<FocusEventArgs>("onfocus", () => Level.HasFocus = true));
         builder.AddAttribute(43, "onblur",

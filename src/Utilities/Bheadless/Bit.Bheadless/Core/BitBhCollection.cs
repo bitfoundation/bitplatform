@@ -40,6 +40,7 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
     private readonly List<TItem> _items = new();
     private int _version;
     private int _syncedVersion;
+    private bool _orderStale;
     private Task? _syncTask;
     private Dictionary<string, string>? _domText;
 
@@ -84,6 +85,13 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
         Changed?.Invoke();
     }
 
+    /// <summary>
+    /// Marks the document order as unknown, so the next <see cref="EnsureOrderAsync"/> reads it again: for
+    /// items that may have moved without joining or leaving - a re-sorted list whose items keep their
+    /// components through <c>@key</c>.
+    /// </summary>
+    public void Invalidate() => _orderStale = true;
+
     /// <summary>Returns the index of <paramref name="item"/>, or -1.</summary>
     public int IndexOf(TItem? item) => item is null ? -1 : _items.IndexOf(item);
 
@@ -97,7 +105,7 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
     /// </summary>
     public Task EnsureOrderAsync(BitBhInterop interop)
     {
-        if (_syncedVersion == _version || _items.Count == 0)
+        if ((_syncedVersion == _version && !_orderStale) || _items.Count == 0)
             return Task.CompletedTask;
         if (_syncTask is not null)
             return _syncTask;
@@ -120,7 +128,7 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
         try
         {
             // Loop while members keep arriving during the round-trip.
-            for (var attempt = 0; attempt < 3 && _syncedVersion != _version && _items.Count > 0; attempt++)
+            for (var attempt = 0; attempt < 3 && (_syncedVersion != _version || _orderStale) && _items.Count > 0; attempt++)
                 await SyncOnceAsync(interop);
         }
         finally
@@ -132,6 +140,7 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
     private async Task SyncOnceAsync(BitBhInterop interop)
     {
         var target = _version;
+        _orderStale = false;
         var entries = await interop.CollectionOrderAsync(Key);
         var changed = false;
         if (entries is { Length: > 0 })

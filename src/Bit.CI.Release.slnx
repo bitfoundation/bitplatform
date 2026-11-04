@@ -419,7 +419,7 @@
     <Project Path="Utilities/Bheadless/Bit.Bheadless.Testing/Bit.Bheadless.Testing.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bheadless/Demo/">
-    <Project Path="Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server/Bit.Bheadless.Demo.Server.csproj" />
+    <Project Path="Utilities/Bheadless/Demo/Server/Bit.Bheadless.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bheadless/Demo/Client/">
     <Project Path="Utilities/Bheadless/Demo/Client/Bit.Bheadless.Demo.Client.Core/Bit.Bheadless.Demo.Client.Core.csproj" />

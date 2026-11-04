@@ -5,7 +5,8 @@ namespace Bit.Bheadless.Tests.E2E.Infrastructure;
 
 /// <summary>
 /// axe-core - the copy Deque.AxeCore.Commons bundles - run inside the page under test over the demo content
-/// (<c>main</c>; the site's chrome is out of scope), against the WCAG 2.0-2.2 A and AA rules and axe's best practices.
+/// (<see cref="DemoTest.Content"/>; the site's chrome - header, docs navigation, breadcrumb, pager, rail - is out of
+/// scope), against the WCAG 2.0-2.2 A and AA rules and axe's best practices.
 /// </summary>
 /// <remarks>
 /// Not through Deque.AxeCore.Playwright's <c>RunAxe</c>: that runs axe in parts, frame by frame, and finishes the run in a
@@ -22,7 +23,7 @@ public static class Axe
     /// Every violation under <paramref name="include"/>, once the page is at rest: its impact, rule and help, then for up
     /// to five of its nodes the selector, the markup and what axe says is wrong.
     /// </summary>
-    public static async Task<string[]> ViolationsAsync(IPage page, string include = "main")
+    public static async Task<string[]> ViolationsAsync(IPage page, string include = DemoTest.Content)
     {
         await WaitForRestAsync(page);
 

@@ -1,7 +1,8 @@
 ﻿@* The demo's code viewer, not part of the library: a sample's source in the site kit's pre.bb-code, which site.js
-   gives a copy button, coloured by SyntaxHighlighter (its token colours are in demo.css). *@
+   gives a copy button, coloured by SyntaxHighlighter (src/Utilities/Shared/Demo; its token colours are in demo.css). *@
 
 @namespace Bit.Blow.Demo.Client.Examples
+@using Bit.Utilities.Demo
 
 <pre class="@(Class is null ? "bb-code" : $"bb-code {Class}")" @attributes="AdditionalAttributes"><code>@_html</code></pre>
 

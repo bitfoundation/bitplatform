@@ -80,6 +80,11 @@ public class BitBhCloseButton : BitBhComponentBase
         Tag.Equals("button", StringComparison.OrdinalIgnoreCase)
         || Tag.Equals("input", StringComparison.OrdinalIgnoreCase);
 
+    // A link with an href is focusable, activates with Enter and is announced as a link on its own: it keeps
+    // that role rather than becoming a button.
+    private bool IsLink =>
+        Tag.Equals("a", StringComparison.OrdinalIgnoreCase) && GetAdditionalAttribute("href") is not null;
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, Tag);
@@ -90,7 +95,7 @@ public class BitBhCloseButton : BitBhComponentBase
         builder.AddAttribute(30, "onclick",
             On<MouseEventArgs>("onclick", HandleClickAsync));
 
-        if (!IsNativeButton)
+        if (!IsNativeButton && !IsLink)
         {
             builder.AddAttribute(40, "onkeydown",
                 On<KeyboardEventArgs>("onkeydown", HandleKeyDownAsync));
@@ -114,6 +119,11 @@ public class BitBhCloseButton : BitBhComponentBase
             attrs["type"] = "button";
             if (Disabled)
                 attrs["disabled"] = true;
+        }
+        else if (IsLink)
+        {
+            if (Disabled)
+                attrs["aria-disabled"] = "true";
         }
         else
         {

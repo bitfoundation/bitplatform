@@ -159,4 +159,40 @@
         cut.Find("input").Press("Enter");
         Assert.IsFalse(cut.FindComponent<Stateful<bool>>().Instance.Value);
     }
+
+    [TestMethod]
+    public void Ctrl_J_and_Ctrl_K_are_left_to_the_palette_shortcut()
+    {
+        // Ctrl+K opens a command palette everywhere but macOS: as a "previous item" alias it did both at once.
+        var cut = Render(Palette());
+        cut.Find("input").Press("j", ctrl: true);
+        Assert.AreEqual("Calendar", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("n", ctrl: true);
+        Assert.AreEqual("Search emoji", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("k", ctrl: true);
+        Assert.AreEqual("Search emoji", Text(ActiveOf(cut.Find("input"))));
+
+        var claimed = cut.Find("input").GetAttribute("data-bit-bh-keys")!.Split(' ');
+        Assert.DoesNotContain("Ctrl+k", claimed);
+        Assert.DoesNotContain("Ctrl+j", claimed);
+    }
+
+    [TestMethod]
+    public void A_pointermove_that_did_not_move_leaves_the_highlight_to_the_keyboard()
+    {
+        // WebKit sends a pointermove at the same coordinates when the list scrolls under a resting pointer.
+        var cut = Render(Palette());
+        AngleSharp.Dom.IElement Option(string text) => cut.FindAll("[role=option]").First(o => o.TextContent.Contains(text));
+
+        Option("Profile").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
+        Assert.AreEqual("Profile", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Billing", Text(ActiveOf(cut.Find("input"))));
+
+        Option("Calendar").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
+        Assert.AreEqual("Billing", Text(ActiveOf(cut.Find("input"))));
+
+        Option("Calendar").PointerMove(new PointerEventArgs { ClientX = 41, ClientY = 120 });
+        Assert.AreEqual("Calendar", Text(ActiveOf(cut.Find("input"))));
+    }
 }

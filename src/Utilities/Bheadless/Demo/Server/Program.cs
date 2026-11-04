@@ -1,11 +1,19 @@
 ﻿using Bit.Bheadless.Demo.Client.Core;
+using Bit.Bheadless.Demo.Client.Core.Services;
 using Bit.Bheadless.Demo.Server.Services;
 using Bit.Bheadless.Demo.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Blazor Server is always registered: Debug builds render in it (see AppRenderMode), and App.razor falls
-// back to it whenever the WASM client is not part of the build.
+#if !INCLUDE_WASM
+// The client project can't tell on its own: a Release build defaults it to WebAssembly whether or not this
+// build ships the WASM client (-p:IncludeWasm=false). Without the client a WebAssembly render mode can't boot,
+// so every page - App.razor's root components and MainLayout's island on a static page - runs on Blazor Server.
+AppRenderMode.WasmEnabled = false;
+#endif
+
+// Blazor Server is always registered: Debug builds render in it (see AppRenderMode), and so does any build
+// that leaves the WASM client out.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
 #if INCLUDE_WASM
