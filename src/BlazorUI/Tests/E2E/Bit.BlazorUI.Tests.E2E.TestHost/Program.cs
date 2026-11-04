@@ -14,10 +14,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Every error the host logs is kept for the tests to read (/api/server-errors): a component that throws while it is
 // disposed, or a circuit an unhandled exception tears down, shows nothing on the page itself.
 builder.Logging.AddProvider(new ServerErrorLog());
-// ASP.NET Core logs every request it serves at Information, and in wasm mode every test has its browser fetch the
-// WebAssembly runtime and every assembly afresh - over 200 requests a test, well over a million in a full run, a host
-// log of gigabytes and the time to write it. Nothing reads them; ServerErrorLog keeps only the warnings and errors.
-builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
+// ASP.NET Core logs every request it serves at Information - its start and end, the endpoint it ran, the file it
+// sent, the result an API returned - and in wasm mode every test has its browser fetch the WebAssembly runtime and every
+// assembly afresh: over 200 requests a test, well over a million in a full run, a host log of gigabytes and the time to
+// write it. Those categories are kept to their warnings; the requests that failed are still logged, by the middleware
+// below, and every other category logs as it did.
+foreach (var category in (string[])["Microsoft.AspNetCore.Hosting.Diagnostics", "Microsoft.AspNetCore.Routing", "Microsoft.AspNetCore.StaticAssets",
+                                    "Microsoft.AspNetCore.StaticFiles", "Microsoft.AspNetCore.Http.Result"])
+{
+    builder.Logging.AddFilter(category, LogLevel.Warning);
+}
 // Which pages each circuit was on, so a test reads the errors of its own pages alone (?paths=...).
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitPaths>();
 
@@ -44,6 +50,20 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 var app = builder.Build();
+
+// Every request the host could not answer, which the filters above leave out of its log otherwise: a WebAssembly boot
+// that fails on a missing _framework or _content file shows here as a 404. At Information, below what ServerErrorLog
+// keeps, so no test is failed by one - /api/upload-fail answers 500 on purpose.
+var requestLog = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Bit.BlazorUI.Tests.E2E.TestHost.FailedRequests");
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.Response.StatusCode >= 400)
+    {
+        requestLog.LogInformation("{Method} {Path}{Query} answered {StatusCode}", context.Request.Method, context.Request.Path, context.Request.QueryString, context.Response.StatusCode);
+    }
+});
 
 if (app.Environment.IsDevelopment() is false)
 {

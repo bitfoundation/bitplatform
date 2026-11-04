@@ -47,6 +47,15 @@ it:
 dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net11.0 --urls http://localhost:5290
 ```
 
+That host is a Debug build. CI runs a Release one (see CI), which is not the same code: the libraries' bundles
+(`bit.blazorui*.js`) are minified, the IL is optimized, and the WebAssembly client carries no symbols and no hot
+reload agent. A test that fails only in CI is reproduced against the same build:
+
+```bash
+dotnet build Bit.BlazorUI.Tests.E2E.TestHost -c Release -f net11.0
+dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost -c Release --no-build --framework net11.0 --urls http://localhost:5290
+```
+
 | Variable | Meaning |
 |----------|---------|
 | `E2E_RENDER_MODE` | `server` (default, InteractiveServer) or `wasm` (InteractiveWebAssembly) |
@@ -55,8 +64,9 @@ dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net11.0 --urls 
 | `E2E_HOST_URL` | the host to drive instead of `http://localhost:5290` |
 
 Filter as usual: `dotnet test -f net11.0 --filter "FullyQualifiedName~BitButtonE2ETests"`. Test classes run four at
-a time (`E2ETestRun.cs`); the tests of a class run in order. The whole suite is about 6,800 tests and takes roughly
-a quarter of an hour on Chromium. On a loaded machine a Blazor Server circuit can time out or a fast keystroke can be
+a time (`E2ETestRun.cs`); the tests of a class run in order. The whole suite is about 7,500 tests (`dotnet exec
+bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll --list-tests` counts them) and takes roughly a quarter of an hour on
+Chromium. On a loaded machine a Blazor Server circuit can time out or a fast keystroke can be
 lost; a test that fails only in the full run and passes alone is load, not a regression.
 
 If `dotnet test` reports that zero tests ran, run the built assembly directly:
@@ -124,9 +134,19 @@ from a warm cache - so a `wasm` run takes about five times longer than a `server
 ## CI
 
 `.github/workflows/bit.ci.BlazorUI.e2e.yml` runs the whole suite on demand only (Actions > "bit platform CI - BlazorUI
-E2E" > Run workflow): one job per browser engine and render mode, narrowed through its inputs (engines, modes, an
-optional test filter). The host is built in Release. A `wasm` job would not finish the whole suite in the time a job
-is given, so without a filter each engine's `wasm` run is split by namespace into three jobs (`inputs-surfaces`,
-`extras-utilities`, and `others` for every namespace the first two do not name). The run stops itself
-(`--timeout`) before the job's own limit, so the test results (TRX) are written even for a run that overruns; they
-and the host's log are uploaded as artifacts of each job.
+E2E" > Run workflow), narrowed through its inputs (engines, modes, an optional test filter):
+
+- One job builds the host (in Release) and the tests, and every test job downloads that build: the host runs from its
+  build output, in Development as `dotnet run` would start it.
+- That job also lists the tests the run selects (`--list-tests`, with the filter) and deals them, a test class at a
+  time and the largest first, into as many shards per render mode as `E2E_SERVER_TESTS_PER_JOB` /
+  `E2E_WASM_TESTS_PER_JOB` allow, each class into the shard with the fewest tests so far. A `wasm` test runs about five
+  times as long as a `server` one, so the `wasm` tests take several jobs per engine where the `server` ones take one;
+  the shards rebalance by themselves as tests and classes are added, and a filter is applied within them. The run's
+  summary shows each shard's tests.
+- Each job's test run stops itself (`--timeout`) `E2E_RESERVE_MINUTES` before the job's limit (`E2E_JOB_MINUTES`),
+  counted from the start of the job, so the test results (TRX) are written even for a run that overruns.
+
+The TRX and the host's log are uploaded as artifacts of each job. The host logs no request it answered, only the ones
+it failed (`FailedRequests`: a 404 of a `_framework` file is what a broken WebAssembly boot looks like), along with
+every warning and error.
