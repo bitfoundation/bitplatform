@@ -1,0 +1,533 @@
+﻿@page "/components/resourcetimeline"
+
+<PageOutlet Url="components/resourcetimeline"
+            Title="ResourceTimeline"
+            Description="BitResourceTimeline is a resource planner: allocation bars on resource rows along a zoomable, time-zone-aware time axis, drawn by a canvas, SVG or HTML renderer, with selection, editing and on-demand loading." />
+
+<div>
+    <DemoPage Name="ResourceTimeline"
+              SecondaryNames="@(["ResourceScheduler", "Gantt", "ResourcePlanner"])"
+              Description="BitResourceTimeline is a high-performance resource timeline - a planner or scheduler with the time along the horizontal axis, the resources down the vertical one and the allocations drawn as bars in between, for gate and fleet planning, crew rosters, machine schedules and the like. One engine lays the board out and drives it while a canvas, SVG or HTML renderer paints it, so tens of thousands of bars stay fluid. It zooms from weeks down to minutes, selects and navigates with the pointer and the keyboard, edits (move, resize, create, copy, paste and delete) under the app's control, nests resources into collapsible groups, draws its axes in any time zone and locale, streams large data sets or loads them window by window on demand, and takes templates for its resource column, its tooltips and its corner."
+              Parameters="componentParameters"
+              CssVariables="componentCssVariables"
+              PublicMembers="componentPublicMembers"
+              SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
+              GitHubExtrasUrl="ResourceTimeline/BitResourceTimeline.razor"
+              GitHubDemoUrl="Extras/ResourceTimeline/BitResourceTimelineDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                To use this component, you need to install the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Extras"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, as described in the Optional steps of the
+                <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+            <br />
+            <BitText>
+                The timeline fills its container, so give the element around it a height. Its axes are laid out left to
+                right whatever the direction of the page.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                <div>
+                    A <b>Config</b> is all the timeline needs: its <b>Resources</b> down the vertical axis, the time range
+                    from <b>StartDate</b> to <b>EndDate</b> along the horizontal one, and the <b>Allocations</b> drawn as
+                    bars between them, each on the row its <b>ResourceId</b> names. It opens with one day in view: scroll
+                    sideways for the rest, hover a bar for its tooltip, and zoom with Ctrl + wheel or a pinch. The Config
+                    is compared by reference, so a new instance is what reloads it.
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="basicConfig" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Resource hierarchy" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+                <div>
+                    A resource whose <b>ParentId</b> names another one is nested under it, to any depth: the parent becomes
+                    a group row, indented by its depth, that a click expands or collapses. <b>Collapsed</b> starts a group
+                    closed (Terminal B). A group row can still hold bars of its own, like the cleaning and the inspection
+                    of Terminal A.
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="hierarchyConfig" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Bar appearance" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
+                <div>
+                    Each allocation can look its own way. <b>Color</b> fills the bar and <b>Height</b> sets its thickness
+                    (4px unless it is given); <b>TextAbove</b>, <b>TextBelow</b>, <b>TextStart</b> and <b>TextEnd</b> label
+                    it on every side; <b>StartBar</b> and <b>EndBar</b> draw edge bars before and after it, here a delay;
+                    and <b>Tooltip</b> replaces the default hover text. <b>Icons</b> anchor images - URLs or data URIs - at
+                    the <b>Position</b> Start, End, Above, Below or Center of the bar, beside it or, with <b>Inside</b>,
+                    within it, in a box of <b>Size</b> pixels. Labels and icons are left out of bars too narrow for them.
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="appearanceConfig" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Bar sections" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
+                <div>
+                    <b>Sections</b> split a bar into parts with colors, text and an icon of their own - the phases of a
+                    turnaround, the part of a job that has run. A section is bounded by times (<b>StartTime</b>,
+                    <b>EndTime</b>) or by percentages of the bar (<b>StartPercent</b>, <b>EndPercent</b>), an edge given
+                    neither way is the bar's own, and it always stays within the bar. <b>BackgroundColor</b>,
+                    <b>BorderColor</b> and <b>ForegroundColor</b> paint it, and its <b>Text</b> and <b>Icon</b> (fitted in
+                    <b>IconSize</b>) sit at their <b>TextPosition</b> and <b>IconPosition</b>. What does not fit is left out
+                    rather than cut, so give a sectioned bar a Height its text fits in.
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="sectionsConfig" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Renderers" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
+                <div>
+                    <b>Options</b> carries the visual configuration of the timeline, and its <b>Renderer</b> picks what
+                    paints it: <b>Canvas</b> (the default, and the fastest on dense data), <b>Svg</b> (vector output,
+                    inspectable and print friendly) or <b>Html</b> (a real element per visible bar, carrying its id in
+                    data-bar-id). One engine drives all three, so the data, the interaction and the events are the same.
+                    Options is compared by reference, so a new instance is what applies a change - here, a switch of the
+                    renderer at runtime. On the HTML renderer the <b>ClassName</b> of an allocation lands on the element of
+                    its bar for your own CSS: switch to Html to see the flights already gone hatched.
+                </div>
+                <br />
+                <BitChoiceGroup Label="Renderer" Horizontal
+                                TItem="BitChoiceGroupOption<BitResourceTimelineRendererType>" TValue="BitResourceTimelineRendererType"
+                                @bind-Value="renderer" @bind-Value:after="() => rendererOptions = new() { Renderer = renderer }">
+                    <BitChoiceGroupOption Text="Canvas" Value="BitResourceTimelineRendererType.Canvas" />
+                    <BitChoiceGroupOption Text="Svg" Value="BitResourceTimelineRendererType.Svg" />
+                    <BitChoiceGroupOption Text="Html" Value="BitResourceTimelineRendererType.Html" />
+                </BitChoiceGroup>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="rendererConfig" Options="rendererOptions" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Navigation & zoom" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
+                <div>
+                    A reference to the timeline drives its view. <b>PanByDaysAsync</b> moves it by whole days without
+                    changing the zoom - 24 hours a step, or to a local midnight with <b>PanToDayStart</b> - and
+                    <b>GoToTodayAsync</b> centers the current time, which <b>AutoScrollToNow</b> does as the first load
+                    lands. <b>ZoomInAsync</b>, <b>ZoomOutAsync</b>, <b>ZoomToDaysAsync</b> (that many days fill the view)
+                    and <b>SetPixelsPerHourAsync</b> zoom around the center within <b>MinPixelsPerHour</b> and
+                    <b>MaxPixelsPerHour</b>, <b>ResetZoomAsync</b> returns to <b>PixelsPerHour</b> (one day in view while it
+                    is not set), and <b>ScrollToTimeAsync</b> centers any time. <b>OnViewChanged</b> reports the visible
+                    range and the scale, at most once a frame. Ctrl + wheel, a pinch, PageUp / PageDown and
+                    Ctrl + plus / minus / 0 do the same from the input devices.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.PanByDaysAsync(-7)">« Week</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.PanByDaysAsync(-1)">‹ Day</BitButton>
+                    <BitButton OnClick="() => navigationRef.GoToTodayAsync()">Today</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.PanByDaysAsync(1)">Day ›</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.PanByDaysAsync(7)">Week »</BitButton>
+                    <BitToggle @bind-Value="panToDayStart" @bind-Value:after="() => navigationOptions = CreateNavigationOptions(panToDayStart)" Label="PanToDayStart" Inline />
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomOutAsync()">Zoom out</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomInAsync()">Zoom in</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomToDaysAsync(1)">1 day</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomToDaysAsync(3)">3 days</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ZoomToDaysAsync(7)">7 days</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.SetPixelsPerHourAsync(120)">120 px/h</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ResetZoomAsync()">Reset zoom</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => navigationRef.ScrollToTimeAsync(BitResourceTimelineDemoData.Today.AddDays(1).AddHours(12))">Tomorrow noon</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline @ref="navigationRef"
+                                         Config="navigationConfig"
+                                         Options="navigationOptions"
+                                         OnViewChanged="view => navigationView = view" />
+                </div>
+                <div class="readout">@NavigationText</div>
+            </DemoExample>
+
+            <DemoExample Title="Selection & pointer events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
+                <div>
+                    A click selects a bar, Ctrl / Cmd + click toggles one, Shift + click selects a range and a drag on empty
+                    content draws a marquee; from the keyboard the arrows move between the bars, Enter selects and Escape
+                    clears. <b>OnSelectionChanged</b> reports the selected bars - the very instances of the Config - when
+                    the set changes, and <b>SelectAsync</b>, <b>ClearSelectionAsync</b> and <b>GetSelectedBarsAsync</b>
+                    drive it from code, with <b>ScrollToAllocationAsync</b> and <b>ScrollToResourceAsync</b> bringing a bar
+                    or a row into view. <b>OnClick</b>, <b>OnDoubleClick</b> and <b>OnContextMenu</b> (a right-click, the
+                    browser's menu suppressed) say what was under the pointer - the area, the resource, the time and the
+                    bar - with the coordinates to place a menu of your own at.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="SelectNextFlights">Select the next 3 flights</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="ScrollToSelection">Scroll to the selection</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick='() => selectionRef.ScrollToResourceAsync("A12")'>Scroll to Gate A12</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => selectionRef.ClearSelectionAsync()">Clear the selection</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline @ref="selectionRef"
+                                         Config="selectionConfig"
+                                         Options="selectionOptions"
+                                         OnSelectionChanged="bars => selectedBars = bars"
+                                         OnClick="args => clickText = DescribePointer(args)"
+                                         OnDoubleClick="args => doubleClickText = DescribePointer(args)"
+                                         OnContextMenu="args => contextMenuText = DescribePointer(args)" />
+                </div>
+                <div class="readout">Selected: @(selectedBars.Length == 0 ? "nothing" : string.Join(", ", selectedBars.Select(b => b.TextAbove)))</div>
+                <div class="readout">Click: @clickText</div>
+                <div class="readout">Double-click: @doubleClickText</div>
+                <div class="readout">Right-click: @contextMenuText</div>
+            </DemoExample>
+
+            <DemoExample Title="Editing" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" CodeFiles="@example8CodeFiles" Id="example8">
+                <div>
+                    With <b>Editable</b> a bar is dragged to move it in time - and onto another row unless
+                    <b>AllowResourceChange</b> is off - or by an edge to resize it, snapped to <b>EditSnapMinutes</b>;
+                    Alt + arrows do the same from the keyboard, and a drag of one of several selected bars moves them all.
+                    Before a change is committed <b>OnAllocationChanging</b> (one bar) and <b>OnAllocationsChanging</b>
+                    (several) can refuse it - here, any flight that would start in the past - and the bars snap back without
+                    a reload; <b>OnAllocationChanged</b> then reports each accepted change on the very instance of the
+                    Config. With <b>EmptyDragAction</b> set to Create a drag on empty content draws a new bar that
+                    <b>OnAllocationCreating</b> builds, Ctrl / Cmd + C and V copy and paste through
+                    <b>OnAllocationsCopying</b>, and with <b>AllowDelete</b> Delete / Backspace removes the selection once
+                    <b>OnAllocationsDeleting</b> agrees - the timeline never invents ids. <b>Locked</b> bars, the flights at
+                    their gates right now, can be selected but not moved, resized or (here) deleted.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitToggle @bind-Value="allowResourceChange" @bind-Value:after="() => editingOptions = CreateEditingOptions(allowResourceChange)" Label="AllowResourceChange" Inline />
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="editingConfig"
+                                         Options="editingOptions"
+                                         OnAllocationChanging="HandleAllocationChanging"
+                                         OnAllocationsChanging="HandleAllocationsChanging"
+                                         OnAllocationChanged="HandleAllocationChanged"
+                                         OnAllocationCreating="HandleAllocationCreating"
+                                         OnAllocationsCopying="HandleAllocationsCopying"
+                                         OnAllocationsDeleting="HandleAllocationsDeleting" />
+                </div>
+                <div class="log">
+                    @foreach (var line in editLog)
+                    {
+                        <div>@line</div>
+                    }
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Overlap & stacking" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
+                <div>
+                    Bars overlapping in time on one row are stacked into lanes <b>BarMargin</b> pixels apart, and the row
+                    grows to hold them (<b>ResourceHeight</b> is its minimum, <b>BarHeight</b> the thickness of a bar).
+                    <b>StackLabelClearance</b> widens the gap by the room the labels and icons of the bars need (Gate A3),
+                    and <b>StackOnLabelCollision</b> also stacks bars whose labels would collide though their times do not
+                    (Gate A2); both are on by default. <b>MaxStackLanes</b> caps a stack: the bars beyond it hide behind a
+                    +N marker that lists them on hover and selects them on click. While editing, turning
+                    <b>AllowOverlap</b> off refuses a move or a resize that would overlap another unlocked bar of its row -
+                    drag a bar onto the one of Gate A4.
+                </div>
+                <br />
+                <BitChoiceGroup Label="MaxStackLanes" Horizontal
+                                TItem="BitChoiceGroupOption<int>" TValue="int"
+                                @bind-Value="maxStackLanes" @bind-Value:after="UpdateOverlapOptions">
+                    <BitChoiceGroupOption Text="Unlimited" Value="0" />
+                    <BitChoiceGroupOption Text="3" Value="3" />
+                    <BitChoiceGroupOption Text="2" Value="2" />
+                </BitChoiceGroup>
+                <br />
+                <div class="toolbar">
+                    <BitToggle @bind-Value="stackLabelClearance" @bind-Value:after="UpdateOverlapOptions" Label="StackLabelClearance" Inline />
+                    <BitToggle @bind-Value="stackOnLabelCollision" @bind-Value:after="UpdateOverlapOptions" Label="StackOnLabelCollision" Inline />
+                    <BitToggle @bind-Value="allowOverlap" @bind-Value:after="UpdateOverlapOptions" Label="AllowOverlap" Inline />
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="overlapConfig" Options="overlapOptions" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Working time & surface" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" CodeFiles="@example10CodeFiles" Id="example10">
+                <div>
+                    <b>NonWorkingDays</b> (0 = Sunday ... 6 = Saturday) and <b>WorkingHoursStart</b> /
+                    <b>WorkingHoursEnd</b> (minutes from midnight) wash the weekends and the hours off. <b>Surface</b>
+                    colors the content under the grid and the bars: its <b>Columns</b> stripe it by day, by hour (a
+                    <b>Span</b> of 8 makes three shifts, <b>Align</b> Repeat restarts them every day) or by week, its
+                    <b>Rows</b> stripe the resource rows, <b>ResourceColors</b> gives a row a color of its own,
+                    <b>Combine</b> Checker crosses the two, and <b>Bands</b> paint explicit ranges across every row or along
+                    one; <b>ShadeTimeAxis</b> and <b>ShadeResourceAxis</b> carry the colors into the axes. <b>AxisLines</b>
+                    recolors the grid lines, here every midnight and every row. The <b>Background</b> and the
+                    <b>LineColor</b> of a resource win over all of it (Gate A3, Gate A5). A new Surface or AxisLines
+                    replaces the previous one as a whole, and an empty one clears it.
+                </div>
+                <br />
+                <BitChoiceGroup Label="Surface" Horizontal
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
+                                @bind-Value="surfacePreset" @bind-Value:after="UpdateSurfaceOptions">
+                    <BitChoiceGroupOption Text="None" Value="@("none")" />
+                    <BitChoiceGroupOption Text="Days" Value="@("days")" />
+                    <BitChoiceGroupOption Text="Shifts" Value="@("shifts")" />
+                    <BitChoiceGroupOption Text="Rows" Value="@("rows")" />
+                    <BitChoiceGroupOption Text="Checker" Value="@("checker")" />
+                    <BitChoiceGroupOption Text="Bands" Value="@("bands")" />
+                </BitChoiceGroup>
+                <br />
+                <BitToggle @bind-Value="axisLines" @bind-Value:after="UpdateSurfaceOptions" Label="AxisLines" Inline />
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="surfaceConfig" Options="surfaceOptions" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Time zone & locale" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" CodeFiles="@example11CodeFiles" Id="example11">
+                <div>
+                    The axes are drawn in the viewer's time zone unless <b>TimeZone</b> names an IANA one; the bars are
+                    absolute instants, so only the axis moves under them. <b>ShowUtcTime</b> adds a second hour row in UTC -
+                    half an hour off under the +05:30 of Kolkata - and a taller <b>TimeAxisHeight</b> gives it room.
+                    <b>Locale</b> formats the day labels, the tooltips and the announcements, <b>Hour12</b> labels the hours
+                    3 PM rather than 15, and <b>FirstDayOfWeek</b> is where the weeks of the surface start (the week start
+                    of the locale while it is not set) - zoom to seven days to see the weeks.
+                </div>
+                <br />
+                <BitChoiceGroup Label="TimeZone" Horizontal
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
+                                @bind-Value="timeZone" @bind-Value:after="UpdateZoneOptions">
+                    <BitChoiceGroupOption Text="Viewer's" Value="@("")" />
+                    <BitChoiceGroupOption Text="UTC" Value="@("UTC")" />
+                    <BitChoiceGroupOption Text="New York" Value="@("America/New_York")" />
+                    <BitChoiceGroupOption Text="Kolkata" Value="@("Asia/Kolkata")" />
+                    <BitChoiceGroupOption Text="Tokyo" Value="@("Asia/Tokyo")" />
+                </BitChoiceGroup>
+                <br />
+                <BitChoiceGroup Label="Locale" Horizontal
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
+                                @bind-Value="locale" @bind-Value:after="UpdateZoneOptions">
+                    <BitChoiceGroupOption Text="Viewer's" Value="@("")" />
+                    <BitChoiceGroupOption Text="en-US" Value="@("en-US")" />
+                    <BitChoiceGroupOption Text="de-DE" Value="@("de-DE")" />
+                    <BitChoiceGroupOption Text="ja-JP" Value="@("ja-JP")" />
+                </BitChoiceGroup>
+                <br />
+                <BitChoiceGroup Label="FirstDayOfWeek" Horizontal
+                                TItem="BitChoiceGroupOption<DayOfWeek>" TValue="DayOfWeek"
+                                @bind-Value="firstDayOfWeek" @bind-Value:after="UpdateZoneOptions">
+                    <BitChoiceGroupOption Text="Sunday" Value="DayOfWeek.Sunday" />
+                    <BitChoiceGroupOption Text="Monday" Value="DayOfWeek.Monday" />
+                    <BitChoiceGroupOption Text="Saturday" Value="DayOfWeek.Saturday" />
+                </BitChoiceGroup>
+                <br />
+                <div class="toolbar">
+                    <BitToggle @bind-Value="showUtcTime" @bind-Value:after="UpdateZoneOptions" Label="ShowUtcTime" Inline />
+                    <BitToggle @bind-Value="hour12" @bind-Value:after="UpdateZoneOptions" Label="Hour12" Inline />
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => zoneRef.ZoomToDaysAsync(1)">1 day</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => zoneRef.ZoomToDaysAsync(7)">7 days</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline @ref="zoneRef" Config="zoneConfig" Options="zoneOptions" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" CodeFiles="@example12CodeFiles" Id="example12">
+                <div>
+                    <b>ResourceTemplate</b> replaces the labels of the resource column with your own markup for each visible
+                    row, receiving its <b>Resource</b>, its <b>Depth</b> and whether it <b>HasChildren</b> or is
+                    <b>Collapsed</b>; a group row keeps its expand / collapse button before it. <b>TooltipTemplate</b>
+                    renders the hovered bar in a positioned overlay, on every renderer, instead of the built-in tooltip.
+                    <b>TopStartContent</b> fills the corner where the axes meet. <b>LoadingContent</b> replaces the spinner
+                    shown while the bars load, and <b>LoadingMinDurationMs</b> keeps it up long enough to be seen - press
+                    Reload, which assigns a new Config; <b>PreserveScrollOnReload</b> keeps the view where it was.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => templatesConfig = CreateTemplatesConfig()">Reload</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="templatesConfig" Options="templatesOptions" LoadingMinDurationMs="800">
+                        <TopStartContent>
+                            <div class="corner">
+                                <b>Gates</b>
+                                <span>flights in 2 weeks</span>
+                            </div>
+                        </TopStartContent>
+                        <ResourceTemplate Context="row">
+                            @if (row.HasChildren)
+                            {
+                                <b>@row.Resource.Name</b>
+                            }
+                            else
+                            {
+                                <div class="gate">
+                                    <span>@row.Resource.Name</span>
+                                    <span class="gate-badge">@FlightsOf(row.Resource.Id)</span>
+                                </div>
+                            }
+                        </ResourceTemplate>
+                        <TooltipTemplate Context="flight">
+                            <div class="flight-tip">
+                                <b>@flight.TextAbove</b>
+                                <span>Gate @flight.ResourceId</span>
+                                <span>@flight.StartTime.ToLocalTime().ToString("ddd HH:mm") - @flight.EndTime.ToLocalTime().ToString("HH:mm")</span>
+                            </div>
+                        </TooltipTemplate>
+                        <LoadingContent>
+                            <BitBarsLoading Size="BitSize.Small" Label="Loading the flights..." />
+                        </LoadingContent>
+                    </BitResourceTimeline>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Resource column" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+                <div>
+                    The resource column is <b>ResourceAxisWidth</b> wide (150px unless it is given) and, unless
+                    <b>ResourceAxisResizable</b> is off, resized by dragging its divider - or by focusing the divider and
+                    using the arrows, Home and End - between <b>ResourceAxisMinWidth</b> and <b>ResourceAxisMaxWidth</b>.
+                    <b>OnResourceAxisWidthChanged</b> reports the width once a resize is committed, for the app to keep and
+                    pass back.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitToggle @bind-Value="resourceAxisResizable" @bind-Value:after="() => UpdateColumnOptions(resourceAxisWidth)" Label="ResourceAxisResizable" Inline />
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => UpdateColumnOptions(120)">120px</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => UpdateColumnOptions(200)">200px</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => UpdateColumnOptions(320)">320px</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="columnConfig" Options="columnOptions" OnResourceAxisWidthChanged="UpdateColumnOptions" />
+                </div>
+                <div class="readout">ResourceAxisWidth: @resourceAxisWidth px</div>
+            </DemoExample>
+
+            <DemoExample Title="Large data" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
+                <div>
+                    The engine draws only what is in view, so tens of thousands of bars - about 40,000 here, of 160 gates
+                    over five weeks - scroll and zoom as smoothly as a handful. A data set larger than
+                    <b>LoadBatchSize</b> (10,000 by default) is streamed to the browser in batches of that size rather than
+                    in one huge interop call. A few changed bars need no reload: <b>UpsertAllocationsAsync</b> merges
+                    changed or new bars by id and <b>RemoveAllocationsAsync</b> drops bars by id, both keeping the
+                    selection, while <b>ReloadAsync</b> sends a Config changed in place again in full. The first two leave
+                    Config.Allocations as it is, so the app keeps that in step itself.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="DelayFlights">Delay 500 flights</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="CancelFlights">Cancel 500 flights</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="ShiftAllFlights">Move every flight an hour later</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline @ref="largeRef" Config="LargeConfig" Options="largeOptions" LoadBatchSize="5000" />
+                </div>
+                <div class="readout">@LargeConfig.Allocations.Count.ToString("N0") flights on @LargeConfig.Resources.Count resources@(largeStatus is null ? null : $" · {largeStatus}")</div>
+            </DemoExample>
+
+            <DemoExample Title="On-demand loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" CodeFiles="@example15CodeFiles" Id="example15">
+                <div>
+                    With <b>LoadAllocationsAsync</b> the bars are not taken from the Config, which then holds the resources
+                    and the range alone: the timeline asks for the bars of the window it needs - the visible range plus
+                    <b>WindowBufferFactor</b> views on each side - and asks again once a scroll or a zoom comes within
+                    <b>WindowRefetchThreshold</b> views of its edge, <b>WindowDebounceMs</b> after the last move. A fetch
+                    overtaken by a newer one is dropped. Here 100 gates over eight months, some 170,000 flights, are served
+                    a few thousand at a time by a simulated server.
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="windowedConfig" Options="windowedOptions" LoadAllocationsAsync="LoadWindowAsync" />
+                </div>
+                <div class="readout">@windowedStatus</div>
+            </DemoExample>
+
+            <DemoExample Title="Disabled" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" CodeFiles="@example16CodeFiles" Id="example16">
+                <div>
+                    <b>Disabled</b> makes an editable timeline view-only: it still scrolls and zooms, from the pointer and
+                    from PageUp / PageDown and Ctrl + plus / minus, but it shows no tooltips, selects and edits nothing, and
+                    raises no click, selection or editing callback - the click counter stands still while it is on.
+                </div>
+                <br />
+                <BitToggle @bind-Value="isDisabled" Label="Disabled" Inline />
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="disabledConfig"
+                                         Options="disabledOptions"
+                                         Disabled="isDisabled"
+                                         OnClick="() => disabledClicks++" />
+                </div>
+                <div class="readout">Clicks: @disabledClicks</div>
+            </DemoExample>
+
+            <DemoExample Title="Texts" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" CodeFiles="@example17CodeFiles" Id="example17">
+                <div>
+                    <b>Texts</b> holds every word of the timeline: its accessible name and role description, the loading
+                    text, the labels of the group buttons and of the column divider, the formats of its tooltips and of its
+                    +N markers, and everything it announces to screen readers. They default to English; an instance with
+                    the ones to override localizes them, and the <b>Locale</b> of the Options formats the dates to match.
+                    The <b>AriaLabel</b> parameter, when set, wins over Texts.AriaLabel.
+                </div>
+                <br />
+                <div class="toolbar">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => textsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true)">Neu laden</BitButton>
+                </div>
+                <br />
+                <div class="timeline">
+                    <BitResourceTimeline Config="textsConfig" Options="textsOptions" Texts="germanTexts" LoadingMinDurationMs="800" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" CodeFiles="@example18CodeFiles" Id="example18">
+                <div>
+                    <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name:
+                    Root, Viewport, Corner, ResourceOverlay, ResourceRow, ResourceContent, GroupToggle, TooltipOverlay,
+                    Loading, Spinner and LoadingText. The colors and the font the engine draws with follow the bit theme,
+                    light or dark, through the public <b>--bit-ResourceTimeline-*</b> custom properties (see the
+                    <BitLink Href="#css-variables-section">CSS variables</BitLink> table): set them in a Style, on an
+                    ancestor or on <code>:root</code>. The <b>Colors</b> of the Options win over them, for a palette set in
+                    code.
+                </div>
+                <br />
+                <div>Style & Class (with CSS variables):</div><br />
+                <div class="small-timeline">
+                    <BitResourceTimeline Config="styleConfig"
+                                         Style="--bit-ResourceTimeline-bar-color: #e8590c; --bit-ResourceTimeline-now-color: #2f9e44; --bit-ResourceTimeline-axis-background: rgba(232, 89, 12, 0.08);"
+                                         Class="custom-class" />
+                </div>
+                <br /><br />
+                <div>Styles:</div><br />
+                <div class="small-timeline">
+                    <BitResourceTimeline Config="styleConfig"
+                                         Styles="@(new() { Root = "border: 2px solid #9c36b5; border-radius: 0.5rem; overflow: hidden;",
+                                                           Corner = "display: flex; align-items: center; justify-content: center; color: #9c36b5; font-weight: bold;" })">
+                        <TopStartContent>Gates</TopStartContent>
+                    </BitResourceTimeline>
+                </div>
+                <br /><br />
+                <div>Classes:</div><br />
+                <div class="small-timeline">
+                    <BitResourceTimeline Config="styleConfig"
+                                         Classes="@(new() { Root = "custom-root", ResourceRow = "custom-row" })">
+                        <ResourceTemplate Context="row">@row.Resource.Name</ResourceTemplate>
+                    </BitResourceTimeline>
+                </div>
+                <br /><br />
+                <div>Options.Colors:</div><br />
+                <div class="small-timeline">
+                    <BitResourceTimeline Config="styleConfig" Options="colorsOptions" />
+                </div>
+            </DemoExample>
+        </Examples>
+    </DemoPage>
+</div>

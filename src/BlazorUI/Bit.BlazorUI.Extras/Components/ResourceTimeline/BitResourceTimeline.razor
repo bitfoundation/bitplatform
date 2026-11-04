@@ -1,0 +1,86 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@* A null written over a splatted attribute removes it, so an idle timeline writes back the aria-busy the page splatted on
+   (see BitComponentBase.GetSplattedAttribute) rather than wiping it. Disabled only takes the timeline's own interaction
+   away (its bars, its selection, its editing) while the templates it hosts stay live, so what bubbles up to the root is
+   an enabled control's own event and the root keeps the handlers the page splatted on it. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-busy="@(_isLoading ? "true" : GetSplattedAttribute("aria-busy"))">
+    @* The scroll viewport the keyboard works on. The active renderer (canvas, SVG or HTML) creates its surface inside it as
+       the script starts, and the engine keeps its data-bit-esc in step with whether an Escape press would clear a
+       selection (see Utils.claimEscape). *@
+    <div @ref="_viewportRef"
+         class="bit-rtm-vpt @Classes?.Viewport"
+         style="@Styles?.Viewport"
+         tabindex="@(TabIndex ?? "0")"
+         role="application"
+         aria-label="@(AriaLabel ?? ActiveTexts.AriaLabel)"
+         aria-roledescription="@ActiveTexts.RoleDescription"
+         aria-keyshortcuts="@KeyShortcuts"
+         aria-disabled="@(Disabled ? "true" : null)">
+    </div>
+
+    @if (TopStartContent is not null)
+    {
+        <div class="bit-rtm-cnr @Classes?.Corner" style="@JoinStyles(GetCornerStyle(), Styles?.Corner)">
+            @TopStartContent
+        </div>
+    }
+
+    @if (ResourceTemplate is not null)
+    {
+        <div class="bit-rtm-rov @Classes?.ResourceOverlay" style="@JoinStyles(GetResourceOverlayStyle(), Styles?.ResourceOverlay)">
+            <div class="bit-rtm-roi" @ref="_resourceOverlayInnerRef">
+                @foreach (var row in _resourceRows)
+                {
+                    <div @key="row.Id" class="bit-rtm-rrw @Classes?.ResourceRow" style="@JoinStyles(GetResourceRowStyle(row), Styles?.ResourceRow)">
+                        @if (row.HasChildren)
+                        {
+                            @* The glyph only shows the state the expanded attribute and the name already say. *@
+                            <button type="button"
+                                    class="bit-rtm-tgl @Classes?.GroupToggle"
+                                    style="@Styles?.GroupToggle"
+                                    disabled="@Disabled"
+                                    aria-disabled="@(Disabled ? "true" : null)"
+                                    aria-expanded="@(row.Collapsed ? "false" : "true")"
+                                    aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, row.Collapsed ? ActiveTexts.ExpandGroupFormat : ActiveTexts.CollapseGroupFormat, row.Name)"
+                                    @onclick="() => ToggleGroupAsync(row.Id)">
+                                <span class="bit-rtm-tgi@(row.Collapsed ? " bit-rtm-tgc" : null)" aria-hidden="true"></span>
+                            </button>
+                        }
+                        <div class="bit-rtm-rct @Classes?.ResourceContent" style="@Styles?.ResourceContent">
+                            @ResourceTemplate(ContextFor(row))
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (TooltipTemplate is not null && _hoverAllocation is not null)
+    {
+        <div class="bit-rtm-tov @Classes?.TooltipOverlay" style="@JoinStyles(GetTooltipOverlayStyle(), Styles?.TooltipOverlay)">
+            @TooltipTemplate(_hoverAllocation)
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <div class="bit-rtm-ldg @Classes?.Loading" style="@Styles?.Loading" role="status" aria-live="polite">
+            @if (LoadingContent is not null)
+            {
+                @LoadingContent
+            }
+            else
+            {
+                <div class="bit-rtm-spn @Classes?.Spinner" style="@Styles?.Spinner"></div>
+                <span class="bit-rtm-ldt @Classes?.LoadingText" style="@Styles?.LoadingText">@ActiveTexts.Loading</span>
+            }
+        </div>
+    }
+</div>
