@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -4688,6 +4689,34 @@ public class BitFileUploadTests : BunitTestContext
         await com.Instance.DisposeAsync();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.clear"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadDisposeShouldKeepItsDotNetReferenceUntilTheUploadersAreCleared()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        // The script answers later, the way it does in a browser: until the uploaders are cleared an upload in flight
+        // still reports its progress through the reference the files were set up with.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.FileUpload.clear", _ => true);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.FileUpload.setup");
+        var reference = (DotNetObjectReference<BitFileUpload>)setup.Arguments[1]!;
+        var fileUpload = com.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, clear.Invocations);
+        Assert.AreSame(fileUpload, reference.Value);
+
+        clear.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

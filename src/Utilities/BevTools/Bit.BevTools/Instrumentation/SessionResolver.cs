@@ -6,8 +6,10 @@ namespace Bit.BevTools;
 /// <para>
 /// Resolution order: (1) an explicit ambient session pushed by <see cref="BevToolsSession.UseAmbient"/>;
 /// (2) the session whose renderer synchronization context is current — an O(1) lookup, which is the case for
-/// everything that runs on a Blazor dispatcher; (3) a scan comparing <c>Dispatcher.CheckAccess()</c>;
-/// (4) for single-user hosts (WebAssembly, WebView, tests) the only live session.
+/// everything that runs on a Blazor dispatcher; (3) a scan comparing <c>Dispatcher.CheckAccess()</c>; (4) the session
+/// whose UI event or navigation the current <c>Activity</c> descends from, for work that left the dispatcher after it
+/// began there (a library awaiting with <c>ConfigureAwait(false)</c>); (5) for single-user hosts (WebAssembly, WebView,
+/// tests) the only live session.
 /// </para>
 /// <para>
 /// The last fallback deliberately excludes every session of a server process (<see cref="BevToolsSession.IsInMultiUserHost"/>):
@@ -22,6 +24,7 @@ internal static class SessionResolver
     private static readonly AsyncLocal<BevToolsSession?> Ambient = new();
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SynchronizationContext, WeakReference<BevToolsSession>> ByContext = new();
     private static BevToolsSession?[] _cache = [];
+    private static bool _allInMultiUserHost;
 
     public static void Register(BevToolsSession session)
     {
@@ -102,6 +105,13 @@ internal static class SessionResolver
             return null;
         }
 
+        if (SynchronizationContext.Current is null && Volatile.Read(ref _allInMultiUserHost))
+        {
+            // A server's dispatchers say yes only on their own synchronization context: without one (the request pipeline,
+            // a hosted service) none can, and a busy server would ask every circuit's on each entry it logs.
+            return ActivityObserver.SessionOfCurrentActivity() is { IsDisposed: false } fromActivity ? fromActivity : null;
+        }
+
         BevToolsSession? single = null;
         var liveCount = 0;
         foreach (var session in sessions)
@@ -126,6 +136,12 @@ internal static class SessionResolver
             }
         }
 
+        // Evidence, not a guess: the activity flowed here from that session's own event.
+        if (liveCount > 0 && ActivityObserver.SessionOfCurrentActivity() is { IsDisposed: false } byActivity)
+        {
+            return byActivity;
+        }
+
         // Single-user hosts (WebAssembly, WebView, tests) have no other candidate. A server process is excluded on
         // purpose, whatever its sessions report about themselves: "the only circuit right now" is not evidence that
         // this activity belongs to that user.
@@ -148,6 +164,9 @@ internal static class SessionResolver
             Sessions[i].TryGetTarget(out list[i]);
         }
 
+        // Read as sessions come and go, not per lookup. A session's host can only turn out to serve many users later (its
+        // platform reported), never the reverse, so a stale false only costs the scan it would have saved.
+        Volatile.Write(ref _allInMultiUserHost, list.Length > 0 && Array.TrueForAll(list, s => s is null or { IsInMultiUserHost: true }));
         Volatile.Write(ref _cache, list);
     }
 

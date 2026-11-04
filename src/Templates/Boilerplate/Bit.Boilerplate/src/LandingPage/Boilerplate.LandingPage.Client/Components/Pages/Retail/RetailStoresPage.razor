@@ -1,0 +1,93 @@
+@attribute [Route(RetailSite.Path + "/stores")]
+@attribute [Route("/{culture}" + RetailSite.Path + "/stores")]
+@layout RetailLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{R[nameof(RetailStrings.StoresTitle)]} | Northside Market")"
+             Description="@R[nameof(RetailStrings.StoresDescription)]"
+             Path="@($"{RetailSite.Path}/stores")"
+             Site="RetailSite.Info"
+             StructuredData="structuredData" />
+
+<section class="lp-container retail-stores-hero">
+    <p class="retail-stores-kicker">@R[nameof(RetailStrings.StoresKicker)]</p>
+    <h1>@R[nameof(RetailStrings.StoresTitle)]</h1>
+    <p class="lp-lede">@R[nameof(RetailStrings.StoresLede)]</p>
+</section>
+
+<div class="lp-container retail-stores">
+    <div id="retail-map" class="retail-stores-map">
+        <div class="retail-stores-frame">
+            @* A third-party frame, so it loads only once the page is interactive, and the drawn map stands in until then *@
+            @if (mapReady)
+            {
+                <iframe @key="selected" loading="lazy" src="@Selected.MapUrl" title="@R[nameof(RetailStrings.StoresMapTitle), R[Selected.NameKey]]"></iframe>
+            }
+            else
+            {
+                <RetailNorthMap Selected="@selected" Label="@R[nameof(RetailStrings.MapAlt)]" />
+                <p class="retail-stores-map-wait">@R[nameof(RetailStrings.StoresMapLoading)]</p>
+            }
+        </div>
+        <p class="retail-stores-map-caption">
+            <span>@($"Northside Market {R[Selected.NameKey]}")</span>
+            <a href="@Selected.DirectionsUrl" rel="noopener" target="_blank">@R[nameof(RetailStrings.StoresDirections)]</a>
+        </p>
+    </div>
+
+    <ul class="retail-stores-list">
+        @foreach (var shop in RetailShops.All)
+        {
+            var isSelected = shop.Key == selected;
+
+            <li class="retail-store @(isSelected ? "is-selected" : null)">
+                <div class="retail-store-head">
+                    <h2>@R[shop.NameKey]</h2>
+                    <RetailOpenState Shop="shop" Now="now" />
+                </div>
+                <p class="retail-store-address"><span dir="ltr">@shop.Address</span></p>
+                <div class="retail-store-services">
+                    <BitTag Text="@R[nameof(RetailStrings.ServiceCollect)]" Variant="BitVariant.Fill" Color="BitColor.Primary" Size="BitSize.Small" />
+                    @foreach (var service in shop.Services)
+                    {
+                        <BitTag Text="@R[service]" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Size="BitSize.Small" />
+                    }
+                </div>
+                <table class="retail-store-hours">
+                    <caption class="lp-visually-hidden">@R[nameof(RetailStrings.StoresHoursCaption), R[shop.NameKey]]</caption>
+                    <tbody>
+                        @foreach (var (days, hours) in Groups(shop))
+                        {
+                            var isToday = now is { } today && days.Contains(today.DayOfWeek);
+
+                            <tr class="@(isToday ? "is-today" : null)" aria-current="@(isToday ? "date" : null)">
+                                <th scope="row">
+                                    @DaysLabel(days)
+                                    @if (isToday)
+                                    {
+                                        <span class="retail-store-today">@R[nameof(RetailStrings.StoresToday)]</span>
+                                    }
+                                </th>
+                                <td>@R[nameof(RetailStrings.TimeRange), hours.Open.ToString("HH:mm", CurrentCulture), hours.Close.ToString("HH:mm", CurrentCulture)]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="retail-store-actions">
+                    <BitButton Href="@($"{LocalUrl($"{RetailSite.Path}/stores")}#retail-map")"
+                               OnClick="() => selected = shop.Key"
+                               Variant="@(isSelected ? BitVariant.Fill : BitVariant.Outline)"
+                               Color="BitColor.PrimaryForeground"
+                               Size="BitSize.Small"
+                               IconName="@BitIconName.MapPin">@R[nameof(RetailStrings.StoresShowOnMap)]</BitButton>
+                    <a class="retail-store-phone" href="@($"tel:{shop.Phone.Replace(" ", string.Empty)}")"><BitIcon IconName="@BitIconName.Phone" /> <span dir="ltr">@shop.Phone</span></a>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<section class="lp-container retail-stores-note" aria-labelledby="retail-stores-note-title">
+    <h2 id="retail-stores-note-title">@R[nameof(RetailStrings.StoresHolidayTitle)]</h2>
+    <p>@R[nameof(RetailStrings.StoresHolidayBody)]</p>
+</section>

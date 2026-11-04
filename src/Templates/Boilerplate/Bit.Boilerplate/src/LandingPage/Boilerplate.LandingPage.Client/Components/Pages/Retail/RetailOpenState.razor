@@ -1,0 +1,15 @@
+@inherits LandingComponentBase
+
+@if (Now is { } now)
+{
+    var status = RetailShops.StatusAt(Shop, now);
+
+    <span class="retail-open is-@status.State.ToString().ToLowerInvariant() @Class">
+        <span class="retail-open-dot" aria-hidden="true"></span>
+        @Text(status)
+    </span>
+}
+else
+{
+    <span class="retail-open is-pending @Class" aria-hidden="true"></span>
+}

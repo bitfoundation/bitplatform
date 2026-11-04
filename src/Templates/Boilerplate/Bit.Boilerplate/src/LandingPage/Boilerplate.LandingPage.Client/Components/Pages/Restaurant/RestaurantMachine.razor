@@ -1,0 +1,26 @@
+<svg class="restaurant-machine @Class" viewBox="0 0 360 320" role="img" aria-label="@Label">
+    <ellipse cx="180" cy="300" rx="150" ry="10" class="rm-shadow" />
+    <rect x="40" y="250" width="280" height="40" rx="8" class="rm-counter" />
+    <path d="M110 70C110 40 250 40 250 70Z" class="rm-copper-dark" />
+    <rect x="172" y="22" width="16" height="22" rx="4" class="rm-copper-dark" />
+    <circle cx="180" cy="18" r="9" class="rm-copper" />
+    <rect x="96" y="68" width="168" height="120" rx="16" class="rm-copper" />
+    <path d="M112 80V176M136 80V176M224 80V176M248 80V176" class="rm-shine" />
+    <circle cx="180" cy="118" r="26" class="rm-gauge" />
+    <path d="M180 118L194 104" class="rm-needle" />
+    <circle cx="180" cy="118" r="3" class="rm-pin" />
+    <rect x="80" y="186" width="200" height="22" rx="6" class="rm-chrome" />
+    @foreach (var x in groups)
+    {
+        <g transform="@FormattableString.Invariant($"translate({x} 208)")">
+            <rect x="-14" y="0" width="28" height="14" rx="3" class="rm-chrome" />
+            <path d="M0 0L-26 -96" class="rm-lever" />
+            <circle cx="-27" cy="-100" r="8" class="rm-knob" />
+            <rect x="-22" y="14" width="44" height="8" rx="4" class="rm-handle" />
+            <path d="M-4 22V36M4 22V36" class="rm-pour" />
+            <path d="M-16 38H16L13 56Q12 60 8 60H-8Q-12 60 -13 56Z" class="rm-cup" />
+            <path d="M16 42q8 0 8 6t-8 6" class="rm-cup-handle" />
+        </g>
+    }
+    <rect x="70" y="244" width="220" height="8" rx="3" class="rm-tray" />
+</svg>

@@ -1,0 +1,66 @@
+@include site(lp-hotel-software) {
+    --hs-board: #1E2124;
+    --hs-board-fg: #F3F1EC;
+    --hs-board-muted: #A9AEB5;
+    --hs-board-line: #33373C;
+    --hs-board-line-strong: #5B6067;
+    --hs-brass: #E0B54A;
+    --hs-brass-text: #7C4A00;
+    --hs-mark: #1E2124;
+    --hs-mark-detail: #E0B54A;
+    --hs-star: #B07A12;
+    --hs-clean-bg: #DCEEE2;
+    --hs-clean-fg: #1D5536;
+    --hs-dirty-bg: #F6E2BE;
+    --hs-dirty-fg: #6B4300;
+    --hs-dirty-line: #D9A441;
+    --hs-occupied-bg: #DCE3EC;
+    --hs-occupied-fg: #22344B;
+    --hs-arriving-bg: #FFF6DE;
+    --hs-arriving-fg: #6B4700;
+    --hs-arriving-line: #C9962B;
+    --hs-departing-bg: #E6EBF1;
+    --hs-departing-fg: #3E4E68;
+    --hs-ooo-bg: #F1DCD8;
+    --hs-ooo-fg: #8A2B1E;
+
+    @include type(("Archivo", system-ui, sans-serif), ("Familjen Grotesk", system-ui, sans-serif));
+    @include shape(6px, 4px);
+    @include palette(light, #2F3439, #FFFFFF, #F3F1EC, #E9E6DF, #FFFFFF, #1A1D20, #5A5F66, #D9D5CC);
+}
+
+@include site-dark(lp-hotel-software) {
+    --hs-board: #26292E;
+    --hs-board-fg: #EEEBE4;
+    --hs-board-muted: #A9AEB5;
+    --hs-board-line: #3A3E44;
+    --hs-board-line-strong: #60656C;
+    --hs-brass-text: #E0B54A;
+    --hs-mark: #E0B54A;
+    --hs-mark-detail: #1A1D20;
+    --hs-star: #E0B54A;
+    --hs-clean-bg: #17301F;
+    --hs-clean-fg: #9FD8B1;
+    --hs-dirty-bg: #3A2A0E;
+    --hs-dirty-fg: #F1CB7E;
+    --hs-dirty-line: #8A6420;
+    --hs-occupied-bg: #1F2A3A;
+    --hs-occupied-fg: #B7C8DE;
+    --hs-arriving-bg: #2C2412;
+    --hs-arriving-fg: #EBCB7C;
+    --hs-arriving-line: #B48A2E;
+    --hs-departing-bg: #252B34;
+    --hs-departing-fg: #B4BFCE;
+    --hs-ooo-bg: #3A2220;
+    --hs-ooo-fg: #F0A99E;
+
+    @include palette(dark, #E0B54A, #1A1D20, #15171A, #1B1E22, #202328, #EEEBE4, #A9AEB5, #2D3137);
+}
+
+:root:has(.lp-hotel-software) :is(h1, h2, h3) {
+    font-stretch: 66%;
+}
+
+:root:lang(fa):has(.lp-hotel-software) {
+    --lp-font-mono: var(--lp-stack-body);
+}

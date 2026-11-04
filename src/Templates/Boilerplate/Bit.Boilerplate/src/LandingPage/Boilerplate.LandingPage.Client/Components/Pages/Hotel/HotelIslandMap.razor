@@ -1,0 +1,33 @@
+@inherits LandingComponentBase
+
+<svg class="hotel-map @Class" viewBox="0 0 400 440" role="img" aria-label="@H[nameof(HotelStrings.MapAlt)]">
+    <rect width="400" height="440" class="hotel-map-sea" />
+    <path d="M358 0C348 80 368 160 354 240C344 300 370 360 358 440H400V0Z" class="hotel-map-land" />
+    <path d="M252 70C292 50 342 60 346 96C350 130 302 150 264 136C232 124 228 84 252 70Z" class="hotel-map-land" />
+    <path d="M152 40C177 40 192 80 194 130C197 200 207 280 232 340C242 365 222 385 197 378C167 370 152 330 142 280C130 210 122 120 132 70C136 52 142 40 152 40Z" class="hotel-map-land" />
+    <path d="M132 70C110 120 104 220 116 300C124 340 152 372 197 378C167 370 152 330 142 280C130 210 122 120 132 70Z" class="hotel-map-sand" />
+    <path d="M214 356C260 352 300 330 354 302" class="hotel-map-ferry" />
+    <g transform="translate(168 262)">
+        <path d="M-3 10L-2 -8H2L3 10Z" class="hotel-map-tower" />
+        <path d="M-2.6 4H2.6V0H-2.4ZM-2.2 -4H2.2" class="hotel-map-red" />
+    </g>
+    <circle cx="175" cy="205" r="4" class="hotel-map-dot" />
+    <circle cx="210" cy="352" r="4" class="hotel-map-dot" />
+    <circle cx="360" cy="300" r="4" class="hotel-map-dot" />
+    <g transform="translate(166 92)">
+        <circle r="13" class="hotel-map-pin" />
+        <circle r="5" class="hotel-map-pin-dot" />
+    </g>
+    <text x="186" y="88" direction="ltr" class="hotel-map-label hotel-map-strong">@H[nameof(HotelStrings.MapNorddorf)]</text>
+    <text x="186" y="104" direction="ltr" class="hotel-map-note">Alder &amp; Salt</text>
+    <text x="186" y="209" direction="ltr" class="hotel-map-label">@H[nameof(HotelStrings.MapNebel)]</text>
+    <text x="196" y="372" text-anchor="end" direction="ltr" class="hotel-map-label">@H[nameof(HotelStrings.MapWittdun)]</text>
+    <text x="352" y="288" text-anchor="end" direction="ltr" class="hotel-map-label">@H[nameof(HotelStrings.MapDagebull)]</text>
+    <text x="296" y="104" text-anchor="middle" direction="ltr" class="hotel-map-label">@H[nameof(HotelStrings.MapFohr)]</text>
+    <text x="290" y="356" text-anchor="middle" direction="ltr" class="hotel-map-note" transform="rotate(-24 290 356)">@H[nameof(HotelStrings.MapFerry)]</text>
+    <text x="84" y="210" text-anchor="middle" direction="ltr" class="hotel-map-island" transform="rotate(-84 84 210)">@H[nameof(HotelStrings.MapAmrum)]</text>
+    <g transform="translate(40 52)" class="hotel-map-north">
+        <path d="M0 -16L7 6L0 1L-7 6Z" />
+        <text y="22" text-anchor="middle">N</text>
+    </g>
+</svg>

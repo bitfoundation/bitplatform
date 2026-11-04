@@ -1,0 +1,19 @@
+@inherits LandingComponentBase
+
+<PageTitle>@(Title ?? Localizer[nameof(LandingStrings.NotFoundTitle)])</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex" />
+</HeadContent>
+
+<section class="lp-container lp-not-found @Class">
+    <div class="lp-not-found-art" aria-hidden="true">@Art</div>
+    <div class="lp-not-found-text">
+        <p class="lp-eyebrow">404</p>
+        <h1>@(Title ?? Localizer[nameof(LandingStrings.NotFoundTitle)])</h1>
+        <p class="lp-lede">@(Body ?? Localizer[nameof(LandingStrings.NotFoundBody)])</p>
+        <div class="lp-not-found-actions">
+            <BitButton Href="@LocalUrl(HomePath)">@Localizer[nameof(LandingStrings.BackToHome)]</BitButton>
+            @Actions
+        </div>
+    </div>
+</section>

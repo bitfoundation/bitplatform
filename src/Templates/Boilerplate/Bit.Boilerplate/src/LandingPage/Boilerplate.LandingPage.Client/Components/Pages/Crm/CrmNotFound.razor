@@ -1,0 +1,32 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@CrmSite.Path" Title="@R[nameof(CrmStrings.NotFoundTitle)]" Body="@R[nameof(CrmStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="0 0 320 240" role="presentation">
+            <rect x="8" y="16" width="92" height="152" rx="8" fill="var(--crm-lane)" />
+            <rect x="114" y="16" width="92" height="152" rx="8" fill="var(--crm-lane)" />
+            <rect x="220" y="16" width="92" height="152" rx="8" fill="var(--crm-lane)" />
+            <rect x="20" y="30" width="44" height="6" rx="3" fill="var(--lp-fg-muted)" opacity=".55" />
+            <rect x="126" y="30" width="36" height="6" rx="3" fill="var(--lp-fg-muted)" opacity=".55" />
+            <rect x="232" y="30" width="52" height="6" rx="3" fill="var(--lp-fg-muted)" opacity=".55" />
+            <rect x="18" y="50" width="72" height="46" rx="5" fill="var(--lp-surface)" stroke="var(--lp-line)" />
+            <rect x="26" y="60" width="42" height="5" rx="2.5" fill="var(--lp-fg)" opacity=".7" />
+            <rect x="26" y="72" width="28" height="4" rx="2" fill="var(--lp-fg-muted)" opacity=".5" />
+            <rect x="18" y="104" width="72" height="46" rx="5" fill="var(--lp-surface)" stroke="var(--lp-line)" />
+            <rect x="26" y="114" width="36" height="5" rx="2.5" fill="var(--lp-fg)" opacity=".7" />
+            <rect x="26" y="126" width="22" height="4" rx="2" fill="var(--lp-fg-muted)" opacity=".5" />
+            <rect x="124" y="50" width="72" height="46" rx="5" fill="none" stroke="var(--lp-fg-muted)" stroke-width="1.5" stroke-dasharray="5 4" />
+            <rect x="230" y="50" width="72" height="46" rx="5" fill="var(--lp-surface)" stroke="var(--lp-line)" />
+            <rect x="238" y="60" width="46" height="5" rx="2.5" fill="var(--lp-fg)" opacity=".7" />
+            <rect x="238" y="72" width="30" height="4" rx="2" fill="var(--lp-fg-muted)" opacity=".5" />
+            <g transform="translate(168 200) rotate(-12)">
+                <rect x="-40" y="-26" width="80" height="52" rx="6" fill="var(--lp-surface)" stroke="var(--lp-accent)" stroke-width="2" />
+                <text x="0" y="8" text-anchor="middle" font-size="22" font-weight="600" fill="var(--lp-accent)" style="font-family: var(--crm-figures)">404</text>
+            </g>
+            <path d="M160 100 C 170 124, 178 150, 172 170" fill="none" stroke="var(--lp-fg-muted)" stroke-width="1.5" stroke-dasharray="3 4" />
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@LocalUrl($"{CrmSite.Path}/pricing")">@R[nameof(CrmStrings.NotFoundPricing)]</BitButton>
+    </Actions>
+</NotFoundPanel>

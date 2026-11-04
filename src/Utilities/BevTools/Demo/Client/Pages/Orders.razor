@@ -86,7 +86,7 @@
         The <strong>Network</strong> panel lists every request with its method, address, status, duration and size,
         and the UI event that triggered it - <em>onclick → Orders.Flaky</em>, or <em>onclick → Orders.Load (lambda)</em>
         for a button whose handler is a lambda that calls <code>Load</code>. Select a request for its headers (sensitive
-        ones redacted; bodies are never captured) and the code that sent it. The column headers sort the list, and
+        ones redacted; bodies only when the app turns <code>CaptureHttpBodies</code> on) and the code that sent it. The column headers sort the list, and
         the filter box narrows it.
     </p>
     <ul class="bb-detail-list">

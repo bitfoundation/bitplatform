@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Fernhouse: indoor plants, delivered and cared for</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Shop 600 indoor plants and the pots to match in the Fernhouse app. Every delivery tracked to the hour, and care reminders written for the light in your home.</value>
+    </data>
+    <data name="Announcement" xml:space="preserve">
+        <value>In the app only: 15% off your first order with the code FERN15.</value>
+    </data>
+    <data name="AnnouncementLink" xml:space="preserve">
+        <value>Get the app</value>
+    </data>
+    <data name="NavFeatures" xml:space="preserve">
+        <value>Why Fernhouse</value>
+    </data>
+    <data name="NavCare" xml:space="preserve">
+        <value>Plant care</value>
+    </data>
+    <data name="NavReviews" xml:space="preserve">
+        <value>Reviews</value>
+    </data>
+    <data name="NavFaq" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>Get the app</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>The Fernhouse app</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Plants that arrive happy, and stay that way.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Shop 600 indoor plants and the pots to match, follow every delivery to the hour, and get care reminders written for the light in your home.</value>
+    </data>
+    <data name="HeroDelivery" xml:space="preserve">
+        <value>Free delivery over €45. Next day across the Netherlands and Belgium.</value>
+    </data>
+    <data name="DemoLabel" xml:space="preserve">
+        <value>A product page from the app. Try it.</value>
+    </data>
+    <data name="DemoProduct" xml:space="preserve">
+        <value>Monstera deliciosa</value>
+    </data>
+    <data name="DemoProductNote" xml:space="preserve">
+        <value>Swiss cheese plant · Easy care</value>
+    </data>
+    <data name="DemoLight" xml:space="preserve">
+        <value>Right for your north-facing window</value>
+    </data>
+    <data name="DemoPot" xml:space="preserve">
+        <value>Pot</value>
+    </data>
+    <data name="DemoPotClay" xml:space="preserve">
+        <value>Clay</value>
+    </data>
+    <data name="DemoPotSage" xml:space="preserve">
+        <value>Sage</value>
+    </data>
+    <data name="DemoPotCharcoal" xml:space="preserve">
+        <value>Charcoal</value>
+    </data>
+    <data name="DemoSize" xml:space="preserve">
+        <value>Size</value>
+    </data>
+    <data name="DemoSizeS" xml:space="preserve">
+        <value>40 cm</value>
+    </data>
+    <data name="DemoSizeM" xml:space="preserve">
+        <value>70 cm</value>
+    </data>
+    <data name="DemoSizeL" xml:space="preserve">
+        <value>110 cm</value>
+    </data>
+    <data name="DemoPrice" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="DemoAdd" xml:space="preserve">
+        <value>Add to bag</value>
+    </data>
+    <data name="DemoAdded" xml:space="preserve">
+        <value>In your bag. Arrives Thursday, 9:00 to 13:00.</value>
+    </data>
+    <data name="DemoBag" xml:space="preserve">
+        <value>Bag, {0} items</value>
+    </data>
+    <data name="DemoGuarantee" xml:space="preserve">
+        <value>30-day plant guarantee</value>
+    </data>
+    <data name="PressLabel" xml:space="preserve">
+        <value>Written about in</value>
+    </data>
+    <data name="FeaturesEyebrow" xml:space="preserve">
+        <value>Why Fernhouse</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>Everything a plant needs, before it needs it</value>
+    </data>
+    <data name="FeaturesLede" xml:space="preserve">
+        <value>The app knows your plants, your windows and your week. It does the remembering, so you can do the enjoying.</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>Matched to your light</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>Tell us which way your windows face, and the shop shows the plants that will thrive there first.</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>Reminders that adapt</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>Watering, feeding and repotting reminders that shift with the season and the weather where you live.</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>Delivery to the hour</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>A two-hour window the day before and live tracking on the day. Plants travel upright, in compostable packaging.</value>
+    </data>
+    <data name="Feature4Title" xml:space="preserve">
+        <value>A 30-day guarantee</value>
+    </data>
+    <data name="Feature4Body" xml:space="preserve">
+        <value>If a plant struggles in its first month, send a photo from the app. We replace it, and nobody asks who forgot to water it.</value>
+    </data>
+    <data name="Feature5Title" xml:space="preserve">
+        <value>Pots that fit</value>
+    </data>
+    <data name="Feature5Body" xml:space="preserve">
+        <value>Every plant lists the pots it fits, so you never come home with a beautiful pot that's two centimetres too small.</value>
+    </data>
+    <data name="Feature6Title" xml:space="preserve">
+        <value>A plant doctor</value>
+    </data>
+    <data name="Feature6Body" xml:space="preserve">
+        <value>Yellow leaves? Take a photo, and a plant specialist answers in the app within a working day.</value>
+    </data>
+    <data name="CareEyebrow" xml:space="preserve">
+        <value>Plant care</value>
+    </data>
+    <data name="CareTitle" xml:space="preserve">
+        <value>A care plan for this week, not for a plant in a book</value>
+    </data>
+    <data name="CareBody" xml:space="preserve">
+        <value>Fernhouse builds each plant's plan from its species, its pot and the room it lives in. When a heatwave comes, the plan changes before your plant notices.</value>
+    </data>
+    <data name="CareWeek" xml:space="preserve">
+        <value>This week</value>
+    </data>
+    <data name="CareItem1" xml:space="preserve">
+        <value>Water the monstera</value>
+    </data>
+    <data name="CareItem1When" xml:space="preserve">
+        <value>Tomorrow</value>
+    </data>
+    <data name="CareItem2" xml:space="preserve">
+        <value>Feed the pothos</value>
+    </data>
+    <data name="CareItem2When" xml:space="preserve">
+        <value>Saturday</value>
+    </data>
+    <data name="CareItem3" xml:space="preserve">
+        <value>Turn the fiddle-leaf fig toward the light</value>
+    </data>
+    <data name="CareItem3When" xml:space="preserve">
+        <value>Sunday</value>
+    </data>
+    <data name="CareNote" xml:space="preserve">
+        <value>Heatwave on Friday, so watering moved a day earlier.</value>
+    </data>
+    <data name="StepsEyebrow" xml:space="preserve">
+        <value>How it works</value>
+    </data>
+    <data name="StepsTitle" xml:space="preserve">
+        <value>From our greenhouse to your windowsill</value>
+    </data>
+    <data name="Step1Title" xml:space="preserve">
+        <value>Pick</value>
+    </data>
+    <data name="Step1Body" xml:space="preserve">
+        <value>Choose a plant and a pot that fits. The app checks the light for you.</value>
+    </data>
+    <data name="Step2Title" xml:space="preserve">
+        <value>We pack</value>
+    </data>
+    <data name="Step2Body" xml:space="preserve">
+        <value>Each plant is checked by hand, then packed upright in compostable materials.</value>
+    </data>
+    <data name="Step3Title" xml:space="preserve">
+        <value>It arrives</value>
+    </data>
+    <data name="Step3Body" xml:space="preserve">
+        <value>Within your two-hour window, with a care card and its first reminder already set.</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>Reviews</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>From people who used to lose even cacti</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>The reminders actually adapt. My calathea survived its first Dutch winter, which is more than I can say for the last three.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>Lotte B.</value>
+    </data>
+    <data name="Review1Place" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>It came in the window it promised, standing upright in a box I could put straight in the compost.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>Samir K.</value>
+    </data>
+    <data name="Review2Place" xml:space="preserve">
+        <value>Antwerp</value>
+    </data>
+    <data name="Review3Quote" xml:space="preserve">
+        <value>I sent a photo of a sad fiddle-leaf fig on Monday and had an answer, and a plan, by lunch.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>Emma de V.</value>
+    </data>
+    <data name="Review3Place" xml:space="preserve">
+        <value>Haarlem</value>
+    </data>
+    <data name="FaqEyebrow" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Before you order</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>Where do you deliver?</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>Next day across the Netherlands and Belgium, and within three days to Germany, France and Luxembourg.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>Which plants are safe for cats and dogs?</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>Every plant page says whether it's pet-safe, and the app can hide the ones that aren't. Calatheas, spider plants and Boston ferns are popular safe choices.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>How does the 30-day guarantee work?</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>If a plant struggles in its first 30 days, send a photo from the order page. We send a replacement, or a refund if you prefer.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>Do I need the app to order?</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>No, you can order on the web too. The app adds care reminders, the plant doctor and the first-order discount.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>How do I use the code FERN15?</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>Install the app, add plants to your bag and enter FERN15 at checkout. It takes 15% off your first order.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>Your plants will thank you</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>Get the app for care reminders, the plant doctor and 15% off your first order.</value>
+    </data>
+    <data name="CouponLabel" xml:space="preserve">
+        <value>Your first-order code</value>
+    </data>
+    <data name="CouponCopy" xml:space="preserve">
+        <value>Copy code</value>
+    </data>
+    <data name="CouponCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>Do you deliver to Germany?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Which plants are safe for cats?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>How does the plant guarantee work?</value>
+    </data>
+    <data name="StickyCta" xml:space="preserve">
+        <value>Get the app · 15% off</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>Indoor plants and the pots to match, delivered across the Benelux since 2019.</value>
+    </data>
+    <data name="FooterShop" xml:space="preserve">
+        <value>Shop</value>
+    </data>
+    <data name="FooterLowLight" xml:space="preserve">
+        <value>Plants for low light</value>
+    </data>
+    <data name="FooterPetSafe" xml:space="preserve">
+        <value>Pet-safe plants</value>
+    </data>
+    <data name="FooterPots" xml:space="preserve">
+        <value>Pots and planters</value>
+    </data>
+    <data name="FooterGiftCards" xml:space="preserve">
+        <value>Gift cards</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Fernhouse</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>How a rented greenhouse outside Aalsmeer became a plant shop that asks about your light first.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>We started Fernhouse in a rented greenhouse outside Aalsmeer, because buying a plant shouldn't feel like a gamble.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>Why we started</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Noor had lost four plants in a year and asked a grower why. The answer was simple: they were the wrong plants for her flat, and nobody had asked her about the light.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>Fernhouse asks first. Every plant we send was grown for homes like yours, is checked by hand, and comes with a plan for keeping it alive.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>The people behind the plants</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Noor van Dijk</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Founder</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Jesse Okafor</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Head grower</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Mina Rahimi</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Plant doctor</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Tom Visser</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Delivery and packaging</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>A question about an order or a plant? Write to us and a person answers within a working day.</value>
+    </data>
+    <data name="VisitTitle" xml:space="preserve">
+        <value>Visit the greenhouse</value>
+    </data>
+    <data name="VisitBody" xml:space="preserve">
+        <value>Open on Saturdays, 10:00 to 16:00. Legmeerdijk 313, Aalsmeer.</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This page has been repotted</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>We couldn't find it where it used to be. The shop is right where you left it.</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Online store</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A plant shop's app, launched on iPhone, Android and the web: a product page you can try, a first-order code and live App Store details.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Product page in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Discount code</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Chat bubble</value>
+    </data>
+</root>

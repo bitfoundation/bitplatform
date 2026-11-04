@@ -59,7 +59,52 @@ public sealed class BevRenderSample
     /// </summary>
     public bool IsWastedRender => Cause == BevRenderCause.ParentRender && ChangedParameters is { Count: 0 };
 
-    public bool Failed { get; set; }
+    // Samples are the most numerous objects BevTools keeps (one per render, up to MaxRendersPerComponent per instance):
+    // whether a render failed and what it allocated share one int, so measuring allocations does not make every sample
+    // bigger. Bit 31: failed; bits 0-30: allocated bytes + 1, 0 when not measured, saturated at about 2 GB.
+    private int _packed;
+
+    public bool Failed
+    {
+        get => _packed < 0;
+        set => _packed = value ? _packed | int.MinValue : _packed & int.MaxValue;
+    }
+
+    /// <summary>
+    /// Bytes the render fragment (BuildRenderTree) allocated on its thread: strings it formatted, closures and lambdas it
+    /// created, collections it built. Its children render separately and count for themselves. Null when the runtime does
+    /// not count allocations per thread (<see cref="BevAllocations.IsMeasurable"/>); at most <see cref="int.MaxValue"/> - 1.
+    /// </summary>
+    public long? AllocatedBytes
+    {
+        get => (_packed & int.MaxValue) is var stored and > 0 ? stored - 1L : null;
+        // Clamped before the one is added: long.MaxValue + 1 would wrap to a negative count and read as nothing allocated.
+        set => _packed = (_packed & int.MinValue) | (value is { } bytes ? (int)Math.Clamp(bytes, 0, int.MaxValue - 1) + 1 : 0);
+    }
+}
+
+/// <summary>Whether this runtime counts the bytes each thread allocates, which per-render allocation needs.</summary>
+public static class BevAllocations
+{
+    /// <summary>
+    /// True when <see cref="GC.GetAllocatedBytesForCurrentThread"/> moves when this thread allocates. Probed once: a runtime
+    /// that always answers zero must not make every render read as allocating nothing.
+    /// </summary>
+    public static bool IsMeasurable { get; } = Probe();
+
+    private static bool Probe()
+    {
+        try
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            GC.KeepAlive(new byte[1024]);
+            return GC.GetAllocatedBytesForCurrentThread() - before >= 1024;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
 
 /// <summary>Live bookkeeping for one component instance. Mutated only on the renderer's dispatcher; read from anywhere.</summary>
@@ -77,6 +122,8 @@ public sealed class BevComponentRecord
     private int _baselineRenderCount;
     private double _baselineTotalMs;
     private double _maxRenderMsSinceBaseline;
+    private long _baselineAllocatedBytes;
+    private long _maxAllocatedBytesSinceBaseline;
 
     internal BevComponentRecord(long instanceId, IComponent component, Type type, int maxRenders, bool isBevTools, bool isHidden)
     {
@@ -150,6 +197,11 @@ public sealed class BevComponentRecord
 
     public double MaxRenderMs { get; private set; }
 
+    /// <summary>Bytes all its recorded renders allocated (<see cref="BevRenderSample.AllocatedBytes"/>); zero where they are not measured.</summary>
+    public long TotalAllocatedBytes { get; private set; }
+
+    public long MaxAllocatedBytes { get; private set; }
+
     public DateTimeOffset? LastRenderAt { get; private set; }
 
     /// <summary>When the first recorded render happened; it stays when the render history has long since moved on.</summary>
@@ -208,6 +260,10 @@ public sealed class BevComponentRecord
 
     public double MaxRenderMsSinceBaseline => _maxRenderMsSinceBaseline;
 
+    public long AllocatedBytesSinceBaseline => TotalAllocatedBytes - _baselineAllocatedBytes;
+
+    public long MaxAllocatedBytesSinceBaseline => _maxAllocatedBytesSinceBaseline;
+
     /// <summary>
     /// Starts a new profiling window: the "since baseline" figures restart from zero while the raw counters keep
     /// running, so render-cause detection (which relies on <see cref="RenderCount"/>) is unaffected.
@@ -222,6 +278,8 @@ public sealed class BevComponentRecord
 
         _baselineTotalMs = TotalRenderMs;
         _maxRenderMsSinceBaseline = 0;
+        _baselineAllocatedBytes = TotalAllocatedBytes;
+        _maxAllocatedBytesSinceBaseline = 0;
         BaselineAt = at;
     }
 
@@ -285,6 +343,20 @@ public sealed class BevComponentRecord
         if (sample.DurationMs > _maxRenderMsSinceBaseline)
         {
             _maxRenderMsSinceBaseline = sample.DurationMs;
+        }
+
+        if (sample.AllocatedBytes is { } allocated)
+        {
+            TotalAllocatedBytes += allocated;
+            if (allocated > MaxAllocatedBytes)
+            {
+                MaxAllocatedBytes = allocated;
+            }
+
+            if (allocated > _maxAllocatedBytesSinceBaseline)
+            {
+                _maxAllocatedBytesSinceBaseline = allocated;
+            }
         }
 
         if ((uint)sample.Cause < (uint)CauseCount)

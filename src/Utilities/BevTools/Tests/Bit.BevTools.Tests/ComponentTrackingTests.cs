@@ -141,6 +141,9 @@ public class ComponentTrackingTests : BunitContext
         Assert.AreEqual(record.InstanceId, error.ComponentInstanceId);
         Assert.AreEqual("boom", error.Message);
         Assert.IsTrue(record.LastRender!.Failed);
+        // Measured on the failure path too: the exception the render threw is what it allocated.
+        Assert.IsTrue(record.LastRender.AllocatedBytes > 0, "allocated: " + record.LastRender.AllocatedBytes);
+        Assert.AreEqual(record.LastRender.AllocatedBytes, record.TotalAllocatedBytes);
     }
 
     [TestMethod]

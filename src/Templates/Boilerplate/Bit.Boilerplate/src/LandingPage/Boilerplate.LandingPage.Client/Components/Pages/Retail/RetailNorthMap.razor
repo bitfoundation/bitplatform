@@ -1,0 +1,23 @@
+@inherits LandingComponentBase
+
+<svg class="retail-map @Class" viewBox="0 0 600 380" role="img" aria-label="@Label" preserveAspectRatio="xMidYMid slice">
+    <rect width="600" height="380" class="retail-map-land" />
+    <path d="M0 196 C 26 182, 52 188, 66 214 L 70 300 L 0 300 Z" class="retail-map-park" />
+    <path d="M150 50 C 166 40, 190 44, 196 60 C 200 74, 180 84, 164 80 C 150 76, 144 62, 150 50 Z" class="retail-map-park" />
+    <path d="M404 380 L 404 300 L 470 300 L 470 168 L 600 118 L 600 380 Z" class="retail-map-water" />
+    <path d="M0 300 H 404" class="retail-map-river" />
+    <path d="M40 34 L 130 56 L 200 72 L 290 96 L 360 128 L 420 164" class="retail-map-stream" />
+    <path d="M0 132 L 120 160 L 168 172 L 252 156 L 330 196 L 380 246 L 404 296" class="retail-map-canal" />
+    <path d="M0 252 L 96 234 L 168 172 L 200 96 M168 172 L 278 92 L 380 132 L 540 128 L 600 110" class="retail-map-road" />
+
+    @foreach (var (shop, x, y, labelX, labelY, anchor) in points)
+    {
+        var selected = shop.Key == Selected;
+
+        <g class="retail-map-stop @(selected ? "is-selected" : null)" transform="@FormattableString.Invariant($"translate({x} {y})")">
+            <circle r="@(selected ? 13 : 10)" class="retail-map-stop-ring" />
+            <circle r="@(selected ? 5 : 4)" class="retail-map-stop-dot" />
+            <text x="@labelX.ToString(CultureInfo.InvariantCulture)" y="@labelY.ToString(CultureInfo.InvariantCulture)" text-anchor="@anchor" direction="ltr" class="retail-map-label">@R[shop.NameKey]</text>
+        </g>
+    }
+</svg>

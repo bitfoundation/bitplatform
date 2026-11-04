@@ -1,0 +1,55 @@
+@attribute [Route(LandingRoutes.Home)]
+@attribute [Route("/{culture:nonfile}")]
+@inherits LandingPageBase
+
+<LandingHead Title="@Localizer[nameof(LandingStrings.GalleryTitle)]"
+             Description="@Localizer[nameof(LandingStrings.GalleryDescription)]"
+             Path="@LandingRoutes.Home" />
+
+<section class="lp-container gallery-hero">
+    <p class="gallery-eyebrow">@Localizer[nameof(LandingStrings.GalleryEyebrow)]</p>
+    <h1>@Localizer[nameof(LandingStrings.GalleryTitle)]</h1>
+    <p class="lp-lede">@Localizer[nameof(LandingStrings.GalleryLede)]</p>
+    <div class="gallery-tour">
+        <BitButton IconName="@BitIconName.Play" OnClick="tourLauncher.Start">@T[nameof(TourStrings.Offer)]</BitButton>
+        <p>@T[nameof(TourStrings.OfferNote)]</p>
+    </div>
+</section>
+
+<section class="lp-container gallery-samples" aria-label="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
+    <BitChoiceGroup Items="filters" @bind-Value="filter" Horizontal NoCircle AriaLabel="@Localizer[nameof(LandingStrings.GalleryEyebrow)]" Class="gallery-filters">
+        <ItemTemplate Context="item">
+            <span class="gallery-filter @(item.Value == filter ? "is-selected" : null)">@item.Text</span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+
+    <GalleryTiles Samples="Samples()" />
+</section>
+
+<section class="lp-container gallery-how" aria-labelledby="gallery-how-title">
+    <h2 id="gallery-how-title">@Localizer[nameof(LandingStrings.GalleryHowTitle)]</h2>
+    <div class="gallery-mix">
+        <div class="gallery-mix-card">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowSamplesTitle)]</h3>
+            <ul>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples1)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples2)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowSamples3)]</li>
+            </ul>
+        </div>
+        <span class="gallery-mix-sign" aria-hidden="true">+</span>
+        <div class="gallery-mix-card">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowYouTitle)]</h3>
+            <ul>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou1)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou2)]</li>
+                <li>@Localizer[nameof(LandingStrings.GalleryHowYou3)]</li>
+            </ul>
+        </div>
+        <span class="gallery-mix-sign" aria-hidden="true">=</span>
+        <div class="gallery-mix-card is-result">
+            <h3>@Localizer[nameof(LandingStrings.GalleryHowResultTitle)]</h3>
+            <p>@Localizer[nameof(LandingStrings.GalleryHowResultBody)]</p>
+        </div>
+    </div>
+</section>

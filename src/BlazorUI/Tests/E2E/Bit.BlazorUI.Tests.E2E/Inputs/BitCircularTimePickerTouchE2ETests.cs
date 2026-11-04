@@ -138,6 +138,26 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_AClosedSheet_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync(Url);
+
+        // A closed sheet is laid out above the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(Page.Locator("#responsive .bit-ctp-cal")).ToBeHiddenAsync();
+
+        var callout = await OpenCalloutAsync("responsive");
+        var hour = callout.GetByRole(AriaRole.Option, new() { Name = "14", Exact = true });
+        await Expect(hour).ToBeVisibleAsync();
+
+        await callout.Locator(".bit-ctp-cbn").TapAsync();
+
+        await Expect(Field("responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(hour).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
     public async Task NotResponsive_OnAPhone_StillOpensACalloutAgainstItsField()
     {
         await OpenAsync(Url);

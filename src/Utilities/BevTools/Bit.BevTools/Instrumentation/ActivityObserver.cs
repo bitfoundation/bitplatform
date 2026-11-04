@@ -200,6 +200,37 @@ internal static class ActivityObserver
         return evt;
     }
 
+    /// <summary>
+    /// The session whose UI event or navigation the current activity descends from. The activity flows with the
+    /// execution context, so code that left the renderer's dispatcher - a library's <c>ConfigureAwait(false)</c>, a task
+    /// the handler started - still carries it: the work provably began in that session's event, which no other evidence
+    /// left after the await says. Null under one of BevTools' own events, or none.
+    /// </summary>
+    internal static BevToolsSession? SessionOfCurrentActivity()
+    {
+        var activity = Activity.Current;
+        var hops = 0;
+        while (activity is not null && hops++ < 32)
+        {
+            if (activity.OperationName == HandleEventName || activity.OperationName == NavigateName)
+            {
+                if (ReferenceEquals(activity.GetCustomProperty(EventProperty), IgnoredEvent))
+                {
+                    return null;
+                }
+
+                if (activity.GetCustomProperty(SessionProperty) is BevToolsSession session)
+                {
+                    return session;
+                }
+            }
+
+            activity = activity.Parent;
+        }
+
+        return null;
+    }
+
     /// <summary>Marker stored on activities BevTools does not record (its own UI, or anything started while capture was paused), so they are not adopted later.</summary>
     private static readonly BevToolsEvent IgnoredEvent = new() { Title = "(bevtools)" };
 

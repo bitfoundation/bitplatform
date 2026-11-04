@@ -1,0 +1,204 @@
+@attribute [Route(HotelSite.Path)]
+@attribute [Route("/{culture}" + HotelSite.Path)]
+@layout HotelLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@H[nameof(HotelStrings.HomeTitle)]"
+             Description="@H[nameof(HotelStrings.HomeDescription)]"
+             Path="@HotelSite.Path"
+             Site="HotelSite.Info"
+             StructuredData="structuredData" />
+
+<section class="hotel-hero" aria-labelledby="hotel-hero-title">
+    <div class="lp-container hotel-hero-head">
+        <p class="hotel-place">@H[nameof(HotelStrings.HeroPlace)]</p>
+        <h1 id="hotel-hero-title">@H[nameof(HotelStrings.HeroTitle)]</h1>
+    </div>
+    <div class="lp-container hotel-hero-body">
+        <div class="hotel-hero-scene">
+            <HotelScene Kind="HotelSceneKind.Panorama" Label="@H[nameof(HotelStrings.HeroSceneAlt)]" />
+        </div>
+        <div class="hotel-hero-phone">
+            <DeviceFrame Kind="LandingDeviceKind.Phone" Class="hotel-phone">
+                <HotelStayPlanner />
+            </DeviceFrame>
+            <p class="hotel-hero-caption">@H[nameof(HotelStrings.DemoCaption)]</p>
+        </div>
+        <div class="hotel-hero-text">
+            <p class="lp-lede">@H[nameof(HotelStrings.HeroLede)]</p>
+            <p class="hotel-hero-promise"><BitIcon IconName="@BitIconName.Shield" /> @H[nameof(HotelStrings.HeroPromise)]</p>
+            <div class="hotel-hero-download">
+                <StoreBadges Site="HotelSite.Info" Campaign="hero" />
+                <DownloadQr Site="HotelSite.Info" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="direct" class="lp-section hotel-direct" aria-labelledby="hotel-direct-title">
+    <div class="lp-container hotel-direct-grid">
+        <header class="hotel-head">
+            <p class="hotel-kicker">@H[nameof(HotelStrings.DirectKicker)]</p>
+            <h2 id="hotel-direct-title">@H[nameof(HotelStrings.DirectTitle)]</h2>
+            <p class="lp-lede">@H[nameof(HotelStrings.DirectLede)]</p>
+            <div class="hotel-promise">
+                <p class="hotel-promise-title">@H[nameof(HotelStrings.PromiseTitle)]</p>
+                <p>@H[nameof(HotelStrings.PromiseBody)]</p>
+            </div>
+        </header>
+        <table class="hotel-compare">
+            <caption class="lp-visually-hidden">@H[nameof(HotelStrings.DirectTitle)]</caption>
+            <thead>
+                <tr>
+                    <td></td>
+                    <th scope="col" class="is-us">@H[nameof(HotelStrings.DirectColUs)]</th>
+                    <th scope="col">@H[nameof(HotelStrings.DirectColThem)]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (row, us, them) in compare)
+                {
+                    <tr>
+                        <th scope="row">@H[row]</th>
+                        <td class="is-us"><BitIcon IconName="@BitIconName.CheckMark" /> @H[us]</td>
+                        <td>@H[them]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="lp-section hotel-rooms" aria-labelledby="hotel-rooms-title">
+    <div class="lp-container">
+        <header class="hotel-head hotel-head-row">
+            <div>
+                <p class="hotel-kicker">@H[nameof(HotelStrings.RoomsKicker)]</p>
+                <h2 id="hotel-rooms-title">@H[nameof(HotelStrings.RoomsTitle)]</h2>
+            </div>
+            <BitButton Href="@LocalUrl($"{HotelSite.Path}/rooms")" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@(IsRtl ? BitIconName.Back : BitIconName.Forward)" IconPlacement="BitPlacement.End">@H[nameof(HotelStrings.RoomsCta)]</BitButton>
+        </header>
+        <ul class="hotel-room-grid">
+            @foreach (var room in HotelRooms.All)
+            {
+                <li>
+                    <a href="@($"{LocalUrl($"{HotelSite.Path}/rooms")}#room-{room.Key.ToLowerInvariant()}")">
+                        <span class="hotel-room-scene"><HotelScene Kind="room.Scene" /></span>
+                        <span class="hotel-room-name">@H[room.NameKey]</span>
+                        <span class="hotel-room-meta">@H[nameof(HotelStrings.RoomSize), room.Size.ToString(CurrentCulture)] · @H[room.ViewKey]</span>
+                        <span class="hotel-room-price">@H[nameof(HotelStrings.DemoFrom), Money(room.Rate)]</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="app" class="lp-section hotel-app" aria-labelledby="hotel-app-title">
+    <div class="lp-container hotel-app-grid">
+        <header class="hotel-head">
+            <p class="hotel-kicker">@H[nameof(HotelStrings.AppKicker)]</p>
+            <h2 id="hotel-app-title">@H[nameof(HotelStrings.AppTitle)]</h2>
+        </header>
+        <ul class="hotel-app-list">
+            @foreach (var (icon, title, body) in appFeatures)
+            {
+                <li>
+                    <HotelLineIcon Kind="@icon" />
+                    <h3>@H[title]</h3>
+                    <p>@H[body]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-section hotel-stories" aria-labelledby="hotel-stories-title">
+    <div class="lp-container">
+        <header class="hotel-head">
+            <p class="hotel-kicker">@H[nameof(HotelStrings.StoriesKicker)]</p>
+            <h2 id="hotel-stories-title">@H[nameof(HotelStrings.StoriesTitle)]</h2>
+        </header>
+        <div class="hotel-story-grid">
+            @foreach (var (quote, name, detail) in stories)
+            {
+                <figure>
+                    <blockquote>@H[quote]</blockquote>
+                    <figcaption><strong>@H[name]</strong> <span>@H[detail]</span></figcaption>
+                </figure>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="lp-section hotel-reviews" aria-labelledby="hotel-reviews-title">
+    <div class="lp-container hotel-reviews-grid">
+        <div class="hotel-trip">
+            <p class="hotel-kicker">@H[nameof(HotelStrings.ReviewsKicker)]</p>
+            <h2 id="hotel-reviews-title">@H[nameof(HotelStrings.ReviewsTitle)]</h2>
+            <div class="hotel-trip-card">
+                <div class="hotel-trip-score">
+                    <p class="hotel-trip-value">@HotelSite.TripadvisorRating.ToString("0.0", CurrentCulture)</p>
+                    <div>
+                        <p class="hotel-trip-label">@H[nameof(HotelStrings.TripLabel)]</p>
+                        <BitRating Value="HotelSite.TripadvisorRating" Max="5" Precision="0.1" ReadOnly SelectedIconName="@BitIconName.CircleFill" UnselectedIconName="@BitIconName.CircleRing" AriaLabel="@H[nameof(HotelStrings.TripStarsAlt), HotelSite.TripadvisorRating.ToString("0.0", CurrentCulture)]" Class="hotel-bubbles" />
+                        <p class="hotel-trip-count">@H[nameof(HotelStrings.TripCount), HotelSite.TripadvisorReviewCount.ToString("N0", CurrentCulture)]</p>
+                    </div>
+                </div>
+                <dl class="hotel-trip-categories">
+                    @foreach (var (category, score) in categories)
+                    {
+                        <div>
+                            <dt>@H[category]</dt>
+                            <dd>
+                                <BitProgress Percent="@(score * 20)" Thickness="6" Rounded AriaLabel="@($"{H[category]}: {score.ToString("0.0", CurrentCulture)}")" Class="hotel-trip-bar" />
+                                <span>@score.ToString("0.0", CurrentCulture)</span>
+                            </dd>
+                        </div>
+                    }
+                </dl>
+                <BitButton Href="@HotelSite.TripadvisorUrl" Target="_blank" Variant="BitVariant.Text" Color="BitColor.PrimaryForeground" IconName="@BitIconName.OpenInNewWindow" IconPlacement="BitPlacement.End" Class="hotel-trip-link">@H[nameof(HotelStrings.TripLink)]</BitButton>
+            </div>
+        </div>
+        <div class="hotel-awards">
+            <h3>@H[nameof(HotelStrings.AwardsTitle)]</h3>
+            <ul>
+                @foreach (var (award, by, year) in awards)
+                {
+                    <li>
+                        <span class="hotel-award-year">@year.ToString(CultureInfo.InvariantCulture)</span>
+                        <span class="hotel-award-name">@H[award]</span>
+                        <span class="hotel-award-by">@H[by]</span>
+                    </li>
+                }
+            </ul>
+            <p class="hotel-awards-note">@H[nameof(HotelStrings.AwardsNote)]</p>
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="lp-section hotel-faq" aria-labelledby="hotel-faq-title">
+    <div class="lp-container hotel-faq-grid">
+        <header class="hotel-head">
+            <p class="hotel-kicker">@H[nameof(HotelStrings.FaqKicker)]</p>
+            <h2 id="hotel-faq-title">@H[nameof(HotelStrings.FaqTitle)]</h2>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>
+
+<section id="download" class="hotel-download" aria-labelledby="hotel-download-title">
+    <div class="lp-container hotel-download-grid">
+        <div class="hotel-download-text">
+            <h2 id="hotel-download-title">@H[nameof(HotelStrings.DownloadTitle)]</h2>
+            <p>@H[nameof(HotelStrings.DownloadBody)]</p>
+            <div class="hotel-download-actions">
+                <StoreBadges Site="HotelSite.Info" Campaign="download" />
+                <DownloadQr Site="HotelSite.Info" />
+            </div>
+        </div>
+        <div class="hotel-download-scene">
+            <HotelScene Kind="HotelSceneKind.Beach" />
+        </div>
+    </div>
+</section>

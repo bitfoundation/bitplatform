@@ -150,6 +150,26 @@ internal sealed class RingBuffer<T>
         return key(_items[index]) == value ? index : -1;
     }
 
+    /// <summary>Replaces the newest item matching a predicate; false when none does.</summary>
+    public bool TryReplaceLast(Func<T, bool> predicate, Func<T, T> replace)
+    {
+        lock (_lock)
+        {
+            for (var i = _count - 1; i >= 0; i--)
+            {
+                var index = (_head + i) % _items.Length;
+                if (predicate(_items[index]))
+                {
+                    _items[index] = replace(_items[index]);
+                    _version++;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     /// <summary>Finds the newest item matching a predicate without allocating.</summary>
     public T? FindLast(Func<T, bool> predicate)
     {

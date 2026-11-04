@@ -32,6 +32,8 @@ public partial class ServerWebSettingsValidator : IValidateOptions<ServerWebSett
 {
 }
 
+// [mirror] WebAppRenderOptions - keep in sync with:
+// - src/LandingPage/Boilerplate.LandingPage.Server/LandingServerSettings.cs
 public partial class WebAppRenderOptions
 {
     public bool PrerenderEnabled { get; set; }

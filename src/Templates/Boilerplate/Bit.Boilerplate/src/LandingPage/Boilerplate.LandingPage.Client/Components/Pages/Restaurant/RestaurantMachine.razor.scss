@@ -1,0 +1,82 @@
+.restaurant-machine {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.rm-shadow {
+    fill: color-mix(in oklab, var(--lp-fg) 10%, transparent);
+}
+
+.rm-counter {
+    fill: color-mix(in oklab, var(--copper), #000000 35%);
+}
+
+.rm-copper {
+    fill: var(--copper);
+}
+
+.rm-copper-dark {
+    fill: color-mix(in oklab, var(--copper), #000000 22%);
+}
+
+.rm-shine {
+    fill: none;
+    stroke: color-mix(in oklab, var(--copper), #FFFFFF 38%);
+    stroke-width: 4;
+    stroke-linecap: round;
+    opacity: .7;
+}
+
+.rm-gauge {
+    fill: var(--porcelain);
+    stroke: color-mix(in oklab, var(--copper), #000000 30%);
+    stroke-width: 4;
+}
+
+.rm-needle {
+    stroke: var(--porcelain-blue);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.rm-pin {
+    fill: var(--lp-fg);
+}
+
+.rm-chrome {
+    fill: color-mix(in oklab, var(--porcelain), var(--lp-fg) 22%);
+}
+
+.rm-lever {
+    stroke: color-mix(in oklab, var(--porcelain), var(--lp-fg) 30%);
+    stroke-width: 7;
+    stroke-linecap: round;
+}
+
+.rm-knob,
+.rm-handle {
+    fill: var(--lp-fg);
+}
+
+.rm-pour {
+    stroke: var(--coffee);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.rm-cup {
+    fill: var(--porcelain);
+    stroke: var(--porcelain-blue);
+    stroke-width: 2;
+}
+
+.rm-cup-handle {
+    fill: none;
+    stroke: var(--porcelain-blue);
+    stroke-width: 3;
+}
+
+.rm-tray {
+    fill: color-mix(in oklab, var(--porcelain), var(--lp-fg) 35%);
+}

@@ -34,6 +34,24 @@ Report("with BevTools registered, disabled", idle, baseline);
 Report("recording, no per-render events", lean, baseline);
 Report("recording everything", instrumented, baseline);
 
+// Log entries: the same structured entry written on the renderer's dispatcher, where the session is resolved from its
+// synchronization context, as an application's component or service would write it.
+const int LogEntries = 20_000;
+Console.WriteLine($"\nlog entries: {LogEntries}, one structured Information entry with two values each\n");
+RunLogs(bevTools: false); RunLogs(bevTools: true); RunLogs(bevTools: true, callers: false); RunLogs(bevTools: true, trackLogs: false);
+var logBaseline = RunLogs(bevTools: false);
+var logOff = RunLogs(bevTools: true, trackLogs: false);
+var logNoCallers = RunLogs(bevTools: true, callers: false);
+var logAll = RunLogs(bevTools: true);
+
+void ReportLogs(string name, (double TotalMs, long Bytes) r) =>
+    Console.WriteLine($"{name,-34} {r.TotalMs,9:0.0} ms  {r.TotalMs * 1000 / LogEntries,8:0.00} µs/entry  alloc {r.Bytes / (double)LogEntries,8:0} B/entry");
+
+ReportLogs("without BevTools", logBaseline);
+ReportLogs("BevTools, TrackLogs = false", logOff);
+ReportLogs("recording, CaptureLogCallers = false", logNoCallers);
+ReportLogs("recording everything", logAll);
+
 (double TotalMs, long Bytes) Run(bool bevTools, bool disabled = false, bool noRenderEvents = false)
 {
     var services = new ServiceCollection();
@@ -73,6 +91,49 @@ Report("recording everything", instrumented, baseline);
     var bytes = GC.GetAllocatedBytesForCurrentThread() - before;
     provider.Dispose();
     return (elapsed, bytes);
+}
+
+(double TotalMs, long Bytes) RunLogs(bool bevTools, bool trackLogs = true, bool callers = true)
+{
+    var services = new ServiceCollection();
+    services.AddLogging();
+    if (bevTools)
+    {
+        services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.TrackLogs = trackLogs;
+            o.CaptureLogCallers = callers;
+        });
+    }
+
+    var provider = services.BuildServiceProvider();
+    var renderer = new BenchRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+    var root = new Host();
+    var id = renderer.Attach(root);
+    renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootAsync(id)).GetAwaiter().GetResult();
+    var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Bench.Orders");
+    var result = renderer.Dispatcher.InvokeAsync(() =>
+    {
+        for (var i = 0; i < 200; i++)
+        {
+            logger.LogInformation("Loaded {Count} orders for {Customer}", i, "Ada");
+        }
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var start = Stopwatch.GetTimestamp();
+        for (var i = 0; i < LogEntries; i++)
+        {
+            logger.LogInformation("Loaded {Count} orders for {Customer}", i, "Ada");
+        }
+
+        return (Stopwatch.GetElapsedTime(start).TotalMilliseconds, GC.GetAllocatedBytesForCurrentThread() - before);
+    }).GetAwaiter().GetResult();
+    provider.Dispose();
+    return result;
 }
 
 sealed class BenchRenderer(IServiceProvider sp, ILoggerFactory lf) : Renderer(sp, lf)

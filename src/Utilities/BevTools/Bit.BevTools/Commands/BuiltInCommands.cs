@@ -22,7 +22,14 @@ internal static class BuiltInCommands
         new DelegateCommand("profiler.renders-over", "Show components rendering more than", "Profiler", (ctx, arg) => ctx.ShowPanel("profiler", "renders>" + (int.TryParse(arg?.Trim(), out var n) ? n : 20)), acceptsArgument: true, keywords: ["render count", "storm", "times"]),
         new DelegateCommand("profiler.show", "Show profiler", "Profiler", (ctx, _) => ctx.ShowPanel("profiler")),
         new DelegateCommand("timeline.show", "Show timeline", "Timeline", (ctx, arg) => ctx.ShowPanel("timeline", arg), acceptsArgument: true, keywords: ["events", "activity", "history"]),
+        new DelegateCommand("timeline.mark", "Add a marker to the timeline", "Timeline", (ctx, arg) =>
+        {
+            var id = SessionOf(ctx).AddMarker(arg ?? "");
+            ctx.Notify(id > 0 ? "Marker added" : "Capture is paused: no marker added");
+        }, acceptsArgument: true, keywords: ["mark", "bookmark", "annotate", "flag", "note", "label"]),
         new DelegateCommand("errors.show", "Show errors", "Errors", (ctx, _) => ctx.ShowPanel("errors"), keywords: ["exceptions", "failures"]),
+        new DelegateCommand("logs.show", "Show logs", "Logs", (ctx, arg) => ctx.ShowPanel("logs", arg), acceptsArgument: true, keywords: ["ilogger", "logging", "console", "trace", "debug", "information"]),
+        new DelegateCommand("logs.warnings", "Show logged warnings and errors", "Logs", (ctx, _) => ctx.ShowPanel("logs", "level:warning"), keywords: ["ilogger", "logging", "warn", "fail"]),
         new DelegateCommand("network.failures", "Show recent network failures", "Network", (ctx, _) => ctx.ShowPanel("network", "status:failed"), keywords: ["http", "requests", "500", "404"]),
         new DelegateCommand("network.show", "Show network", "Network", (ctx, arg) => ctx.ShowPanel("network", arg), acceptsArgument: true, keywords: ["http", "requests"]),
         new DelegateCommand("state.show", "Show state", "State", (ctx, _) => ctx.ShowPanel("state"), keywords: ["store", "providers"]),

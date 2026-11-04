@@ -32,6 +32,8 @@
             <label class="bb-check"><input type="checkbox" @bind="_searchOnType" /> search the API on every keystroke (a burst of overlapping requests)</label>
             <label class="bb-check"><input type="checkbox" @bind="_priceAlert" /> price alert (hiding it leaks it: problem 16)</label>
             <label class="bb-check"><input type="checkbox" @bind="_skipUnchangedRows" /> the fix: rows skip renders that would change nothing</label>
+            <label class="bb-check"><input type="checkbox" @bind="_logRowRenders" /> rows log every update (a log flood: problem 25)</label>
+            <button type="button" class="btn btn-secondary demo-btn-sm" @onclick="RecalculateRatings">Recalculate ratings (problem 26)</button>
             <span class="bb-spacer"></span>
             <span class="bb-muted">Cart: @Cart.ItemCount items, @Cart.Total.ToString("C") — see BevTools → State → CartState</span>
         </div>
@@ -42,7 +44,7 @@
         }
         <CategorySummary />
         <FilterBar />
-        <ProductList SearchOnType="_searchOnType" SkipUnchangedRows="_skipUnchangedRows" />
+        <ProductList SearchOnType="_searchOnType" SkipUnchangedRows="_skipUnchangedRows" LogRowRenders="_logRowRenders" />
     </div>
 </div>
 
@@ -134,6 +136,8 @@
         <a href="problems#problem-11" class="btn btn-outline">Problem 11 →</a>
         <a href="problems#problem-16" class="btn btn-outline">Problem 16 →</a>
         <a href="problems#problem-21" class="btn btn-outline">Problem 21 →</a>
+        <a href="problems#problem-25" class="btn btn-outline">Problem 25 →</a>
+        <a href="problems#problem-26" class="btn btn-outline">Problem 26 →</a>
     </div>
 </div>
 
@@ -141,6 +145,21 @@
     private bool _searchOnType;
     private bool _priceAlert;
     private bool _skipUnchangedRows;
+    private bool _logRowRenders;
+
+    // Problem 26, intentional: a synchronous computation in an event handler. On WebAssembly .NET runs on the browser's
+    // main thread, so nothing paints and no input is handled until it returns; on a circuit it blocks the circuit.
+    private void RecalculateRatings()
+    {
+        var until = System.Diagnostics.Stopwatch.GetTimestamp() + System.Diagnostics.Stopwatch.Frequency * 2 / 5;
+        var spins = 0L;
+        while (System.Diagnostics.Stopwatch.GetTimestamp() < until)
+        {
+            spins++;
+        }
+
+        _ = spins;
+    }
 
     // The Add buttons belong to ProductList, so only it re-renders after a click; the cart summary above lives here.
     protected override void OnInitialized() => Cart.Changed += OnCartChanged;

@@ -55,6 +55,7 @@ public sealed class BevToolsSession : IDisposable
         Errors = new ErrorCenter(this, options);
         Http = new HttpStore(this, options);
         Interop = new JsInteropStore(this, options);
+        Logs = new BevLogStore(this, options);
         State = new StateStore(this, options);
         Diagnostics = new DiagnosticsEngine(this, options, registry);
         Commands = new CommandRegistry();
@@ -131,11 +132,20 @@ public sealed class BevToolsSession : IDisposable
     /// </summary>
     internal bool AllowsForcedCollection => !IsInMultiUserHost || IsDevelopmentHost(Services);
 
+    /// <summary>
+    /// Whether BevTools may ask a state provider to restore an earlier state (<see cref="IBevStateRestorer"/>): it changes
+    /// what the application does, so as forced collections, only in Development or a process that serves one user.
+    /// </summary>
+    internal bool AllowsStateRestore => AllowsForcedCollection;
+
     internal ErrorCenter Errors { get; }
 
     internal HttpStore Http { get; }
 
     internal JsInteropStore Interop { get; }
+
+    /// <summary>What the application's loggers wrote while this session's code ran.</summary>
+    internal BevLogStore Logs { get; }
 
     internal StateStore State { get; }
 
@@ -148,6 +158,9 @@ public sealed class BevToolsSession : IDisposable
     public BevToolsUiState Ui { get; }
 
     public BevBrowserState Browser { get; }
+
+    /// <summary>The heap, full collections and (on WebAssembly) linear memory over the last ten minutes.</summary>
+    public BevMemoryTrend Memory { get; } = new();
 
     /// <summary>Public timeline API for extensions.</summary>
     public IBevToolsTimeline TimelineApi => Timeline;
@@ -482,17 +495,40 @@ public sealed class BevToolsSession : IDisposable
         }
     }
 
+    /// <summary>
+    /// Puts a marker in the timeline ("before the fix", "clicked Save"): a named point to find again among the events,
+    /// in exports and in the performance trace. Recorded while capturing only, like every other event.
+    /// </summary>
+    /// <summary>How many numbered markers the Timeline's ⚑ Mark put down this session: the next one is this plus one.</summary>
+    internal int MarkerCount { get; set; }
+
+    public long AddMarker(string label)
+    {
+        ArgumentNullException.ThrowIfNull(label);
+        var text = BevRedactor.RedactText(label.Trim().ReplaceLineEndings(" "));
+        return Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Custom,
+            Category = "marker",
+            Title = "⚑ " + (text.Length == 0 ? "Marker" : text.Length <= 200 ? text : text[..200]),
+            Detail = "Marker added by the developer",
+        });
+    }
+
     public void ClearAll()
     {
         Timeline.Clear();
         Errors.Clear();
         Http.Clear();
         Interop.Clear();
+        Logs.Clear();
         State.ClearHistory();
         Components.ClearDisposed();
         Leaks.Clear();
         Forms.Clear();
         Browser.Accessibility = null;
+        Browser.Responsiveness.Clear();
+        Memory.Clear();
         Browser.AccessibilityCheckedAt = null;
         Browser.AccessibilityError = null;
         Diagnostics.Clear();

@@ -907,6 +907,8 @@ public static partial class Program
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }
 
+    // [mirror] smtp connection string parsing - keep in sync with:
+    // - src/LandingPage/Boilerplate.LandingPage.Server/Features/Email/LandingEmailService.cs
     /// <summary>
     /// The `smtp` connection string, shared by the mail sender and <see cref="SmtpHealthCheck"/>.
     /// </summary>

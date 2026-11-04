@@ -1,0 +1,53 @@
+@include site(lp-restaurant) {
+    --copper: #B8662E;
+    --copper-text: #9A4F1F;
+    --copper-soft: #F6E3D4;
+    --porcelain: #FFFFFF;
+    --porcelain-blue: #1F44B8;
+    --porcelain-ink: #1F44B8;
+    --porcelain-line: #C9D3F2;
+    --daylight: #FFD166;
+    --daylight-fg: #2A1E00;
+    --coffee: #6B4430;
+    --crema: #C98F5A;
+    --foam: #FFF8EE;
+
+    @include type("Fraunces", "Instrument Sans");
+    @include shape(18px, 999px);
+    @include palette(light, #1F44B8, #FFFFFF, #FCFCFD, #F1F4FB, #FFFFFF, #101A33, #4A5570, #DDE3F0);
+}
+
+@include site-dark(lp-restaurant) {
+    --copper: #E0915A;
+    --copper-text: #E8A574;
+    --copper-soft: #3A2A21;
+    --porcelain: #F4EEE6;
+    --porcelain-blue: #6F8FF0;
+    --porcelain-line: #4A3B33;
+    --daylight: #F2C25B;
+    --daylight-fg: #241800;
+    --coffee: #3B2519;
+    --crema: #B8783F;
+    --foam: #F1E4D2;
+
+    @include palette(dark, #E0915A, #1A0E07, #1A1310, #221915, #2A201B, #F6EEE7, #C4B3A6, #3A2D26);
+}
+
+.lp-restaurant :is(h1, h2, h3) {
+    font-weight: 650;
+
+    &:lang(fa) {
+        font-weight: 800;
+    }
+
+    em {
+        font-weight: 500;
+        font-style: italic;
+        color: var(--lp-accent);
+
+        // Vazirmatn has no italic, so Persian stays upright rather than slanted by the browser
+        &:lang(fa) {
+            font-style: normal;
+        }
+    }
+}

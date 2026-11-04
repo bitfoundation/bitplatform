@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-fitness">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="FitnessSite.Info" Links="links">
+        <Brand><FitnessLogo /><span class="fit-wordmark" lang="en">pulsepath</span></Brand>
+        <Actions>
+            <BitButton Href="@($"{Page(string.Empty)}#download")" Size="BitSize.Small" Class="fit-nav-cta">@F[nameof(FitnessStrings.NavGetApp)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="FitnessSite.Info" Tagline="@F[nameof(FitnessStrings.FooterTagline)]">
+        <Brand><FitnessLogo /><span class="fit-wordmark" lang="en">pulsepath</span></Brand>
+        <Intro>
+            <StoreBadges Site="FitnessSite.Info" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@L[nameof(LandingStrings.FooterProduct)]</h2>
+                <a href="@($"{Page(string.Empty)}#whats-new")">@F[nameof(FitnessStrings.NavWhatsNew)]</a>
+                <a href="@($"{Page(string.Empty)}#next")">@F[nameof(FitnessStrings.FooterNext)]</a>
+                <a href="@($"{Page(string.Empty)}#download")">@F[nameof(FitnessStrings.NavDevices)]</a>
+                <a href="@($"{Page(string.Empty)}#faq")">@F[nameof(FitnessStrings.NavFaq)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <ConsentBanner SitePath="@FitnessSite.Path" />
+    <LanguageSuggestion />
+</div>

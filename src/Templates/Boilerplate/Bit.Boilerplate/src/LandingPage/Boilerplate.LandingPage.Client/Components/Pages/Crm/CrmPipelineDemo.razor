@@ -1,0 +1,90 @@
+@inherits LandingComponentBase
+
+<div class="crm-board">
+    <div class="crm-board-head">
+        <div class="crm-board-title">
+            <p class="crm-board-name">@R[nameof(CrmStrings.DemoBoardTitle)]</p>
+            <p class="crm-board-meta">@R[nameof(CrmStrings.DemoOpenDeals), OpenDeals.ToString(CurrentCulture)]</p>
+        </div>
+        <div class="crm-board-forecast">
+            <p class="crm-board-forecast-label">@R[nameof(CrmStrings.DemoForecast)]</p>
+            <p class="crm-board-forecast-value crm-figure">@Money(Forecast)</p>
+            <BitProgress Percent="ForecastPercent" AriaValueText="@R[nameof(CrmStrings.DemoTarget), Money(Forecast), Money(Target)]" Class="crm-board-progress" />
+            <p class="crm-board-target">@R[nameof(CrmStrings.DemoTarget), ForecastPercent.ToString("0", CurrentCulture) + "%", Money(Target)]</p>
+        </div>
+    </div>
+
+    <div class="crm-board-lanes">
+        @for (var stage = 0; stage < stages.Length; stage++)
+        {
+            var current = stage;
+            var inStage = deals.Where(d => d.Stage == current).ToList();
+            <section class="crm-lane @(current == stages.Length - 1 ? "is-won" : null)" aria-label="@StageName(current)">
+                <header class="crm-lane-head">
+                    <p class="crm-lane-name">@StageName(current) <span>@inStage.Count.ToString(CurrentCulture)</span></p>
+                    <p class="crm-lane-total crm-figure">@Money(Total(current))</p>
+                    <p class="crm-lane-odds">@R[nameof(CrmStrings.DemoProbability), stages[current].Probability.ToString(CurrentCulture)]</p>
+                </header>
+                <div class="crm-lane-cards">
+                    @foreach (var deal in inStage)
+                    {
+                        <article @key="deal.Id"
+                                 @ref="cards[deal.Id]"
+                                 class="crm-deal @(deal.Id == lastMoved ? "is-moved" : null)"
+                                 tabindex="0"
+                                 aria-label="@($"{deal.Company}, {Money(deal.Value)}, {StageName(deal.Stage)}")"
+                                 aria-describedby="crm-board-hint"
+                                 @onkeydown="args => OnCardKeyDown(args, deal)">
+                            <p class="crm-deal-company">@deal.Company</p>
+                            <p class="crm-deal-next">@R[deal.Next]</p>
+                            <div class="crm-deal-foot">
+                                <span class="crm-deal-value crm-figure">@Money(deal.Value)</span>
+                                <span class="crm-deal-owner" aria-hidden="true">@deal.Owner</span>
+                            </div>
+                            <div class="crm-deal-moves">
+                                <BitButton Variant="BitVariant.Text"
+                                           Color="BitColor.PrimaryForeground"
+                                           Size="BitSize.Small"
+                                           IconOnly
+                                           IconName="@(IsRtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)"
+                                           Disabled="deal.Stage == 0"
+                                           AriaLabel="@MoveLabel(deal, -1)"
+                                           Title="@MoveLabel(deal, -1)"
+                                           TabIndex="-1"
+                                           OnClick="() => Move(deal, -1)" />
+                                <BitButton Variant="BitVariant.Text"
+                                           Color="BitColor.PrimaryForeground"
+                                           Size="BitSize.Small"
+                                           IconOnly
+                                           IconName="@(IsRtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)"
+                                           Disabled="deal.Stage == stages.Length - 1"
+                                           AriaLabel="@MoveLabel(deal, 1)"
+                                           Title="@MoveLabel(deal, 1)"
+                                           TabIndex="-1"
+                                           OnClick="() => Move(deal, 1)" />
+                            </div>
+                        </article>
+                    }
+                    @if (inStage.Count is 0)
+                    {
+                        <p class="crm-lane-empty">@R[nameof(CrmStrings.DemoEmptyStage)]</p>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+
+    <div class="crm-board-foot">
+        <p id="crm-board-hint" class="crm-board-hint">@R[nameof(CrmStrings.DemoKeyboardHint)]</p>
+        <p class="crm-board-status" role="status">
+            @if (status is not null)
+            {
+                <BitIcon IconName="@BitIconName.CheckMark" /> @status
+            }
+            else
+            {
+                @R[nameof(CrmStrings.DemoWonSoFar), Money(Won)]
+            }
+        </p>
+    </div>
+</div>

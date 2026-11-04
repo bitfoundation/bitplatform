@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Lodgeboard: hotel software for independent hotels, small groups and B&amp;Bs</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>A property management system for the front desk, housekeeping, rates and booking channels. 2,300 properties in 31 countries, from €4 per room a month.</value>
+    </data>
+    <data name="NavDesk" xml:space="preserve">
+        <value>Front desk</value>
+    </data>
+    <data name="NavAudiences" xml:space="preserve">
+        <value>Who it's for</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>Pricing</value>
+    </data>
+    <data name="NavPress" xml:space="preserve">
+        <value>Press</value>
+    </data>
+    <data name="NavTrial" xml:space="preserve">
+        <value>Try it free</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>Property management for independent hotels, small groups and B&amp;Bs. From Porto and Ljubljana since 2017.</value>
+    </data>
+    <data name="FooterReviews" xml:space="preserve">
+        <value>Reviews and awards</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>Does it connect to the booking sites?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>What would 24 rooms cost?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>Can it work out city tax?</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>Property management for independent hotels</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Run the front desk, not the software.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Lodgeboard keeps arrivals, rooms, housekeeping and the booking channels on one board, so whoever is at the desk can look at the guest.</value>
+    </data>
+    <data name="HeroTrial" xml:space="preserve">
+        <value>Start a 30-day trial</value>
+    </data>
+    <data name="HeroDemo" xml:space="preserve">
+        <value>Book a 20-minute demo</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>No setup fee. We move your bookings, guests and rates from your current system for free.</value>
+    </data>
+    <data name="DeskCaption" xml:space="preserve">
+        <value>Today's front desk at a 12-room hotel. Check a guest in or out, or mark a room clean, and watch the board change.</value>
+    </data>
+    <data name="DeskRooms" xml:space="preserve">
+        <value>12 rooms</value>
+    </data>
+    <data name="DeskToday" xml:space="preserve">
+        <value>Today at a glance</value>
+    </data>
+    <data name="DeskInHouse" xml:space="preserve">
+        <value>in house</value>
+    </data>
+    <data name="DeskArriving" xml:space="preserve">
+        <value>arriving</value>
+    </data>
+    <data name="DeskDeparting" xml:space="preserve">
+        <value>departing</value>
+    </data>
+    <data name="DeskToClean" xml:space="preserve">
+        <value>to clean</value>
+    </data>
+    <data name="DeskArrivals" xml:space="preserve">
+        <value>Arrivals today</value>
+    </data>
+    <data name="DeskDepartures" xml:space="preserve">
+        <value>Departures today</value>
+    </data>
+    <data name="DeskArrival1" xml:space="preserve">
+        <value>2 nights · expected 14:30</value>
+    </data>
+    <data name="DeskArrival2" xml:space="preserve">
+        <value>1 night · expected 16:00</value>
+    </data>
+    <data name="DeskArrival3" xml:space="preserve">
+        <value>3 nights · family of 4 · 17:15</value>
+    </data>
+    <data name="DeskArrival4" xml:space="preserve">
+        <value>2 nights · late arrival, 21:00</value>
+    </data>
+    <data name="DeskDeparture1" xml:space="preserve">
+        <value>Paid in full</value>
+    </data>
+    <data name="DeskDeparture2" xml:space="preserve">
+        <value>€84 to pay: minibar and city tax</value>
+    </data>
+    <data name="DeskCheckIn" xml:space="preserve">
+        <value>Check in</value>
+    </data>
+    <data name="DeskCheckInLabel" xml:space="preserve">
+        <value>Check in {0} to room {1}</value>
+    </data>
+    <data name="DeskCheckedIn" xml:space="preserve">
+        <value>Checked in</value>
+    </data>
+    <data name="DeskCheckOut" xml:space="preserve">
+        <value>Check out</value>
+    </data>
+    <data name="DeskCheckOutLabel" xml:space="preserve">
+        <value>Check out {0} from room {1}</value>
+    </data>
+    <data name="DeskCheckedOut" xml:space="preserve">
+        <value>Checked out</value>
+    </data>
+    <data name="DeskRoomsLabel" xml:space="preserve">
+        <value>Rooms</value>
+    </data>
+    <data name="DeskFloor" xml:space="preserve">
+        <value>Floor {0}</value>
+    </data>
+    <data name="DeskKindDouble" xml:space="preserve">
+        <value>Double</value>
+    </data>
+    <data name="DeskKindTwin" xml:space="preserve">
+        <value>Twin</value>
+    </data>
+    <data name="DeskKindSuite" xml:space="preserve">
+        <value>Suite</value>
+    </data>
+    <data name="DeskKindSingle" xml:space="preserve">
+        <value>Single</value>
+    </data>
+    <data name="DeskKindFamily" xml:space="preserve">
+        <value>Family</value>
+    </data>
+    <data name="DeskStatusClean" xml:space="preserve">
+        <value>Clean, ready</value>
+    </data>
+    <data name="DeskStatusDirty" xml:space="preserve">
+        <value>To clean</value>
+    </data>
+    <data name="DeskStatusOccupied" xml:space="preserve">
+        <value>Occupied</value>
+    </data>
+    <data name="DeskStatusArriving" xml:space="preserve">
+        <value>Arriving</value>
+    </data>
+    <data name="DeskStatusDeparting" xml:space="preserve">
+        <value>Due out</value>
+    </data>
+    <data name="DeskStatusOutOfOrder" xml:space="preserve">
+        <value>Out of order</value>
+    </data>
+    <data name="DeskMarkClean" xml:space="preserve">
+        <value>Mark clean</value>
+    </data>
+    <data name="DeskMarkCleanLabel" xml:space="preserve">
+        <value>Mark room {0} clean</value>
+    </data>
+    <data name="DeskMessageIn" xml:space="preserve">
+        <value>{0} checked in to room {1}. The door code went out by email.</value>
+    </data>
+    <data name="DeskMessageOut" xml:space="preserve">
+        <value>{0} checked out of room {1}. The room is on the housekeeping list.</value>
+    </data>
+    <data name="DeskMessageClean" xml:space="preserve">
+        <value>Room {0} is clean and ready to sell.</value>
+    </data>
+    <data name="DeskTonight" xml:space="preserve">
+        <value>Tonight: {0} of {1} rooms sold. Room 204 is out of order until Thursday.</value>
+    </data>
+    <data name="StatsTitle" xml:space="preserve">
+        <value>Lodgeboard in numbers</value>
+    </data>
+    <data name="Stat1Value" xml:space="preserve">
+        <value>2,300</value>
+    </data>
+    <data name="Stat1Label" xml:space="preserve">
+        <value>hotels, groups and B&amp;Bs</value>
+    </data>
+    <data name="Stat2Value" xml:space="preserve">
+        <value>31</value>
+    </data>
+    <data name="Stat2Label" xml:space="preserve">
+        <value>countries, from Iceland to Portugal</value>
+    </data>
+    <data name="Stat3Value" xml:space="preserve">
+        <value>4.1 m</value>
+    </data>
+    <data name="Stat3Label" xml:space="preserve">
+        <value>nights booked through Lodgeboard in 2025</value>
+    </data>
+    <data name="Stat4Value" xml:space="preserve">
+        <value>4 min</value>
+    </data>
+    <data name="Stat4Label" xml:space="preserve">
+        <value>median first answer from support, day and night</value>
+    </data>
+    <data name="AudiencesEyebrow" xml:space="preserve">
+        <value>Who it's for</value>
+    </data>
+    <data name="AudiencesTitle" xml:space="preserve">
+        <value>Built for properties that are run by people, not departments</value>
+    </data>
+    <data name="AudienceHotelsTab" xml:space="preserve">
+        <value>Independent hotels</value>
+    </data>
+    <data name="AudienceHotelsWho" xml:space="preserve">
+        <value>15 to 120 rooms, one property</value>
+    </data>
+    <data name="AudienceHotelsTitle" xml:space="preserve">
+        <value>A front desk that keeps pace with a full house</value>
+    </data>
+    <data name="AudienceHotelsBody" xml:space="preserve">
+        <value>Check-ins, payments, housekeeping and the booking channels in one place, so the person at the desk looks at guests, not screens.</value>
+    </data>
+    <data name="AudienceHotelsPoint1" xml:space="preserve">
+        <value>Two-way sync with more than 40 booking channels</value>
+    </data>
+    <data name="AudienceHotelsPoint2" xml:space="preserve">
+        <value>Online check-in with door codes</value>
+    </data>
+    <data name="AudienceHotelsPoint3" xml:space="preserve">
+        <value>A booking engine on your site, with no commission</value>
+    </data>
+    <data name="AudienceHotelsPoint4" xml:space="preserve">
+        <value>Revenue reports by room type and channel</value>
+    </data>
+    <data name="AudienceHotelsFigure" xml:space="preserve">
+        <value>2 min</value>
+    </data>
+    <data name="AudienceHotelsFigureLabel" xml:space="preserve">
+        <value>average check-in at Hotel Marlowe, down from 6</value>
+    </data>
+    <data name="AudienceHotelsPlan" xml:space="preserve">
+        <value>Most choose Professional, €7 per room a month</value>
+    </data>
+    <data name="AudienceGroupsTab" xml:space="preserve">
+        <value>Small groups</value>
+    </data>
+    <data name="AudienceGroupsWho" xml:space="preserve">
+        <value>2 to 10 properties</value>
+    </data>
+    <data name="AudienceGroupsTitle" xml:space="preserve">
+        <value>One view of every property, without a head-office project</value>
+    </data>
+    <data name="AudienceGroupsBody" xml:space="preserve">
+        <value>See occupancy, revenue and guest history across your hotels, set group rates once, and let staff move between properties with one login.</value>
+    </data>
+    <data name="AudienceGroupsPoint1" xml:space="preserve">
+        <value>Central reports and rates</value>
+    </data>
+    <data name="AudienceGroupsPoint2" xml:space="preserve">
+        <value>Guest profiles shared across properties</value>
+    </data>
+    <data name="AudienceGroupsPoint3" xml:space="preserve">
+        <value>One login, with roles per property</value>
+    </data>
+    <data name="AudienceGroupsPoint4" xml:space="preserve">
+        <value>Move a booking to another property in two clicks</value>
+    </data>
+    <data name="AudienceGroupsFigure" xml:space="preserve">
+        <value>1 login</value>
+    </data>
+    <data name="AudienceGroupsFigureLabel" xml:space="preserve">
+        <value>for every property and every role</value>
+    </data>
+    <data name="AudienceGroupsPlan" xml:space="preserve">
+        <value>Groups, €6 per room a month</value>
+    </data>
+    <data name="AudienceBnbTab" xml:space="preserve">
+        <value>B&amp;Bs and guesthouses</value>
+    </data>
+    <data name="AudienceBnbWho" xml:space="preserve">
+        <value>Up to 15 rooms, often run by the owners</value>
+    </data>
+    <data name="AudienceBnbTitle" xml:space="preserve">
+        <value>Everything a guesthouse needs, on one iPad</value>
+    </data>
+    <data name="AudienceBnbBody" xml:space="preserve">
+        <value>Take bookings, send the welcome email, print the invoice with city tax and see who's having breakfast, from the kitchen table if you like.</value>
+    </data>
+    <data name="AudienceBnbPoint1" xml:space="preserve">
+        <value>A calendar with drag-and-drop bookings</value>
+    </data>
+    <data name="AudienceBnbPoint2" xml:space="preserve">
+        <value>Invoices with city tax worked out</value>
+    </data>
+    <data name="AudienceBnbPoint3" xml:space="preserve">
+        <value>Welcome and directions emails</value>
+    </data>
+    <data name="AudienceBnbPoint4" xml:space="preserve">
+        <value>Works on an iPad, and offline for a while</value>
+    </data>
+    <data name="AudienceBnbFigure" xml:space="preserve">
+        <value>€39</value>
+    </data>
+    <data name="AudienceBnbFigureLabel" xml:space="preserve">
+        <value>a month on Essentials, for up to 9 rooms</value>
+    </data>
+    <data name="AudienceBnbPlan" xml:space="preserve">
+        <value>Essentials, €4 per room with a €39 minimum</value>
+    </data>
+    <data name="DayEyebrow" xml:space="preserve">
+        <value>A day at the desk</value>
+    </data>
+    <data name="DayTitle" xml:space="preserve">
+        <value>From the breakfast list to the night audit</value>
+    </data>
+    <data name="DayLede" xml:space="preserve">
+        <value>The same five moments, every day of the year. Lodgeboard has the next one ready before it comes.</value>
+    </data>
+    <data name="Day1Time" xml:space="preserve">
+        <value>06:30</value>
+    </data>
+    <data name="Day1Title" xml:space="preserve">
+        <value>The breakfast list</value>
+    </data>
+    <data name="Day1Body" xml:space="preserve">
+        <value>The kitchen sees how many breakfasts to prepare, with allergies and early departures flagged.</value>
+    </data>
+    <data name="Day2Time" xml:space="preserve">
+        <value>10:00</value>
+    </data>
+    <data name="Day2Title" xml:space="preserve">
+        <value>Departures and housekeeping</value>
+    </data>
+    <data name="Day2Body" xml:space="preserve">
+        <value>Guests settle up at the desk or on the iPad, and each room goes to housekeeping in the order it's needed.</value>
+    </data>
+    <data name="Day3Time" xml:space="preserve">
+        <value>14:00</value>
+    </data>
+    <data name="Day3Title" xml:space="preserve">
+        <value>Arrivals</value>
+    </data>
+    <data name="Day3Body" xml:space="preserve">
+        <value>Guests who checked in online get a door code by email. For the rest, the registration card is filled in and waiting.</value>
+    </data>
+    <data name="Day4Time" xml:space="preserve">
+        <value>18:00</value>
+    </data>
+    <data name="Day4Title" xml:space="preserve">
+        <value>Rates and channels</value>
+    </data>
+    <data name="Day4Body" xml:space="preserve">
+        <value>Change tomorrow's price once, and every booking channel and your own website follow within a minute.</value>
+    </data>
+    <data name="Day5Time" xml:space="preserve">
+        <value>23:30</value>
+    </data>
+    <data name="Day5Title" xml:space="preserve">
+        <value>The night audit</value>
+    </data>
+    <data name="Day5Body" xml:space="preserve">
+        <value>The day closes itself: payments reconciled, city tax counted, and the report in the manager's inbox by morning.</value>
+    </data>
+    <data name="CasePlate" xml:space="preserve">
+        <value>42 rooms · Ljubljana</value>
+    </data>
+    <data name="CaseEyebrow" xml:space="preserve">
+        <value>Customer story</value>
+    </data>
+    <data name="CaseTitle" xml:space="preserve">
+        <value>Hotel Marlowe cut check-in from six minutes to two</value>
+    </data>
+    <data name="CaseBody" xml:space="preserve">
+        <value>Marlowe is a 42-room hotel in Ljubljana's old town, run by a team of 14. In 2025 it moved from a desktop system and two booking-site extranets to Lodgeboard, over one quiet week in February.</value>
+    </data>
+    <data name="CaseNumber1Value" xml:space="preserve">
+        <value>6 → 2 min</value>
+    </data>
+    <data name="CaseNumber1Label" xml:space="preserve">
+        <value>average check-in, with online check-in and door codes</value>
+    </data>
+    <data name="CaseNumber2Value" xml:space="preserve">
+        <value>18% → 31%</value>
+    </data>
+    <data name="CaseNumber2Label" xml:space="preserve">
+        <value>of nights booked directly, in the first year</value>
+    </data>
+    <data name="CaseNumber3Value" xml:space="preserve">
+        <value>11 h</value>
+    </data>
+    <data name="CaseNumber3Label" xml:space="preserve">
+        <value>a week no longer spent reconciling channels</value>
+    </data>
+    <data name="CaseQuote" xml:space="preserve">
+        <value>On a Friday in August we have 40 arrivals. Now the desk talks to guests and the board does the rest.</value>
+    </data>
+    <data name="CaseQuoteBy" xml:space="preserve">
+        <value>Nika Zupan, general manager, Hotel Marlowe</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>Reviews and awards</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>What hoteliers say when nobody asked them to</value>
+    </data>
+    <data name="TrustWord" xml:space="preserve">
+        <value>Excellent</value>
+    </data>
+    <data name="TrustStars" xml:space="preserve">
+        <value>4.7 out of 5 stars</value>
+    </data>
+    <data name="TrustScore" xml:space="preserve">
+        <value>TrustScore 4.7 out of 5</value>
+    </data>
+    <data name="TrustCount" xml:space="preserve">
+        <value>Based on 1,284 reviews on Trustpilot</value>
+    </data>
+    <data name="TrustLink" xml:space="preserve">
+        <value>Read the reviews</value>
+    </data>
+    <data name="TrustSample" xml:space="preserve">
+        <value>Sample figures. Replace them with your own TrustScore, review count and profile link, and keep them current.</value>
+    </data>
+    <data name="ReviewFiveStars" xml:space="preserve">
+        <value>5 out of 5 stars</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>We switched in the middle of the season and didn't lose a single booking. The import took a weekend, the training an afternoon.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>Henrik Aalto</value>
+    </data>
+    <data name="Review1Place" xml:space="preserve">
+        <value>Villa Saaristo, 18 rooms, Turku</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>Support answered at two in the morning when our card terminal froze. That alone is worth the price.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>Giulia Ferri</value>
+    </data>
+    <data name="Review2Place" xml:space="preserve">
+        <value>Casa Ferri B&amp;B, 6 rooms, Lucca</value>
+    </data>
+    <data name="AwardsTitle" xml:space="preserve">
+        <value>Awards</value>
+    </data>
+    <data name="Award1Year" xml:space="preserve">
+        <value>2025</value>
+    </data>
+    <data name="Award1Name" xml:space="preserve">
+        <value>Best PMS for independent hotels</value>
+    </data>
+    <data name="Award1By" xml:space="preserve">
+        <value>Independent Hoteliers' Forum</value>
+    </data>
+    <data name="Award2Year" xml:space="preserve">
+        <value>2024</value>
+    </data>
+    <data name="Award2Name" xml:space="preserve">
+        <value>Front desk software of the year</value>
+    </data>
+    <data name="Award2By" xml:space="preserve">
+        <value>Alpine Hospitality Awards</value>
+    </data>
+    <data name="Award3Year" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Award3Name" xml:space="preserve">
+        <value>Small hotel technology award</value>
+    </data>
+    <data name="Award3By" xml:space="preserve">
+        <value>Atlantic Hotel Show</value>
+    </data>
+    <data name="AwardsSample" xml:space="preserve">
+        <value>Sample awards, made up for this page. List only the awards you have won, with a link to each.</value>
+    </data>
+    <data name="CtaTitle" xml:space="preserve">
+        <value>Try it on a real day at your desk</value>
+    </data>
+    <data name="CtaBody" xml:space="preserve">
+        <value>30 days with every Professional feature and your own data, which we import for you. No card, and no contract until you decide.</value>
+    </data>
+    <data name="CtaPricing" xml:space="preserve">
+        <value>See the prices</value>
+    </data>
+    <data name="AppsBody" xml:space="preserve">
+        <value>In the browser, on the front desk PC with the Windows app, and on iPad for housekeeping and check-in at the door.</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>Pricing | Lodgeboard</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>Lodgeboard costs €4 to €7 per room a month, with no setup fee and a free import. Work out your price with the room calculator, or talk to us about larger groups.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>A price per room, and nothing hidden behind it</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>Pay for the rooms you have, not for features you don't use. No setup fee, no commission on bookings, and a free move from your current system.</value>
+    </data>
+    <data name="CalcTitle" xml:space="preserve">
+        <value>Work out your price</value>
+    </data>
+    <data name="CalcRooms" xml:space="preserve">
+        <value>Rooms in your property, or in all of them for Groups</value>
+    </data>
+    <data name="CalcRoomsValue" xml:space="preserve">
+        <value>{0} rooms</value>
+    </data>
+    <data name="CalcPlan" xml:space="preserve">
+        <value>Plan</value>
+    </data>
+    <data name="CalcMonthly" xml:space="preserve">
+        <value>Your price a month, without VAT</value>
+    </data>
+    <data name="CalcMath" xml:space="preserve">
+        <value>{0} rooms × {1} = {2}</value>
+    </data>
+    <data name="CalcMinimum" xml:space="preserve">
+        <value>The {1} minimum of {0} a month applies.</value>
+    </data>
+    <data name="CalcYearly" xml:space="preserve">
+        <value>Or {0} a year if you pay yearly, {1}% less.</value>
+    </data>
+    <data name="CalcNote" xml:space="preserve">
+        <value>No setup fee. Cancel with 30 days' notice.</value>
+    </data>
+    <data name="MoneyEur" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="PlansEyebrow" xml:space="preserve">
+        <value>Plans</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>Three plans, and a conversation for the rest</value>
+    </data>
+    <data name="PerRoomMonth" xml:space="preserve">
+        <value>per room a month</value>
+    </data>
+    <data name="PlanMinimum" xml:space="preserve">
+        <value>Minimum {0} a month</value>
+    </data>
+    <data name="PlanEssentials" xml:space="preserve">
+        <value>Essentials</value>
+    </data>
+    <data name="PlanEssentialsSummary" xml:space="preserve">
+        <value>For B&amp;Bs, guesthouses and small hotels.</value>
+    </data>
+    <data name="PlanEssentialsFeature1" xml:space="preserve">
+        <value>Front desk and bookings calendar</value>
+    </data>
+    <data name="PlanEssentialsFeature2" xml:space="preserve">
+        <value>Housekeeping on iPad</value>
+    </data>
+    <data name="PlanEssentialsFeature3" xml:space="preserve">
+        <value>Invoices with city tax</value>
+    </data>
+    <data name="PlanEssentialsFeature4" xml:space="preserve">
+        <value>Welcome and directions emails</value>
+    </data>
+    <data name="PlanProfessional" xml:space="preserve">
+        <value>Professional</value>
+    </data>
+    <data name="PlanProfessionalSummary" xml:space="preserve">
+        <value>For independent hotels that sell on many channels.</value>
+    </data>
+    <data name="PlanProfessionalFeature1" xml:space="preserve">
+        <value>Everything in Essentials</value>
+    </data>
+    <data name="PlanProfessionalFeature2" xml:space="preserve">
+        <value>Two-way sync with more than 40 booking channels</value>
+    </data>
+    <data name="PlanProfessionalFeature3" xml:space="preserve">
+        <value>A booking engine for your site, no commission</value>
+    </data>
+    <data name="PlanProfessionalFeature4" xml:space="preserve">
+        <value>Online check-in, door codes and revenue reports</value>
+    </data>
+    <data name="PlanGroups" xml:space="preserve">
+        <value>Groups</value>
+    </data>
+    <data name="PlanGroupsSummary" xml:space="preserve">
+        <value>For 2 to 10 properties under one account.</value>
+    </data>
+    <data name="PlanGroupsFeature1" xml:space="preserve">
+        <value>Everything in Professional</value>
+    </data>
+    <data name="PlanGroupsFeature2" xml:space="preserve">
+        <value>Central reports and group rates</value>
+    </data>
+    <data name="PlanGroupsFeature3" xml:space="preserve">
+        <value>Guest profiles shared across properties</value>
+    </data>
+    <data name="PlanGroupsFeature4" xml:space="preserve">
+        <value>One login with roles per property</value>
+    </data>
+    <data name="PlanEnterprise" xml:space="preserve">
+        <value>Enterprise</value>
+    </data>
+    <data name="PlanEnterpriseSummary" xml:space="preserve">
+        <value>For more than 10 properties or 500 rooms.</value>
+    </data>
+    <data name="PlanEnterprisePrice" xml:space="preserve">
+        <value>Let's talk</value>
+    </data>
+    <data name="Enterprise1" xml:space="preserve">
+        <value>Integrations with your door locks, POS and accounting</value>
+    </data>
+    <data name="Enterprise2" xml:space="preserve">
+        <value>A 99.9% uptime commitment</value>
+    </data>
+    <data name="Enterprise3" xml:space="preserve">
+        <value>A named account manager and on-site training</value>
+    </data>
+    <data name="Enterprise4" xml:space="preserve">
+        <value>Nightly export to your data warehouse</value>
+    </data>
+    <data name="TalkToUs" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="PricingFaqEyebrow" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="PricingFaqTitle" xml:space="preserve">
+        <value>Before you ask the bank</value>
+    </data>
+    <data name="PricingFaq1Question" xml:space="preserve">
+        <value>Is there a setup fee?</value>
+    </data>
+    <data name="PricingFaq1Answer" xml:space="preserve">
+        <value>No. We import your bookings, guests and rates from your current system for free, and the first training session is included.</value>
+    </data>
+    <data name="PricingFaq2Question" xml:space="preserve">
+        <value>What counts as a room?</value>
+    </data>
+    <data name="PricingFaq2Answer" xml:space="preserve">
+        <value>Every unit you sell by the night: rooms, apartments or dorm beds sold as one unit. Rooms that are out of order still count.</value>
+    </data>
+    <data name="PricingFaq3Question" xml:space="preserve">
+        <value>Do you take a commission on bookings?</value>
+    </data>
+    <data name="PricingFaq3Answer" xml:space="preserve">
+        <value>Never. The booking engine and the channel manager are part of the plan price, however many nights you sell.</value>
+    </data>
+    <data name="PricingFaq4Question" xml:space="preserve">
+        <value>Can we change plans or room count later?</value>
+    </data>
+    <data name="PricingFaq4Answer" xml:space="preserve">
+        <value>Yes, from one month to the next. Adding rooms takes effect at once; going down to a smaller plan takes effect at the next bill.</value>
+    </data>
+    <data name="PricingFaq5Question" xml:space="preserve">
+        <value>How does the trial work?</value>
+    </data>
+    <data name="PricingFaq5Answer" xml:space="preserve">
+        <value>30 days of Professional with your own data, no card needed. At the end you choose a plan, or we delete the account and its data.</value>
+    </data>
+    <data name="PressPageTitle" xml:space="preserve">
+        <value>Press kit | Lodgeboard</value>
+    </data>
+    <data name="PressDescription" xml:space="preserve">
+        <value>Facts, logos, colours and contacts for writing about Lodgeboard, the property management system for independent hotels.</value>
+    </data>
+    <data name="PressTitle" xml:space="preserve">
+        <value>Press kit</value>
+    </data>
+    <data name="PressLede" xml:space="preserve">
+        <value>Everything you need to write about Lodgeboard. Use any of it freely, and ask us for anything that isn't here.</value>
+    </data>
+    <data name="PressAboutTitle" xml:space="preserve">
+        <value>Lodgeboard in 60 words</value>
+    </data>
+    <data name="PressAboutText" xml:space="preserve">
+        <value>Lodgeboard makes a property management system for independent hotels, small hotel groups and B&amp;Bs. More than 2,300 properties in 31 countries run their front desk, housekeeping, rates and booking channels on it. The company was founded in Porto in 2017 by a former hotel manager and an engineer, and employs 85 people in Porto and Ljubljana.</value>
+    </data>
+    <data name="PressCopy" xml:space="preserve">
+        <value>Copy the text</value>
+    </data>
+    <data name="PressCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="Fact1Label" xml:space="preserve">
+        <value>Founded</value>
+    </data>
+    <data name="Fact1Value" xml:space="preserve">
+        <value>2017, in Porto</value>
+    </data>
+    <data name="Fact2Label" xml:space="preserve">
+        <value>Offices</value>
+    </data>
+    <data name="Fact2Value" xml:space="preserve">
+        <value>Porto and Ljubljana</value>
+    </data>
+    <data name="Fact3Label" xml:space="preserve">
+        <value>People</value>
+    </data>
+    <data name="Fact3Value" xml:space="preserve">
+        <value>85</value>
+    </data>
+    <data name="Fact4Label" xml:space="preserve">
+        <value>Properties</value>
+    </data>
+    <data name="Fact4Value" xml:space="preserve">
+        <value>2,300 in 31 countries</value>
+    </data>
+    <data name="Fact5Label" xml:space="preserve">
+        <value>Nights in 2025</value>
+    </data>
+    <data name="Fact5Value" xml:space="preserve">
+        <value>4.1 million</value>
+    </data>
+    <data name="Fact6Label" xml:space="preserve">
+        <value>Funding</value>
+    </data>
+    <data name="Fact6Value" xml:space="preserve">
+        <value>Profitable since 2021, no outside investors</value>
+    </data>
+    <data name="PressLogosTitle" xml:space="preserve">
+        <value>Logos and colours</value>
+    </data>
+    <data name="PressLogosLede" xml:space="preserve">
+        <value>Vector files, ready for print and screen. Please don't redraw, recolour or stretch them.</value>
+    </data>
+    <data name="LogoFull" xml:space="preserve">
+        <value>Logo, for light backgrounds</value>
+    </data>
+    <data name="LogoFullNote" xml:space="preserve">
+        <value>SVG, charcoal and brass</value>
+    </data>
+    <data name="LogoLight" xml:space="preserve">
+        <value>Logo, for dark backgrounds</value>
+    </data>
+    <data name="LogoLightNote" xml:space="preserve">
+        <value>SVG, stone and brass</value>
+    </data>
+    <data name="LogoMark" xml:space="preserve">
+        <value>Key tag mark</value>
+    </data>
+    <data name="LogoMarkNote" xml:space="preserve">
+        <value>SVG, for small spaces and app icons</value>
+    </data>
+    <data name="PressDownloadSvg" xml:space="preserve">
+        <value>Download SVG</value>
+    </data>
+    <data name="PressColorsTitle" xml:space="preserve">
+        <value>Colours</value>
+    </data>
+    <data name="ColorCharcoal" xml:space="preserve">
+        <value>Charcoal</value>
+    </data>
+    <data name="ColorBrass" xml:space="preserve">
+        <value>Brass</value>
+    </data>
+    <data name="ColorStone" xml:space="preserve">
+        <value>Stone</value>
+    </data>
+    <data name="PressUsage" xml:space="preserve">
+        <value>Write the name as Lodgeboard, one word with a capital L. The key tag stands on its own only where the full logo doesn't fit.</value>
+    </data>
+    <data name="PressFoundersTitle" xml:space="preserve">
+        <value>Founders</value>
+    </data>
+    <data name="Founder1Name" xml:space="preserve">
+        <value>Teresa Lobo</value>
+    </data>
+    <data name="Founder1Role" xml:space="preserve">
+        <value>Co-founder and CEO</value>
+    </data>
+    <data name="Founder1Bio" xml:space="preserve">
+        <value>Ran a 40-room hotel on the Douro for nine years before she started Lodgeboard. Still does a desk shift at a customer's hotel once a quarter.</value>
+    </data>
+    <data name="Founder2Name" xml:space="preserve">
+        <value>Luka Horvat</value>
+    </data>
+    <data name="Founder2Role" xml:space="preserve">
+        <value>Co-founder and CTO</value>
+    </data>
+    <data name="Founder2Bio" xml:space="preserve">
+        <value>Built booking systems for an Alpine ski resort group in Kranjska Gora, then led Lodgeboard's engineering from the first line of code.</value>
+    </data>
+    <data name="PressContactTitle" xml:space="preserve">
+        <value>Press contact</value>
+    </data>
+    <data name="PressContactName" xml:space="preserve">
+        <value>Ana Ribeiro</value>
+    </data>
+    <data name="PressContactRole" xml:space="preserve">
+        <value>Communications, Porto</value>
+    </data>
+    <data name="PressContactNote" xml:space="preserve">
+        <value>We answer press requests within a working day, and can arrange interviews and a visit to a customer's hotel.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Lodgeboard</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Lodgeboard was started in Porto in 2017 by a hotel manager and an engineer. 85 people in Porto and Ljubljana now build it for 2,300 properties.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>We make software for the people behind the desk: owners, receptionists, housekeepers and night porters. 85 of us, in Porto and Ljubljana.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>Started at a front desk</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Teresa Lobo ran a 40-room hotel on the Douro for nine years, with three systems that didn't talk to each other and a whiteboard that did the real work.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>In 2017 she and Luka Horvat built that whiteboard as software: one board for arrivals, rooms and housekeeping, connected to the booking sites. Her own hotel was the first customer.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>Lodgeboard has been profitable since 2021, without outside investors, so the roadmap is written by hoteliers, not by a board.</value>
+    </data>
+    <data name="PrinciplesTitle" xml:space="preserve">
+        <value>How we work</value>
+    </data>
+    <data name="Principle1Title" xml:space="preserve">
+        <value>Answer like a night porter</value>
+    </data>
+    <data name="Principle1Body" xml:space="preserve">
+        <value>Hotels don't close, so neither does support. A person answers by chat or phone day and night, in a median of four minutes.</value>
+    </data>
+    <data name="Principle2Title" xml:space="preserve">
+        <value>Work a shift every quarter</value>
+    </data>
+    <data name="Principle2Body" xml:space="preserve">
+        <value>Everyone at Lodgeboard, engineers included, spends a shift at a customer's front desk every three months.</value>
+    </data>
+    <data name="Principle3Title" xml:space="preserve">
+        <value>Never hold your data hostage</value>
+    </data>
+    <data name="Principle3Body" xml:space="preserve">
+        <value>Bookings, guests and invoices can be exported at any time, in open formats, and moving away costs nothing.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>Some of the people behind it</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Sofia Marques</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Head of Support</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Ana Ribeiro</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Communications</value>
+    </data>
+    <data name="OfficesTitle" xml:space="preserve">
+        <value>Offices</value>
+    </data>
+    <data name="OfficePorto" xml:space="preserve">
+        <value>Porto</value>
+    </data>
+    <data name="OfficePortoNote" xml:space="preserve">
+        <value>Head office, support and sales.</value>
+    </data>
+    <data name="OfficeLjubljana" xml:space="preserve">
+        <value>Ljubljana</value>
+    </data>
+    <data name="OfficeLjubljanaAddress" xml:space="preserve">
+        <value>Trubarjeva cesta 42, 1000 Ljubljana, Slovenia</value>
+    </data>
+    <data name="OfficeLjubljanaNote" xml:space="preserve">
+        <value>Engineering and night support.</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>Questions about the product, a trial or moving from your current system: write to us and a person answers within a working day.</value>
+    </data>
+    <data name="ContactHours" xml:space="preserve">
+        <value>Customers reach support around the clock, by chat in the app or by phone.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>Company details</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This room isn't on the board</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The page you asked for doesn't exist, or its key was handed back. The front desk is right where you left it.</value>
+    </data>
+    <data name="NotFoundKey" xml:space="preserve">
+        <value>Key not on the hook</value>
+    </data>
+    <data name="NotFoundPricing" xml:space="preserve">
+        <value>See the prices</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Hotel software</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A property management system for independent hotels, live on the web, Windows and iPad: a front desk you can work, a price-per-room calculator and a press kit.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Front desk in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Room calculator</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Press kit</value>
+    </data>
+</root>

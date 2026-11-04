@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Northside Market: سفارش از قبل، تحویل از فروشگاه محله</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>خریدتان را در اپ Northside Market سفارش بدهید و در ساعتی که خودتان انتخاب می‌کنید، از یکی از شش فروشگاه ما در دوبلین تحویل بگیرید. تخفیف‌های این هفته و Northside Card هم در همین اپ است.</value>
+    </data>
+    <data name="NavOffers" xml:space="preserve">
+        <value>تخفیف‌ها</value>
+    </data>
+    <data name="NavCollect" xml:space="preserve">
+        <value>تحویل حضوری</value>
+    </data>
+    <data name="NavCard" xml:space="preserve">
+        <value>Northside Card</value>
+    </data>
+    <data name="NavStores" xml:space="preserve">
+        <value>فروشگاه‌ها</value>
+    </data>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>دریافت اپ</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>یک سوپرمارکت خانوادگی با شش فروشگاه در شمال دوبلین، از سال 1998.</value>
+    </data>
+    <data name="FooterShop" xml:space="preserve">
+        <value>خرید</value>
+    </data>
+    <data name="FooterOffers" xml:space="preserve">
+        <value>تخفیف‌های این هفته</value>
+    </data>
+    <data name="FooterCollect" xml:space="preserve">
+        <value>سفارش و تحویل حضوری</value>
+    </data>
+    <data name="FooterCard" xml:space="preserve">
+        <value>Northside Card</value>
+    </data>
+    <data name="FooterStores" xml:space="preserve">
+        <value>پیدا کردن فروشگاه</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>از فروشگاه بپرسید</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>کدام فروشگاه دیرتر از همه باز است؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>نوبت‌های تحویل چطور کار می‌کنند؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>امتیازهای Northside Card چطور حساب می‌شود؟</value>
+    </data>
+    <data name="Money" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="TimeRange" xml:space="preserve">
+        <value>{0} تا {1}</value>
+    </data>
+    <data name="ShopPhibsborough" xml:space="preserve">
+        <value>فیبزبرو</value>
+    </data>
+    <data name="ShopStoneybatter" xml:space="preserve">
+        <value>استونی‌بتر</value>
+    </data>
+    <data name="ShopDrumcondra" xml:space="preserve">
+        <value>درامکاندرا</value>
+    </data>
+    <data name="ShopGlasnevin" xml:space="preserve">
+        <value>گلاسنوین</value>
+    </data>
+    <data name="ShopFairview" xml:space="preserve">
+        <value>فرویو</value>
+    </data>
+    <data name="ShopClontarf" xml:space="preserve">
+        <value>کلانتارف</value>
+    </data>
+    <data name="ServiceCollect" xml:space="preserve">
+        <value>تحویل حضوری</value>
+    </data>
+    <data name="ServiceBakery" xml:space="preserve">
+        <value>نانوایی</value>
+    </data>
+    <data name="ServiceDeli" xml:space="preserve">
+        <value>پیشخوان اغذیه</value>
+    </data>
+    <data name="ServiceFish" xml:space="preserve">
+        <value>پیشخوان ماهی</value>
+    </data>
+    <data name="ServiceParking" xml:space="preserve">
+        <value>پارکینگ</value>
+    </data>
+    <data name="ServiceFlowers" xml:space="preserve">
+        <value>گل</value>
+    </data>
+    <data name="OpenUntil" xml:space="preserve">
+        <value>باز تا {0}</value>
+    </data>
+    <data name="ClosesSoon" xml:space="preserve">
+        <value>به‌زودی می‌بندد، ساعت {0}</value>
+    </data>
+    <data name="OpensAt" xml:space="preserve">
+        <value>ساعت {0} باز می‌شود</value>
+    </data>
+    <data name="OpensTomorrow" xml:space="preserve">
+        <value>فردا ساعت {0} باز می‌شود</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>تحویل حضوری در شش فروشگاه</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>ظهر سفارش بدهید، سر راه خانه تحویل بگیرید.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>سبد خریدتان را در اپ Northside Market پر کنید و یکی از شش فروشگاه و ساعتی را که برایتان مناسب است انتخاب کنید؛ خریدتان بسته‌بندی‌شده پشت پیشخوان منتظرتان است. تخفیف‌های این هفته و Northside Card شما هم در همین اپ است.</value>
+    </data>
+    <data name="HeroFactSlots" xml:space="preserve">
+        <value>نوبت‌های یک‌ساعته، از 10:00 تا 21:00</value>
+    </data>
+    <data name="HeroFactFree" xml:space="preserve">
+        <value>تحویل رایگان برای خرید بالای 40 یورو</value>
+    </data>
+    <data name="HeroFactRating" xml:space="preserve">
+        <value>امتیاز {0} در Google، از {1} نظر</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>انتخاب نوبت تحویل، از داخل اپ. امتحانش کنید.</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>سفارش و تحویل حضوری</value>
+    </data>
+    <data name="DemoBasket" xml:space="preserve">
+        <value>سبد: {0} قلم، {1}</value>
+    </data>
+    <data name="DemoShop" xml:space="preserve">
+        <value>تحویل از</value>
+    </data>
+    <data name="DemoDay" xml:space="preserve">
+        <value>روز</value>
+    </data>
+    <data name="DemoTime" xml:space="preserve">
+        <value>ساعت تحویل</value>
+    </data>
+    <data name="DemoToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="DemoTomorrow" xml:space="preserve">
+        <value>فردا</value>
+    </data>
+    <data name="DemoFull" xml:space="preserve">
+        <value>پر</value>
+    </data>
+    <data name="DemoSlotSummary" xml:space="preserve">
+        <value>{0}، {1} تا {2}</value>
+    </data>
+    <data name="DemoPickSlot" xml:space="preserve">
+        <value>یک ساعت تحویل انتخاب کنید</value>
+    </data>
+    <data name="DemoFree" xml:space="preserve">
+        <value>تحویل رایگان است: سبدتان بالای 40 یوروست.</value>
+    </data>
+    <data name="DemoBook" xml:space="preserve">
+        <value>رزرو این نوبت</value>
+    </data>
+    <data name="DemoBooked" xml:space="preserve">
+        <value>نوبت رزرو شد</value>
+    </data>
+    <data name="DemoCode" xml:space="preserve">
+        <value>کد تحویل</value>
+    </data>
+    <data name="DemoTextYou" xml:space="preserve">
+        <value>وقتی بسته‌بندی تمام شد پیامک می‌دهیم. کد را پشت پیشخوان بگویید.</value>
+    </data>
+    <data name="DemoChange" xml:space="preserve">
+        <value>تغییر نوبت</value>
+    </data>
+    <data name="DemoStepBooked" xml:space="preserve">
+        <value>نوبت برایتان نگه داشته شد</value>
+    </data>
+    <data name="DemoStepPick" xml:space="preserve">
+        <value>جمع کردن سفارش از ساعت {0}</value>
+    </data>
+    <data name="DemoStepReady" xml:space="preserve">
+        <value>آماده‌ی تحویل پشت پیشخوان از ساعت {0}</value>
+    </data>
+    <data name="OffersKicker" xml:space="preserve">
+        <value>پنجشنبه تا چهارشنبه</value>
+    </data>
+    <data name="OffersTitle" xml:space="preserve">
+        <value>تخفیف‌های این هفته</value>
+    </data>
+    <data name="OffersLede" xml:space="preserve">
+        <value>قیمت‌ها در هر شش فروشگاه و در اپ یکی است. «قیمت کارت» مخصوص دارندگان Northside Card است و کارت رایگان است.</value>
+    </data>
+    <data name="OfferKindOffer" xml:space="preserve">
+        <value>تخفیف</value>
+    </data>
+    <data name="OfferKindCard" xml:space="preserve">
+        <value>قیمت کارت</value>
+    </data>
+    <data name="OfferKindLocal" xml:space="preserve">
+        <value>محلی</value>
+    </data>
+    <data name="OfferPotatoes" xml:space="preserve">
+        <value>سیب‌زمینی روستر</value>
+    </data>
+    <data name="OfferPotatoesPack" xml:space="preserve">
+        <value>کیسه‌ی دو و نیم کیلویی، از کانتی میث</value>
+    </data>
+    <data name="OfferHake" xml:space="preserve">
+        <value>فیله‌ی ماهی هیک</value>
+    </data>
+    <data name="OfferHakePack" xml:space="preserve">
+        <value>300 گرم، صید بندر هاوث</value>
+    </data>
+    <data name="OfferSourdough" xml:space="preserve">
+        <value>نان ساوردو</value>
+    </data>
+    <data name="OfferSourdoughPack" xml:space="preserve">
+        <value>800 گرم، پخت امروز صبح در فیبزبرو</value>
+    </data>
+    <data name="OfferEggs" xml:space="preserve">
+        <value>تخم‌مرغ محلی</value>
+    </data>
+    <data name="OfferEggsPack" xml:space="preserve">
+        <value>جعبه‌ی 12 تایی، از کانتی ویکلو</value>
+    </data>
+    <data name="OfferApples" xml:space="preserve">
+        <value>سیب پختنی برملی</value>
+    </data>
+    <data name="OfferApplesPack" xml:space="preserve">
+        <value>1 کیلو، از کانتی آرما</value>
+    </data>
+    <data name="OfferCoffee" xml:space="preserve">
+        <value>دانه‌ی قهوه‌ی برشته‌ی خودمان</value>
+    </data>
+    <data name="OfferCoffeePack" xml:space="preserve">
+        <value>250 گرم، برشته‌شده در اسمیتفیلد</value>
+    </data>
+    <data name="OfferPerKg" xml:space="preserve">
+        <value>کیلویی {0}</value>
+    </data>
+    <data name="OfferEach" xml:space="preserve">
+        <value>دانه‌ای {0}</value>
+    </data>
+    <data name="OfferWas" xml:space="preserve">
+        <value>قبلاً {0}</value>
+    </data>
+    <data name="CollectKicker" xml:space="preserve">
+        <value>سفارش و تحویل حضوری</value>
+    </data>
+    <data name="CollectTitle" xml:space="preserve">
+        <value>در همان فروشگاه، به دست کسانی که قفسه‌هایش را می‌شناسند</value>
+    </data>
+    <data name="CollectLede" xml:space="preserve">
+        <value>سفارش شما در همان فروشگاهی جمع می‌شود که از آن تحویل می‌گیرید، به دست کارکنانی که جای همه‌چیز را بلدند. خوراکی‌های یخچالی و یخ‌زده تا رسیدن شما در سردخانه می‌مانند و فقط پول چیزهایی را می‌دهید که در کیسه‌هاست.</value>
+    </data>
+    <data name="CollectRule1" xml:space="preserve">
+        <value>نوبت‌های یک‌ساعته‌ی تحویل، هر روز، در هر شش فروشگاه</value>
+    </data>
+    <data name="CollectRule2Key" xml:space="preserve">
+        <value>2 ساعت زودتر</value>
+    </data>
+    <data name="CollectRule2" xml:space="preserve">
+        <value>دیرترین زمان سفارش برای نوبت‌های همان روز</value>
+    </data>
+    <data name="CollectRule3Key" xml:space="preserve">
+        <value>6 روز</value>
+    </data>
+    <data name="CollectRule3" xml:space="preserve">
+        <value>تا این مدت جلوتر می‌توانید نوبت بگیرید</value>
+    </data>
+    <data name="CollectRule4" xml:space="preserve">
+        <value>تحویل سفارش‌های بالاتر از این مبلغ رایگان است و پایین‌تر از آن 2 یورو</value>
+    </data>
+    <data name="TicketTitle" xml:space="preserve">
+        <value>سفارش پنجشنبه</value>
+    </data>
+    <data name="Ticket1" xml:space="preserve">
+        <value>سر ناهار سفارش می‌دهید: 23 قلم، 64٫80 یورو، و برای دو قلم اجازه‌ی جایگزین.</value>
+    </data>
+    <data name="Ticket2" xml:space="preserve">
+        <value>کاشا سفارش را در فروشگاه فیبزبرو جمع می‌کند و نوشیدنی جوی دوسرِ تمام‌شده را با همانی عوض می‌کند که اجازه داده بودید.</value>
+    </data>
+    <data name="Ticket3" xml:space="preserve">
+        <value>بسته‌بندی تمام شد. کیسه‌های یخچالی و یخ‌زده به سردخانه می‌روند و برایتان پیامک می‌آید.</value>
+    </data>
+    <data name="Ticket4" xml:space="preserve">
+        <value>کد را پشت پیشخوان می‌گویید و دو دقیقه بعد بیرون آمده‌اید.</value>
+    </data>
+    <data name="CardKicker" xml:space="preserve">
+        <value>Northside Card</value>
+    </data>
+    <data name="CardTitle" xml:space="preserve">
+        <value>هر یورو یک امتیاز. هر 500 امتیاز 5 یورو.</value>
+    </data>
+    <data name="CardLede" xml:space="preserve">
+        <value>کارت در اپ است، پس هیچ‌وقت در جیب کت دیگر جا نمی‌ماند. سر هر صندوقی اسکنش کنید یا بگذارید سفارش آنلاین خودش ثبتش کند؛ بن‌ها هم خودشان از خرید بعدی کم می‌شوند.</value>
+    </data>
+    <data name="CardSliderLabel" xml:space="preserve">
+        <value>خرید هفتگی شما</value>
+    </data>
+    <data name="CardResultPoints" xml:space="preserve">
+        <value>امتیاز در سال</value>
+    </data>
+    <data name="CardResultVouchers" xml:space="preserve">
+        <value>بن 5 یورویی</value>
+    </data>
+    <data name="CardResultBack" xml:space="preserve">
+        <value>برگشتی در سال</value>
+    </data>
+    <data name="CardTuesday" xml:space="preserve">
+        <value>سه‌شنبه‌ها امتیاز میوه و سبزی دوبرابر است.</value>
+    </data>
+    <data name="CardVisualAlt" xml:space="preserve">
+        <value>یک Northside Card در اپ با {0} امتیاز</value>
+    </data>
+    <data name="CardPoints" xml:space="preserve">
+        <value>امتیاز</value>
+    </data>
+    <data name="CardNext" xml:space="preserve">
+        <value>{0} امتیاز تا بن {1} بعدی</value>
+    </data>
+    <data name="ShopsKicker" xml:space="preserve">
+        <value>شش فروشگاه</value>
+    </data>
+    <data name="ShopsTitle" xml:space="preserve">
+        <value>همه شمال رود لیفی، همه با تحویل حضوری</value>
+    </data>
+    <data name="ShopsCta" xml:space="preserve">
+        <value>ساعت کاری و مسیرها</value>
+    </data>
+    <data name="MapAlt" xml:space="preserve">
+        <value>نقشه‌ی شمال دوبلین با شش فروشگاه ما: استونی‌بتر، فیبزبرو، گلاسنوین، درامکاندرا، فرویو و کلانتارف</value>
+    </data>
+    <data name="ReviewsKicker" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>همسایه‌ها چه می‌گویند</value>
+    </data>
+    <data name="ReviewsCount" xml:space="preserve">
+        <value>{0} نظر در Google</value>
+    </data>
+    <data name="ReviewsStarsAlt" xml:space="preserve">
+        <value>امتیاز {0} از 5</value>
+    </data>
+    <data name="ReviewsBarAlt" xml:space="preserve">
+        <value>{0} ستاره: {1} درصد نظرها</value>
+    </data>
+    <data name="ReviewsLink" xml:space="preserve">
+        <value>خواندن همه‌ی نظرها در Google</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>دارا ا.</value>
+    </data>
+    <data name="Review1When" xml:space="preserve">
+        <value>2 هفته پیش</value>
+    </data>
+    <data name="Review1Text" xml:space="preserve">
+        <value>حدود ساعت یک پشت میزم سفارش می‌دهم و سر راه برگشت از کار در درامکاندرا تحویل می‌گیرم. هر پنجشنبه بیست دقیقه صرفه‌جویی، و حتی یک بار هم تخم‌مرغ‌ها را جا نینداخته‌اند.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>اوا ک.</value>
+    </data>
+    <data name="Review2When" xml:space="preserve">
+        <value>یک ماه پیش</value>
+    </data>
+    <data name="Review2Text" xml:space="preserve">
+        <value>فقط نان ساوردو ارزش پیاده‌روی تا فیبزبرو را دارد. کارکنان اسمم را بلدند و اپ هم این را عوض نکرده.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>انکچی ا.</value>
+    </data>
+    <data name="Review3When" xml:space="preserve">
+        <value>3 روز پیش</value>
+    </data>
+    <data name="Review3Text" xml:space="preserve">
+        <value>کلانتارف فروشگاه محله‌ی من است و نوبت‌ها همیشه سر وقت‌اند. یک ستاره کم کردم، چون جمعه‌ها نوبت ساعت 18:00 زود پر می‌شود.</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>پیش از اولین سفارش</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>تحویل حضوری چقدر هزینه دارد؟</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>برای سفارش‌های بالای 40 یورو هیچ. پایین‌تر از آن 2 یورو. قیمت‌ها همان قیمت روی قفسه است.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>برای امروز تا چه ساعتی می‌توانم سفارش بدهم؟</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>تا دو ساعت پیش از نوبتتان. نوبت‌ها از ساعت 10:00 هر یک ساعت یک بار شروع می‌شوند و آخرینشان 20:00 تا 21:00 است.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>اگر چیزی تمام شده باشد چه می‌شود؟</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>برای هر قلم خودتان تصمیم می‌گیرید: یک کالای مشابه با همان قیمت یا ارزان‌تر، یا هیچ. فقط پول چیزی را می‌دهید که در کیسه‌ها می‌ماند.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>Northside Card را در فروشگاه هم می‌شود استفاده کرد؟</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>بله. کارت را در اپ باز کنید و سر هر صندوقی اسکنش کنید. امتیازها و بن‌ها در فروشگاه و در سفارش آنلاین یکسان کار می‌کنند.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>حتماً باید اپ را نصب کنم؟</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>روی وب هم می‌توانید سفارش بدهید، با همان نوبت‌ها و تخفیف‌ها. Northside Card در اپ است.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>فروشگاه محله‌تان از قبل در اپ است</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>یک بار فروشگاهتان را انتخاب کنید؛ تخفیف‌ها و نوبت‌هایش و Northside Card شما همراهش می‌آیند. رایگان برای آیفون و اندروید.</value>
+    </data>
+    <data name="StoresTitle" xml:space="preserve">
+        <value>فروشگاه خودتان را پیدا کنید</value>
+    </data>
+    <data name="StoresDescription" xml:space="preserve">
+        <value>نشانی، ساعت کاری و مسیر شش فروشگاه Northside Market در دوبلین، همه با تحویل حضوری.</value>
+    </data>
+    <data name="StoresKicker" xml:space="preserve">
+        <value>شش فروشگاه در شمال دوبلین</value>
+    </data>
+    <data name="StoresLede" xml:space="preserve">
+        <value>همه‌ی فروشگاه‌ها تحویل حضوری دارند، با همان قیمت‌های اپ و تخفیف‌های این هفته. نان هر صبح از نانوایی خودمان در فیبزبرو می‌رسد.</value>
+    </data>
+    <data name="StoresMapTitle" xml:space="preserve">
+        <value>نقشه: Northside Market {0}</value>
+    </data>
+    <data name="StoresMapLoading" xml:space="preserve">
+        <value>نقشه تا لحظه‌ای دیگر نمایش داده می‌شود.</value>
+    </data>
+    <data name="StoresDirections" xml:space="preserve">
+        <value>مسیریابی</value>
+    </data>
+    <data name="StoresHoursCaption" xml:space="preserve">
+        <value>ساعت کاری {0}</value>
+    </data>
+    <data name="StoresToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="StoresEveryDay" xml:space="preserve">
+        <value>همه‌ی روزها</value>
+    </data>
+    <data name="StoresDayRange" xml:space="preserve">
+        <value>{0} تا {1}</value>
+    </data>
+    <data name="StoresShowOnMap" xml:space="preserve">
+        <value>نمایش روی نقشه</value>
+    </data>
+    <data name="StoresHolidayTitle" xml:space="preserve">
+        <value>تعطیلات رسمی و کریسمس</value>
+    </data>
+    <data name="StoresHolidayBody" xml:space="preserve">
+        <value>ساعت کاری در تعطیلات رسمی و ایام کریسمس تغییر می‌کند. اپ ساعت‌های تازه‌ی هر فروشگاه را دو هفته زودتر نشان می‌دهد و این صفحه هم.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>سوپرمارکتی که هیچ‌وقت از شمال شهر نرفت</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>این‌که چطور یک فروشگاه در خیابان فیبزبرو شش فروشگاه شد، با همان نانوایی و همان کشاورزها از سال 1998.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Northside Market سال 1998 با یک فروشگاه در خیابان فیبزبرو شروع شد. حالا شش فروشگاه است، همه شمال رود لیفی، و هنوز یک کسب‌وکار خانوادگی.</value>
+    </data>
+    <data name="FrontsTitle" xml:space="preserve">
+        <value>شش فروشگاه ما و سال افتتاح هر کدام</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>یک تنور، همان کشاورزها</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>سیوبان برن اولین فروشگاه را با برادرش کیران باز کرد؛ با یک تنور نان در اتاق پشتی و سبزی از کشاورزهای راش و لاسک، نیم ساعت بالاتر در امتداد ساحل.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>تنور هنوز هر روز پیش از ساعت هفت صبح برای هر شش فروشگاه نان می‌پزد و بیشتر کشاورزها همان خانواده‌های قدیمی‌اند. فروشگاه تازه فقط جایی باز می‌شود که نان پیش از باز شدن درها به آن برسد.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>چیزی که عوض شد صف بود. از وقتی اپ در سال 2024 آمد، حدود یک‌سوم مشتری‌ها از قبل سفارش می‌دهند و سر راه خانه تحویل می‌گیرند، و صندوق‌ها برای بقیه هم خلوت‌تر شده‌اند.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>کسانی که می‌بینیدشان</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>سیوبان برن</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>بنیان‌گذار و مدیرعامل</value>
+    </data>
+    <data name="Team1Note" xml:space="preserve">
+        <value>صبح‌های شنبه هنوز پشت صندوق فیبزبرو می‌ایستد.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>توماش ووی‌چیک</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>سرپرست نانوایی</value>
+    </data>
+    <data name="Team2Note" xml:space="preserve">
+        <value>ساعت چهار صبح کارش را شروع می‌کند. دستور نان ساوردو مال مادربزرگش است.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>آدائزه انوانکوو</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>تحویل حضوری</value>
+    </data>
+    <data name="Team3Note" xml:space="preserve">
+        <value>مسئول جمع‌کننده‌های سفارش در هر شش فروشگاه و زمان‌بندی نوبت‌هاست.</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>روی کوستا</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>اپ و Northside Card</value>
+    </data>
+    <data name="Team4Note" xml:space="preserve">
+        <value>همه‌ی نظرهای اپ را می‌خواند، حتی آن‌هایی را که یک ستاره دارند.</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>سؤالی درباره‌ی سفارش، یکی از فروشگاه‌ها یا کارتتان دارید؟ دوشنبه تا جمعه، از ساعت 9:00 تا 17:00، به دفتر ما در طبقه‌ی بالای فروشگاه فیبزبرو ایمیل بزنید یا زنگ بزنید. یک انسان جواب می‌دهد.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>مشخصات شرکت</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این راهرو وجود ندارد</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>شاید صفحه جابه‌جا شده یا نشانی اشتباه تایپ شده. فروشگاه‌ها هنوز سر جایشان هستند.</value>
+    </data>
+    <data name="NotFoundStores" xml:space="preserve">
+        <value>پیدا کردن فروشگاه</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>سوپرمارکت محله</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>اپ یک زنجیره‌ی سوپرمارکت که روی آیفون، اندروید و وب منتشر شده: انتخاب نوبت تحویل که می‌شود امتحانش کرد، فروشگاه‌یاب با نقشه و ساعت کاری، و کارت وفاداری.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>انتخاب نوبت در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>فروشگاه‌یاب و نقشه</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>چت کناری</value>
+    </data>
+</root>

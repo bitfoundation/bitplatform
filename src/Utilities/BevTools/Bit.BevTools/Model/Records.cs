@@ -115,6 +115,33 @@ public sealed class BevHttpRecord
     public long TimelineEventId { get; set; }
 
     /// <summary>
+    /// The W3C trace id the request carried to the server in its <c>traceparent</c> header - what the server's spans and
+    /// logs are filed under in a tracing backend (OpenTelemetry) - when it carried one. HttpClient adds the header below
+    /// BevTools' handler, so it is read once the request completes; a client that propagates nothing (the browser's
+    /// HttpClient by default) has none.
+    /// </summary>
+    public string? TraceId { get; set; }
+
+    /// <summary>The client span the server's work is a child of: the <c>traceparent</c> header's parent id.</summary>
+    public string? SpanId { get; set; }
+
+    /// <summary>What the request is beyond plain HTTP, from its content types and path: "gRPC", "server-sent events", "GraphQL".</summary>
+    public string? Protocol { get; set; }
+
+    /// <summary>The GraphQL operation its body names (<c>operationName</c>), when bodies are captured.</summary>
+    public string? GraphQlOperation { get; set; }
+
+    /// <summary>The request body, redacted and bounded, when <see cref="BitBevToolsOptions.CaptureHttpBodies"/> asked for it.</summary>
+    public string? RequestBody { get; set; }
+
+    /// <summary>Why the request body was not read, when bodies are captured and it was not.</summary>
+    public string? RequestBodyNote { get; set; }
+
+    public string? ResponseBody { get; set; }
+
+    public string? ResponseBodyNote { get; set; }
+
+    /// <summary>
     /// The request's cancellation token was cancelled before it completed. Inside the handler pipeline the caller
     /// cancelling and <c>HttpClient.Timeout</c> elapsing look the same (the client tells them apart above the handlers),
     /// so a cancelled request is neither called a failure nor a timeout.
@@ -334,6 +361,9 @@ public sealed class BevStateChangeRecord
     public long? TriggerEventId { get; init; }
 
     public long TimelineEventId { get; set; }
+
+    /// <summary>The provider's token for the state after this change, when the provider can restore it (<see cref="IBevStateRestorer"/>).</summary>
+    public string? RestoreToken { get; init; }
 }
 
 public sealed record BevStateDiffEntry(string Path, string? Before, string? After)

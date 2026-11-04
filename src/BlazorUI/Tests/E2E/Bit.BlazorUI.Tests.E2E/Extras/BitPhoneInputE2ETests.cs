@@ -1013,6 +1013,28 @@ public class BitPhoneInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTree()
+    {
+        await Page.SetViewportSizeAsync(375, 700);
+        await OpenAsync(Route);
+
+        // A closed panel is laid out beside the screen for the slide that brings it in, and none of the closed panels of
+        // the page leaves its close button there for a screen reader - or a test - to find.
+        var close = Page.GetByRole(AriaRole.Button, new() { Name = "Close the list", Exact = true });
+        await Expect(close).ToHaveCountAsync(0);
+
+        var callout = await OpenCalloutAsync("phi-responsive");
+        await Expect(close).ToHaveCountAsync(1);
+
+        await close.ClickAsync();
+
+        await Expect(Dropdown("phi-responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToHaveCSSAsync("visibility", "hidden");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(close).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
     public async Task ExternalIcons_ResponsiveCloseIconAndIconName()
     {
         await Page.SetViewportSizeAsync(375, 700);

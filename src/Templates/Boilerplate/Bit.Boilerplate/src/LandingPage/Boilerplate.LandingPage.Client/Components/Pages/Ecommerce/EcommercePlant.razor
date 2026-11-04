@@ -1,0 +1,17 @@
+<svg class="ecommerce-plant @Class" viewBox="-130 -232 260 304" role="img" aria-label="@Label" style="--pot: @PotColor; --plant-scale: @Scale">
+    <g class="ecommerce-plant-leaves">
+        <path d="M0 0 C -6 -40, -40 -70, -62 -96 M0 0 C 4 -50, 18 -100, 14 -140 M0 0 C 10 -36, 46 -62, 70 -84 M0 0 C -2 -30, -18 -54, -30 -66" class="ecommerce-plant-stem" />
+        @foreach (var (x, y, angle, size, deep) in leaves)
+        {
+            <g transform="@FormattableString.Invariant($"translate({x} {y}) rotate({angle}) scale({size})")">
+                <path d="M0 0 C -24 -6, -38 -34, -24 -60 C -14 -74, 14 -74, 24 -60 C 38 -34, 24 -6, 0 0 Z" class="@(deep ? "ecommerce-plant-leaf-deep" : "ecommerce-plant-leaf")" />
+                <path d="M0 -3 L 0 -64" class="ecommerce-plant-vein" />
+                <path d="M0 -16 L -20 -24 M0 -30 L -27 -38 M0 -44 L -21 -52 M0 -16 L 20 -24 M0 -30 L 27 -38 M0 -44 L 21 -52" class="ecommerce-plant-cut" />
+            </g>
+        }
+    </g>
+    <g class="ecommerce-plant-pot">
+        <path d="M -44 4 L 44 4 L 36 62 Q 35 68 29 68 L -29 68 Q -35 68 -36 62 Z" />
+        <rect x="-50" y="-8" width="100" height="16" rx="5" />
+    </g>
+</svg>

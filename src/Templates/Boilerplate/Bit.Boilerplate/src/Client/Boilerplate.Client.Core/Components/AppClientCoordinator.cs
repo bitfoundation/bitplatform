@@ -233,6 +233,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 return;
 
             propagatingUser = user;
+            lastPropagatedUser = null;
 
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 

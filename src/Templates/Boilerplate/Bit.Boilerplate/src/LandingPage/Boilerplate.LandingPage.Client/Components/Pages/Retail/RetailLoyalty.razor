@@ -1,0 +1,50 @@
+@inherits LandingComponentBase
+
+<div class="loyalty">
+    <div class="loyalty-card" role="img" aria-label="@R[nameof(RetailStrings.CardVisualAlt), Balance.ToString("N0", CurrentCulture)]">
+        <div class="loyalty-card-head" aria-hidden="true">
+            <RetailLogo />
+            <span>Northside Card</span>
+        </div>
+        <p class="loyalty-card-name" aria-hidden="true">Aoife Murphy</p>
+        <div class="loyalty-card-points" aria-hidden="true">
+            <strong>@Balance.ToString("N0", CurrentCulture)</strong>
+            <span>@R[nameof(RetailStrings.CardPoints)]</span>
+        </div>
+        <div class="loyalty-card-bar" aria-hidden="true"><span style="@FormattableString.Invariant($"width: {Balance * 100 / VoucherPoints}%")"></span></div>
+        <p class="loyalty-card-next" aria-hidden="true">@R[nameof(RetailStrings.CardNext), (VoucherPoints - Balance).ToString("N0", CurrentCulture), Money(VoucherValue)]</p>
+        <svg class="loyalty-card-barcode" viewBox="0 0 162 40" preserveAspectRatio="none" aria-hidden="true">
+            @foreach (var (x, width) in bars)
+            {
+                <rect x="@x" width="@width" height="40" />
+            }
+        </svg>
+    </div>
+
+    <div class="loyalty-calc">
+        <BitSlider Label="@R[nameof(RetailStrings.CardSliderLabel)]"
+                   Min="20"
+                   Max="250"
+                   Step="5"
+                   @bind-Value="weekly"
+                   GetValueText="v => Money((decimal)v)"
+                   Class="loyalty-slider" />
+
+        <dl class="loyalty-results" aria-live="polite">
+            <div>
+                <dt>@R[nameof(RetailStrings.CardResultPoints)]</dt>
+                <dd>@PointsPerYear.ToString("N0", CurrentCulture)</dd>
+            </div>
+            <div>
+                <dt>@R[nameof(RetailStrings.CardResultVouchers)]</dt>
+                <dd>@Vouchers.ToString("N0", CurrentCulture)</dd>
+            </div>
+            <div class="is-total">
+                <dt>@R[nameof(RetailStrings.CardResultBack)]</dt>
+                <dd>@Money(Vouchers * VoucherValue)</dd>
+            </div>
+        </dl>
+
+        <p class="loyalty-tuesday"><BitIcon IconName="@BitIconName.Calendar" /> @R[nameof(RetailStrings.CardTuesday)]</p>
+    </div>
+</div>

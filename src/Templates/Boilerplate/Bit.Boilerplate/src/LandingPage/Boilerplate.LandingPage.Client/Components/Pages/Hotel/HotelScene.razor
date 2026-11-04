@@ -1,0 +1,267 @@
+@switch (Kind)
+{
+    case HotelSceneKind.Panorama:
+        <svg class="hs hs-panorama @Class" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="800" height="400" class="hs-sky" />
+            <rect y="110" width="800" height="120" class="hs-haze-1" />
+            <rect y="160" width="800" height="70" class="hs-haze-2" />
+            <rect y="200" width="800" height="30" class="hs-haze-3" />
+            <circle cx="120" cy="64" r="1.6" class="hs-star" />
+            <circle cx="230" cy="40" r="1.2" class="hs-star" />
+            <circle cx="420" cy="70" r="1.4" class="hs-star" />
+            <circle cx="520" cy="34" r="1.2" class="hs-star" />
+            <circle cx="760" cy="58" r="1.5" class="hs-star" />
+            <circle cx="606" cy="112" r="30" class="hs-sun" />
+            <path d="M250 96q6-6 12 0q6-6 12 0M292 122q5-5 10 0q5-5 10 0" class="hs-bird" />
+            <rect y="228" width="800" height="62" class="hs-sea" />
+            <path d="M40 244h60M180 252h90M360 242h50M520 250h80M660 244h70M110 266h50M430 262h70" class="hs-glint" />
+            <path d="M700 140 L540 236 L860 236 Z" class="hs-beam" />
+            <path d="M612 238C650 222 724 220 790 236Z" class="hs-sand-deep" />
+            <g transform="translate(700 150)">
+                <path d="M-9 86L-5 0H5L9 86Z" class="hs-tower" />
+                <path d="M-7.7 62L-7 50H7L7.7 62ZM-6.4 38L-5.8 26H5.8L6.4 38ZM-5.2 14L-4.9 5H4.9L5.2 14Z" class="hs-red" />
+                <rect x="-7" y="-11" width="14" height="11" rx="2" class="hs-lamp" />
+                <path d="M-9 -11H9L0 -21Z" class="hs-red" />
+            </g>
+            <path d="M0 290C160 280 300 286 460 282C600 278 700 284 800 280V302H0Z" class="hs-sand-far" />
+            <path d="M0 302C90 264 190 260 280 286C340 302 420 264 520 270C610 276 690 258 800 272V400H0Z" class="hs-sand-deep" />
+            <g transform="translate(150 0)">
+                <rect x="170" y="206" width="10" height="24" class="hs-wall-out" />
+                <rect y="262" width="250" height="44" class="hs-wall-out" />
+                <rect x="246" y="264" width="78" height="8" class="hs-wood-deep" />
+                <rect x="250" y="270" width="70" height="36" class="hs-wood" />
+                <path d="M262 272V306M274 272V306M286 272V306M298 272V306M310 272V306" class="hs-plank" />
+                <path d="M-12 266L56 220H194L262 266Z" class="hs-thatch" />
+                <path d="M56 220H194" class="hs-ridge" />
+                <path d="M80 240L96 227L112 240ZM140 240L156 227L172 240Z" class="hs-wall-out" />
+                <rect x="91" y="232" width="10" height="7" class="hs-win" />
+                <rect x="151" y="232" width="10" height="7" class="hs-win" />
+                @for (var i = 0; i < 7; i++)
+                {
+                    if (i is 3)
+                    {
+                        <rect x="117" y="282" width="16" height="24" class="hs-door" />
+                    }
+                    else
+                    {
+                        <rect x="@(18 + i * 33)" y="278" width="16" height="15" class="hs-win" />
+                    }
+                }
+                <rect x="268" y="280" width="34" height="14" class="hs-win" />
+            </g>
+            <path d="M0 320C120 302 220 320 330 328C450 336 560 306 680 314C740 318 780 312 800 314V400H0Z" class="hs-sand" />
+            <path d="M352 400L448 400L290 306L274 306Z" class="hs-wood" />
+            <path d="M342 388H428M330 374H404M320 361H382M310 349H362M301 338H344M292 328H327M285 319H312M278 311H298" class="hs-plank-light" />
+            <path d="M60 322q-4-18-10-26M60 322q0-20 2-32M60 322q6-16 13-22M112 316q-5-16-11-22M112 316q1-18 4-28M112 316q7-12 14-16M238 326q-4-16-10-22M238 326q2-18 5-26M238 326q6-12 12-15M508 314q-5-16-11-22M508 314q1-18 3-28M508 314q7-12 14-16M590 310q-4-16-10-22M590 310q2-18 4-26M590 310q6-12 12-16M718 314q-5-16-11-22M718 314q1-18 4-28M718 314q7-12 14-16M770 316q-3-14-8-20M770 316q2-16 5-22" class="hs-grass" />
+            <path d="M170 286q-3-12-8-17M170 286q1-14 3-20M170 286q5-9 10-12M470 278q-3-12-8-17M470 278q1-14 3-20M470 278q5-9 10-12" class="hs-grass-far" />
+        </svg>
+        break;
+
+    case HotelSceneKind.DuneRoom:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-wall" />
+            <rect y="236" width="480" height="84" class="hs-floor" />
+            <path d="M0 236H480" class="hs-edge" />
+            <rect x="40" y="48" width="152" height="136" rx="3" class="hs-wood" />
+            <rect x="48" y="56" width="136" height="120" class="hs-sky" />
+            <circle cx="152" cy="86" r="11" class="hs-sun" />
+            <path d="M48 138C76 120 106 126 128 136C148 146 168 130 184 134V176H48Z" class="hs-sand-deep" />
+            <path d="M48 156C82 146 120 160 184 150V176H48Z" class="hs-sand" />
+            <path d="M62 152q-2-10-6-14M62 152q1-11 3-16M150 148q-2-10-6-14M150 148q1-11 3-16M164 150q3-8 7-10" class="hs-grass" />
+            <path d="M116 56V176M48 116H184" class="hs-mullion" />
+            <rect x="32" y="184" width="168" height="16" rx="3" class="hs-wood-deep" />
+            <rect x="46" y="168" width="78" height="18" rx="9" class="hs-throw" />
+            <rect x="130" y="172" width="40" height="14" rx="7" class="hs-linen" />
+            <rect x="206" y="190" width="30" height="46" rx="3" class="hs-wood" />
+            <path d="M221 190V170" class="hs-edge" />
+            <path d="M209 150h24l6 22h-36Z" class="hs-lamp" />
+            <rect x="262" y="104" width="186" height="90" rx="6" class="hs-wood" />
+            <path d="M286 104V194M310 104V194M334 104V194M358 104V194M382 104V194M406 104V194M430 104V194" class="hs-plank" />
+            <rect x="272" y="150" width="76" height="30" rx="12" class="hs-linen" />
+            <rect x="362" y="150" width="76" height="30" rx="12" class="hs-linen" />
+            <path d="M246 178H464V226Q464 238 452 238H258Q246 238 246 226Z" class="hs-linen" />
+            <rect x="246" y="178" width="218" height="16" class="hs-linen-shade" />
+            <path d="M388 178H464V238H388Z" class="hs-throw" />
+            <rect x="256" y="238" width="8" height="12" class="hs-wood-deep" />
+            <rect x="446" y="238" width="8" height="12" class="hs-wood-deep" />
+            <ellipse cx="330" cy="282" rx="124" ry="16" class="hs-rug" />
+            <rect x="308" y="40" width="64" height="46" class="hs-frame" />
+            <rect x="314" y="46" width="52" height="34" class="hs-window" />
+            <path d="M314 68H366M330 68l6-10l6 10" class="hs-edge" />
+        </svg>
+        break;
+
+    case HotelSceneKind.SeaRoom:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-wall" />
+            <rect y="246" width="480" height="74" class="hs-floor" />
+            <path d="M0 246H480" class="hs-edge" />
+            <rect x="44" y="30" width="236" height="216" class="hs-wood" />
+            <rect x="52" y="38" width="220" height="208" class="hs-sky" />
+            <circle cx="112" cy="96" r="20" class="hs-sun" />
+            <rect x="52" y="150" width="220" height="96" class="hs-sea" />
+            <path d="M52 150H272" class="hs-horizon" />
+            <path d="M66 172q10-4 20 0t20 0M158 186q10-4 20 0t20 0M96 204q10-4 20 0t20 0M200 214q10-4 20 0t20 0" class="hs-wave" />
+            <rect x="232" y="118" width="8" height="32" class="hs-tower" />
+            <rect x="232" y="124" width="8" height="5" class="hs-red" />
+            <rect x="232" y="136" width="8" height="5" class="hs-red" />
+            <rect x="231" y="112" width="10" height="6" class="hs-lamp" />
+            <path d="M162 38V246" class="hs-mullion" />
+            <path d="M52 204H272M52 216H272M72 204V246M112 204V246M152 204V246M192 204V246M232 204V246" class="hs-rail" />
+            <path d="M18 24h26v226h-26q10-113 0-226Z" class="hs-curtain" />
+            <path d="M282 24h26q-10 113 0 226h-26Z" class="hs-curtain" />
+            <rect x="328" y="128" width="124" height="68" rx="6" class="hs-wood-deep" />
+            <rect x="334" y="160" width="54" height="24" rx="10" class="hs-linen" />
+            <rect x="394" y="160" width="54" height="24" rx="10" class="hs-linen" />
+            <path d="M318 182H462V232Q462 242 452 242H328Q318 242 318 232Z" class="hs-linen" />
+            <rect x="318" y="182" width="144" height="14" class="hs-linen-shade" />
+            <path d="M318 206H462V214H318Z" class="hs-throw" />
+            <rect x="326" y="242" width="7" height="10" class="hs-wood-deep" />
+            <rect x="448" y="242" width="7" height="10" class="hs-wood-deep" />
+            <ellipse cx="200" cy="286" rx="110" ry="14" class="hs-rug" />
+        </svg>
+        break;
+
+    case HotelSceneKind.Loft:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-thatch-in" />
+            <path d="M0 320V126L240 18L480 126V320Z" class="hs-wall" />
+            <path d="M0 126L240 18L480 126" class="hs-beam-line" />
+            <path d="M118 72L184 42L194 70L128 100Z" class="hs-sky" />
+            <circle cx="160" cy="66" r="1.6" class="hs-star" />
+            <circle cx="174" cy="58" r="1.2" class="hs-star" />
+            <circle cx="240" cy="84" r="20" class="hs-window" />
+            <circle cx="246" cy="78" r="7" class="hs-sun" />
+            <rect x="240" y="150" width="240" height="10" class="hs-wood-deep" />
+            <rect x="300" y="126" width="150" height="24" rx="8" class="hs-linen" />
+            <rect x="306" y="118" width="40" height="14" rx="7" class="hs-linen-shade" />
+            <path d="M240 122H480M256 122V150M286 122V150M316 122V150M346 122V150M376 122V150M406 122V150M436 122V150M466 122V150" class="hs-rail" />
+            <path d="M268 160L298 296M302 160L332 296M272 180H306M277 202H311M282 224H316M287 246H321M292 268H326" class="hs-ladder" />
+            <rect y="292" width="480" height="28" class="hs-floor" />
+            <rect x="48" y="220" width="160" height="30" rx="10" class="hs-throw" />
+            <rect x="48" y="244" width="160" height="30" rx="8" class="hs-throw-deep" />
+            <rect x="58" y="272" width="8" height="20" class="hs-wood-deep" />
+            <rect x="190" y="272" width="8" height="20" class="hs-wood-deep" />
+            <rect x="64" y="226" width="40" height="22" rx="9" class="hs-linen" />
+            <path d="M228 292V200M228 200l-12 -10h24Z" class="hs-edge" />
+            <path d="M216 190h24l5 16h-34Z" class="hs-lamp" />
+            <rect x="360" y="230" width="80" height="62" rx="4" class="hs-wood" />
+            <path d="M360 262H440" class="hs-plank" />
+        </svg>
+        break;
+
+    case HotelSceneKind.Suite:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-wall" />
+            <rect y="250" width="480" height="70" class="hs-stone" />
+            <path d="M0 250H480M120 250L96 320M240 250V320M360 250L384 320" class="hs-edge" />
+            <rect x="24" y="96" width="76" height="154" rx="3" class="hs-wood" />
+            <rect x="44" y="116" width="36" height="46" rx="2" class="hs-win" />
+            <circle cx="90" cy="186" r="3" class="hs-lamp" />
+            <rect x="300" y="36" width="160" height="214" class="hs-wood" />
+            <rect x="308" y="44" width="144" height="206" class="hs-sky" />
+            <rect x="308" y="150" width="144" height="100" class="hs-sea" />
+            <path d="M308 150H452" class="hs-horizon" />
+            <path d="M308 204C340 190 380 196 410 206C430 212 444 204 452 202V250H308Z" class="hs-sand" />
+            <path d="M320 206q-2-10-6-14M320 206q1-11 3-16M436 204q-2-10-6-14M436 204q1-11 3-16" class="hs-grass" />
+            <circle cx="410" cy="88" r="16" class="hs-sun" />
+            <path d="M380 44V250" class="hs-mullion" />
+            <path d="M126 210Q126 250 168 250H246Q288 250 288 210Z" class="hs-tub" />
+            <path d="M120 206H294" class="hs-tub-rim" />
+            <path d="M140 250l-6 12M274 250l6 12" class="hs-metal" />
+            <path d="M264 206V170q0-10-10-10h-14" class="hs-metal" />
+            <path d="M150 196q12-10 24 0t24 0t24 0" class="hs-steam" />
+            <rect x="214" y="96" width="60" height="6" rx="3" class="hs-metal-fill" />
+            <rect x="222" y="102" width="20" height="44" rx="3" class="hs-throw" />
+            <rect x="246" y="102" width="20" height="36" rx="3" class="hs-linen" />
+            <rect x="146" y="214" width="24" height="10" rx="4" class="hs-linen" />
+        </svg>
+        break;
+
+    case HotelSceneKind.Dining:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-wall" />
+            <rect y="250" width="480" height="70" class="hs-floor" />
+            @for (var i = 0; i < 3; i++)
+            {
+                var x = 40 + i * 140;
+
+                <rect x="@x" y="40" width="120" height="166" class="hs-wood" />
+                <rect x="@(x + 6)" y="46" width="108" height="160" class="hs-sky" />
+                <rect x="@(x + 6)" y="140" width="108" height="66" class="hs-sea" />
+                <path d="@FormattableString.Invariant($"M{x + 6} 170C{x + 40} 156 {x + 80} 162 {x + 114} 172V206H{x + 6}Z")" class="hs-sand" />
+            }
+            <circle cx="330" cy="92" r="16" class="hs-sun" />
+            <path d="M120 0V56M240 0V72M360 0V56" class="hs-edge" />
+            <path d="M104 56h32l10 22h-52ZM224 72h32l10 22h-52ZM344 56h32l10 22h-52Z" class="hs-lamp" />
+            <rect x="56" y="214" width="368" height="12" rx="3" class="hs-wood-deep" />
+            <path d="M76 226V276M404 226V276" class="hs-leg" />
+            @for (var i = 0; i < 5; i++)
+            {
+                <ellipse cx="@(96 + i * 72)" cy="212" rx="18" ry="4" class="hs-plate" />
+            }
+            <path d="M226 212q14-16 28 0Z" class="hs-bread" />
+            <rect x="300" y="190" width="10" height="22" rx="4" class="hs-glass" />
+            <rect x="152" y="192" width="9" height="20" rx="4" class="hs-glass" />
+            <rect x="60" y="236" width="140" height="10" rx="3" class="hs-wood" />
+            <rect x="280" y="236" width="140" height="10" rx="3" class="hs-wood" />
+        </svg>
+        break;
+
+    case HotelSceneKind.Sauna:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-sky" />
+            <rect y="90" width="480" height="90" class="hs-haze-1" />
+            <rect y="130" width="480" height="50" class="hs-haze-2" />
+            <rect y="156" width="480" height="24" class="hs-haze-3" />
+            <circle cx="380" cy="70" r="22" class="hs-sun" />
+            <circle cx="90" cy="40" r="1.4" class="hs-star" />
+            <circle cx="210" cy="28" r="1.2" class="hs-star" />
+            <rect y="176" width="480" height="40" class="hs-sea" />
+            <path d="M0 176H480" class="hs-horizon" />
+            <path d="M0 216C90 194 170 200 250 214C330 228 400 204 480 210V320H0Z" class="hs-sand-deep" />
+            <path d="M228 86q-10-12 0-24t0-24M244 92q-10-12 0-24" class="hs-smoke" />
+            <rect x="232" y="96" width="10" height="26" class="hs-wood-deep" />
+            <path d="M138 140L210 98L282 140Z" class="hs-roof-grass" />
+            <rect x="150" y="138" width="120" height="78" class="hs-wood" />
+            <path d="M166 138V216M182 138V216M198 138V216M214 138V216M230 138V216M246 138V216M262 138V216" class="hs-plank" />
+            <rect x="164" y="160" width="30" height="56" class="hs-wood-deep" />
+            <rect x="214" y="156" width="40" height="24" class="hs-win" />
+            <rect x="140" y="216" width="160" height="8" class="hs-wood-deep" />
+            <path d="M150 224V250M290 224V250" class="hs-leg" />
+            <path d="M300 214h24M300 214V196M324 214V196M300 200h24" class="hs-rail" />
+            <path d="M306 200h10v16h-10Z" class="hs-throw" />
+            <path d="M0 270C120 252 220 266 320 278C400 288 450 270 480 272V320H0Z" class="hs-sand" />
+            <path d="M190 320L236 320L208 224L196 224Z" class="hs-wood" />
+            <path d="M60 272q-4-18-10-26M60 272q0-20 2-32M60 272q6-16 13-22M404 280q-4-16-10-22M404 280q2-18 4-26M404 280q6-12 12-16M450 276q-3-14-8-20M450 276q2-16 5-22" class="hs-grass" />
+        </svg>
+        break;
+
+    default:
+        <svg class="hs @Class" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" role="@Role" aria-label="@Label" aria-hidden="@Hidden" focusable="false">
+            <rect width="480" height="320" class="hs-sky" />
+            <rect y="80" width="480" height="80" class="hs-haze-1" />
+            <rect y="116" width="480" height="44" class="hs-haze-2" />
+            <rect y="140" width="480" height="20" class="hs-haze-3" />
+            <circle cx="96" cy="76" r="24" class="hs-sun" />
+            <path d="M300 60q6-6 12 0q6-6 12 0" class="hs-bird" />
+            <rect y="160" width="480" height="56" class="hs-sea" />
+            <path d="M0 160H480" class="hs-horizon" />
+            <path d="M0 214C80 204 160 210 240 206C320 202 400 210 480 204V320H0Z" class="hs-foam" />
+            <path d="M0 222C90 214 170 220 250 216C330 212 410 218 480 212V320H0Z" class="hs-sand" />
+            <path d="M0 226C90 218 170 224 250 220C330 216 410 222 480 216" class="hs-tide" />
+            @foreach (var (x, y, flip) in chairs)
+            {
+                <g transform="@FormattableString.Invariant($"translate({x} {y}) scale({(flip ? -1 : 1)} 1)")">
+                    <path d="M-4 0Q32 -30 68 0V8H-4Z" class="hs-canvas" />
+                    <path d="M14 -16Q16 -6 16 8M32 -22V8M50 -16Q48 -6 48 8" class="hs-canvas-stripe" />
+                    <rect x="-2" y="8" width="66" height="44" rx="3" class="hs-wicker" />
+                    <path d="M-2 18H64M-2 28H64M-2 40H64" class="hs-wicker-line" />
+                    <rect x="6" y="14" width="50" height="22" rx="2" class="hs-wicker-in" />
+                    <path d="M4 52h56l6 10H-2Z" class="hs-wood-deep" />
+                </g>
+            }
+            <path d="M340 300l6-4M352 290l6-4M362 280l6-4M374 272l6-4M386 262l6-4M398 254l6-4" class="hs-steps" />
+        </svg>
+        break;
+}

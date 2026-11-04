@@ -35,6 +35,7 @@ public static class BevTraceExporter
     private const int ConnectionTrack = 72;
     private const int DiagnosticsTrack = 73;
     private const int BevToolsTrack = 74;
+    private const int LogTrack = 75;
     private const int MaxLanes = 16;
 
     /// <summary>
@@ -113,6 +114,9 @@ public static class BevTraceExporter
                         break;
                     case BevToolsEventKind.Diagnostic:
                         Instant(w, e, pid, DiagnosticsTrack, clock.Start(e), session);
+                        break;
+                    case BevToolsEventKind.Log:
+                        Instant(w, e, pid, LogTrack, clock.Start(e), session);
                         break;
                     default:
                         if (e.DurationMs is > 0)
@@ -339,6 +343,7 @@ public static class BevTraceExporter
         Metadata(w, pid, ErrorTrack, "thread_name", "Errors");
         Metadata(w, pid, ConnectionTrack, "thread_name", "Circuit and browser");
         Metadata(w, pid, DiagnosticsTrack, "thread_name", "Diagnostics findings");
+        Metadata(w, pid, LogTrack, "thread_name", "Logs");
         Metadata(w, pid, BevToolsTrack, "thread_name", "BevTools");
     }
 

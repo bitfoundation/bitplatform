@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1307,6 +1309,32 @@ public class BitStickyTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Assert.IsEmpty(Disposals());
+    }
+
+    [TestMethod]
+    public async Task BitStickyDisposeShouldKeepItsDotNetReferenceUntilTheScriptIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until it is disposed it still reports the stuck
+        // edges through the reference the sticky was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Stickies.dispose", _ => true);
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+        });
+
+        var reference = (DotNetObjectReference<BitSticky>)Setups().Single().Arguments[1]!;
+        var sticky = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(sticky, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     private List<Bunit.JSRuntimeInvocation> Setups()

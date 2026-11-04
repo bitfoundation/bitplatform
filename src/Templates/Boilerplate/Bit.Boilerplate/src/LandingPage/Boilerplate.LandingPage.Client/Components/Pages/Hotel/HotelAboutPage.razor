@@ -1,0 +1,75 @@
+@attribute [Route(HotelSite.Path + "/about")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/about")]
+@layout HotelLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{H[nameof(HotelStrings.AboutTitle)]} | Alder & Salt")"
+             Description="@H[nameof(HotelStrings.AboutDescription)]"
+             Path="@($"{HotelSite.Path}/about")"
+             Site="HotelSite.Info" />
+
+<section class="lp-container hotel-about-hero">
+    <p class="hotel-place">@L[nameof(LandingStrings.About)]</p>
+    <h1>@H[nameof(HotelStrings.AboutHeading)]</h1>
+    <p class="lp-lede">@H[nameof(HotelStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container hotel-about-story" aria-labelledby="hotel-story-title">
+    <figure>
+        <div class="hotel-about-picture"><HotelScene Kind="HotelSceneKind.Dining" Label="@H[nameof(HotelStrings.GalleryDining)]" /></div>
+        <figcaption>@H[nameof(HotelStrings.GalleryDining)]</figcaption>
+    </figure>
+    <div>
+        <h2 id="hotel-story-title">@H[nameof(HotelStrings.StoryTitle)]</h2>
+        <p>@H[nameof(HotelStrings.StoryBody1)]</p>
+        <p>@H[nameof(HotelStrings.StoryBody2)]</p>
+    </div>
+</section>
+
+<section class="lp-section hotel-team" aria-labelledby="hotel-team-title">
+    <div class="lp-container">
+        <h2 id="hotel-team-title">@H[nameof(HotelStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role) in team)
+            {
+                <li>
+                    <span class="hotel-team-initials" aria-hidden="true">@Initials(H[name])</span>
+                    <strong>@H[name]</strong>
+                    <span>@H[role]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="getting-here" class="lp-container hotel-getting" aria-labelledby="hotel-getting-title">
+    <div class="hotel-getting-map">
+        <HotelIslandMap />
+    </div>
+    <div class="hotel-getting-text">
+        <h2 id="hotel-getting-title">@H[nameof(HotelStrings.GettingTitle)]</h2>
+        <p>@H[nameof(HotelStrings.GettingBody)]</p>
+        <BitTimeline Items="journey" LinePlacement="BitPlacement.Start" Color="BitColor.Primary" Classes="@(new() { PrimaryText = "hotel-journey-time", SecondaryText = "hotel-journey-text" })" Class="hotel-journey" />
+    </div>
+</section>
+
+<section class="lp-container hotel-contact" aria-labelledby="hotel-contact-title">
+    <div class="hotel-contact-text">
+        <h2 id="hotel-contact-title">@H[nameof(HotelStrings.ContactTitle)]</h2>
+        <p>@H[nameof(HotelStrings.ContactBody)]</p>
+        <div class="hotel-contact-links">
+            <BitButton Href="@($"mailto:{HotelSite.Info.Company.Email}")" IconName="@BitIconName.Mail">@HotelSite.Info.Company.Email</BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{HotelSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@HotelSite.Info.Company.Phone</span></BitButton>
+        </div>
+    </div>
+    <div class="hotel-company">
+        <h3>@H[nameof(HotelStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@HotelSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><span dir="ltr">@HotelSite.Info.Company.Address</span></dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@HotelSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@HotelSite.Info.Company.RegistrationNumber</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@HotelSite.Info.Company.VatId</dd></div>
+        </dl>
+    </div>
+</section>

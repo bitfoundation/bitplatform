@@ -390,7 +390,8 @@ public partial class BitButton : BitComponentBase
     // The three callbacks the drag script invokes, each with the pointer's position. The coordinates are
     // unused here, but the signatures have to take them: the interop dispatcher matches a call to a method
     // by the number of arguments and throws when they differ, and the script swallows what it throws - so a
-    // handler declared without them is never actually reached, and the drag flag below never flips.
+    // handler declared without them is never actually reached, and the drag flag below never flips. A drag
+    // still under way while the button is being disposed reaches them as well, and is ignored.
     [JSInvokable("OnDragStart")]
     public ValueTask _OnDragStart(double x, double y)
     {
@@ -400,6 +401,8 @@ public partial class BitButton : BitComponentBase
     [JSInvokable("OnDragging")]
     public ValueTask _OnDragging(double x, double y)
     {
+        if (IsDisposing) return ValueTask.CompletedTask;
+
         _dragging = true;
 
         return ValueTask.CompletedTask;
@@ -408,6 +411,8 @@ public partial class BitButton : BitComponentBase
     [JSInvokable("OnDragEnd")]
     public async ValueTask _OnDragEnd(double x, double y)
     {
+        if (IsDisposing) return;
+
         // The click that ends a drag arrives after the drag does, so the flag that swallows it has to outlive it.
         await Task.Delay(100);
 
@@ -750,13 +755,8 @@ public partial class BitButton : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.BitDraggablesDisable(_Id);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            // A drag still calls back through the reference until the script lets go of the button.
+            await _dotnetObj.DisposeAfterAsync(() => _js.BitDraggablesDisable(_Id));
         }
     }
 }

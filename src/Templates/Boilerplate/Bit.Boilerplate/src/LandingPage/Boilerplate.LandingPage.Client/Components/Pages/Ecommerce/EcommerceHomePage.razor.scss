@@ -1,0 +1,454 @@
+@import '../../../Styles/tokens';
+
+.ecommerce-hero {
+    padding-block: clamp(40px, 6vw, 88px) clamp(56px, 7vw, 104px);
+    overflow: hidden;
+}
+
+.ecommerce-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-hero-text {
+    display: grid;
+    justify-items: start;
+    gap: 20px;
+
+    h1 {
+        font-size: clamp(2.6rem, 1.9rem + 3.2vw, 4.6rem);
+        font-weight: 500;
+        letter-spacing: -.025em;
+        line-height: 1.02;
+    }
+}
+
+.ecommerce-hero-download {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px 28px;
+    margin-top: 8px;
+}
+
+.ecommerce-hero-proof {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 28px;
+    margin-top: 4px;
+    padding-top: 20px;
+    border-top: 1px solid var(--lp-line);
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+
+    p {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.ecommerce-hero-visual {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding-block: 24px;
+}
+
+.ecommerce-window {
+    position: absolute;
+    inset: 0 8% 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 999px 999px 24px 24px;
+    background: color-mix(in oklab, var(--lp-line), var(--lp-surface) 40%);
+
+    span {
+        border-radius: inherit;
+        background: linear-gradient(180deg, color-mix(in oklab, #BFDDF2, var(--lp-bg) 35%), color-mix(in oklab, var(--lp-sun), var(--lp-bg) 70%));
+    }
+
+    span:first-child {
+        border-radius: 999px 0 18px 18px;
+    }
+
+    span:last-child {
+        border-radius: 0 999px 18px 18px;
+    }
+}
+
+::deep .ecommerce-phone {
+    position: relative;
+    --lp-device-width: min(300px, 78vw);
+    --lp-device-screen: var(--lp-surface);
+}
+
+.ecommerce-hero-caption {
+    position: relative;
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.ecommerce-press {
+    border-block: 1px solid var(--lp-line);
+    background: var(--lp-bg-alt);
+}
+
+.ecommerce-press-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 40px;
+    padding-block: 22px;
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: .8125rem;
+    }
+
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 40px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: color-mix(in oklab, var(--lp-fg), var(--lp-bg) 35%);
+    }
+}
+
+.ecommerce-press-serif {
+    font-family: "Newsreader", serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.ecommerce-press-caps {
+    font-size: .9375rem;
+    font-weight: 800;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+}
+
+.ecommerce-press-italic {
+    font-family: "Newsreader", serif;
+    font-size: 1.25rem;
+    font-style: italic;
+}
+
+.ecommerce-press-mono {
+    font-family: var(--lp-font-mono);
+    font-size: 1rem;
+}
+
+.ecommerce-section-head {
+    display: grid;
+    gap: 14px;
+    max-width: 680px;
+    margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.ecommerce-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px 48px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+    }
+
+    h3 {
+        font-size: 1.3125rem;
+        font-weight: 600;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-feature-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px 14px 14px 4px;
+    background: var(--lp-accent-soft);
+    color: var(--lp-accent);
+    font-size: 1.25rem;
+}
+
+.ecommerce-care {
+    background: var(--lp-bg-alt);
+}
+
+.ecommerce-care-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+
+    > div:first-child {
+        display: grid;
+        gap: 14px;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-care-card {
+    display: grid;
+    gap: 4px;
+    padding: 24px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    box-shadow: 0 24px 60px -40px color-mix(in oklab, var(--lp-fg) 50%, transparent);
+}
+
+.ecommerce-care-week {
+    margin-bottom: 8px;
+    font-family: var(--lp-stack-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.ecommerce-care-task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--lp-line);
+
+    span {
+        flex: none;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+    }
+}
+
+.ecommerce-care-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--lp-sun) 22%, var(--lp-surface));
+    font-size: .875rem;
+}
+
+.ecommerce-step-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+
+    li {
+        display: grid;
+        gap: 10px;
+        padding-top: 20px;
+        border-top: 2px solid var(--lp-fg);
+        counter-increment: step;
+
+        &::before {
+            content: counter(step, decimal-leading-zero);
+            font-family: var(--lp-stack-display);
+            font-size: 2.5rem;
+            font-weight: 400;
+            line-height: 1;
+            color: var(--lp-accent);
+        }
+    }
+
+    h3 {
+        font-size: 1.375rem;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-reviews {
+    border-top: 1px solid var(--lp-line);
+}
+
+.ecommerce-reviews-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: none;
+
+    > div {
+        display: grid;
+        gap: 14px;
+        max-width: 640px;
+    }
+}
+
+.ecommerce-review-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+
+    figure {
+        display: grid;
+        align-content: space-between;
+        gap: 24px;
+        margin: 0;
+        padding: 28px;
+        border-radius: var(--lp-radius);
+        background: var(--lp-bg-alt);
+    }
+
+    blockquote {
+        margin: 0;
+        font-family: var(--lp-stack-display);
+        font-size: 1.25rem;
+        line-height: 1.45;
+    }
+
+    figcaption {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+
+        strong {
+            color: var(--lp-fg);
+        }
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--lp-accent);
+    color: var(--lp-accent-fg);
+    font-family: var(--lp-stack-display);
+    font-weight: 600;
+}
+
+.ecommerce-faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+
+    header {
+        display: grid;
+        align-content: start;
+        gap: 14px;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-download {
+    padding-block: clamp(56px, 7vw, 96px);
+    background: var(--lp-accent);
+    color: var(--lp-accent-fg);
+}
+
+.ecommerce-download-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    align-items: center;
+    gap: 40px;
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ecommerce-download-text {
+    display: grid;
+    gap: 16px;
+
+    h2 {
+        font-size: clamp(2.2rem, 1.6rem + 2.6vw, 3.6rem);
+        font-weight: 500;
+    }
+
+    p {
+        max-width: 48ch;
+        opacity: .9;
+    }
+}
+
+.ecommerce-coupon {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    justify-self: start;
+    padding: 10px 10px 10px 16px;
+    border: 1.5px dashed color-mix(in oklab, var(--lp-accent-fg) 60%, transparent);
+    border-radius: 16px;
+
+    span {
+        font-size: .8125rem;
+        opacity: .85;
+    }
+
+    strong {
+        font-family: var(--lp-font-mono);
+        font-size: 1.125rem;
+        letter-spacing: .08em;
+    }
+}
+
+.ecommerce-download-actions {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+    padding: 28px;
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    color: var(--lp-fg);
+}

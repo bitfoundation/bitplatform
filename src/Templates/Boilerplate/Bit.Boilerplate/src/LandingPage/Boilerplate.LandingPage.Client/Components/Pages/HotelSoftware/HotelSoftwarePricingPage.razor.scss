@@ -1,0 +1,284 @@
+@import '../../../Styles/tokens';
+
+.hs-kicker {
+    color: var(--hs-brass-text);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+
+    &:lang(fa) {
+        font-size: .8125rem;
+        letter-spacing: 0;
+    }
+}
+
+.hs-head {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    gap: 12px;
+    max-width: 720px;
+    margin-bottom: clamp(28px, 4vw, 44px);
+
+    h2 {
+        font-size: clamp(2.2rem, 1.5rem + 2.6vw, 3.6rem);
+        font-weight: 700;
+        line-height: .98;
+
+        &:lang(fa) {
+            font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.6rem);
+            line-height: 1.35;
+        }
+    }
+}
+
+::deep .hs-on-board {
+    --bit-Button-background: var(--hs-brass);
+    --bit-Button-border-color: var(--hs-brass);
+    --bit-Button-color: var(--hs-board);
+    --bit-Button-hover-background: color-mix(in oklab, var(--hs-brass), #FFFFFF 18%);
+    --bit-Button-hover-border-color: color-mix(in oklab, var(--hs-brass), #FFFFFF 18%);
+    --bit-Button-hover-color: var(--hs-board);
+    --bit-Button-focus-color: color-mix(in oklab, var(--hs-brass) 60%, transparent);
+}
+
+.hs-pricing-hero {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    padding-block: clamp(44px, 6vw, 80px) 32px;
+
+    > * {
+        max-width: 860px;
+    }
+
+    h1 {
+        font-size: clamp(2.8rem, 1.8rem + 4vw, 5.2rem);
+        font-weight: 700;
+        line-height: .95;
+
+        &:lang(fa) {
+            font-size: clamp(2.1rem, 1.6rem + 2.2vw, 3.3rem);
+            line-height: 1.3;
+        }
+    }
+}
+
+.hs-calc {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    overflow: hidden;
+    margin-bottom: clamp(40px, 6vw, 72px);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.hs-calc-inputs {
+    display: grid;
+    align-content: start;
+    gap: 26px;
+    padding: clamp(22px, 3vw, 36px);
+    --bit-Slider-color: var(--lp-fg);
+    --bit-Slider-rail-color: var(--lp-bg-alt);
+    --bit-Slider-thumb-size: 22px;
+    --bit-Slider-font-size: .9375rem;
+
+    h2 {
+        font-family: var(--lp-stack-body);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    ::deep .hs-calc-slider {
+        width: 100%;
+    }
+
+    ::deep .hs-calc-plans {
+        --bit-ChoiceGroup-gap: 6px;
+        --bit-ChoiceGroup-padding: 0;
+        --bit-ChoiceGroup-label-font-weight: 600;
+    }
+}
+
+.hs-calc-plan {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 6px 14px;
+    border: 1px solid color-mix(in oklab, var(--lp-line), var(--lp-fg) 20%);
+    border-radius: 4px;
+    font-size: .9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color .15s, color .15s;
+
+    &.is-selected {
+        border-color: var(--hs-board);
+        background: var(--hs-board);
+        color: var(--hs-board-fg);
+    }
+}
+
+.hs-calc-result {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    gap: 8px;
+    padding: clamp(22px, 3vw, 36px);
+    background: var(--hs-board);
+    color: var(--hs-board-fg);
+}
+
+.hs-calc-label {
+    color: var(--hs-board-muted);
+    font-size: .875rem;
+}
+
+.hs-calc-total {
+    color: var(--hs-brass);
+    font-family: var(--lp-stack-display);
+    font-size: clamp(3.4rem, 2.6rem + 3vw, 5rem);
+    font-stretch: 62%;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.hs-calc-math {
+    font-size: .9375rem;
+}
+
+.hs-calc-yearly {
+    margin-bottom: 10px;
+    color: var(--hs-board-muted);
+    font-size: .875rem;
+}
+
+.hs-calc-note {
+    margin-top: 6px;
+    color: var(--hs-board-muted);
+    font-size: .8125rem;
+}
+
+.hs-plans {
+    background: var(--lp-bg-alt);
+}
+
+.hs-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+
+    @media (max-width: 1099px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.hs-plan {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px 22px;
+    border: 1px solid var(--lp-line);
+    border-top: 4px solid var(--lp-line);
+    border-radius: 4px;
+    background: var(--lp-surface);
+    transition: border-color .2s;
+
+    h3 {
+        font-size: 2rem;
+        font-stretch: 66%;
+        font-weight: 700;
+        line-height: 1;
+
+        &:lang(fa) {
+            font-size: 1.5rem;
+        }
+    }
+
+    ul {
+        display: grid;
+        gap: 9px;
+        margin: 6px 0 0;
+        padding: 14px 0 0;
+        border-top: 1px solid var(--lp-line);
+        list-style: none;
+        font-size: .9375rem;
+    }
+
+    li {
+        display: grid;
+        grid-template-columns: 16px minmax(0, 1fr);
+        gap: 10px;
+        line-height: 1.45;
+    }
+
+    ::deep .hs-check {
+        margin-top: 4px;
+        color: var(--hs-clean-fg);
+        --bit-Icon-color: var(--hs-clean-fg);
+    }
+
+    &.is-current {
+        border-top-color: var(--hs-brass);
+    }
+
+    &.is-enterprise {
+        border-style: dashed;
+        border-top-style: solid;
+        border-top-color: var(--lp-fg);
+        background: transparent;
+
+        ::deep .hs-plan-cta {
+            margin-top: auto;
+        }
+    }
+}
+
+.hs-plan-summary {
+    min-height: 3em;
+    color: var(--lp-fg-muted);
+    font-size: .9375rem;
+}
+
+.hs-plan-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+
+    span {
+        color: var(--lp-fg);
+        font-family: var(--lp-stack-display);
+        font-size: 2.75rem;
+        font-stretch: 62%;
+        font-weight: 700;
+        line-height: 1;
+    }
+}
+
+.hs-plan-min {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.hs-faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: 28px clamp(28px, 6vw, 88px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

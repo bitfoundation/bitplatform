@@ -173,11 +173,25 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         });
         session.Http.Add(record);
 
+        var bodies = BevHttpBodies.Allowed(session);
+        if (bodies)
+        {
+            (record.RequestBody, record.RequestBodyNote) = await BevHttpBodies.ReadRequestAsync(session, request.Content).ConfigureAwait(false);
+            record.GraphQlOperation = BevHttpBodies.GraphQlOperation(record.RequestBody);
+        }
+
         var start = Stopwatch.GetTimestamp();
         try
         {
             var response = await next(request, cancellationToken).ConfigureAwait(false);
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            ReadTraceParent(request, record);
+            record.Protocol = BevHttpBodies.Protocol(request, response);
+            if (bodies)
+            {
+                (record.ResponseBody, record.ResponseBodyNote) = await BevHttpBodies.ReadResponseAsync(session, response, cancellationToken).ConfigureAwait(false);
+            }
+
             record.StatusCode = (int)response.StatusCode;
             record.ReasonPhrase = response.ReasonPhrase;
             record.ResponseBytes = response.Content?.Headers.ContentLength;
@@ -202,6 +216,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            ReadTraceParent(request, record);
             record.IsCancelled = true;
             // BevTools is the innermost handler, so this is one attempt: a resilience pipeline's attempt timeout or a
             // hedged attempt cancels it the same way the caller does.
@@ -213,6 +228,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         catch (Exception ex)
         {
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            ReadTraceParent(request, record);
             // A connect timeout is a TaskCanceledException whose inner TimeoutException says what happened.
             record.Error = BevRedactor.RedactText(ex.GetType().Name + ": " + ex.Message + (ex.InnerException is { } inner && inner.Message != ex.Message ? " (" + inner.GetType().Name + ": " + inner.Message + ")" : ""));
             session.Http.MarkFailed(record);
@@ -220,6 +236,36 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             RecordException(session, ex, trigger?.Id, tokenCancelled: false);
             session.Http.Touch();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// The trace the request was sent in: <c>traceparent</c> ("00-{trace id}-{parent id}-{flags}") as it left, which the
+    /// client's diagnostics handler writes into the request below BevTools. Only a well-formed header counts.
+    /// </summary>
+    internal static void ReadTraceParent(HttpRequestMessage request, BevHttpRecord record)
+    {
+        try
+        {
+            if (!request.Headers.TryGetValues("traceparent", out var values) || values.FirstOrDefault() is not { Length: 55 } header
+                || header[2] != '-' || header[35] != '-' || header[52] != '-')
+            {
+                return;
+            }
+
+            var traceId = header.Substring(3, 32);
+            var spanId = header.Substring(36, 16);
+            // W3C: lowercase hex throughout, and neither id all zeros.
+            if (traceId.All(char.IsAsciiHexDigitLower) && spanId.All(char.IsAsciiHexDigitLower) && traceId.Any(c => c != '0') && spanId.Any(c => c != '0')
+                && char.IsAsciiHexDigitLower(header[53]) && char.IsAsciiHexDigitLower(header[54]))
+            {
+                record.TraceId = traceId;
+                record.SpanId = spanId;
+            }
+        }
+        catch
+        {
+            // Headers a handler disposed with the request: no trace id rather than a failure.
         }
     }
 

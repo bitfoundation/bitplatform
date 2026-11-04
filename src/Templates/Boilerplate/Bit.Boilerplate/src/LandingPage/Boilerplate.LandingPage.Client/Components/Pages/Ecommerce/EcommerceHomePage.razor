@@ -1,0 +1,162 @@
+@attribute [Route(EcommerceSite.Path)]
+@attribute [Route("/{culture}" + EcommerceSite.Path)]
+@layout EcommerceLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@E[nameof(EcommerceStrings.HomeTitle)]"
+             Description="@E[nameof(EcommerceStrings.HomeDescription)]"
+             Path="@EcommerceSite.Path"
+             Site="EcommerceSite.Info"
+             StructuredData="structuredData" />
+
+<section class="ecommerce-hero" aria-labelledby="ecommerce-hero-title">
+    <div class="lp-container ecommerce-hero-grid">
+        <div class="ecommerce-hero-text">
+            <p class="lp-eyebrow">@E[nameof(EcommerceStrings.HeroEyebrow)]</p>
+            <h1 id="ecommerce-hero-title">@E[nameof(EcommerceStrings.HeroTitle)]</h1>
+            <p class="lp-lede">@E[nameof(EcommerceStrings.HeroLede)]</p>
+            <div class="ecommerce-hero-download">
+                <StoreBadges Site="EcommerceSite.Info" Campaign="hero" />
+                <DownloadQr Site="EcommerceSite.Info" />
+            </div>
+            <div class="ecommerce-hero-proof">
+                <StoreRating AppleAppId="@(EcommerceSite.Info.AppleAppId!)" />
+                <p><BitIcon IconName="@BitIconName.DeliveryTruck" /> @E[nameof(EcommerceStrings.HeroDelivery)]</p>
+            </div>
+        </div>
+        <div class="ecommerce-hero-visual">
+            <div class="ecommerce-window" aria-hidden="true">
+                <span></span><span></span>
+            </div>
+            <DeviceFrame Kind="LandingDeviceKind.Phone" Class="ecommerce-phone">
+                <EcommerceShopDemo />
+            </DeviceFrame>
+            <p class="ecommerce-hero-caption">@E[nameof(EcommerceStrings.DemoLabel)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="ecommerce-press" aria-label="@E[nameof(EcommerceStrings.PressLabel)]">
+    <div class="lp-container ecommerce-press-row">
+        <p>@E[nameof(EcommerceStrings.PressLabel)]</p>
+        <ul>
+            <li class="ecommerce-press-serif">The Sunday Planter</li>
+            <li class="ecommerce-press-caps">Northlight</li>
+            <li class="ecommerce-press-italic">Habitat Weekly</li>
+            <li class="ecommerce-press-mono">casa/review</li>
+        </ul>
+    </div>
+</section>
+
+<section id="features" class="lp-section ecommerce-features" aria-labelledby="ecommerce-features-title">
+    <div class="lp-container">
+        <header class="ecommerce-section-head">
+            <p class="lp-eyebrow">@E[nameof(EcommerceStrings.FeaturesEyebrow)]</p>
+            <h2 id="ecommerce-features-title" class="lp-title">@E[nameof(EcommerceStrings.FeaturesTitle)]</h2>
+            <p class="lp-lede">@E[nameof(EcommerceStrings.FeaturesLede)]</p>
+        </header>
+        <ul class="ecommerce-feature-grid">
+            @foreach (var (icon, title, body) in features)
+            {
+                <li>
+                    <span class="ecommerce-feature-icon"><BitIcon IconName="@icon" /></span>
+                    <h3>@E[title]</h3>
+                    <p>@E[body]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="care" class="lp-section ecommerce-care" aria-labelledby="ecommerce-care-title">
+    <div class="lp-container ecommerce-care-grid">
+        <div>
+            <p class="lp-eyebrow">@E[nameof(EcommerceStrings.CareEyebrow)]</p>
+            <h2 id="ecommerce-care-title" class="lp-title">@E[nameof(EcommerceStrings.CareTitle)]</h2>
+            <p class="lp-lede">@E[nameof(EcommerceStrings.CareBody)]</p>
+        </div>
+        <div class="ecommerce-care-card">
+            <p class="ecommerce-care-week">@E[nameof(EcommerceStrings.CareWeek)]</p>
+            @foreach (var (task, when) in careTasks)
+            {
+                <div class="ecommerce-care-task">
+                    <BitCheckbox Label="@E[task]" />
+                    <span>@E[when]</span>
+                </div>
+            }
+            <p class="ecommerce-care-note"><BitIcon IconName="@BitIconName.Sunny" /> @E[nameof(EcommerceStrings.CareNote)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section ecommerce-steps" aria-labelledby="ecommerce-steps-title">
+    <div class="lp-container">
+        <header class="ecommerce-section-head">
+            <p class="lp-eyebrow">@E[nameof(EcommerceStrings.StepsEyebrow)]</p>
+            <h2 id="ecommerce-steps-title" class="lp-title">@E[nameof(EcommerceStrings.StepsTitle)]</h2>
+        </header>
+        <ol class="ecommerce-step-list">
+            @foreach (var (title, body) in steps)
+            {
+                <li>
+                    <h3>@E[title]</h3>
+                    <p>@E[body]</p>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section id="reviews" class="lp-section ecommerce-reviews" aria-labelledby="ecommerce-reviews-title">
+    <div class="lp-container">
+        <header class="ecommerce-section-head ecommerce-reviews-head">
+            <div>
+                <p class="lp-eyebrow">@E[nameof(EcommerceStrings.ReviewsEyebrow)]</p>
+                <h2 id="ecommerce-reviews-title" class="lp-title">@E[nameof(EcommerceStrings.ReviewsTitle)]</h2>
+            </div>
+            <StoreRating AppleAppId="@(EcommerceSite.Info.AppleAppId!)" Class="ecommerce-reviews-rating" />
+        </header>
+        <div class="ecommerce-review-grid">
+            @foreach (var (quote, name, place) in reviews)
+            {
+                <figure>
+                    <blockquote>@E[quote]</blockquote>
+                    <figcaption>
+                        <span class="ecommerce-avatar" aria-hidden="true">@E[name].ToString()[..1]</span>
+                        <span><strong>@E[name]</strong><br />@E[place]</span>
+                    </figcaption>
+                </figure>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="lp-section ecommerce-faq" aria-labelledby="ecommerce-faq-title">
+    <div class="lp-container ecommerce-faq-grid">
+        <header>
+            <p class="lp-eyebrow">@E[nameof(EcommerceStrings.FaqEyebrow)]</p>
+            <h2 id="ecommerce-faq-title" class="lp-title">@E[nameof(EcommerceStrings.FaqTitle)]</h2>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>
+
+<section id="download" class="ecommerce-download" aria-labelledby="ecommerce-download-title">
+    <div class="lp-container ecommerce-download-grid">
+        <div class="ecommerce-download-text">
+            <h2 id="ecommerce-download-title">@E[nameof(EcommerceStrings.DownloadTitle)]</h2>
+            <p>@E[nameof(EcommerceStrings.DownloadBody)]</p>
+            <div class="ecommerce-coupon">
+                <span>@E[nameof(EcommerceStrings.CouponLabel)]</span>
+                <strong dir="ltr">FERN15</strong>
+                <BitButton Color="BitColor.PrimaryBackground" Size="BitSize.Small" IconName="@(couponCopied ? BitIconName.CheckMark : BitIconName.Copy)" OnClick="CopyCoupon">
+                    @(couponCopied ? E[nameof(EcommerceStrings.CouponCopied)] : E[nameof(EcommerceStrings.CouponCopy)])
+                </BitButton>
+            </div>
+        </div>
+        <div class="ecommerce-download-actions">
+            <StoreBadges Site="EcommerceSite.Info" Campaign="download" />
+            <DownloadQr Site="EcommerceSite.Info" />
+        </div>
+    </div>
+</section>

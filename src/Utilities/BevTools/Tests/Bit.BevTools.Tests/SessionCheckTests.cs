@@ -204,6 +204,17 @@ public class SessionCheckTests
             Assert.AreEqual(BevToolsCli.Unusable, Run("compare", baseline, current, "--min-render-change", "1e10").Code, "more than an int holds");
             Assert.AreEqual(BevToolsCli.Unusable, Run("compare", baseline, current, "--time-change-ratio", "Infinity").Code);
             Assert.AreEqual(BevToolsCli.Unusable, Run("compare", baseline).Code);
+
+            // Allocations per render: 2 KB → 3 KB is a regression by default, within a 60 % tolerance with the option.
+            File.WriteAllText(baseline, Profile(100, 10).Replace("\"maxRenderMs\":1", "\"maxRenderMs\":1,\"allocatedBytes\":204800", StringComparison.Ordinal));
+            File.WriteAllText(current, Profile(100, 10).Replace("\"maxRenderMs\":1", "\"maxRenderMs\":1,\"allocatedBytes\":307200", StringComparison.Ordinal));
+            var allocated = Run("compare", baseline, current);
+            Assert.AreEqual(BevToolsCli.Failed, allocated.Code);
+            StringAssert.Contains(allocated.Output, "allocated per render +1 KB (+50 %)");
+            Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, current, "--allocation-change-ratio", "0.6").Code);
+            Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, current, "--min-allocation-change-bytes", "2048").Code);
+            Assert.AreEqual(BevToolsCli.Unusable, Run("compare", baseline, current, "--min-allocation-change-bytes", "-1").Code);
+            StringAssert.Contains(Run("compare", baseline, current, "--format", "json").Output, "\"currentAllocatedBytes\": 307200");
         }
         finally
         {

@@ -1,0 +1,23 @@
+.lp-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lp-fg);
+    text-decoration: none;
+}
+
+::deep .lp-rating-icon {
+    font-size: 1.5rem;
+    color: var(--lp-accent);
+}
+
+.lp-rating-text {
+    display: grid;
+    line-height: 1.3;
+    font-size: .875rem;
+
+    span {
+        color: var(--lp-fg-muted);
+        font-size: .8125rem;
+    }
+}

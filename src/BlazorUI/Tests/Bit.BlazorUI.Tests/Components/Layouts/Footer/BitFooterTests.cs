@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1413,6 +1414,34 @@ public class BitFooterTests : BunitTestContext
 
         Assert.AreEqual(1, disposes.Length);
         Assert.AreEqual("site-footer", disposes[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitFooterDisposeShouldKeepItsDotNetReferenceUntilTheScrollListenerIsOff()
+    {
+        // The script answers later, the way it does in a browser: until the listener is off a scroll still calls back
+        // through the reference the footer was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Footers.dispose", _ => true);
+
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Footers.setup");
+        var reference = (DotNetObjectReference<BitFooter>)setup.Arguments[1]!;
+        var footer = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(footer, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

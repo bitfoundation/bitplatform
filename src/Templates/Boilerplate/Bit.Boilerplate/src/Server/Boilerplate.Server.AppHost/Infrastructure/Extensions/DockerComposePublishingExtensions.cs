@@ -23,7 +23,8 @@ public static class DockerComposePublishingExtensions
         /// </summary>
         public void ConfigureDockerComposePublishing(
             IResourceBuilder<DockerComposeEnvironmentResource> compose,
-            IResourceBuilder<ProjectResource> serverWebProject
+            IResourceBuilder<ProjectResource> serverWebProject,
+            IResourceBuilder<ProjectResource> landingPageProject
             //#if (api == "Standalone")
             , IResourceBuilder<ProjectResource> serverApiProject
             //#endif
@@ -48,7 +49,7 @@ public static class DockerComposePublishingExtensions
             apiProject = serverApiProject;
             //#endif
 
-            List<IResourceBuilder<ProjectResource>> projects = [serverWebProject];
+            List<IResourceBuilder<ProjectResource>> projects = [serverWebProject, landingPageProject];
             //#if (api == "Standalone")
             projects.Add(serverApiProject);
             //#endif
@@ -85,7 +86,9 @@ public static class DockerComposePublishingExtensions
 #pragma warning restore ASPIREPIPELINES003
 
             // Mailpit is development only. A deployed server sends its mail through a real SMTP server.
-            apiProject.WithReference(builder.AddConnectionString("smtp"));
+            var smtp = builder.AddConnectionString("smtp");
+            apiProject.WithReference(smtp);
+            landingPageProject.WithReference(smtp);
             //#if (database == "Other")
             // The database is outside the Docker Compose project: read it from the `otherdb` connection string.
             apiProject.WithReference(builder.AddConnectionString("otherdb"));

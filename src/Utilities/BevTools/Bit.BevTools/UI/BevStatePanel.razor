@@ -4,6 +4,9 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:30%">
         <div class="bev-toolbar"><strong>State providers</strong> <span class="bev-muted">(@_entries.Length)</span></div>
+        <div class="bev-toolbar">
+            <input type="text" aria-label="Filter state providers and changes" placeholder="Filter: provider, action, detail, member" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+        </div>
         <div class="bev-scroll">
             @if (_entries.Length == 0)
             {
@@ -15,7 +18,7 @@
                     Component state is inspected per component in the Components panel.
                 </div>
             }
-            @foreach (var item in _entries)
+            @foreach (var item in _visible)
             {
                 var name = item.Name;
                 <div class="bev-ev-row @(Ui.SelectedStateProvider == name ? "bev-selected" : "")" @onclick="() => { Ui.SelectedStateProvider = name; _selectedChange = null; Ui.Touch(); }">
@@ -40,14 +43,18 @@
                 </div>
             </div>
             <div class="bev-section">
-                <div class="bev-section-title">Change history (@entry.ChangeCount) <span class="bev-muted" style="font-weight:normal">newest first · click to see before/after</span></div>
+                <div class="bev-section-title">Change history (@entry.ChangeCount) <span class="bev-muted" style="font-weight:normal">newest first · click to see before/after@(entry.Provider is IBevStateRestorer ? (Session.AllowsStateRestore ? " · ⟲ restores the state after a change" : " · restoring is off outside Development in a multi-user process") : "")</span></div>
                 <div class="bev-section-body">
-                    @foreach (var change in entry.Changes.Reverse())
+                    @foreach (var change in _changes.GetValueOrDefault(entry) ?? [])
                     {
                         var c = change;
                         <div class="bev-ev-row @(_selectedChange?.Id == c.Id ? "bev-selected" : "")" @onclick="() => _selectedChange = c">
                             <span class="bev-time">@BevFmt.Time(c.At)</span>
-                            <span class="bev-ev-title">@(c.Action ?? "changed") <span class="bev-muted">@c.Changes.Count member@(c.Changes.Count == 1 ? "" : "s")</span> @if (c.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectEvent(t)">trigger ↗</button> }</span>
+                            <span class="bev-ev-title">@(c.Action ?? "changed") @if (c.Detail is { Length: > 0 } detail) { <span class="bev-mono">@(" · " + detail)</span> } <span class="bev-muted">@c.Changes.Count member@(c.Changes.Count == 1 ? "" : "s")</span> @if (c.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectEvent(t)">trigger ↗</button> }</span>
+                            @if (c.RestoreToken is not null && Session.AllowsStateRestore)
+                            {
+                                <button type="button" class="bev-link" title="Ask @entry.Name to restore the state it had right after this change" aria-label="Restore @entry.Name to after @(c.Action ?? "this change") at @BevFmt.Time(c.At)" @onclick:stopPropagation="true" @onclick="() => RestoreAsync(c)">⟲ restore</button>
+                            }
                         </div>
                     }
                 </div>
@@ -55,7 +62,7 @@
             @if (_selectedChange is { } sc)
             {
                 <div class="bev-section">
-                    <div class="bev-section-title">Diff @BevFmt.Time(sc.At) @(sc.Action) <button type="button" class="bev-link" style="margin-left:auto;font-weight:normal" @onclick="() => Host.SelectEvent(sc.TimelineEventId)">timeline ↗</button></div>
+                    <div class="bev-section-title">Diff @BevFmt.Time(sc.At) @(sc.Action) @if (sc.Detail is { Length: > 0 } scDetail) { <span class="bev-mono" style="font-weight:normal">@(" · " + scDetail)</span> } <button type="button" class="bev-link" style="margin-left:auto;font-weight:normal" @onclick="() => Host.SelectEvent(sc.TimelineEventId)">timeline ↗</button></div>
                     <div class="bev-section-body">
                         @if (sc.Changes.Count == 0)
                         {
@@ -97,15 +104,36 @@
 
 @code {
     private BevStateProviderEntry[] _entries = [];
+    // What the list shows: the providers the filter matches by name, or by one of their changes.
+    private BevStateProviderEntry[] _visible = [];
     private BevStateProviderEntry? _selected;
     private object? _snapshot;
     private BevStateChangeRecord? _selectedChange;
+    private BevQueryFilter _filter = BevQueryFilter.Parse(null);
+    private Dictionary<BevStateProviderEntry, BevStateChangeRecord[]> _changes = [];
+
+    private string? Query => Ui.GetQuery("state");
 
     protected override void OnParametersSet()
     {
         _entries = Session.State.Entries;
+        _filter = BevQueryFilter.Parse(Query);
+        // A provider matches by name; otherwise by the changes that do: their action, detail and members.
+        _changes = _entries.ToDictionary(e => e, e => e.Changes.Reverse()
+            .Where(c => _filter.MatchesText(e.Name, e.Description) || _filter.MatchesText(c.Action, c.Detail, string.Join(" ", c.Changes.Select(d => d.Path))))
+            .ToArray());
+        if (_filter.Terms.Count > 0)
+        {
+            foreach (var name in _changes.Where(p => p.Value.Length == 0).Select(p => p.Key).ToList())
+            {
+                _changes.Remove(name);
+            }
+        }
+
+        _visible = _entries.Where(e => _filter.MatchesText(e.Name, e.Description) || _changes.ContainsKey(e)).ToArray();
         Ui.SelectedStateProvider ??= _entries.FirstOrDefault()?.Name;
-        _selected = _entries.FirstOrDefault(e => e.Name == Ui.SelectedStateProvider);
+        // The detail pane shows what the list shows: a provider the filter hides is not shown beside it.
+        _selected = _visible.FirstOrDefault(e => e.Name == Ui.SelectedStateProvider);
         if (_selectedChange is not null && (_selected is null || !_selected.Changes.Any(change => change.Id == _selectedChange.Id)))
         {
             _selectedChange = null;
@@ -119,5 +147,17 @@
         {
             _snapshot = "«GetSnapshot threw " + ex.GetType().Name + ": " + ex.Message + "»";
         }
+    }
+
+    private void OnQuery(string? value)
+    {
+        Ui.SetQuery("state", value);
+        OnParametersSet();
+    }
+
+    private async Task RestoreAsync(BevStateChangeRecord change)
+    {
+        Host.Notify(await Session.State.RestoreAsync(change.Id));
+        OnParametersSet();
     }
 }

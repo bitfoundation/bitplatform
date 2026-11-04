@@ -1,0 +1,13 @@
+.hotel-404-wave {
+    animation: hotel-404-tide 6s ease-in-out infinite alternate;
+}
+
+@keyframes hotel-404-tide {
+    from {
+        transform: translateY(-6px);
+    }
+
+    to {
+        transform: translateY(8px);
+    }
+}

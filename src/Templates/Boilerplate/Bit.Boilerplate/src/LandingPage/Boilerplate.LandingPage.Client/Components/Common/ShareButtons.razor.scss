@@ -1,0 +1,13 @@
+.lp-share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+}
+
+.lp-share-link {
+    color: var(--lp-fg);
+    font-size: .875rem;
+    font-weight: 500;
+    text-underline-offset: 3px;
+}

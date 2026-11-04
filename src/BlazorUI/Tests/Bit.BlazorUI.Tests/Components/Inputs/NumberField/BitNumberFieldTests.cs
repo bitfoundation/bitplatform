@@ -3467,6 +3467,26 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldImmediateShouldReportEveryKeystrokeEvenOneThatParsesToAnEqualValue()
+    {
+        var values = new List<decimal?>();
+
+        var component = RenderComponent<BitNumberField<decimal?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, (decimal? v) => values.Add(v));
+        });
+
+        component.Find("input").Input(new ChangeEventArgs { Value = "1.5" });
+        component.Find("input").Input(new ChangeEventArgs { Value = "1.50" });
+
+        // Every keystroke is reported, as only the change event raised on blur leaves out a value already reported. And
+        // 1.5m and 1.50m are equal, yet the binding keeps the scale it is handed: the one typed last.
+        Assert.AreEqual(2, values.Count);
+        Assert.AreEqual("1.50", values[1]?.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [TestMethod]
     public void BitNumberFieldShouldShowTheCommittedValueAgainOnceTheFieldIsLeft()
     {
         // ... and the text kept visible for that pending commit is history the moment the field is

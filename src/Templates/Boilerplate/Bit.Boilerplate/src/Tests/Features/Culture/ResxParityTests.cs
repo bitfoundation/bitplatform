@@ -198,7 +198,8 @@ public class ResxParityTests
             Path.Combine(templateRoot, "src", "Shared", "Resources", "IdentityStrings.resx"),
             Path.Combine(templateRoot, "src", "Shared", "Resources", "BitBlazorUIStrings.resx"),
             Path.Combine(templateRoot, "src", "Workbench", "Resources", "WorkbenchStrings.resx"),
-            .. Directory.GetFiles(Path.Combine(templateRoot, "src", "Server"), "EmailStrings.resx", SearchOption.AllDirectories)
+            .. Directory.GetFiles(Path.Combine(templateRoot, "src", "Server"), "EmailStrings.resx", SearchOption.AllDirectories),
+            .. Directory.GetFiles(Path.Combine(templateRoot, "src", "LandingPage"), "*Strings.resx", SearchOption.AllDirectories)
         ];
 
         foreach (var neutral in neutralFiles)
