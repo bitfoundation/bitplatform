@@ -132,12 +132,12 @@
 
             <div class="lp-footer-col">
                 <h2>@Localizer[nameof(WorkbenchStrings.LandingFooterLegal)]</h2>
-                <a href="privacy">@AppLocalizer[nameof(AppStrings.PrivacyTitle)]</a>
-                <a href="terms">@AppLocalizer[nameof(AppStrings.Terms)]</a>
-                <a href="cookies">@Localizer[nameof(WorkbenchStrings.LandingCookies)]</a>
-                <a href="imprint">@Localizer[nameof(WorkbenchStrings.LandingImprint)]</a>
-                <a href="accessibility">@Localizer[nameof(WorkbenchStrings.LandingAccessibility)]</a>
-                <button type="button" class="lp-footer-link-button">@AppLocalizer[nameof(AppStrings.PrivacySettings)]</button>
+                <a href="privacy" @onclick="ShowMissingPage" @onclick:preventDefault>@AppLocalizer[nameof(AppStrings.PrivacyTitle)]</a>
+                <a href="terms" @onclick="ShowMissingPage" @onclick:preventDefault>@AppLocalizer[nameof(AppStrings.Terms)]</a>
+                <a href="cookies" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingCookies)]</a>
+                <a href="imprint" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingImprint)]</a>
+                <a href="accessibility" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingAccessibility)]</a>
+                <button type="button" class="lp-footer-link-button" @onclick="store.OpenConsent">@AppLocalizer[nameof(AppStrings.PrivacySettings)]</button>
             </div>
         </div>
 
@@ -147,4 +147,6 @@
             <p class="lp-footer-sample">@Localizer[nameof(WorkbenchStrings.LandingSampleSite)]</p>
         </div>
     </footer>
+
+    <MinimalConsentBanner OnPrivacyLink="ShowMissingPage" />
 </div>

@@ -38,6 +38,21 @@ public class EveryShowcaseUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task APageWithTheAppShellOff_Should_StillScroll(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?chrome=false");
+
+        var heading = View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 1, Exact = true });
+
+        await Expect(heading).ToBeInViewportAsync();
+
+        await Page.Locator("iframe[data-pane-id='1']").HoverAsync();
+        await Page.Mouse.WheelAsync(0, 1600);
+
+        await Expect(heading).Not.ToBeInViewportAsync();
+    }
+
+    [TestMethod, EverySurface]
     [TestCategory("Localization")]
     public async Task EveryPage_Should_TurnRightToLeftInPersianAndStillFit(WorkbenchSurface surface)
     {

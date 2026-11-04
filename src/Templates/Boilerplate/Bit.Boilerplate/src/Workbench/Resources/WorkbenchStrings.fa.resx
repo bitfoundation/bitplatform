@@ -3057,4 +3057,46 @@
     <data name="HomeWhyManyAppsText" xml:space="preserve">
         <value>برنامه‌های مختلفتان را با تم‌های مختلف این‌جا اضافه کنید، همان‌طور که این میز کار یک صفحه‌ی فرود را با ظاهر خودش کنار صفحه‌های برنامه نگه داشته است.</value>
     </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>حریم خصوصی شما</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>می‌خواهیم ببینیم این سایت چقدر سریع است و چطور استفاده می‌شود تا بهترش کنیم. تا موافقت نکنید هیچ‌کدام جمع نمی‌شود و از کوکی هم استفاده نمی‌کنیم. خطاها در هر حال گزارش می‌شوند، بدون شناسایی شما.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>سرعت و عیب‌یابی</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>سرعت بارگذاری و پاسخ صفحه‌ها، و جزئیاتی که به رفع خطاهای بازدیدکننده‌ها کمک می‌کند.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>آمار استفاده</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>کدام صفحه‌ها خوانده و کدام دکمه‌ها زده می‌شوند، بدون این‌که معلوم شود شما چه کسی هستید.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>ذخیره‌ی انتخاب‌ها</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>موافقم</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>نه، ممنون</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>خودم انتخاب می‌کنم</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>این صفحه در Workbench نیست. از عاملتان بخواهید آن را این‌جا بیاورد.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>پنجره‌ی رضایت</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>قبلاً انتخاب کرده</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>بازدید اول</value>
+    </data>
 </root>

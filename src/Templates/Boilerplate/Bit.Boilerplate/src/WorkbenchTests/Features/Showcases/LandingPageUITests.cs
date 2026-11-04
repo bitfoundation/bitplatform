@@ -11,6 +11,8 @@ public class LandingPageUITests : ShowcaseUITest
 
     private ILocator Submit => ViewButton(WorkbenchStrings.NotchJoinSubmit);
 
+    private ILocator Consent => View().Locator(".lp-consent");
+
     private ILocator Joined => View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.LandingWaitlistDoneTitle, Exact = true });
 
     [TestMethod, EverySurface]
@@ -20,6 +22,26 @@ public class LandingPageUITests : ShowcaseUITest
 
         await Expect(Heading).ToBeVisibleAsync();
         await Expect(View().Locator(".main-container, .nav-bar")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheLandingPage_Should_ScrollToItsFooterAndBackToAJoinLink(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        var footer = View().Locator(".lp-footer");
+
+        await Expect(footer).Not.ToBeInViewportAsync();
+
+        await Page.Locator("iframe[data-pane-id='1']").HoverAsync();
+        await Page.Mouse.WheelAsync(0, 8000);
+
+        await Expect(footer).ToBeInViewportAsync();
+        await Expect(View().Locator(".lp-nav")).ToBeInViewportAsync();
+
+        await Press(View().Locator(".lp-nav").GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.NotchNavJoin, Exact = true }));
+
+        await Expect(View().GetByLabel(AppStrings.Email)).ToBeInViewportAsync();
     }
 
     [TestMethod, EverySurface]
@@ -83,6 +105,51 @@ public class LandingPageUITests : ShowcaseUITest
         await ReloadTheView();
 
         await Expect(View().GetByText(line, new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task ThePrivacySettings_Should_OpenTheChoicesAndSaveThem(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(ViewButton(AppStrings.PrivacySettings));
+
+        await Expect(Consent.GetByText(WorkbenchStrings.LandingConsentAnalytics, new() { Exact = true })).ToBeVisibleAsync();
+
+        await Press(Consent.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.LandingConsentSave, Exact = true }));
+
+        await Expect(Consent).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AFirstVisit_Should_AskUntilTheVisitorDecides(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-consent=first-visit");
+
+        await Press(Consent.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.LandingConsentAccept, Exact = true }));
+
+        await Expect(Consent).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AVisitWithItsDecisionMade_Should_NotShowTheBanner(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Expect(Heading).ToBeVisibleAsync();
+        await Expect(Consent).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task ALinkToAPageThatIsntHere_Should_SaySoAndStayOnThePage(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(View().Locator(".lp-footer").GetByRole(AriaRole.Link, new() { Name = AppStrings.Terms, Exact = true }));
+
+        await Expect(View().GetByText(WorkbenchStrings.LandingMissingPage, new() { Exact = true }).First).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex($"/workbench/{PageKey}"));
+        await Expect(Heading).ToBeAttachedAsync();
     }
 
     [TestMethod, OnDesktops]

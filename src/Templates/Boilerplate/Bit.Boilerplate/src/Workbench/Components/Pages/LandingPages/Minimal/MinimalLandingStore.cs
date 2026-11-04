@@ -14,6 +14,11 @@ public partial class MinimalLandingStore
     [BlexState] private int? _position;
     [BlexState] private string? _line;
     [BlexState] private string? _savedLine;
+    [BlexState] private bool _isConsentOpen;
+    [BlexState] private bool _isConsentChoosing;
+    [BlexState] private bool _isConsentDecided;
+    [BlexState] private bool _wantsPerformance = true;
+    [BlexState] private bool _wantsAnalytics = true;
 
     [BlexAction] private void OnShowMenu(bool isOpen) => IsMenuOpen = isOpen;
 
@@ -27,4 +32,27 @@ public partial class MinimalLandingStore
     [BlexAction] private void OnTypeLine(string? line) => Line = line;
 
     [BlexAction] private void OnSaveLine(string line) => SavedLine = line;
+
+    [BlexAction]
+    private void OnOpenConsent()
+    {
+        IsConsentOpen = true;
+        IsConsentChoosing = true;
+    }
+
+    [BlexAction] private void OnChooseConsent() => IsConsentChoosing = true;
+
+    [BlexAction] private void OnWantPerformance(bool wanted) => WantsPerformance = wanted;
+
+    [BlexAction] private void OnWantAnalytics(bool wanted) => WantsAnalytics = wanted;
+
+    [BlexAction]
+    private void OnDecideConsent(bool performance, bool analytics)
+    {
+        WantsPerformance = performance;
+        WantsAnalytics = analytics;
+        IsConsentDecided = true;
+        IsConsentOpen = false;
+        IsConsentChoosing = false;
+    }
 }

@@ -12,6 +12,11 @@ body {
     overflow-x: hidden;
 }
 
+// The app's styles stop the document scrolling at phone widths for its app shell, so without the shell the body scrolls.
+.wb-preview-body:has(.wb-no-shell) {
+    overflow-y: auto;
+}
+
 // Panels and snack bars read the browser's own insets, which a view's device doesn't change, so they get the device's here.
 .wb-preview-body .bit-pnl {
     --bit-pnl-sa-top: var(--bit-env-inset-top);

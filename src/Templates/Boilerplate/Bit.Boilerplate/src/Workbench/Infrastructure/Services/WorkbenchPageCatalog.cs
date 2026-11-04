@@ -114,7 +114,15 @@ public static class WorkbenchPageCatalog
             ["BitTextField", "BitCheckbox", "BitPanel"],
             nameof(WorkbenchStrings.LandingMinimalCaption))
         {
-            HasAppShell = false
+            HasAppShell = false,
+            Switches =
+            [
+                new("consent", nameof(WorkbenchStrings.LandingSwitchConsent),
+                [
+                    new("decided", nameof(WorkbenchStrings.LandingConsentDecided)),
+                    new("first-visit", nameof(WorkbenchStrings.LandingConsentFirstVisit))
+                ])
+            ]
         }
     ];
 

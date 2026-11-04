@@ -3057,4 +3057,46 @@
     <data name="HomeWhyManyAppsText" xml:space="preserve">
         <value>أضف تطبيقاتك المختلفة هنا، لكل منها سمة خاصة بها، تمامًا كما يحتفظ Workbench هذا بصفحة هبوط بمظهرها الخاص بجانب صفحات التطبيق.</value>
     </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>خصوصيتك</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>نود قياس سرعة هذا الموقع وكيفية استخدامه لنتمكن من تحسينه. لا يُجمع شيء من ذلك حتى توافق، ولا نستخدم ملفات تعريف الارتباط. يُبلَّغ عن الأخطاء في كل الأحوال دون الكشف عن هويتك.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>الأداء والتشخيص</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>سرعة تحميل الصفحات واستجابتها، والتفاصيل التي تساعد على إصلاح الأخطاء التي يواجهها الزوار.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>إحصاءات الاستخدام</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>الصفحات التي تُقرأ والأزرار التي تُضغط، دون الكشف عن هويتك.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>حفظ اختياراتي</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>موافق</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>لا، شكرًا</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>دعني أختار</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>هذه الصفحة ليست في Workbench. اطلب من وكيلك إضافتها هنا.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>شريط الموافقة</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>تم الاختيار مسبقًا</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>الزيارة الأولى</value>
+    </data>
 </root>

@@ -3055,6 +3055,48 @@
         <value>Ein Designer für mehrere Apps</value>
     </data>
     <data name="HomeWhyManyAppsText" xml:space="preserve">
-        <value>Füge hier deine verschiedenen Apps hinzu, jede mit ihrem eigenen Design, so wie diese Workbench eine Landingpage in ihrem eigenen Aussehen neben den Seiten der App führt.</value>
+        <value>Fügen Sie hier Ihre verschiedenen Apps hinzu, jede mit ihrem eigenen Design, so wie diese Workbench eine Landingpage in ihrem eigenen Aussehen neben den Seiten der App führt.</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Deine Privatsphäre</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>Wir möchten messen, wie schnell diese Seite ist und wie sie genutzt wird, damit wir sie verbessern können. Nichts davon wird erfasst, bevor du zustimmst, und wir verwenden keine Cookies. Fehler werden in jedem Fall gemeldet, ohne zu verraten, wer du bist.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Leistung und Diagnose</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>Wie schnell Seiten laden und reagieren, und die Details, die helfen, Fehler der Besucher zu beheben.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Nutzungsstatistiken</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Welche Seiten gelesen und welche Schaltflächen gedrückt werden, ohne zu verraten, wer du bist.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Meine Auswahl speichern</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Akzeptieren</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>Nein, danke</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Selbst auswählen</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>Diese Seite ist nicht in der Workbench. Bitten Sie Ihren Agenten, sie hierher zu holen.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Einwilligungshinweis</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Bereits entschieden</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>Erster Besuch</value>
     </data>
 </root>
