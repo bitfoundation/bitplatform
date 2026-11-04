@@ -2122,6 +2122,8 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnPageVisible(int pageNumber)
     {
+        if (IsDisposing || IsDisposed) return;
+
         // One page (or spread) at a time: what is on screen is the current page by
         // construction, so a report can only be late - the page just left, arriving
         // while the key that moves on from it is already navigating - and acting on it
@@ -2163,7 +2165,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     [JSInvokable]
     public Task OnLinkNavigate(int pageNumber, double? top)
-        => GoToDestination(new BitPdfDestination { PageNumber = pageNumber, Top = top });
+        => IsDisposing || IsDisposed ? Task.CompletedTask
+            : GoToDestination(new BitPdfDestination { PageNumber = pageNumber, Top = top });
 
     /// <summary>
     /// Invoked from JavaScript when the viewport size changes.
@@ -2171,6 +2174,8 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnViewportResized()
     {
+        if (IsDisposing || IsDisposed) return;
+
         if (_zoomMode != BitPdfZoomMode.Custom)
         {
             // A fit re-sizes every page when the box changes (leaving fullscreen, a
@@ -2188,6 +2193,8 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnWheelZoom(double deltaY)
     {
+        if (IsDisposing || IsDisposed) return;
+
         // The point under the cursor is stashed on the JS side before this call; the
         // render pass below puts it back where it was once the pages have re-sized.
         _zoomAnchorPending = true;
@@ -4766,7 +4773,9 @@ public partial class BitPdfViewer : BitComponentBase
 
         var previousDocument = _document;
         var previousStream = _streamSource;
-        if (previousStream is not null) _document = null;
+        // Non-buffered models expire with their source; public getters must not
+        // fall back to one whose bytes are retired while JS teardown is pending.
+        if (previousStream is not null || _rangeSource is not null) _document = null;
         _streamSource = null;
         _streamPreparation = null;
         previousDocument?.ReleaseByteWindows();

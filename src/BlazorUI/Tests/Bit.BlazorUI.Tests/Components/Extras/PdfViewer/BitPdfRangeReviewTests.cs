@@ -268,6 +268,93 @@ public class BitPdfRangeReviewTests : BunitTestContext
         Assert.AreEqual(1, xref.Misses, "A new /W list must not reset the million-entry expansion budget.");
     }
 
+    [TestMethod]
+    [DataRow("buffered", "page")]
+    [DataRow("buffered", "link")]
+    [DataRow("buffered", "resize")]
+    [DataRow("buffered", "wheel")]
+    [DataRow("stream", "page")]
+    [DataRow("stream", "link")]
+    [DataRow("stream", "resize")]
+    [DataRow("stream", "wheel")]
+    [DataRow("range", "page")]
+    [DataRow("range", "link")]
+    [DataRow("range", "resize")]
+    [DataRow("range", "wheel")]
+    public async Task LateBrowserCallbacksMustNotChangeStateWhileTeardownIsPending(string kind, string callback)
+    {
+        byte[] bytes = BitPdfRangeViewerTests.SpacedPages();
+        using var handler = new RangeHandler(bytes);
+        Services.AddSingleton(new HttpClient(handler));
+        var source = kind == "range" ? Definition() : kind == "stream"
+            ? BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(new MemoryStream(bytes))) : BitPdfSource.FromBytes(bytes);
+        int pageEvents = 0, zoomEvents = 0;
+        var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source)
+            .Add(v => v.OnPageChanged, (int _) => pageEvents++)
+            .Add(v => v.OnZoomChanged, (double _) => zoomEvents++));
+        component.WaitForPages(3);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var teardown = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.disposeScrollSpy", _ => { entered.TrySetResult(); return true; });
+        var disposal = component.InvokeAsync(async () => await component.Instance.DisposeAsync());
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        int page = component.Instance.CurrentPage;
+        double zoom = component.Instance.Zoom;
+        pageEvents = 0; zoomEvents = 0;
+        int anchors = Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor").Count;
+        int measurements = Context.InvocationsOf("BitBlazorUI.PdfViewer.getViewport").Count;
+        try
+        {
+            await component.InvokeAsync(() => callback switch
+            {
+                "page" => component.Instance.OnPageVisible(2),
+                "link" => component.Instance.OnLinkNavigate(2, null),
+                "resize" => component.Instance.OnViewportResized(),
+                _ => component.Instance.OnWheelZoom(-1),
+            });
+            Assert.AreEqual(page, component.Instance.CurrentPage);
+            Assert.AreEqual(zoom, component.Instance.Zoom);
+            Assert.AreEqual(0, pageEvents);
+            Assert.AreEqual(0, zoomEvents);
+            Assert.AreEqual(anchors, Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor").Count);
+            Assert.AreEqual(measurements, Context.InvocationsOf("BitBlazorUI.PdfViewer.getViewport").Count);
+        }
+        finally
+        {
+            teardown.SetVoidResult();
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task RetiringANonBufferedSourceMustClearTheViewerDocumentBeforeJsTeardown(bool range)
+    {
+        byte[] bytes = BitPdfRangeViewerTests.SpacedPages();
+        using var handler = new RangeHandler(bytes);
+        Services.AddSingleton(new HttpClient(handler));
+        var source = range ? Definition() : BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(new MemoryStream(bytes)));
+        var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source));
+        component.WaitForPages(3);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var teardown = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.disposeScrollSpy", _ => { entered.TrySetResult(); return true; });
+        var disposal = component.InvokeAsync(async () => await component.Instance.DisposeAsync());
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            Assert.IsNull(component.Instance.Document, "The viewer must not expose a retired source's document.");
+            Assert.IsNull(component.Instance.Metadata);
+            Assert.AreEqual(0, component.Instance.FormFields.Count);
+            Assert.AreEqual(0, component.Instance.StructureTree.Count);
+            Assert.AreEqual(0L, component.Instance.FileSize);
+        }
+        finally
+        {
+            teardown.SetVoidResult();
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+    }
+
     private sealed class ThrowingXRef(Exception error) : IBitPdfXRef
     {
         public object? Fetch(BitPdfRef reference, bool suppressEncryption = false) => throw error;
