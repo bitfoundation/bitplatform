@@ -639,7 +639,8 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
 - The checks are mechanical: the skills it read, the tools it called (a `ToolSearch` that only loads a tool doesn't
   count), the files changed after each turn, words in its final message. They say whether it followed the
   instructions, not how good its work is: for that, read each scenario's final messages and changed files in
-  `results` against its request. A check that fails once and passes on the next run or with the other model is
+  `results` against its request. A skill counts as read even when the agent opened its file only to edit it, so check the
+  first tools in the transcript too. A check that fails once and passes on the next run or with the other model is
   variance; one that fails twice is a finding. A run whose session started with the bit platform MCP server failed,
   because the platform website was down, counts for neither: run it again.
 - `-Model sonnet,opus` runs every scenario with both, and their habits differ: Sonnet tends to write the plan before
