@@ -162,17 +162,22 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         Assert.IsTrue(rtl ? saturation > 80 : saturation < 20, $"A press near the left edge picked a saturation of {saturation}.");
     }
 
-    // The slides are placed with physical transforms, so the carousel lays itself out - the buttons and their names
-    // among the rest - in the direction its container reads, which it measures along with its size.
+    // The slides are placed with physical transforms, so the carousel lays itself out - the edges of its buttons among
+    // the rest - in the direction its container reads, which it measures along with its size: the next button sits at
+    // the right edge reading left to right and at the left edge reading right to left.
     [TestMethod,
-        DataRow("#b-ltr", "Next slide"),
-        DataRow("#b-rtl", "Previous slide")]
-    public async Task TheCarouselIsLaidOutInTheDirectionItReads(string set, string leftLabel)
+        DataRow("#b-ltr", false),
+        DataRow("#b-rtl", true)]
+    public async Task TheCarouselIsLaidOutInTheDirectionItReads(string set, bool rtl)
     {
         await Open();
 
-        await Page.WaitForFunctionAsync($"() => document.querySelector('{set} [data-probe=carousel] .bit-csl-lbt')?.getAttribute('aria-label') === '{leftLabel}'",
-            null, new() { Timeout = DefaultTimeout });
+        await Page.WaitForFunctionAsync($@"() => {{
+            const container = document.querySelector('{set} [data-probe=carousel] .bit-csl-cnt')?.getBoundingClientRect();
+            const next = document.querySelector('{set} [data-probe=carousel] .bit-csl-nbt')?.getBoundingClientRect();
+            if (!container || !next || next.width === 0) return false;
+            return {(rtl ? "true" : "false")} ? Math.abs(next.left - container.left) < 1 : Math.abs(next.right - container.right) < 1;
+        }}", null, new() { Timeout = DefaultTimeout });
     }
 
     // A callout placed on the Start side of its anchor sits on its left reading left to right and on its right reading
