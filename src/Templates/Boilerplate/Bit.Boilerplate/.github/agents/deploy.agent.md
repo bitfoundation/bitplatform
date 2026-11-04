@@ -146,8 +146,7 @@ business, and only what the project doesn't answer by itself.
 <!--#endif-->
 - The landing page (`src/LandingPage`) is prerendered whatever this decides, since being found is what it is for. Its
   pages set no cookies and a short shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them
-  from the edge. Search engine crawlers, Lighthouse and PageSpeed Insights get those pages without their scripts, so
-  add a rule before it that bypasses the cache for them, or they get the copy a visitor left there, scripts included.
+  from the edge.
 - Blazor Server is for development only in this template, and so is Auto, which runs on Blazor Server until
   WebAssembly has loaded: offer neither for a deployment.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
