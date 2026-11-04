@@ -1,6 +1,6 @@
 ---
 name: port
-description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages, existing data - plans and builds through ai-dlc, hands the look to rebrand, and proves feature parity scenario by scenario in the running app.
+description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages, existing data - plans and builds through ai-dlc, hands the look to rebrand, rebuilds the source's landing page on the project's own with its AI chat, brings the main pages into the Workbench, and proves feature parity scenario by scenario in the running app.
 ---
 
 # Port: bring an existing app's functionality into this project
@@ -73,7 +73,9 @@ Without one, do its job yourself, by the same rules:
 
 Cover everything that exists: every page, dialog and action, every report and export, every setting, background job
 and scheduled task, every integration (payments, printers, scanners, email, SMS, other systems), every role and
-permission, and every calculation that produces a number - totals, taxes, discounts, rounding, stock, balances.
+permission, and every calculation that produces a number - totals, taxes, discounts, rounding, stock, balances. The
+product's public site belongs here too: find its project or its address from the source, the app's own links and the
+user, and note which of them you have (4.4).
 
 **Inventory lanes.** A large source reads faster in parallel. If your tool runs subagents, split the source into
 areas that don't overlap and together cover all of it - by module, or by group of screens - and give each area the
@@ -194,12 +196,37 @@ replace - a card terminal, a receipt printer, a scanner - stays: Java, Kotlin, S
 used from the MAUI app, through a binding library for a `.jar`, `.aar` or framework, or through Native Library
 Interop - a thin wrapper written in Android Studio or Xcode around the part of the SDK the app needs.
 
+### 4.4 The landing page
+
+The product's public site is rebuilt in `src/LandingPage` with the **landing-page** skill
+(`.github/agents/landing-page.agent.md`), on that project whatever the source's site was made with, so its
+prerendering, search engine files, waitlist and telemetry stay. The samples the result doesn't use go, as that skill's
+section 4 says.
+
+- **When the source's site is known**, through its project or an address that answers, the result looks the same. Its
+  images, fonts, videos, other assets and texts come over, with the assets' licenses recorded, and its pages are
+  written again with this project's components and styles: none of its markup, styles or scripts is copied, a site
+  builder's output included. Compare the two side by side at the breakpoints the site itself uses, with its scroll,
+  hover and menu states, until every difference left is one the spec lists. It has the languages and color schemes the
+  source's site has, instead of that skill's two of each.
+- **When it can't be found or reached**, make one that fits the business, from the sample closest to it, with what the
+  inventory says about the product and the look the app got.
+- **The AI chat stays in both cases**, even when the source's site has nothing like it. It answers from facts about
+  this product, taken from the inventory, and wears the page's look.
+- **Text a script reveals still shows without scripts.** Crawlers and benchmarks get the page without them, so an effect
+  taken from the source's site can't leave its text hidden from them.
+
 ## 5. Plan and build
 
 - **Order**: the decisions that change the foundation first - multi-tenancy, further apps, optional features - then
   the domain model and the API, then each app's features. Each task names its rows of the parity table.
 - **The look**: when the result should look like the source too, run `rebrand` once per app, each with that app's
   screens as its reference. One run over several apps makes them look alike.
+- **The Workbench**: once an app's look is settled, bring its main pages into the Workbench, the ones its users spend
+  their day in, as the **workbench** skill's section 3 says (`.github/agents/workbench.agent.md`): on sample data that
+  looks real, with the product's images and the states each page can be in, so the user can review the product there and
+  make store screenshots from it. The copies of template pages the port removed go. With several apps, each app's pages
+  wear that app's look.
 - **Lanes**: a port is long. If your tool runs subagents, split the work into lanes - the server, and the UI of each
   app - each in a git worktree of its own. A UI lane that needs an API it doesn't have writes the request into a file
   under `specs/changes/` for the server lane instead of building it. Agents you start don't start agents of their own,
@@ -234,6 +261,9 @@ section 4).
 - Every decision in section 3 is in a spec, and the report lists the ones decided without review.
 - No source code was copied, and no secret came over that the report doesn't list.
 - Every heavy client package of the source is replaced, moved to the server, or kept with its reason.
+- The landing page looks like the source's site, or fits the business when that site couldn't be found or reached, is
+  built on `src/LandingPage`, and its chat answers about this product.
+- The main pages of each app are in the Workbench.
 - Each app serves only its own pages, and the tests say so.
 - The build is clean, the tests pass, and the review skill has run.
 
@@ -243,7 +273,7 @@ Write the report as an HTML page, `.playwright-mcp/port/<slug>/report.html`, in 
 in, and hand that file to the user:
 
 - The decisions to revisit first, those decided without review at the top.
-- The parity table with each row's status, and the source-and-result captures of the key flows.
+- The parity table with each row's status, and the source-and-result captures of the key flows and the landing page.
 - What is left and why, how to run each app, the secrets the user has to set, and the licenses of the assets that
   came over.
 - What was verified, each claim with its evidence (the command and its result, or the capture), and what wasn't.
