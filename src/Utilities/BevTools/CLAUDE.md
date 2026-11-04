@@ -2,7 +2,7 @@
 
 Developer tools for Blazor (WebAssembly, Server, Interactive Auto, static SSR; net10.0/11.0): component tree with
 event wiring, lifecycle and render modes, render profiler, timeline, state (authentication included), routing, network
-with WebSocket/SignalR traffic, JS interop, errors, DI inspector, circuit, runtime and prerendering diagnostics, rules,
+with WebSocket/SignalR traffic, JS interop, errors, DI inspector, circuit, runtime and prerendering diagnostics, logs, rules,
 session and trace export. Three frontends read one protocol: the in-app panel, the companion window and the browser
 extension.
 `README.md` in this folder is the reference guide; `docs/` holds the capability matrix, the architecture and the
@@ -20,7 +20,8 @@ measured overhead - keep all of them accurate when behaviour changes.
 | `Bit.BevTools/Routing/`, `Auth/`, `WebApp/`, `Runtime/` | Route data and route table, the authentication state provider, the prerendering handoff, per-platform runtime facts |
 | `Bit.BevTools.Server/` | Circuit instrumentation and the Circuit panel, itself written as a BevTools extension |
 | `Bit.BevTools.Loader/` | The half an app references at startup when it opens BevTools on demand or lazy loads it: startup hooks (activator, HTTP, framework diagnostics, service collection), `BevToolsLoader`, `BevToolsLoaderPanel`, `BevToolsHttpHookHandler`. It ships in every startup download, AOT builds included, so it is trimmable, AOT compatible and reflection free, and it never references `Bit.BevTools`: `Bit.BevTools` references it, and implements its internal contract (`Internal/BevToolsLoaderContract.cs`) through `[assembly: BevToolsEntryPoint]` |
-| `Bit.BevTools.Cli/` | The `bevtools` .NET tool for CI: `check` (`BevSessionCheck`) and `compare` (`BevProfileComparison`) over export files; a thin shell, the logic lives in `Bit.BevTools`. Reads files only, never a running app |
+| `Bit.BevTools.Cli/` | The `bevtools` .NET tool: `check` (`BevSessionCheck`) and `compare` (`BevProfileComparison`) over export files for CI (Markdown, JSON, SARIF, GitHub annotations), and `mcp`, a read-only Model Context Protocol server over exports for coding agents; a thin shell, the logic lives in `Bit.BevTools`. Reads files only, never a running app |
+| `Bit.BevTools.Blex/` | bit Blex in the State panel, with restoring through Blex's time travel: an integration written against the public contract only, as a third party's would be |
 | `Bit.BevTools.Extension/` | Manifest V3 browser extension (Chromium, Firefox): the companion in a DevTools panel over `inspectedWindow.eval`; no permissions, no content script. `node build.mjs` assembles `dist/` |
 | `Demo/` | Blazor Web App (Interactive Auto, `Server` + `Client`) whose `/problems` page lists real, deliberately planted problems to diagnose |
 | `Samples/` | One small app per host, all rendering the pages of `Samples/Core` with `<BevToolsPanel />` in its `Routes.razor`: `Server`, `Wasm`, `Auto` (each with its `.Client`) and `MAUI` (Blazor Hybrid). Each host's `Program.cs` (`MauiProgram.cs`) owns its BevTools registration, so the setups can be compared; they show the recommended one, not the demo's always-on one. `Lazy` (with its `.Client`) stands apart: a Blazor Web App of its own set up as the README's "Opening it on demand, and lazy loading" says - `Bit.BevTools.wasm` marked lazy (except in AOT builds), `AddBitBevToolsLoaderServices`, `<BevToolsLoaderPanel />` and an "Open dev tools" button - which `Tests/Bit.BevTools.Tests.E2E` publishes and drives |

@@ -1,0 +1,277 @@
+@import '../../../Styles/tokens';
+
+.restaurant-about-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 72px);
+    padding-block: clamp(48px, 7vw, 96px) clamp(24px, 4vw, 48px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.restaurant-about-text {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+
+    h1 {
+        font-size: clamp(2.5rem, 1.5rem + 3.8vw, 4.75rem);
+        line-height: 1.02;
+        letter-spacing: -.02em;
+
+        &:lang(fa) {
+            line-height: 1.35;
+            letter-spacing: 0;
+        }
+    }
+}
+
+.restaurant-kicker {
+    color: var(--copper-text);
+    font-size: .875rem;
+    font-weight: 700;
+}
+
+.restaurant-about-machine {
+    justify-self: center;
+    width: min(100%, 380px);
+    padding: 28px 20px 12px;
+    border-radius: 50% 50% var(--lp-radius) var(--lp-radius);
+    background: var(--daylight);
+}
+
+.restaurant-story {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: clamp(24px, 5vw, 72px);
+    padding-block: clamp(40px, 6vw, 80px);
+
+    h2 {
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+        line-height: 1.1;
+    }
+
+    > div {
+        display: grid;
+        gap: 16px;
+        max-width: 62ch;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: 1.0625rem;
+        line-height: 1.7;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.restaurant-about-cafes {
+    background: var(--lp-bg-alt);
+    scroll-margin-top: var(--lp-nav-height);
+
+    h2 {
+        margin-bottom: 32px;
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+    }
+}
+
+.restaurant-about-cafe-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+
+    article {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+        padding: 24px;
+        border-radius: var(--lp-radius);
+        background: var(--lp-surface);
+        box-shadow: 0 0 0 1px var(--lp-line);
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+    }
+
+    .restaurant-about-cafe-note {
+        color: var(--copper-text);
+        font-weight: 600;
+    }
+
+    table {
+        width: 100%;
+        margin-top: 6px;
+        border-collapse: collapse;
+        font-size: .9375rem;
+    }
+
+    th,
+    td {
+        padding: 8px 0;
+        border-top: 1px solid var(--lp-line);
+        font-weight: 400;
+        text-align: start;
+    }
+
+    td {
+        font-weight: 600;
+        text-align: end;
+        white-space: nowrap;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.restaurant-about-holidays {
+    margin-top: 20px;
+    color: var(--lp-fg-muted);
+}
+
+.restaurant-team {
+    h2 {
+        margin-bottom: 36px;
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+    }
+
+    ul {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 32px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 4px;
+
+        p {
+            margin-top: 6px;
+            color: var(--lp-fg-muted);
+            font-size: .9375rem;
+        }
+    }
+
+    strong {
+        font-family: var(--lp-stack-display);
+        font-size: 1.25rem;
+        font-weight: 650;
+    }
+}
+
+.restaurant-team-cup {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+    border: 3px solid var(--porcelain-blue);
+    border-radius: 50%;
+    background: var(--porcelain);
+    color: var(--porcelain-ink);
+    font-family: var(--lp-stack-display);
+    font-size: 1.375rem;
+    font-weight: 650;
+    box-shadow: 0 0 0 6px var(--lp-bg), 0 0 0 7px var(--porcelain-line);
+}
+
+.restaurant-team-role {
+    color: var(--copper-text);
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.restaurant-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    padding-block: clamp(48px, 6vw, 88px) clamp(56px, 7vw, 96px);
+    border-top: 1px solid var(--lp-line);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.restaurant-contact-text {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+
+    h2 {
+        font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+    }
+
+    p {
+        max-width: 50ch;
+        color: var(--lp-fg-muted);
+    }
+}
+
+.restaurant-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.restaurant-company {
+    display: grid;
+    gap: 12px;
+    padding: 28px;
+    border-radius: var(--lp-radius);
+    background: var(--lp-bg-alt);
+
+    h3 {
+        font-size: 1.375rem;
+    }
+
+    dl {
+        display: grid;
+        gap: 10px;
+        margin: 8px 0 0;
+    }
+
+    div {
+        display: grid;
+        grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+        gap: 12px;
+        font-size: .9375rem;
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+    }
+
+    dd {
+        margin: 0;
+    }
+
+    @include lt-sm {
+        padding: 22px;
+
+        div {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
+        }
+    }
+}

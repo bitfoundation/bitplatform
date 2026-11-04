@@ -306,6 +306,19 @@ public class HttpClientProxySourceGeneratorTests
     }
 
     [TestMethod]
+    public async Task Percent_escapes_inside_string_values_are_sent_as_given()
+    {
+        var proxy = await RunAsync(BoilerplateControllers, """
+                    await sp.GetRequiredService<IProductController>().SearchProducts("50%25 off", default);
+                    await sp.GetRequiredService<IIdentityController>().GetExternalSignInUri("Google", "/products?filter=a%26b&page=2");
+                    return null;
+            """, (request, _) => request.Uri!.AbsolutePath.Contains("GetExternalSignInUri") ? Text("") : Json("null"));
+
+        Assert.AreEqual(Url("api/v1/Product/SearchProducts/50%2525%20off"), proxy.Requests[0].Uri!.AbsoluteUri);
+        Assert.AreEqual(Url("api/v1/Identity/GetExternalSignInUri/?provider=Google&returnUrl=%2Fproducts%3Ffilter%3Da%2526b%26page%3D2&localHttpPort="), proxy.Requests[1].Uri!.AbsoluteUri);
+    }
+
+    [TestMethod]
     public async Task Route_and_query_values_are_formatted_with_the_invariant_culture()
     {
         var proxy = await RunAsync("""

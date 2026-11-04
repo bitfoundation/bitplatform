@@ -1,0 +1,34 @@
+@import '../../../Styles/tokens';
+
+.lp-crm {
+    --lp-chat-bubble-bg: var(--crm-ink);
+    --lp-chat-bubble-fg: var(--crm-ink-fg);
+}
+
+.crm-footer-hours {
+    max-width: 36ch;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+}
+
+.crm-chat-footer {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: .8125rem;
+    }
+
+    a {
+        color: var(--lp-accent);
+        font-weight: 500;
+    }
+}
+
+::deep .crm-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}

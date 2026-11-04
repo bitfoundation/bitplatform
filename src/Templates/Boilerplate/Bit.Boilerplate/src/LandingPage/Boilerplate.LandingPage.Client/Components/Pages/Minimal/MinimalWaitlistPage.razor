@@ -1,0 +1,8 @@
+@attribute [Route(MinimalSite.Path + "/waitlist/confirm")]
+@attribute [Route(MinimalSite.Path + "/waitlist/unsubscribe")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/waitlist/confirm")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/waitlist/unsubscribe")]
+@layout MinimalLayout
+@inherits LandingPageBase
+
+<WaitlistTokenPage Site="MinimalSite.Info" />

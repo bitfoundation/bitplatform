@@ -1,0 +1,45 @@
+﻿@* Previous/next navigation in the catalog's reading order - part of the site kit every Utilities
+   demo shares (see wwwroot/app.css). It is what turns the docs into a course you can page through
+   rather than a set of pages you have to know the name of. DocsLayout renders it under the page
+   and hands it the page it is on. *@
+
+@if (_previous is not null || _next is not null)
+{
+    <nav class="bb-pager" aria-label="Documentation pager">
+        @if (_previous is not null)
+        {
+            <a href="@_previous.Url" class="bb-pager-link bb-pager-prev">
+                <span class="bb-pager-label">← Previous</span>
+                <span class="bb-pager-title">@_previous.Title</span>
+            </a>
+        }
+        @if (_next is not null)
+        {
+            <a href="@_next.Url" class="bb-pager-link bb-pager-next">
+                <span class="bb-pager-label">Next →</span>
+                <span class="bb-pager-title">@_next.Title</span>
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    private DocsPageInfo? _previous;
+    private DocsPageInfo? _next;
+
+    /// <summary>The page the reader is on.</summary>
+    [Parameter, EditorRequired] public DocsPageInfo Current { get; set; } = default!;
+
+    protected override void OnParametersSet() => (_previous, _next) = DocsCatalog.NeighborsOf(Current);
+
+    private DocsPageInfo? _rendered;
+
+    /// <summary>
+    /// The shell re-renders on every navigation and hands the pager its page again, and a record is
+    /// never provably unchanged to the renderer - so the pager itself skips the renders that would
+    /// draw the same two links.
+    /// </summary>
+    protected override bool ShouldRender() => Equals(_rendered, Current) is false;
+
+    protected override void OnAfterRender(bool firstRender) => _rendered = Current;
+}

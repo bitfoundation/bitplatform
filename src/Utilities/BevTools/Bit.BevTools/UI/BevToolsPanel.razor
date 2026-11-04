@@ -59,6 +59,10 @@
                                     {
                                         <span class="bev-count bev-err">@Session.Http.FailedCount</span>
                                     }
+                                    else if (id == "logs" && Session.Logs.CountOf(Microsoft.Extensions.Logging.LogLevel.Warning) > 0)
+                                    {
+                                        <span class="bev-count bev-warn" title="Warnings logged">@Session.Logs.CountOf(Microsoft.Extensions.Logging.LogLevel.Warning)</span>
+                                    }
                                 </button>
                             }
                             @foreach (var panel in ExtensionPanels)
@@ -102,6 +106,7 @@
                             case "network": <BevNetworkPanel /> break;
                             case "interop": <BevInteropPanel /> break;
                             case "errors": <BevErrorsPanel /> break;
+                            case "logs": <BevLogsPanel /> break;
                             case "services": <BevServicesPanel /> break;
                             case "diagnostics": <BevDiagnosticsPanel /> break;
                             case "runtime": <BevRuntimePanel /> break;

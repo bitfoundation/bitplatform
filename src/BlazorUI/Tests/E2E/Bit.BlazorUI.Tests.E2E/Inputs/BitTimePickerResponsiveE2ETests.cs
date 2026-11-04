@@ -61,6 +61,26 @@ public class BitTimePickerResponsiveE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_AClosedSheet_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync(Url);
+
+        // A closed sheet is laid out above the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(Page.Locator("#responsive .bit-tpc-cal")).ToBeHiddenAsync();
+
+        var callout = await OpenCalloutAsync("responsive");
+        var spin = callout.Locator("button[aria-label='Increase hour']");
+        await Expect(spin).ToBeVisibleAsync();
+
+        await callout.Locator(".bit-tpc-cbn").TapAsync();
+
+        await Expect(Field("responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(spin).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
     public async Task Responsive_SwipeTheSheetUp_DismissesIt()
     {
         if (IsChromium is false) Assert.Inconclusive("Real touch input is dispatched through the Chrome DevTools Protocol, which only Chromium speaks.");

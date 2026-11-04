@@ -1,0 +1,47 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-ecommerce">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <AnnouncementBar Key="fern15" Label="@E[nameof(EcommerceStrings.Announcement)]">
+        @E[nameof(EcommerceStrings.Announcement)] <a href="@Link("#download")">@E[nameof(EcommerceStrings.AnnouncementLink)]</a>
+    </AnnouncementBar>
+
+    <LandingNav Site="EcommerceSite.Info" Links="links" ShowSignIn>
+        <Brand><EcommerceLogo /><span>Fernhouse</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#download")" Size="BitSize.Small" Class="ecommerce-nav-cta">@E[nameof(EcommerceStrings.NavGetApp)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="EcommerceSite.Info" Tagline="@E[nameof(EcommerceStrings.FooterTagline)]">
+        <Brand><EcommerceLogo /><span>Fernhouse</span></Brand>
+        <Intro>
+            <StoreBadges Site="EcommerceSite.Info" ShowComingSoon="false" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@E[nameof(EcommerceStrings.FooterShop)]</h2>
+                <a href="@EcommerceSite.Info.WebAppUrl">@E[nameof(EcommerceStrings.FooterLowLight)]</a>
+                <a href="@EcommerceSite.Info.WebAppUrl">@E[nameof(EcommerceStrings.FooterPetSafe)]</a>
+                <a href="@EcommerceSite.Info.WebAppUrl">@E[nameof(EcommerceStrings.FooterPots)]</a>
+                <a href="@EcommerceSite.Info.WebAppUrl">@E[nameof(EcommerceStrings.FooterGiftCards)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <a class="ecommerce-sticky-cta" href="@($"{EcommerceSite.Path.TrimStart('/')}/download?utm_source=landing&utm_medium=sticky")">@E[nameof(EcommerceStrings.StickyCta)]</a>
+
+    <LandingChat Site="EcommerceSite.Info"
+                 Variant="LandingChatVariant.Bubble"
+                 Suggestions="suggestions"
+                 HandoffUrl="@($"mailto:{EcommerceSite.Info.Company.Email}")"
+                 Class="ecommerce-chat" />
+
+    <ConsentBanner SitePath="@EcommerceSite.Path" />
+    <LanguageSuggestion />
+</div>

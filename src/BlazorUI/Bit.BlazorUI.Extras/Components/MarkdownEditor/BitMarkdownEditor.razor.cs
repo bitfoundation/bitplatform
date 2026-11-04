@@ -578,7 +578,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorEditResult))]
     public BitMarkdownEditorEditResult _ApplyCommand(string command, int start, int end, string value)
     {
-        if (ReadOnly || Disabled || Enum.TryParse<BitMarkdownEditorCommand>(command, out var cmd) is false)
+        if (IsDisposing || ReadOnly || Disabled || Enum.TryParse<BitMarkdownEditorCommand>(command, out var cmd) is false)
         {
             return BitMarkdownEditorEditResult.NotHandled(value, start, end);
         }
@@ -593,7 +593,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnHistoryChanged")]
     public void _OnHistoryChanged(bool canUndo, bool canRedo)
     {
-        if (canUndo == _canUndo && canRedo == _canRedo) return;
+        if (IsDisposing || (canUndo == _canUndo && canRedo == _canRedo)) return;
 
         _canUndo = canUndo;
         _canRedo = canRedo;
@@ -609,6 +609,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnSelectionChanged")]
     public void _OnSelectionChanged(int start, int end, string value, int line = 1, int column = 1, int selectedLength = 0)
     {
+        if (IsDisposing) return;
+
         var formats = BitMarkdownEditorCommands.DetectActiveFormats(value ?? string.Empty, start, end, CommandOptions);
 
         var formatsChanged = formats.Count != _activeFormats.Count || formats.All(_activeFormats.Contains) is false;
@@ -654,6 +656,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnDraftRestored")]
     public async Task _OnDraftRestored(string? value)
     {
+        if (IsDisposing) return;
+
         await OnDraftRestored.InvokeAsync(value);
     }
 
@@ -663,6 +667,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnSubmit")]
     public async Task _OnSubmit(string? value)
     {
+        if (IsDisposing) return;
+
         _value = value ?? string.Empty;
 
         await OnSubmit.InvokeAsync(value);
@@ -675,7 +681,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("UploadImage")]
     public async Task<string?> _UploadImage(string fileName, string base64, string contentType)
     {
-        if (OnImageUpload is null || ReadOnly || Disabled) return null;
+        if (IsDisposing || OnImageUpload is null || ReadOnly || Disabled) return null;
 
         byte[] data;
         try
@@ -697,7 +703,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnImageRejected")]
     public async Task _OnImageRejected(string fileName, string contentType, long size, string reason)
     {
-        if (OnImageRejected.HasDelegate is false) return;
+        if (IsDisposing || OnImageRejected.HasDelegate is false) return;
 
         var parsed = Enum.TryParse<BitMarkdownEditorImageRejectionReason>(reason, out var value)
             ? value
@@ -713,6 +719,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnEscape")]
     public async Task _OnEscape()
     {
+        if (IsDisposing) return;
+
         if (_showHelp)
         {
             _showHelp = false;
@@ -751,6 +759,10 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnShortcut")]
     public async Task _OnShortcut(string name)
     {
+        // A full-screen toggled while the editor is being disposed would take the scroll lock after the disposal
+        // has already let go of it, and nothing would ever release it again.
+        if (IsDisposing) return;
+
         switch (name)
         {
             case "find":
@@ -1554,7 +1566,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     private async Task ApplyScrollLock()
     {
-        if (FullScreen == _scrollLocked) return;
+        // The disposal releases a lock still held on its own, and one taken after it would be held for good.
+        if (IsDisposing || FullScreen == _scrollLocked) return;
 
         _scrollLocked = FullScreen;
 
@@ -1615,9 +1628,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         _debounceCts?.Dispose();
         _debounceCts = null;
 
-        _dotnetObj?.Dispose();
-
-        try
+        // The editor's listeners still call back through the reference until they are removed.
+        await _dotnetObj.DisposeAfterAsync(async () =>
         {
             if (_scrollLocked)
             {
@@ -1632,8 +1644,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
             }
 
             await _js.BitMarkdownEditorDispose(_Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        });
 
         await base.DisposeAsync(disposing);
     }

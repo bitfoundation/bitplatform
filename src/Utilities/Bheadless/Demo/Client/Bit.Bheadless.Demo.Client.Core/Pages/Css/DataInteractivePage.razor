@@ -1,155 +1,157 @@
 ﻿@page "/data-interactive"
 
-<PageTitle>DataInteractive — bit Bheadless</PageTitle>
+<PageTitle>DataInteractive · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>DataInteractive</h1>
-        <p>
-            A wrapper that forwards <code>data-hover</code>, <code>data-active</code>, and
-            <code>data-focus</code> attributes to its child element for consistent interactive
-            state styling — without relying on CSS pseudo-classes.
-        </p>
-        <SectionSwitcher Slug="data-interactive" />
-    </header>
-
-    <DemoBlock Title="Basic Usage"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            Wrap any element to get <code>data-hover</code>, <code>data-active</code>, and
-            <code>data-focus</code> attributes applied automatically. Style with CSS attribute selectors.
-        </Description>
-        <LiveContent>
-            <BitBhDataInteractive As="button" class="interactive-btn">
-                Hover, focus, or press me
-            </BitBhDataInteractive>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Link Wrapper"
-               Code="@_linkCode"
-               Css="@_linkCss">
-        <Description>
-            Use <code>As="a"</code> to wrap a link element. The data attributes let you style
-            hover/focus/active states consistently across all interactive elements.
-        </Description>
-        <LiveContent>
-            <BitBhDataInteractive As="a" href="#" class="interactive-link">
-                Dashboard
-            </BitBhDataInteractive>
-            <BitBhDataInteractive As="a" href="#" class="interactive-link">
-                Settings
-            </BitBhDataInteractive>
-            <BitBhDataInteractive As="a" href="#" class="interactive-link">
-                Profile
-            </BitBhDataInteractive>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Render Context"
-               Code="@_contextCode"
-               Css="@_contextCss">
-        <Description>
-            Access the interactive state via the render context to conditionally render content
-            or apply classes based on hover, focus, and active states.
-        </Description>
-        <LiveContent>
-            <BitBhDataInteractive As="button" class="interactive-card">
-                <Template Context="state">
-                    <span class="card-icon">@(state.Active ? "⚡" : state.Hover ? "👆" : "🖱️")</span>
-                    <span class="card-label">
-                        @if (state.Active)
-                        {
-                            <span>Pressing!</span>
-                        }
-                        else if (state.Hover)
-                        {
-                            <span>Hovering…</span>
-                        }
-                        else if (state.Focus)
-                        {
-                            <span>Focused (Tab here)</span>
-                        }
-                        else
-                        {
-                            <span>Interact with me</span>
-                        }
-                    </span>
-                </Template>
-            </BitBhDataInteractive>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled State"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            When <code>Disabled="true"</code>, all interactive state tracking is suppressed and
-            <code>data-disabled</code> is emitted instead.
-        </Description>
-        <LiveContent>
-            <BitBhDataInteractive As="button" class="interactive-btn" Disabled="true">
-                I'm disabled
-            </BitBhDataInteractive>
-            <BitBhDataInteractive As="button" class="interactive-btn">
-                I'm enabled
-            </BitBhDataInteractive>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Card Grid"
-               Code="@_cardCode"
-               Css="@_cardCss">
-        <Description>
-            Build interactive cards that respond to hover, focus, and press. The data attributes
-            give you full control over each state's visual treatment.
-        </Description>
-        <LiveContent>
-            <div class="card-grid">
-                <BitBhDataInteractive As="div" class="card" tabindex="0">
-                    <div class="card-title">Analytics</div>
-                    <div class="card-desc">View your dashboard metrics</div>
-                </BitBhDataInteractive>
-                <BitBhDataInteractive As="div" class="card" tabindex="0">
-                    <div class="card-title">Reports</div>
-                    <div class="card-desc">Generate monthly reports</div>
-                </BitBhDataInteractive>
-                <BitBhDataInteractive As="div" class="card" tabindex="0">
-                    <div class="card-title">Settings</div>
-                    <div class="card-desc">Configure your workspace</div>
-                </BitBhDataInteractive>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="State Inspector"
-               Code="@_inspectorCode"
-               Css="@_inspectorCss">
-        <Description>
-            A live view of the data attributes being applied. Interact with the element and
-            watch the state indicators update in real time.
-        </Description>
-        <LiveContent>
-            <BitBhDataInteractive As="button" class="inspector-target">
-                <Template Context="s">
-                    <span class="inspector-label">Interact with this button</span>
-                    <div class="inspector-states">
-                        <span class="state-badge @(s.Hover ? "state-on" : "")">
-                            data-hover: @(s.Hover ? "✓" : "✗")
-                        </span>
-                        <span class="state-badge @(s.Focus ? "state-on" : "")">
-                            data-focus: @(s.Focus ? "✓" : "✗")
-                        </span>
-                        <span class="state-badge @(s.Active ? "state-on" : "")">
-                            data-active: @(s.Active ? "✓" : "✗")
-                        </span>
-                    </div>
-                </Template>
-            </BitBhDataInteractive>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>DataInteractive</h1>
+    <p class="bb-subtitle">
+        A wrapper that puts <code>data-hover</code>, <code>data-active</code>, and
+        <code>data-focus</code> attributes on the element it renders for consistent interactive
+        state styling — without relying on CSS pseudo-classes.
+    </p>
 </div>
+
+<SectionSwitcher Slug="data-interactive" />
+
+<DemoBlock Title="Basic Usage"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Wrap any element to get <code>data-hover</code>, <code>data-active</code>, and
+        <code>data-focus</code> attributes applied automatically. The CSS version styles them with
+        <code>[data-hover]</code> / <code>[data-active]</code> / <code>[data-focus]</code> attribute
+        selectors, the Tailwind version with the <code>data-[hover]:</code> / <code>data-active:</code> /
+        <code>data-[focus]:</code> variants.
+    </Description>
+    <LiveContent>
+        <BitBhDataInteractive As="button" class="interactive-btn">
+            Hover, focus, or press me
+        </BitBhDataInteractive>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Link Wrapper"
+           Code="@_linkCode"
+           Css="@_linkCss">
+    <Description>
+        Use <code>As="a"</code> to wrap a link element. The data attributes let you style
+        hover/focus/active states consistently across all interactive elements.
+    </Description>
+    <LiveContent>
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
+            Dashboard
+        </BitBhDataInteractive>
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
+            Settings
+        </BitBhDataInteractive>
+        <BitBhDataInteractive As="a" href="#" @onclick:preventDefault class="interactive-link">
+            Profile
+        </BitBhDataInteractive>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Render Context"
+           Code="@_contextCode"
+           Css="@_contextCss">
+    <Description>
+        Access the interactive state via the render context (<code>Context="state"</code>) to
+        conditionally render content or apply classes based on hover, focus, and active states.
+    </Description>
+    <LiveContent>
+        <BitBhDataInteractive As="button" class="interactive-card">
+            <Template Context="state">
+                <span class="card-icon">@(state.Active ? "⚡" : state.Hover ? "👆" : "🖱️")</span>
+                <span class="card-label">
+                    @if (state.Active)
+                    {
+                        <span>Pressing!</span>
+                    }
+                    else if (state.Hover)
+                    {
+                        <span>Hovering…</span>
+                    }
+                    else if (state.Focus)
+                    {
+                        <span>Focused (Tab here)</span>
+                    }
+                    else
+                    {
+                        <span>Interact with me</span>
+                    }
+                </span>
+            </Template>
+        </BitBhDataInteractive>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled State"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        When <code>Disabled="true"</code>, all interactive state tracking is suppressed and
+        <code>data-disabled</code> is emitted instead.
+    </Description>
+    <LiveContent>
+        <BitBhDataInteractive As="button" class="interactive-btn" Disabled="true">
+            I'm disabled
+        </BitBhDataInteractive>
+        <BitBhDataInteractive As="button" class="interactive-btn">
+            I'm enabled
+        </BitBhDataInteractive>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Card Grid"
+           Code="@_cardCode"
+           Css="@_cardCss">
+    <Description>
+        Build interactive cards that respond to hover, focus, and press. The data attributes
+        give you full control over each state's visual treatment.
+    </Description>
+    <LiveContent>
+        <div class="card-grid">
+            <BitBhDataInteractive As="div" class="card" tabindex="0">
+                <div class="card-title">Analytics</div>
+                <div class="card-desc">View your dashboard metrics</div>
+            </BitBhDataInteractive>
+            <BitBhDataInteractive As="div" class="card" tabindex="0">
+                <div class="card-title">Reports</div>
+                <div class="card-desc">Generate monthly reports</div>
+            </BitBhDataInteractive>
+            <BitBhDataInteractive As="div" class="card" tabindex="0">
+                <div class="card-title">Settings</div>
+                <div class="card-desc">Configure your workspace</div>
+            </BitBhDataInteractive>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="State Inspector"
+           Code="@_inspectorCode"
+           Css="@_inspectorCss">
+    <Description>
+        A live view of the data attributes being applied. Interact with the element and
+        watch the state indicators update in real time.
+    </Description>
+    <LiveContent>
+        <BitBhDataInteractive As="button" class="inspector-target">
+            <Template Context="s">
+                <span class="inspector-label">Interact with this button</span>
+                <div class="inspector-states">
+                    <span class="state-badge @(s.Hover ? "state-on" : "")">
+                        data-hover: @(s.Hover ? "✓" : "✗")
+                    </span>
+                    <span class="state-badge @(s.Focus ? "state-on" : "")">
+                        data-focus: @(s.Focus ? "✓" : "✗")
+                    </span>
+                    <span class="state-badge @(s.Active ? "state-on" : "")">
+                        data-active: @(s.Active ? "✓" : "✗")
+                    </span>
+                </div>
+            </Template>
+        </BitBhDataInteractive>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── Source snippets shown alongside each live demo ─────────────────────────

@@ -296,7 +296,7 @@ registration, or any other section of this guide by its heading. Every tool is r
 https://bheadless.bitplatform.dev
 
 ```bash
-dotnet run --project src/Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server
+dotnet run --project src/Utilities/Bheadless/Demo/Server
 ```
 
 Every component is demonstrated twice - hand-written CSS at `/<component>` and Tailwind at `/tw/<component>` - with the Razor and CSS for each demo one click away. Debug builds run the demo as Blazor Server; Release builds (and `-p:IncludeWasm=true`) run it as Blazor WebAssembly. The demo also hosts the [MCP server](#mcp-server) at `/mcp`.
@@ -304,7 +304,7 @@ Every component is demonstrated twice - hand-written CSS at `/<component>` and T
 ```
 Bit.Bheadless/                     the library (Components, Core, Scripts/*.ts compiled to wwwroot)
 Bit.Bheadless.Testing/             accessibility test toolkit (bUnit)
-Demo/Bit.Bheadless.Demo.Server/    demo host and MCP server
+Demo/Server/                       demo host and MCP server
 Demo/Client/Bit.Bheadless.Demo.Client.Core/   demo pages, layout and styles (CSS + Tailwind)
 Demo/Client/Bit.Bheadless.Demo.Client.Web/    demo WebAssembly client
 Tests/Bit.Bheadless.Tests/         component, keyboard, ARIA and engine tests (MSTest + bUnit)

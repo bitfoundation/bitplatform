@@ -1,56 +1,59 @@
 ﻿@page "/focus-trap"
 
-<PageTitle>FocusTrap — bit Bheadless</PageTitle>
+<PageTitle>FocusTrap · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>FocusTrap</h1>
-        <p>A low-level component that traps keyboard focus within a container. Used internally by Dialog but also useful standalone for custom modal-like patterns.</p>
-        <SectionSwitcher Slug="focus-trap" />
-    </header>
+<div class="bb-intro">
+    <h1>FocusTrap</h1>
+    <p class="bb-subtitle">A low-level component that traps keyboard focus within a container. Used internally by Dialog but also useful standalone for custom modal-like patterns.</p>
+</div>
 
-    <DemoBlock Title="Basic Focus Trap"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            Toggle the trap on and off. While active, pressing Tab and Shift+Tab cycles
-            through the focusable elements inside the container without escaping to the
-            rest of the page. Focus is automatically moved to the first focusable element
-            when the trap activates, and restored to the previously-focused element when
-            it deactivates.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
-                      class="@($"btn {(basicEnabled ? "btn-primary" : "")}")">
-                @(basicEnabled ? "Deactivate trap" : "Activate trap")
-            </BitBhButton>
+<SectionSwitcher Slug="focus-trap" />
 
-            <BitBhFocusTrap Enabled="basicEnabled" class="focus-trap-container">
-                <p class="focus-trap-label">
-                    Focus is @(basicEnabled ? "trapped" : "free") inside this box.
-                </p>
-                <input type="text" placeholder="First input" class="focus-trap-input" />
-                <input type="text" placeholder="Second input" class="focus-trap-input" />
-                <button class="btn" @onclick="() => basicEnabled = false">Close</button>
-            </BitBhFocusTrap>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Basic Focus Trap"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Toggle the trap on and off. While active, pressing Tab and Shift+Tab cycles
+        through the focusable elements inside the container without escaping to the
+        rest of the page. Focus is automatically moved to the first focusable element
+        when the trap activates, and restored to the previously-focused element when
+        it deactivates. The active container gets <code>data-state="active"</code>, which
+        highlights it: the CSS version styles it with a <code>[data-state="active"]</code>
+        selector, the Tailwind version with the <code>data-state-active:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+                  class="@($"btn {(basicEnabled ? "btn-primary" : "")}")">
+            @(basicEnabled ? "Deactivate trap" : "Activate trap")
+        </BitBhButton>
 
-    <DemoBlock Title="Slide-over panel"
-               Code="@_slideOverCode"
-               Css="@_slideOverCss">
-        <Description>
-            A common use case: a slide-over panel that traps focus while visible.
-            The trap activates when the panel opens and deactivates when it closes,
-            returning focus to the trigger button.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="() => panelOpen = true" class="btn btn-primary">
-                Open panel
-            </BitBhButton>
+        <BitBhFocusTrap Enabled="basicEnabled" class="focus-trap-container">
+            <p class="focus-trap-label">
+                Focus is @(basicEnabled ? "trapped" : "free") inside this box.
+            </p>
+            <input type="text" placeholder="First input" class="focus-trap-input" />
+            <input type="text" placeholder="Second input" class="focus-trap-input" />
+            <button class="btn" @onclick="() => basicEnabled = false">Close</button>
+        </BitBhFocusTrap>
+    </LiveContent>
+</DemoBlock>
 
-            @if (panelOpen)
-            {
+<DemoBlock Title="Slide-over panel"
+           Code="@_slideOverCode"
+           Css="@_slideOverCss">
+    <Description>
+        A common use case: a slide-over panel that traps focus while visible.
+        The trap activates when the panel opens and deactivates when it closes,
+        returning focus to the trigger button.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="() => panelOpen = true" class="btn btn-primary">
+            Open panel
+        </BitBhButton>
+
+        @if (panelOpen)
+        {
+            <BitBhPortal>
                 <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
                 <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
                     <h3 class="slide-over-title">Settings</h3>
@@ -73,50 +76,50 @@
                         <button class="btn btn-primary" @onclick="() => panelOpen = false">Save</button>
                     </div>
                 </BitBhFocusTrap>
-            }
-        </LiveContent>
-    </DemoBlock>
+            </BitBhPortal>
+        }
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Multiple focusable regions"
-               Code="@_multiCode"
-               Css="@_multiCss">
-        <Description>
-            Demonstrates that only the active trap captures focus. Toggle between
-            two regions — only the enabled one traps Tab navigation.
-        </Description>
-        <LiveContent>
-            <div class="multi-controls">
-                <BitBhButton OnClick="ActivateRegionA"
-                          class="@($"btn {(regionA ? "btn-primary" : "")}")">
-                    Trap Region A
-                </BitBhButton>
-                <BitBhButton OnClick="ActivateRegionB"
-                          class="@($"btn {(regionB ? "btn-primary" : "")}")">
-                    Trap Region B
-                </BitBhButton>
-                <BitBhButton OnClick="DeactivateAll" class="btn">
-                    Release all
-                </BitBhButton>
-            </div>
+<DemoBlock Title="Multiple focusable regions"
+           Code="@_multiCode"
+           Css="@_multiCss">
+    <Description>
+        Demonstrates that only the active trap captures focus. Toggle between
+        two regions — only the enabled one traps Tab navigation.
+    </Description>
+    <LiveContent>
+        <div class="multi-controls">
+            <BitBhButton OnClick="ActivateRegionA"
+                      class="@($"btn {(regionA ? "btn-primary" : "")}")">
+                Trap Region A
+            </BitBhButton>
+            <BitBhButton OnClick="ActivateRegionB"
+                      class="@($"btn {(regionB ? "btn-primary" : "")}")">
+                Trap Region B
+            </BitBhButton>
+            <BitBhButton OnClick="DeactivateAll" class="btn">
+                Release all
+            </BitBhButton>
+        </div>
 
-            <div class="multi-regions">
-                <BitBhFocusTrap Enabled="regionA" class="focus-trap-container">
-                    <strong>Region A</strong>
-                    <input type="text" placeholder="A — Field 1" class="focus-trap-input" />
-                    <input type="text" placeholder="A — Field 2" class="focus-trap-input" />
-                    <button class="btn">A — Action</button>
-                </BitBhFocusTrap>
+        <div class="multi-regions">
+            <BitBhFocusTrap Enabled="regionA" class="focus-trap-container">
+                <strong>Region A</strong>
+                <input type="text" placeholder="A — Field 1" class="focus-trap-input" />
+                <input type="text" placeholder="A — Field 2" class="focus-trap-input" />
+                <button class="btn">A — Action</button>
+            </BitBhFocusTrap>
 
-                <BitBhFocusTrap Enabled="regionB" class="focus-trap-container">
-                    <strong>Region B</strong>
-                    <input type="text" placeholder="B — Field 1" class="focus-trap-input" />
-                    <input type="text" placeholder="B — Field 2" class="focus-trap-input" />
-                    <button class="btn">B — Action</button>
-                </BitBhFocusTrap>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <BitBhFocusTrap Enabled="regionB" class="focus-trap-container">
+                <strong>Region B</strong>
+                <input type="text" placeholder="B — Field 1" class="focus-trap-input" />
+                <input type="text" placeholder="B — Field 2" class="focus-trap-input" />
+                <button class="btn">B — Action</button>
+            </BitBhFocusTrap>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool basicEnabled;
@@ -169,26 +172,28 @@
 
 @if (panelOpen)
 {
-    <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
-    <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
-        <h3>Settings</h3>
-        <p>Focus is trapped inside this panel.</p>
+    <BitBhPortal>
+        <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
+        <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
+            <h3>Settings</h3>
+            <p>Focus is trapped inside this panel.</p>
 
-        <label>
-            <span>Username</span>
-            <input type="text" value="alice" />
-        </label>
+            <label>
+                <span>Username</span>
+                <input type="text" value="alice" />
+            </label>
 
-        <label>
-            <span>Email</span>
-            <input type="email" value="alice@example.com" />
-        </label>
+            <label>
+                <span>Email</span>
+                <input type="email" value="alice@example.com" />
+            </label>
 
-        <div class="slide-over-actions">
-            <button @onclick="() => panelOpen = false">Cancel</button>
-            <button @onclick="() => panelOpen = false">Save</button>
-        </div>
-    </BitBhFocusTrap>
+            <div class="slide-over-actions">
+                <button @onclick="() => panelOpen = false">Cancel</button>
+                <button @onclick="() => panelOpen = false">Save</button>
+            </div>
+        </BitBhFocusTrap>
+    </BitBhPortal>
 }
 
 @code {

@@ -36,6 +36,8 @@ of a page at once (a Server circuit and WebAssembly side by side) and opens expo
 ```bash
 dotnet add package Bit.BevTools          # Blazor WebAssembly / any Blazor host
 dotnet add package Bit.BevTools.Server   # adds circuit instrumentation for Blazor Server
+dotnet add package Bit.BevTools.Blex     # optional: bit Blex stores in the State panel (services.AddBevToolsBlex())
+dotnet tool install --global Bit.BevTools.Cli   # optional: bevtools check / compare / mcp over exports
 dotnet add package Bit.BevTools.Loader   # opens BevTools on demand, and lets WebAssembly lazy load it
 ```
 
@@ -216,15 +218,25 @@ since the profiler baseline* exports only what happened after the last baseline 
 | What do all 500 rows of my list cost together? | Profiler → *by type* |
 | What did one render batch render, and where did its time go? | Profiler → a batch in *Recent render batches* → cost tree (self and with descendants), or *Time*: each render on a time axis |
 | Which page costs the most rendering, and in which components? | Profiler → *Renders per page* |
+| Which components allocate the most per render, and did my change make one allocate more? | Profiler → *Allocated* (per render in each row's title), the inspector's *Rendering*; *Compare…* and `bevtools compare` flag more bytes per render; Diagnostics (*render.allocations*) |
 | Did my change make anything render more often or for longer? | Profiler → *Compare…* with the export from before the change; in CI, `bevtools compare before.json after.json` (`Bit.BevTools.Cli`), or `BevProfileComparison.Compare` and `ToMarkdown()` in a test |
 | Can CI fail a build on what BevTools found? | `bevtools check session.json` (`Bit.BevTools.Cli`), or `BevSessionCheck.Check` in a test |
 | What happened when I clicked, and what did it cause (renders, HTTP, JS, state)? | Timeline (select an event: *caused by* / *caused*) |
-| What changed in my state container and which click did it? | State (history with before/after diffs) |
+| What changed in my state container and which click did it? | State (history with before/after diffs, details, a filter) |
+| Can I go back to the state before that change? | State → a change → *⟲ restore* puts back the state right *after* that change, so to undo a change restore the one just before it; for a provider that implements `IBevStateRestorer` (Development and single-user hosts) |
 | Which HTTP requests ran, how long, which failed, what triggered them, which component sent them? | Network (*Sent from* in a request's detail and per endpoint) |
+| Which database queries did that click run, and is one of them running once per row? | Logs → *Database* (EF Core's commands by SQL, with times and senders), Diagnostics (*db.per-item*, *db.slow*) |
+| What did the request send and what came back? | Network → a request → *Request body* / *Response body*, with `CaptureHttpBodies` (off by default; text, bounded, redacted) |
+| Can an AI coding agent investigate what BevTools recorded? | `bevtools mcp session.json` (`Bit.BevTools.Cli`): a read-only MCP server over exports |
+| Which trace did this request start on the server, and what did my app log in it? | Network → a request → *Trace* (the `traceparent` it carried) and *logs in it*; Logs → *requests in it* |
+| Did a fire-and-forget task fail silently? | Errors (source *task*, WebAssembly and Hybrid) |
+| How do I find this moment again in a long recording? | Timeline → *⚑ Mark*, or `>mark before the fix` in the palette |
 | Is this the same error again, with another id in its message? | Errors → *Groups*, Diagnostics (*error.repeated* counts by group) |
 | Which endpoints are slow at the 95th percentile, or called once per list row? | Network → *Endpoints* (ids in the path as `{id}`), Diagnostics (*http.per-item*) |
 | Which JS interop calls are slow or excessive, and from which component? | JS Interop |
 | Where did this exception come from and what preceded it? | Errors |
+| What did my loggers write during this click, from which component, with which values and trace id? | Logs (filter `level:warning`, `category:`, `event:`, `trace:`; *Categories*), Diagnostics (*log.flood*) |
+| Did my app catch an exception and only log it? | Errors (source *log*: an application entry at Error or above), Logs |
 | What is registered in DI, with which lifetimes, dependencies and mistakes? | Services |
 | Is my circuit blocked, reconnecting, dying? | Circuit (Server), Browser |
 | Which component rendered *this* part of the page? | ⌖ *Pick* (header, palette `>pick`, companion, extension), then click it; the browser extension also follows the Elements panel's selection |
@@ -232,6 +244,7 @@ since the profiler baseline* exports only what happened after the last baseline 
 | Why does my form accept invalid input, or fail without saying why? | Forms (fields, each validation and its outcome, what validates and what displays), Diagnostics (*forms.validation*) |
 | What can stop navigation away from this page, and is my app bouncing between two pages? | Routing → *Navigation guards*, *Navigation history* (with what each navigation rendered), Diagnostics (*navigation.loop*) |
 | Which parts of my page can a keyboard or screen-reader user not use, and in which component? | Browser → *Accessibility* → *Check the page* (markup facts, each with its component and *Show*), Diagnostics (*a11y.page*) |
+| Is memory growing, and when did the garbage collector pause? | Runtime → *Memory over time* (the heap, each full collection, WebAssembly memory), Timeline (a *gc* event per full collection), Diagnostics (*memory.growth*) |
 | Is something keeping disposed components alive, and what? | Runtime → *Disposed components still alive* (*Collect garbage and check*), Diagnostics (*memory.retained-components*): the service event, lambda, `DotNetObjectReference` or timer that holds them |
 | Where is this component, or this handler, written? | Components → *Type & source* and *Event handlers & callbacks*: `Counter.razor:53`, a link that opens your editor (`Ui.EditorUrlTemplate`), from the app's symbols |
 | Which handlers does this component bind, and which callbacks does it pass to its children? | Components → *Event handlers & callbacks* (read from its latest render tree) |
@@ -243,6 +256,7 @@ since the profiler baseline* exports only what happened after the last baseline 
 | How big are the render batches my circuit sends, and how long does the browser take to apply them? | Network → *WebSockets*, Diagnostics |
 | What did my app's SignalR hubs send and receive? | Network → *WebSockets* (by message kind; never payloads) |
 | Did a `_framework` file fail to load, or a Content Security Policy block something? | Errors (*resource*, *csp*) |
+| Which clicks and key presses feel slow, and which part - input delay, my handler, rendering the frame? Is the main thread blocked? | Browser → *Responsiveness* (each interaction to the next paint, INP, long frames with the scripts in them; on WebAssembly the .NET handler that ran), Diagnostics (*browser.slow-interaction*, *browser.long-frame*) |
 | How is the thread pool / heap / WebAssembly runtime doing? | Runtime (per platform: Server process, WebAssembly runtime, .NET runtime) |
 | What is BevTools itself costing me? | About → overhead |
 | How do I share what I found? | About → *Export session (JSON)* / *Copy report (Markdown)* / *Export performance trace*, or `>export`, `>trace` in the palette |
@@ -275,11 +289,21 @@ How the information is obtained, in short:
   `ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing/AddComponentsMetrics`, because outside
   server-side rendering the framework does not register them itself — without that, WebAssembly could not answer
   *why did this render?* at all. Turn it off with `options.UseFrameworkInstrumentation = false`.
-* **HTTP**: `IHttpMessageHandlerBuilderFilter` (all `IHttpClientFactory` clients). Bodies are never captured.
+* **HTTP**: `IHttpMessageHandlerBuilderFilter` (all `IHttpClientFactory` clients). Bodies only with `CaptureHttpBodies`
+  (off by default; text, bounded, redacted, never a stream, Development or single-user hosts at value access Full).
 * **JS interop**: `IJSRuntime` injected into components is wrapped on the first render (calls made earlier, from
   `OnInitialized`, are not attributed); `IJSRuntime` is *not* decorated in DI because the framework casts it to its
   concrete type.
-* **Errors**: render wrapper + Blazor's own logger categories + browser `error`/`unhandledrejection`.
+* **Errors**: render wrapper + Blazor's own logger categories + browser `error`/`unhandledrejection` + the
+  application's own entries at Error or above.
+* **Logs**: an `ILoggerProvider` (alias `BevTools`, so `Logging:BevTools:LogLevel` configures it alone) that records
+  what is logged while a session's code runs, at `MinimumLogLevel` (Information) or above, after the host's own
+  logging configuration. Work that left the renderer's dispatcher - a library awaiting with `ConfigureAwait(false)`,
+  a task a handler started - is attributed through the `Activity` of the UI event or navigation it descends from; an
+  entry written outside every session (the request pipeline of a server, a hosted service) is nobody's. Each entry's
+  template values and scopes are read through the inspector, at the session's value access, and redacted; a value
+  redacted by its name is redacted in the message too. `TrackLogs = false` turns it off; `CaptureLogCallers = false`
+  skips the stack walk that names the sending component.
 * **Circuits**: `CircuitHandler` (lifecycle, connection state, inbound message processing time) +
   Blazor's `components-reconnect-state-changed` in the browser (dispatched on the app's own reconnect dialog).
 * **Event handlers and callbacks**: the frames of the component's latest render, which the renderer keeps
@@ -346,7 +370,7 @@ trace, protocol, companion, extension - can show more:
   claim), including in the pair's `ToString`.
 * Never read at all: `IConfiguration` and its providers and sources, `IOptions<T>`/`IOptionsMonitor<T>`/
   `IOptionsSnapshot<T>`, credentials and key material (`NetworkCredential`, `SecureString`, certificates, keys), request
-  and response bodies, DI instance values, WebSocket payloads (only sizes and SignalR message kinds), and browser
+  and response bodies (unless the app turns on `CaptureHttpBodies`), DI instance values, WebSocket payloads (only sizes and SignalR message kinds), and browser
   storage values that look sensitive (redacted in the browser, before they reach .NET).
 
 Circuit ids are truncated; SignalR connection ids in socket URLs are redacted in the browser. Nothing is sent anywhere:
@@ -380,11 +404,16 @@ public sealed class MyLibraryBevTools : IBevToolsExtension
 services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
 
-A library that wants to expose itself to BevTools references `Bit.BevTools`, which carries the extension contracts:
+Integrations ship as packages of their own: `Bit.BevTools.Blex` shows bit Blex's stores and actions in the State panel
+and restores through Blex's time travel (`services.AddBevToolsBlex()`). A library that wants to expose itself to
+BevTools references `Bit.BevTools`, which carries the extension contracts:
 
 - `IBevToolsExtension` / `IBevToolsExtensionBuilder` - contribute panels, state providers, diagnostic rules, commands
   and value formatters, or hide internal components.
-- `IBevStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs.
+- `IBevStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs;
+  `IBevStateRestorer` alongside it, with a `RestoreToken` on each `BevStateChangeInfo`, lets the panel restore an
+  earlier state through the provider's own code. A change's `Arguments` (an action's payload) are read through the
+  inspector at the session's value access; its `Detail` is shown as it is, so it carries no application value.
 - `IBevDiagnosticRule` - turn symptoms into findings with evidence.
 - `IBevToolsCommand` - add commands to the command palette.
 - `IBevToolsTimeline` / `BevToolsEvent` - write your own events into the activity timeline.
@@ -393,13 +422,14 @@ A library that wants to expose itself to BevTools references `Bit.BevTools`, whi
 Application code can also emit timeline events through `IBevToolsTimeline`, expose state with
 `IBevStateProvider` (or `services.AddBevToolsStateProvider<T>()`), attribute background work with
 `session.UseAmbient()`, pause and resume capture (`session.PauseCapture()` / `ResumeCapture()`) and export everything
-with `BevSessionExporter` (session JSON, Markdown) or `BevTraceExporter` (Chrome trace). Commands get `CopyTextAsync` /
+with `BevSessionExporter` (session JSON, Markdown) or `BevTraceExporter` (Chrome trace), and mark a moment in the
+timeline (`session.AddMarker("before the fix")`). Whatever the app logs through `ILogger` is in the Logs panel already. Commands get `CopyTextAsync` /
 `DownloadTextAsync` on their context to hand text to the browser. The `Bit.BevTools.Server` package is itself an
 extension (Circuit panel, circuit rules, command).
 
 A tool of your own can read a page the way the companion does: `window.__BIT_BEVTOOLS__.targets()` lists the runtimes,
 and `request(targetId, method, params)` speaks `BevToolsProtocol` (`hello`, `snapshot`, `inspect`, `expand`, `command`,
-`export`; documented on the class). A snapshot is the `bit-bevtools/1` export, optionally limited to sections and to
+`export`, `locate`, `resolve`; documented on the class). A snapshot is the `bit-bevtools/1` export, optionally limited to sections and to
 the timeline events after a given id.
 
 ---
@@ -417,7 +447,9 @@ Bit.BevTools                  instrumentation, session stores, diagnostics, insp
 Bit.BevTools.Server           circuit handler, circuit registry, Circuit panel (reference extension)
 Bit.BevTools.Loader           trimmable startup half for opening BevTools on demand: hooks, BevToolsLoader, the panel host
 Bit.BevTools.Extension        the browser extension (Manifest V3, Chromium and Firefox): the companion in a DevTools panel
-Bit.BevTools.Cli              the bevtools .NET tool for CI: an export's findings (check), two recordings (compare)
+Bit.BevTools.Cli              the bevtools .NET tool: an export's findings (check), two recordings (compare), for CI in
+                              Markdown, JSON, SARIF or GitHub annotations; a read-only MCP server over exports (mcp)
+Bit.BevTools.Blex             bit Blex in the State panel, restoring through Blex's time travel (an integration package)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Samples                       the same pages (Core) in every host, each with its own BevTools setup in Program.cs:
                               Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid); and Lazy (+ Client),
@@ -462,4 +494,5 @@ validation, routing and navigation guards, network with endpoints, senders and W
 search/commands, DI inspection, circuit, runtime, prerendering and retained-component diagnostics, accessibility checks
 of the page, the rules engine, session and trace export, the CI tool, the companion window and the browser extension.
 The demo shows each of them. See [docs/architecture.md](docs/architecture.md) for the design and the list of deliberate
-non-goals (request bodies, SignalR payloads, time-travel state restoration, editing component state).
+non-goals (request bodies by default, SignalR payloads, BevTools writing application state - a provider restores itself through
+`IBevStateRestorer` - editing component state).

@@ -41,7 +41,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -57,7 +57,7 @@ jobs:
     # constructor lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and
     # fails only there.
     - name: Publish the demo
-      run: dotnet publish src/Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server/Bit.Bheadless.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true ${{ matrix.publish-args }}
+      run: dotnet publish src/Utilities/Bheadless/Demo/Server/Bit.Bheadless.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true ${{ matrix.publish-args }}
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E/Bit.Bheadless.Tests.E2E.csproj -c Release

@@ -1,158 +1,164 @@
 ﻿@page "/progress"
 @implements IDisposable
 
-<PageTitle>Progress / Meter — bit Bheadless</PageTitle>
+<PageTitle>Progress / Meter · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Progress / Meter</h1>
-        <p>Report task completion with a progress bar, or a measurement within a known range with a meter.</p>
-        <SectionSwitcher Slug="progress" />
-    </header>
-
-    <DemoBlock Title="Determinate progress"
-               Code="@_determinateCode"
-               Css="@_determinateCss">
-        <Description>
-            <code>BitBhProgress</code> renders <code>role="progressbar"</code> with
-            <code>aria-valuenow</code>/<code>min</code>/<code>max</code> and a percentage
-            <code>aria-valuetext</code>. It exposes <code>--bit-bh-progress</code> (a unitless 0–100 number) and
-            <code>data-state="loading|complete"</code>; size the <code>BitBhProgressIndicator</code> with
-            <code>calc(var(--bit-bh-progress) * 1%)</code>. Name it with <code>aria-labelledby</code>.
-        </Description>
-        <LiveContent>
-            <div class="progress-card">
-                <div class="progress-header">
-                    <span class="progress-label" id="profile-label">Profile completion</span>
-                    <span class="progress-status">@profile%</span>
-                </div>
-                <BitBhProgress Value="profile" aria-labelledby="profile-label" class="progress">
-                    <BitBhProgressIndicator class="progress-indicator" />
-                </BitBhProgress>
-                <div class="progress-actions">
-                    <button type="button" class="progress-btn" @onclick="() => profile = Math.Max(0, profile - 20)">− 20%</button>
-                    <button type="button" class="progress-btn" @onclick="() => profile = Math.Min(100, profile + 20)">+ 20%</button>
-                </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Simulated upload"
-               Code="@_uploadCode"
-               Css="@_uploadCss">
-        <Description>
-            A timer drives <code>Value</code> in megabytes against <code>Max="8"</code>; <code>ValueText</code>
-            turns it into "2.4 of 8 MB uploaded" for screen readers. The upload starts with
-            <code>Value="null"</code> (indeterminate) while "preparing". <code>Template</code> receives the
-            computed percentage (<code>double?</code>) to draw the label inside the bar. The page
-            implements <code>IDisposable</code> to stop the timer.
-        </Description>
-        <LiveContent>
-            <div class="progress-card">
-                <div class="progress-header">
-                    <span class="progress-label" id="upload-label">quarterly-report.pdf</span>
-                    <span class="progress-status">@UploadStatus()</span>
-                </div>
-                <BitBhProgress Value="uploaded" Max="FileSizeMb"
-                            ValueText="@((v, max) => $"{v:0.0} of {max:0} MB uploaded")"
-                            aria-labelledby="upload-label" class="progress progress-lg">
-                    <Template Context="percent">
-                        <BitBhProgressIndicator class="progress-indicator" />
-                        <span class="progress-percent">@(percent is null ? "" : $"{percent:0}%")</span>
-                    </Template>
-                </BitBhProgress>
-                <div class="progress-actions">
-                    <button type="button" class="progress-btn progress-btn-primary"
-                            disabled="@uploading" @onclick="StartUpload">
-                        @(uploaded >= FileSizeMb ? "Upload again" : "Start upload")
-                    </button>
-                    <button type="button" class="progress-btn"
-                            disabled="@(!uploading)" @onclick="CancelUpload">Cancel</button>
-                </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Indeterminate"
-               Code="@_indeterminateCode"
-               Css="@_indeterminateCss">
-        <Description>
-            Leave <code>Value</code> unset (<code>null</code>) when the duration is unknown:
-            <code>aria-valuenow</code> is omitted, <code>data-state="indeterminate"</code> is set and
-            <code>--bit-bh-progress</code> is absent, so CSS can switch to an animation. Honor
-            <code>prefers-reduced-motion</code>.
-        </Description>
-        <LiveContent>
-            <div class="progress-card">
-                <div class="progress-header">
-                    <span class="progress-label" id="sync-label">Syncing mailbox</span>
-                    <span class="progress-status">Waiting for the server…</span>
-                </div>
-                <BitBhProgress aria-labelledby="sync-label" class="progress">
-                    <BitBhProgressIndicator class="progress-indicator" />
-                </BitBhProgress>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Meter: disk usage"
-               Code="@_meterCode"
-               Css="@_meterCss">
-        <Description>
-            <code>BitBhMeter</code> (<code>role="meter"</code>) shows a scalar within a known range — not task
-            progress. <code>Low</code> and <code>High</code> split the range into
-            <code>data-level="low|optimum|high"</code>, and <code>--bit-bh-meter</code> (0–100) sizes the fill.
-            <code>ValueText</code> gives a readable value.
-        </Description>
-        <LiveContent>
-            <ul class="meter-list">
-                @foreach (var drive in drives)
-                {
-                    <li class="meter-row">
-                        <div class="progress-header">
-                            <span class="progress-label" id="@($"drive-{drive.Id}")">@drive.Name</span>
-                            <span class="progress-status">@drive.Used of 256 GB</span>
-                        </div>
-                        <BitBhMeter Value="drive.Used" Max="256" Low="64" High="200"
-                                 ValueText="@(v => $"{v} of 256 GB used")"
-                                 aria-labelledby="@($"drive-{drive.Id}")" class="meter">
-                            <span class="meter-fill"></span>
-                        </BitBhMeter>
-                    </li>
-                }
-            </ul>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Meter: password strength"
-               Code="@_strengthCode"
-               Css="@_strengthCss">
-        <Description>
-            A 0–4 score with <code>Low="2"</code> and <code>High="3"</code>: weak scores are
-            <code>low</code>, fair ones <code>optimum</code>, a full score <code>high</code>.
-            <code>BitBhMeter</code>'s <code>Template</code> receives the percentage, used here to fill
-            four segments.
-        </Description>
-        <LiveContent>
-            <div class="strength">
-                <label for="pw" class="progress-label">Choose a password</label>
-                <input id="pw" type="password" class="strength-input" autocomplete="new-password"
-                       @bind="password" @bind:event="oninput" aria-describedby="pw-strength" />
-                <BitBhMeter Value="Score()" Max="4" Low="2" High="3"
-                         ValueText="@(v => StrengthLabels[(int)v])"
-                         aria-label="Password strength" class="strength-meter">
-                    <Template Context="percent">
-                        @for (var i = 1; i <= 4; i++)
-                        {
-                            <span class="strength-segment" data-filled="@(percent >= i * 25)"></span>
-                        }
-                    </Template>
-                </BitBhMeter>
-                <span class="progress-status" id="pw-strength">Strength: <strong>@(StrengthLabels[Score()])</strong></span>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Progress / Meter</h1>
+    <p class="bb-subtitle">Report task completion with a progress bar, or a measurement within a known range with a meter.</p>
 </div>
+
+<SectionSwitcher Slug="progress" />
+
+<DemoBlock Title="Determinate progress"
+           Code="@_determinateCode"
+           Css="@_determinateCss">
+    <Description>
+        <code>BitBhProgress</code> renders <code>role="progressbar"</code> with
+        <code>aria-valuenow</code>/<code>min</code>/<code>max</code> and a percentage
+        <code>aria-valuetext</code>. It exposes <code>--bit-bh-progress</code> (a unitless 0–100 number) and
+        <code>data-state="loading|complete"</code>, which <code>BitBhProgressIndicator</code> mirrors; size the
+        indicator with <code>calc(var(--bit-bh-progress, 0) * 1%)</code>. Name it with <code>aria-labelledby</code>.
+        The CSS version sets that width in a rule and recolors a full bar with
+        <code>[data-state="complete"]</code>; the Tailwind version uses the
+        <code>w-[calc(var(--bit-bh-progress,0)*1%)]</code> utility and the <code>data-[state=complete]:</code> variant.
+    </Description>
+    <LiveContent>
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-label" id="profile-label">Profile completion</span>
+                <span class="progress-status">@profile%</span>
+            </div>
+            <BitBhProgress Value="profile" aria-labelledby="profile-label" class="progress">
+                <BitBhProgressIndicator class="progress-indicator" />
+            </BitBhProgress>
+            <div class="progress-actions">
+                <button type="button" class="progress-btn" @onclick="() => profile = Math.Max(0, profile - 20)">− 20%</button>
+                <button type="button" class="progress-btn" @onclick="() => profile = Math.Min(100, profile + 20)">+ 20%</button>
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Simulated upload"
+           Code="@_uploadCode"
+           Css="@_uploadCss">
+    <Description>
+        A timer drives <code>Value</code> in megabytes against <code>Max="8"</code>; <code>ValueText</code>
+        turns it into "2.4 of 8 MB uploaded" for screen readers. The upload starts with
+        <code>Value="null"</code> (indeterminate) while "preparing". <code>Template</code> receives the
+        computed percentage (<code>double?</code>) to draw the label inside the bar. The page
+        implements <code>IDisposable</code> to stop the timer.
+    </Description>
+    <LiveContent>
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-label" id="upload-label">quarterly-report.pdf</span>
+                <span class="progress-status">@UploadStatus()</span>
+            </div>
+            <BitBhProgress Value="uploaded" Max="FileSizeMb"
+                        ValueText="@((v, max) => $"{v:0.0} of {max:0} MB uploaded")"
+                        aria-labelledby="upload-label" class="progress progress-lg">
+                <Template Context="percent">
+                    <BitBhProgressIndicator class="progress-indicator" />
+                    <span class="progress-percent">@(percent is null ? "" : $"{percent:0}%")</span>
+                </Template>
+            </BitBhProgress>
+            <div class="progress-actions">
+                <button type="button" class="progress-btn progress-btn-primary"
+                        disabled="@uploading" @onclick="StartUpload">
+                    @(uploaded >= FileSizeMb ? "Upload again" : "Start upload")
+                </button>
+                <button type="button" class="progress-btn"
+                        disabled="@(!uploading)" @onclick="CancelUpload">Cancel</button>
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Indeterminate"
+           Code="@_indeterminateCode"
+           Css="@_indeterminateCss">
+    <Description>
+        Leave <code>Value</code> unset (<code>null</code>) when the duration is unknown:
+        <code>aria-valuenow</code> is omitted, <code>data-state="indeterminate"</code> is set and
+        <code>--bit-bh-progress</code> is absent, so the indicator can switch to an animation. Honor
+        <code>prefers-reduced-motion</code>: the CSS version slides the indicator and slows it down under
+        <code>prefers-reduced-motion: reduce</code>; the Tailwind version pulses it with
+        <code>data-[state=indeterminate]:</code>, only under <code>motion-safe:</code>.
+    </Description>
+    <LiveContent>
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-label" id="sync-label">Syncing mailbox</span>
+                <span class="progress-status">Waiting for the server…</span>
+            </div>
+            <BitBhProgress aria-labelledby="sync-label" class="progress">
+                <BitBhProgressIndicator class="progress-indicator" />
+            </BitBhProgress>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Meter: disk usage"
+           Code="@_meterCode"
+           Css="@_meterCss">
+    <Description>
+        <code>BitBhMeter</code> (<code>role="meter"</code>) shows a scalar within a known range — not task
+        progress. <code>Low</code> and <code>High</code> split the range into
+        <code>data-level="low|optimum|high"</code>, and <code>--bit-bh-meter</code> (0–100) sizes the fill.
+        <code>ValueText</code> gives a readable value. The CSS version colors the fill with
+        <code>[data-level]</code> selectors on the meter; the Tailwind version marks the meter as a
+        <code>group</code> and uses <code>group-data-[level=low]:</code> / <code>group-data-[level=high]:</code>.
+    </Description>
+    <LiveContent>
+        <ul class="meter-list">
+            @foreach (var drive in drives)
+            {
+                <li class="meter-row">
+                    <div class="progress-header">
+                        <span class="progress-label" id="@($"drive-{drive.Id}")">@drive.Name</span>
+                        <span class="progress-status">@drive.Used of 256 GB</span>
+                    </div>
+                    <BitBhMeter Value="drive.Used" Max="256" Low="64" High="200"
+                             ValueText="@(v => $"{v} of 256 GB used")"
+                             aria-labelledby="@($"drive-{drive.Id}")" class="meter">
+                        <span class="meter-fill"></span>
+                    </BitBhMeter>
+                </li>
+            }
+        </ul>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Meter: password strength"
+           Code="@_strengthCode"
+           Css="@_strengthCss">
+    <Description>
+        A 0–4 score with <code>Low="2"</code> and <code>High="3"</code>: weak scores are
+        <code>low</code>, fair ones <code>optimum</code>, a full score <code>high</code>.
+        <code>BitBhMeter</code>'s <code>Template</code> receives the percentage, used here to fill
+        four segments (<code>data-filled</code>), colored by the meter's level.
+    </Description>
+    <LiveContent>
+        <div class="strength">
+            <label for="pw" class="progress-label">Choose a password</label>
+            <input id="pw" type="password" class="strength-input" autocomplete="new-password"
+                   @bind="password" @bind:event="oninput" aria-describedby="pw-strength" />
+            <BitBhMeter Value="Score()" Max="4" Low="2" High="3"
+                     ValueText="@(v => StrengthLabels[(int)v])"
+                     aria-label="Password strength" class="strength-meter">
+                <Template Context="percent">
+                    @for (var i = 1; i <= 4; i++)
+                    {
+                        <span class="strength-segment" data-filled="@(percent >= i * 25)"></span>
+                    }
+                </Template>
+            </BitBhMeter>
+            <span class="progress-status" id="pw-strength">Strength: <strong>@(StrengthLabels[Score()])</strong></span>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // Determinate

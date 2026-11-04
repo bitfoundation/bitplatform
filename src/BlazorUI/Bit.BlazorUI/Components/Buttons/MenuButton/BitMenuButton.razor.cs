@@ -484,6 +484,10 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        // The callout is cleared as the menu goes away, and an outer one cleared with it dismisses this one too:
+        // neither is a dismissal to report, nor a reason to close the submenus the disposal takes down anyway.
+        if (IsDisposing) return;
+
         // The menu is being dismissed from outside (a click on the page, another callout taking over), which
         // ends the search that was being typed into it just as closing it from the keyboard does.
         ResetTypeahead();
@@ -1950,14 +1954,12 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
-            try
+            // The callout still calls back through the reference until it is cleared.
+            await _dotnetObj.DisposeAfterAsync(async () =>
             {
                 await _js.BitCalloutClearCallout(_calloutId);
                 await _js.BitMenuButtonsDispose(_Id);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            });
         }
     }
 }

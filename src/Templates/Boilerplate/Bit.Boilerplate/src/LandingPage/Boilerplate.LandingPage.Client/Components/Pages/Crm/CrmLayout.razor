@@ -1,0 +1,47 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-crm">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="CrmSite.Info" Links="links" ShowSignIn>
+        <Brand><CrmLogo /><span>Brightlane</span></Brand>
+        <Actions>
+            <BitButton Href="@CrmSite.TrialUrl" Size="BitSize.Small" Class="crm-nav-cta">@R[nameof(CrmStrings.NavTrial)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="CrmSite.Info" Tagline="@R[nameof(CrmStrings.FooterTagline)]">
+        <Brand><CrmLogo /><span>Brightlane</span></Brand>
+        <Intro>
+            <p class="crm-footer-hours">@R[nameof(CrmStrings.FooterHours)]</p>
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@L[nameof(LandingStrings.FooterProduct)]</h2>
+                <a href="@Page("/pricing")">@R[nameof(CrmStrings.NavPricing)]</a>
+                <a href="@Page("/vs-spreadsheets")">@R[nameof(CrmStrings.FooterSpreadsheets)]</a>
+                <a href="@($"{Page(string.Empty)}#security")">@R[nameof(CrmStrings.FooterSecurity)]</a>
+                <a href="@($"{Page(string.Empty)}#apps")">@R[nameof(CrmStrings.FooterApps)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <LandingChat Site="CrmSite.Info"
+                 Variant="LandingChatVariant.Bubble"
+                 Suggestions="suggestions"
+                 Class="crm-chat">
+        <Footer>
+            <div class="crm-chat-footer">
+                <BitButton Href="@CrmSite.TrialUrl" Size="BitSize.Small" IconName="@BitIconName.Rocket">@R[nameof(CrmStrings.ChatTrial)]</BitButton>
+                <p>@R[nameof(CrmStrings.ChatPerson)] <a href="@($"mailto:{CrmSite.SalesEmail}")" dir="ltr">@CrmSite.SalesEmail</a></p>
+            </div>
+        </Footer>
+    </LandingChat>
+
+    <ConsentBanner SitePath="@CrmSite.Path" />
+    <LanguageSuggestion />
+</div>

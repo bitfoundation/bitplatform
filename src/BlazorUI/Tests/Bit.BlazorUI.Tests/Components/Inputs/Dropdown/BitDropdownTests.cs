@@ -4893,6 +4893,79 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-invalid"));
         Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
         Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-describedby"));
+
+        // The flag on its own has nothing to say, unless a label gives it something.
+        Assert.AreEqual(string.Empty, component.Find(".bit-drp-lvr").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "انتخاب نامعتبر"));
+
+        Assert.AreEqual("انتخاب نامعتبر", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual("انتخاب نامعتبر", component.Find($"#{component.Find(".bit-drp-wrp").GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDropdownErrorMessageTemplateShouldBeAnnouncedAsARejection()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        // A template is free to render anything at all, so the region says the selection was rejected - never
+        // the plain text the template hides.
+        Assert.AreEqual("Invalid input", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-drp-erm").Id, component.Find(".bit-drp-wrp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessageAriaLabel, "این میوه موجود نیست");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "warning-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        var label = component.Find($"#{component.Find(".bit-drp-wrp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("این میوه موجود نیست", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual("این میوه موجود نیست", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-drp-vhd"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-drp-erm").Id, component.Find(".bit-drp-wrp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitDropdownBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-drp-erm").Id, component.Find(".bit-drp-wrp").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]

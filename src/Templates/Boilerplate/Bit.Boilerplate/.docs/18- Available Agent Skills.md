@@ -19,6 +19,7 @@ start of a session and loads the skill when a task matches it.
 | `bitify-ui` | A page uses raw HTML and CSS that should become Bit.BlazorUI components and theme-aware styles. | `/bitify-ui UserProfile.razor` |
 | `workbench` | A new page should be designed and agreed on before the app builds it: sample data, every device, theme, language and data state, and store screenshots. | `/workbench design an order history page` |
 | `localize-strings` | Text written as `Localizer["..."]` literals should move into `AppStrings.resx` and get translated, usually before a push. | `/localize-strings Dashboard.razor` |
+| `landing-page` | The landing page should change: make one of its samples the product's home page, launch it, or change its pages, texts, look, chat, waitlist or store links. | `/landing-page make the e-commerce sample our home page` |
 | `rebrand` | The app should look like a brand, a site, a Figma file or a mood: colors, fonts, logo, home page and navigation, in light and dark. | `/rebrand to match our new brand guide` |
 | `port` | An existing app, in any language or with no source left, should be rebuilt on this project with the same features. | `/port our old Xamarin point of sale` |
 | `template-diff` | A newer template version is out, the project moves to another .NET version, or it needs a template feature it was created without. | `/template-diff add Sentry` |

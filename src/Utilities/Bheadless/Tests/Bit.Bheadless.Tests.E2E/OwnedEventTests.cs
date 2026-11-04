@@ -16,7 +16,7 @@ public sealed class OwnedEventTests : DemoTest
     public async Task Grid_cells_move_focus_and_activate_through_the_owned_events()
     {
         var page = await OpenDemoAsync("/grid");
-        var grid = page.Locator("main table[aria-label=Planets]");
+        var grid = page.Locator($"{Content} table[aria-label=Planets]");
         var header = grid.Locator("th[role=columnheader]").First;
         var firstBodyCell = grid.Locator("tbody [role=rowheader]").First;
 
@@ -40,7 +40,7 @@ public sealed class OwnedEventTests : DemoTest
     public async Task A_right_click_in_the_trigger_of_an_open_context_menu_moves_it_without_closing_it()
     {
         var page = await OpenDemoAsync("/context-menu");
-        var trigger = page.Locator("main .cm-trigger").First;
+        var trigger = page.Locator($"{Content} .cm-trigger").First;
         await trigger.ClickAsync(new LocatorClickOptions { Button = MouseButton.Right, Position = new Position { X = 10, Y = 10 } });
 
         var menu = page.Locator("[role=menu]:visible").First;

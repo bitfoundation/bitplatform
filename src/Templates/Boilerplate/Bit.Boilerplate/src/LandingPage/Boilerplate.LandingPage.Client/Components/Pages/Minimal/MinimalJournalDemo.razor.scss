@@ -1,0 +1,114 @@
+.notch-app {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: 100%;
+    padding: 58px 20px 24px;
+    background: var(--lp-bg);
+    font-size: .875rem;
+}
+
+.notch-app-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.notch-app-date {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+.notch-app-saved {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--lp-bg-alt);
+}
+
+.notch-app-line {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.notch-app-note {
+    margin: 0;
+    font-size: .8125rem;
+    color: var(--lp-fg-muted);
+}
+
+.notch-app-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-family: var(--lp-font-mono);
+    font-size: .75rem;
+    color: var(--lp-fg-muted);
+}
+
+.notch-app-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: .6875rem;
+    color: var(--lp-fg-muted);
+    text-align: center;
+
+    li {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+    }
+
+    .is-today {
+        font-weight: 700;
+        color: var(--lp-fg);
+    }
+}
+
+.notch-app-mark {
+    width: 3px;
+    height: 26px;
+    border-radius: 2px;
+    background: var(--lp-line);
+
+    .is-written & {
+        background: var(--lp-fg);
+    }
+
+    .is-today.is-written & {
+        width: 6px;
+        background: var(--notch-mark);
+        box-shadow: 0 0 0 1px color-mix(in oklab, var(--notch-mark), var(--lp-fg) 30%);
+    }
+}
+
+.notch-app-past ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        padding-top: 10px;
+        border-top: 1px solid var(--lp-line);
+        line-height: 1.45;
+    }
+}
+
+.notch-app-year {
+    display: block;
+    margin-bottom: 2px;
+    font-family: var(--lp-font-mono);
+    font-size: .6875rem;
+    color: var(--lp-fg-muted);
+}

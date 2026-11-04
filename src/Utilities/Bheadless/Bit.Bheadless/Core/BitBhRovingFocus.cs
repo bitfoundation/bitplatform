@@ -19,6 +19,7 @@ public sealed class BitBhRovingFocusContext
     {
         _interop = interop;
         Items = new BitBhCollection<BitBhRovingItemBase>(key);
+        Items.Changed += RefreshTabStops;
     }
 
     /// <summary>The registered items in document order.</summary>
@@ -52,6 +53,19 @@ public sealed class BitBhRovingFocusContext
         BitBhRovingOrientation.Both => "ArrowUp ArrowDown ArrowLeft ArrowRight Home End",
         _ => "ArrowLeft ArrowRight Home End",
     };
+
+    // An item's tabindex is decided when it renders, but the tab stop moves without that item rendering: an item
+    // that registers later can take the first place, and EnsureOrderAsync re-sorts the items into document order
+    // once they are on the page. Re-render whichever item now disagrees, so the group keeps exactly one tab stop.
+    private void RefreshTabStops()
+    {
+        var stop = TabStop;
+        foreach (var item in Items.Items.ToArray())
+        {
+            if (item.RenderedAsTabStop != ReferenceEquals(item, stop))
+                item.Refresh();
+        }
+    }
 
     internal void SetCurrent(BitBhRovingItemBase item)
     {
@@ -138,6 +152,9 @@ public abstract class BitBhRovingItemBase : BitBhComponentBase, IBitBhCollection
 
     internal void Refresh() => StateHasChanged();
 
+    /// <summary>Whether the last render gave this item <c>tabindex="0"</c>.</summary>
+    internal bool RenderedAsTabStop { get; private set; }
+
     /// <summary>Called after arrow keys moved focus to this item (radio-like groups select it).</summary>
     protected internal virtual Task OnRovedToAsync() => Task.CompletedTask;
 
@@ -173,7 +190,8 @@ public abstract class BitBhRovingItemBase : BitBhComponentBase, IBitBhCollection
         var attrs = base.BuildComponentAttributes();
         if (RovingContext is not null)
         {
-            attrs["tabindex"] = ReferenceEquals(RovingContext.TabStop, this) ? "0" : "-1";
+            RenderedAsTabStop = ReferenceEquals(RovingContext.TabStop, this);
+            attrs["tabindex"] = RenderedAsTabStop ? "0" : "-1";
             attrs["data-bit-bh-item"] = RovingContext.Items.Key;
             attrs[BitBhKeyboard.KeysAttribute] = RovingContext.KeysAttribute;
         }

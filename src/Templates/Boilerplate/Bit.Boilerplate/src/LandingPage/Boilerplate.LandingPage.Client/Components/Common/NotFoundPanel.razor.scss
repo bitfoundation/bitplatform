@@ -1,0 +1,43 @@
+@import '../../Styles/tokens';
+
+.lp-not-found {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: 48px;
+    min-height: 64vh;
+    padding-block: 72px;
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+        min-height: auto;
+    }
+}
+
+.lp-not-found-art {
+    display: grid;
+    place-items: center;
+
+    ::deep svg {
+        width: min(100%, 420px);
+        height: auto;
+    }
+}
+
+.lp-not-found-text {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+
+    h1 {
+        font-size: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    }
+}
+
+.lp-not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}

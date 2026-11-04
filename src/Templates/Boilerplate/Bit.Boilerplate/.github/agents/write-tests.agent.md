@@ -59,6 +59,8 @@ infrastructure is `.docs/17- Automated Testing (Unitigration Tests).md`; this is
   the feature has: a phone or a desktop screen, with an agent or without one. `WorkbenchSurface.cs` has the attributes
   that do it, so one test body runs four times and an `if` covers only what really differs; it presses with a finger on
   a phone, and checks the page itself changed, not only its address.
+- **The landing page**: its tests are in `src/LandingPage/Boilerplate.LandingPage.Tests`. `LandingTestServer` runs it
+  in-process and a test reads the prerendered HTML the way a crawler does, so a change there needs no browser.
 <!--#endif-->
 - A comment above a test says why it exists when its name can't: the defect it guards against, or why this kind of
   test rather than another.

@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Alder &amp; Salt: a 32-room hotel in the dunes of Amrum</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Book direct with Alder &amp; Salt, a small hotel at the quiet north end of Amrum: the lowest rate for your dates, breakfast included, check-in on the ferry and your room key on your phone.</value>
+    </data>
+    <data name="NavRooms" xml:space="preserve">
+        <value>Rooms</value>
+    </data>
+    <data name="NavDirect" xml:space="preserve">
+        <value>Book direct</value>
+    </data>
+    <data name="NavApp" xml:space="preserve">
+        <value>The app</value>
+    </data>
+    <data name="NavReviews" xml:space="preserve">
+        <value>Reviews</value>
+    </data>
+    <data name="NavBook" xml:space="preserve">
+        <value>Book a room</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>A 32-room hotel in the dunes at Norddorf, on the North Sea island of Amrum.</value>
+    </data>
+    <data name="FooterStay" xml:space="preserve">
+        <value>Your stay</value>
+    </data>
+    <data name="FooterRooms" xml:space="preserve">
+        <value>Rooms and rates</value>
+    </data>
+    <data name="FooterDirect" xml:space="preserve">
+        <value>Booking direct</value>
+    </data>
+    <data name="FooterGettingHere" xml:space="preserve">
+        <value>Getting here</value>
+    </data>
+    <data name="FooterVouchers" xml:space="preserve">
+        <value>Gift vouchers</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>Ask the front desk</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>What time is check-in?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Can I bring my dog?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>How do I get to Amrum?</value>
+    </data>
+    <data name="Money" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="HeroPlace" xml:space="preserve">
+        <value>Norddorf, Amrum, on the North Sea</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Thirty-two rooms at the quiet end of Amrum</value>
+    </data>
+    <data name="HeroSceneAlt" xml:space="preserve">
+        <value>The hotel's thatched house in the dunes, with the sea and the lighthouse behind it</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>A hotel in the dunes behind one of the widest beaches on the North Sea. Book in our app for the lowest rate, check in on the ferry, and let your phone open the door.</value>
+    </data>
+    <data name="HeroPromise" xml:space="preserve">
+        <value>Best-rate promise: book direct and you pay the lowest price for your dates, with breakfast for two included.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>The stay planner from the app. Try your dates.</value>
+    </data>
+    <data name="DemoBadge" xml:space="preserve">
+        <value>Direct rate</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>Plan your stay</value>
+    </data>
+    <data name="DemoDates" xml:space="preserve">
+        <value>Your dates</value>
+    </data>
+    <data name="DemoDatesPlaceholder" xml:space="preserve">
+        <value>Arrival and departure</value>
+    </data>
+    <data name="DemoDateFormat" xml:space="preserve">
+        <value>ddd d MMM</value>
+    </data>
+    <data name="DemoRangeFormat" xml:space="preserve">
+        <value>{0} to {1}</value>
+    </data>
+    <data name="DemoCalendar" xml:space="preserve">
+        <value>Choose your dates</value>
+    </data>
+    <data name="DemoPrevMonth" xml:space="preserve">
+        <value>Previous month</value>
+    </data>
+    <data name="DemoNextMonth" xml:space="preserve">
+        <value>Next month</value>
+    </data>
+    <data name="DemoChangeMonth" xml:space="preserve">
+        <value>{0}, change the month</value>
+    </data>
+    <data name="DemoSelectedDates" xml:space="preserve">
+        <value>Your dates: {0}</value>
+    </data>
+    <data name="DemoRoom" xml:space="preserve">
+        <value>Room</value>
+    </data>
+    <data name="DemoFrom" xml:space="preserve">
+        <value>from {0}</value>
+    </data>
+    <data name="DemoNights" xml:space="preserve">
+        <value>{0} nights, {1}</value>
+    </data>
+    <data name="DemoOneNight" xml:space="preserve">
+        <value>One night, {0}</value>
+    </data>
+    <data name="DemoPerNight" xml:space="preserve">
+        <value>{0} a night, breakfast for two included</value>
+    </data>
+    <data name="DemoPickDates" xml:space="preserve">
+        <value>Pick your arrival and departure dates.</value>
+    </data>
+    <data name="DemoPerk1" xml:space="preserve">
+        <value>Breakfast for two, every morning</value>
+    </data>
+    <data name="DemoPerk2" xml:space="preserve">
+        <value>Late check-out until 13:00</value>
+    </data>
+    <data name="DemoPerk3" xml:space="preserve">
+        <value>Free cancellation until 3 days before</value>
+    </data>
+    <data name="DemoCheck" xml:space="preserve">
+        <value>Check availability</value>
+    </data>
+    <data name="DemoAvailable" xml:space="preserve">
+        <value>{0}: {1} free for your dates. We'll hold one for 15 minutes while you finish booking in the app.</value>
+    </data>
+    <data name="RoomDuneName" xml:space="preserve">
+        <value>Dune Room</value>
+    </data>
+    <data name="RoomSeaName" xml:space="preserve">
+        <value>Sea Room</value>
+    </data>
+    <data name="RoomLoftName" xml:space="preserve">
+        <value>Lantern Loft</value>
+    </data>
+    <data name="RoomSuiteName" xml:space="preserve">
+        <value>Salt Suite</value>
+    </data>
+    <data name="RoomDuneBody" xml:space="preserve">
+        <value>Our quietest rooms, on the dune side. A window seat for reading, a bed made of alder, and the sound of the wind in the marram grass.</value>
+    </data>
+    <data name="RoomSeaBody" xml:space="preserve">
+        <value>A balcony facing west over the dunes to the sea, with the lighthouse at the end of the beach. The best seat on the island for the sunset.</value>
+    </data>
+    <data name="RoomLoftBody" xml:space="preserve">
+        <value>Two floors under the thatch: a sofa and a double bed below, a sleeping loft with two single beds above, and a skylight for the stars. For families and friends.</value>
+    </data>
+    <data name="RoomSuiteBody" xml:space="preserve">
+        <value>Our two corner suites: a bath by the window, a private sauna and the sea on two sides.</value>
+    </data>
+    <data name="RoomDuneBed" xml:space="preserve">
+        <value>Queen bed</value>
+    </data>
+    <data name="RoomSeaBed" xml:space="preserve">
+        <value>King bed</value>
+    </data>
+    <data name="RoomLoftBed" xml:space="preserve">
+        <value>A double and two singles</value>
+    </data>
+    <data name="RoomSuiteBed" xml:space="preserve">
+        <value>King bed</value>
+    </data>
+    <data name="RoomDuneView" xml:space="preserve">
+        <value>Dune view</value>
+    </data>
+    <data name="RoomSeaView" xml:space="preserve">
+        <value>Sea view and balcony</value>
+    </data>
+    <data name="RoomLoftView" xml:space="preserve">
+        <value>Skylight and dune view</value>
+    </data>
+    <data name="RoomSuiteView" xml:space="preserve">
+        <value>Sea view on two sides</value>
+    </data>
+    <data name="RoomSize" xml:space="preserve">
+        <value>{0} m²</value>
+    </data>
+    <data name="RoomCount" xml:space="preserve">
+        <value>{0} rooms like this</value>
+    </data>
+    <data name="RoomFactSize" xml:space="preserve">
+        <value>Size</value>
+    </data>
+    <data name="RoomFactBed" xml:space="preserve">
+        <value>Beds</value>
+    </data>
+    <data name="RoomFactView" xml:space="preserve">
+        <value>View</value>
+    </data>
+    <data name="RoomFactSleeps" xml:space="preserve">
+        <value>Sleeps</value>
+    </data>
+    <data name="RoomRate" xml:space="preserve">
+        <value>From {0} a night, breakfast for two included</value>
+    </data>
+    <data name="RoomBook" xml:space="preserve">
+        <value>Check your dates</value>
+    </data>
+    <data name="RoomSceneAlt" xml:space="preserve">
+        <value>Drawing of the {0}</value>
+    </data>
+    <data name="DirectKicker" xml:space="preserve">
+        <value>Book direct</value>
+    </data>
+    <data name="DirectTitle" xml:space="preserve">
+        <value>Book with us, not through a booking site</value>
+    </data>
+    <data name="DirectLede" xml:space="preserve">
+        <value>Booking sites keep up to a fifth of the price of every room. When you book with us, that money goes into your stay instead.</value>
+    </data>
+    <data name="DirectColUs" xml:space="preserve">
+        <value>Booking direct</value>
+    </data>
+    <data name="DirectColThem" xml:space="preserve">
+        <value>Booking sites</value>
+    </data>
+    <data name="DirectRow1" xml:space="preserve">
+        <value>Price</value>
+    </data>
+    <data name="DirectRow1Us" xml:space="preserve">
+        <value>The lowest rate for your dates</value>
+    </data>
+    <data name="DirectRow1Them" xml:space="preserve">
+        <value>Usually higher</value>
+    </data>
+    <data name="DirectRow2" xml:space="preserve">
+        <value>Breakfast for two</value>
+    </data>
+    <data name="DirectRow2Us" xml:space="preserve">
+        <value>Included</value>
+    </data>
+    <data name="DirectRow2Them" xml:space="preserve">
+        <value>€24 per person</value>
+    </data>
+    <data name="DirectRow3" xml:space="preserve">
+        <value>Check-out</value>
+    </data>
+    <data name="DirectRow3Us" xml:space="preserve">
+        <value>13:00</value>
+    </data>
+    <data name="DirectRow3Them" xml:space="preserve">
+        <value>11:00</value>
+    </data>
+    <data name="DirectRow4" xml:space="preserve">
+        <value>Free cancellation</value>
+    </data>
+    <data name="DirectRow4Us" xml:space="preserve">
+        <value>Until 3 days before</value>
+    </data>
+    <data name="DirectRow4Them" xml:space="preserve">
+        <value>Depends on the site</value>
+    </data>
+    <data name="DirectRow5" xml:space="preserve">
+        <value>Your room</value>
+    </data>
+    <data name="DirectRow5Us" xml:space="preserve">
+        <value>Choose it in the app</value>
+    </data>
+    <data name="DirectRow5Them" xml:space="preserve">
+        <value>Given to you on arrival</value>
+    </data>
+    <data name="DirectRow6" xml:space="preserve">
+        <value>On arrival</value>
+    </data>
+    <data name="DirectRow6Us" xml:space="preserve">
+        <value>A bottle of Amrum sea buckthorn juice</value>
+    </data>
+    <data name="DirectRow6Them" xml:space="preserve">
+        <value>Nothing extra</value>
+    </data>
+    <data name="PromiseTitle" xml:space="preserve">
+        <value>Our best-rate promise</value>
+    </data>
+    <data name="PromiseBody" xml:space="preserve">
+        <value>Found the same room for the same dates cheaper within 24 hours of booking with us? Send us the link. We match the price and take another 10% off.</value>
+    </data>
+    <data name="RoomsKicker" xml:space="preserve">
+        <value>Rooms</value>
+    </data>
+    <data name="RoomsTitle" xml:space="preserve">
+        <value>Four kinds of room, all facing the dunes or the sea</value>
+    </data>
+    <data name="RoomsCta" xml:space="preserve">
+        <value>Rooms and rates</value>
+    </data>
+    <data name="AppKicker" xml:space="preserve">
+        <value>The app</value>
+    </data>
+    <data name="AppTitle" xml:space="preserve">
+        <value>Your stay, from the ferry to the last breakfast</value>
+    </data>
+    <data name="App1Title" xml:space="preserve">
+        <value>Check in on the ferry</value>
+    </data>
+    <data name="App1Body" xml:space="preserve">
+        <value>Fill in the form on the way over. When the ferry docks in Wittdün, your room number is on your phone, and our driver is at the pier.</value>
+    </data>
+    <data name="App2Title" xml:space="preserve">
+        <value>Your phone is the key</value>
+    </data>
+    <data name="App2Body" xml:space="preserve">
+        <value>The app opens your room, the sauna and the bike shed. It works without a signal, and the person you travel with can have a key too.</value>
+    </data>
+    <data name="App3Title" xml:space="preserve">
+        <value>The front desk, by message</value>
+    </data>
+    <data name="App3Body" xml:space="preserve">
+        <value>A table for dinner, a later ferry, more towels: write to us in the app between 7:00 and 23:00 and a person answers.</value>
+    </data>
+    <data name="App4Title" xml:space="preserve">
+        <value>The island, from people who live here</value>
+    </data>
+    <data name="App4Body" xml:space="preserve">
+        <value>Our guide to Amrum: tide times for the guided mudflat walk to Föhr, the lighthouse opening hours, the bakery in Nebel and where the seals are.</value>
+    </data>
+    <data name="StoriesKicker" xml:space="preserve">
+        <value>Guests</value>
+    </data>
+    <data name="StoriesTitle" xml:space="preserve">
+        <value>What guests wrote to us after they left</value>
+    </data>
+    <data name="Story1Quote" xml:space="preserve">
+        <value>We came for three nights and stayed six. The Sea Room balcony faces the sunset, the bread at breakfast is still warm, and nobody ever asked us to hurry.</value>
+    </data>
+    <data name="Story1Name" xml:space="preserve">
+        <value>Lena and Tom</value>
+    </data>
+    <data name="Story1Detail" xml:space="preserve">
+        <value>Hamburg, Sea Room in September</value>
+    </data>
+    <data name="Story2Quote" xml:space="preserve">
+        <value>With two children and a dog, the Lantern Loft was perfect: the children slept up in the loft, we had the sofa and the skylight. The app had the tide times for the mudflat walk.</value>
+    </data>
+    <data name="Story2Name" xml:space="preserve">
+        <value>Aylin K.</value>
+    </data>
+    <data name="Story2Detail" xml:space="preserve">
+        <value>Cologne, Lantern Loft in July</value>
+    </data>
+    <data name="Story3Quote" xml:space="preserve">
+        <value>I checked in on the ferry and walked straight to my room. The sauna in the dunes at dusk is the best hour of my year.</value>
+    </data>
+    <data name="Story3Name" xml:space="preserve">
+        <value>Mikkel S.</value>
+    </data>
+    <data name="Story3Detail" xml:space="preserve">
+        <value>Copenhagen, Dune Room in February</value>
+    </data>
+    <data name="ReviewsKicker" xml:space="preserve">
+        <value>Reviews</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>Rated by the people who stayed</value>
+    </data>
+    <data name="TripLabel" xml:space="preserve">
+        <value>Excellent on Tripadvisor</value>
+    </data>
+    <data name="TripCount" xml:space="preserve">
+        <value>{0} reviews</value>
+    </data>
+    <data name="TripStarsAlt" xml:space="preserve">
+        <value>Rated {0} out of 5 on Tripadvisor</value>
+    </data>
+    <data name="TripLink" xml:space="preserve">
+        <value>Read the reviews on Tripadvisor</value>
+    </data>
+    <data name="TripLocation" xml:space="preserve">
+        <value>Location</value>
+    </data>
+    <data name="TripRooms" xml:space="preserve">
+        <value>Rooms</value>
+    </data>
+    <data name="TripService" xml:space="preserve">
+        <value>Service</value>
+    </data>
+    <data name="TripValue" xml:space="preserve">
+        <value>Value</value>
+    </data>
+    <data name="TripCleanliness" xml:space="preserve">
+        <value>Cleanliness</value>
+    </data>
+    <data name="TripSleep" xml:space="preserve">
+        <value>Sleep quality</value>
+    </data>
+    <data name="AwardsTitle" xml:space="preserve">
+        <value>Recognition</value>
+    </data>
+    <data name="Award1" xml:space="preserve">
+        <value>Small hotel of the year, North Sea coast</value>
+    </data>
+    <data name="Award1By" xml:space="preserve">
+        <value>Coast &amp; Quiet Guide</value>
+    </data>
+    <data name="Award2" xml:space="preserve">
+        <value>Breakfast of the year</value>
+    </data>
+    <data name="Award2By" xml:space="preserve">
+        <value>Nordic Table Awards</value>
+    </data>
+    <data name="Award3" xml:space="preserve">
+        <value>One of twelve island hotels to know</value>
+    </data>
+    <data name="Award3By" xml:space="preserve">
+        <value>Slow Stay List</value>
+    </data>
+    <data name="AwardsNote" xml:space="preserve">
+        <value>Sample awards. Replace them with your own.</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Before you travel</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>How do I get to Amrum?</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>Take the ferry from Dagebüll to Wittdün, about 90 minutes. Our car meets every ferry and brings you to Norddorf in 15 minutes, so you can leave your car in Dagebüll.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>When can I check in and out?</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>Rooms are ready from 15:00 and check-out is at 11:00. Book direct and you can stay until 13:00. With mobile check-in, the app tells you the moment your room is ready.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>Can I bring my dog?</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>Yes, in the Dune Rooms and the Lantern Lofts, for €15 a night. Dogs are welcome on the dune paths and on the beach north of the lighthouse, on a lead.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>Is breakfast included?</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>Always, when you book direct. Booked anywhere else, it costs €24 per person. It's served in the Salt Kitchen from 7:30 to 10:30.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>How does the best-rate promise work?</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>If you find the same room for the same dates cheaper within 24 hours of booking with us, send us the link. We match the price and take another 10% off.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>Book direct in the app</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>The lowest rate for your dates, breakfast included, and your key on your phone before the ferry docks.</value>
+    </data>
+    <data name="RoomsPageTitle" xml:space="preserve">
+        <value>Rooms and rates</value>
+    </data>
+    <data name="RoomsPageHeading" xml:space="preserve">
+        <value>Four kinds of room, thirty-two in all</value>
+    </data>
+    <data name="RoomsPageDescription" xml:space="preserve">
+        <value>The Dune Rooms, Sea Rooms, Lantern Lofts and Salt Suites of Alder &amp; Salt on Amrum, with their sizes, beds, views and rates for every season.</value>
+    </data>
+    <data name="RoomsPageLede" xml:space="preserve">
+        <value>Every room has a bed made of alder, linen sheets and a window onto the dunes or the sea. When you book direct, the rate includes breakfast for two.</value>
+    </data>
+    <data name="RatesTitle" xml:space="preserve">
+        <value>Rates per night</value>
+    </data>
+    <data name="RatesLede" xml:space="preserve">
+        <value>Rates include breakfast for two when you book direct. They go up by €30 a night in April, May, September and October, and by €60 a night from June to August.</value>
+    </data>
+    <data name="RatesRoom" xml:space="preserve">
+        <value>Room</value>
+    </data>
+    <data name="RatesWinter" xml:space="preserve">
+        <value>November to March</value>
+    </data>
+    <data name="RatesMid" xml:space="preserve">
+        <value>April, May, September, October</value>
+    </data>
+    <data name="RatesSummer" xml:space="preserve">
+        <value>June to August</value>
+    </data>
+    <data name="GalleryTitle" xml:space="preserve">
+        <value>Around the house</value>
+    </data>
+    <data name="GalleryLede" xml:space="preserve">
+        <value>Breakfast in the Salt Kitchen, the sauna in the dunes, and the beach at the end of the boardwalk.</value>
+    </data>
+    <data name="GalleryDining" xml:space="preserve">
+        <value>The Salt Kitchen, where breakfast is served from 7:30 to 10:30</value>
+    </data>
+    <data name="GallerySauna" xml:space="preserve">
+        <value>The sauna in the dunes, open from 16:00 to 22:00</value>
+    </data>
+    <data name="GalleryBeach" xml:space="preserve">
+        <value>Kniepsand beach, at the end of our boardwalk</value>
+    </data>
+    <data name="GalleryPrevious" xml:space="preserve">
+        <value>Previous picture</value>
+    </data>
+    <data name="GalleryNext" xml:space="preserve">
+        <value>Next picture</value>
+    </data>
+    <data name="GalleryDots" xml:space="preserve">
+        <value>Choose a picture</value>
+    </data>
+    <data name="GalleryDot" xml:space="preserve">
+        <value>Picture</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Alder &amp; Salt</value>
+    </data>
+    <data name="AboutHeading" xml:space="preserve">
+        <value>An old guesthouse, rebuilt in alder</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>The story of Alder &amp; Salt, a 32-room hotel in a rebuilt guesthouse from 1934 at Norddorf on Amrum, the people who run it and how to get here.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Freya Nielsen grew up on Amrum, and Jonas Brodersen cooked in Copenhagen for twelve years. In 2019 they bought the old Haus Seeblick in Norddorf and rebuilt it, room by room, in alder wood.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>Why alder, and why salt</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Alder is the tree of the island's only wood, behind the dunes at Norddorf. It's soft and warm and turns golden with the years, so we used it for every bed, door and table.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>Salt is everything else: the wind, the sea on three sides, and the bread Jonas bakes every morning with sea salt from the Wadden coast. We kept the thatched roof and the front door from 1934, and added a sauna in the dunes.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>The people who look after you</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Freya Nielsen</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Owner and host</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Jonas Brodersen</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Owner and head of the kitchen</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Malin Andersson</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Front desk and the app</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Kofi Mensah</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Housekeeping and the sauna</value>
+    </data>
+    <data name="GettingTitle" xml:space="preserve">
+        <value>Getting here</value>
+    </data>
+    <data name="GettingBody" xml:space="preserve">
+        <value>Amrum is one of the North Frisian islands, close to the Danish border. Leave the car on the mainland: the island is small, and our car meets every ferry.</value>
+    </data>
+    <data name="Journey1Time" xml:space="preserve">
+        <value>About 3 hours</value>
+    </data>
+    <data name="Journey1" xml:space="preserve">
+        <value>By train from Hamburg to Dagebüll Mole, at the ferry pier</value>
+    </data>
+    <data name="Journey2Time" xml:space="preserve">
+        <value>About 90 minutes</value>
+    </data>
+    <data name="Journey2" xml:space="preserve">
+        <value>By ferry from Dagebüll to Wittdün, at the south end of Amrum</value>
+    </data>
+    <data name="Journey3Time" xml:space="preserve">
+        <value>15 minutes</value>
+    </data>
+    <data name="Journey3" xml:space="preserve">
+        <value>With our car from the pier to Norddorf and your room</value>
+    </data>
+    <data name="MapAlt" xml:space="preserve">
+        <value>Map of Amrum, with Alder &amp; Salt at Norddorf and the ferry from Dagebüll to Wittdün</value>
+    </data>
+    <data name="MapNorddorf" xml:space="preserve">
+        <value>Norddorf</value>
+    </data>
+    <data name="MapNebel" xml:space="preserve">
+        <value>Nebel</value>
+    </data>
+    <data name="MapWittdun" xml:space="preserve">
+        <value>Wittdün</value>
+    </data>
+    <data name="MapDagebull" xml:space="preserve">
+        <value>Dagebüll</value>
+    </data>
+    <data name="MapFohr" xml:space="preserve">
+        <value>Föhr</value>
+    </data>
+    <data name="MapAmrum" xml:space="preserve">
+        <value>Amrum</value>
+    </data>
+    <data name="MapFerry" xml:space="preserve">
+        <value>Ferry, about 90 minutes</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Write to us or call</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>The front desk is open from 7:00 to 23:00 and answers the phone, email and messages in the app.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>The company</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This page went out with the tide</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The address may be mistyped, or the page has moved. The beach is still where it was.</value>
+    </data>
+    <data name="NotFoundRooms" xml:space="preserve">
+        <value>See the rooms</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Boutique hotel</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A 32-room hotel's app, live on iPhone, Android and the web: a stay planner you can try with real dates, the case for booking direct, rooms drawn as a gallery and Tripadvisor-style reviews.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Stay planner in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Book-direct benefits</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Concierge chat</value>
+    </data>
+</root>

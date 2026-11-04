@@ -1,0 +1,89 @@
+@attribute [Route(RestaurantSite.Path + "/about")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/about")]
+@layout RestaurantLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{C[nameof(RestaurantStrings.AboutTitle)]} | Little Copper")"
+             Description="@C[nameof(RestaurantStrings.AboutDescription)]"
+             Path="@($"{RestaurantSite.Path}/about")"
+             Site="RestaurantSite.Info" />
+
+<section class="lp-container restaurant-about-hero">
+    <div class="restaurant-about-text">
+        <p class="restaurant-kicker">@L[nameof(LandingStrings.About)]</p>
+        <h1>@C[nameof(RestaurantStrings.AboutHeadingStart)] <em>@C[nameof(RestaurantStrings.AboutHeadingEm)]</em></h1>
+        <p class="lp-lede">@C[nameof(RestaurantStrings.AboutLede)]</p>
+    </div>
+    <div class="restaurant-about-machine">
+        <RestaurantMachine Label="@C[nameof(RestaurantStrings.MachineAlt)]" />
+    </div>
+</section>
+
+<section class="lp-container restaurant-story" aria-labelledby="restaurant-story-title">
+    <h2 id="restaurant-story-title">@C[nameof(RestaurantStrings.StoryTitle)]</h2>
+    <div>
+        <p>@C[nameof(RestaurantStrings.StoryBody1)]</p>
+        <p>@C[nameof(RestaurantStrings.StoryBody2)]</p>
+    </div>
+</section>
+
+<section id="cafes" class="lp-section restaurant-about-cafes" aria-labelledby="restaurant-about-cafes-title">
+    <div class="lp-container">
+        <h2 id="restaurant-about-cafes-title">@C[nameof(RestaurantStrings.AboutCafesTitle)]</h2>
+        <div class="restaurant-about-cafe-grid">
+            @foreach (var cafe in RestaurantCafes.All)
+            {
+                <article aria-labelledby="@($"cafe-{cafe.Key.ToLowerInvariant()}")">
+                    <h3 id="@($"cafe-{cafe.Key.ToLowerInvariant()}")">@C[cafe.NameKey]</h3>
+                    <p class="restaurant-about-cafe-note">@C[cafe.NoteKey]</p>
+                    <p><span dir="ltr">@cafe.Address</span></p>
+                    <table>
+                        <caption class="lp-visually-hidden">@C[nameof(RestaurantStrings.HoursCaption), C[cafe.NameKey]]</caption>
+                        <tbody>
+                            <tr><th scope="row">@C[nameof(RestaurantStrings.HoursWeekdays)]</th><td>@Range(cafe.WeekdayOpen, cafe.WeekdayClose)</td></tr>
+                            <tr><th scope="row">@C[nameof(RestaurantStrings.HoursWeekends)]</th><td>@Range(cafe.WeekendOpen, cafe.WeekendClose)</td></tr>
+                        </tbody>
+                    </table>
+                </article>
+            }
+        </div>
+        <p class="restaurant-about-holidays">@C[nameof(RestaurantStrings.HoursHolidays)]</p>
+    </div>
+</section>
+
+<section class="lp-section restaurant-team" aria-labelledby="restaurant-team-title">
+    <div class="lp-container">
+        <h2 id="restaurant-team-title">@C[nameof(RestaurantStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role, note) in team)
+            {
+                <li>
+                    <span class="restaurant-team-cup" aria-hidden="true">@Initials(C[name])</span>
+                    <strong>@C[name]</strong>
+                    <span class="restaurant-team-role">@C[role]</span>
+                    <p>@C[note]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container restaurant-contact" aria-labelledby="restaurant-contact-title">
+    <div class="restaurant-contact-text">
+        <h2 id="restaurant-contact-title">@C[nameof(RestaurantStrings.ContactTitle)]</h2>
+        <p>@C[nameof(RestaurantStrings.ContactBody)]</p>
+        <div class="restaurant-contact-links">
+            <BitButton Href="@($"mailto:{RestaurantSite.Info.Company.Email}")" IconName="@BitIconName.Mail">@RestaurantSite.Info.Company.Email</BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{RestaurantSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@RestaurantSite.Info.Company.Phone</span></BitButton>
+        </div>
+    </div>
+    <div class="restaurant-company">
+        <h3>@C[nameof(RestaurantStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@RestaurantSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><span dir="ltr">@RestaurantSite.Info.Company.Address</span></dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@RestaurantSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@RestaurantSite.Info.Company.RegistrationNumber</dd></div>
+        </dl>
+    </div>
+</section>

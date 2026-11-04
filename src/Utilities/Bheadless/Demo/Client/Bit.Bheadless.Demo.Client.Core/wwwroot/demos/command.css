@@ -100,7 +100,7 @@
     color: var(--color-muted);
 }
 
-.cmd-item[data-selected] .cmd-item-shortcut { color: #60a5fa; }
+.cmd-item[data-selected] .cmd-item-shortcut { color: var(--color-primary-text); }
 
 /* BitBhCommandSeparator is removed while searching */
 .cmd-separator { height: 1px; margin: 0.375rem -0.375rem; background: var(--color-border); }

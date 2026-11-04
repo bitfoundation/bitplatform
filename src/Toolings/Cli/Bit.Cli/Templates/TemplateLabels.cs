@@ -24,6 +24,7 @@ public static class TemplateLabels
         ["theme"] = "Theme",
         ["apiServerUrl"] = "API server URL",
         ["webAppUrl"] = "Web app URL",
+        ["landingPageUrl"] = "Landing page URL",
         ["advancedTests"] = "Advanced automated tests"
     };
 

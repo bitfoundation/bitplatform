@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using Bit.Bdnd.Demo.Client.Examples;
+using Bit.Utilities.Demo;
 
 namespace Bit.Bdnd.Tests.Mcp;
 

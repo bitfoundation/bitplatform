@@ -20,6 +20,9 @@
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.2" />
         <PackageReference Include="bunit" Version="2.13.3" />
+        <!-- DbCommandsTests: what Entity Framework Core really logs for its commands, against an in-memory SQLite database. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +30,9 @@
         <ProjectReference Include="..\..\Bit.BevTools.Loader\Bit.BevTools.Loader.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Cli\Bit.BevTools.Cli.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Blex\Bit.BevTools.Blex.csproj" />
+        <!-- BlexIntegrationTests define a Blex store the way an app does: through Blex's source generator. -->
+        <ProjectReference Include="..\..\..\Blex\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

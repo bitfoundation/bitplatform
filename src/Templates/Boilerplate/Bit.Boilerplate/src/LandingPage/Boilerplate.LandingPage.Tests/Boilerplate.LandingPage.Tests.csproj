@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Boilerplate.LandingPage.Server\Boilerplate.LandingPage.Server.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Net" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Net.WebSockets" />
+        <Using Include="System.Text.RegularExpressions" />
+        <Using Include="Microsoft.AspNetCore.Builder" />
+        <Using Include="Microsoft.AspNetCore.Hosting" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.Hosting" />
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure.Models" />
+        <Using Include="Boilerplate.LandingPage.Tests.Infrastructure" />
+    </ItemGroup>
+
+</Project>

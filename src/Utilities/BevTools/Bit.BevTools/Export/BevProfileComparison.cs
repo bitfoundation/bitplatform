@@ -20,6 +20,15 @@ public sealed class BevProfileComparisonOptions
 
     /// <summary>…and by more than this fraction of the baseline's time. Default 0.5: timings vary from run to run, counts do not.</summary>
     public double TimeChangeRatio { get; set; } = 0.5;
+
+    /// <summary>
+    /// A type's bytes allocated per render change by this many at least. Default 1024. Compared only when both recordings
+    /// measured allocations, in the same render mode; per render, so a type that renders more often is a render regression, not also this one.
+    /// </summary>
+    public long MinAllocationChangeBytes { get; set; } = 1024;
+
+    /// <summary>…and by more than this fraction of the baseline's bytes per render. Default 0.25: allocations repeat far more closely than times.</summary>
+    public double AllocationChangeRatio { get; set; } = 0.25;
 }
 
 public enum BevProfileChangeKind
@@ -55,7 +64,18 @@ public sealed record BevProfileTypeChange(
     double CurrentMaxRenderMs,
     double? BaselineP95RenderMs,
     double? CurrentP95RenderMs,
-    string? Reason);
+    string? Reason)
+{
+    /// <summary>Bytes the baseline's renders of the type allocated; null when that recording did not measure allocations.</summary>
+    public long? BaselineAllocatedBytes { get; init; }
+
+    public long? CurrentAllocatedBytes { get; init; }
+
+    /// <summary>Bytes allocated per render in the baseline, when measured.</summary>
+    public double? BaselineBytesPerRender => BaselineAllocatedBytes is { } bytes && BaselineRenders > 0 ? (double)bytes / BaselineRenders : null;
+
+    public double? CurrentBytesPerRender => CurrentAllocatedBytes is { } bytes && CurrentRenders > 0 ? (double)bytes / CurrentRenders : null;
+}
 
 /// <summary>Two recordings compared type by type, regressions first.</summary>
 public sealed class BevProfileComparisonResult
@@ -119,17 +139,17 @@ public sealed class BevProfileComparisonResult
         }
 
         sb.AppendLine(CultureInfo.InvariantCulture, $"#### {title} ({rows.Count})").AppendLine();
-        sb.AppendLine("| Component | Instances | Renders | Render time | p95 | Max | Why |");
-        sb.AppendLine("|---|---:|---:|---:|---:|---:|---|");
+        sb.AppendLine("| Component | Instances | Renders | Render time | p95 | Max | Allocated per render | Why |");
+        sb.AppendLine("|---|---:|---:|---:|---:|---:|---:|---|");
         foreach (var c in rows.Take(maxRows))
         {
             sb.AppendLine(CultureInfo.InvariantCulture,
-                $"| `{Cell(c.DisplayName)}` | {c.BaselineInstances} → {c.CurrentInstances} | {c.BaselineRenders} → {c.CurrentRenders} | {Ms(c.BaselineRenderMs)} → {Ms(c.CurrentRenderMs)} | {Ms(c.BaselineP95RenderMs)} → {Ms(c.CurrentP95RenderMs)} | {Ms(c.BaselineMaxRenderMs)} → {Ms(c.CurrentMaxRenderMs)} | {Cell(c.Reason ?? "")} |");
+                $"| `{Cell(c.DisplayName)}` | {c.BaselineInstances} → {c.CurrentInstances} | {c.BaselineRenders} → {c.CurrentRenders} | {Ms(c.BaselineRenderMs)} → {Ms(c.CurrentRenderMs)} | {Ms(c.BaselineP95RenderMs)} → {Ms(c.CurrentP95RenderMs)} | {Ms(c.BaselineMaxRenderMs)} → {Ms(c.CurrentMaxRenderMs)} | {Bytes(c.BaselineBytesPerRender)} → {Bytes(c.CurrentBytesPerRender)} | {Cell(c.Reason ?? "")} |");
         }
 
         if (rows.Count > maxRows)
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"| … {rows.Count - maxRows} more | | | | | | |");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"| … {rows.Count - maxRows} more | | | | | | | |");
         }
 
         sb.AppendLine();
@@ -141,6 +161,8 @@ public sealed class BevProfileComparisonResult
     internal static string Ms(double ms) => ms.ToString(ms >= 100 ? "0" : "0.0", CultureInfo.InvariantCulture) + " ms";
 
     private static string Ms(double? ms) => ms is { } value ? Ms(value) : "–";
+
+    internal static string Bytes(double? bytes) => bytes is { } value ? BevToolsHttpMessageHandler.FormatBytes((long)Math.Round(value)) : "–";
 
     internal static string Signed(int value) => value > 0 ? "+" + value.ToString(CultureInfo.InvariantCulture) : value.ToString(CultureInfo.InvariantCulture);
 }
@@ -190,7 +212,7 @@ public static class BevProfileComparison
         {
             before.TryGetValue(type, out var b);
             after.TryGetValue(type, out var a);
-            var (kind, reason) = Classify(b, a, options);
+            var (kind, reason) = Classify(b, a, options, SameRenderMode(baseline, current));
             changes.Add(new BevProfileTypeChange(
                 type,
                 (a ?? b)!.DisplayName,
@@ -205,7 +227,11 @@ public static class BevProfileComparison
                 a?.MaxRenderMs ?? 0,
                 b?.P95RenderMs,
                 a?.P95RenderMs,
-                reason));
+                reason)
+            {
+                BaselineAllocatedBytes = b?.AllocatedBytes,
+                CurrentAllocatedBytes = a?.AllocatedBytes,
+            });
         }
 
         var ordered = changes
@@ -223,7 +249,12 @@ public static class BevProfileComparison
         return new BevProfileComparisonResult(ordered, Warnings(baseline, current), baseline.RecordedAt, current.RecordedAt);
     }
 
-    private static (BevProfileChangeKind Kind, string? Reason) Classify(BevProfileTypeTotals? baseline, BevProfileTypeTotals? current, BevProfileComparisonOptions options)
+    // As Warnings decides it: two render modes run on different runtimes (a circuit's CoreCLR, the browser's Mono), whose
+    // allocations differ for the same code.
+    private static bool SameRenderMode(BevRenderProfile baseline, BevRenderProfile current) =>
+        baseline.RenderMode is not { } before || current.RenderMode is not { } after || before == after;
+
+    private static (BevProfileChangeKind Kind, string? Reason) Classify(BevProfileTypeTotals? baseline, BevProfileTypeTotals? current, BevProfileComparisonOptions options, bool sameRenderMode)
     {
         if (baseline is null)
         {
@@ -241,20 +272,34 @@ public static class BevProfileComparison
         var timeChanged = Math.Abs(timeDelta) >= options.MinTimeChangeMs && Math.Abs(timeDelta) > baseline.RenderMs * options.TimeChangeRatio;
         var renders = "renders " + BevProfileComparisonResult.Signed(renderDelta) + Percent(renderDelta, baseline.Renders);
         var time = "time " + (timeDelta >= 0 ? "+" : "-") + BevProfileComparisonResult.Ms(Math.Abs(timeDelta)) + Percent(timeDelta, baseline.RenderMs);
+        // Per render: what each render costs the garbage collector, which a change to the component's code moves and the
+        // machine it ran on does not.
+        var bytesBefore = baseline.AllocatedBytes is { } ab && baseline.Renders > 0 ? (double)ab / baseline.Renders : (double?)null;
+        var bytesAfter = current.AllocatedBytes is { } aa && current.Renders > 0 ? (double)aa / current.Renders : (double?)null;
+        var allocationDelta = bytesBefore is { } pb && bytesAfter is { } pa ? pa - pb : 0;
+        var allocationsChanged = sameRenderMode && bytesBefore is not null && bytesAfter is not null
+            && Math.Abs(allocationDelta) >= options.MinAllocationChangeBytes && Math.Abs(allocationDelta) > bytesBefore.Value * options.AllocationChangeRatio;
+        var allocations = "allocated per render " + (allocationDelta >= 0 ? "+" : "-") + BevProfileComparisonResult.Bytes(Math.Abs(allocationDelta)) + Percent(allocationDelta, bytesBefore ?? 0);
+        var moreAllocations = allocationsChanged && allocationDelta > 0 ? ", " + allocations : "";
         if (rendersChanged && renderDelta > 0)
         {
-            return (BevProfileChangeKind.Regressed, renders + (timeChanged ? ", " + time : ""));
+            return (BevProfileChangeKind.Regressed, renders + (timeChanged ? ", " + time : "") + moreAllocations);
         }
 
         if (timeChanged && timeDelta > 0)
         {
-            return (BevProfileChangeKind.Regressed, time + (renderDelta < 0 ? ", " + renders : "") + (current.Instances != baseline.Instances ? ", instances " + baseline.Instances + " → " + current.Instances : ""));
+            return (BevProfileChangeKind.Regressed, time + (renderDelta < 0 ? ", " + renders : "") + (current.Instances != baseline.Instances ? ", instances " + baseline.Instances + " → " + current.Instances : "") + moreAllocations);
         }
 
-        // Not regressed, so renders did not rise beyond the thresholds and time did not grow clearly.
-        if ((rendersChanged && renderDelta < 0) || (timeChanged && timeDelta < 0))
+        if (allocationsChanged && allocationDelta > 0)
         {
-            return (BevProfileChangeKind.Improved, string.Join(", ", new[] { rendersChanged ? renders : null, timeChanged ? time : null }.Where(r => r is not null)));
+            return (BevProfileChangeKind.Regressed, allocations + (rendersChanged ? ", " + renders : ""));
+        }
+
+        // Not regressed, so renders did not rise beyond the thresholds and neither time nor allocations grew clearly.
+        if ((rendersChanged && renderDelta < 0) || (timeChanged && timeDelta < 0) || (allocationsChanged && allocationDelta < 0))
+        {
+            return (BevProfileChangeKind.Improved, string.Join(", ", new[] { rendersChanged ? renders : null, timeChanged ? time : null, allocationsChanged ? allocations : null }.Where(r => r is not null)));
         }
 
         return (BevProfileChangeKind.Unchanged, null);
@@ -283,13 +328,13 @@ public static class BevProfileComparison
 
         if (baseline.RenderMode is { } before && current.RenderMode is { } after && before != after)
         {
-            warnings.Add("Recorded in different render modes (" + before + " → " + after + "): render counts are comparable, times are not.");
+            warnings.Add("Recorded in different render modes (" + before + " → " + after + "): render counts are comparable, times and allocations are not.");
         }
 
         // A patch release does not change what renders cost; another major or minor version can.
         if (baseline.Runtime is { } runtimeBefore && current.Runtime is { } runtimeAfter && MajorMinor(runtimeBefore) != MajorMinor(runtimeAfter))
         {
-            warnings.Add("Recorded on different runtimes (" + runtimeBefore + " → " + runtimeAfter + "): times are not comparable.");
+            warnings.Add("Recorded on different runtimes (" + runtimeBefore + " → " + runtimeAfter + "): render counts are comparable, times and allocations are not.");
         }
 
         if (baseline.FromComponents || current.FromComponents)

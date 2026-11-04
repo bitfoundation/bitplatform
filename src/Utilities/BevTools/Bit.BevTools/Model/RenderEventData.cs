@@ -14,7 +14,7 @@ namespace Bit.BevTools;
 /// </summary>
 internal sealed class RenderEventData(BevRenderSample sample, int renderCount) : IReadOnlyDictionary<string, object?>
 {
-    private static readonly string[] Keys = ["cause", "batch", "renderCount", "changedState", "changedParameters", "parametersUnchanged"];
+    private static readonly string[] Keys = ["cause", "batch", "renderCount", "changedState", "changedParameters", "parametersUnchanged", "allocatedBytes"];
 
     IEnumerable<string> IReadOnlyDictionary<string, object?>.Keys => Keys;
 
@@ -57,6 +57,9 @@ internal sealed class RenderEventData(BevRenderSample sample, int renderCount) :
             case "parametersUnchanged":
                 // null: not compared; true: compared and identical (a forced re-render); false: compared and different.
                 value = sample.ChangedParameters is { } compared ? compared.Count == 0 : null;
+                return true;
+            case "allocatedBytes":
+                value = sample.AllocatedBytes;
                 return true;
             default:
                 value = null;

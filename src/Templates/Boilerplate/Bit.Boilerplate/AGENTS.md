@@ -54,6 +54,7 @@ The solution is organized into the following projects. Understand their roles to
 *   **Boilerplate.Client.Maui**: The .NET MAUI Blazor Hybrid project for native mobile and desktop apps.
 *   **Boilerplate.Client.Windows**: The Windows Forms Blazor Hybrid project.
 *   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app. Its pages are designs, not app code: an approved one is rebuilt in the app following this file, never copied as it is.
+*   **Boilerplate.LandingPage.Server** and **Boilerplate.LandingPage.Client**: The product's public landing page, a site of its own next to the app: sample landing pages for several kinds of business, each under its own path with its own pages, look, texts and chat, a waitlist before launch and the store links after it, prerendered for search engines, in English and Persian. It references none of the app's projects and deploys as a service of its own.
 
 ## 3. Information Gathering & Codebase Investigation
 
@@ -114,8 +115,17 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#elif (aspire == true)-->
 -   **Report the running app**: Once `aspire start` reports `serverweb` healthy, check that its URLs respond, then give the user a short list with one line on what each is for: the local `serverweb` URL, the Aspire dashboard login URL, and the `smtp` (Mailpit) inbox URL where the app's outgoing emails land.
 <!--#endif-->
+<!--#if (aspire == true)-->
+-   **Run the landing page**: Start the `landingpage` resource from the Aspire dashboard, where it waits for a start, or run `dotnet watch` in src/LandingPage/Boilerplate.LandingPage.Server.
+<!--#else-->
+-   **Run the landing page**: Run `dotnet watch` in src/LandingPage/Boilerplate.LandingPage.Server.
+<!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
+<!--#if (advancedTests == true)-->
+-   **Run tests**: Run `dotnet test` in the src/Tests directory, and in src/LandingPage/Boilerplate.LandingPage.Tests for the landing page.
+<!--#else-->
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
+<!--#endif-->
 <!--#if (offlineDb == true)-->
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project, with `--offline` for the offline database.
 <!--#else-->
@@ -148,6 +158,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 -   **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 -   **Follow Mapperly Conventions**: Use **partial static classes and extension methods** with Mapperly for high-performance object mapping.
 -   **Handle Concurrency**: Always use `long Version` for optimistic concurrency control in update and delete operations.
+-   **Give the Landing Page Its Own Conventions**: `src/LandingPage` is a site apart from the app. The rules above that name the app's own types and files (`AppBitParams`, `AppComponentBase` and `AppPageBase` with their lifecycle methods, `WrapHandled`, `_bit-css-variables.scss`, `Localizer["..."]` literals) don't apply there: follow the `landing-page` skill.
 -   **Respect `[mirror]` Comments**: Some files carry (near) identical logic under different extensions or projects. Each of them starts with a `[mirror]` comment listing its counterparts. Whenever you change such a file you **MUST** open every file that comment names and apply the same change there, or state explicitly why it does not apply. Run `Grep` for `[mirror]` to see the full set.
 
 ## 6. Behavioral Directives
@@ -168,6 +179,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
 | `workbench` | Designing or reviewing a page's UI and UX on sample data before the app builds it, comparing it across devices, themes, languages and data states, answering review comments left on it in the Workbench, or making store screenshots, usually as part of an `ai-dlc` design phase | `.github/agents/workbench.agent.md` |
+| `landing-page` | Any change to the landing page (`src/LandingPage`): making one of its samples the product's home page, launching it, or its pages, texts, look, chat, waitlist, emails and store links | `.github/agents/landing-page.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
 | `rebrand` | Re-skinning the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood) | `.github/agents/rebrand.agent.md` |
 | `port` | Bringing an existing app or system's functionality into this project - from its code in any language, the running app, or only its screens and manuals. It runs the `ai-dlc` lifecycle itself | `.github/agents/port.agent.md` |

@@ -24,6 +24,7 @@ public sealed class BitBhListState<TValue>
     private readonly Dictionary<string, BitBhOptionBase<TValue>> _rendered = new(StringComparer.Ordinal);
     private bool _panelRevealed;
     private bool _scrollPending;
+    private bool _scrollAfterRender;
     private bool _hasActiveValue;
     private TValue _activeValue = default!;
     private bool _optionsUnmounted;
@@ -73,10 +74,13 @@ public sealed class BitBhListState<TValue>
 
         // Data option ids are positions: when the list changes (a new filter) the highlight follows its
         // item to the new position, or is dropped when the item is gone - never left on whatever moved in.
+        // The panel scrolls to the new position once it has rendered the new list (Reconcile).
         if (items is not null && ActiveId is not null && _hasActiveValue)
         {
             var index = IndexOfValue(items, _activeValue, IndexOfId(ActiveId));
-            SetActiveId(index >= 0 ? DataItemId(index) : null, scroll: false);
+            var id = index >= 0 ? DataItemId(index) : null;
+            _scrollAfterRender |= id is not null && id != ActiveId;
+            SetActiveId(id, scroll: false);
         }
     }
 
@@ -213,6 +217,12 @@ public sealed class BitBhListState<TValue>
         _unmountedTexts = _optionsUnmounted ? Options.Items.Select(o => (o.Value, o.ItemText)).ToArray() : [];
     }
 
+    /// <summary>
+    /// Scrolls the panel to the highlight once it has rendered: the options changed under it (a new query) and
+    /// the panel's scroll position belongs to the list that was there before.
+    /// </summary>
+    internal void ScrollToActiveAfterRender() => _scrollAfterRender = true;
+
     internal void SetActiveIndex(int index, bool scroll = true)
         => SetActiveId(index >= 0 && index < Count ? IdAt(index) : null, scroll);
 
@@ -274,11 +284,23 @@ public sealed class BitBhListState<TValue>
     /// <summary>
     /// After options changed: keeps the highlight valid. When the highlighted option
     /// disappeared it moves to <paramref name="fallbackToFirst"/> ? the first option : nothing.
+    /// Either way the panel scrolls to the highlight when it moved: a list filtered while scrolled down
+    /// would otherwise highlight - and select on Enter - an option out of sight.
     /// </summary>
     internal void Reconcile(bool fallbackToFirst)
     {
-        if (ActiveId is not null && IndexOfId(ActiveId) >= 0) return;
-        SetActiveIndex(fallbackToFirst ? FirstEnabled() : -1, scroll: false);
+        if (ActiveId is not null && IndexOfId(ActiveId) >= 0)
+        {
+            if (_scrollAfterRender)
+            {
+                _scrollAfterRender = false;
+                if (_panelRevealed) ScrollTo(ActiveId);
+                else _scrollPending = true;
+            }
+            return;
+        }
+        _scrollAfterRender = false;
+        SetActiveIndex(fallbackToFirst ? FirstEnabled() : -1);
     }
 
     /// <summary>

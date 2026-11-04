@@ -1,0 +1,10 @@
+@inherits LandingComponentBase
+
+@if (suggested is not null)
+{
+    <aside class="lp-lang-suggestion" lang="@suggested.Name" dir="@(suggested.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
+        <p>@LandingCultures.Suggestions[suggested.Name].Suggestion</p>
+        <a href="@target" hreflang="@suggested.Name">@LandingCultures.Suggestions[suggested.Name].Switch</a>
+        <BitButton Variant="BitVariant.Text" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Cancel" Title="@Localizer[nameof(LandingStrings.Dismiss)]" OnClick="Dismiss" />
+    </aside>
+}

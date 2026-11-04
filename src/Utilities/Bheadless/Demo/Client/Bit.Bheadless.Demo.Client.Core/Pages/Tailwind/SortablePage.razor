@@ -1,128 +1,144 @@
 ﻿@page "/tw/sortable"
 
-<PageTitle>Sortable — bit Bheadless · Tailwind</PageTitle>
+<PageTitle>Sortable (Tailwind) · Bheadless</PageTitle>
 
-<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
-    <header class="mb-12">
-        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Sortable</h1>
-        <p class="mt-2 text-zinc-500">Pointer and keyboard reordering, styled with Tailwind's <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">*:</code>, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-dragging:</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-pressed:</code> variants.</p>
-        <TwSectionSwitcher Slug="sortable" />
-    </header>
+<div class="bb-intro">
+    <h1>Sortable</h1>
+    <p class="bb-subtitle">Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
+</div>
 
-    <TwDemoBlock Title="Reorderable task list" Code="@_tasksCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Items</code> with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">ItemKey</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">ItemLabel</code>.
-            Drag a grip, or focus it and press Space / Enter to pick up, ↑ / ↓ to move, Space / Enter to drop and Escape to cancel — every step is announced.
-            The <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;li&gt;</code> items are rendered by the sortable, so they're styled from the list with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">*:</code>.
-        </Description>
-        <LiveContent>
-            <div class="grid w-full gap-4">
-                <BitBhSortable TItem="TaskItem" @bind-Items="tasks"
-                            ItemKey="t => t.Id" ItemLabel="t => t.Title"
-                            aria-label="Tasks"
-                            class="m-0 flex w-full max-w-md list-none flex-col gap-2 p-0 data-dragging:select-none *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
-                            Context="s">
-                    <BitBhSortableHandle TItem="TaskItem" aria-label="@($"Reorder {s.Item.Title}")"
-                                      class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
-                    <span class="flex-1 text-zinc-900">@s.Item.Title</span>
-                    <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">@s.Item.Tag</span>
-                </BitBhSortable>
-                <p class="m-0 text-sm text-zinc-500">
-                    Bound order (ids): <strong class="font-semibold text-zinc-900">@string.Join(" · ", tasks.Select(t => t.Id))</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
+<SectionSwitcher Slug="sortable" />
 
-    <TwDemoBlock Title="OnReorder event log" Code="@_logCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnReorder</code> fires once per committed move with the item, old index and new index — use it to persist the order. Cancelled moves don't fire it.
-        </Description>
-        <LiveContent>
-            <div class="grid w-full grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] items-start gap-6">
-                <BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
-                            aria-label="Sprint backlog"
-                            class="m-0 flex w-full list-none flex-col gap-2 p-0 data-dragging:select-none *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
-                            Context="s">
-                    <BitBhSortableHandle TItem="string" aria-label="@($"Reorder {s.Item}")"
-                                      class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
-                    <span class="flex-1 text-zinc-900">@s.Item</span>
-                </BitBhSortable>
-
-                <ol class="m-0 min-h-full list-none space-y-1.5 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 font-mono text-xs text-zinc-700"
-                    aria-label="Reorder events">
-                    @if (reorderLog.Count == 0)
-                    {
-                        <li class="text-zinc-500">No moves yet — reorder an item.</li>
-                    }
-                    @foreach (var entry in reorderLog)
-                    {
-                        <li>@entry</li>
-                    }
-                </ol>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Horizontal orientation" Code="@_horizontalCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Orientation="BitBhOrientation.Horizontal"</code>: siblings shift sideways and ← / → move a picked-up item. The whole chip is the handle.
-        </Description>
-        <LiveContent>
-            <div class="grid w-full gap-4">
-                <BitBhSortable TItem="string" @bind-Items="priorities"
-                            Orientation="BitBhOrientation.Horizontal" aria-label="Priorities"
-                            class="m-0 flex list-none gap-2 p-0 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
-                            Context="s">
-                    <BitBhSortableHandle TItem="string"
-                                      class="inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-zinc-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:text-blue-700">
-                        <span class="text-zinc-400" aria-hidden="true">⠿</span>@s.Item
-                    </BitBhSortableHandle>
-                </BitBhSortable>
-                <p class="m-0 text-sm text-zinc-500">
-                    Ranking: <strong class="font-semibold text-zinc-900">@string.Join(" › ", priorities)</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Custom announcements" Code="@_announcementsCode">
-        <Description>
-            A <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhSortableAnnouncements</code> rewords (or localizes) the handle instructions and the picked-up / moved / dropped / cancelled messages. The template's <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Index</code> is the live position.
-        </Description>
-        <LiveContent>
-            <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
-                        aria-label="Up next"
+<TwDemoBlock Title="Reorderable task list" Code="@_tasksCode">
+    <Description>
+        Bind the list with <code>@@bind-Items</code>; <code>ItemKey</code> keeps each row's identity
+        stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
+        finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
+        <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
+        <kbd>Escape</kbd> to cancel. Each step is announced automatically. The moving item and the root
+        carry <code>data-dragging</code>, and a handle picked up with the keyboard gets
+        <code>aria-pressed="true"</code>. The sortable renders the <code>&lt;li&gt;</code> items itself,
+        so they're styled from the list: a <code>.sortable-list &gt; li</code> selector in the CSS
+        version, the <code>*:</code> variant in the Tailwind version.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-4">
+            <BitBhSortable TItem="TaskItem" @bind-Items="tasks"
+                        ItemKey="t => t.Id" ItemLabel="t => t.Title"
+                        aria-label="Tasks"
                         class="m-0 flex w-full max-w-md list-none flex-col gap-2 p-0 data-dragging:select-none *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
                         Context="s">
-                <BitBhSortableHandle TItem="string" aria-label="@($"Move {s.Item}")"
+                <BitBhSortableHandle TItem="TaskItem" aria-label="@($"Reorder {s.Item.Title}")"
                                   class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
-                <span class="inline-grid size-6 place-items-center rounded-full bg-blue-50 text-xs font-semibold tabular-nums text-blue-700">@(s.Index + 1)</span>
+                <span class="flex-1 text-zinc-900">@s.Item.Title</span>
+                <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">@s.Item.Tag</span>
+            </BitBhSortable>
+            <p class="m-0 text-sm text-zinc-500">
+                Bound order (ids): <strong class="font-semibold text-zinc-900">@string.Join(" · ", tasks.Select(t => t.Id))</strong>
+            </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="OnReorder event log" Code="@_logCode">
+    <Description>
+        <code>OnReorder</code> fires once per committed move with the item and its old and new
+        index — handy for persisting the order or sending a PATCH. Moves cancelled with
+        <kbd>Escape</kbd> (or dropped in place) don't fire it.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] items-start gap-6">
+            <BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
+                        aria-label="Sprint backlog"
+                        class="m-0 flex w-full list-none flex-col gap-2 p-0 data-dragging:select-none *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
+                        Context="s">
+                <BitBhSortableHandle TItem="string" aria-label="@($"Reorder {s.Item}")"
+                                  class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
                 <span class="flex-1 text-zinc-900">@s.Item</span>
             </BitBhSortable>
-        </LiveContent>
-    </TwDemoBlock>
 
-    <TwDemoBlock Title="Disabled" Code="@_disabledCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Disabled="true"</code> blocks reordering; style the root and items with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> and the handles with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-disabled:</code>. The lock is a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhToggle</code>.
-        </Description>
-        <LiveContent>
-            <div class="grid w-full gap-4">
-                <BitBhToggle @bind-Pressed="locked"
-                          class="inline-flex cursor-pointer items-center justify-self-start rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 outline-none transition-colors hover:bg-zinc-100 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-[state=on]:border-zinc-900 data-[state=on]:bg-zinc-900 data-[state=on]:text-white data-[state=on]:hover:bg-zinc-800">Lock order</BitBhToggle>
-                <BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
-                            aria-label="Onboarding steps"
-                            class="m-0 flex w-full max-w-md list-none flex-col gap-2 p-0 *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg data-disabled:*:bg-zinc-50 data-disabled:*:text-zinc-500"
-                            Context="s">
-                    <BitBhSortableHandle TItem="string" aria-label="@($"Reorder {s.Item}")"
-                                      class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white aria-disabled:cursor-not-allowed aria-disabled:opacity-50">⠿</BitBhSortableHandle>
-                    <span class="flex-1">@s.Item</span>
-                </BitBhSortable>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
-</div>
+            <ol class="m-0 min-h-full list-none space-y-1.5 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 font-mono text-xs text-zinc-700"
+                aria-label="Reorder events">
+                @if (reorderLog.Count == 0)
+                {
+                    <li class="text-zinc-500">No moves yet — reorder an item.</li>
+                }
+                @foreach (var entry in reorderLog)
+                {
+                    <li>@entry</li>
+                }
+            </ol>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Horizontal orientation" Code="@_horizontalCode">
+    <Description>
+        Set <code>Orientation="BitBhOrientation.Horizontal"</code> for a row: pointer drags shift
+        siblings sideways and, once picked up, <kbd>←</kbd> / <kbd>→</kbd> move the item. Here the
+        whole chip is the <code>BitBhSortableHandle</code>, so its text becomes the accessible name.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-4">
+            <BitBhSortable TItem="string" @bind-Items="priorities"
+                        Orientation="BitBhOrientation.Horizontal" aria-label="Priorities"
+                        class="m-0 flex list-none gap-2 overflow-x-auto p-1 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
+                        Context="s">
+                <BitBhSortableHandle TItem="string"
+                                  class="inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-zinc-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:text-blue-700">
+                    <span class="text-zinc-400" aria-hidden="true">⠿</span>@s.Item
+                </BitBhSortableHandle>
+            </BitBhSortable>
+            <p class="m-0 text-sm text-zinc-500">
+                Ranking: <strong class="font-semibold text-zinc-900">@string.Join(" › ", priorities)</strong>
+            </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Custom announcements" Code="@_announcementsCode">
+    <Description>
+        Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
+        hear: the <code>Instructions</code> every handle is described by, plus the
+        <code>PickedUp</code>, <code>Moved</code>, <code>Dropped</code> and <code>Cancelled</code>
+        messages. The template's <code>Index</code> is the live (preview) position.
+    </Description>
+    <LiveContent>
+        <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
+                    aria-label="Up next"
+                    class="m-0 flex w-full max-w-md list-none flex-col gap-2 p-0 data-dragging:select-none *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
+                    Context="s">
+            <BitBhSortableHandle TItem="string" aria-label="@($"Move {s.Item}")"
+                              class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
+            <span class="inline-grid size-6 place-items-center rounded-full bg-blue-50 text-xs font-semibold tabular-nums text-blue-700">@(s.Index + 1)</span>
+            <span class="flex-1 text-zinc-900">@s.Item</span>
+        </BitBhSortable>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Disabled" Code="@_disabledCode">
+    <Description>
+        <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every item get
+        <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>: the CSS version
+        styles them with <code>[data-disabled]</code> / <code>[aria-disabled="true"]</code> selectors,
+        the Tailwind version with the <code>data-disabled:</code> / <code>aria-disabled:</code>
+        variants. The lock below is a <code>BitBhToggle</code>.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-4">
+            <BitBhToggle @bind-Pressed="locked"
+                      class="inline-flex cursor-pointer items-center justify-self-start rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 outline-none transition-colors hover:bg-zinc-100 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 data-[state=on]:border-zinc-900 data-[state=on]:bg-zinc-900 data-[state=on]:text-white data-[state=on]:hover:bg-zinc-800">Lock order</BitBhToggle>
+            <BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
+                        aria-label="Onboarding steps"
+                        class="m-0 flex w-full max-w-md list-none flex-col gap-2 p-0 *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg data-disabled:*:bg-zinc-50 data-disabled:*:text-zinc-500"
+                        Context="s">
+                <BitBhSortableHandle TItem="string" aria-label="@($"Reorder {s.Item}")"
+                                  class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white aria-disabled:cursor-not-allowed aria-disabled:opacity-50">⠿</BitBhSortableHandle>
+                <span class="flex-1">@s.Item</span>
+            </BitBhSortable>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
 @code {
     public sealed record TaskItem(int Id, string Title, string Tag);
@@ -229,7 +245,7 @@
     private const string _horizontalCode = """
 <BitBhSortable TItem="string" @bind-Items="priorities"
             Orientation="BitBhOrientation.Horizontal" aria-label="Priorities"
-            class="m-0 flex list-none gap-2 p-0 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
+            class="m-0 flex list-none gap-2 overflow-x-auto p-1 *:rounded-full *:border *:border-zinc-300 *:bg-white *:transition *:data-dragging:border-blue-600 *:data-dragging:bg-blue-50 *:data-dragging:shadow-md"
             Context="s">
     @* The whole chip is the handle: pointer drags and keyboard both start here. *@
     <BitBhSortableHandle TItem="string"

@@ -1,0 +1,121 @@
+$breakpoint-sm: 600px;
+$breakpoint-md: 960px;
+$breakpoint-lg: 1280px;
+
+@mixin lt-sm {
+    @media (max-width: #{$breakpoint-sm - 1px}) {
+        @content;
+    }
+}
+
+@mixin lt-md {
+    @media (max-width: #{$breakpoint-md - 1px}) {
+        @content;
+    }
+}
+
+@mixin gt-md {
+    @media (min-width: $breakpoint-md) {
+        @content;
+    }
+}
+
+@mixin palette($scheme, $accent, $accent-fg, $bg, $bg-alt, $surface, $fg, $fg-muted, $line) {
+    color-scheme: $scheme;
+
+    --lp-accent: #{$accent};
+    --lp-accent-fg: #{$accent-fg};
+    --lp-accent-soft: color-mix(in oklab, var(--lp-accent) 12%, var(--lp-bg));
+    --lp-bg: #{$bg};
+    --lp-bg-alt: #{$bg-alt};
+    --lp-surface: #{$surface};
+    --lp-fg: #{$fg};
+    --lp-fg-muted: #{$fg-muted};
+    --lp-line: #{$line};
+
+    // Bit.BlazorUI's own variables follow the sample's palette, so its components match without styles of their own
+    --bit-clr-pri: var(--lp-accent);
+    --bit-clr-pri-hover: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 12%);
+    --bit-clr-pri-active: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 22%);
+    --bit-clr-pri-dark: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 30%);
+    --bit-clr-pri-dark-hover: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 38%);
+    --bit-clr-pri-dark-active: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 46%);
+    --bit-clr-pri-light: var(--lp-accent-soft);
+    --bit-clr-pri-light-hover: color-mix(in oklab, var(--lp-accent-soft), var(--lp-accent) 10%);
+    --bit-clr-pri-light-active: color-mix(in oklab, var(--lp-accent-soft), var(--lp-accent) 18%);
+    --bit-clr-pri-text: var(--lp-accent-fg);
+    --bit-clr-pri-focus: color-mix(in oklab, var(--lp-accent) 45%, transparent);
+    --bit-clr-pri-dis: color-mix(in oklab, var(--lp-accent) 14%, var(--lp-bg));
+    --bit-clr-pri-dis-text: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 25%);
+
+    --bit-clr-bg-pri: var(--lp-bg);
+    --bit-clr-bg-pri-hover: color-mix(in oklab, var(--lp-bg), var(--lp-fg) 5%);
+    --bit-clr-bg-pri-active: color-mix(in oklab, var(--lp-bg), var(--lp-fg) 9%);
+    --bit-clr-bg-sec: var(--lp-bg-alt);
+    --bit-clr-bg-sec-hover: color-mix(in oklab, var(--lp-bg-alt), var(--lp-fg) 5%);
+    --bit-clr-bg-sec-active: color-mix(in oklab, var(--lp-bg-alt), var(--lp-fg) 9%);
+    --bit-clr-bg-ter: var(--lp-surface);
+    --bit-clr-bg-ter-hover: color-mix(in oklab, var(--lp-surface), var(--lp-fg) 5%);
+    --bit-clr-bg-ter-active: color-mix(in oklab, var(--lp-surface), var(--lp-fg) 9%);
+
+    --bit-clr-fg-pri: var(--lp-fg);
+    --bit-clr-fg-sec: var(--lp-fg-muted);
+    --bit-clr-fg-ter: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 20%);
+    --bit-clr-fg-dis: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 35%);
+    --bit-clr-bg-dis: var(--lp-bg-alt);
+    --bit-clr-brd-dis: var(--lp-line);
+
+    --bit-clr-brd-pri: color-mix(in oklab, var(--lp-line), var(--lp-fg) 35%);
+    --bit-clr-brd-pri-hover: color-mix(in oklab, var(--lp-line), var(--lp-fg) 55%);
+    --bit-clr-brd-sec: var(--lp-line);
+    --bit-clr-brd-ter: var(--lp-line);
+}
+
+@mixin type($display, $body) {
+    --lp-font-display: #{$display};
+    --lp-font-body: #{$body};
+    --bit-tpg-font-family: var(--lp-stack-body);
+}
+
+@mixin shape($radius, $control-radius) {
+    --lp-radius: #{$radius};
+    --lp-radius-control: #{$control-radius};
+    --bit-shp-brd-radius: #{$control-radius};
+    --bit-shp-radius-control: #{$control-radius};
+    --bit-shp-radius-button: #{$control-radius};
+    --bit-shp-radius-surface: #{$radius};
+}
+
+@mixin stacks {
+    --lp-stack-body: var(--lp-font-body), system-ui, sans-serif;
+    --lp-stack-display: var(--lp-font-display), system-ui, sans-serif;
+}
+
+// FD Digits turns 0 to 9 into Persian digits and Vazirmatn covers only Arabic script, so Latin text keeps the sample's font
+@mixin stacks-fa {
+    --lp-stack-body: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-body), system-ui, sans-serif;
+    --lp-stack-display: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-display), system-ui, sans-serif;
+}
+
+@mixin gallery-theme {
+    @include type(("Instrument Sans", system-ui, sans-serif), ("Instrument Sans", system-ui, sans-serif));
+    @include shape(16px, 10px);
+    @include palette(light, #2448C9, #FFFFFF, #FBFBFA, #F3F3F0, #FFFFFF, #17181B, #5A5F69, #E4E4E0);
+}
+
+@mixin gallery-theme-dark {
+    @include palette(dark, #8EA8FF, #0C0E14, #111214, #17181B, #1D1F23, #F2F2EF, #A9ADB5, #2C2E33);
+}
+
+// On :root while the page holds the sample's layout class, so the body and its scrollbars take the palette too
+@mixin site($class) {
+    :root:has(.#{$class}) {
+        @content;
+    }
+}
+
+@mixin site-dark($class) {
+    :root[bit-theme="dark"]:has(.#{$class}) {
+        @content;
+    }
+}

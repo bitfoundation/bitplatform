@@ -1,0 +1,99 @@
+@attribute [Route(HotelSoftwareSite.Path + "/about")]
+@attribute [Route("/{culture}" + HotelSoftwareSite.Path + "/about")]
+@layout HotelSoftwareLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{H[nameof(HotelSoftwareStrings.AboutTitle)]} | Lodgeboard")"
+             Description="@H[nameof(HotelSoftwareStrings.AboutDescription)]"
+             Path="@($"{HotelSoftwareSite.Path}/about")"
+             Site="HotelSoftwareSite.Info" />
+
+<section class="lp-container hs-about-hero" aria-labelledby="hs-about-title">
+    <p class="hs-kicker">@L[nameof(LandingStrings.About)]</p>
+    <h1 id="hs-about-title">@H[nameof(HotelSoftwareStrings.AboutTitle)]</h1>
+    <p class="lp-lede">@H[nameof(HotelSoftwareStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container hs-story" aria-labelledby="hs-story-title">
+    <div class="hs-story-text">
+        <h2 id="hs-story-title">@H[nameof(HotelSoftwareStrings.StoryTitle)]</h2>
+        <p>@H[nameof(HotelSoftwareStrings.StoryBody1)]</p>
+        <p>@H[nameof(HotelSoftwareStrings.StoryBody2)]</p>
+        <p>@H[nameof(HotelSoftwareStrings.StoryBody3)]</p>
+    </div>
+    <div class="hs-key-rack" aria-hidden="true">
+        @foreach (var number in new[] { "101", "102", "103", "201", "202", "203" })
+        {
+            <span class="hs-key @(number is "102" or "201" ? "is-out" : null)"><b>@number</b></span>
+        }
+    </div>
+</section>
+
+<section class="lp-section hs-principles" aria-labelledby="hs-principles-title">
+    <div class="lp-container">
+        <h2 id="hs-principles-title">@H[nameof(HotelSoftwareStrings.PrinciplesTitle)]</h2>
+        <ul>
+            @foreach (var (title, body) in principles)
+            {
+                <li>
+                    <h3>@H[title]</h3>
+                    <p>@H[body]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-section hs-team" aria-labelledby="hs-team-title">
+    <div class="lp-container">
+        <h2 id="hs-team-title">@H[nameof(HotelSoftwareStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role) in team)
+            {
+                <li>
+                    <span class="hs-team-mark" aria-hidden="true">@Initials(H[name])</span>
+                    <strong>@H[name]</strong>
+                    <span>@H[role]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container hs-offices" aria-labelledby="hs-offices-title">
+    <h2 id="hs-offices-title">@H[nameof(HotelSoftwareStrings.OfficesTitle)]</h2>
+    <div class="hs-office-grid">
+        <div class="hs-office">
+            <p class="hs-office-city">@H[nameof(HotelSoftwareStrings.OfficePorto)]</p>
+            <p>@HotelSoftwareSite.Info.Company.Address</p>
+            <p class="hs-office-note">@H[nameof(HotelSoftwareStrings.OfficePortoNote)]</p>
+        </div>
+        <div class="hs-office">
+            <p class="hs-office-city">@H[nameof(HotelSoftwareStrings.OfficeLjubljana)]</p>
+            <p>@H[nameof(HotelSoftwareStrings.OfficeLjubljanaAddress)]</p>
+            <p class="hs-office-note">@H[nameof(HotelSoftwareStrings.OfficeLjubljanaNote)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-container hs-contact" aria-labelledby="hs-contact-title">
+    <div class="hs-contact-text">
+        <h2 id="hs-contact-title">@H[nameof(HotelSoftwareStrings.ContactTitle)]</h2>
+        <p>@H[nameof(HotelSoftwareStrings.ContactBody)]</p>
+        <div class="hs-contact-links">
+            <BitButton Href="@($"mailto:{HotelSoftwareSite.Info.Company.Email}")" IconName="@BitIconName.Mail"><span dir="ltr">@HotelSoftwareSite.Info.Company.Email</span></BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{HotelSoftwareSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@HotelSoftwareSite.Info.Company.Phone</span></BitButton>
+        </div>
+        <p class="hs-contact-hours">@H[nameof(HotelSoftwareStrings.ContactHours)]</p>
+    </div>
+    <div class="hs-company">
+        <h3>@H[nameof(HotelSoftwareStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@HotelSoftwareSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd>@HotelSoftwareSite.Info.Company.Address</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@HotelSoftwareSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@HotelSoftwareSite.Info.Company.RegistrationNumber</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@HotelSoftwareSite.Info.Company.VatId</dd></div>
+        </dl>
+    </div>
+</section>

@@ -1,0 +1,14 @@
+@attribute [Route(MinimalSite.Path + "/privacy")]
+@attribute [Route(MinimalSite.Path + "/terms")]
+@attribute [Route(MinimalSite.Path + "/cookies")]
+@attribute [Route(MinimalSite.Path + "/imprint")]
+@attribute [Route(MinimalSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/terms")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + MinimalSite.Path + "/accessibility")]
+@layout MinimalLayout
+@inherits LandingPageBase
+
+<LegalPage Site="MinimalSite.Info" />

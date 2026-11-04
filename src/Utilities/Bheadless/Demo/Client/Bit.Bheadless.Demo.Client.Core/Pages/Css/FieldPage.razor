@@ -1,59 +1,60 @@
 ﻿@page "/field"
 @using System.ComponentModel.DataAnnotations
 
-<PageTitle>Field / Input — bit Bheadless</PageTitle>
+<PageTitle>Field / Input · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Field / Input</h1>
-        <p>Form primitives with auto-wired ARIA labels, descriptions, and validation state.</p>
-        <SectionSwitcher Slug="field" />
-    </header>
+<div class="bb-intro">
+    <h1>Field / Input</h1>
+    <p class="bb-subtitle">Form primitives with auto-wired ARIA labels, descriptions, and validation state.</p>
+</div>
 
-    <DemoBlock Title="Basic Field"
-               Code="@_basicCode"
-               Css="@_fieldCss">
-        <Description>
-            Wrap a label, input, and description in an <code>BitBhField</code>. The label's
-            <code>for</code>, the input's <code>id</code>, and the description's
-            <code>aria-describedby</code> are all wired automatically — no manual id management.
-        </Description>
-        <LiveContent>
-            <BitBhField class="field">
-                <BitBhLabel class="field-label">Email</BitBhLabel>
-                <BitBhInput type="email" placeholder="you@example.com" class="field-input" />
-                <BitBhDescription class="field-description">We'll never share your email.</BitBhDescription>
-            </BitBhField>
-        </LiveContent>
-    </DemoBlock>
+<SectionSwitcher Slug="field" />
 
-    <DemoBlock Title="Textarea"
-               Code="@_textareaCode"
-               Css="@_textareaCss">
-        <Description>
-            <code>BitBhTextarea</code> works identically to <code>BitBhInput</code> — same ARIA
-            wiring, same data attributes. Standard HTML attributes like <code>rows</code>
-            pass through.
-        </Description>
-        <LiveContent>
-            <BitBhField class="field">
-                <BitBhLabel class="field-label">Bio</BitBhLabel>
-                <BitBhTextarea rows="3" placeholder="Tell us about yourself…" class="field-input field-textarea" />
-                <BitBhDescription class="field-description">Max 280 characters.</BitBhDescription>
-            </BitBhField>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Basic Field"
+           Code="@_basicCode"
+           Css="@_fieldCss">
+    <Description>
+        Wrap a label, input, and description in a <code>BitBhField</code>. The label's
+        <code>for</code>, the input's <code>id</code>, and the description's
+        <code>aria-describedby</code> are all wired automatically — no manual id management.
+    </Description>
+    <LiveContent>
+        <BitBhField class="field">
+            <BitBhLabel class="field-label">Email</BitBhLabel>
+            <BitBhInput type="email" placeholder="you@example.com" class="field-input" />
+            <BitBhDescription class="field-description">We'll never share your email.</BitBhDescription>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Select"
-               Code="@_selectCode"
-               Css="@_selectCss">
-        <Description>
-            <code>BitBhSelect</code> renders a native <code>&lt;select&gt;</code> with the same
-            auto-wired ARIA. Place <code>&lt;option&gt;</code> elements inside.
-        </Description>
-        <LiveContent>
-            <BitBhField class="field">
-                <BitBhLabel class="field-label">Country</BitBhLabel>
+<DemoBlock Title="Textarea"
+           Code="@_textareaCode"
+           Css="@_textareaCss">
+    <Description>
+        <code>BitBhTextarea</code> works identically to <code>BitBhInput</code> — same ARIA
+        wiring, same data attributes. Standard HTML attributes like <code>rows</code>
+        pass through.
+    </Description>
+    <LiveContent>
+        <BitBhField class="field">
+            <BitBhLabel class="field-label">Bio</BitBhLabel>
+            <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…" class="field-input field-textarea" />
+            <BitBhDescription class="field-description">Max 280 characters.</BitBhDescription>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Select"
+           Code="@_selectCode"
+           Css="@_selectCss">
+    <Description>
+        <code>BitBhSelect</code> renders a native <code>&lt;select&gt;</code> with the same
+        auto-wired ARIA. Place <code>&lt;option&gt;</code> elements inside.
+    </Description>
+    <LiveContent>
+        <BitBhField class="field">
+            <BitBhLabel class="field-label">Country</BitBhLabel>
+            <div class="field-select-wrap">
                 <BitBhSelect class="field-input field-select">
                     <option value="">Choose…</option>
                     <option value="us">United States</option>
@@ -61,138 +62,145 @@
                     <option value="fr">France</option>
                     <option value="de">Germany</option>
                 </BitBhSelect>
-                <BitBhDescription class="field-description">Where you're based.</BitBhDescription>
+                <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
+            <BitBhDescription class="field-description">Where you're based.</BitBhDescription>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled Field"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> on the <code>BitBhField</code> to disable all
+        children at once. The field, label, and input all receive <code>data-disabled</code>:
+        the CSS version styles them with <code>[data-disabled]</code> selectors, the Tailwind
+        version with the <code>data-disabled:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhField Disabled="true" class="field">
+            <BitBhLabel class="field-label">Username</BitBhLabel>
+            <BitBhInput type="text" value="alice" class="field-input" />
+            <BitBhDescription class="field-description">Cannot be changed.</BitBhDescription>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Invalid Field"
+           Code="@_invalidCode"
+           Css="@_invalidCss">
+    <Description>
+        Set <code>Invalid="true"</code> on the <code>BitBhField</code> to mark the input
+        as invalid. The input receives <code>aria-invalid="true"</code> and
+        <code>data-invalid</code>. Use the description to show an error message. The CSS version
+        styles the input with a <code>[data-invalid]</code> selector, the Tailwind version with
+        Tailwind's built-in <code>aria-invalid:</code> variant.
+    </Description>
+    <LiveContent>
+        <BitBhField Invalid="true" class="field">
+            <BitBhLabel class="field-label">Password</BitBhLabel>
+            <BitBhInput type="password" value="123" class="field-input" />
+            <BitBhDescription class="field-description field-error">
+                Password must be at least 8 characters.
+            </BitBhDescription>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Multiple Fields (form layout)"
+           Code="@_formCode"
+           Css="@_formCss">
+    <Description>
+        Compose multiple <code>BitBhField</code> components into a form. Each field
+        manages its own id namespace — no collisions.
+    </Description>
+    <LiveContent>
+        <form class="field-form" @onsubmit:preventDefault>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">First name</BitBhLabel>
+                <BitBhInput type="text" placeholder="Alice" class="field-input" />
             </BitBhField>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Disabled Field"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> on the <code>BitBhField</code> to disable all
-            children at once. The field, label, and input all receive <code>data-disabled</code>
-            for CSS hooks.
-        </Description>
-        <LiveContent>
-            <BitBhField Disabled="true" class="field">
-                <BitBhLabel class="field-label">Username</BitBhLabel>
-                <BitBhInput type="text" value="alice" class="field-input" />
-                <BitBhDescription class="field-description">Cannot be changed.</BitBhDescription>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Last name</BitBhLabel>
+                <BitBhInput type="text" placeholder="Anderson" class="field-input" />
             </BitBhField>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Invalid Field"
-               Code="@_invalidCode"
-               Css="@_invalidCss">
-        <Description>
-            Set <code>Invalid="true"</code> on the <code>BitBhField</code> to mark the input
-            as invalid. The input receives <code>aria-invalid="true"</code> and
-            <code>data-invalid</code> for CSS hooks. Use the description to show an error message.
-        </Description>
-        <LiveContent>
-            <BitBhField Invalid="true" class="field">
-                <BitBhLabel class="field-label">Password</BitBhLabel>
-                <BitBhInput type="password" value="123" class="field-input" />
-                <BitBhDescription class="field-description field-error">
-                    Password must be at least 8 characters.
-                </BitBhDescription>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Email</BitBhLabel>
+                <BitBhInput type="email" placeholder="alice@example.com" class="field-input" />
+                <BitBhDescription class="field-description">Your work email.</BitBhDescription>
             </BitBhField>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Multiple Fields (form layout)"
-               Code="@_formCode"
-               Css="@_formCss">
-        <Description>
-            Compose multiple <code>BitBhField</code> components into a form. Each field
-            manages its own id namespace — no collisions.
-        </Description>
-        <LiveContent>
-            <form class="field-form" @onsubmit:preventDefault>
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">First name</BitBhLabel>
-                    <BitBhInput type="text" placeholder="Alice" class="field-input" />
-                </BitBhField>
+            <BitBhButton Type="submit" class="btn btn-primary">Submit</BitBhButton>
+        </form>
+    </LiveContent>
+</DemoBlock>
 
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Last name</BitBhLabel>
-                    <BitBhInput type="text" placeholder="Anderson" class="field-input" />
-                </BitBhField>
+<DemoBlock Title="EditForm validation"
+           Code="@_editFormCode"
+           Css="@_editFormCss">
+    <Description>
+        Inside an <code>EditForm</code> with <code>DataAnnotationsValidator</code>, every control bound
+        with <code>@@bind-Value</code> / <code>@@bind-Checked</code> reports its validation state to its
+        <code>BitBhField</code>: the control gets <code>aria-invalid="true"</code> and
+        <code>data-invalid</code>, and <code>BitBhErrorMessage</code> appears with the messages and is
+        added to the control's <code>aria-describedby</code> — no ids to wire. Non-native controls work
+        too: the radio group is named by its <code>BitBhLabel</code> via <code>aria-labelledby</code>, and
+        clicking the label focuses the group. Because these components take plain child content, they
+        nest inside <code>EditForm</code> without <code>Context</code> clashes. Submit empty to see it.
+        The CSS version styles the invalid state with <code>[data-invalid]</code> /
+        <code>[aria-invalid]</code> selectors, the Tailwind version with the <code>data-invalid:</code> /
+        <code>aria-invalid:</code> variants.
+    </Description>
+    <LiveContent>
+        <EditForm Model="signup" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="() => signupResult = null"
+                  novalidate="@true" class="field-form validation-form">
+            <DataAnnotationsValidator />
 
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Email</BitBhLabel>
-                    <BitBhInput type="email" placeholder="alice@example.com" class="field-input" />
-                    <BitBhDescription class="field-description">Your work email.</BitBhDescription>
-                </BitBhField>
+            <BitBhField Required="true" class="field">
+                <BitBhLabel class="field-label">Full name</BitBhLabel>
+                <BitBhInput @bind-Value="signup.Name" autocomplete="name" class="field-input" />
+                <BitBhErrorMessage class="validation-message" />
+            </BitBhField>
 
-                <BitBhButton Type="submit" class="btn btn-primary">Submit</BitBhButton>
-            </form>
-        </LiveContent>
-    </DemoBlock>
+            <BitBhField Required="true" class="field">
+                <BitBhLabel class="field-label">Email</BitBhLabel>
+                <BitBhDescription class="field-description">We'll send the receipt here.</BitBhDescription>
+                <BitBhInput type="email" @bind-Value="signup.Email" autocomplete="email" class="field-input" />
+                <BitBhErrorMessage class="validation-message" />
+            </BitBhField>
 
-    <DemoBlock Title="EditForm validation"
-               Code="@_editFormCode"
-               Css="@_editFormCss">
-        <Description>
-            Inside an <code>EditForm</code> with <code>DataAnnotationsValidator</code>, every control bound
-            with <code>@@bind-Value</code> / <code>@@bind-Checked</code> reports its validation state to its
-            <code>BitBhField</code>: the control gets <code>aria-invalid="true"</code> and
-            <code>data-invalid</code>, and <code>BitBhErrorMessage</code> appears with the messages and is
-            added to the control's <code>aria-describedby</code> — no ids to wire. Non-native controls work
-            too: the radio group is named by its <code>BitBhLabel</code> via <code>aria-labelledby</code>, and
-            clicking the label focuses the group. Because these components take plain child content, they
-            nest inside <code>EditForm</code> without <code>Context</code> clashes. Submit empty to see it.
-        </Description>
-        <LiveContent>
-            <EditForm Model="signup" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="() => signupResult = null"
-                      novalidate="@true" class="field-form validation-form">
-                <DataAnnotationsValidator />
+            <BitBhField Required="true" class="field">
+                <BitBhLabel class="field-label">Plan</BitBhLabel>
+                <BitBhRadioGroup @bind-Value="signup.Plan" Vertical="false" class="validation-radios">
+                    <BitBhRadio Value="Free" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Free</BitBhRadio>
+                    <BitBhRadio Value="Pro" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Pro</BitBhRadio>
+                    <BitBhRadio Value="Team" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Team</BitBhRadio>
+                </BitBhRadioGroup>
+                <BitBhErrorMessage class="validation-message" />
+            </BitBhField>
 
-                <BitBhField Required="true" class="field">
-                    <BitBhLabel class="field-label">Full name</BitBhLabel>
-                    <BitBhInput @bind-Value="signup.Name" autocomplete="name" class="field-input" />
-                    <BitBhErrorMessage class="validation-message" />
-                </BitBhField>
-
-                <BitBhField Required="true" class="field">
-                    <BitBhLabel class="field-label">Email</BitBhLabel>
-                    <BitBhDescription class="field-description">We'll send the receipt here.</BitBhDescription>
-                    <BitBhInput type="email" @bind-Value="signup.Email" autocomplete="email" class="field-input" />
-                    <BitBhErrorMessage class="validation-message" />
-                </BitBhField>
-
-                <BitBhField Required="true" class="field">
-                    <BitBhLabel class="field-label">Plan</BitBhLabel>
-                    <BitBhRadioGroup @bind-Value="signup.Plan" Vertical="false" class="validation-radios">
-                        <BitBhRadio Value="Free" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Free</BitBhRadio>
-                        <BitBhRadio Value="Pro" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Pro</BitBhRadio>
-                        <BitBhRadio Value="Team" class="validation-radio"><span class="validation-radio-dot" aria-hidden="true"></span>Team</BitBhRadio>
-                    </BitBhRadioGroup>
-                    <BitBhErrorMessage class="validation-message" />
-                </BitBhField>
-
-                <BitBhField class="field">
-                    <div class="validation-check">
-                        <BitBhCheckbox @bind-Checked="signup.AcceptTerms" class="checkbox">
-                            <BitBhCheckboxIndicator class="checkbox-tick">✓</BitBhCheckboxIndicator>
-                        </BitBhCheckbox>
-                        <BitBhLabel class="validation-check-label">I accept the terms of service</BitBhLabel>
-                    </div>
-                    <BitBhErrorMessage class="validation-message" />
-                </BitBhField>
-
-                <div class="validation-actions">
-                    <button type="submit" class="btn btn-primary">Create account</button>
-                    <button type="button" class="btn" @onclick="ResetSignup">Reset</button>
+            <BitBhField class="field">
+                <div class="validation-check">
+                    <BitBhCheckbox @bind-Checked="signup.AcceptTerms" class="checkbox">
+                        <BitBhCheckboxIndicator class="checkbox-tick">✓</BitBhCheckboxIndicator>
+                    </BitBhCheckbox>
+                    <BitBhLabel class="validation-check-label">I accept the terms of service</BitBhLabel>
                 </div>
+                <BitBhErrorMessage class="validation-message" />
+            </BitBhField>
 
-                <BitBhLiveRegion class="validation-success">@signupResult</BitBhLiveRegion>
-            </EditForm>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <div class="validation-actions">
+                <button type="submit" class="btn btn-primary">Create account</button>
+                <button type="button" class="btn" @onclick="ResetSignup">Reset</button>
+            </div>
+
+            <BitBhLiveRegion class="validation-success">@signupResult</BitBhLiveRegion>
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── EditForm validation ───────────────────────────────────────────────────
@@ -411,7 +419,7 @@
     private const string _textareaCode = """
 <BitBhField class="field">
     <BitBhLabel class="field-label">Bio</BitBhLabel>
-    <BitBhTextarea rows="3" placeholder="Tell us about yourself…" class="field-input" />
+    <BitBhTextarea rows="3" maxlength="280" placeholder="Tell us about yourself…" class="field-input field-textarea" />
     <BitBhDescription class="field-description">Max 280 characters.</BitBhDescription>
 </BitBhField>
 """;
@@ -419,11 +427,14 @@
     private const string _selectCode = """
 <BitBhField class="field">
     <BitBhLabel class="field-label">Country</BitBhLabel>
-    <BitBhSelect class="field-input field-select">
-        <option value="">Choose…</option>
-        <option value="us">United States</option>
-        <option value="gb">United Kingdom</option>
-    </BitBhSelect>
+    <div class="field-select-wrap">
+        <BitBhSelect class="field-input field-select">
+            <option value="">Choose…</option>
+            <option value="us">United States</option>
+            <option value="gb">United Kingdom</option>
+        </BitBhSelect>
+        <svg aria-hidden="true" viewBox="0 0 16 16" class="field-select-chevron"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </div>
     <BitBhDescription class="field-description">Where you're based.</BitBhDescription>
 </BitBhField>
 """;
@@ -614,6 +625,15 @@
 
 /* The select needs a small appearance override. */
 .field-select { appearance: none; padding-right: 2rem; }
+.field-select-wrap { position: relative; }
+.field-select-wrap .field-select { width: 100%; }
+.field-select-chevron {
+    position: absolute; top: 50%; right: 0.625rem;
+    width: 1rem; height: 1rem;
+    translate: 0 -50%;
+    color: #71717a;
+    pointer-events: none;
+}
 """;
 
     private const string _disabledCss = """
@@ -763,6 +783,11 @@
     gap: 1rem;
     width: 100%;
     max-width: 24rem;
+}
+
+/* The submit button keeps its own width instead of the form's. */
+.field-form > .btn {
+    align-self: flex-start;
 }
 
 /* Submit button */

@@ -1,0 +1,189 @@
+@attribute [Route(HotelSoftwareSite.Path)]
+@attribute [Route("/{culture}" + HotelSoftwareSite.Path)]
+@layout HotelSoftwareLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@H[nameof(HotelSoftwareStrings.HomeTitle)]"
+             Description="@H[nameof(HotelSoftwareStrings.HomeDescription)]"
+             Path="@HotelSoftwareSite.Path"
+             Site="HotelSoftwareSite.Info"
+             StructuredData="structuredData" />
+
+<section id="desk" class="hs-hero" aria-labelledby="hs-hero-title">
+    <div class="lp-container hs-hero-grid">
+        <div class="hs-hero-text">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.HeroEyebrow)]</p>
+            <h1 id="hs-hero-title">@H[nameof(HotelSoftwareStrings.HeroTitle)]</h1>
+            <p class="hs-hero-lede">@H[nameof(HotelSoftwareStrings.HeroLede)]</p>
+            <div class="hs-actions">
+                <BitButton Href="@HotelSoftwareSite.TrialUrl" Class="hs-on-board">@H[nameof(HotelSoftwareStrings.HeroTrial)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" Href="@($"mailto:{HotelSoftwareSite.SalesEmail}?subject=Lodgeboard%20demo")" Class="hs-on-board-outline">@H[nameof(HotelSoftwareStrings.HeroDemo)]</BitButton>
+            </div>
+            <p class="hs-hero-fine">@H[nameof(HotelSoftwareStrings.HeroFine)]</p>
+        </div>
+        <div class="hs-hero-visual">
+            <DeviceFrame Kind="LandingDeviceKind.Browser" Address="brana.lodgeboard.example/front-desk" Class="hs-frame">
+                <HotelSoftwareFrontDesk />
+            </DeviceFrame>
+            <p class="hs-hero-caption">@H[nameof(HotelSoftwareStrings.DeskCaption)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="hs-stats" aria-labelledby="hs-stats-title">
+    <div class="lp-container">
+        <h2 id="hs-stats-title" class="lp-visually-hidden">@H[nameof(HotelSoftwareStrings.StatsTitle)]</h2>
+        <dl class="hs-stat-grid">
+            @foreach (var (value, label) in stats)
+            {
+                <div>
+                    <dt>@H[label]</dt>
+                    <dd>@H[value]</dd>
+                </div>
+            }
+        </dl>
+    </div>
+</section>
+
+<section id="audiences" class="lp-section hs-audiences" aria-labelledby="hs-audiences-title">
+    <div class="lp-container">
+        <header class="hs-head">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.AudiencesEyebrow)]</p>
+            <h2 id="hs-audiences-title">@H[nameof(HotelSoftwareStrings.AudiencesTitle)]</h2>
+        </header>
+        <BitPivot HeaderType="BitPivotHeaderType.Tab" OverflowBehavior="BitPivotOverflowBehavior.Scroll" Class="hs-pivot">
+            @foreach (var audience in audiences)
+            {
+                <BitPivotItem Key="@audience.Key" HeaderText="@H[audience.Tab]">
+                    <div class="hs-audience">
+                        <div class="hs-audience-text">
+                            <p class="hs-audience-who">@H[audience.Who]</p>
+                            <h3>@H[audience.Title]</h3>
+                            <p>@H[audience.Body]</p>
+                            <ul>
+                                @foreach (var point in audience.Points)
+                                {
+                                    <li><BitIcon IconName="@BitIconName.CheckMark" Class="hs-check" /> <span>@H[point]</span></li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="hs-audience-card">
+                            <p class="hs-audience-figure">@H[audience.Figure]</p>
+                            <p>@H[audience.FigureLabel]</p>
+                            <p class="hs-audience-plan">@H[audience.Plan]</p>
+                        </div>
+                    </div>
+                </BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+</section>
+
+<section class="lp-section hs-day" aria-labelledby="hs-day-title">
+    <div class="lp-container hs-day-grid">
+        <header class="hs-head">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.DayEyebrow)]</p>
+            <h2 id="hs-day-title">@H[nameof(HotelSoftwareStrings.DayTitle)]</h2>
+            <p class="lp-lede">@H[nameof(HotelSoftwareStrings.DayLede)]</p>
+        </header>
+        <ol class="hs-day-list">
+            @foreach (var (time, title, body) in day)
+            {
+                <li>
+                    <p class="hs-day-time">@H[time]</p>
+                    <div>
+                        <h3>@H[title]</h3>
+                        <p>@H[body]</p>
+                    </div>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section class="lp-section hs-case" aria-labelledby="hs-case-title">
+    <div class="lp-container hs-case-grid">
+        <div class="hs-case-plate" aria-hidden="true">
+            <span>Hotel Marlowe</span>
+            <small>@H[nameof(HotelSoftwareStrings.CasePlate)]</small>
+        </div>
+        <div class="hs-case-text">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.CaseEyebrow)]</p>
+            <h2 id="hs-case-title">@H[nameof(HotelSoftwareStrings.CaseTitle)]</h2>
+            <p>@H[nameof(HotelSoftwareStrings.CaseBody)]</p>
+            <dl class="hs-case-numbers">
+                @foreach (var (value, label) in caseNumbers)
+                {
+                    <div>
+                        <dt>@H[label]</dt>
+                        <dd>@H[value]</dd>
+                    </div>
+                }
+            </dl>
+            <figure class="hs-case-quote">
+                <blockquote>@H[nameof(HotelSoftwareStrings.CaseQuote)]</blockquote>
+                <figcaption>@H[nameof(HotelSoftwareStrings.CaseQuoteBy)]</figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="lp-section hs-reviews" aria-labelledby="hs-reviews-title">
+    <div class="lp-container">
+        <header class="hs-head">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.ReviewsEyebrow)]</p>
+            <h2 id="hs-reviews-title">@H[nameof(HotelSoftwareStrings.ReviewsTitle)]</h2>
+        </header>
+        <div class="hs-reviews-grid">
+            <div class="hs-trust">
+                <p class="hs-trust-word">@H[nameof(HotelSoftwareStrings.TrustWord)]</p>
+                <BitRating Value="4.7" Max="5" Precision="0.1" ReadOnly AriaLabel="@H[nameof(HotelSoftwareStrings.TrustStars)]" Class="hs-trust-stars" />
+                <p class="hs-trust-score">@H[nameof(HotelSoftwareStrings.TrustScore)]</p>
+                <p class="hs-trust-count">@H[nameof(HotelSoftwareStrings.TrustCount)]</p>
+                <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@HotelSoftwareSite.ReviewsUrl" Target="_blank" IconName="@BitIconName.OpenInNewWindow">@H[nameof(HotelSoftwareStrings.TrustLink)]</BitButton>
+                <p class="hs-sample-note">@H[nameof(HotelSoftwareStrings.TrustSample)]</p>
+            </div>
+            <div class="hs-review-list">
+                @foreach (var (quote, name, place) in reviews)
+                {
+                    <figure>
+                        <BitRating Value="5" Max="5" ReadOnly AriaLabel="@H[nameof(HotelSoftwareStrings.ReviewFiveStars)]" Class="hs-review-stars" />
+                        <blockquote>@H[quote]</blockquote>
+                        <figcaption><strong>@H[name]</strong> · @H[place]</figcaption>
+                    </figure>
+                }
+            </div>
+        </div>
+        <div class="hs-awards">
+            <p class="hs-awards-title">@H[nameof(HotelSoftwareStrings.AwardsTitle)]</p>
+            <ul>
+                @foreach (var (year, name, by) in awards)
+                {
+                    <li>
+                        <span class="hs-award-year">@H[year]</span>
+                        <strong>@H[name]</strong>
+                        <span>@H[by]</span>
+                    </li>
+                }
+            </ul>
+            <p class="hs-sample-note">@H[nameof(HotelSoftwareStrings.AwardsSample)]</p>
+        </div>
+    </div>
+</section>
+
+<section id="apps" class="hs-board hs-cta" aria-labelledby="hs-cta-title">
+    <div class="lp-container hs-cta-grid">
+        <div>
+            <h2 id="hs-cta-title">@H[nameof(HotelSoftwareStrings.CtaTitle)]</h2>
+            <p>@H[nameof(HotelSoftwareStrings.CtaBody)]</p>
+            <div class="hs-actions">
+                <BitButton Href="@HotelSoftwareSite.TrialUrl" Class="hs-on-board">@H[nameof(HotelSoftwareStrings.HeroTrial)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" Href="@Page("/pricing")" Class="hs-on-board-outline">@H[nameof(HotelSoftwareStrings.CtaPricing)]</BitButton>
+            </div>
+        </div>
+        <div class="hs-cta-apps">
+            <p>@H[nameof(HotelSoftwareStrings.AppsBody)]</p>
+            <StoreBadges Site="HotelSoftwareSite.Info" Campaign="cta" Class="hs-cta-badges" />
+        </div>
+    </div>
+</section>

@@ -90,9 +90,6 @@ higher-numbered lines exist there.
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
 rest. Do not move all twenty-one at once.
 
-**Vitest is held at `^3`** in `src/Utilities/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js`,
-`src/Utilities/Bsqlite/Tests/bit-bsqlite-js` and `src/Utilities/BevTools/Tests/bit-bevtools-js`.
-
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
 the action runs with `Could not find file '.../helper-compilation-targets/node_modules/.bin/semver'`.
@@ -199,8 +196,12 @@ unless the split is a TFM floor.
 
 ### npm
 
-The direct dependencies are `typescript`, `sass`, `esbuild`, `vitest`, `happy-dom`, `@tailwindcss/cli` and
-`@web-alchemy/fonttools`; list them from every `package.json` rather than trusting this line. Read latest
+The direct dependencies are `typescript`, `sass`, `esbuild`, `vitest`, `happy-dom`, `axe-core`, `@tailwindcss/cli`
+and `@web-alchemy/fonttools`; list them from every `package.json` rather than trusting this line.
+
+A `vitest` bump needs `npm test` in every `Tests/bit-*-js` folder, on the Node version their CI jobs set up: newer
+Node versions give happy-dom tests a `localStorage` of their own and fail them. Several import the built
+`wwwroot` of their library, so build it first. Read latest
 with `npm view <pkg> version` and `npm view <pkg> dist-tags --json`. After editing a `package.json`,
 run `npm install` in that directory so `package-lock.json` matches — a lock file left behind is the
 most common miss.
@@ -287,7 +288,10 @@ move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, s
 
 In `Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs`.
 Pin a major (`pgvector/pgvector:pg18`, `mssql/server:2025-latest`, `redis:8`), never `latest`. Where
-an image publishes no major-only tag, pin the full newest tag and note it.
+an image publishes no major-only tag, pin the full newest tag and note it. Read every tag in that file,
+`WithImageTag` included, and the images it pulls from `ghcr.io`, whose tags Docker Hub's API doesn't list: ask
+`ghcr.io/v2/<repo>/manifests/<tag>` for the next minor with an anonymous pull token. The same tag also appears in
+the `docker run` hint of the Server.Api `appsettings.json`.
 
 Check the image is still *maintained*, not just that the tag is newest of its line. `redis/redis-stack`
 was pinned here until its upstream stopped publishing — Redis 8 folded the Stack modules into core, so

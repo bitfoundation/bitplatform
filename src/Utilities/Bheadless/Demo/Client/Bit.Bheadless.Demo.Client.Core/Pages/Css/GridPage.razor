@@ -1,282 +1,290 @@
 ﻿@page "/grid"
 
-<PageTitle>Grid / TreeGrid — bit Bheadless</PageTitle>
+<PageTitle>Grid / TreeGrid · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Grid / TreeGrid</h1>
-        <p>An interactive two-dimensional widget — data tables, spreadsheets-lite, file trees with columns, calendars — with roving cell focus, row selection, sorting and expandable rows.</p>
-        <SectionSwitcher Slug="grid" />
-    </header>
+<div class="bb-intro">
+    <h1>Grid / TreeGrid</h1>
+    <p class="bb-subtitle">An interactive two-dimensional widget — data tables, spreadsheets-lite, file trees with columns, calendars — with roving cell focus, row selection, sorting and expandable rows.</p>
+</div>
 
-    <DemoBlock Title="Sortable data grid"
-               Code="@_sortCode"
-               Css="@_sortCss">
-        <Description>
-            The WAI-ARIA Data Grid pattern on a real <code>&lt;table&gt;</code> (<code>As="table"</code> /
-            <code>"thead"</code> / <code>"tbody"</code> / <code>"tr"</code> / <code>"th"</code> / <code>"td"</code>).
-            The grid is a single tab stop: arrow keys move between cells, Home / End jump to the ends of the row,
-            Ctrl + Home / End to the corners, PageUp / PageDown move by <code>PageSize</code> rows. Column headers are
-            cells too — click one or press Enter on it and its <code>OnActivate</code> toggles the sort, which
-            <code>Sort</code> announces as <code>aria-sort</code>.
-        </Description>
-        <LiveContent>
-            <div class="datagrid-demo">
-                <div class="datagrid-frame">
-                    <BitBhGrid As="table" aria-label="Planets" class="datagrid">
-                        <BitBhGridRowGroup As="thead">
-                            <BitBhGridRow As="tr" IsHeaderRow="true">
-                                <BitBhGridCell As="th" Header="true" class="datagrid-sortable"
-                                            Sort="@(SortOf("name"))" OnActivate="@(() => SortBy("name"))">
-                                    Planet<span class="datagrid-sort" aria-hidden="true">▲</span>
-                                </BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="datagrid-sortable"
-                                            Sort="@(SortOf("type"))" OnActivate="@(() => SortBy("type"))">
-                                    Type<span class="datagrid-sort" aria-hidden="true">▲</span>
-                                </BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="datagrid-sortable num"
-                                            Sort="@(SortOf("diameter"))" OnActivate="@(() => SortBy("diameter"))">
-                                    Diameter<span class="datagrid-sort" aria-hidden="true">▲</span>
-                                </BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="datagrid-sortable num"
-                                            Sort="@(SortOf("moons"))" OnActivate="@(() => SortBy("moons"))">
-                                    Moons<span class="datagrid-sort" aria-hidden="true">▲</span>
-                                </BitBhGridCell>
+<SectionSwitcher Slug="grid" />
+
+<DemoBlock Title="Sortable data grid"
+           Code="@_sortCode"
+           Css="@_sortCss">
+    <Description>
+        The WAI-ARIA Data Grid pattern on a real <code>&lt;table&gt;</code> (<code>As="table"</code> /
+        <code>"thead"</code> / <code>"tbody"</code> / <code>"tr"</code> / <code>"th"</code> / <code>"td"</code>).
+        The grid is a single tab stop: arrow keys move between cells, Home / End jump to the ends of the row,
+        Ctrl + Home / End to the corners, PageUp / PageDown move by <code>PageSize</code> rows. Column headers are
+        cells too — click one or press Enter on it and its <code>OnActivate</code> toggles the sort, which
+        <code>Sort</code> announces as <code>aria-sort</code>. The ▲ indicator turns with it: the CSS version
+        uses a <code>th[aria-sort="descending"]</code> selector, the Tailwind version
+        <code>group-aria-[sort=descending]:rotate-180</code>.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="datagrid-frame">
+                <BitBhGrid As="table" aria-label="Planets" class="datagrid">
+                    <BitBhGridRowGroup As="thead">
+                        <BitBhGridRow As="tr" IsHeaderRow="true">
+                            <BitBhGridCell As="th" Header="true" class="datagrid-sortable"
+                                        Sort="@(SortOf("name"))" OnActivate="@(() => SortBy("name"))">
+                                Planet<span class="datagrid-sort" aria-hidden="true">▲</span>
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="datagrid-sortable"
+                                        Sort="@(SortOf("type"))" OnActivate="@(() => SortBy("type"))">
+                                Type<span class="datagrid-sort" aria-hidden="true">▲</span>
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="datagrid-sortable num"
+                                        Sort="@(SortOf("diameter"))" OnActivate="@(() => SortBy("diameter"))">
+                                Diameter<span class="datagrid-sort" aria-hidden="true">▲</span>
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="datagrid-sortable num"
+                                        Sort="@(SortOf("moons"))" OnActivate="@(() => SortBy("moons"))">
+                                Moons<span class="datagrid-sort" aria-hidden="true">▲</span>
+                            </BitBhGridCell>
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup As="tbody">
+                        @foreach (var planet in SortedPlanets)
+                        {
+                            <BitBhGridRow As="tr" @key="planet.Name" Key="@planet.Name">
+                                <BitBhGridCell As="th" RowHeader="true">@planet.Name</BitBhGridCell>
+                                <BitBhGridCell As="td">@planet.Type</BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@planet.DiameterKm.ToString("N0") km</BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@planet.Moons</BitBhGridCell>
                             </BitBhGridRow>
-                        </BitBhGridRowGroup>
-                        <BitBhGridRowGroup As="tbody">
-                            @foreach (var planet in SortedPlanets)
-                            {
-                                <BitBhGridRow As="tr" @key="planet.Name" Key="@planet.Name">
-                                    <BitBhGridCell As="th" RowHeader="true">@planet.Name</BitBhGridCell>
-                                    <BitBhGridCell As="td">@planet.Type</BitBhGridCell>
-                                    <BitBhGridCell As="td" class="num">@planet.DiameterKm.ToString("N0") km</BitBhGridCell>
-                                    <BitBhGridCell As="td" class="num">@planet.Moons</BitBhGridCell>
-                                </BitBhGridRow>
-                            }
-                        </BitBhGridRowGroup>
-                    </BitBhGrid>
-                </div>
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
             </div>
-        </LiveContent>
-    </DemoBlock>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Multi-row selection"
-               Code="@_selectionCode"
-               Css="@_selectionCss">
-        <Description>
-            <code>SelectionMode="BitBhGridSelectionMode.Multiple"</code> with <code>@@bind-SelectedKeys</code> (every
-            data row needs a <code>Key</code>). Click toggles a row and Shift + click selects a range; Space toggles
-            the focused row, Shift + Space or Shift + Up / Down extend the selection, Ctrl + A selects every row.
-            Rows get <code>aria-selected</code>, so the check boxes are pure CSS; the header box uses
-            <code>OnActivate</code> to select or clear everything.
-        </Description>
-        <LiveContent>
-            <div class="datagrid-demo">
-                <div class="datagrid-toolbar">
-                    <span><strong>@selectedInvoices.Count</strong> selected · total <strong>@FormatMoney(SelectedTotal)</strong></span>
-                    <button type="button" class="datagrid-button" disabled="@(selectedInvoices.Count == 0)"
-                            @onclick="ClearInvoices">Clear selection</button>
-                </div>
+<DemoBlock Title="Multi-row selection"
+           Code="@_selectionCode"
+           Css="@_selectionCss">
+    <Description>
+        <code>SelectionMode="BitBhGridSelectionMode.Multiple"</code> with <code>@@bind-SelectedKeys</code> (every
+        data row needs a <code>Key</code>). Click toggles a row and Shift + click selects a range; Space toggles
+        the focused row, Shift + Space or Shift + Up / Down extend the selection, Ctrl + A selects every row.
+        Rows get <code>aria-selected</code>, so the check boxes are pure styling: the CSS version uses a
+        <code>tr[aria-selected="true"]</code> selector, the Tailwind version <code>group-aria-selected:</code>.
+        The header box uses <code>OnActivate</code> to select or clear everything.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="datagrid-toolbar">
+                <span><strong>@selectedInvoices.Count</strong> selected · total <strong>@FormatMoney(SelectedTotal)</strong></span>
+                <button type="button" class="datagrid-button" disabled="@(selectedInvoices.Count == 0)"
+                        @onclick="ClearInvoices">Clear selection</button>
+            </div>
 
-                <div class="datagrid-frame">
-                    <BitBhGrid As="table" aria-label="Invoices" class="datagrid datagrid-selectable"
-                            SelectionMode="BitBhGridSelectionMode.Multiple"
-                            @bind-SelectedKeys="selectedInvoices">
-                        <BitBhGridRowGroup As="thead">
-                            <BitBhGridRow As="tr" IsHeaderRow="true">
-                                <BitBhGridCell As="th" Header="true" class="datagrid-check-cell" OnActivate="ToggleAllInvoices">
-                                    <BitBhVisuallyHidden>Select all</BitBhVisuallyHidden>
-                                    <span class="datagrid-check" data-checked="@AllInvoicesState" aria-hidden="true"></span>
+            <div class="datagrid-frame">
+                <BitBhGrid As="table" aria-label="Invoices" class="datagrid datagrid-selectable"
+                        SelectionMode="BitBhGridSelectionMode.Multiple"
+                        @bind-SelectedKeys="selectedInvoices">
+                    <BitBhGridRowGroup As="thead">
+                        <BitBhGridRow As="tr" IsHeaderRow="true">
+                            <BitBhGridCell As="th" Header="true" class="datagrid-check-cell" OnActivate="ToggleAllInvoices">
+                                <BitBhVisuallyHidden>Select all</BitBhVisuallyHidden>
+                                <span class="datagrid-check" data-checked="@AllInvoicesState" aria-hidden="true"></span>
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true">Invoice</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true">Customer</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true">Status</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="num">Amount</BitBhGridCell>
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup As="tbody">
+                        @foreach (var invoice in invoices)
+                        {
+                            <BitBhGridRow As="tr" @key="invoice.Id" Key="@invoice.Id">
+                                <BitBhGridCell As="td" class="datagrid-check-cell">
+                                    <span class="datagrid-check" aria-hidden="true"></span>
                                 </BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true">Invoice</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true">Customer</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true">Status</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="num">Amount</BitBhGridCell>
+                                <BitBhGridCell As="td">@invoice.Id</BitBhGridCell>
+                                <BitBhGridCell As="td">@invoice.Customer</BitBhGridCell>
+                                <BitBhGridCell As="td">
+                                    <span class="datagrid-badge" data-status="@invoice.Status.ToLowerInvariant()">@invoice.Status</span>
+                                </BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@FormatMoney(invoice.Amount)</BitBhGridCell>
                             </BitBhGridRow>
-                        </BitBhGridRowGroup>
-                        <BitBhGridRowGroup As="tbody">
-                            @foreach (var invoice in invoices)
-                            {
-                                <BitBhGridRow As="tr" @key="invoice.Id" Key="@invoice.Id">
-                                    <BitBhGridCell As="td" class="datagrid-check-cell">
-                                        <span class="datagrid-check" aria-hidden="true"></span>
-                                    </BitBhGridCell>
-                                    <BitBhGridCell As="td">@invoice.Id</BitBhGridCell>
-                                    <BitBhGridCell As="td">@invoice.Customer</BitBhGridCell>
-                                    <BitBhGridCell As="td">
-                                        <span class="datagrid-badge" data-status="@invoice.Status.ToLowerInvariant()">@invoice.Status</span>
-                                    </BitBhGridCell>
-                                    <BitBhGridCell As="td" class="num">@FormatMoney(invoice.Amount)</BitBhGridCell>
-                                </BitBhGridRow>
-                            }
-                        </BitBhGridRowGroup>
-                    </BitBhGrid>
-                </div>
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
             </div>
-        </LiveContent>
-    </DemoBlock>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Row activation"
-               Code="@_activationCode"
-               Css="@_activationCss">
-        <Description>
-            <code>OnRowActivate</code> fires with the row's <code>Key</code> when the user presses Enter on any of its
-            cells or double-clicks it — open a message, navigate to a record, start editing. Here
-            <code>BitBhGridSelectionMode.Single</code> marks the current row, and opening a message marks it as read.
-        </Description>
-        <LiveContent>
-            <div class="datagrid-demo">
-                <div class="datagrid-frame">
-                    <BitBhGrid As="table" aria-label="Inbox" class="datagrid datagrid-selectable"
-                            SelectionMode="BitBhGridSelectionMode.Single"
-                            @bind-SelectedKeys="selectedMessage"
-                            OnRowActivate="OpenMessage">
-                        <BitBhGridRowGroup As="thead">
-                            <BitBhGridRow As="tr" IsHeaderRow="true">
-                                <BitBhGridCell As="th" Header="true">From</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true">Subject</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="num">Received</BitBhGridCell>
+<DemoBlock Title="Row activation"
+           Code="@_activationCode"
+           Css="@_activationCss">
+    <Description>
+        <code>OnRowActivate</code> fires with the row's <code>Key</code> when the user presses Enter on any of its
+        cells or double-clicks it — open a message, navigate to a record, start editing. Here
+        <code>BitBhGridSelectionMode.Single</code> marks the current row, and opening a message marks it as read.
+        Unread rows carry a <code>data-unread</code> attribute set by the page: the CSS version bolds them with a
+        <code>tr[data-unread]</code> selector, the Tailwind version with <code>data-[unread]:font-semibold</code>.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="datagrid-frame">
+                <BitBhGrid As="table" aria-label="Inbox" class="datagrid datagrid-selectable"
+                        SelectionMode="BitBhGridSelectionMode.Single"
+                        @bind-SelectedKeys="selectedMessage"
+                        OnRowActivate="OpenMessage">
+                    <BitBhGridRowGroup As="thead">
+                        <BitBhGridRow As="tr" IsHeaderRow="true">
+                            <BitBhGridCell As="th" Header="true">From</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true">Subject</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="num">Received</BitBhGridCell>
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup As="tbody">
+                        @foreach (var message in messages)
+                        {
+                            <BitBhGridRow As="tr" @key="message.Id" Key="@message.Id"
+                                       data-unread="@(!readMessages.Contains(message.Id))">
+                                <BitBhGridCell As="td"><span class="datagrid-dot" aria-hidden="true"></span>@message.From</BitBhGridCell>
+                                <BitBhGridCell As="td">@message.Subject</BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@message.Received</BitBhGridCell>
                             </BitBhGridRow>
-                        </BitBhGridRowGroup>
-                        <BitBhGridRowGroup As="tbody">
-                            @foreach (var message in messages)
-                            {
-                                <BitBhGridRow As="tr" @key="message.Id" Key="@message.Id"
-                                           data-unread="@(!readMessages.Contains(message.Id))">
-                                    <BitBhGridCell As="td"><span class="datagrid-dot" aria-hidden="true"></span>@message.From</BitBhGridCell>
-                                    <BitBhGridCell As="td">@message.Subject</BitBhGridCell>
-                                    <BitBhGridCell As="td" class="num">@message.Received</BitBhGridCell>
-                                </BitBhGridRow>
-                            }
-                        </BitBhGridRowGroup>
-                    </BitBhGrid>
-                </div>
-
-                @if (OpenedMessage is { } opened)
-                {
-                    <div class="datagrid-preview">
-                        <strong>@opened.Subject</strong>
-                        From @opened.From — @opened.Body
-                    </div>
-                }
-                else
-                {
-                    <p class="datagrid-output">Press Enter on a row, or double-click it, to open the message.</p>
-                }
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
             </div>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="TreeGrid"
-               Code="@_treeGridCode"
-               Css="@_treeGridCss">
-        <Description>
-            <code>TreeGrid="true"</code> renders <code>role="treegrid"</code>. Give each row its <code>Level</code>,
-            <code>HasChildren</code> and <code>ParentKey</code>: rows under a collapsed folder get the
-            <code>hidden</code> attribute and are skipped by the keyboard. On a row's first cell, Right expands it
-            (then moves into the row) and Left collapses it (then jumps to the parent row). The chevron is a
-            <code>BitBhGridRowToggle</code>: a mouse shortcut, hidden from assistive tech, that toggles the row (synced through <code>@@bind-ExpandedKeys</code>); indentation comes from the
-            <code>--bit-bh-grid-level</code> variable on each row.
-        </Description>
-        <LiveContent>
-            <div class="datagrid-demo">
-                <div class="datagrid-frame">
-                    <BitBhGrid As="table" TreeGrid="true" aria-label="Project files" class="datagrid datagrid-selectable"
-                            SelectionMode="BitBhGridSelectionMode.Single"
-                            @bind-SelectedKeys="selectedEntry"
-                            @bind-ExpandedKeys="expandedFolders">
-                        <BitBhGridRowGroup As="thead">
-                            <BitBhGridRow As="tr" IsHeaderRow="true">
-                                <BitBhGridCell As="th" Header="true">Name</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true">Kind</BitBhGridCell>
-                                <BitBhGridCell As="th" Header="true" class="num">Size</BitBhGridCell>
+            @if (OpenedMessage is { } opened)
+            {
+                <div class="datagrid-preview">
+                    <strong>@opened.Subject</strong>
+                    From @opened.From — @opened.Body
+                </div>
+            }
+            else
+            {
+                <p class="datagrid-output">Press Enter on a row, or double-click it, to open the message.</p>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="TreeGrid"
+           Code="@_treeGridCode"
+           Css="@_treeGridCss">
+    <Description>
+        <code>TreeGrid="true"</code> renders <code>role="treegrid"</code>. Give each row its <code>Level</code>,
+        <code>HasChildren</code> and <code>ParentKey</code>: rows under a collapsed folder get the
+        <code>hidden</code> attribute and are skipped by the keyboard. On a row's first cell, Right expands it
+        (then moves into the row) and Left collapses it (then jumps to the parent row). The chevron is a
+        <code>BitBhGridRowToggle</code>: a mouse shortcut, hidden from assistive tech, that toggles the row
+        (synced through <code>@@bind-ExpandedKeys</code>); indentation comes from the
+        <code>--bit-bh-grid-level</code> variable on each row. Rows emit <code>data-state="open|closed"</code>:
+        the CSS version rotates the chevron with a <code>tr[data-state="open"]</code> selector, the Tailwind
+        version with <code>group-data-[state=open]:rotate-90</code>.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="datagrid-frame">
+                <BitBhGrid As="table" TreeGrid="true" aria-label="Project files" class="datagrid datagrid-selectable"
+                        SelectionMode="BitBhGridSelectionMode.Single"
+                        @bind-SelectedKeys="selectedEntry"
+                        @bind-ExpandedKeys="expandedFolders">
+                    <BitBhGridRowGroup As="thead">
+                        <BitBhGridRow As="tr" IsHeaderRow="true">
+                            <BitBhGridCell As="th" Header="true">Name</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true">Kind</BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="num">Size</BitBhGridCell>
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup As="tbody">
+                        @foreach (var entry in fileSystem)
+                        {
+                            <BitBhGridRow As="tr" @key="entry.Path" Key="@entry.Path"
+                                       Level="entry.Level" ParentKey="@entry.Parent" HasChildren="entry.IsFolder">
+                                <BitBhGridCell As="td">
+                                    <span class="treegrid-name">
+                                        @if (entry.IsFolder)
+                                        {
+                                            <BitBhGridRowToggle class="treegrid-toggle">▸</BitBhGridRowToggle>
+                                            <span>@(expandedFolders.Contains(entry.Path) ? "📂" : "📁")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="treegrid-spacer"></span>
+                                            <span>📄</span>
+                                        }
+                                        @entry.Name
+                                    </span>
+                                </BitBhGridCell>
+                                <BitBhGridCell As="td">@entry.Kind</BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@FormatSize(SizeOf(entry))</BitBhGridCell>
                             </BitBhGridRow>
-                        </BitBhGridRowGroup>
-                        <BitBhGridRowGroup As="tbody">
-                            @foreach (var entry in fileSystem)
-                            {
-                                <BitBhGridRow As="tr" @key="entry.Path" Key="@entry.Path"
-                                           Level="entry.Level" ParentKey="@entry.Parent" HasChildren="entry.IsFolder">
-                                    <BitBhGridCell As="td">
-                                        <span class="treegrid-name">
-                                            @if (entry.IsFolder)
-                                            {
-                                                <BitBhGridRowToggle class="treegrid-toggle">▸</BitBhGridRowToggle>
-                                                <span>@(expandedFolders.Contains(entry.Path) ? "📂" : "📁")</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="treegrid-spacer"></span>
-                                                <span>📄</span>
-                                            }
-                                            @entry.Name
-                                        </span>
-                                    </BitBhGridCell>
-                                    <BitBhGridCell As="td">@entry.Kind</BitBhGridCell>
-                                    <BitBhGridCell As="td" class="num">@FormatSize(SizeOf(entry))</BitBhGridCell>
-                                </BitBhGridRow>
-                            }
-                        </BitBhGridRowGroup>
-                    </BitBhGrid>
-                </div>
-
-                <p class="datagrid-output">Selected: <strong>@(selectedEntry.FirstOrDefault() ?? "(none)")</strong></p>
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
             </div>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Div-based grid (calendar)"
-               Code="@_calendarCode"
-               Css="@_calendarCss">
-        <Description>
-            <code>BitBhGrid</code>, <code>BitBhGridRowGroup</code>, <code>BitBhGridRow</code> and <code>BitBhGridCell</code> render
-            <code>&lt;div&gt;</code>s with <code>role="grid"</code> / <code>"rowgroup"</code> / <code>"row"</code> /
-            <code>"gridcell"</code> by default, so any layout works — here each row is a 7-column CSS grid. Arrow keys
-            move by day and week, Home / End go to the start / end of the week, and Enter or a click picks a date
-            through each cell's <code>OnActivate</code>. <code>aria-selected</code>, <code>aria-current</code> and
-            <code>aria-disabled</code> on the cells are plain attributes set by the page.
-        </Description>
-        <LiveContent>
-            <div class="datagrid-demo">
-                <div class="calendar-card">
-                    <div id="grid-calendar-title" class="calendar-title">@MonthStart.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</div>
-                    <BitBhGrid aria-labelledby="grid-calendar-title" class="calendar">
-                        <BitBhGridRowGroup>
-                            <BitBhGridRow IsHeaderRow="true" class="calendar-row">
-                                @foreach (var (shortName, longName) in weekdays)
+            <p class="datagrid-output">Selected: <strong>@(selectedEntry.FirstOrDefault() ?? "(none)")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Div-based grid (calendar)"
+           Code="@_calendarCode"
+           Css="@_calendarCss">
+    <Description>
+        <code>BitBhGrid</code>, <code>BitBhGridRowGroup</code>, <code>BitBhGridRow</code> and <code>BitBhGridCell</code> render
+        <code>&lt;div&gt;</code>s with <code>role="grid"</code> / <code>"rowgroup"</code> / <code>"row"</code> /
+        <code>"gridcell"</code> by default, so any layout works — here each row is a 7-column CSS grid
+        (<code>grid-template-columns</code> in the CSS version, <code>grid-cols-[repeat(7,2.25rem)]</code> in the
+        Tailwind version). Left / Right move by day within a week, Up / Down by week (a grid does not wrap from one row to the next), Home / End go to the start / end of the week, and
+        Enter or a click picks a date through each cell's <code>OnActivate</code>. <code>aria-selected</code>,
+        <code>aria-current</code> and <code>aria-disabled</code> on the cells are plain attributes set by the page.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="calendar-card">
+                <div id="grid-calendar-title" class="calendar-title">@MonthStart.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</div>
+                <BitBhGrid aria-labelledby="grid-calendar-title" class="calendar">
+                    <BitBhGridRowGroup>
+                        <BitBhGridRow IsHeaderRow="true" class="calendar-row">
+                            @foreach (var (shortName, longName) in weekdays)
+                            {
+                                <BitBhGridCell Header="true" class="calendar-weekday">
+                                    <abbr title="@longName">@shortName</abbr>
+                                </BitBhGridCell>
+                            }
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup class="calendar-weeks">
+                        @foreach (var week in Weeks)
+                        {
+                            <BitBhGridRow class="calendar-row">
+                                @foreach (var day in week)
                                 {
-                                    <BitBhGridCell Header="true" class="calendar-weekday">
-                                        <abbr title="@longName">@shortName</abbr>
-                                    </BitBhGridCell>
+                                    <BitBhGridCell class="calendar-day"
+                                                aria-selected="@(day == pickedDate ? "true" : null)"
+                                                aria-current="@(day == today ? "date" : null)"
+                                                aria-disabled="@(day.Month != MonthStart.Month ? "true" : null)"
+                                                OnActivate="() => PickDate(day)">@day.Day</BitBhGridCell>
                                 }
                             </BitBhGridRow>
-                        </BitBhGridRowGroup>
-                        <BitBhGridRowGroup class="calendar-weeks">
-                            @foreach (var week in Weeks)
-                            {
-                                <BitBhGridRow class="calendar-row">
-                                    @foreach (var day in week)
-                                    {
-                                        <BitBhGridCell class="calendar-day"
-                                                    aria-selected="@(day == pickedDate ? "true" : null)"
-                                                    aria-current="@(day == today ? "date" : null)"
-                                                    aria-disabled="@(day.Month != MonthStart.Month ? "true" : null)"
-                                                    OnActivate="() => PickDate(day)">@day.Day</BitBhGridCell>
-                                    }
-                                </BitBhGridRow>
-                            }
-                        </BitBhGridRowGroup>
-                    </BitBhGrid>
-                </div>
-
-                <p class="datagrid-output">
-                    Picked: <strong>@(pickedDate?.ToString("dddd, MMMM d", System.Globalization.CultureInfo.InvariantCulture) ?? "(none)")</strong>
-                </p>
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
             </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+
+            <p class="datagrid-output">
+                Picked: <strong>@(pickedDate?.ToString("dddd, MMMM d", System.Globalization.CultureInfo.InvariantCulture) ?? "(none)")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── Sortable data grid ───────────────────────────────────────────────────

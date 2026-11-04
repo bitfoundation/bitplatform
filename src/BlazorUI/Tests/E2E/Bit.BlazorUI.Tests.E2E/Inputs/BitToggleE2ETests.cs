@@ -706,6 +706,14 @@ public class BitToggleE2ETests : E2ETestBase
         await Expect(Page.Locator("#tg-error-tpl .bit-tgl-erm #error-tpl-link")).ToBeVisibleAsync();
         await Expect(Root("tg-error-tpl")).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Button("tg-error-tpl")).ToHaveAttributeAsync("aria-invalid", "true");
+
+        // A template has no text of its own to hand a screen reader, so the label speaks for it - announced, and
+        // describing the switch on every later focus.
+        const string label = "This conflicts with your privacy settings.";
+        var errorLabel = Page.Locator("#tg-error-tpl [id$='-error-label']");
+        await Expect(Page.Locator("#tg-error-tpl [role=status]")).ToHaveTextAsync(label);
+        await Expect(errorLabel).ToHaveTextAsync(label);
+        StringAssert.Contains(await Button("tg-error-tpl").GetAttributeAsync("aria-describedby"), await errorLabel.GetAttributeAsync("id"));
     }
 
     [TestMethod]

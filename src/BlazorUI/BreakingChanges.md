@@ -37,6 +37,29 @@ gives it the left-to-right glyph. **A stylesheet or a test locator** that read t
 `bit-csl-rbt` reads the button off the new classes, and the direction off the `bit-csl-rtl` class of the root, which a
 carousel laid out right to left carries whether its `Dir` says so or it inherits the direction.
 
+### An error message template is announced in place of the message it hides ([#14563](https://github.com/bitfoundation/bitplatform/issues/14563))
+
+`BitTextField`, `BitSearchBox`, `BitNumberField`, `BitDatePicker`, `BitTimePicker`, `BitDropdown` and `BitToggle`
+announce their error message through a live region. Given both an `ErrorMessage` and an `ErrorMessageTemplate`, they
+announced the plain `ErrorMessage`, which the template replaces on screen, and given a template alone all but
+`BitNumberField` announced nothing, leaving a rejected value sounding accepted. The live region now announces what is
+on screen: a template as a bare "Invalid input", or as the text of the new `ErrorMessageAriaLabel` parameter (also in
+their `Bit*Params`), which the field is described by on every later focus too. `ErrorMessageAriaLabel` also makes the
+forced `Invalid` state announce it. **An app that set the plain message next to a template to have it announced**,
+as the docs of `BitToggle` advised, moves that text to `ErrorMessageAriaLabel`:
+
+```razor
+@* before: the hidden message was announced *@
+<BitToggle Label="Public profile" ErrorMessage="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+
+@* after *@
+<BitToggle Label="Public profile" ErrorMessageAriaLabel="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+```
+
 ### A `BitDropdown` or `BitChoiceGroup` of options of another `TValue` throws ([#14383](https://github.com/bitfoundation/bitplatform/issues/14383))
 
 An option finds its `BitDropdown` or `BitChoiceGroup` through a cascade typed by its own `TValue`, so the options of

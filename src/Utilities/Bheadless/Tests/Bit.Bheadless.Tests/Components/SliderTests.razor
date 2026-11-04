@@ -249,4 +249,29 @@
         var options = (IDictionary<string, object?>)attach.Invocations.Single().Arguments[3]!;
         Assert.AreEqual(true, options["rtl"]);
     }
+
+    [TestMethod]
+    public void A_press_on_the_track_focuses_the_thumb_that_moves()
+    {
+        // The runtime focuses the thumb under the pointer, or the first one for a press on the track.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("slider.attach", _ => true);
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 20, 60 })">
+                <BitBhSliderThumb aria-label="Minimum" />
+                <BitBhSliderThumb aria-label="Maximum" />
+            </BitBhSlider>);
+        attach.SetResult(1);
+
+        var callbacks = attach.Invocations.Single().Arguments[0]!;
+        var target = callbacks.GetType().GetProperty("Value")!.GetValue(callbacks)!;
+        var pointer = target.GetType().GetMethod("OnSliderPointer")!;
+        cut.InvokeAsync(() => (Task)pointer.Invoke(target, ["start", 0.75])!).GetAwaiter().GetResult();
+        cut.InvokeAsync(() => (Task)pointer.Invoke(target, ["end", 0.75])!).GetAwaiter().GetResult();
+
+        var maximum = cut.Find("[aria-label=Maximum]");
+        Assert.AreEqual("75", maximum.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("20", cut.Find("[aria-label=Minimum]").GetAttribute("aria-valuenow"));
+        Assert.AreEqual(maximum.Id, JSInterop.Invocations.Last(i => i.Identifier == "focus.focus").Arguments[0]);
+    }
 }

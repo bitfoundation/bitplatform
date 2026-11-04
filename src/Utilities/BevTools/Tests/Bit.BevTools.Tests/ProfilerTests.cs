@@ -77,7 +77,7 @@ public class ProfilerTests : BunitContext
         var cells = grouped.QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToList();
         Assert.AreEqual("2", cells[1]); // instances
         Assert.AreEqual("2", cells[2]); // renders
-        Assert.Contains("2 initial", cells[7], StringComparison.Ordinal); // after Total, Avg, p95, Max
+        Assert.Contains("2 initial", cells[8], StringComparison.Ordinal); // after Total, Avg, p95, Max, Allocated
 
         grouped.Click();
         Assert.AreEqual("ChildComponent", Session.Ui.GetQuery("profiler"));
@@ -387,7 +387,7 @@ public class ProfilerTests : BunitContext
         var grouped = Assert.ContainsSingle(r => r.TextContent.Contains("ListChild", StringComparison.Ordinal), panel.FindAll("tbody tr.bev-row"));
         var cells = grouped.QuerySelectorAll("td").Select(c => c.TextContent.Trim()).ToList();
         Assert.AreEqual("122", cells[2]);
-        Assert.AreEqual("121 parent · 1 initial", cells[7]);
+        Assert.AreEqual("121 parent · 1 initial", cells[8]); // after Total, Avg, p95, Max, Allocated
     }
 
     /// <summary>A navigation while paused is not in the timeline, so it must not be remembered as one.</summary>

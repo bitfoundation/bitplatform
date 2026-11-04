@@ -1,0 +1,26 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@FitnessSite.Path" Title="@F[nameof(FitnessStrings.NotFoundTitle)]" Body="@F[nameof(FitnessStrings.NotFoundBody)]" Class="fit-not-found">
+    <Art>
+        <svg viewBox="0 0 320 280" role="presentation">
+            <circle cx="160" cy="158" r="108" fill="var(--fit-lemon)" />
+            <rect x="140" y="14" width="40" height="22" rx="6" fill="var(--lp-fg)" />
+            <rect x="152" y="32" width="16" height="36" fill="var(--lp-fg)" />
+            <rect x="211" y="74" width="26" height="14" rx="5" fill="var(--lp-fg)" transform="rotate(40 224 81)" />
+            <circle cx="160" cy="158" r="92" fill="var(--fit-screen)" stroke="var(--lp-fg)" stroke-width="6" />
+            <circle cx="160" cy="158" r="74" fill="none" stroke="var(--fit-ring-base)" stroke-width="10" />
+            <circle cx="160" cy="158" r="74" fill="none" stroke="var(--lp-accent)" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="68 100" transform="rotate(-90 160 158)" />
+            <g stroke="var(--lp-fg-muted)" stroke-width="3" stroke-linecap="round">
+                <path d="M160 72v6" />
+                <path d="M246 158h-6" />
+                <path d="M160 244v-6" />
+                <path d="M74 158h6" />
+            </g>
+            <text x="160" y="170" text-anchor="middle" direction="ltr" font-size="44" font-weight="800" fill="var(--lp-fg)" style="font-family: var(--lp-stack-display)">4:04</text>
+            <text x="160" y="196" text-anchor="middle" font-size="13" fill="var(--lp-fg-muted)" style="font-family: var(--lp-stack-body)">@F[nameof(FitnessStrings.NotFoundTimer)]</text>
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"{LocalUrl(FitnessSite.Path)}#whats-new")">@F[nameof(FitnessStrings.NotFoundNews)]</BitButton>
+    </Actions>
+</NotFoundPanel>

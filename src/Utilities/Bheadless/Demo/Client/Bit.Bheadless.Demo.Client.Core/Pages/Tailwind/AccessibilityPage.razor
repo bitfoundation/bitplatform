@@ -1,322 +1,343 @@
 ﻿@page "/tw/accessibility"
 @inject IBitBhAnnouncer Announcer
 
-<PageTitle>Accessibility Utilities — bit Bheadless · Tailwind</PageTitle>
+<PageTitle>Accessibility Utilities (Tailwind) · Bheadless</PageTitle>
 
-<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
-    <header class="mb-12">
-        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Accessibility Utilities</h1>
-        <p class="mt-2 text-zinc-500">The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
-        <TwSectionSwitcher Slug="accessibility" />
-    </header>
+<div class="bb-intro">
+    <h1>Accessibility Utilities</h1>
+    <p class="bb-subtitle">The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
+</div>
 
-    <TwDemoBlock Title="Visually hidden" Code="@_hiddenCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhVisuallyHidden</code> keeps text in the accessibility tree while hiding it — the names of icon-only buttons.
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Focusable="true"</code> reveals it while focused: Tab into this demo to uncover the skip link.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <BitBhVisuallyHidden Focusable="true">
-                    <a href="tw/accessibility#a11y-skip-target"
-                       class="inline-block rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-                       @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
-                </BitBhVisuallyHidden>
+<SectionSwitcher Slug="accessibility" />
 
-                <div class="flex items-center gap-3">
-                    <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
-                        </svg>
-                        <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
-                    </button>
-                    <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" />
-                        </svg>
-                        <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
-                    </button>
-                    <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
-                        </svg>
-                        <BitBhVisuallyHidden>Delete</BitBhVisuallyHidden>
-                    </button>
-                </div>
+<TwDemoBlock Title="Visually hidden" Code="@_hiddenCode">
+    <Description>
+        <code>BitBhVisuallyHidden</code> hides content visually but keeps it in the accessibility
+        tree — the label of an icon-only button is read as "Edit", "Notifications", "Delete".
+        With <code>Focusable="true"</code> the content is revealed while keyboard focus is inside
+        it: Tab into this demo to uncover the skip link.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <BitBhVisuallyHidden Focusable="true">
+                <a href="tw/accessibility#a11y-skip-target"
+                   class="inline-block rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                   @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
+            </BitBhVisuallyHidden>
 
-                <div id="a11y-skip-target" tabindex="-1" @ref="skipTarget"
-                     class="rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-sm text-zinc-600 focus:border-transparent focus:outline-2 focus:outline-offset-2 focus:outline-blue-600">
-                    Main content — the skip link moves focus here.
+            <div class="flex items-center gap-3">
+                <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+                    </svg>
+                    <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
+                </button>
+                <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" />
+                    </svg>
+                    <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
+                </button>
+                <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 cursor-pointer hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <svg class="size-[1.1rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+                    </svg>
+                    <BitBhVisuallyHidden>Delete</BitBhVisuallyHidden>
+                </button>
+            </div>
+
+            <div id="a11y-skip-target" tabindex="-1" @ref="skipTarget"
+                 class="rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-sm text-zinc-600 focus:border-transparent focus:outline-2 focus:outline-offset-2 focus:outline-blue-600">
+                Main content — the skip link moves focus here.
+            </div>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Separator" Code="@_separatorCode">
+    <Description>
+        <code>BitBhSeparator</code> renders <code>role="separator"</code> (plus
+        <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
+        assistive tech announces the boundary between groups of content. When the line is purely
+        visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
+        <code>data-orientation</code>: the CSS version styles it with <code>[data-orientation]</code>
+        selectors, the Tailwind version with the <code>data-orientation-*:</code> variants.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <div class="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-5 py-4">
+                <p class="m-0 font-semibold text-zinc-900">bit Bheadless</p>
+                <p class="m-0 mt-0.5 text-sm text-zinc-500">Unstyled, accessible components for Blazor.</p>
+                <BitBhSeparator class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
+                <div class="flex h-5 items-center gap-3 text-sm text-zinc-700">
+                    <span>Docs</span>
+                    <BitBhSeparator Orientation="BitBhOrientation.Vertical"
+                                 class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
+                    <span>Source</span>
+                    <BitBhSeparator Orientation="BitBhOrientation.Vertical"
+                                 class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
+                    <span>Changelog</span>
                 </div>
             </div>
-        </LiveContent>
-    </TwDemoBlock>
 
-    <TwDemoBlock Title="Separator" Code="@_separatorCode">
-        <Description>
-            Semantic separators render <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="separator"</code> (+ <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-orientation="vertical"</code>);
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Decorative="true"</code> renders <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="none"</code>.
-            Style both with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-orientation-*:</code>.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <div class="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-5 py-4">
-                    <p class="m-0 font-semibold text-zinc-900">bit Bheadless</p>
-                    <p class="m-0 mt-0.5 text-sm text-zinc-500">Unstyled, accessible components for Blazor.</p>
-                    <BitBhSeparator class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
-                    <div class="flex h-5 items-center gap-3 text-sm text-zinc-700">
-                        <span>Docs</span>
-                        <BitBhSeparator Orientation="BitBhOrientation.Vertical"
-                                     class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
-                        <span>Source</span>
-                        <BitBhSeparator Orientation="BitBhOrientation.Vertical"
-                                     class="shrink-0 bg-zinc-200 data-orientation-horizontal:my-3.5 data-orientation-horizontal:h-px data-orientation-horizontal:w-full data-orientation-vertical:h-full data-orientation-vertical:w-px" />
-                        <span>Changelog</span>
-                    </div>
-                </div>
-
-                <div class="flex w-full max-w-sm items-center gap-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    <BitBhSeparator Decorative="true" class="h-px flex-1 bg-zinc-200" />
-                    or
-                    <BitBhSeparator Decorative="true" class="h-px flex-1 bg-zinc-200" />
-                </div>
+            <div class="flex w-full max-w-sm items-center gap-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <BitBhSeparator Decorative="true" class="h-px flex-1 bg-zinc-200" />
+                or
+                <BitBhSeparator Decorative="true" class="h-px flex-1 bg-zinc-200" />
             </div>
-        </LiveContent>
-    </TwDemoBlock>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
-    <TwDemoBlock Title="Live regions" Code="@_liveRegionCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhLiveRegion</code> exists from the first render, so content changes are announced — politely (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="status"</code>)
-            or assertively (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="alert"</code>). <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">VisuallyHidden="true"</code> announces without showing.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <div class="flex flex-wrap items-center gap-3">
-                    <BitBhButton OnClick="SaveDraft"
-                              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        Save draft
-                    </BitBhButton>
-                    <BitBhLiveRegion class="text-sm text-green-700">@draftStatus</BitBhLiveRegion>
-                </div>
-                <div>
-                    <BitBhButton OnClick="ToggleConnection"
-                              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        @(offline ? "Reconnect" : "Simulate connection loss")
-                    </BitBhButton>
-                </div>
-                <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive"
-                              class="text-sm text-red-800 not-empty:rounded-lg not-empty:border not-empty:border-red-200 not-empty:bg-red-50 not-empty:px-3 not-empty:py-2">@alertText</BitBhLiveRegion>
+<TwDemoBlock Title="Live regions" Code="@_liveRegionCode">
+    <Description>
+        <code>BitBhLiveRegion</code> is rendered from the first render (live regions must exist before
+        their content changes), so updating its content is announced. Polite regions
+        (<code>role="status"</code>) wait for the user to be idle; assertive ones
+        (<code>role="alert"</code>) interrupt — reserve them for urgent problems. Set
+        <code>VisuallyHidden="true"</code> to announce without showing.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <BitBhButton OnClick="SaveDraft"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Save draft
+                </BitBhButton>
+                <BitBhLiveRegion class="text-sm text-green-700">@draftStatus</BitBhLiveRegion>
             </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Announcer" Code="@_announcerCode">
-        <Description>
-            Inject <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">IBitBhAnnouncer</code> and call <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">AnnounceAsync</code> for fire-and-forget messages — it writes to one shared,
-            visually hidden live region. The log only mirrors what a screen reader hears.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <div class="flex flex-wrap gap-3">
-                    @foreach (var product in Products)
-                    {
-                        <div class="flex min-w-40 flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-sm">
-                            <strong class="text-zinc-900">@product</strong>
-                            <BitBhButton OnClick="() => AddToCartAsync(product)"
-                                      class="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                Add to cart
-                            </BitBhButton>
-                        </div>
-                    }
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <span class="text-sm text-zinc-500">Cart: <strong class="text-zinc-900">@cartCount</strong> item(s)</span>
-                    <BitBhButton OnClick="EmptyCartAsync"
-                              class="rounded-md px-1 text-sm font-medium text-blue-600 underline underline-offset-2 cursor-pointer hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        Empty cart (assertive)
-                    </BitBhButton>
-                </div>
-                <ol class="m-0 list-decimal rounded-lg bg-(--color-code-bg) py-2.5 pl-8 pr-3.5 font-mono text-xs text-[#d4d4d8]" aria-label="Announcement log">
-                    @if (announcements.Count == 0)
-                    {
-                        <li class="-ml-4 list-none text-[#a1a1aa]">Nothing announced yet.</li>
-                    }
-                    @foreach (var line in announcements)
-                    {
-                        <li>@line</li>
-                    }
-                </ol>
+            <div>
+                <BitBhButton OnClick="ToggleConnection"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    @(offline ? "Reconnect" : "Simulate connection loss")
+                </BitBhButton>
             </div>
-        </LiveContent>
-    </TwDemoBlock>
+            <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive"
+                          class="text-sm text-red-800 not-empty:rounded-lg not-empty:border not-empty:border-red-200 not-empty:bg-red-50 not-empty:px-3 not-empty:py-2">@alertText</BitBhLiveRegion>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
-    <TwDemoBlock Title="Hotkeys" Code="@_hotkeyCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhHotkey</code> registers a global shortcut while rendered (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">mod</code> = ⌘ on Apple, Ctrl elsewhere).
-            Shortcuts without Ctrl / ⌘ are ignored in text fields unless <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">AllowInInputs</code> is set. Try <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Ctrl+K</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">?</code>.
-        </Description>
-        <LiveContent>
-            <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
-            <BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
-
-            <div class="flex w-full flex-col gap-4">
-                <div class="relative w-full max-w-xs">
-                    <input @ref="searchInput" type="search" placeholder="Search components…"
-                           aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
-                           class="w-full rounded-md border border-zinc-300 bg-white py-2 pl-3 pr-18 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
-                    <span class="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 gap-1" aria-hidden="true">
-                        <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">Ctrl</kbd>
-                        <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">K</kbd>
-                    </span>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")" aria-keyshortcuts="Shift+?"
-                              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        Keyboard shortcuts
-                        <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">?</kbd>
-                    </BitBhButton>
-                    <span class="text-sm text-zinc-500">Last shortcut: <strong class="text-zinc-900">@(lastHotkey ?? "(none)")</strong></span>
-                </div>
-                @if (showShortcuts)
+<TwDemoBlock Title="Announcer" Code="@_announcerCode">
+    <Description>
+        For fire-and-forget messages from code, inject <code>IBitBhAnnouncer</code> and call
+        <code>AnnounceAsync</code>. It writes to one shared, visually hidden live region (the one
+        toasts and drag-and-drop use too), so nothing needs to be rendered. The log below only
+        mirrors what a screen reader hears.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <div class="flex flex-wrap gap-3">
+                @foreach (var product in Products)
                 {
-                    <section aria-label="Keyboard shortcuts" class="w-full max-w-xs rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-lg">
-                        <h3 class="mb-2 text-sm font-semibold text-zinc-900">Keyboard shortcuts</h3>
-                        <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-                            <dt>
-                                <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">Ctrl</kbd>
-                                <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">K</kbd>
-                            </dt>
-                            <dd class="m-0 text-zinc-600">Focus search (⌘ K on macOS)</dd>
-                            <dt>
-                                <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">?</kbd>
-                            </dt>
-                            <dd class="m-0 text-zinc-600">Show / hide this list</dd>
-                        </dl>
-                    </section>
+                    <div class="flex min-w-40 flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-sm">
+                        <strong class="text-zinc-900">@product</strong>
+                        <BitBhButton OnClick="() => AddToCartAsync(product)"
+                                  class="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            Add to cart
+                        </BitBhButton>
+                    </div>
                 }
             </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Focus scope and focus trap" Code="@_focusScopeCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhFocusScope</code> auto-focuses its content, traps (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Trapped</code>) or wraps (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Loop</code>) Tab, and restores focus when it deactivates.
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhFocusTrap</code> = trapped by default. Save, Cancel or Escape return focus to "Edit profile".
-        </Description>
-        <LiveContent>
-            <div class="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-zinc-200 bg-white px-5 py-4">
-                <div class="flex items-center justify-between gap-4">
-                    <div class="flex flex-col">
-                        <strong class="text-zinc-900">@profileName</strong>
-                        <span class="text-sm text-zinc-500">@profileEmail</span>
-                    </div>
-                    <BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")"
-                              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        Edit profile
-                    </BitBhButton>
-                </div>
-                @if (editing)
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm text-zinc-500">Cart: <strong class="text-zinc-900">@cartCount</strong> item(s)</span>
+                <BitBhButton OnClick="EmptyCartAsync"
+                          class="rounded-md px-1 text-sm font-medium text-blue-600 underline underline-offset-2 cursor-pointer hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Empty cart (assertive)
+                </BitBhButton>
+            </div>
+            <ol class="m-0 list-decimal rounded-lg bg-(--color-code-bg) py-2.5 pl-8 pr-3.5 font-mono text-xs text-[#d4d4d8]" aria-label="Announcement log">
+                @if (announcements.Count == 0)
                 {
-                    <BitBhFocusScope Trapped="true" RestoreFocus="true" aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown"
-                                  class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-4 outline-none data-state-active:border-blue-600 data-state-active:bg-blue-50">
-                        <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
-                            <span>Name</span>
-                            <input @bind="draftName"
-                                   class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
-                        </label>
-                        <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
-                            <span>Email</span>
-                            <input type="email" @bind="draftEmail"
-                                   class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
-                        </label>
-                        <div class="flex justify-end gap-2">
-                            <button type="button" @onclick="CancelEditing"
-                                    class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                Cancel
-                            </button>
-                            <button type="button" @onclick="SaveProfile"
-                                    class="rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                Save
-                            </button>
-                        </div>
-                    </BitBhFocusScope>
+                    <li class="-ml-4 list-none text-[#a1a1aa]">Nothing announced yet.</li>
                 }
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
+                @foreach (var line in announcements)
+                {
+                    <li>@line</li>
+                }
+            </ol>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
-    <TwDemoBlock Title="Reading direction" Code="@_directionCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhDirectionProvider</code> cascades the direction to every component below it: in RTL, ArrowLeft moves to the <em>next</em> radio or tab.
-            Set the HTML <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">dir</code> attribute too so the layout mirrors.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <div role="group" aria-label="Reading direction" class="inline-flex self-start rounded-lg bg-zinc-100 p-0.5">
-                    <BitBhButton OnClick="() => direction = BitBhDirection.Ltr"
-                              aria-pressed="@(direction == BitBhDirection.Ltr ? "true" : "false")"
-                              class="rounded-md px-3 py-1 text-xs font-semibold text-zinc-600 cursor-pointer aria-pressed:bg-white aria-pressed:text-zinc-900 aria-pressed:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        LTR
-                    </BitBhButton>
-                    <BitBhButton OnClick="() => direction = BitBhDirection.Rtl"
-                              aria-pressed="@(direction == BitBhDirection.Rtl ? "true" : "false")"
-                              class="rounded-md px-3 py-1 text-xs font-semibold text-zinc-600 cursor-pointer aria-pressed:bg-white aria-pressed:text-zinc-900 aria-pressed:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        RTL
-                    </BitBhButton>
-                </div>
+<TwDemoBlock Title="Hotkeys" Code="@_hotkeyCode">
+    <Description>
+        <code>BitBhHotkey</code> registers a global shortcut while it is rendered and renders nothing.
+        <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
+        (like <code>shift+?</code>) are ignored while typing in a text field unless
+        <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
+        Try <code>Ctrl+K</code> and <code>?</code> here.
+    </Description>
+    <LiveContent>
+        <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
+        <BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
 
-                <div dir="@direction.ToAttribute()" class="flex w-full flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                    <BitBhDirectionProvider Dir="direction">
-                        <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size"
-                                      class="inline-flex gap-1 self-start rounded-lg border border-zinc-200 bg-white p-0.5">
-                            <BitBhRadio Value="s" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Small</BitBhRadio>
-                            <BitBhRadio Value="m" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Medium</BitBhRadio>
-                            <BitBhRadio Value="l" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Large</BitBhRadio>
-                        </BitBhRadioGroup>
-
-                        <BitBhTabGroup>
-                            <BitBhTabList aria-label="Project" class="flex gap-1 border-b border-zinc-200">
-                                <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Overview</BitBhTab>
-                                <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Activity</BitBhTab>
-                                <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Settings</BitBhTab>
-                            </BitBhTabList>
-                            <BitBhTabPanels>
-                                <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Overview — focus a tab and press the arrow keys.</BitBhTabPanel>
-                                <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Activity — in RTL, ArrowLeft moved you here.</BitBhTabPanel>
-                                <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Settings — Home / End jump to the ends.</BitBhTabPanel>
-                            </BitBhTabPanels>
-                        </BitBhTabGroup>
-                    </BitBhDirectionProvider>
-                </div>
-            </div>
-        </LiveContent>
-    </TwDemoBlock>
-
-    <TwDemoBlock Title="Roving focus" Code="@_rovingCode">
-        <Description>
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhRovingFocusGroup</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhRovingFocusItem</code> give your own composite widgets a roving <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">tabindex</code>:
-            one Tab stop, arrow keys / Home / End between items, disabled items skipped. Give the group the role that fits — here a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">toolbar</code> of toggle chips.
-        </Description>
-        <LiveContent>
-            <div class="flex w-full flex-col gap-4">
-                <BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="flex flex-wrap gap-2">
-                    @foreach (var tag in Tags)
-                    {
-                        <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
-                                           aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
-                                           @onclick="() => ToggleTag(tag)"
-                                           class="inline-flex items-center rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-700 cursor-pointer transition-colors hover:border-zinc-400 aria-pressed:border-blue-600 aria-pressed:bg-blue-50 aria-pressed:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                            @tag
-                        </BitBhRovingFocusItem>
-                    }
-                </BitBhRovingFocusGroup>
-                <span class="text-sm text-zinc-500">
-                    Filters: <strong class="text-zinc-900">@(selectedTags.Count == 0 ? "(none)" : string.Join(", ", Tags.Where(selectedTags.Contains)))</strong>
+        <div class="flex w-full flex-col gap-4">
+            <div class="relative w-full max-w-xs">
+                <input @ref="searchInput" type="search" placeholder="Search components…"
+                       aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
+                       class="w-full rounded-md border border-zinc-300 bg-white py-2 pl-3 pr-18 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                <span class="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 gap-1" aria-hidden="true">
+                    <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">Ctrl</kbd>
+                    <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">K</kbd>
                 </span>
             </div>
-        </LiveContent>
-    </TwDemoBlock>
-</div>
+            <div class="flex flex-wrap items-center gap-3">
+                <BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")" aria-keyshortcuts="Shift+?"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Keyboard shortcuts
+                    <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">?</kbd>
+                </BitBhButton>
+                <span class="text-sm text-zinc-500">Last shortcut: <strong class="text-zinc-900">@(lastHotkey ?? "(none)")</strong></span>
+            </div>
+            @if (showShortcuts)
+            {
+                <section aria-label="Keyboard shortcuts" class="w-full max-w-xs rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-lg">
+                    <h3 class="mb-2 text-sm font-semibold text-zinc-900">Keyboard shortcuts</h3>
+                    <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                        <dt>
+                            <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">Ctrl</kbd>
+                            <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">K</kbd>
+                        </dt>
+                        <dd class="m-0 text-zinc-600">Focus search (⌘ K on macOS)</dd>
+                        <dt>
+                            <kbd class="inline-block min-w-[1.4em] rounded border border-b-2 border-zinc-300 bg-zinc-50 px-1.5 text-center font-mono text-xs text-zinc-700">?</kbd>
+                        </dt>
+                        <dd class="m-0 text-zinc-600">Show / hide this list</dd>
+                    </dl>
+                </section>
+            }
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Focus scope and focus trap" Code="@_focusScopeCode">
+    <Description>
+        <code>BitBhFocusScope</code> manages focus for a region: it moves focus inside when it
+        activates, can trap Tab / Shift+Tab (<code>Trapped</code>) or just wrap it
+        (<code>Loop</code>), and restores focus to where it was when it deactivates.
+        <code>BitBhFocusTrap</code> is the same component with <code>Trapped</code> on by default.
+        Click "Edit profile": focus lands on the first field and stays in the form; Save, Cancel
+        or Escape return it to the button.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-zinc-200 bg-white px-5 py-4">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col">
+                    <strong class="text-zinc-900">@profileName</strong>
+                    <span class="text-sm text-zinc-500">@profileEmail</span>
+                </div>
+                <BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Edit profile
+                </BitBhButton>
+            </div>
+            @if (editing)
+            {
+                <BitBhFocusScope Trapped="true" RestoreFocus="true" aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown"
+                              class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-4 outline-none data-state-active:border-blue-600 data-state-active:bg-blue-50">
+                    <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
+                        <span>Name</span>
+                        <input @bind="draftName"
+                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    </label>
+                    <label class="flex flex-col gap-1 text-xs font-semibold text-zinc-900">
+                        <span>Email</span>
+                        <input type="email" @bind="draftEmail"
+                               class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-normal text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    </label>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" @onclick="CancelEditing"
+                                class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            Cancel
+                        </button>
+                        <button type="button" @onclick="SaveProfile"
+                                class="rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            Save
+                        </button>
+                    </div>
+                </BitBhFocusScope>
+            }
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Reading direction" Code="@_directionCode">
+    <Description>
+        <code>BitBhDirectionProvider</code> cascades the reading direction to every component below
+        it. In RTL, Left / Right arrow keys are mirrored: ArrowLeft moves to the <em>next</em>
+        radio or tab. Set the HTML <code>dir</code> attribute as well so the layout flips; a
+        component's own <code>Dir</code> parameter takes precedence.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <div role="group" aria-label="Reading direction" class="inline-flex self-start rounded-lg bg-zinc-100 p-0.5">
+                <BitBhButton OnClick="() => direction = BitBhDirection.Ltr"
+                          aria-pressed="@(direction == BitBhDirection.Ltr ? "true" : "false")"
+                          class="rounded-md px-3 py-1 text-xs font-semibold text-zinc-600 cursor-pointer aria-pressed:bg-white aria-pressed:text-zinc-900 aria-pressed:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    LTR
+                </BitBhButton>
+                <BitBhButton OnClick="() => direction = BitBhDirection.Rtl"
+                          aria-pressed="@(direction == BitBhDirection.Rtl ? "true" : "false")"
+                          class="rounded-md px-3 py-1 text-xs font-semibold text-zinc-600 cursor-pointer aria-pressed:bg-white aria-pressed:text-zinc-900 aria-pressed:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    RTL
+                </BitBhButton>
+            </div>
+
+            <div dir="@direction.ToAttribute()" class="flex w-full flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                <BitBhDirectionProvider Dir="direction">
+                    <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size"
+                                  class="inline-flex gap-1 self-start rounded-lg border border-zinc-200 bg-white p-0.5">
+                        <BitBhRadio Value="s" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Small</BitBhRadio>
+                        <BitBhRadio Value="m" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Medium</BitBhRadio>
+                        <BitBhRadio Value="l" class="rounded-md px-3.5 py-1.5 text-sm text-zinc-600 cursor-pointer data-state-checked:bg-blue-600 data-state-checked:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Large</BitBhRadio>
+                    </BitBhRadioGroup>
+
+                    <BitBhTabGroup>
+                        <BitBhTabList aria-label="Project" class="flex gap-1 border-b border-zinc-200">
+                            <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Overview</BitBhTab>
+                            <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Activity</BitBhTab>
+                            <BitBhTab class="border-b-2 border-transparent px-3.5 py-2 text-sm font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 data-state-active:border-blue-600 data-state-active:text-blue-600 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600">Settings</BitBhTab>
+                        </BitBhTabList>
+                        <BitBhTabPanels>
+                            <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Overview — focus a tab and press the arrow keys.</BitBhTabPanel>
+                            <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Activity — in RTL, ArrowLeft moved you here.</BitBhTabPanel>
+                            <BitBhTabPanel class="pt-3 text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Settings — Home / End jump to the ends.</BitBhTabPanel>
+                        </BitBhTabPanels>
+                    </BitBhTabGroup>
+                </BitBhDirectionProvider>
+            </div>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Roving focus" Code="@_rovingCode">
+    <Description>
+        <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> implement a roving
+        <code>tabindex</code> for your own composite widgets: the group is a single Tab stop, arrow
+        keys (per <code>Orientation</code>) and Home / End move between items, disabled items are
+        skipped and the last focused item is remembered. Give the group the role that matches your
+        widget — here a <code>toolbar</code> of toggle chips.
+    </Description>
+    <LiveContent>
+        <div class="flex w-full flex-col gap-4">
+            <BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="flex flex-wrap gap-2">
+                @foreach (var tag in Tags)
+                {
+                    <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
+                                       aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
+                                       @onclick="() => ToggleTag(tag)"
+                                       class="inline-flex items-center rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-700 cursor-pointer transition-colors hover:border-zinc-400 aria-pressed:border-blue-600 aria-pressed:bg-blue-50 aria-pressed:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        @tag
+                    </BitBhRovingFocusItem>
+                }
+            </BitBhRovingFocusGroup>
+            <span class="text-sm text-zinc-500">
+                Filters: <strong class="text-zinc-900">@(selectedTags.Count == 0 ? "(none)" : string.Join(", ", Tags.Where(selectedTags.Contains)))</strong>
+            </span>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
 
 @code {
     // ── Visually hidden ────────────────────────────────────────────────────────

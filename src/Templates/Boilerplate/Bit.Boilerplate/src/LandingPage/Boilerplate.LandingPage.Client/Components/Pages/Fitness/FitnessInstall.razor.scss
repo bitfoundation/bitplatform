@@ -1,0 +1,90 @@
+@import '../../../Styles/tokens';
+
+.fit-install-badge,
+.fit-install-state {
+    --bit-Icon-color: var(--fit-accent-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.fit-install {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+    container-type: inline-size;
+}
+
+.fit-install-now {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+
+    p {
+        margin: 0;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+    }
+}
+
+.fit-install-how {
+    margin: 0;
+    font-weight: 700;
+}
+
+.fit-install-steps {
+    display: grid;
+    gap: 0;
+    width: 100%;
+    margin: 0;
+
+    @container (min-width: 560px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 16px;
+    }
+
+    > div {
+        display: grid;
+        gap: 2px;
+        padding: 10px 12px;
+        border-inline-start: 3px solid var(--lp-line);
+    }
+
+    > div.is-yours {
+        border-inline-start-color: var(--lp-accent);
+        background: var(--lp-accent-soft);
+    }
+
+    dt {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 10px;
+        font-size: .875rem;
+        font-weight: 700;
+    }
+
+    dd {
+        margin: 0;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+        line-height: 1.5;
+    }
+}
+
+.fit-install-yours {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--lp-accent);
+    color: var(--lp-accent-fg);
+    font-size: .6875rem;
+    font-weight: 700;
+}
+
+.fit-install-fallback {
+    margin: 0;
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}

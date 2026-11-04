@@ -1,0 +1,12 @@
+@inherits LandingComponentBase
+
+<script type="application/ld+json">@((MarkupString)structuredData)</script>
+
+<div class="lp-faq @Class">
+    @foreach (var item in Items)
+    {
+        <BitAccordion Title="@item.Question" HeadingLevel="3">
+            <p>@item.Answer</p>
+        </BitAccordion>
+    }
+</div>

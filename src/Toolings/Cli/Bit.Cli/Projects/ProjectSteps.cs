@@ -311,6 +311,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public Task<StepResult> WorkbenchBuildAsync(Action<string> progress, CancellationToken cancellationToken)
         => BuildAsync(Templates.Platforms.WorkbenchProject(project.Name), "the Workbench", progress, cancellationToken);
 
+    public Task<StepResult> LandingPageBuildAsync(Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(Templates.Platforms.LandingPageProject(project.Name), "the landing page", progress, cancellationToken);
+
     public Task<StepResult> BuildProjectAsync(string path, Action<string> progress, CancellationToken cancellationToken)
         => BuildAsync(path, Path.GetFileNameWithoutExtension(path), progress, cancellationToken);
 
@@ -519,18 +522,34 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public RunningProject? Workbench { get; private set; }
 
+    public RunningProject? LandingPage { get; private set; }
+
     public async Task<StepResult> WorkbenchRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, project.WorkbenchDirectory))}";
+        var (result, running) = await RunUntilClosedAsync(project.WorkbenchDirectory, "the Workbench", progress, cancellationToken);
+        Workbench = running;
+        return result;
+    }
 
-        if (ReadLaunchUrl(project.WorkbenchDirectory) is not { } url)
-            return StepResult.Skipped("Didn't start the Workbench", "it has no URL in its launchSettings.json");
+    public async Task<StepResult> LandingPageRunAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var (result, running) = await RunUntilClosedAsync(project.LandingPageDirectory, "the landing page", progress, cancellationToken);
+        LandingPage = running;
+        return result;
+    }
+
+    private async Task<(StepResult Result, RunningProject? Running)> RunUntilClosedAsync(string directory, string name, Action<string> progress, CancellationToken cancellationToken)
+    {
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, directory))}";
+
+        if (ReadLaunchUrl(directory) is not { } url)
+            return (StepResult.Skipped($"Didn't start {name}", "it has no URL in its launchSettings.json"), null);
 
         var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var run = RunUntilStoppedAsync(new ProcessSpec
         {
             FileName = "dotnet",
-            Arguments = ["run", "--project", project.WorkbenchDirectory, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+            Arguments = ["run", "--project", directory, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
             WorkingDirectory = project.Directory,
             Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
         }, running.Token);
@@ -545,11 +564,10 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         {
             await StopAsync();
             running.Dispose();
-            return StepResult.Warning("Couldn't start the Workbench", reason, followUp);
+            return (StepResult.Warning($"Couldn't start {name}", reason, followUp), null);
         }
 
-        Workbench = new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run };
-        return StepResult.Succeeded("Started the Workbench", url);
+        return (StepResult.Succeeded($"Started {name}", url), new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run });
     }
 
     private async Task<ProcessResult?> RunUntilStoppedAsync(ProcessSpec spec, CancellationToken cancellationToken)

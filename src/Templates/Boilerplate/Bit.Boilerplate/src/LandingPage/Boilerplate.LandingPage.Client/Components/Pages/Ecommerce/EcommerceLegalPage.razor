@@ -1,0 +1,14 @@
+@attribute [Route(EcommerceSite.Path + "/privacy")]
+@attribute [Route(EcommerceSite.Path + "/terms")]
+@attribute [Route(EcommerceSite.Path + "/cookies")]
+@attribute [Route(EcommerceSite.Path + "/imprint")]
+@attribute [Route(EcommerceSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/terms")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/accessibility")]
+@layout EcommerceLayout
+@inherits LandingPageBase
+
+<LegalPage Site="EcommerceSite.Info" />

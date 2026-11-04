@@ -195,6 +195,7 @@ public class BitTimePickerParamsTests : BunitTestContext
             DisallowedTimeErrorMessage = "Cascaded disallowed",
             DisableFuture = true,
             DropDirection = BitDropDirection.All,
+            ErrorMessageAriaLabel = "Cascaded error",
             HasBorder = false,
             HourInputAriaLabel = "Cascaded hour",
             HourStep = 2,
@@ -256,6 +257,7 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded disallowed", instance.DisallowedTimeErrorMessage);
         Assert.IsTrue(instance.DisableFuture);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
         Assert.IsFalse(instance.HasBorder);
         Assert.AreEqual("Cascaded hour", instance.HourInputAriaLabel);
         Assert.AreEqual(2, instance.HourStep);

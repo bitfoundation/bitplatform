@@ -1,0 +1,78 @@
+.lp-device {
+    position: relative;
+    overflow: hidden;
+    background: var(--lp-device-screen, var(--lp-surface));
+    color: var(--lp-fg);
+}
+
+.lp-device-phone {
+    width: var(--lp-device-width, 300px);
+    max-width: 100%;
+    aspect-ratio: 9 / 19.5;
+    padding: 10px;
+    border-radius: 46px;
+    background: var(--lp-device-body, #111214);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--lp-fg) 18%, transparent), 0 40px 80px -40px color-mix(in oklab, var(--lp-fg) 55%, transparent);
+
+    .lp-device-screen {
+        height: 100%;
+        overflow: hidden;
+        border-radius: 37px;
+        background: var(--lp-device-screen, var(--lp-bg));
+    }
+}
+
+.lp-device-island {
+    position: absolute;
+    z-index: 2;
+    top: 20px;
+    left: 50%;
+    width: 31%;
+    height: 22px;
+    border-radius: 12px;
+    background: var(--lp-device-body, #111214);
+    transform: translateX(-50%);
+}
+
+.lp-device-browser {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 0 0 1px var(--lp-line), 0 40px 80px -48px color-mix(in oklab, var(--lp-fg) 50%, transparent);
+
+    .lp-device-screen {
+        overflow: hidden;
+        background: var(--lp-device-screen, var(--lp-bg));
+    }
+}
+
+.lp-device-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding-inline: 14px;
+    border-bottom: 1px solid var(--lp-line);
+    background: var(--lp-bg-alt);
+
+    span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--lp-fg) 18%, transparent);
+    }
+}
+
+.lp-device-address {
+    flex: 1;
+    max-width: 320px;
+    margin-inline: auto;
+    padding: 3px 12px;
+    border-radius: 6px;
+    background: var(--lp-bg);
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

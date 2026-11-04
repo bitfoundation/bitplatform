@@ -155,7 +155,7 @@ public class PipelineTests
     public async Task Pipeline_Should_CreateTheContainerPasswordsInLettersAndDigits()
     {
         using var host = Repository();
-        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.REDIS_CACHE_PASSWORD }} ${{ secrets.REDIS_PERSISTENT_PASSWORD }} ${{ secrets.SERVERWEB_SETTINGS }}\n");
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.REDIS_CACHE_PASSWORD }} ${{ secrets.REDIS_PERSISTENT_PASSWORD }} ${{ secrets.SERVERWEB_SETTINGS }} ${{ secrets.LANDINGPAGE_SETTINGS }}\n");
         host.Runner.On("gh", "api repos/contoso/shop/environments/Production --silent", 0, "");
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
@@ -165,6 +165,7 @@ public class PipelineTests
         Assert.IsTrue(stored.Values.All(password => password.Length == 32 && password.All(char.IsAsciiLetterOrDigit)), string.Join(", ", stored.Values));
         Assert.AreEqual(3, stored.Values.Distinct().Count());
         Assert.IsFalse(host.FlatOutput.Contains("Skipped SERVERWEB_SETTINGS", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.FlatOutput.Contains("Skipped LANDINGPAGE_SETTINGS", StringComparison.Ordinal), host.Output);
     }
 
     [TestMethod]

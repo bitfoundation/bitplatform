@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 40" width="336" height="80">
+    <title>Lodgeboard</title>
+    <path d="M5 4h22a3 3 0 0 1 3 3v19.5L16 36 2 26.5V7a3 3 0 0 1 3-3z" fill="#1E2124" />
+    <circle cx="16" cy="11" r="2.6" fill="#E0B54A" />
+    <path d="M9 19h14M9 24h9" stroke="#E0B54A" stroke-width="2.4" stroke-linecap="round" />
+    <g transform="translate(42 2)" fill="none" stroke="#1E2124" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 4V24" />
+        <ellipse cx="11.5" cy="18" rx="4.6" ry="6" />
+        <ellipse cx="25" cy="18" rx="4.6" ry="6" />
+        <path d="M29.6 4V24" />
+        <ellipse cx="38.5" cy="18" rx="4.6" ry="6" />
+        <path d="M43.1 12V26.5C43.1 30 41 32 38.4 32C36.3 32 34.8 31 34 29.4" />
+        <path d="M47.6 18H56.6C56.6 14.4 54.8 12 52.1 12C49.4 12 47.5 14.6 47.5 18C47.5 21.4 49.4 24 52.2 24C54.2 24 55.6 23.1 56.4 21.6" />
+        <path d="M61.2 4V24" />
+        <ellipse cx="65.8" cy="18" rx="4.6" ry="6" />
+        <ellipse cx="79.2" cy="18" rx="4.6" ry="6" />
+        <ellipse cx="92.6" cy="18" rx="4.6" ry="6" />
+        <path d="M97.2 12V24" />
+        <path d="M102.6 24V12M102.6 17.6C102.6 14.2 104.6 12 108.2 12" />
+        <ellipse cx="115.6" cy="18" rx="4.6" ry="6" />
+        <path d="M120.2 4V24" />
+    </g>
+</svg>

@@ -18,6 +18,7 @@ public partial class BitToggle : BitInputBase<bool>
     private string? _liveText;
     private string? _announcedLiveText;
     private string? _errorId;
+    private string? _errorLabelId;
     private string? _labelId;
     private string? _buttonId;
     private string? _stateText;
@@ -161,12 +162,28 @@ public partial class BitToggle : BitInputBase<bool>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the toggle the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and the switch
+    /// references it through its aria-describedby attribute, so the same reason is read out on every later
+    /// focus too. A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking
     /// the toggle invalid in the same way.
     /// </summary>
     /// <remarks>
-    /// Only the plain <see cref="ErrorMessage"/> is announced by the live region, since a template is free
-    /// to render anything at all - set both to have a message that is both formatted and announced.
+    /// It replaces the message for a screen reader as well: a template is free to render anything at all, so
+    /// the live region announces <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when
+    /// that is not set - never the plain <see cref="ErrorMessage"/> it hides.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public RenderFragment? ErrorMessageTemplate { get; set; }
@@ -191,6 +208,8 @@ public partial class BitToggle : BitInputBase<bool>
     /// <remarks>
     /// A toggle failing its own validation stays invalid regardless of this parameter. Pair it with
     /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// On its own it says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a
+    /// reason to announce.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Invalid { get; set; }
@@ -462,6 +481,7 @@ public partial class BitToggle : BitInputBase<bool>
     protected override void OnInitialized()
     {
         _errorId = $"BitToggle-{UniqueId}-error";
+        _errorLabelId = $"BitToggle-{UniqueId}-error-label";
         _labelId = $"BitToggle-{UniqueId}-label";
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
@@ -484,10 +504,13 @@ public partial class BitToggle : BitInputBase<bool>
         SetStateText();
 
         // The live region is only rendered for a toggle that is wired to say something through it - one whose
-        // ErrorMessage is written at all, even as a null for now - so a page of plain switches does not carry
-        // an empty live region per switch. Once there it stays, since it has to be on the page before the
-        // text that is meant to be announced out of it.
-        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false || ErrorMessage.HasValue();
+        // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
+        // so a page of plain switches does not carry an empty live region per switch. Once there it stays, since
+        // it has to be on the page before the text that is meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || LiveText is not null;
 
         SyncLiveRegion();
 
@@ -575,13 +598,28 @@ public partial class BitToggle : BitInputBase<bool>
     protected override bool HasError => Invalid || HasErrorMessage;
 
     /// <summary>
-    /// What the live region carries, which is the plain error message and nothing else.
+    /// Whether <see cref="ErrorMessageAriaLabel"/> speaks for the rejection on screen: a template, which wins
+    /// over a plain message and is free to render anything at all, or the forced state without a message.
     /// </summary>
     /// <remarks>
-    /// Only the plain text, never the template: a template is free to render anything at all, and a live
-    /// region reading out a block of markup is worse than one saying nothing.
+    /// A whitespace label is no label - announcing it would leave the switch sounding accepted.
     /// </remarks>
-    private string? LiveText => ErrorMessage.HasValue() ? ErrorMessage : null;
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    /// <summary>
+    /// What the live region carries, which is the rejection on screen and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// It always matches what is shown: a plain message is its own text, while a template - never read out
+    /// itself, since a live region reading out a block of markup is worse than one saying nothing - is
+    /// announced through its label, or as "Invalid input" rather than left in silence. The forced state is
+    /// the one rejection only announced with a label of its own, its reason being explained elsewhere.
+    /// </remarks>
+    private string? LiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                : ErrorMessageTemplate is not null ? "Invalid input"
+                                : ErrorMessage.HasValue() ? ErrorMessage
+                                : null;
 
     /// <summary>
     /// Whether the toggle is busy, from the <see cref="Loading"/> parameter or from
@@ -784,7 +822,9 @@ public partial class BitToggle : BitInputBase<bool>
         _describedById = string.Join(' ', new[]
         {
             _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
-            HasErrorMessage ? _errorId : null,
+            // A label stands in for the template on focus as well, which may well be a bare icon with no
+            // text to describe the switch with at all.
+            HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
             HasDescription ? _descriptionId : null,
             AriaDescription.HasValue() ? _ariaDescriptionId : null,
             AriaDescribedby.HasValue() ? AriaDescribedby : null

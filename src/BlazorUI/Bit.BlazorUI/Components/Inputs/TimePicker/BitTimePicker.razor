@@ -447,11 +447,12 @@
     *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-tpc-vhd">
         @* The rejection wins over the time: the time says what the picker holds, this says what is wrong
-           with it. Text only, never ErrorMessageTemplate, which is arbitrary markup meant to be seen -
-           rendering it a second time here would duplicate its ids and its handlers. *@
-        @if (ErrorMessage.HasValue())
+           with it. Text only, never ErrorMessageTemplate itself, which is arbitrary markup meant to be seen -
+           rendering it a second time here would duplicate its ids and its handlers. A template is announced
+           through ErrorMessageAriaLabel instead, or as a bare "Invalid input". *@
+        @if (ErrorLiveText is not null)
         {
-            @ErrorMessage
+            @ErrorLiveText
         }
         else
         {
@@ -476,6 +477,13 @@
                 <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
             }
         </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-tpc-vhd">@ErrorMessageAriaLabel</span>
     }
 
     @if (HasDescription)

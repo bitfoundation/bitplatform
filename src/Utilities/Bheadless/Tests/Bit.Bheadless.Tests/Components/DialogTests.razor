@@ -141,4 +141,30 @@
         var options = (IDictionary<string, object?>)JSInterop.Invocations["floating.open"][open - 1].Arguments[2]!;
         return (ElementReference)((IDictionary<string, object?>)options["focus"]!)["autoFocus"]!;
     }
+
+    [TestMethod]
+    public void A_CloseButton_rendered_as_a_link_stays_a_link()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Info">
+                    <BitBhCloseButton As="a" href="/docs">Read the docs</BitBhCloseButton>
+                    <BitBhCloseButton As="a">Close</BitBhCloseButton>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        // A link with an href is focusable, activates with Enter and is announced as a link by itself.
+        var link = cut.Find("a[href]");
+        Assert.IsNull(link.GetAttribute("role"));
+        Assert.IsNull(link.GetAttribute("tabindex"));
+        Assert.IsNull(link.GetAttribute("data-bit-bh-keys"));
+        // Without one it is no link: it is made a button.
+        var bare = cut.Find("a:not([href])");
+        Assert.AreEqual("button", bare.GetAttribute("role"));
+        Assert.AreEqual("0", bare.GetAttribute("tabindex"));
+
+        link.Click();
+        Assert.IsFalse(open);
+    }
 }

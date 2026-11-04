@@ -77,7 +77,7 @@ public class NewWorkflowTests
     }
 
     [TestMethod]
-    public async Task WithoutARun_TheWorkbenchAndTheWebApp_Should_StillBeBuiltBeforeTheNativeApps()
+    public async Task WithoutARun_TheWorkbenchTheLandingPageAndTheWebApp_Should_StillBeBuiltBeforeTheNativeApps()
     {
         using var host = new TestHost(HostOs.Linux);
         var package = FakeTemplatePackage(host);
@@ -88,6 +88,7 @@ public class NewWorkflowTests
         Assert.AreEqual(0, exitCode, host.Output);
         AssertInOrder(host, [
             "build src/Workbench/Contoso.Workbench.csproj",
+            "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj",
             "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf",
@@ -102,7 +103,7 @@ public class NewWorkflowTests
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run" || c.FileName is "aspire"), Calls(host));
         Assert.IsFalse(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) is "build Contoso.slnx"), "The whole solution isn't built again: " + Calls(host));
         Assert.IsEmpty(host.Runner.Detached);
-        StringAssert.Contains(host.FlatOutput, "build the Workbench, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
+        StringAssert.Contains(host.FlatOutput, "build the Workbench, build the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
     }
 
     [TestMethod]
@@ -119,6 +120,7 @@ public class NewWorkflowTests
 
         AssertInOrder(host, [
             "build src/Workbench/Contoso.Workbench.csproj",
+            "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj",
             "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf",
@@ -129,20 +131,20 @@ public class NewWorkflowTests
             "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj",
             "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
         ]);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"), "Without a terminal the Workbench is only built: " + Calls(host));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"), "Without a terminal the Workbench and the landing page are only built: " + Calls(host));
         StringAssert.Contains(host.FlatOutput, "Started and stopped the project with Aspire");
         StringAssert.Contains(host.FlatOutput, "Contoso is ready");
     }
 
     [TestMethod]
-    public async Task ThePlan_Should_OpenTheWorkbenchFirstAndSetUpTheNativeAppsLast()
+    public async Task ThePlan_Should_OpenTheWorkbenchThenTheLandingPageAndSetUpTheNativeAppsLast()
     {
         using var host = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
         host.AllToolsInstalled();
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--platforms", "android", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, build and open the Workbench, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
+        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, build and open the Workbench, build and open the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
     }
 
     [TestMethod]
@@ -323,7 +325,7 @@ public class NewWorkflowTests
 
     private static void WriteProject(string directory, string name)
     {
-        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj", Platforms.WorkbenchProject(name)];
+        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj", Platforms.WorkbenchProject(name), $"src/LandingPage/{name}.LandingPage.Client/{name}.LandingPage.Client.csproj", Platforms.LandingPageProject(name)];
         string[] solution = [.. web, Platforms.MauiProject(name), Platforms.WindowsProject(name)];
 
         Directory.CreateDirectory(directory);
@@ -342,6 +344,10 @@ public class NewWorkflowTests
         var properties = Directory.CreateDirectory(Path.Combine(directory, "src", "Workbench", "Properties")).FullName;
         File.WriteAllText(Path.Combine(directory, Platforms.WorkbenchProject(name)), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
         File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{name}}.Workbench": { "commandName": "Project", "applicationUrl": "http://localhost:6030" } } }""");
+
+        var landingPage = Directory.CreateDirectory(Path.Combine(directory, "src", "LandingPage", $"{name}.LandingPage.Server", "Properties")).FullName;
+        File.WriteAllText(Path.Combine(directory, Platforms.LandingPageProject(name)), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
+        File.WriteAllText(Path.Combine(landingPage, "launchSettings.json"), $$"""{ "profiles": { "{{name}}.LandingPage.Server": { "commandName": "Project", "applicationUrl": "http://localhost:7030" } } }""");
     }
 
     private static void AssertInOrder(TestHost host, string[] expected)

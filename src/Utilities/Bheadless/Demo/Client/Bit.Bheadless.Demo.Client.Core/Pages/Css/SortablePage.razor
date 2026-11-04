@@ -1,137 +1,142 @@
 ﻿@page "/sortable"
 
-<PageTitle>Sortable — bit Bheadless</PageTitle>
+<PageTitle>Sortable · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Sortable</h1>
-        <p>Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
-        <SectionSwitcher Slug="sortable" />
-    </header>
+<div class="bb-intro">
+    <h1>Sortable</h1>
+    <p class="bb-subtitle">Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
+</div>
 
-    <DemoBlock Title="Reorderable task list"
-               Code="@_tasksCode"
-               Css="@_tasksCss">
-        <Description>
-            Bind the list with <code>@@bind-Items</code>; <code>ItemKey</code> keeps each row's identity
-            stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
-            finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
-            <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
-            <kbd>Escape</kbd> to cancel. Each step is announced automatically.
-        </Description>
-        <LiveContent>
-            <div class="sortable-demo">
-                <BitBhSortable TItem="TaskItem" @bind-Items="tasks"
-                            ItemKey="t => t.Id" ItemLabel="t => t.Title"
-                            aria-label="Tasks" class="sortable-list" Context="s">
-                    <BitBhSortableHandle TItem="TaskItem" class="sortable-handle"
-                                      aria-label="@($"Reorder {s.Item.Title}")">⠿</BitBhSortableHandle>
-                    <span class="sortable-title">@s.Item.Title</span>
-                    <span class="sortable-tag">@s.Item.Tag</span>
-                </BitBhSortable>
-                <p class="sortable-output">
-                    Bound order (ids): <strong>@string.Join(" · ", tasks.Select(t => t.Id))</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<SectionSwitcher Slug="sortable" />
 
-    <DemoBlock Title="OnReorder event log"
-               Code="@_logCode"
-               Css="@_logCss">
-        <Description>
-            <code>OnReorder</code> fires once per committed move with the item and its old and new
-            index — handy for persisting the order or sending a PATCH. Moves cancelled with
-            <kbd>Escape</kbd> (or dropped in place) don't fire it.
-        </Description>
-        <LiveContent>
-            <div class="sortable-split">
-                <BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
-                            aria-label="Sprint backlog" class="sortable-list" Context="s">
-                    <BitBhSortableHandle TItem="string" class="sortable-handle"
-                                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
-                    <span class="sortable-title">@s.Item</span>
-                </BitBhSortable>
+<DemoBlock Title="Reorderable task list"
+           Code="@_tasksCode"
+           Css="@_tasksCss">
+    <Description>
+        Bind the list with <code>@@bind-Items</code>; <code>ItemKey</code> keeps each row's identity
+        stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
+        finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
+        <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
+        <kbd>Escape</kbd> to cancel. Each step is announced automatically. The moving item and the root
+        carry <code>data-dragging</code>, and a handle picked up with the keyboard gets
+        <code>aria-pressed="true"</code>. The sortable renders the <code>&lt;li&gt;</code> items itself,
+        so they're styled from the list: a <code>.sortable-list &gt; li</code> selector in the CSS
+        version, the <code>*:</code> variant in the Tailwind version.
+    </Description>
+    <LiveContent>
+        <div class="sortable-demo">
+            <BitBhSortable TItem="TaskItem" @bind-Items="tasks"
+                        ItemKey="t => t.Id" ItemLabel="t => t.Title"
+                        aria-label="Tasks" class="sortable-list" Context="s">
+                <BitBhSortableHandle TItem="TaskItem" class="sortable-handle"
+                                  aria-label="@($"Reorder {s.Item.Title}")">⠿</BitBhSortableHandle>
+                <span class="sortable-title">@s.Item.Title</span>
+                <span class="sortable-tag">@s.Item.Tag</span>
+            </BitBhSortable>
+            <p class="sortable-output">
+                Bound order (ids): <strong>@string.Join(" · ", tasks.Select(t => t.Id))</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-                <ol class="sortable-log" aria-label="Reorder events">
-                    @if (reorderLog.Count == 0)
-                    {
-                        <li class="sortable-log-empty">No moves yet — reorder an item.</li>
-                    }
-                    @foreach (var entry in reorderLog)
-                    {
-                        <li>@entry</li>
-                    }
-                </ol>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Horizontal orientation"
-               Code="@_horizontalCode"
-               Css="@_horizontalCss">
-        <Description>
-            Set <code>Orientation="BitBhOrientation.Horizontal"</code> for a row: pointer drags shift
-            siblings sideways and, once picked up, <kbd>←</kbd> / <kbd>→</kbd> move the item. Here the
-            whole chip is the <code>BitBhSortableHandle</code>, so its text becomes the accessible name.
-        </Description>
-        <LiveContent>
-            <div class="sortable-demo">
-                <BitBhSortable TItem="string" @bind-Items="priorities"
-                            Orientation="BitBhOrientation.Horizontal"
-                            aria-label="Priorities" class="sortable-row" Context="s">
-                    <BitBhSortableHandle TItem="string" class="sortable-chip">
-                        <span class="sortable-chip-grip" aria-hidden="true">⠿</span>@s.Item
-                    </BitBhSortableHandle>
-                </BitBhSortable>
-                <p class="sortable-output">
-                    Ranking: <strong>@string.Join(" › ", priorities)</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Custom announcements"
-               Code="@_announcementsCode"
-               Css="@_announcementsCss">
-        <Description>
-            Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
-            hear: the <code>Instructions</code> every handle is described by, plus the
-            <code>PickedUp</code>, <code>Moved</code>, <code>Dropped</code> and <code>Cancelled</code>
-            messages. The template's <code>Index</code> is the live (preview) position.
-        </Description>
-        <LiveContent>
-            <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
-                        aria-label="Up next" class="sortable-list" Context="s">
+<DemoBlock Title="OnReorder event log"
+           Code="@_logCode"
+           Css="@_logCss">
+    <Description>
+        <code>OnReorder</code> fires once per committed move with the item and its old and new
+        index — handy for persisting the order or sending a PATCH. Moves cancelled with
+        <kbd>Escape</kbd> (or dropped in place) don't fire it.
+    </Description>
+    <LiveContent>
+        <div class="sortable-split">
+            <BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
+                        aria-label="Sprint backlog" class="sortable-list" Context="s">
                 <BitBhSortableHandle TItem="string" class="sortable-handle"
-                                  aria-label="@($"Move {s.Item}")">⠿</BitBhSortableHandle>
-                <span class="sortable-index">@(s.Index + 1)</span>
+                                  aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
                 <span class="sortable-title">@s.Item</span>
             </BitBhSortable>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Disabled"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every
-            item get <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>.
-            The lock below is a <code>BitBhToggle</code>.
-        </Description>
-        <LiveContent>
-            <div class="sortable-demo">
-                <BitBhToggle @bind-Pressed="locked" class="sortable-lock">Lock order</BitBhToggle>
-                <BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
-                            aria-label="Onboarding steps" class="sortable-list" Context="s">
-                    <BitBhSortableHandle TItem="string" class="sortable-handle"
-                                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
-                    <span class="sortable-title">@s.Item</span>
-                </BitBhSortable>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <ol class="sortable-log" aria-label="Reorder events">
+                @if (reorderLog.Count == 0)
+                {
+                    <li class="sortable-log-empty">No moves yet — reorder an item.</li>
+                }
+                @foreach (var entry in reorderLog)
+                {
+                    <li>@entry</li>
+                }
+            </ol>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Horizontal orientation"
+           Code="@_horizontalCode"
+           Css="@_horizontalCss">
+    <Description>
+        Set <code>Orientation="BitBhOrientation.Horizontal"</code> for a row: pointer drags shift
+        siblings sideways and, once picked up, <kbd>←</kbd> / <kbd>→</kbd> move the item. Here the
+        whole chip is the <code>BitBhSortableHandle</code>, so its text becomes the accessible name.
+    </Description>
+    <LiveContent>
+        <div class="sortable-demo">
+            <BitBhSortable TItem="string" @bind-Items="priorities"
+                        Orientation="BitBhOrientation.Horizontal"
+                        aria-label="Priorities" class="sortable-row" Context="s">
+                <BitBhSortableHandle TItem="string" class="sortable-chip">
+                    <span class="sortable-chip-grip" aria-hidden="true">⠿</span>@s.Item
+                </BitBhSortableHandle>
+            </BitBhSortable>
+            <p class="sortable-output">
+                Ranking: <strong>@string.Join(" › ", priorities)</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Custom announcements"
+           Code="@_announcementsCode"
+           Css="@_announcementsCss">
+    <Description>
+        Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
+        hear: the <code>Instructions</code> every handle is described by, plus the
+        <code>PickedUp</code>, <code>Moved</code>, <code>Dropped</code> and <code>Cancelled</code>
+        messages. The template's <code>Index</code> is the live (preview) position.
+    </Description>
+    <LiveContent>
+        <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
+                    aria-label="Up next" class="sortable-list" Context="s">
+            <BitBhSortableHandle TItem="string" class="sortable-handle"
+                              aria-label="@($"Move {s.Item}")">⠿</BitBhSortableHandle>
+            <span class="sortable-index">@(s.Index + 1)</span>
+            <span class="sortable-title">@s.Item</span>
+        </BitBhSortable>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every item get
+        <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>: the CSS version
+        styles them with <code>[data-disabled]</code> / <code>[aria-disabled="true"]</code> selectors,
+        the Tailwind version with the <code>data-disabled:</code> / <code>aria-disabled:</code>
+        variants. The lock below is a <code>BitBhToggle</code>.
+    </Description>
+    <LiveContent>
+        <div class="sortable-demo">
+            <BitBhToggle @bind-Pressed="locked" class="sortable-lock">Lock order</BitBhToggle>
+            <BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
+                        aria-label="Onboarding steps" class="sortable-list" Context="s">
+                <BitBhSortableHandle TItem="string" class="sortable-handle"
+                                  aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
+                <span class="sortable-title">@s.Item</span>
+            </BitBhSortable>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     public sealed record TaskItem(int Id, string Title, string Tag);
@@ -411,7 +416,8 @@
     display: flex;
     gap: 0.5rem;
     margin: 0;
-    padding: 0;
+    padding: 0.25rem;
+    overflow-x: auto;
     list-style: none;
 }
 
@@ -483,6 +489,8 @@
     background: #fafafa;
     color: #71717a;
 }
+
+.sortable-list[data-disabled] .sortable-title { color: #71717a; }
 
 .sortable-handle[aria-disabled="true"] { cursor: not-allowed; opacity: 0.5; }
 

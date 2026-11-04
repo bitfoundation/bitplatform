@@ -1,0 +1,14 @@
+@attribute [Route(CrmSite.Path + "/privacy")]
+@attribute [Route(CrmSite.Path + "/terms")]
+@attribute [Route(CrmSite.Path + "/cookies")]
+@attribute [Route(CrmSite.Path + "/imprint")]
+@attribute [Route(CrmSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/terms")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/accessibility")]
+@layout CrmLayout
+@inherits LandingPageBase
+
+<LegalPage Site="CrmSite.Info" />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -3582,8 +3583,45 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsNotNull(component.Find("#custom-error"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
 
-        // Only the plain text is announced, since a template is free to render anything at all.
-        Assert.AreEqual(string.Empty, component.Find(".bit-srb-elv").TextContent);
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // staying silent and leaving the field sounding accepted.
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "عبارت جستجو کوتاه است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        var label = component.Find($"#{component.Find(".bit-srb-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("عبارت جستجو کوتاه است", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual("عبارت جستجو کوتاه است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-srb-ard"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitSearchBoxBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]
@@ -4370,6 +4408,75 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(inputId, unregistrations[0].Arguments[0]);
         Assert.AreEqual(1, clears.Count);
         Assert.AreEqual(calloutId, clears[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxDisposeShouldKeepItsDotNetReferenceUntilTheCalloutIsCleared()
+    {
+        // The script answers later, the way it does in a browser: until the callout is cleared a click outside of it
+        // still calls back through the reference it was opened with.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle")));
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var reference = (DotNetObjectReference<BitSearchBox>)toggle.Arguments[0]!;
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, clear.Invocations);
+        Assert.AreSame(searchBox, reference.Value);
+
+        clear.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldIgnoreACloseItsCalloutSendsWhileItIsBeingDisposed()
+    {
+        // An outer callout cleared as it goes away along with the search box dismisses the suggestions too, through
+        // the reference that is alive until the teardown returns - which is no toggle of them to report.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => CollectionAssert.Contains(toggles, true));
+
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => searchBox._CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        clear.SetVoidResult();
+        await disposal;
+
+        CollectionAssert.DoesNotContain(toggles, false);
     }
 
     [TestMethod]

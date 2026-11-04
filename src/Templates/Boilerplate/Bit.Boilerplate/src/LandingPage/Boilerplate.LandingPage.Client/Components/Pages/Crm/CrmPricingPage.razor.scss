@@ -1,0 +1,538 @@
+@import '../../../Styles/tokens';
+
+.crm-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lp-fg-muted);
+    font-family: var(--crm-figures);
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+
+    &::before {
+        content: "";
+        width: 18px;
+        height: 2px;
+        background: var(--lp-accent);
+    }
+
+    &:lang(fa) {
+        font-size: .8125rem;
+        letter-spacing: 0;
+    }
+}
+
+.crm-kicker-ink {
+    color: var(--crm-ink-muted);
+
+    &::before {
+        background: var(--crm-signal);
+    }
+}
+
+.crm-figure {
+    font-family: var(--crm-figures);
+    font-feature-settings: "tnum";
+    letter-spacing: -.01em;
+}
+
+.crm-head {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    gap: 14px;
+    max-width: 720px;
+    margin-bottom: clamp(28px, 4vw, 44px);
+
+    .lp-title {
+        font-weight: 700;
+        letter-spacing: -.03em;
+
+        &:lang(fa) {
+            line-height: 1.35;
+        }
+    }
+}
+
+.crm-pricing-hero {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding-block: clamp(44px, 6vw, 80px) 32px;
+
+    > * {
+        max-width: 860px;
+    }
+
+    h1 {
+        font-size: clamp(2.4rem, 1.7rem + 3vw, 4.25rem);
+        font-weight: 700;
+        letter-spacing: -.035em;
+        line-height: 1.02;
+
+        &:lang(fa) {
+            font-size: clamp(2rem, 1.5rem + 2.2vw, 3.25rem);
+            line-height: 1.3;
+        }
+    }
+}
+
+.crm-plans {
+    display: grid;
+    gap: 24px;
+    padding-bottom: clamp(56px, 7vw, 96px);
+}
+
+.crm-plan-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px 32px;
+    padding-block: 18px;
+    border-block: 1px solid var(--lp-line);
+}
+
+::deep .crm-segmented {
+    --bit-ChoiceGroup-gap: 6px;
+    --bit-ChoiceGroup-padding: 0;
+    --bit-ChoiceGroup-label-font-weight: 600;
+    --bit-ChoiceGroup-label-font-size: .8125rem;
+    --bit-ChoiceGroup-label-color: var(--lp-fg-muted);
+}
+
+.crm-segment {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid color-mix(in oklab, var(--lp-line), var(--lp-fg) 18%);
+    border-radius: 6px;
+    background: var(--lp-surface);
+    color: var(--lp-fg);
+    font-size: .875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color .15s, color .15s, border-color .15s;
+
+    em {
+        padding: 1px 6px;
+        border-radius: 3px;
+        background: var(--lp-accent-soft);
+        color: var(--lp-accent);
+        font-size: .75rem;
+        font-style: normal;
+        font-weight: 600;
+    }
+
+    &.is-selected {
+        border-color: var(--crm-strong);
+        background: var(--crm-strong);
+        color: var(--crm-strong-fg);
+
+        em {
+            background: var(--crm-signal);
+            color: var(--crm-signal-fg);
+        }
+    }
+}
+
+.crm-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+
+    @media (max-width: 1099px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crm-plan {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto auto 1fr;
+    align-content: start;
+    gap: 14px;
+    padding: 24px 22px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+
+    header {
+        display: grid;
+        gap: 6px;
+        min-height: 5.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -.02em;
+    }
+
+    &.is-popular {
+        border: 2px solid var(--lp-accent);
+        padding: 23px 21px;
+        box-shadow: 0 24px 50px -36px color-mix(in oklab, var(--lp-accent) 70%, transparent);
+    }
+
+    &.is-enterprise {
+        border-style: dashed;
+        border-color: color-mix(in oklab, var(--lp-line), var(--lp-fg) 30%);
+        background: var(--lp-bg-alt);
+    }
+}
+
+.crm-plan-flag {
+    position: absolute;
+    top: -12px;
+    inset-inline-start: 20px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    background: var(--lp-accent);
+    color: var(--lp-accent-fg);
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+.crm-plan-summary {
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+}
+
+.crm-plan-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+
+    .crm-figure {
+        font-size: 2.5rem;
+        font-weight: 500;
+        letter-spacing: -.04em;
+        line-height: 1;
+        white-space: nowrap;
+
+        small {
+            font-size: .5em;
+            letter-spacing: -.02em;
+            vertical-align: .72em;
+        }
+    }
+}
+
+.crm-plan-custom {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1.25;
+}
+
+.crm-plan-unit {
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.crm-plan-billing {
+    min-height: 2.9em;
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+    line-height: 1.45;
+}
+
+.crm-plan-saving {
+    color: var(--lp-accent);
+    font-weight: 600;
+}
+
+.crm-plan-features {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    margin: 6px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--lp-line);
+    list-style: none;
+    font-size: .875rem;
+
+    li {
+        display: grid;
+        grid-template-columns: 16px minmax(0, 1fr);
+        gap: 10px;
+        line-height: 1.45;
+    }
+
+    ::deep .crm-plan-check {
+        margin-top: 3px;
+        color: var(--lp-accent);
+    }
+}
+
+.crm-plan-note {
+    max-width: 82ch;
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.crm-trial {
+    background: var(--lp-bg-alt);
+}
+
+.crm-trial-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 32px clamp(32px, 6vw, 88px);
+
+    .crm-head {
+        margin-bottom: 0;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crm-trial-steps {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1.5px solid var(--lp-fg);
+    list-style: none;
+
+    li {
+        display: grid;
+        grid-template-columns: 6.5rem minmax(0, 1fr);
+        gap: 16px;
+        padding-block: 20px;
+        border-bottom: 1px solid var(--lp-line);
+    }
+
+    h3 {
+        margin-bottom: 4px;
+        font-size: 1.0625rem;
+        font-weight: 650;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+    }
+
+    .crm-trial-day {
+        padding-top: 2px;
+        color: var(--lp-accent);
+        font-size: .875rem;
+        font-weight: 600;
+    }
+}
+
+.crm-matrix-table {
+    border-top: 1.5px solid var(--lp-fg);
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    th,
+    td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--lp-line);
+        font-size: .875rem;
+        text-align: start;
+        vertical-align: top;
+    }
+
+    thead th {
+        position: sticky;
+        top: var(--lp-nav-height);
+        z-index: 1;
+        background: var(--lp-bg);
+        font-size: .9375rem;
+        font-weight: 700;
+    }
+
+    thead td {
+        width: 34%;
+    }
+
+    tbody th[scope="row"] {
+        font-weight: 500;
+    }
+
+    td {
+        color: var(--lp-fg-muted);
+    }
+
+    .is-popular {
+        background: var(--lp-surface);
+        box-shadow: inset 1px 0 0 var(--lp-line), inset -1px 0 0 var(--lp-line);
+        color: var(--lp-fg);
+    }
+
+    thead th.is-popular {
+        background: var(--lp-surface);
+        box-shadow: inset 0 3px 0 var(--lp-accent), inset 1px 0 0 var(--lp-line), inset -1px 0 0 var(--lp-line);
+    }
+
+    ::deep .crm-yes {
+        color: var(--lp-fg);
+        font-size: 1rem;
+    }
+
+    .crm-no {
+        color: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 30%);
+    }
+}
+
+.crm-matrix-group th {
+    padding-top: 26px;
+    border-bottom: 1px solid var(--lp-fg);
+    color: var(--lp-fg);
+    font-family: var(--crm-figures);
+    font-size: .75rem !important;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+
+    &:lang(fa) {
+        font-size: .875rem !important;
+        letter-spacing: 0;
+    }
+}
+
+::deep .crm-matrix-pick {
+    display: none;
+    margin-bottom: 20px;
+
+    @include lt-md {
+        display: block;
+    }
+}
+
+@include lt-md {
+    .crm-matrix-table {
+        table {
+            table-layout: auto;
+        }
+
+        thead td {
+            width: 55%;
+        }
+
+        thead th,
+        tbody td {
+            display: none;
+        }
+
+        @for $i from 0 through 3 {
+            &[data-plan="#{$i}"] {
+                thead th:nth-child(#{$i + 2}),
+                tbody td:nth-child(#{$i + 2}) {
+                    display: table-cell;
+                }
+            }
+        }
+    }
+}
+
+.crm-enterprise {
+    padding-block: clamp(56px, 7vw, 96px);
+    background: var(--crm-ink);
+    color: var(--crm-ink-fg);
+}
+
+.crm-enterprise-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 32px clamp(32px, 6vw, 88px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crm-enterprise-text {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+
+    h2 {
+        font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -.03em;
+        line-height: 1.05;
+
+        &:lang(fa) {
+            line-height: 1.35;
+        }
+    }
+
+    > p:not(.crm-kicker) {
+        max-width: 52ch;
+        color: var(--crm-ink-muted);
+        font-size: 1.0625rem;
+    }
+
+    ::deep .crm-enterprise-sales {
+        --bit-Button-background: var(--crm-signal);
+        --bit-Button-border-color: var(--crm-signal);
+        --bit-Button-color: var(--crm-signal-fg);
+        --bit-Button-hover-background: color-mix(in oklab, var(--crm-signal), #FFFFFF 12%);
+        --bit-Button-hover-border-color: color-mix(in oklab, var(--crm-signal), #FFFFFF 12%);
+        --bit-Button-hover-color: var(--crm-signal-fg);
+    }
+}
+
+.crm-enterprise-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 20px;
+    margin-top: 8px;
+}
+
+.crm-enterprise-phone {
+    color: var(--crm-ink-muted);
+    font-family: var(--crm-figures);
+    font-size: .9375rem;
+}
+
+.crm-enterprise-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--crm-ink-line-strong);
+    list-style: none;
+
+    li {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 14px;
+        padding-block: 16px;
+        border-bottom: 1px solid var(--crm-ink-line);
+    }
+
+    ::deep .crm-enterprise-icon {
+        margin-top: 3px;
+        color: var(--crm-signal);
+    }
+}
+
+.crm-billing-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: 28px clamp(32px, 6vw, 88px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

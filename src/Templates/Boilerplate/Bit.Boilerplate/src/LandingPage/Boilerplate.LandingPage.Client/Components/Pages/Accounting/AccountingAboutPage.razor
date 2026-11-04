@@ -1,0 +1,80 @@
+@attribute [Route(AccountingSite.Path + "/about")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/about")]
+@layout AccountingLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{A[nameof(AccountingStrings.AboutTitle)]} | Sumwise")"
+             Description="@A[nameof(AccountingStrings.AboutDescription)]"
+             Path="@($"{AccountingSite.Path}/about")"
+             Site="AccountingSite.Info" />
+
+<section class="lp-container acc-about-hero" aria-labelledby="acc-about-title">
+    <p class="acc-eyebrow">@L[nameof(LandingStrings.About)]</p>
+    <h1 id="acc-about-title">@A[nameof(AccountingStrings.AboutTitle)]</h1>
+    <p class="lp-lede">@A[nameof(AccountingStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container acc-story" aria-labelledby="acc-story-title">
+    <div class="acc-story-text">
+        <h2 id="acc-story-title">@A[nameof(AccountingStrings.StoryTitle)]</h2>
+        <p>@A[nameof(AccountingStrings.StoryBody1)]</p>
+        <p>@A[nameof(AccountingStrings.StoryBody2)]</p>
+    </div>
+    <figure class="acc-note">
+        <blockquote>@A[nameof(AccountingStrings.StoryQuote)]</blockquote>
+        <figcaption>@A[nameof(AccountingStrings.StoryQuoteBy)]</figcaption>
+    </figure>
+</section>
+
+<section class="lp-section acc-promises" aria-labelledby="acc-promises-title">
+    <div class="lp-container">
+        <h2 id="acc-promises-title">@A[nameof(AccountingStrings.PromisesTitle)]</h2>
+        <ul>
+            @foreach (var (title, body) in promises)
+            {
+                <li>
+                    <h3>@A[title]</h3>
+                    <p>@A[body]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-section acc-team" aria-labelledby="acc-team-title">
+    <div class="lp-container">
+        <h2 id="acc-team-title">@A[nameof(AccountingStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role) in team)
+            {
+                <li>
+                    <span class="acc-team-mark" aria-hidden="true">@Initials(A[name])</span>
+                    <strong>@A[name]</strong>
+                    <span>@A[role]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container acc-contact" aria-labelledby="acc-contact-title">
+    <div class="acc-contact-text">
+        <h2 id="acc-contact-title">@A[nameof(AccountingStrings.ContactTitle)]</h2>
+        <p>@A[nameof(AccountingStrings.ContactBody)]</p>
+        <div class="acc-contact-links">
+            <BitButton Href="@($"mailto:{AccountingSite.Info.Company.Email}")" IconName="@BitIconName.Mail"><span dir="ltr">@AccountingSite.Info.Company.Email</span></BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{AccountingSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@AccountingSite.Info.Company.Phone</span></BitButton>
+        </div>
+        <p class="acc-contact-hours">@A[nameof(AccountingStrings.ContactHours)]</p>
+    </div>
+    <div class="acc-company">
+        <h3>@A[nameof(AccountingStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@AccountingSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd>@AccountingSite.Info.Company.Address</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@AccountingSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@AccountingSite.Info.Company.RegistrationNumber</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@AccountingSite.Info.Company.VatId</dd></div>
+        </dl>
+    </div>
+</section>

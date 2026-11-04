@@ -293,7 +293,8 @@ private void LogOnBlur()
 
 <BitToggle Label=""Marked invalid, explained elsewhere"" Invalid />
 
-<BitToggle Label=""Public profile"" OnText=""Anyone can see it"">
+<BitToggle Label=""Public profile"" OnText=""Anyone can see it""
+           ErrorMessageAriaLabel=""This conflicts with your privacy settings."">
     <ErrorMessageTemplate>
         This conflicts with your
         <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">privacy settings</BitLink>.

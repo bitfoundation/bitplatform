@@ -1038,7 +1038,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     private async Task SetupJsAsync()
     {
-        if (IsDisposed || _dotnetObj is null) return;
+        // IsDisposing rather than IsDisposed: the reference stays alive until the script is disposed, and a render
+        // still finishing then must not set the observer up again behind the disposal's back.
+        if (IsDisposing || _dotnetObj is null) return;
 
         // A pending scroll correction observes the sentinel itself once the scroll is where it belongs, so the
         // observer must not start out watching a sentinel that is still sitting in the viewport.
@@ -1162,16 +1164,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         CancelLoad();
 
-        _dotnetObj?.Dispose();
+        // The observer still asks for the next page through the reference until it is disconnected.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitInfiniteScrollingDispose(UniqueId));
         _dotnetObj = null;
-
-        try
-        {
-            await _js.BitInfiniteScrollingDispose(UniqueId);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (OperationCanceledException) { } // the renderer is being torn down along with the component
-        catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
 
         await base.DisposeAsync(disposing);
     }

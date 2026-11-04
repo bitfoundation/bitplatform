@@ -1,0 +1,82 @@
+.retail-map {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.retail-map-land {
+    fill: var(--lp-bg-alt);
+}
+
+.retail-map-park {
+    fill: color-mix(in oklab, var(--retail-park) 30%, var(--lp-bg-alt));
+}
+
+.retail-map-water {
+    fill: color-mix(in oklab, var(--retail-water) 26%, var(--lp-bg-alt));
+}
+
+.retail-map-river {
+    fill: none;
+    stroke: color-mix(in oklab, var(--retail-water) 40%, var(--lp-bg-alt));
+    stroke-width: 14;
+}
+
+.retail-map-stream {
+    fill: none;
+    stroke: color-mix(in oklab, var(--retail-water) 34%, var(--lp-bg-alt));
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.retail-map-canal {
+    fill: none;
+    stroke: color-mix(in oklab, var(--retail-water) 45%, var(--lp-bg-alt));
+    stroke-width: 3;
+    stroke-dasharray: 2 6;
+    stroke-linecap: round;
+}
+
+.retail-map-road {
+    fill: none;
+    stroke: var(--lp-fg);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: .9;
+}
+
+.retail-map-stop-ring {
+    fill: var(--lp-surface);
+    stroke: var(--lp-fg);
+    stroke-width: 4;
+    transition: r .25s var(--lp-ease);
+}
+
+.retail-map-stop-dot {
+    fill: var(--lp-accent);
+}
+
+.retail-map-stop.is-selected {
+    .retail-map-stop-ring {
+        fill: var(--lp-accent);
+        stroke: var(--lp-fg);
+    }
+
+    .retail-map-stop-dot {
+        fill: var(--lp-surface);
+    }
+}
+
+.retail-map-label {
+    fill: var(--lp-fg);
+    font-size: 17px;
+    font-weight: 800;
+    font-stretch: 112%;
+    paint-order: stroke;
+    stroke: var(--lp-bg-alt);
+    stroke-width: 5;
+    stroke-linejoin: round;
+}

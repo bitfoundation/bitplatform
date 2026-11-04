@@ -284,7 +284,7 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to practise first?</h3>
-                <p class="bb-card-desc">Twenty-four real problems are planted in this app, each with the steps from the symptom to its cause.</p>
+                <p class="bb-card-desc">Twenty-six real problems are planted in this app, each with the steps from the symptom to its cause.</p>
                 <a href="problems" class="btn btn-outline">Problems to diagnose →</a>
             </section>
             <section class="bb-card">
@@ -348,7 +348,7 @@ builder.Services.AddBevToolsStateProvider&lt;CartState&gt;();</pre>
                 <p>
                     Redacted when they are captured: by name (<code>password</code>, <code>token</code>,
                     <code>authorization</code>, …), by <code>[BevToolsSensitive]</code>, and in the browser before storage
-                    values reach .NET. Request and response bodies are never read, nothing is sent anywhere, and an export
+                    values reach .NET. Request and response bodies are not read unless the app turns that on, nothing is sent anywhere, and an export
                     contains exactly what the panels show.
                 </p>
             </details>

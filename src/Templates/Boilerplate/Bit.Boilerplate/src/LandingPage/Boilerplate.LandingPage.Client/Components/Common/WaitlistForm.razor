@@ -1,0 +1,77 @@
+@inherits LandingComponentBase
+
+<div class="lp-waitlist @Class" id="@Id">
+    @if (result is null)
+    {
+        <div class="lp-waitlist-fields">
+            <BitTextField @bind-Value="email"
+                          Type="BitInputType.Email"
+                          Label="@Localizer[nameof(LandingStrings.WaitlistEmailLabel)]"
+                          Placeholder="you@example.com"
+                          AutoComplete="email"
+                          Required
+                          Disabled="isSubmitting"
+                          OnEnter="Submit"
+                          Class="lp-waitlist-email" />
+            @if (ShowName)
+            {
+                <BitTextField @bind-Value="name"
+                              Label="@Localizer[nameof(LandingStrings.WaitlistNameLabel)]"
+                              AutoComplete="given-name"
+                              MaxLength="100"
+                              Disabled="isSubmitting" />
+            }
+            <BitButton Class="lp-waitlist-submit" OnClick="Submit" IsLoading="isSubmitting" LoadingLabel="@Localizer[nameof(LandingStrings.WaitlistSubmitting)]">
+                @(SubmitText ?? Localizer[nameof(LandingStrings.WaitlistSubmit)])
+            </BitButton>
+        </div>
+
+        @if (offeredPlatforms.Count > 1)
+        {
+            <fieldset class="lp-waitlist-platforms">
+                <legend>@Localizer[nameof(LandingStrings.WaitlistPlatformsLabel)]</legend>
+                @foreach (var platform in offeredPlatforms)
+                {
+                    <BitCheckbox Value="selectedPlatforms.Contains(platform)" ValueChanged="(bool v) => Toggle(platform, v)" Label="@Localizer[$"Platform{platform}"]" Disabled="isSubmitting" />
+                }
+            </fieldset>
+        }
+
+        @if (ShowUpdates)
+        {
+            <BitCheckbox @bind-Value="wantsUpdates" Label="@Localizer[nameof(LandingStrings.WaitlistUpdatesLabel)]" Disabled="isSubmitting" Class="lp-waitlist-updates" />
+        }
+
+        @* A honeypot, hidden from people and screen readers: whatever fills it in is a bot *@
+        <div class="lp-waitlist-trap" aria-hidden="true">
+            <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" @bind="website" /></label>
+        </div>
+
+        @if (error is not null)
+        {
+            <p class="lp-waitlist-error" role="alert">@error</p>
+        }
+        else
+        {
+            <p class="lp-waitlist-promise">@Localizer[nameof(LandingStrings.WaitlistPromise)]</p>
+        }
+    }
+    else
+    {
+        <div class="lp-waitlist-done" role="status">
+            <h3>@(result.ConfirmationSent ? Localizer[nameof(LandingStrings.WaitlistDoneTitle)] : Localizer[nameof(LandingStrings.WaitlistConfirmedTitle)])</h3>
+            <p>
+                @if (result.AlreadyJoined && result.ConfirmationSent is false)
+                {
+                    @Localizer[nameof(LandingStrings.WaitlistAlreadyJoined), result.Position.ToString("N0", CurrentCulture)]
+                }
+                else
+                {
+                    @Localizer[nameof(LandingStrings.WaitlistDoneBody), email ?? string.Empty, result.Position.ToString("N0", CurrentCulture)]
+                }
+            </p>
+            <p class="lp-waitlist-share-prompt">@Localizer[nameof(LandingStrings.WaitlistSharePrompt)]</p>
+            <ShareButtons Title="@Site.Name" Url="@NavigationManager.ToAbsoluteUri(LocalUrl(Site.Path)).ToString()" />
+        </div>
+    }
+</div>

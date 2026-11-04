@@ -67,6 +67,8 @@ public class BitBhContextMenuContent : BitBhMenuContentBase, IBitBhPointAnchored
     {
         Level.Reset();
         await Floating.SetPointAsync(x, y);
+        // The second right click focused whatever it landed on: the moved menu takes the keyboard back.
+        await Level.FocusAsync();
     }
 
     public override ValueTask DisposeAsync()

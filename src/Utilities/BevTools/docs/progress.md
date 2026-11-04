@@ -579,3 +579,332 @@ WebAssembly run on the interop, errors, routing, checkout and extension pages); 
 while the request list was still filling, which passes on its own. At phone width no page scrolls sideways, and the
 page's accessibility check finds nothing on any page but the two planted problems on Checkout. Benchmark allocations
 unchanged (23.9, 23.9, 142.0 and 209.1 MB).
+
+## Round 16 — logs
+
+Test environment from this round: Windows 11, .NET SDK 11.0.100-rc.3 with the .NET 10.0.14 and 11.0 rc.3 runtimes; the
+suites target net10.0 and net11.0 (net8.0 and net9.0 are no longer targets). Baseline before the round: 534/534 tests
+on each of net10.0 and net11.0, vitest 71/71.
+
+**Gap.** BevTools captured only the warnings and errors Blazor itself logs, as errors. What the application's own
+loggers wrote - the first thing a developer reads - was invisible, an exception the app caught and logged never reached
+Errors, and nothing connected an entry to the component, click or trace it came from. Every other developer-tool
+category has this (a console or log viewer); for Blazor it is also where Entity Framework Core's commands, the HTTP
+client's and every library's diagnostics appear.
+
+**Changes**
+
+- `BevToolsLoggerProvider` (alias `BevTools`, `ISupportExternalScope`) records, with `TrackLogs` (on), each entry at
+  `MinimumLogLevel` (Information) or above that the host's logging configuration let through: level, category, event id
+  and name, message, template and its values, scopes, exception and its inner chain, W3C trace and span id, the UI event
+  running, and the sending component (`CaptureLogCallers`, a stack walk per entry, `BevCallSites` as for HTTP). Values and
+  scopes go through the inspector (value access, redaction by name and shape); a value redacted by its name is redacted
+  in the message as well, which is then rebuilt from the template, as it is under `Shallow`; under `None` the template
+  stands for the message. `BevLogRecord`, `BevLogStore` (`MaxLogs`, counts per level for the session),
+  `BevToolsEventKind.Log` (an addition to the contract).
+- An application entry at Error or above is an error (source *log*); Blazor's own warnings and errors behave as before,
+  and an entry that became an error shares its timeline row instead of adding one.
+- `SessionResolver`: after the dispatcher checks, the session whose UI event or navigation the current `Activity`
+  descends from (`ActivityObserver.SessionOfCurrentActivity`) - work that left the dispatcher after a library's
+  `ConfigureAwait(false)` provably began in that session's event. HTTP requests and every other ambient lookup gain it
+  too. Under BevTools' own events it is nobody's; outside every session in a server process it still is nobody's.
+- Logs panel (entries newest first; `level:` as a minimum, `category:`, `event:`, `trace:`, text; *Categories*; an
+  entry's template, values, scopes, sender, *During*, trace, timeline row and error), a warning count on its tab, the
+  palette's search, `logs.show` and `logs.warnings`, the timeline's lanes, the performance trace (*Logs* track),
+  exports (`logs`, `logCounts`, the options), the Markdown report (logged warnings and errors), the companion and the
+  extension (a *Logs* view), About → Capabilities (three *Logging* rows).
+- `log.flood` (`LogFloodCount`, 100 within ten seconds) for one category's template logged over and over, with senders.
+- Demo: `ProductApi` logs structured entries (`Loaded {Count} products in {ElapsedMs} ms`, a warning when the flaky
+  endpoint fails); problem 25 (*rows log every update* on Products: 120 entries per keystroke); Getting started lists
+  the Logs tab.
+
+**Verification**
+
+- .NET: 551/551 on net10.0 and on net11.0 (new: `LogsTests` 17 and `LogsPanelTests` 1 - the template, values, level,
+  category and event; minimum levels and the host's filter first; a sensitive value redacted in its values, the message,
+  the timeline and the export; a token in a plain string, which is its own template; `None` and `Shallow`; scopes with a
+  sensitive key; an application error in Errors with one timeline row; Blazor's warnings unchanged; paused capture;
+  `TrackLogs` off; BevTools' own work, its own category and a value that logs from `ToString`; nobody's entry in a server
+  process; an entry written after leaving the dispatcher attributed through the click's activity, with its trace id and
+  trigger; exports and the report; the filter; `log.flood` below and at its threshold; a component logging through a
+  service named as *LoggingRow.OnInitializedAsync via LoggingRowService.Load* and the panel's entries, detail and
+  categories). Every existing test passes unchanged.
+- vitest: 72/72 (the companion's Logs view: the tab's count, a minimum level, an entry's detail, logged markup as text).
+- Browser (a Playwright driver against the demo, problem 25, on a Server circuit and then on WebAssembly, in Chromium,
+  Firefox and WebKit): the rows' entries listed with their sender and the keystroke, the template and values in the
+  detail, *Categories* with `ProductRow` and `ProductApi`, the *Log flood* finding, every control of the panel named;
+  no page errors. All passing.
+- Overhead: the render path is untouched - 23.7, 23.8, 142.6 and 209.7 MB in the four benchmark configurations, against
+  23.7, 23.7, 142.6 and 209.8 MB for the code before the round on the same machine, back to back. Per log entry: 7.9 µs
+  and 6.4 KB recording everything, 2.9 µs and 1.8 KB without senders, nothing with `TrackLogs` off (performance.md).
+
+**Found and fixed on the way.** The first export test found a token in the export: an entry logged as a plain string
+is its own `{OriginalFormat}`, so the template carried what the message had redacted. Templates are redacted too.
+
+**Limits.** An entry written from a lifecycle method's continuation off the dispatcher with no UI event or navigation
+above it (an `OnInitializedAsync` awaiting a library that uses `ConfigureAwait(false)`) has no activity BevTools can
+follow on a server, and is nobody's there; on WebAssembly the only session takes it. Entries written before BevTools
+attached are not replayed. The sender is a stack walk: a log written after the code went asynchronous names none.
+
+## Round 17 — allocations per render
+
+**Gap.** The profiler said how long each render took, never what it allocated, although on WebAssembly the garbage
+collector pauses the only thread the UI has, and allocations - unlike times - repeat from run to run, so they make a
+steadier regression gate than durations. The capability matrix had no row for it.
+
+**Changes**
+
+- `BevRenderSample.AllocatedBytes`: the runtime's per-thread allocation counter read right around each instrumented
+  `BuildRenderTree`, after BevTools' own work for the render, so it is the component's render alone (its children
+  render separately). `BevAllocations.IsMeasurable` probes once whether the counter moves; where it does not, nothing is
+  shown as zero. Stored with `Failed` in one int: the sample, the most numerous object BevTools keeps, stays its size.
+- `BevComponentRecord`: total, max, since the baseline; components let go fold theirs into the gone totals.
+- Profiler: *Allocated* per component and per type (sortable, per render in each row's title); the inspector's
+  *Rendering*: per render, max, last; each render's timeline data (`allocatedBytes`); exports (per component, and per
+  type in `profile`), the Markdown report (*Allocated per render*); the companion's profiler.
+- `BevProfileComparison`: a type allocating `MinAllocationChangeBytes` (1 KB) and `AllocationChangeRatio` (25 %) more
+  per render regresses, fewer improves - per render, so rendering more often is not counted twice - when both
+  recordings measured; the Markdown table has the column; different render modes warn that allocations are not
+  comparable. `bevtools compare` and `Profiler → Compare…` gain it through the same code.
+- `render.allocations` (`HeavyRenderAllocationBytes`, 256 KB): a type averaging that much per render over at least
+  three renders of the last 30 s. A capability row.
+
+**Verification**
+
+- .NET: 558/558 on net10.0 and on net11.0 (new `AllocationTests` 6: the runtime counts; a parent's render counts its own
+  buffer and not its child's; totals, maxima and the timeline data; the baseline window, the profile written and read
+  back, the components section; regressions, improvements, a change under the thresholds, a recording without the
+  measure, the Markdown column; the rule; the profiler's column and sort). Two profiler tests that read the causes
+  column by position now read it one cell further, after the new column; their assertions are unchanged.
+- vitest: 73/73 (the companion's column, per type, and none for an export without allocations).
+- Browser (the Playwright driver, problem 25's page, Server then WebAssembly, Chromium, Firefox and WebKit): the column
+  is there and `ProductRow`'s renders allocated something on both runtimes - Mono on WebAssembly counts allocations per
+  thread too (`ProductRow` 3.2 KB, `ProductList` 100 KB on WebAssembly; 992 B and 104.6 KB on a Server circuit).
+- Overhead: the first version stored the bytes in a `long?` and every sample grew: 148.7 and 215.9 MB in the two
+  recording configurations against 142.6 and 209.7 MB. Packed with `Failed` into one int: 23.7, 23.7, 142.6 and
+  209.7 MB, as before the round.
+
+**Limits.** An EditForm's first render with an EditContext includes BevTools' watch of it. A render that allocates
+more than about 2 GB is shown as that. Allocations are not comparable between runtimes (Mono and CoreCLR size objects
+differently), which comparisons say when the render modes differ.
+
+## Round 18 — responsiveness
+
+**Gap.** BevTools timed renders and handlers in .NET and never asked the browser what a person felt: how long a click
+took to show anything, and whether the main thread was blocked. On WebAssembly that thread is the one .NET renders
+on, so a slow handler freezes the page - and the browser measures exactly that (Event Timing, long animation frames),
+with nothing linking its measurement to the Blazor event that caused it.
+
+**Changes**
+
+- Page hub: `long-animation-frame` (else `longtask`) and Event Timing observers (`TrackResponsiveness`, on), reported
+  once a second as ages; an interaction merged across its entries and named after its slowest event; BevTools' own UI
+  left out; what the browser supports in the attach snapshot.
+- `BevResponsiveness` (the Browser state): recent interactions and long frames, session totals, INP. Each long frame
+  and each interaction of 50 ms or more is a timeline event dated by its age. On WebAssembly: the UI event whose handler
+  started inside an interaction's processing (exactly one, within 4 ms), and the events and batches inside a frame.
+- Browser → *Responsiveness* (INP, slowest interaction, long frames, blocking time, what the browser does not report,
+  the circuit caveat; tables of slow interactions with their three parts and handler, and of long frames with what ran
+  in them); exports (`browser.responsiveness`, the options and thresholds); two capability rows whose status follows
+  the browser.
+- `browser.slow-interaction` (`SlowInteractionMs`, 200) and `browser.long-frame` (`LongFrameBlockingMs`, 150).
+- Demo: problem 26 (*Recalculate ratings*: a 400 ms synchronous handler) - a frozen page on WebAssembly, a slow
+  inbound message on a circuit.
+
+**Verification**
+
+- .NET: 566/566 on net10.0 and on net11.0 (new: `ResponsivenessTests` 7 and `ResponsivenessPanelTests` 1 - parts, INP, timeline events and severities, no match
+  on a circuit; on WebAssembly the handler and the work inside a frame, and two handlers naming neither; findings that
+  say which part was slow; paused capture, the option, non-finite and oversized payloads, a token in a target; INP's
+  outlier rule; exports; the panel and the capability statuses).
+- vitest: 75/75 (new: the observers, an interaction across three entries, BevTools' own interaction across two, ages
+  and script sources; the long-task fallback; nothing observed when off; observers disconnected on detach).
+- Browser (problem 26 on Server and WebAssembly, Chromium, Firefox and WebKit): on WebAssembly *click on
+  &lt;button.btn&gt;*, about 408 ms to the next paint, about 402 ms of it processing, *Ran: onclick →
+  Products.RecalculateRatings*, and the *Slow interaction* finding, in all three; on a circuit no handler is claimed.
+  Chromium reports the long frames; Firefox and WebKit report none, and the panel says so.
+
+**Found and fixed on the way.** The first browser run showed the 400 ms click as a *pointerdown* with 0.1 ms of
+processing and 400 ms of "presentation": the hub kept one entry per interaction, and a click's pointerdown entry
+carries the click handler's time as its own wait for the paint. Entries are merged now, as the metric defines an
+interaction; the vitest case covers it.
+
+**Limits.** Durations are the browser's, rounded to 8 ms. A long frame on WebAssembly can include BevTools' own panel
+rendering while it is open. On a circuit an interaction's time is the browser's part only.
+
+## Round 19 — the page's other storage
+
+**Gap.** The Browser panel read localStorage and sessionStorage; cookies, IndexedDB, Cache Storage and service workers
+were "out of scope". For a Blazor WebAssembly app installed as a PWA (Bit.Bswup) or keeping data in the browser
+(IndexedDB, OPFS), the questions are structural - which caches exist and how full they are, is an update waiting, will
+the browser keep the data - and nothing answered them.
+
+**Changes.** The hub's `getAppStorage` (read with local and session storage, on request): cookie names and value
+lengths (values never read), IndexedDB databases by name and version (never opened), Cache Storage caches with their
+request counts, service worker registrations (active, waiting, installing; URLs redacted) and the controller, usage,
+quota, usage per kind and persistence; each part that fails or times out says why. `BevAppStorage`, bounded and
+redacted on arrival (`BevToolsPanel.Clean`); the Browser panel's *Read storage*; exports (`browser.storage`); a
+capability row; `pwa.update-waiting`.
+
+**Verification.** .NET 569/569 on net10.0 and on net11.0 (new `AppStorageTests` 3: the panel's quota, cookies,
+databases, caches and the waiting worker; the finding and the export without values; bounds and redaction of what the
+page reported; one existing test clicks the button by its new label). vitest 77/77 (cookie names and sizes and no value,
+every API read, a failed part reported, browsers without the APIs). Browser: *Read storage* on the demo in Chromium,
+Firefox and WebKit lists every kind and reports the quota (Firefox 84.4 KB of 10 GB, WebKit 0 B of 1 GB), no failure.
+
+**Limits.** Contents stay in the browser's Application panel: no IndexedDB records, cache responses or cookie values.
+`indexedDB.databases()` is missing in older browsers, and the panel says so.
+
+## Round 20 — correlation
+
+**Gaps.** A request in the Network panel could not be found in a tracing backend: nothing recorded the trace it
+carried. A fire-and-forget task that failed vanished unless the runtime's unobserved-exception event was handled by
+the app. A long recording had no way to mark "here I clicked Save".
+
+**Changes**
+
+- `BevHttpRecord.TraceId` and `SpanId`, from the request's `traceparent` header read once it completes (the client
+  writes it below BevTools' handler); the request's *Trace* row with *logs in it*, the log entry's *requests in it*,
+  `trace:` in the Network filter, exports, the companion, a capability row.
+- `BevUnobservedTasks`: `TaskScheduler.UnobservedTaskException` into Errors (source *task*), never marking the
+  exception observed; tasks BevTools started left out by their outermost frame below the task machinery.
+- Markers: `BevToolsSession.AddMarker`, the Timeline's *⚑ Mark*, `timeline.mark`, the protocol's `mark` command.
+
+**Verification.** .NET 573/573 on net10.0 and on net11.0 (new `CorrelationTests` 3 and `MarkerPanelTests` 1: the trace
+from a header written below the handler, none, an all-zero id and garbage refused, the export; an application task, a
+task of BevTools' own async method and an application's call through the tracked `IJSRuntime` told apart; markers from
+the API, the protocol, with an empty label and while paused; the toolbar's numbered markers). vitest 77/77. Browser
+(the demo, Chromium): on a circuit `GET /api/orders` from *onclick → Orders.Load* carried trace
+`dad67c25…` with its client span; the products the page loads in `OnInitializedAsync` carried none, and neither did
+WebAssembly's requests - as documented.
+
+**Limits.** Whether a request carries a trace is the client's decision (propagation needs a current activity or a
+listener); BevTools reads what was sent and never adds a header. Unobserved task exceptions are raised when the task is
+collected, so they arrive late, and in a server process they belong to no session.
+
+## Round 21 — state: details, search, restoring
+
+**Gaps (audit D).** Each change's `Detail` was captured and never shown; the State panel could not be searched; and
+time travel was "N/A" - right for BevTools writing arbitrary objects, but nothing let a provider that *can* restore
+itself offer it.
+
+**Changes.** `IBevStateRestorer` and `BevStateChangeInfo.RestoreToken` (additions to the contract): the provider names
+the state after each change and restores itself when asked. `StateStore.RestoreAsync` asks - only where
+`BevToolsSession.AllowsStateRestore` (Development or a single-user process), only for a provider that can, only with its
+own token - and answers what happened, never throwing; the restore is a timeline event linked to the change. State
+panel: *⟲ restore* on restorable changes, details (*Add · Quantum Lamp 3*), a filter over providers, actions, details
+and members. The protocol's `restore` command (never blocking the dispatcher). Exports mark changes `restorable`, never
+with the token. A capability row whose status follows the gate. Demo: `CartState` keeps its last hundred versions and
+restores them (problem 10).
+
+**Verification.** .NET 578/578 on net10.0 and on net11.0 (new `StateRestoreTests` 5: a restore back to the first of
+three changes, the restore recorded as a change and a timeline event linked to it, a change no longer held; tokens
+dropped for a provider that cannot restore, a failing restore answered and recorded as BevTools' own error; refused on a
+Server session outside Development, with the capability *Not available*; the protocol by change id; the export's
+`restorable` without the token; the panel's detail, filter and ⟲). The first panel test failed because the session was
+a Server circuit outside Development: the gate worked, and the test now runs in a Development host. vitest 77/77.
+Browser (the demo, a Server circuit, Chromium, Firefox and WebKit): three products added, ⟲ on the first change, the
+page's cart back to one item and a *Restore* change in the history.
+
+**Limits.** Restoring is as good as the provider's own implementation. A provider that restores asynchronously,
+asked through the protocol, is reported as started; the outcome is in the timeline.
+
+## Round 22 — memory over time
+
+**Gap.** The Runtime panel showed the heap and collection counts at the moment it was opened: no trend, no link
+between a collection's pause and what the app was doing, no WebAssembly memory, and nothing that said "this keeps
+growing" - the outside view of every leak the retained-components check cannot name.
+
+**Changes.** `BevMemoryTrend` (a reading a second from the panel's refresh loop, ten minutes kept): the heap, full
+collections of the highest generation (gen 1 on Mono), the total pause, the heap after each full collection, and on
+WebAssembly the linear memory (the hub's `wasmMemory`, read in-process). Each full collection is a timeline event.
+Runtime → *Memory over time* (a sparkline with the collections marked, the window's range, the heap after the last
+collection, WebAssembly memory and its rise). `memory.growth`. Exports (`memory`). A capability row. A failure to read
+the counters is recorded once as BevTools' own error instead of disappearing.
+
+**Verification.** .NET 583/583 on net10.0 and on net11.0, twice in a row (new `MemoryTrendTests` 4 and
+`MemoryTrendPanelTests` 1, fed readings: once a second, an exact and an inferred collection with their events, a
+climbing heap found and a sawtooth not, exports, the runtime's own counters, the panel's sparkline, mark and
+WebAssembly memory). vitest 78/78. Browser (the demo, Chromium, Firefox and WebKit, Server then WebAssembly): the trend
+on both runtimes, and WebAssembly memory of about 96-98 MB next to a managed heap of 5-7 MB.
+
+**Found and fixed on the way.** The first browser run had no trend on WebAssembly at all, and nothing said why: the
+sampler swallowed the exception. Recording it showed Mono's `GCMemoryInfo` is a default whose getters throw a
+`NullReferenceException`; every member is read guarded now, and a failure is recorded once.
+
+**Limits.** Readings come from the panel component's loop: an app that does not render `<BevToolsPanel />` (an
+external frontend only) has no trend. On Mono the heap after a collection is the next reading, not the runtime's own
+figure. A heap snapshot of objects and their paths stays with dotnet-gcdump and the browser's memory tools.
+
+## After round 22
+
+Seven rounds (16-22), each verified in tests and in real browsers before the next began.
+
+- .NET tests: 534 → 583 on each of net10.0 and net11.0, all passing, twice in a row after the last round. vitest:
+  71 → 78. End to end (`Bit.BevTools.Tests.E2E`, the published, trimmed, lazy-loaded sample): 2/2.
+- Browser: a Playwright driver against the demo ran every round's checks on a Server circuit and on WebAssembly, in
+  Chromium, Firefox and WebKit - logs, allocations, responsiveness (problem 26), storage, request traces, state
+  restoring and memory over time - with no page errors.
+- Overhead: the render path's allocations are what they were before round 16 (23.7-23.8, 23.7-23.8, 142.6 and
+  209.7-209.8 MB in the four configurations, run back to back with the code before the work); the per-entry cost of
+  logs is measured in performance.md, and every other addition is off the render path.
+- New diagnostics rules: `log.flood`, `render.allocations`, `browser.slow-interaction`, `browser.long-frame`,
+  `pwa.update-waiting`, `memory.growth`. New contract members (additions only): `BevToolsEventKind.Log`,
+  `IBevStateRestorer`, `BevStateChangeInfo.RestoreToken`.
+- What is left, and why, is in roadmap.md (*Next*, *Later / investigated*) and audit.md (area Q).
+
+## Round 23 — closing the open items
+
+Everything the roadmap's *Next* and the audit's area Q listed, taken to an end: done, or left with the reason found.
+
+**Changes**
+
+- **MCP and CLI formats.** A separate session had built `bevtools mcp` (a read-only Model Context Protocol server over
+  stdio, serving only the export files it is given: findings, errors, groups, components, requests, endpoints, timeline,
+  logs, check, compare; every answer bounded) and `--format json|sarif|github` for `check`, then stopped without merging.
+  Reviewed and brought in; its `get_logs` tool, written before exports had logs, finds an entry by its template too, and
+  its test now strips the section to stand for an older export. `compare` takes `--min-allocation-change-bytes` and
+  `--allocation-change-ratio`, and its JSON carries the allocations. `Bit.BevTools.Cli` is in the release workflows
+  (as `Bit.Cli` is); the package installs and runs as a tool.
+- **Entity Framework Core.** `BevDbCommands`: EF's command entries (events 20101, 20102) read while their values are
+  still objects - SQL at Full and Shallow access, redacted, and the elapsed time; Logs → *Database*; `db.per-item`
+  (`DbPerItemCount`) and `db.slow` (`SlowDbCommandMs`); exports and the companion.
+- **Bodies, opt-in.** `CaptureHttpBodies` (off), `MaxHttpBodyBytes`: text only, redacted, never a stream, a response
+  only with a known length; at Full access where a forced collection is allowed. gRPC, server-sent events and GraphQL
+  (with the operation when bodies are read) are told apart. The demo turns bodies on and sends `/api/profile` with
+  its length.
+- **The companion's batch views.** Protocol `batch` (`{ batchId }`): the cost tree and the time axis the Profiler
+  shows; the companion's Profiler lists the timeline's batches and opens one on a live page.
+- **BevTools' own rendering in long frames.** The render tracker remembers when BevTools' own components rendered
+  (a fixed array, written only for them); a long frame on WebAssembly says how much of it was the panel, and one that
+  was mostly the panel is not the application's blocked thread.
+- **`Bit.BevTools.Blex`.** A package of its own against the public contract: the *Blex* state provider, a change per
+  action with its payload redacted, restoring through Blex's time travel; `AddBevToolsBlex()`; in the release
+  workflows; the BevTools CI also runs when Blex changes. The inspector flattens JSON for it (any provider that
+  snapshots JSON gets real diffs).
+- **Looked at and left:** WebAssembly heap snapshots (`collectGcDump` is undefined without a diagnostics build),
+  runtime container resolutions (would report dependencies as never resolved), a Fluxor package (not in this
+  repository; the adapter overload covers it). See roadmap.md.
+
+**Verification**
+
+- .NET: 611/611 on net10.0 and on net11.0 (new: `DbCommandsTests` 5 against EF Core 10 and 11 on SQLite - twelve
+  queries for twelve rows and the finding, a failed command, value access None, a slow command, elapsed parsing -
+  and `DatabaseViewTests` 1; `HttpBodiesTests` 5 - off by default, JSON both ways redacted with the server and the app
+  getting exactly their bytes, a stream and an unknown length left alone, forms and limits, Shallow not honoured,
+  gRPC / SSE / GraphQL; `BlexIntegrationTests` 3 with a store from Blex's own generator; the protocol's `batch`; an
+  own-rendering long frame; JSON flattening; the CLI's allocation thresholds; the MCP and format tests brought in).
+- vitest 79/79 (the companion's batch view on a live page, its database commands, names as text).
+- Browser (the demo, Chromium, Firefox, WebKit, Server and WebAssembly): `/api/profile`'s response body shown with the
+  e-mail and the access token redacted; every check of rounds 16-22 again.
+- Packages: `Bit.BevTools.Cli` and `Bit.BevTools.Blex` pack (the latter depending on `Bit.BevTools` and `Bit.Blex` of
+  the same version) and the tool installs and runs; the browser extension assembles.
+- End to end: 2/2 on a fresh publish of the lazy loading sample. Benchmark allocations 23.7, 23.7, 142.6 and 209.7 MB,
+  as before round 16; times were noise on a loaded machine (the disabled configuration, which runs none of BevTools'
+  code, measured +130 %).
+- Found while verifying: fifty Playwright browser processes left by timed-out runs had starved Firefox into failing
+  checks that pass on a clean machine; only processes under the Playwright browsers folder were stopped.
+
+**Found on the way.** EF Core 10 and 11 log the elapsed time as a culture-formatted string; a seekable stream reports
+its length (so it is safe to read, and is), while a forward-only one does not; JSON snapshots were never diffed, since
+the inspector shows JSON as text - now flattened for diffs.

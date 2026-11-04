@@ -1,0 +1,25 @@
+@include site(lp-ecommerce) {
+    --lp-sun: #F2C14E;
+    --lp-sun-fg: #3A2A00;
+    --lp-clay: #C4703F;
+    --lp-sage: #8FAE8B;
+    --lp-charcoal: #3B4140;
+    --fern-leaf: #2F7D52;
+    --fern-leaf-deep: #1F5C3B;
+    --fern-stem: #3F6B45;
+
+    @include type(("Newsreader", Georgia, serif), ("Schibsted Grotesk", system-ui, sans-serif));
+    @include shape(20px, 999px);
+    @include palette(light, #1E6B47, #FFFFFF, #FAFBF7, #EEF2EA, #FFFFFF, #13251B, #4F6156, #DCE4DA);
+}
+
+@include site-dark(lp-ecommerce) {
+    --lp-sun: #E9B949;
+    --lp-sun-fg: #2B1F00;
+    --lp-charcoal: #59605E;
+    --fern-leaf: #4FA374;
+    --fern-leaf-deep: #2E7A50;
+    --fern-stem: #5C8A62;
+
+    @include palette(dark, #74D3A0, #06190F, #0D1611, #111E17, #15241C, #E8F0EA, #A2B5A8, #243529);
+}

@@ -9,7 +9,8 @@ The Workbench is a web app of its own in `src/Workbench`. It runs pages on sampl
 side by side, and switches what a page would otherwise wait for: the data's state, the theme, the language, the
 signed-in user. It references Client.Core for the theme, the styles and the components, and nothing that needs the
 API, the database or a session. A page designed here is built from the components and the theme the app ships, so
-what the user approves is how the real page will look.
+what the user approves is how the real page will look. The landing page (`src/LandingPage`) is not designed here: it
+has a look of its own, and the **landing-page** skill (`.github/agents/landing-page.agent.md`) covers it.
 
 ## 1. Run it
 

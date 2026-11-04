@@ -1,25 +1,19 @@
 ﻿@*
-    Compact toggle that lets visitors flip between the CSS and Tailwind
-    versions of the current demo page. Lives in the page header.
+    Lets visitors flip between the CSS and Tailwind versions of the current demo page. It follows the page
+    intro of both versions, drawn as the site kit's segmented control, and sticks under the header while the
+    page scrolls - so it goes after the intro's closing tag, not inside it (see demo.css). The version on
+    screen is the one NavLink marks active (and aria-current="page").
 
     Usage:
-        <SectionSwitcher Slug="button" Current="DemoSection.Css" />
+        <SectionSwitcher Slug="button" />
 *@
 
-<div class="section-switcher section-switcher-sticky" role="group" aria-label="Styling implementation">
-    <span class="section-switcher-label">Implementation:</span>
-    <NavLink class="section-switcher-link"
-             href="@Slug"
-             Match="NavLinkMatch.All"
-             ActiveClass="section-switcher-link-active">
-        CSS
-    </NavLink>
-    <NavLink class="section-switcher-link"
-             href="@($"tw/{Slug}")"
-             Match="NavLinkMatch.All"
-             ActiveClass="section-switcher-link-active">
-        Tailwind
-    </NavLink>
+<div class="bh-styling-switch" role="group" aria-label="Styling implementation">
+    <span class="bh-styling-switch-label">Styled with</span>
+    <span class="bb-segmented">
+        <NavLink href="@Slug" Match="NavLinkMatch.All" ActiveClass="active">CSS</NavLink>
+        <NavLink href="@($"tw/{Slug}")" Match="NavLinkMatch.All" ActiveClass="active">Tailwind</NavLink>
+    </span>
 </div>
 
 @code {

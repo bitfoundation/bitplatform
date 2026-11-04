@@ -1,0 +1,34 @@
+.retail-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 1.5em;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.is-open {
+        color: var(--retail-open);
+    }
+
+    &.is-closingsoon {
+        color: var(--retail-soon);
+    }
+
+    &.is-pending {
+        min-width: 9em;
+    }
+}
+
+.retail-open-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+
+    .is-open > & {
+        box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 22%, transparent);
+    }
+}

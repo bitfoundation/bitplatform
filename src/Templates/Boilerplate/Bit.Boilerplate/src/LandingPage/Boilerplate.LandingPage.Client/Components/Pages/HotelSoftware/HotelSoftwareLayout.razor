@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-hotel-software">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="HotelSoftwareSite.Info" Links="links" ShowSignIn>
+        <Brand><HotelSoftwareLogo /><HotelSoftwareWordmark /></Brand>
+        <Actions>
+            <BitButton Href="@HotelSoftwareSite.TrialUrl" Size="BitSize.Small" Class="hs-nav-cta">@H[nameof(HotelSoftwareStrings.NavTrial)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="HotelSoftwareSite.Info" Tagline="@H[nameof(HotelSoftwareStrings.FooterTagline)]">
+        <Brand><HotelSoftwareLogo /><HotelSoftwareWordmark /></Brand>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@L[nameof(LandingStrings.FooterProduct)]</h2>
+                <a href="@Page("/pricing")">@H[nameof(HotelSoftwareStrings.NavPricing)]</a>
+                <a href="@($"{Page(string.Empty)}#audiences")">@H[nameof(HotelSoftwareStrings.NavAudiences)]</a>
+                <a href="@($"{Page(string.Empty)}#reviews")">@H[nameof(HotelSoftwareStrings.FooterReviews)]</a>
+                <a href="@Page("/press")">@H[nameof(HotelSoftwareStrings.NavPress)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <LandingChat Site="HotelSoftwareSite.Info"
+                 Variant="LandingChatVariant.Bubble"
+                 Suggestions="suggestions"
+                 HandoffUrl="@($"mailto:{HotelSoftwareSite.Info.Company.Email}")"
+                 Class="hs-chat" />
+
+    <ConsentBanner SitePath="@HotelSoftwareSite.Path" />
+    <LanguageSuggestion />
+</div>

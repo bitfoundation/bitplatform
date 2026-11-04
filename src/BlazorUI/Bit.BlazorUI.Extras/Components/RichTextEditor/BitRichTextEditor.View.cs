@@ -42,7 +42,7 @@ public partial class BitRichTextEditor
     [JSInvokable("OnFullScreenChanged")]
     public void _OnFullScreenChanged(bool isFullScreen)
     {
-        if (_fullScreen == isFullScreen) return;
+        if (IsDisposing || _fullScreen == isFullScreen) return;
         _fullScreen = isFullScreen;
         ClassBuilder.Reset();
         StateHasChanged();

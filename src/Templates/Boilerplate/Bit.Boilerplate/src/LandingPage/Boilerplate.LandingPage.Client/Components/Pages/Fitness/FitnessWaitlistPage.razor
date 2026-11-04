@@ -1,0 +1,8 @@
+@attribute [Route(FitnessSite.Path + "/waitlist/confirm")]
+@attribute [Route(FitnessSite.Path + "/waitlist/unsubscribe")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/waitlist/confirm")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/waitlist/unsubscribe")]
+@layout FitnessLayout
+@inherits LandingPageBase
+
+<WaitlistTokenPage Site="FitnessSite.Info" />

@@ -1,0 +1,35 @@
+@include site(lp-retail) {
+    --retail-sign: #C8331C;
+    --retail-sign-fg: #FFFFFF;
+    --retail-label: #FFD43B;
+    --retail-label-fg: #1F1B0C;
+    --retail-paper: #FFFFFF;
+    --retail-ink: #16181D;
+    --retail-ink-fg: #FFFFFF;
+    --retail-shelf: #2A2D33;
+    --retail-open: #1D7A4F;
+    --retail-soon: #9C5600;
+    --retail-water: #3C78C8;
+    --retail-park: #5E9B63;
+
+    @include type("Archivo", "Archivo");
+    @include shape(8px, 6px);
+    @include palette(light, #C8331C, #FFFFFF, #FCFBF9, #F2EFE9, #FFFFFF, #16181D, #565A62, #E3DFD7);
+}
+
+@include site-dark(lp-retail) {
+    --retail-sign: #A62914;
+    --retail-paper: #F7F5F0;
+    --retail-ink: #0A0B0D;
+    --retail-shelf: #3A3D44;
+    --retail-open: #5CC48E;
+    --retail-soon: #F0A64B;
+    --retail-water: #6FA3E8;
+    --retail-park: #6FAE74;
+
+    @include palette(dark, #FF6B52, #1A0905, #121314, #1A1B1E, #202226, #F4F2EE, #A9ACB3, #2F3136);
+}
+
+.lp-retail :is(h1, h2, h3, .lp-nav-brand, .lp-footer-brand) {
+    font-stretch: 125%;
+}
