@@ -115,7 +115,8 @@ public class ServiceTests
     [DataRow("sitemap.xml")]
     public async Task AForgedHost_Should_GetA400InsteadOfLinksToIt(string url)
     {
-        await using var production = await new LandingTestServer().Start(environment: "Production");
+        var log = new RecordingErrorLog();
+        await using var production = await new LandingTestServer().Start(builder => builder.Logging.AddProvider(log), environment: "Production");
         using var productionClient = production.CreateClient();
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Host = "evil.example";
@@ -124,6 +125,7 @@ public class ServiceTests
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.DoesNotContain("evil.example", await response.Content.ReadAsStringAsync());
+        Assert.IsEmpty(log.Errors, string.Join(Environment.NewLine, log.Errors));
     }
 
     private static async Task<string> SampleWithRatings(int ratingCount, Action<WebApplicationBuilder>? before = null)
