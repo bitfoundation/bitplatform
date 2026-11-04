@@ -27,7 +27,7 @@
                         disabled="@prevDisabled"
                         aria-disabled="@(prevDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
-                        aria-label="@(PreviousAriaLabel ?? "Previous")"
+                        aria-label="@(PreviousAriaLabel ?? BitStrings.Current.Previous)"
                         @onclick="() => Slide(false)"
                         class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
                     <i aria-hidden="true" class="@prevIcon?.GetCssClasses() @_SlideIconMirrorClass" />
@@ -70,7 +70,7 @@
                         aria-disabled="@(Disabled ? "true" : null)"
                         style="display:none;@Styles?.OverflowButton"
                         aria-haspopup="menu"
-                        aria-label="@(OverflowAriaLabel ?? "More")"
+                        aria-label="@(OverflowAriaLabel ?? BitStrings.Current.More)"
                         aria-controls="@_MenuId"
                         aria-expanded="@(_isMenuOpen ? "true" : "false")"
                         data-bit-esc="@EscapeClaim"
@@ -91,7 +91,7 @@
                         disabled="@nextDisabled"
                         aria-disabled="@(nextDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
-                        aria-label="@(NextAriaLabel ?? "Next")"
+                        aria-label="@(NextAriaLabel ?? BitStrings.Current.Next)"
                         @onclick="() => Slide(true)"
                         class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
                     <i aria-hidden="true" class="@nextIcon?.GetCssClasses() @_SlideIconMirrorClass" />
@@ -106,9 +106,9 @@
                 <button type="button"
                         disabled="@(Disabled)"
                         aria-disabled="@(Disabled ? "true" : null)"
-                        title="@(AddTitle ?? "Add")"
+                        title="@(AddTitle ?? BitStrings.Current.Add)"
                         style="@Styles?.AddButton"
-                        aria-label="@(AddAriaLabel ?? "Add")"
+                        aria-label="@(AddAriaLabel ?? BitStrings.Current.Add)"
                         @onclick="HandleAddClick"
                         class="bit-pvt-abt @Classes?.AddButton">
                     <i aria-hidden="true" style="@Styles?.AddIcon" class="@addIcon?.GetCssClasses() @Classes?.AddIcon" />
@@ -134,7 +134,7 @@
                      id="@_MenuId"
                      role="menu"
                      tabindex="-1"
-                     aria-label="@(OverflowAriaLabel ?? "More")"
+                     aria-label="@(OverflowAriaLabel ?? BitStrings.Current.More)"
                      aria-activedescendant="@_ActiveMenuItemId"
                      data-bit-esc="@EscapeClaim"
                      @onkeydown="HandleMenuKeyDown"

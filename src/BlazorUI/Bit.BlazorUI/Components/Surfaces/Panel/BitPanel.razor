@@ -92,8 +92,8 @@
 
                             <button @onclick="HandleOnCloseClick"
                                     type="button"
-                                    title="@(CloseButtonTitle ?? "Close")"
-                                    aria-label="@(CloseButtonTitle ?? "Close")"
+                                    title="@(CloseButtonTitle ?? BitStrings.Current.Close)"
+                                    aria-label="@(CloseButtonTitle ?? BitStrings.Current.Close)"
                                     disabled="@(Disabled)"
                                     aria-disabled="@(Disabled ? "true" : null)"
                                     style="@Styles?.CloseButton"

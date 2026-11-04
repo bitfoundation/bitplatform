@@ -681,7 +681,7 @@ public partial class BitTag : BitComponentBase
 
         var name = Text.HasValue() ? Text : label;
 
-        return name.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", name!) : "Dismiss";
+        return name.HasValue() ? Format(DismissLabelFormat ?? BitStrings.Current.RemoveFormat, name!) : BitStrings.Current.Dismiss;
     }
 
     // A format string is app-supplied, so a wrong one is a typo rather than an exception: the tag falls back

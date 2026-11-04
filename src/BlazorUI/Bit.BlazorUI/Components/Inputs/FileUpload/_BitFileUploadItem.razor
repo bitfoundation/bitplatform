@@ -97,8 +97,8 @@
                                                    FileUpload.RetryIconName ?? FileUpload.UploadIconName ?? "Refresh")
                                 : BitIconInfo.From(FileUpload.UploadIcon, FileUpload.UploadIconName ?? "Play");
             var uploadTitle = isRetry
-                                ? (FileUpload.RetryButtonTitle ?? FileUpload.UploadButtonTitle ?? "Retry")
-                                : (FileUpload.UploadButtonTitle ?? "Upload");
+                                ? (FileUpload.RetryButtonTitle ?? FileUpload.UploadButtonTitle ?? BitStrings.Current.Retry)
+                                : (FileUpload.UploadButtonTitle ?? BitStrings.Current.Upload);
             _hasUploadButton = true;
             <button @ref="_uploadButtonRef"
                     @onclick="() => FileUpload.HandleItemUpload(Item)"
@@ -116,7 +116,7 @@
         @if (Item.Status == BitFileUploadStatus.InProgress)
         {
             var pauseIcon = BitIconInfo.From(FileUpload.PauseIcon, FileUpload.PauseIconName ?? "Pause");
-            var pauseTitle = FileUpload.PauseButtonTitle ?? "Pause";
+            var pauseTitle = FileUpload.PauseButtonTitle ?? BitStrings.Current.Pause;
             _hasPauseButton = true;
             <button @ref="_pauseButtonRef"
                     @onclick="() => FileUpload.HandleItemPause(Item)"
@@ -136,7 +136,7 @@
         @if (Item.IsQueued || Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
         {
             var cancelIcon = BitIconInfo.From(FileUpload.CancelIcon, FileUpload.CancelIconName ?? "Cancel");
-            var cancelTitle = FileUpload.CancelButtonTitle ?? "Cancel";
+            var cancelTitle = FileUpload.CancelButtonTitle ?? BitStrings.Current.Cancel;
             _hasCancelButton = true;
             <button @ref="_cancelButtonRef"
                     @onclick="() => FileUpload.HandleItemCancel(Item)"
@@ -165,7 +165,7 @@
             else
             {
                 var removeIcon = BitIconInfo.From(FileUpload.RemoveIcon, FileUpload.RemoveIconName ?? "Delete");
-                var removeTitle = FileUpload.RemoveButtonTitle ?? "Remove";
+                var removeTitle = FileUpload.RemoveButtonTitle ?? BitStrings.Current.Remove;
                 _hasRemoveButton = true;
                 <button @ref="_removeButtonRef"
                         @onclick="() => FileUpload.HandleItemRemove(Item)"

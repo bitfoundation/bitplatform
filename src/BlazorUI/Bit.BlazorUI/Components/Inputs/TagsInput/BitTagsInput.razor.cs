@@ -1572,12 +1572,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private string GetMoreTagsText(int hidden)
     {
-        return Format(MoreTagsFormat ?? "+{0}", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
+        return Format(MoreTagsFormat ?? BitStrings.Current.MoreTagsFormat, hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
     }
 
     private string GetMoreTagsAriaLabel(int hidden)
     {
-        return Format(MoreTagsAriaLabelFormat ?? "Show {0} more tags", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
+        return Format(MoreTagsAriaLabelFormat ?? BitStrings.Current.ShowMoreTagsFormat, hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
     }
 
     // Whether a plain Escape on the input acts at all: it takes back the text being typed while there is any.
@@ -1744,7 +1744,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private string GetDismissAriaLabel(string tag)
     {
-        return Format(DismissAriaLabelFormat ?? "Remove {0}", TagName(tag));
+        return Format(DismissAriaLabelFormat ?? BitStrings.Current.RemoveFormat, TagName(tag));
     }
 
     /// <summary>
@@ -1764,15 +1764,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (carried is not null && _pickedUpTagIndex != index)
         {
-            return Format(ReorderDropAriaLabelFormat ?? "Move {0} here", TagName(carried));
+            return Format(ReorderDropAriaLabelFormat ?? BitStrings.Current.MoveHereFormat, TagName(carried));
         }
 
-        return Format(ReorderAriaLabelFormat ?? "Move {0}", TagName(tag));
+        return Format(ReorderAriaLabelFormat ?? BitStrings.Current.MoveFormat, TagName(tag));
     }
 
     private string GetEditAriaLabel(string tag)
     {
-        return Format(EditAriaLabelFormat ?? "Edit {0}", TagName(tag));
+        return Format(EditAriaLabelFormat ?? BitStrings.Current.EditFormat, TagName(tag));
     }
 
     /// <summary>

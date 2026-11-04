@@ -31,7 +31,7 @@
                @onclick="HandleSkipLinkClick"
                @onclick:preventDefault="_IsFragmentSkipLink"
                style="@Styles?.SkipLink"
-               class="bit-hdr-skp @Classes?.SkipLink">@(SkipLinkText ?? "Skip to main content")</a>
+               class="bit-hdr-skp @Classes?.SkipLink">@(SkipLinkText ?? BitStrings.Current.SkipToMainContent)</a>
         }
         @ChildContent
     </div>

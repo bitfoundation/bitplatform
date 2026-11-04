@@ -72,7 +72,8 @@ public static class IBitBlazorUIServiceCollectionExtensions
 
     /// <summary>
     /// Registers the core Bit.BlazorUI services and applies the library's runtime options in the same call - the lazy
-    /// scripts and where the packages' assets are served from - so an app configures the library in its Program.cs.
+    /// scripts, where the packages' assets are served from and the strings the components fall back on - so an app
+    /// configures the library in its Program.cs.
     /// </summary>
     /// <param name="services">The service collection to add the services to.</param>
     /// <param name="configure">Sets the options; see <see cref="BitBlazorUIOptions"/> for what each one covers.</param>
@@ -93,6 +94,8 @@ public static class IBitBlazorUIServiceCollectionExtensions
                 if (string.IsNullOrWhiteSpace(options.ContentPath) is false) BitBlazorUIScripts.SetContentPath(options.ContentPath);
                 break;
         }
+
+        if (options.Strings is not null) BitStrings.Current = options.Strings;
 
         return AddBitBlazorUIServices(services, options.TrySingleton);
     }
