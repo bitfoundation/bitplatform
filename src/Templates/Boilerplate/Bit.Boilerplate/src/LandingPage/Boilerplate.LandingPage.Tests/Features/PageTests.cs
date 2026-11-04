@@ -5,8 +5,15 @@ namespace Boilerplate.LandingPage.Tests.Features;
 [TestClass]
 public class PageTests
 {
+    private static readonly Regex scriptTagWithSource = new(@"<script[^>]*\ssrc=");
     private static readonly XNamespace sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
     private static readonly string[] headTags = ["<title>", "name=\"description\"", "rel=\"canonical\"", "property=\"og:title\"", "name=\"twitter:card\"", .. LandingCultures.InvariantGlobalization ? Array.Empty<string>() : ["hreflang=\"x-default\""]];
+
+    private const string googlebot = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+    private const string lighthouse = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Chrome-Lighthouse";
+    private const string pageSpeed = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko; Google Page Speed Insights) Chrome/75.0.3777.100 Safari/537.36 Chrome-Lighthouse";
+    private const string browser = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+    private const string duckDuckGoBrowser = "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile DuckDuckGo/5 Safari/537.36";
 
     private static LandingTestServer server = default!;
     private static HttpClient client = default!;
@@ -199,6 +206,80 @@ public class PageTests
     }
 
     [TestMethod]
+    [DataRow(googlebot)]
+    [DataRow(lighthouse)]
+    [DataRow(pageSpeed)]
+    public async Task ACrawlerOrABenchmark_Should_GetThePageWithoutItsScripts(string userAgent)
+    {
+        using var response = await GetAs(client, userAgent, SamplePath());
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h1", html);
+        Assert.DoesNotMatchRegex(scriptTagWithSource, html);
+        Assert.DoesNotContain("Blazor.start", html);
+    }
+
+    [TestMethod]
+    [DataRow(browser)]
+    [DataRow(duckDuckGoBrowser)]
+    public async Task AVisitor_Should_GetThePageWithItsScripts(string userAgent)
+    {
+        using var response = await GetAs(client, userAgent, SamplePath());
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.MatchesRegex(scriptTagWithSource, html);
+        Assert.Contains("Blazor.start", html);
+    }
+
+    [TestMethod]
+    public async Task ACrawler_Should_GetTheScripts_WhenNothingIsPrerendered()
+    {
+        await using var unrendered = await new LandingTestServer().Start(before: builder => builder.Configuration["WebAppRender:PrerenderEnabled"] = "false");
+        using var unrenderedClient = unrendered.CreateClient();
+
+        using var response = await GetAs(unrenderedClient, googlebot, SamplePath());
+
+        Assert.MatchesRegex(scriptTagWithSource, await response.Content.ReadAsStringAsync(), "With no page to read, the scripts are the only way to fill it in.");
+    }
+
+    [TestMethod]
+    [DataRow(googlebot)]
+    [DataRow(lighthouse)]
+    [DataRow(pageSpeed)]
+    public async Task AScriptLessPage_Should_NeverBeOfferedToACdn(string userAgent)
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production");
+        using var productionClient = production.CreateClient();
+
+        using var scriptLess = await GetAs(productionClient, userAgent, SamplePath());
+        using var visitors = await GetAs(productionClient, browser, SamplePath());
+
+        Assert.IsTrue(scriptLess.Headers.CacheControl!.Private, scriptLess.Headers.CacheControl.ToString());
+        Assert.IsFalse(scriptLess.Headers.CacheControl.Public, scriptLess.Headers.CacheControl.ToString());
+        Assert.IsNull(scriptLess.Headers.CacheControl.SharedMaxAge, scriptLess.Headers.CacheControl.ToString());
+
+        Assert.IsTrue(visitors.Headers.CacheControl!.Public, "A visitor's page stays cacheable, so the check above isn't just caching being off.");
+        Assert.IsNotNull(visitors.Headers.CacheControl.SharedMaxAge);
+    }
+
+    [TestMethod]
+    public async Task ACrawlersSitemap_Should_CacheLikeAnyoneElses()
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production");
+        using var productionClient = production.CreateClient();
+
+        using var crawlers = await GetAs(productionClient, googlebot, "sitemap.xml");
+        using var visitors = await GetAs(productionClient, browser, "sitemap.xml");
+
+        Assert.AreEqual(HttpStatusCode.OK, crawlers.StatusCode);
+        var expected = visitors.Headers.CacheControl?.ToString();
+        var actual = crawlers.Headers.CacheControl?.ToString();
+
+        Assert.AreEqual(expected, actual);
+    }
+
+    [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
         using var response = await client.GetAsync(LandingSites.All[0].Path);
@@ -224,6 +305,16 @@ public class PageTests
         Assert.Contains($"rel=\"canonical\" href=\"https://www.example.com{path}\"", html);
         Assert.IsFalse(response.Headers.Contains("X-Robots-Tag"));
         Assert.IsTrue(XDocument.Parse(sitemap).Descendants(sitemapNamespace + "loc").All(loc => loc.Value.StartsWith("https://www.example.com/", StringComparison.Ordinal)));
+    }
+
+    private static string SamplePath() => LandingSites.All[0].Path.Length is 0 ? LandingRoutes.Home : LandingSites.All[0].Path;
+
+    private static async Task<HttpResponseMessage> GetAs(HttpClient httpClient, string userAgent, string url)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
+
+        return await httpClient.SendAsync(request);
     }
 
     private static async Task<string[]> SitemapUrls()

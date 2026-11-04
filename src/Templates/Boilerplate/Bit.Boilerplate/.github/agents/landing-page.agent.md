@@ -54,7 +54,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   comments in step.
 - **Both languages, both directions, both color schemes, phone to desktop**, for every change.
 - **What a crawler or a link preview should see is in the prerendered page**: no text that appears only after the
-  app loads, every page with its own title, description and preview image through `LandingHead`, and one `h1`.
+  app loads, every page with its own title, description and preview image through `LandingHead`, and one `h1`. Search
+  engine crawlers, Lighthouse and PageSpeed Insights get that page with no scripts at all, so what they see is exactly
+  this, and nothing in it may be hidden until a script shows it.
 - **Keep the download small.** The chat, the tour and their assets load on first use. Before adding a package, find out what it
   adds to the visitor's download and prefer what the project already has. Images are sized and in a modern format,
   fonts are self-hosted subsets with `font-display: swap`, and work that isn't needed for the first view starts after

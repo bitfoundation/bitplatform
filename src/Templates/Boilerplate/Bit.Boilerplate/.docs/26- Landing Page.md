@@ -87,6 +87,11 @@ step whose sample is gone is left out, and one whose element isn't there shows i
   compressed with Brotli and Gzip (and Zstandard on .NET 11).
 - **Cacheable.** The pages set no cookies, the antiforgery check included, so a CDN can cache them; static files are
   cached for a week when their URL carries a version, and pages for ten minutes.
+- **No scripts for crawlers and benchmarks.** Search engine crawlers, Lighthouse and PageSpeed Insights get the
+  prerendered page without its JavaScript tags, so a benchmark isn't charged for code a visitor's device already keeps
+  and a crawler reads the page as it is. That response is marked `private`, so a CDN never hands it to a visitor. The
+  other direction takes a rule on the CDN: a page a visitor left in its cache still has the scripts, so these callers
+  have to bypass it.
 - **Light on the server.** The waitlist and the chat have rate limits of their own, the rating is looked up only for
   the samples' own apps and cached for hours, and the chat checks where its connection comes from, keeps
   conversations short and answers only from the facts it is given about the product.

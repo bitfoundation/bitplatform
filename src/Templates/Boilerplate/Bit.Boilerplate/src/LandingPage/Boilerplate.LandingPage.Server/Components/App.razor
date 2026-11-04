@@ -8,7 +8,10 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <BitThemeHead Options="@themeOptions" />
-    <BelemetryScript />
+    @if (OmitScripts is false)
+    {
+        <BelemetryScript />
+    }
 
     @if (string.IsNullOrWhiteSpace(settings.Site.GoogleSiteVerification) is false)
     {
@@ -36,28 +39,31 @@
 <body>
     <Routes @rendermode="settings.WebAppRender.RenderMode" />
 
-    <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-    <script>
-        (() => {
-            @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options *@
-            const start = Blazor.start;
-            Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
+    @if (OmitScripts is false)
+    {
+        <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
+        <script>
+            (() => {
+                @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options *@
+                const start = Blazor.start;
+                Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
 
-            @* A first install starts the app at once, while an update waits for the tab to be hidden before it reloads *@
-            window.bitBswupHandler = (message, data) => {
-                if (message === 'DOWNLOAD_FINISHED' && data?.firstInstall) {
-                    data.reload();
-                } else if (message === 'UPDATE_READY') {
-                    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && data.reload());
-                }
-            };
-        })();
-    </script>
-    <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="600" updateOnVisibility="true"></Script>
-    <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
-    <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-    <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
-    <Script Src="scripts/landing.js"></Script>
+                @* A first install starts the app at once, while an update waits for the tab to be hidden before it reloads *@
+                window.bitBswupHandler = (message, data) => {
+                    if (message === 'DOWNLOAD_FINISHED' && data?.firstInstall) {
+                        data.reload();
+                    } else if (message === 'UPDATE_READY') {
+                        document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && data.reload());
+                    }
+                };
+            })();
+        </script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="600" updateOnVisibility="true"></Script>
+        <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
+        <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="scripts/landing.js"></Script>
+    }
 </body>
 
 </html>

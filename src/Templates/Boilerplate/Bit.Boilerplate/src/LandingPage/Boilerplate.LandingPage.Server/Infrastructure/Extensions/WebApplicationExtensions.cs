@@ -140,6 +140,12 @@ public static class WebApplicationExtensions
                     {
                         headers.CacheControl = new() { Public = true, NoTransform = true, MaxAge = TimeSpan.FromDays(7) };
                     }
+                    else if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true
+                        && (context.Request.IsLightHouseRequest() || context.Request.IsCrawlerClient()))
+                    {
+                        // These callers get no scripts (See App.razor) and a CDN doesn't key on the user agent, so it must never store this page for visitors
+                        headers.CacheControl = new() { Private = true, MaxAge = TimeSpan.Zero };
+                    }
                     else if (context.Response.StatusCode is StatusCodes.Status200OK && context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true)
                     {
                         // Browsers ask again on every visit, while a CDN may serve the page for ten minutes
