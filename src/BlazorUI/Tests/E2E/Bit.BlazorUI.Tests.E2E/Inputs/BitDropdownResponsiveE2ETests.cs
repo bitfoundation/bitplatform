@@ -311,19 +311,12 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         Assert.AreEqual(844 - 10, box.Y + box.Height, 1.5, "The list keeps its gap from the bottom of a screen with no safe area.");
 
         // The cap is only half of it: the user still reaches the last item by scrolling the list itself. Wheeled over
-        // the list rather than scrolled into view from script, which would move a list that clips its overflow too - a
-        // page of it at a time, each let land, until it reaches its end: Firefox moves a scroller by no more than a page
-        // for one wheel event however large its delta is, where the other engines go the whole way.
+        // the list to its end rather than scrolled into view from script, which would move a list that clips its
+        // overflow too.
         var last = callout.GetByRole(AriaRole.Option, new() { Name = "Item 60", Exact = true });
 
         await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
-        var handle = await list.ElementHandleAsync();
-        for (var i = 0; i < 20 && await list.EvaluateAsync<bool>("e => e.scrollTop + e.clientHeight < e.scrollHeight - 1"); i++)
-        {
-            var before = await list.EvaluateAsync<double>("e => e.scrollTop");
-            await Page.Mouse.WheelAsync(0, (float)(box.Height * 0.8));
-            await Page.WaitForFunctionAsync("([e, before]) => e.scrollTop > before", new object[] { handle, before });
-        }
+        await WheelInPagesAsync($"[id='{await callout.GetAttributeAsync("id")}'] .bit-drp-scn", int.MaxValue);
         await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
 
         var item = await BoxAsync(last);
