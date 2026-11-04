@@ -1,0 +1,136 @@
+// [mirror] the look of the landing page's Minimal sample, only while it is on the screen - keep in sync with:
+// - src/LandingPage/Boilerplate.LandingPage.Client/Styles/landing.scss
+// - src/LandingPage/Boilerplate.LandingPage.Client/Styles/sites/_minimal.scss
+@import 'tokens';
+
+// The page sets the theme's tokens for itself, so it wears its own theme while the app's pages keep theirs.
+:root:has(.lp-minimal) {
+    --lp-max-width: 1180px;
+    --lp-gutter: clamp(16px, 4vw, 40px);
+    --lp-nav-height: 64px;
+    --notch-mark: #FFD43B;
+    --notch-highlight: var(--notch-mark);
+    --lp-device-body: #111214;
+    --lp-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+    scroll-padding-top: calc(var(--lp-nav-height) + 16px);
+    scroll-behavior: smooth;
+
+    @include stacks;
+    @include type((ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif), (ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif));
+    @include shape(14px, 10px);
+    @include palette(light, #141414, #FFFFFF, #FFFFFF, #F4F4F1, #FFFFFF, #141414, #56564F, #E3E3DD);
+}
+
+:root[bit-theme$="dark"]:has(.lp-minimal) {
+    --notch-mark: #E9C53A;
+    --notch-highlight: color-mix(in oklab, var(--notch-mark) 38%, var(--lp-bg));
+
+    @include palette(dark, #F2F2EC, #141414, #121211, #191917, #1D1D1A, #F2F2EC, #A6A69D, #2D2D29);
+}
+
+:root:lang(fa):has(.lp-minimal) {
+    --lp-font-mono: var(--lp-stack-body);
+
+    @include stacks-fa;
+}
+
+.lp-site {
+    min-height: 100dvh;
+    background: var(--lp-bg);
+    color: var(--lp-fg);
+    font-family: var(--lp-stack-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:where(.lp-site),
+:where(.lp-site) *,
+:where(.lp-site) *::before,
+:where(.lp-site) *::after {
+    box-sizing: border-box;
+}
+
+:where(.lp-site) :is(h1, h2, h3, h4) {
+    margin: 0;
+    font-family: var(--lp-stack-display);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+}
+
+:where(.lp-site) p {
+    margin: 0;
+    text-wrap: pretty;
+}
+
+:where(.lp-site) :is(img, svg, video) {
+    display: block;
+    max-width: 100%;
+}
+
+:where(.lp-site) a {
+    color: inherit;
+}
+
+:where(.lp-site) button {
+    font: inherit;
+}
+
+.lp-site :focus-visible {
+    outline: 2px solid var(--lp-accent);
+    outline-offset: 3px;
+}
+
+.lp-site ::selection {
+    background: color-mix(in oklab, var(--lp-accent) 28%, transparent);
+}
+
+:lang(fa) .lp-site :is(h1, h2, h3, h4) {
+    letter-spacing: 0;
+}
+
+.lp-container {
+    width: min(var(--lp-max-width), 100% - 2 * var(--lp-gutter));
+    margin-inline: auto;
+}
+
+.lp-lede {
+    max-width: 62ch;
+    font-size: clamp(1.0625rem, 1rem + .4vw, 1.25rem);
+    color: var(--lp-fg-muted);
+}
+
+.lp-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.lp-skip {
+    position: fixed;
+    z-index: 1000;
+    top: 8px;
+    inset-inline-start: 8px;
+    padding: 10px 16px;
+    border-radius: var(--lp-radius-control);
+    background: var(--lp-fg);
+    color: var(--lp-bg);
+    font-weight: 600;
+    text-decoration: none;
+    transform: translateY(-200%);
+
+    &:focus {
+        transform: none;
+    }
+}

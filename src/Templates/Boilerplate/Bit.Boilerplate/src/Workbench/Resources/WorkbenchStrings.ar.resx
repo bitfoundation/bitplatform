@@ -2880,4 +2880,181 @@
     <data name="TourCaption" xml:space="preserve">
         <value>كل عملية بيع، مباشرة</value>
     </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>انضم إلى قائمة الانتظار</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>ربيع 2027، على iPhone وAndroid</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>سطر واحد كل يوم. سنة تقرؤها في دقيقة.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch دفتر يوميات له قاعدة واحدة: سطر واحد كل يوم، 140 حرفًا على الأكثر. لا أسئلة تجيب عنها ولا سلسلة تحافظ عليها. فقط السطر والتاريخ الذي ينتمي إليه.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>احجز لي مكانًا</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>نكتب إليك مرة واحدة عندما يصبح Notch جاهزًا. هذا كل شيء.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>معاينة لتطبيق Notch: سطر اليوم وهذا الأسبوع واليوم نفسه في سنوات سابقة</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>سطر اليوم</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>بماذا ستتذكر هذا اليوم؟</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>متبقٍ {0}</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>سجّله</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>تم الحفظ. يُفتح سطر الغد عند منتصف الليل.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>هذا الأسبوع</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} من 7 أيام</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>في مثل هذا اليوم</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>أول صقيع على الدراجة. ستبقى القفازات في الحقيبة من الآن فصاعدًا.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>قرأت ميا صفحة كاملة بصوت عالٍ دون أن تتوقف مرة واحدة.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>ثلاث قواعد، وهذا هو التطبيق</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>سطر واحد، كل يوم</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>140 حرفًا على الأكثر. قصير بما يكفي لتكتبه في طابور القهوة، وطويل بما يكفي لتتذكر به اليوم.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>اليوم نفسه، بعد سنوات</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>افتح اليوم واقرأ ما كتبته في هذا التاريخ العام الماضي والعام الذي قبله. هنا يبدأ السطر اليومي في إظهار قيمته.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>أنت وحدك من يقرؤه</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>تُشفَّر السطور على هاتفك قبل أن تغادره. لا موجز ولا إعجابات ولا متابعين، وتصدير نص عادي متى شئت.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>سطر كل يوم، محفوظ إلى الأبد.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>إلى أين تذهب سطورك</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>هاتفك</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>يُكتب كل سطر ويُحفظ هنا، مشفرًا بمفتاح لا يغادر الهاتف أبدًا.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>النسخ الاحتياطي</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>متوقف حتى تشغّله. بعدها تعيد نسخة مشفرة كل سطر إلى هاتف جديد.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>خادمنا</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>يحتفظ بتلك النسخة في هلسنكي. نرى حجمها وتاريخها، ولا شيء مما بداخلها.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>المعلنون وسماسرة البيانات</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>لا يحصلون على شيء. لا يوجد ما يُباع لهم.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>إذا أردت</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>أبدًا</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>انتقل إلى المحتوى</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>الشركة</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>اتصل بنا</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>قانوني</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>ملفات تعريف الارتباط</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>بيانات الناشر</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>إمكانية الوصول</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. جميع الحقوق محفوظة.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>هذا موقع تجريبي. النشاط التجاري والأشخاص والأرقام فيه من نسج الخيال.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>جارٍ إضافتك…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>أخبرني عند صدوره لـ</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone وiPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>رسالة بريد واحدة عند الإطلاق. لا رسائل مزعجة، ويمكنك المغادرة في أي وقت.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>تحقق من بريدك الوارد</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>أرسلنا رابط تأكيد إلى {0}. افتحه للاحتفاظ بمكانك: رقم {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>لا يبدو عنوان البريد هذا صحيحًا.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>صفحات الهبوط</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>صفحة هبوط: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>أحد نماذج صفحة الهبوط، بسمته الخاصة ودون إطار التطبيق حوله: قائمة انتظار، وعرض هاتف يعمل، والوضعان الفاتح والداكن، ومن اليمين إلى اليسار.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>سطر كل يوم</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>مصمم لعدة تطبيقات</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>أضف تطبيقاتك المختلفة هنا، لكل منها سمة خاصة بها، تمامًا كما يحتفظ Workbench هذا بصفحة هبوط بمظهرها الخاص بجانب صفحات التطبيق.</value>
+    </data>
 </root>

@@ -1,0 +1,48 @@
+@* [mirror] the waitlist form, joining on sample data instead of the server - keep in sync with: *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Common/WaitlistForm.razor *@
+@inherits WorkbenchComponentBase
+
+<div class="lp-waitlist @Class" id="@Id">
+    @if (store.Position is not { } position)
+    {
+        <div class="lp-waitlist-fields">
+            <BitTextField Value="@store.Email"
+                          ValueChanged="store.TypeEmail"
+                          Type="BitInputType.Email"
+                          Label="@AppLocalizer[nameof(AppStrings.Email)]"
+                          Placeholder="you@example.com"
+                          AutoComplete="email"
+                          Required
+                          Disabled="isSubmitting"
+                          OnEnter="Submit"
+                          Class="lp-waitlist-email" />
+            <BitButton Class="lp-waitlist-submit" OnClick="Submit" IsLoading="isSubmitting" LoadingLabel="@Localizer[nameof(WorkbenchStrings.LandingWaitlistSubmitting)]">
+                @SubmitText
+            </BitButton>
+        </div>
+
+        <fieldset class="lp-waitlist-platforms">
+            <legend>@Localizer[nameof(WorkbenchStrings.LandingWaitlistPlatforms)]</legend>
+            @foreach (var (platform, textKey) in platforms)
+            {
+                <BitCheckbox Value="store.OffPlatforms.Contains(platform) is false" ValueChanged="(bool isChosen) => store.ChoosePlatform(platform, isChosen)" Label="@Localizer[textKey]" Disabled="isSubmitting" />
+            }
+        </fieldset>
+
+        @if (error is not null)
+        {
+            <p class="lp-waitlist-error" role="alert">@error</p>
+        }
+        else
+        {
+            <p class="lp-waitlist-promise">@Localizer[nameof(WorkbenchStrings.LandingWaitlistPromise)]</p>
+        }
+    }
+    else
+    {
+        <div class="lp-waitlist-done" role="status">
+            <h3>@Localizer[nameof(WorkbenchStrings.LandingWaitlistDoneTitle)]</h3>
+            <p>@Localizer[nameof(WorkbenchStrings.LandingWaitlistDoneBody), store.Email ?? string.Empty, position.ToString("N0", CultureInfo.CurrentUICulture)]</p>
+        </div>
+    }
+</div>

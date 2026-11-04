@@ -2880,4 +2880,181 @@
     <data name="TourCaption" xml:space="preserve">
         <value>Jeder Verkauf, live</value>
     </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>Auf die Warteliste</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>Frühjahr 2027, für iPhone und Android</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>Eine Zeile am Tag. Ein Jahr, das du in einer Minute liest.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch ist ein Tagebuch mit einer einzigen Regel: eine Zeile pro Tag, höchstens 140 Zeichen. Keine Fragen zu beantworten, keine Serie zu halten. Nur die Zeile und das Datum, zu dem sie gehört.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>Platz für mich freihalten</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>Wir schreiben einmal, wenn Notch fertig ist. Das ist alles.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>Eine Vorschau der Notch-App: die heutige Zeile, diese Woche und derselbe Tag in früheren Jahren</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>Die heutige Zeile</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>Woran wirst du dich heute erinnern?</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>noch {0}</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>Festhalten</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>Gespeichert. Die Zeile von morgen öffnet um Mitternacht.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>Diese Woche</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} von 7 Tagen</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>An diesem Tag</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>Erster Frost auf dem Rad. Die Handschuhe bleiben ab jetzt in der Tasche.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>Mia hat eine ganze Seite laut vorgelesen, ohne einmal anzuhalten.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>Drei Regeln, und das ist die App</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>Eine Zeile, jeden Tag</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>Höchstens 140 Zeichen. Kurz genug für die Schlange am Kaffee, lang genug, um sich an den Tag zu erinnern.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>Derselbe Tag, Jahre später</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>Öffne heute und lies, was du an diesem Datum letztes Jahr und im Jahr davor geschrieben hast. Hier beginnt sich eine Zeile am Tag auszuzahlen.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>Nur du kannst es lesen</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>Zeilen werden auf deinem Telefon verschlüsselt, bevor sie es verlassen. Kein Feed, keine Likes, keine Follower, und ein Export als reiner Text, wann immer du willst.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>Eine Zeile am Tag, für immer bewahrt.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>Wohin deine Zeilen gehen</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>Dein Telefon</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>Jede Zeile wird hier geschrieben und aufbewahrt, verschlüsselt mit einem Schlüssel, der das Telefon nie verlässt.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>Sicherung</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>Aus, bis du sie einschaltest. Dann bringt eine verschlüsselte Kopie jede Zeile auf ein neues Telefon zurück.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>Unser Server</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>Bewahrt diese Kopie in Helsinki auf. Wir sehen ihre Größe und ihr Datum, aber nichts vom Inhalt.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>Werbetreibende und Datenhändler</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>Bekommen nichts. Es gibt nichts, was man ihnen verkaufen könnte.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>Wenn du willst</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>Niemals</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>Zum Inhalt springen</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>Unternehmen</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>Kontakt</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>Rechtliches</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>Impressum</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>Barrierefreiheit</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. Alle Rechte vorbehalten.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>Dies ist eine Beispielseite. Das Unternehmen, die Personen und die Zahlen sind erfunden.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>Du wirst eingetragen…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>Sag mir Bescheid, wenn es erscheint für</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone und iPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>Eine E-Mail zum Start. Kein Spam, und du kannst jederzeit gehen.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>Schau in dein Postfach</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>Wir haben einen Bestätigungslink an {0} geschickt. Öffne ihn, um deinen Platz zu behalten: Nummer {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>Diese E-Mail-Adresse sieht nicht richtig aus.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>Landingpages</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>Landingpage: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>Eines der Beispiele der Landingpage, mit eigenem Design und ohne die App-Hülle darum: eine Warteliste, eine funktionierende Telefon-Demo, hell und dunkel sowie von rechts nach links.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>Eine Zeile am Tag</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>Ein Designer für mehrere Apps</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>Füge hier deine verschiedenen Apps hinzu, jede mit ihrem eigenen Design, so wie diese Workbench eine Landingpage in ihrem eigenen Aussehen neben den Seiten der App führt.</value>
+    </data>
 </root>

@@ -13,7 +13,8 @@ public class EveryShowcaseUITests : ShowcaseUITest
         ("pos-dashboard", nameof(WorkbenchStrings.PosCustomize)),
         ("buildings", nameof(WorkbenchStrings.BuildingsHeading)),
         ("assistant", nameof(WorkbenchStrings.AssistantWelcomeTitle)),
-        ("shifts", nameof(WorkbenchStrings.ShiftsHeading))
+        ("shifts", nameof(WorkbenchStrings.ShiftsHeading)),
+        ("landing-minimal", nameof(WorkbenchStrings.NotchHeroTitle))
     ];
 
     [TestMethod, EverySurface]

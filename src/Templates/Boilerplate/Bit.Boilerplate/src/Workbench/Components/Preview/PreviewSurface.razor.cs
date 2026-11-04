@@ -1,7 +1,7 @@
 namespace Boilerplate.Workbench.Components.Preview;
 
 /// <summary>
-/// A page as the app shows it: inside the app's chrome, or bare when the scenario turns the chrome off.
+/// A page as the app shows it: inside the app's chrome, or bare when the scenario turns the chrome off. A page that isn't the app's has no chrome at all.
 /// </summary>
 public partial class PreviewSurface
 {
