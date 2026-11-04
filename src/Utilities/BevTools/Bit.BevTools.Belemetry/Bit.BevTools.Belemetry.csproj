@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.BevTools</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- Builds on Bit.BevTools, which is not trim-safe (see Bit.BevTools.csproj). -->
+        <IsTrimmable>false</IsTrimmable>
+        <IsAotCompatible>false</IsAotCompatible>
+        <PackageDescription>bit Belemetry integration for bit BevTools: a Support panel with Belemetry's diagnostic timeline and exception groups, a jump from a failure to its component in the tree, support bundle preview, export and import - and the component tree and render counts BevTools observes, added to Belemetry's captures.</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;devtools;diagnostics;telemetry;support;Belemetry</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BevTools\Bit.BevTools.csproj" />
+        <ProjectReference Include="..\..\Belemetry\Bit.Belemetry\Bit.Belemetry.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.BevTools.Tests" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
+    </ItemGroup>
+
+</Project>

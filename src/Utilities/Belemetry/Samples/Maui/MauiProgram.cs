@@ -18,7 +18,11 @@ public static class MauiProgram
 #endif
 
         // There is no server to fetch from: the "fetch" button requests a file of this app's wwwroot.
-        builder.Services.AddCoreServices(settings => settings.FetchUrl = "sample-data.json");
+        builder.Services.AddCoreServices(settings =>
+        {
+            settings.FetchUrl = "sample-data.json";
+            settings.FailUrl = "missing-data.json";
+        });
 
         builder.Services.AddBitBelemetryServices(o =>
         {

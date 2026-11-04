@@ -48,9 +48,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // there would hide real failures under load.
         _errors = settings.IsServer ? null : new BelemetryErrorLimiter(settings.Options.Errors);
         _consent.Changed += OnConsentChanged;
+        Diagnostics = new BelemetryDiagnosticHub(settings, consent, services);
     }
 
     public BelemetrySettings Settings { get; }
+
+    /// <summary>The diagnostic timelines (<see cref="BelemetryOptions.Diagnostics"/>), fed by every record this pipeline accepts.</summary>
+    public BelemetryDiagnosticHub Diagnostics { get; }
 
     /// <summary>Whether the collectors are running.</summary>
     public bool IsCollecting => _started == 1 && Settings.CollectDotnet && Settings.HasExporters;
@@ -76,7 +80,11 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     public void Start()
     {
         if (Interlocked.Exchange(ref _started, 1) == 1) return;
-        if (Settings.Options.Enabled is false || Settings.HasExporters is false) return;
+        if (Settings.Options.Enabled is false) return;
+
+        // Diagnostics work without any exporter: the timeline is local until a capture is exported on purpose.
+        Diagnostics.Start();
+        if (Settings.HasExporters is false) return;
 
         if (Settings.CollectDotnet)
         {
@@ -154,7 +162,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
     public void Enqueue(BelemetrySpan span, BelemetryResource? resource = null, bool relayed = false)
     {
-        if (relayed is false && CanRecord(span.Feature, allowPending: true) is false) return;
+        var export = Settings.HasExporters && (relayed || CanRecord(span.Feature, allowPending: true));
+        var diagnose = relayed is false && Diagnostics.Enabled && Diagnostics.CanRecordFor(span.Feature);
+        if (export is false && diagnose is false) return;
 
         _privacy.Apply(span);
         BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
@@ -177,16 +187,26 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
+        if (export) Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
+        if (diagnose) Diagnostics.OnSpan(span, relayed);
     }
 
     /// <param name="log">The log record.</param>
     /// <param name="resource">Its resource; the .NET side's when null.</param>
     /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
-    public void Enqueue(BelemetryLogRecord log, BelemetryResource? resource = null, bool relayed = false)
-    {
-        if (relayed is false && CanRecord(log.Feature, allowPending: true) is false) return;
+    public void Enqueue(BelemetryLogRecord log, BelemetryResource? resource = null, bool relayed = false) => Enqueue(log, resource, relayed, export: true);
 
+    /// <param name="log">The log record.</param>
+    /// <param name="resource">Its resource; the .NET side's when null.</param>
+    /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
+    /// <param name="export">Whether the record may be exported; false for an entry produced for the diagnostic timeline alone (below the export's level).</param>
+    internal void Enqueue(BelemetryLogRecord log, BelemetryResource? resource, bool relayed, bool export)
+    {
+        export = export && Settings.HasExporters && (relayed || CanRecord(log.Feature, allowPending: true));
+        var diagnose = relayed is false && Diagnostics.Enabled && Diagnostics.CanRecordFor(log.Feature);
+        if (export is false && diagnose is false) return;
+
+        // The error limits protect the diagnostic timeline as much as the export: a loop that keeps throwing is one event per window.
         if (relayed is false && log.Feature == BelemetryFeatures.Errors && _errors?.ShouldRecord(log) is false)
         {
             Self.Dropped("error_limit", span: false);
@@ -214,7 +234,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed, userIds));
+        if (export) Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed, userIds));
+        if (diagnose) Diagnostics.OnLog(log, relayed);
     }
 
     /// <summary>
@@ -753,6 +774,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
         _consent.Changed -= OnConsentChanged;
+        Diagnostics.Dispose();
         _activities?.Dispose();
         _requests?.Dispose();
 

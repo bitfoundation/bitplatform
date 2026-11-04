@@ -62,6 +62,12 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     /// <summary>Raised when the script reports a new context.</summary>
     public event Action<BelemetryJsContext>? ContextChanged;
 
+    /// <summary>Raised when the page reports a JavaScript error as a diagnostic trigger (type, message).</summary>
+    public event Action<string?, string?>? DiagnosticTriggered;
+
+    // A browser timeline is at most BrowserMaxEvents (1000) small events; anything larger is not one.
+    private const long MaxDiagnosticsBytes = 4 * 1024 * 1024;
+
     /// <summary>Starts the script (idempotent). Returns false when it cannot run here or now.</summary>
     public async ValueTask<bool> StartAsync()
     {
@@ -162,6 +168,82 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     public ValueTask TrackExceptionAsync(string type, string message, string? stack, IReadOnlyDictionary<string, object?>? attributes) => InvokeAsync("trackException", type, message, stack, ToElement(attributes));
 
     public ValueTask FlushAsync() => InvokeAsync("flush");
+
+    /// <summary>
+    /// The script's diagnostic timeline, or null when it is unreachable or keeps none. A server reads it as a stream: a
+    /// circuit's messages from the page are capped (32 KiB by default), and a timeline can be larger.
+    /// </summary>
+    public async ValueTask<JsonElement?> GetDiagnosticsAsync(CancellationToken cancellationToken)
+    {
+        if (await StartAsync() is false || _module is null) return null;
+
+        try
+        {
+            if (_settings.IsServer)
+            {
+                var reference = await _module.InvokeAsync<IJSStreamReference?>("getDiagnosticsStream", cancellationToken);
+                if (reference is null) return null;
+                await using (reference)
+                {
+                    await using var stream = await reference.OpenReadStreamAsync(MaxDiagnosticsBytes, cancellationToken);
+                    using var document = await JsonDocument.ParseAsync(stream, new JsonDocumentOptions { MaxDepth = 16 }, cancellationToken);
+                    return document.RootElement.Clone();
+                }
+            }
+
+            var element = await _module.InvokeAsync<JsonElement>("getDiagnostics", cancellationToken);
+            return element.ValueKind == JsonValueKind.Object ? element : null;
+        }
+        catch (Exception ex) when (IsUnavailable(ex) || ex is JsonException or IOException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Forgets the page's diagnostic timeline and its stored copy.</summary>
+    public ValueTask ClearDiagnosticsAsync() => InvokeAsync("clearDiagnostics");
+
+    /// <summary>Saves a file in the browser (a download). False when there is no browser to save it in.</summary>
+    public async ValueTask<bool> DownloadAsync(string fileName, byte[] bytes, CancellationToken cancellationToken)
+    {
+        if (await StartAsync() is false || _module is null) return false;
+
+        try
+        {
+            if (_settings.IsServer)
+            {
+                // Streamed: a bundle can be larger than a circuit's single message.
+                using var reference = new DotNetStreamReference(new MemoryStream(bytes, writable: false));
+                await _module.InvokeVoidAsync("downloadFile", cancellationToken, fileName, reference);
+            }
+            else
+            {
+                await _module.InvokeVoidAsync("downloadFile", cancellationToken, fileName, bytes);
+            }
+            return true;
+        }
+        catch (Exception ex) when (IsUnavailable(ex))
+        {
+            return false;
+        }
+    }
+
+    internal void OnDiagnosticTrigger(JsonElement error)
+    {
+        if (error.ValueKind != JsonValueKind.Object) return;
+
+        string? Read(string name) => error.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+        var type = Read("type");
+        var message = Read("message");
+        try
+        {
+            DiagnosticTriggered?.Invoke(type is { Length: > 256 } ? type[..256] : type, message is { Length: > 1024 } ? message[..1024] : message);
+        }
+        catch
+        {
+            // A trigger never fails the page's call.
+        }
+    }
 
     private async ValueTask SendRequestsAsync(IReadOnlyList<BelemetryHttpRequest> requests)
     {

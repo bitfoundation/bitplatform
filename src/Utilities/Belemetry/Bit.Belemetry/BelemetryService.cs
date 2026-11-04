@@ -58,6 +58,7 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
         record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
+        record.Exception = exception;
         Enqueue(record);
     }
 

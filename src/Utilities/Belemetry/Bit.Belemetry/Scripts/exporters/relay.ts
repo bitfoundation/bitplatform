@@ -11,6 +11,7 @@ export const DotNetCallbacks = {
     relay: 'Belemetry.Relay',
     contextChanged: 'Belemetry.ContextChanged',
     drainForUnload: 'Belemetry.DrainForUnload',
+    diagnosticTrigger: 'Belemetry.DiagnosticTrigger',
 } as const;
 
 /**

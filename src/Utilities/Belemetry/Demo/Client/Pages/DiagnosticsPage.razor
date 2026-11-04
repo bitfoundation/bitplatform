@@ -1,0 +1,194 @@
+﻿@page "/diagnostics"
+@using System.Text.Json
+@using Microsoft.Extensions.Logging
+@inject IJSRuntime JS
+@inject IBelemetryDiagnostics Diagnostics
+@inject ILogger<DiagnosticsPage> Logger
+
+<PageTitle>Production diagnostics · Belemetry</PageTitle>
+
+<div class="bb-intro">
+    <h1>Production diagnostics and support bundles</h1>
+    <p class="bb-subtitle">
+        When someone reports a problem, telemetry says <em>that</em> something failed. Production diagnostics keep what
+        the Blazor app was doing - the route and component, the event handler, the requests that failed before it, what
+        the page reported, the circuit's transitions, the release, the trace ids - in a bounded, sanitized timeline in
+        memory, and turn it into a support bundle the user previews and confirms before anything leaves the app.
+    </p>
+</div>
+
+<div class="bb-note">
+    The timeline follows the consent you gave this site: grant at least <code>Errors</code>, <code>Dependencies</code>
+    and <code>Traces</code> in the banner (or on the <a href="/consent">consent page</a>) to see the evidence below. Nothing
+    of it is ever sent to this site: the bundle is downloaded to your own machine.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Turn it on</h3>
+    <p>
+        Off by default. It needs no exporter, follows the user's consent, and on Blazor Server keeps one timeline per
+        circuit - holding only what that circuit's code produced.
+    </p>
+    <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Try it</h3>
+    <p>Make something fail, then capture. The preview shows what the bundle would hold; nothing leaves the page until you confirm.</p>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="FailInHandler">Fail in an event handler</button>
+        <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="FailRequestAsync">Failing request</button>
+        <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowJsErrorAsync">JS error</button>
+        <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="CaptureAsync">Capture</button>
+    </div>
+    @if (_status is not null)
+    {
+        <p class="bb-muted" role="status">@_status</p>
+    }
+    @if (_capture is not null)
+    {
+        <BelemetryCapturePreview Capture="_capture" OnConfirmed="Exported" OnCancelled="() => _capture = null" />
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Exception groups</h3>
+    <p>
+        Grouped by <code>BelemetryExceptionFingerprint</code>: the type, the message with its values replaced
+        (<code>Order {n} not found</code>) and the first application frames - without paths, line numbers or arguments,
+        so one failure is one group across builds. Each group keeps its count, releases and last occurrences.
+    </p>
+    @if (Diagnostics.GetExceptionGroups() is { Count: > 0 } groups)
+    {
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th scope="col">Exception</th><th scope="col">Template</th><th scope="col">Count</th><th scope="col">Fingerprint</th></tr></thead>
+                <tbody>
+                    @foreach (var g in groups)
+                    {
+                        <tr><td><code>@g.ExceptionType</code></td><td>@g.MessageTemplate</td><td>@g.Count</td><td><code>@g.Fingerprint</code></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="bb-muted">None yet: fail something above.</p>
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What a bundle holds</h3>
+    <p>
+        A ZIP of JSON documents with a versioned manifest - every file's SHA-256, what was redacted, cut, left out for
+        consent or size, and what the user removed in the preview - plus the issue report as Markdown. Every statement of
+        the report says whether it was <strong>observed</strong> (an exception logged inside a component's event handler
+        is that handler's failure), <strong>inferred</strong> (a request that failed just before may be the cause), or
+        <strong>user-provided</strong>. Metadata, never values: route templates, URL templates, component types, exception
+        types and scrubbed messages; never bodies, headers, cookies, DOM text, session or user ids.
+    </p>
+    <CodeSnippet Code="@ExportCode" Language="C#" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Application state, classification, BevTools</h3>
+    <p>
+        Belemetry never serializes components or services. A snapshot provider describes what support needs as plain
+        values, only when a capture asks for it; a classifier groups and flags your domain's exceptions; and
+        <code>Bit.BevTools.Belemetry</code> adds a Support panel to BevTools and the component tree to captures.
+    </p>
+    <CodeSnippet Code="@ExtendCode" Language="C#" />
+</div>
+
+@code {
+    private BelemetryDiagnosticCapture? _capture;
+    private string? _status;
+
+    private void FailInHandler()
+    {
+        try
+        {
+            throw new InvalidOperationException($"Order {Random.Shared.Next(10000, 99999)} could not be saved.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Saving the order failed");
+        }
+        _status = "An exception was logged inside this button's event handler.";
+    }
+
+    private async Task FailRequestAsync()
+    {
+        try
+        {
+            await JS.InvokeAsync<JsonElement>("blDemo.fetch", "/api/demo/fail");
+            _status = "GET /api/demo/fail answered 500.";
+        }
+        catch (JSException)
+        {
+            _status = "The request could not be made.";
+        }
+    }
+
+    private async Task ThrowJsErrorAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("blDemo.throwError", "Cannot read properties of undefined (reading 'total')");
+            _status = "A JavaScript error was thrown in the page.";
+        }
+        catch (JSException)
+        {
+            _status = "The script could not run.";
+        }
+    }
+
+    private async Task CaptureAsync()
+    {
+        _capture = await Diagnostics.CaptureAsync(new BelemetryDiagnosticCaptureOptions { Reason = "demo" });
+        _status = null;
+    }
+
+    private void Exported(BelemetryDiagnosticCapture capture)
+    {
+        _status = $"Saved {capture.SuggestedFileName}.";
+        _capture = null;
+    }
+
+    private const string SetupCode = """
+        builder.Services.AddBitBelemetryServices(o =>
+        {
+            o.Diagnostics.Enabled = true;
+            o.Diagnostics.AutoCaptureTriggers = BelemetryDiagnosticTriggers.Default;   // optional: unhandled exceptions, circuit failures
+            o.Diagnostics.Release.Commit = Environment.GetEnvironmentVariable("GIT_COMMIT");
+        });
+        """;
+
+    private const string ExportCode = """
+        @inject IBelemetryDiagnostics Diagnostics
+
+        var capture = await Diagnostics.CaptureAsync(new() { Reason = "user-report", Exception = boundaryException });
+
+        // Show it: <BelemetryCapturePreview Capture="capture" /> - or narrow it in code:
+        capture.ExcludeSection(BelemetryBundleSections.Snapshots);
+        capture.SetDescription(userText);
+        capture.Confirm();                                  // export requires it, and every change withdraws it
+
+        await Diagnostics.DownloadAsync(capture);           // or: await capture.ExportAsync(stream) to your support API
+        """;
+
+    private const string ExtendCode = """
+        public sealed class CartSnapshot(Cart cart) : IBelemetrySnapshotProvider
+        {
+            public string Name => "cart";
+
+            public ValueTask<IReadOnlyDictionary<string, object?>?> CaptureAsync(BelemetrySnapshotContext context, CancellationToken cancellationToken) =>
+                ValueTask.FromResult<IReadOnlyDictionary<string, object?>?>(new Dictionary<string, object?> { ["itemCount"] = cart.Items.Count });
+        }
+
+        builder.Services.AddBitBelemetrySnapshotProvider<CartSnapshot>();
+        builder.Services.AddSingleton<IBelemetryExceptionClassifier, PaymentsClassifier>();
+        builder.Services.AddBitBevToolsBelemetry();         // in development, with Bit.BevTools.Belemetry
+        """;
+}

@@ -98,6 +98,18 @@ internal static class BelemetryBrowserConfigFactory
             },
             MaxValueLength = Math.Max(0, options.MaxValueLength),
             Debug = browser.Debug,
+            Diagnostics = options.Diagnostics.Enabled
+                ? new()
+                {
+                    MaxEvents = Math.Clamp(options.Diagnostics.BrowserMaxEvents, 1, 1000),
+                    Categories = (int)options.Diagnostics.Categories,
+                    IncludeSuccessfulActivity = options.Diagnostics.IncludeSuccessfulActivity,
+                    IncludeLogMessages = options.Diagnostics.IncludeLogMessages,
+                    Persist = options.Diagnostics.PersistBrowserTimeline,
+                    TriggerBrowserErrors = (options.Diagnostics.AutoCaptureTriggers & (BelemetryDiagnosticTriggers.BrowserErrors | BelemetryDiagnosticTriggers.AllExceptions)) != 0,
+                    AllowedQueryParameters = [.. options.Diagnostics.AllowedQueryParameters],
+                }
+                : null,
         };
 
         if (options.ServiceNamespace is not null) config.Resource[BelemetrySemanticConventions.ServiceNamespace] = options.ServiceNamespace;

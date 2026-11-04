@@ -1,0 +1,195 @@
+﻿@page "/support"
+@implements IAsyncDisposable
+@inject IBelemetryDiagnostics Diagnostics
+@inject ILogger<SupportPage> Logger
+@inject IJSRuntime JS
+@inject SampleSettings Settings
+@inject SampleCart Cart
+
+<PageTitle>Support - Belemetry samples</PageTitle>
+
+<h1>Report a problem</h1>
+
+<p>
+    Production diagnostics keep a bounded timeline of what this app did - navigation, component events, exceptions,
+    failed requests, browser errors - after consent and the privacy rules, in memory only. A support bundle is made from
+    it only when you ask, and leaves only after you previewed and confirmed it.
+</p>
+
+<section>
+    <h2>Make something fail</h2>
+    <button @onclick="AddItem">Add an item to the cart</button>
+    <button @onclick="FailRequestAsync">Failing request (@Settings.FailUrl)</button>
+    <button @onclick="ThrowJsErrorAsync">Throw a JS error</button>
+    <button @onclick="() => _widgetFails = true">Break the widget</button>
+    <button @onclick="LogHandledError">Log a handled error</button>
+    <button @onclick="RecordSnapshotAsync">Record a cart snapshot</button>
+
+    <ErrorBoundary @ref="_boundary">
+        <ChildContent>
+            <FaultyWidget Fail="_widgetFails" />
+        </ChildContent>
+        <ErrorContent Context="exception">
+            <p class="status">
+                The widget failed.
+                <button @onclick="() => CaptureAsync(exception)">Report it</button>
+                <button @onclick="Recover">Recover</button>
+            </p>
+        </ErrorContent>
+    </ErrorBoundary>
+</section>
+
+<section>
+    <h2>Report</h2>
+    <button @onclick="() => CaptureAsync(null)">Report a problem</button>
+    @if (Diagnostics.PendingCaptures.Count > 0)
+    {
+        <button @onclick="ReviewPending">Review the automatic report (@Diagnostics.PendingCaptures.Count)</button>
+    }
+    <p>Exception groups so far: @Diagnostics.GetExceptionGroups().Count.ToString(System.Globalization.CultureInfo.InvariantCulture)</p>
+</section>
+
+@if (_capture is not null)
+{
+    @* The library's preview: sections, findings, events with a Remove button each, missing evidence, the report as it
+       will be sent - then Confirm and download, or Cancel. *@
+    <BelemetryCapturePreview Capture="_capture" OnConfirmed="Done" OnCancelled="Cancel" />
+}
+
+@if (_status is not null)
+{
+    <p class="status">@_status</p>
+}
+
+@code {
+    private ErrorBoundary? _boundary;
+    private BelemetryDiagnosticCapture? _capture;
+    private IJSObjectReference? _module;
+    private bool _widgetFails;
+    private string? _status;
+
+    protected override void OnInitialized()
+    {
+        // Raised when an automatic trigger (an unhandled exception, a circuit failure) made a capture for review.
+        Diagnostics.CaptureAvailable += OnCaptureAvailable;
+    }
+
+    private void OnCaptureAvailable(BelemetryDiagnosticCapture capture) => _ = InvokeAsync(StateHasChanged);
+
+    private void AddItem()
+    {
+        Cart.Items.Add($"product-{Cart.Items.Count + 1}");
+        Diagnostics.Record("cart.item_added", new Dictionary<string, object?> { ["itemCount"] = Cart.Items.Count });
+        _status = $"{Cart.Items.Count} item(s) in the cart.";
+    }
+
+    private async Task FailRequestAsync()
+    {
+        try
+        {
+            var module = await GetModuleAsync();
+            var status = await module.InvokeAsync<int>("fetchUrl", Settings.FailUrl);
+            _status = $"fetch {Settings.FailUrl}: {status}.";
+        }
+        catch (JSException ex)
+        {
+            _status = "The request could not be made: " + ex.Message;
+        }
+    }
+
+    private async Task ThrowJsErrorAsync()
+    {
+        try
+        {
+            var module = await GetModuleAsync();
+            await module.InvokeVoidAsync("throwError", "Checkout script failed.");
+            _status = "JS error thrown.";
+        }
+        catch (JSException ex)
+        {
+            _status = "The script could not be loaded: " + ex.Message;
+        }
+    }
+
+    private void LogHandledError()
+    {
+        try
+        {
+            throw new TimeoutException("The inventory service did not answer in 5000 ms.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Checking the inventory for {ItemCount} items failed", Cart.Items.Count);
+        }
+        _status = "Handled error logged.";
+    }
+
+    private async Task RecordSnapshotAsync()
+    {
+        // A snapshot kept on the timeline: a later report shows the state before an operation next to the state at the end.
+        await Diagnostics.RecordSnapshotAsync("before-checkout");
+        _status = "Cart snapshot recorded.";
+    }
+
+    private async Task CaptureAsync(Exception? exception)
+    {
+        _capture = await Diagnostics.CaptureAsync(new BelemetryDiagnosticCaptureOptions
+        {
+            Reason = exception is null ? "user-report" : "error-boundary",
+            Exception = exception,
+            IncludeSnapshots = true,
+        });
+        _status = null;
+    }
+
+    private void ReviewPending()
+    {
+        _capture = Diagnostics.PendingCaptures[^1];
+        _status = null;
+    }
+
+    private void Done(BelemetryDiagnosticCapture capture)
+    {
+        Diagnostics.Dismiss(capture);
+        _capture = null;
+        _status = $"Report {capture.Id} exported as {capture.SuggestedFileName}.";
+    }
+
+    private void Cancel()
+    {
+        _capture = null;
+        _status = "Nothing was sent.";
+    }
+
+    private void Recover()
+    {
+        _widgetFails = false;
+        _boundary?.Recover();
+    }
+
+    // Callers catch JSException: the module may fail to load like any script.
+    private async ValueTask<IJSObjectReference> GetModuleAsync()
+    {
+        try
+        {
+            return _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.Belemetry.Samples.Core/samples.js");
+        }
+        catch (JSException)
+        {
+            throw;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Diagnostics.CaptureAvailable -= OnCaptureAvailable;
+        try
+        {
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone; so is the module.
+        }
+    }
+}

@@ -22,7 +22,11 @@ internal static class Program
 #endif
 
         // There is no server to fetch from: the "fetch" button requests a file of this app's wwwroot.
-        services.AddCoreServices(settings => settings.FetchUrl = "sample-data.json");
+        services.AddCoreServices(settings =>
+        {
+            settings.FetchUrl = "sample-data.json";
+            settings.FailUrl = "missing-data.json";
+        });
 
         services.AddBitBelemetryServices(o =>
         {

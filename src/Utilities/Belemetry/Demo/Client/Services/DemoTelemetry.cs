@@ -52,5 +52,9 @@ public static class DemoTelemetry
         foreach (var url in SelfUrls) options.Browser.IgnoreUrls.Add(url);
 
         options.AddProcessor(new DemoNoiseFilter());
+
+        // Production diagnostics, for the Support bundles page: a local timeline, exported only as a bundle the reader
+        // previews and downloads.
+        options.Diagnostics.Enabled = true;
     }
 }

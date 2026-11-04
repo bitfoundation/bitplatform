@@ -121,6 +121,21 @@ export interface PersistenceConfig {
     retryIntervalMs: number;
 }
 
+/** Production diagnostics (C# BelemetryDiagnosticsOptions); absent from the config unless enabled. */
+export interface DiagnosticsConfig {
+    enabled: boolean;
+    maxEvents: number;
+    /** The C# BelemetryDiagnosticCategories bits recorded. */
+    categories: number;
+    includeSuccessfulActivity: boolean;
+    includeLogMessages: boolean;
+    /** Whether the timeline survives a reload of the tab (sessionStorage, while Persistence is granted). */
+    persist: boolean;
+    /** Whether a JS error is offered to .NET as an automatic capture trigger. */
+    triggerBrowserErrors: boolean;
+    allowedQueryParameters: string[];
+}
+
 export interface ResolvedConfig {
     service: ServiceConfig;
     resource: Attributes;
@@ -143,6 +158,7 @@ export interface ResolvedConfig {
     /** The longest string kept in an attribute, a body or a status message; 0 keeps strings whole. */
     maxValueLength: number;
     debug: boolean;
+    diagnostics: DiagnosticsConfig;
 }
 
 type Section<T> = T extends unknown[] ? T : T extends object ? { [P in keyof T]?: T[P] | null } : T;
@@ -183,6 +199,10 @@ export function createDefaults(): ResolvedConfig {
         persistence: { enabled: true, maxBytes: 1048576, maxAgeHours: 48, retryIntervalMs: 60000 },
         maxValueLength: 32768,
         debug: false,
+        diagnostics: {
+            enabled: false, maxEvents: 200, categories: 1023, includeSuccessfulActivity: true, includeLogMessages: false, persist: false,
+            triggerBrowserErrors: false, allowedQueryParameters: [],
+        },
     };
 }
 

@@ -8,4 +8,10 @@ public sealed class SampleSettings
     /// fetches a file of its own <c>wwwroot</c>.
     /// </summary>
     public string FetchUrl { get; set; } = "api/weather";
+
+    /// <summary>
+    /// The URL the support page's "failing request" button requests: the web hosts answer <c>api/fail</c> with a 500;
+    /// the MAUI and WinForms apps ask for a file their <c>wwwroot</c> does not have (a 404).
+    /// </summary>
+    public string FailUrl { get; set; } = "api/fail";
 }

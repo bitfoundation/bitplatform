@@ -49,6 +49,9 @@ app.MapStaticAssets();
 // The target of the "fetch" button.
 app.MapGet("/api/weather", () => new { summary = "Sunny", temperatureC = 23 });
 
+// The target of the support page's "failing request" button: a 500 the diagnostic timeline records as a failed request.
+app.MapGet("/api/fail", () => Results.Problem("The sample endpoint failed on purpose.", statusCode: 500));
+
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Routes).Assembly);

@@ -41,6 +41,15 @@ export class Pipeline {
     /** Attributes the app set for every record (`setAttributes`); a record's own attributes win. */
     attributes: Attributes = {};
 
+    /** The diagnostic timeline's tap: every record accepted (after consent, error limits and privacy), sampled or not. */
+    onRecord: ((record: TelemetryRecord) => void) | null = null;
+
+    /** Told about a record an app processor dropped (the diagnostic timeline forgets it too). */
+    onFiltered: ((record: TelemetryRecord) => void) | null = null;
+
+    // Each record is processed once, whether the export or the diagnostic timeline asks first.
+    private processed = new WeakMap<TelemetryRecord, boolean>();
+
     constructor(public config: ResolvedConfig, private consent: ConsentManager, private session: SessionManager, public resource: Attributes) {
         this.errors = new ErrorLimiter(config.errors);
     }
@@ -54,7 +63,9 @@ export class Pipeline {
         try {
             if (!(this.config.features & record.feature)) return;
             const sessionId = this.session.id();
-            if (!isSessionSampled(sessionId, this.config.sampling.sessionRatio)) {
+            // A session sampled out of the export still keeps its diagnostic timeline: it never leaves the page unasked.
+            const sampled = isSessionSampled(sessionId, this.config.sampling.sessionRatio);
+            if (!sampled && !this.onRecord) {
                 countDropped('sampled_out');
                 return;
             }
@@ -75,6 +86,14 @@ export class Pipeline {
             // After privacy, so a cut never hides an e-mail address from the scrubber.
             limitRecord(record, this.config.maxValueLength);
             this.setId(record, 'session.id', sessionId);
+            if (!sampled) {
+                // Never exported, so never processed at export: the app's processors run now, as the timeline's records
+                // must have been through them (one that drops the record keeps it off the timeline too).
+                if (this.onRecord && this.process(record)) this.onRecord(record);
+                countDropped('sampled_out');
+                return;
+            }
+            if (this.onRecord) this.onRecord(record);
             if (this.consent.isGranted(record.feature)) this.enqueue(record);
             else this.consent.hold(record);
         } catch (e) {
@@ -164,6 +183,20 @@ export class Pipeline {
      * emitted, so a processor added right after the script started still sees the initial page view.
      */
     private process(record: TelemetryRecord): boolean {
+        const known = this.processed.get(record);
+        if (known !== undefined) return known;
+        const kept = this.runProcessors(record);
+        this.processed.set(record, kept);
+        if (!kept && this.onFiltered) this.onFiltered(record);
+        return kept;
+    }
+
+    /** Runs the processors on the queued records now (memoized), so the diagnostic timeline reflects them before export. */
+    processQueued(): void {
+        for (const record of this.queue) this.process(record);
+    }
+
+    private runProcessors(record: TelemetryRecord): boolean {
         for (const processor of this.processors) {
             try {
                 if (processor(record) === false) {

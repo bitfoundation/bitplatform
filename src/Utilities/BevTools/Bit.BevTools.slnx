@@ -54,6 +54,7 @@
   </Folder>
   <Project Path="Bit.BevTools/Bit.BevTools.csproj" />
   <Project Path="Bit.BevTools.Blex/Bit.BevTools.Blex.csproj" />
+  <Project Path="Bit.BevTools.Belemetry/Bit.BevTools.Belemetry.csproj" />
   <Project Path="Bit.BevTools.Cli/Bit.BevTools.Cli.csproj" />
   <Project Path="Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
   <Project Path="Bit.BevTools.Server/Bit.BevTools.Server.csproj" />

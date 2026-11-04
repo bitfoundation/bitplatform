@@ -37,14 +37,14 @@ internal sealed class BelemetryLogger : ILogger
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => _provider.ScopeProvider?.Push(state);
 
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return logLevel != LogLevel.None
-               && logLevel >= _minimumLevel
-               && _excluded is false
-               && _pipeline.IsCollecting
-               && _pipeline.CanRecord(logLevel >= LogLevel.Error ? BelemetryFeatures.Errors : BelemetryFeatures.Logs, allowPending: true);
-    }
+    public bool IsEnabled(LogLevel logLevel) =>
+        logLevel != LogLevel.None && _excluded is false && (Exports(logLevel) || _pipeline.Diagnostics.WantsLog(logLevel));
+
+    /// <summary>Whether an entry at <paramref name="logLevel"/> is exported (rather than produced for the diagnostic timeline alone).</summary>
+    private bool Exports(LogLevel logLevel) =>
+        logLevel >= _minimumLevel
+        && _pipeline.IsCollecting
+        && _pipeline.CanRecord(logLevel >= LogLevel.Error ? BelemetryFeatures.Errors : BelemetryFeatures.Logs, allowPending: true);
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
@@ -75,6 +75,7 @@ internal sealed class BelemetryLogger : ILogger
                     if (key == OriginalFormat)
                     {
                         template = value as string;
+                        record.MessageTemplate = template;
                         if (_options.IncludeMessageTemplate) record.Attributes.Set(BelemetrySemanticConventions.LogMessageTemplate, value);
                         continue;
                     }
@@ -94,6 +95,7 @@ internal sealed class BelemetryLogger : ILogger
 
             if (exception is not null)
             {
+                record.Exception = exception;
                 record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
                 record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
                 record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
@@ -120,7 +122,7 @@ internal sealed class BelemetryLogger : ILogger
                 record.Flags = (int)activity.ActivityTraceFlags;
             }
 
-            _pipeline.Enqueue(record);
+            _pipeline.Enqueue(record, resource: null, relayed: false, export: Exports(logLevel));
         }
         catch
         {

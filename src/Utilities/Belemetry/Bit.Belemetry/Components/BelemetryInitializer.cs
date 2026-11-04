@@ -11,6 +11,9 @@ public sealed class BelemetryInitializer : ComponentBase
 {
     [Inject] private BelemetryJsBridge Bridge { get; set; } = default!;
 
+    // Resolved here, on the renderer's synchronization context: a server circuit's diagnostic timeline registers under it.
+    [Inject] private IBelemetryDiagnostics Diagnostics { get; set; } = default!;
+
     /// <summary>Raised once the script is connected.</summary>
     [Parameter] public EventCallback OnReady { get; set; }
 
@@ -18,6 +21,8 @@ public sealed class BelemetryInitializer : ComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false) return;
+
+        (Diagnostics as BelemetryDiagnosticsService)?.EnsureRegistered();
 
         if (await Bridge.StartAsync()) await OnReady.InvokeAsync();
     }
