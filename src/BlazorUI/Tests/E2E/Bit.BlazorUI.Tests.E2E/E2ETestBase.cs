@@ -380,14 +380,23 @@ public abstract class E2ETestBase
     {
         var query = paths is null ? string.Empty : $"&paths={Uri.EscapeDataString(string.Join(',', paths))}";
 
-        // A read that fails is tried again, and then fails the test, rather than being taken for "no errors": an empty
-        // answer would let the test's own errors through, and a baseline of 0 would blame it for every error the host
-        // logged before it began.
+        // A read that fails fails the test rather than being taken for "no errors": an empty answer would let the
+        // test's own errors through, and a baseline of 0 would blame it for every error the host logged before it began.
+        return await ReadFromHostAsync<ServerErrors>($"/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
+    }
+
+    /// <summary>
+    /// Reads what an endpoint of the test host answers (an <c>/api/...</c> path with its query), for what only the host
+    /// knows - what it logged, the culture data it formats with on the machine it runs on, which need not be the one the
+    /// tests run on (<c>E2E_HOST_URL</c>). A read that fails is tried again, and then fails the test.
+    /// </summary>
+    protected static async Task<T?> ReadFromHostAsync<T>(string pathAndQuery)
+    {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
+                return await _http.GetFromJsonAsync<T>($"{BaseUrl}/{pathAndQuery.TrimStart('/')}");
             }
             catch (Exception ex) when ((ex is HttpRequestException or TaskCanceledException) && attempt < 3)
             {

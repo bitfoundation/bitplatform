@@ -107,6 +107,16 @@ app.MapDelete("/api/server-errors", () =>
     return Results.Ok();
 });
 
+// The shortest day names a page on the server writes (?culture=en-US&first=0&count=7, first a DayOfWeek number), read
+// off this host's culture data: .NET gives the narrow ones of its ICU data on Windows ("S", "M") and the short ones on
+// Linux ("Su", "Mo."), and the tests need not run on the machine the host does (E2E_HOST_URL).
+app.MapGet("/api/day-names", (string culture, int first, int? count) =>
+{
+    var format = CultureInfo.GetCultureInfo(culture).DateTimeFormat;
+
+    return Results.Ok(Enumerable.Range(0, count ?? 1).Select(i => format.GetShortestDayName((DayOfWeek)((first + i) % 7))).ToArray());
+});
+
 app.Run();
 
 public partial class Program { }

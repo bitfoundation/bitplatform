@@ -26,14 +26,17 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
     // What the culture data says differs by where the page runs: the ICU data .NET ships for WebAssembly is trimmed, so
     // in the browser GetShortestDayName has no narrow (one-letter) day names and gives the short ones ("Su", "Mo."), and
     // the Persian and Hijri calendars have no month names in their own language. The server reads the full ICU data.
-    private static string[] ServerOrWasm(string[] server, string[] wasm) => IsWasm ? wasm : server;
-
     private static string ServerOrWasm(string server, string wasm) => IsWasm ? wasm : server;
 
-    // The day names the server writes, read here from the same culture data the host has on this machine: .NET gives
-    // GetShortestDayName the narrow names of that data on Windows ("S", "M") and its short ones on Linux ("Su", "Mo.").
-    private static string[] ServerDayNames(string culture, DayOfWeek first, int count = 1)
-        => [.. Enumerable.Range(0, count).Select(i => CultureInfo.GetCultureInfo(culture).DateTimeFormat.GetShortestDayName((DayOfWeek)(((int)first + i) % 7)))];
+    // The day names a page writes from the given day on: in the browser the ones given (see ServerOrWasm), on the server
+    // the ones the host's culture data has, asked of the host itself - .NET gives GetShortestDayName the narrow names of
+    // that data on Windows ("S", "M") and its short ones on Linux ("Su", "Mo."), and the host need not run on the machine
+    // the tests do (E2E_HOST_URL).
+    private static async Task<string[]> DayNamesAsync(string culture, DayOfWeek first, int count, string[] wasm)
+        => IsWasm ? wasm : await ReadFromHostAsync<string[]>(FormattableString.Invariant($"/api/day-names?culture={Uri.EscapeDataString(culture)}&first={(int)first}&count={count}")) ?? [];
+
+    private static async Task<string> DayNameAsync(string culture, DayOfWeek day, string wasm)
+        => (await DayNamesAsync(culture, day, 1, [wasm]))[0];
 
     private ILocator Dialog(ILocator calendar) => calendar.Locator(".bit-bfc-dialog[role='dialog']");
 
@@ -108,7 +111,7 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
         await Expect(Title(Cal)).ToHaveTextAsync("July 2025");
         await Expect(Cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("16");
         await Expect(Cal.Locator(".bit-bfc-month-cell:not(.bit-bfc-month-cell-blank)")).ToHaveCountAsync(35);
-        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(ServerOrWasm(ServerDayNames("en-US", DayOfWeek.Sunday, 7), ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]));
+        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(await DayNamesAsync("en-US", DayOfWeek.Sunday, 7, ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]));
 
         var body = Page.Locator("#cal-body");
         await Expect(body).ToHaveAttributeAsync("role", "tabpanel");

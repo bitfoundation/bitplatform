@@ -237,6 +237,10 @@
                 if (Dropdowns._focusGenerations.get(callout) !== generation) return;
 
                 if (scrolled) {
+                    // A Home or an End whose end of the list never arrived is left where it is: a row of the window the
+                    // list was scrolled from would be replaced under the focus as the rows of that end arrive.
+                    if ((mode === 'first' || mode === 'last') && Dropdowns._holdsEnd(scrolled.items, mode) === false) return;
+
                     items = scrolled.items;
                     current = scrolled.items.indexOf(document.activeElement as HTMLElement);
                     mode = scrolled.mode;
@@ -338,11 +342,18 @@
                     el.offsetParent !== null);
         }
 
+        // The rows of the list among the items: the select all item is not one of them - it is rendered above the list
+        // whatever window of it is rendered, so it says nothing of which rows have arrived.
+        private static _rows(items: HTMLElement[]) {
+            return items.filter(item => item.classList.contains('bit-drp-sab') === false);
+        }
+
         // Whether the rendered rows include the first or the last option of the whole list, which every option of a
         // virtualized one states (aria-posinset of aria-setsize). Rows that state no position are taken as holding it.
         private static _holdsEnd(items: HTMLElement[], end: 'first' | 'last') {
-            const options = items.filter(item => item.hasAttribute('aria-posinset'));
-            if (options.length === 0) return items.length > 0;
+            const rows = Dropdowns._rows(items);
+            const options = rows.filter(item => item.hasAttribute('aria-posinset'));
+            if (options.length === 0) return rows.length > 0;
 
             return options.some(option => end === 'first'
                 ? option.getAttribute('aria-posinset') === '1'
@@ -423,12 +434,26 @@
             // Which window is rendered, rather than which elements: Blazor updates the reused rows of a
             // Virtualize in place, so the ends of the new window are usually the same elements carrying
             // different items - a comparison by identity alone would never see the re-render and would
-            // wait out every frame below before falling back.
-            const windowOf = (rendered: HTMLElement[]) => rendered.length === 0 ? '' :
-                [rendered[0].id, rendered[0].textContent,
-                 rendered[rendered.length - 1].id, rendered[rendered.length - 1].textContent].join('\0');
+            // wait out every frame below before falling back. Read off the rows alone, since the select all
+            // item above them is there in every window.
+            const windowOf = (rendered: HTMLElement[]) => {
+                const rows = Dropdowns._rows(rendered);
+
+                return rows.length === 0 ? '' :
+                    [rows[0].id, rows[0].textContent, rows[rows.length - 1].id, rows[rows.length - 1].textContent].join('\0');
+            };
 
             const before = windowOf(items);
+
+            // A window is taken once it holds rows and differs from the one the scroll left - and, for a Home or an End,
+            // once it holds that end of the list: a window rendered on the way there would have the focus land on a row
+            // the next one replaces.
+            const isTarget = (rendered: HTMLElement[]) => {
+                const shown = windowOf(rendered);
+
+                return shown !== '' && shown !== before &&
+                    ((mode !== 'first' && mode !== 'last') || Dropdowns._holdsEnd(rendered, mode));
+            };
 
             scroller.scrollTop = top;
 
@@ -463,7 +488,7 @@
                 await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
                 const rendered = Dropdowns._getItems(callout);
-                if (rendered.length > 0 && windowOf(rendered) !== before) {
+                if (isTarget(rendered)) {
                     return { items: rendered, mode: nextMode };
                 }
             }

@@ -1461,8 +1461,22 @@ public class BitSliderE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectTextAsync("rtl-value", "2");
-        await Page.Keyboard.PressAsync("ArrowUp");
+    }
+
+    [TestMethod]
+    public async Task Rtl_TheVerticalArrowKeysStepUpAndDownWhateverTheDirection()
+    {
+        await OpenAsync(Route);
+
+        // Up and Down are no direction of the layout, so every engine - WebKit included - steps them alike.
         await ExpectTextAsync("rtl-value", "3");
+
+        await Input("sld-rtl").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await ExpectTextAsync("rtl-value", "4");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await ExpectTextAsync("rtl-value", "2");
     }
 
     [TestMethod]

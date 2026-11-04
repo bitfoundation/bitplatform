@@ -1322,8 +1322,6 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     [TestMethod]
     public async Task ImageUpload_APastedAndADroppedImage_AreUploaded()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit does not let a page construct a ClipboardEvent carrying files.");
-
         await OpenAsync(Route);
 
         await SetTextAsync("mde-image", "");
@@ -1356,8 +1354,6 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     [TestMethod]
     public async Task Paste_HtmlTablesSpreadsheetRowsAndUrlsBecomeMarkdown()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit does not let a page construct a ClipboardEvent with data.");
-
         await OpenAsync(Route);
 
         async Task PasteAsync(string text, string? html)

@@ -267,6 +267,22 @@ public class BitImageE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task ReloadAsync_ALoadedImage_GoesThroughLoadingAgain()
+    {
+        await OpenAsync(Path);
+
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(">Loaded");
+        await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("1");
+
+        await Page.Locator("#btn-reload").ClickAsync();
+
+        // Read off the states the component reports rather than off the network: a loaded image can be handed to the
+        // new element from the copy the browser keeps of it without being asked for again.
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(">Loaded>Loading>Loaded");
+        await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("2");
+    }
+
+    [TestMethod]
     public async Task FadeIn_AnimatesTheMomentTheImageAppears()
     {
         var gate = await HoldAsync("fade");

@@ -38,7 +38,8 @@ public class HostE2ETests : E2ETestBase
         // Firefox closes the connection of the page it leaves first and keeps running its scripts until the next page
         // commits, so every call to .NET a page makes in that time fails - an error that only says the connection is gone
         // (some of which Firefox reports only after the next page has committed), and the requests it has under way are
-        // cut off. None of those is a page's own; a page whose own circuit has gone is what the circuit check is for.
+        // cut off. None of those is a page's own: a page whose own circuit has gone is what the circuit check is for, and
+        // one whose own connection dropped - which raises the very same errors - the connection check.
         AllowConsoleErrors = AllowPageErrors = true;
         (int Console, int Page) atCommit = (0, 0);
         Page.FrameNavigated += (_, frame) =>
@@ -48,10 +49,31 @@ public class HostE2ETests : E2ETestBase
 
         var failures = new List<string>();
         var previous = "/";
+        // Where the errors already read end: what a page raises after its own check is read once it has been left.
+        (int Console, int Page) checkedTo = (ConsoleErrors.Count, PageErrors.Count);
+
+        // Read off the page on screen right before it is left, so a connection it lost at any point of its stay counts.
+        async Task CheckConnectionAsync(string page)
+        {
+            if (await HasLostItsConnectionAsync()) failures.Add($"{page}: lost its connection to the server");
+        }
+
+        // What the page just left raised from the end of its own check until the next page committed.
+        void CheckLeaving(string page)
+        {
+            var commit = atCommit;
+            var leaving = ConsoleErrors.Skip(checkedTo.Console).Take(commit.Console - checkedTo.Console)
+                                       .Concat(PageErrors.Skip(checkedTo.Page).Take(commit.Page - checkedTo.Page))
+                                       .Where(error => IsTheConnectionGone(error) is false && IsCutOffByLeaving(error) is false)
+                                       .ToList();
+            if (leaving.Count > 0) failures.Add($"{page}: raised an error while it was left ({leaving[0].Split('\n')[0]})");
+
+            checkedTo = (Math.Max(checkedTo.Console, commit.Console), Math.Max(checkedTo.Page, commit.Page));
+        }
 
         foreach (var route in routes)
         {
-            (int Console, int Page) before = (ConsoleErrors.Count, PageErrors.Count);
+            await CheckConnectionAsync(previous);
 
             try
             {
@@ -60,27 +82,42 @@ public class HostE2ETests : E2ETestBase
             catch (Exception ex)
             {
                 failures.Add($"{route}: never became ready ({ex.Message.Split(Environment.NewLine)[0]})");
+                CheckLeaving(previous);
                 previous = route;
                 continue;
             }
 
-            var leaving = ConsoleErrors.Skip(before.Console).Take(atCommit.Console - before.Console)
-                                       .Concat(PageErrors.Skip(before.Page).Take(atCommit.Page - before.Page))
-                                       .Where(error => IsTheConnectionGone(error) is false && IsCutOffByLeaving(error) is false)
-                                       .ToList();
-            if (leaving.Count > 0) failures.Add($"{previous}: raised an error while it was left ({leaving[0].Split('\n')[0]})");
+            CheckLeaving(previous);
 
             if (await IsCircuitDeadAsync()) failures.Add($"{route}: the circuit died");
 
-            var raised = ConsoleErrors.Skip(atCommit.Console).Concat(PageErrors.Skip(atCommit.Page))
+            (int Console, int Page) now = (ConsoleErrors.Count, PageErrors.Count);
+            var raised = ConsoleErrors.Skip(atCommit.Console).Take(now.Console - atCommit.Console)
+                                      .Concat(PageErrors.Skip(atCommit.Page).Take(now.Page - atCommit.Page))
                                       .Where(error => IsTheConnectionGone(error) is false)
                                       .ToList();
             if (raised.Count > 0) failures.Add($"{route}: raised an error ({raised[0].Split('\n')[0]})");
 
+            checkedTo = now;
             previous = route;
         }
 
+        // The last page is left as well, so what it raises after its own check - and while it is left - is read like
+        // every other page's.
+        await CheckConnectionAsync(previous);
+        await OpenAsync("/");
+        CheckLeaving(previous);
+
         Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+    }
+
+    // Whether the circuit of the page on screen has lost its connection at some point: Blazor adds its reconnect UI to
+    // the page the first time the connection drops (blazor.web.js, DefaultReconnectDisplay.show) and only hides it once
+    // the connection is back, so the element stays for as long as the page does. A page running in the browser has no
+    // circuit to lose.
+    private Task<bool> HasLostItsConnectionAsync()
+    {
+        return Page.EvaluateAsync<bool>("() => document.getElementById('components-reconnect-modal') !== null");
     }
 
     // The errors Blazor and SignalR raise for a call made over a connection that has already been closed, or by a circuit
