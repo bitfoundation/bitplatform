@@ -1,6 +1,6 @@
 ---
 name: port
-description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages, existing data - plans and builds through ai-dlc, hands the look to rebrand, rebuilds the source's landing page on the project's own with its AI chat, brings the main pages into the Workbench, and proves feature parity scenario by scenario in the running app.
+description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages - designs the database again instead of copying its structure, plans and builds through ai-dlc, hands the look to rebrand, rebuilds the source's landing page on the project's own with its AI chat, brings the main pages into the Workbench, proves feature parity scenario by scenario in the running app, and at the end offers to help bring the source's data over.
 ---
 
 # Port: bring an existing app's functionality into this project
@@ -14,8 +14,9 @@ Ports fail in three predictable ways, and this file is built around them:
 
 1. **The source is translated instead of understood** - its code is carried over line by line with its framework's
    habits and its bugs, while the features nobody opened are missed (section 2).
-2. **The source's architecture comes along** - its sign-in, its packages, its client-side batches and its project
-   layout are rebuilt, instead of mapped onto what the template already does (sections 3 and 4).
+2. **The source's architecture comes along** - its sign-in, its database structure, its packages, its client-side
+   batches and its project layout are rebuilt, instead of mapped onto what the template already does (sections 3 and
+   4).
 3. **Parity is assumed, not shown** - the build and the tests are green while a total never computes, a keypad
    misreads its first digit and a report crashes on one of its buttons (section 6).
 
@@ -23,8 +24,8 @@ Ports fail in three predictable ways, and this file is built around them:
 
 - **Behavior comes over; code does not.** Read the source to learn what it does, then write that again the way this
   project writes things (AGENTS.md), even when the source is C#: copied code brings its patterns, its packages and its
-  bugs with it. Images, fonts and other assets can come over as files, with their licenses recorded. JavaScript has a
-  rule of its own (4.2).
+  bugs with it, and a copied database structure its design mistakes and slow queries (3.4). Images, fonts and other
+  assets can come over as files, with their licenses recorded. JavaScript has a rule of its own (4.2).
 - **Secrets preferably stay behind.** Treat every key, password, connection string and certificate in the source as
   leaked, and give the new project new ones. Carry one over only when the user asks for it or it can't be reissued,
   and then into user secrets or the pipeline's secrets, never into a committed file. Before you hand back, search the
@@ -55,7 +56,7 @@ What you are given decides the first step, and most sources are a mix - read eve
 | C# and .NET code | Read the code and its tests. The tests become acceptance criteria (section 6), and the code is evidence of behavior, not a draft of the new one. |
 | Code in another language or framework | A reverse-engineering pass over it (below), which separates the business logic from the framework it was written in. |
 | No source code: the app running, videos, screenshots, manuals | A reverse-engineering pass from what the app does: walk every screen of a running web app with the Playwright MCP tools, or work from the captures and the manual's pages. Behavior nobody has shown you is an open question in the spec, not a guess. |
-| A database, or a dump of one | Its schema, constraints, triggers, stored procedures and seed data: business rules often live there and nowhere else. |
+| A database, or a dump of one | Its schema, constraints, triggers, stored procedures and seed data: business rules often live there and nowhere else. Read them for those rules and for what the product stores, not as the model to build (3.4). |
 | A spreadsheet the business runs on | Read it twice: once for its formulas, which are the calculations to port, and once for its stored values, which are the figures the port must reproduce and become the expected values of its parity tests. |
 | Manuals, requirement documents, PDFs | Read them as text, keeping their tables as tables, and look at their pages as images where the layout or a screenshot carries the meaning. |
 
@@ -152,10 +153,24 @@ Wiring a further app takes more than its projects, and these are the parts that 
 <!--#endif-->
 - The solution files, `AGENTS.md` section 2, CI and CD list, build, test and deploy it next to the first app.
 
-### 3.4 Existing data
+### 3.4 The database and its data
 
-Ask whether the source's data moves over - a mapping per table and a one-time import, verified against the source's
-own totals - or the product starts empty. Write the answer into the spec of the features it touches.
+The source's database shows what the product stores and the rules it enforces. It is not the model to build, whether
+you see it in a schema, a dump or the source's code, so don't carry its tables over. Design the model again from the
+features, the way this project models things (AGENTS.md), so it comes out better than the source's in design and in
+performance: one fact in one place instead of repeated columns or several values packed into one, types, keys and
+constraints that keep bad data out, and indexes for the queries the features really run. A rule that lived in a
+trigger or a stored procedure moves into the server's code. Only the user can keep the structure as it is, for example
+when another system still reads it.
+
+Everything the source stored has a place in the new model, or its removal is in a spec. Keep where each table and
+column went in the spec of the features they touch, since bringing the data over starts from that.
+
+When the rest of the port is done, offer to help bring the source's data over, unless the user has already said the
+product starts empty. How is yours to work out from the scenario: how much data there is, how far its shape changed,
+whether the source keeps running meanwhile, who runs the move and how many times. A script, a small app of its own or
+an existing tool can each be the right answer, so recommend one with its reason. Whatever moves is verified against
+the source's own totals.
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 
 ### 3.5 Optional features
@@ -260,6 +275,8 @@ section 4).
   agreement.
 - Every decision in section 3 is in a spec, and the report lists the ones decided without review.
 - No source code was copied, and no secret came over that the report doesn't list.
+- The database is designed for this project instead of copied, and a spec says where each of the source's tables and
+  columns went.
 - Every heavy client package of the source is replaced, moved to the server, or kept with its reason.
 - The landing page looks like the source's site, or fits the business when that site couldn't be found or reached, is
   built on `src/LandingPage`, and its chat answers about this product.
@@ -277,3 +294,4 @@ in, and hand that file to the user:
 - What is left and why, how to run each app, the secrets the user has to set, and the licenses of the assets that
   came over.
 - What was verified, each claim with its evidence (the command and its result, or the capture), and what wasn't.
+- The offer to help bring the source's data over, with the way you recommend for it (3.4).
