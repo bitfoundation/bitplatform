@@ -129,6 +129,14 @@ public partial class BitResourceTimelineStylesheetTests
     }
 
     [TestMethod]
+    public void BitResourceTimelineShouldBeImportedByTheExtrasStylesheet()
+    {
+        var components = SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI.Extras", "Styles", "extra-components.scss"));
+
+        StringAssert.Contains(components, "Components/ResourceTimeline/BitResourceTimeline.scss", "The Extras stylesheet does not import the stylesheet of the timeline.");
+    }
+
+    [TestMethod]
     public void BitResourceTimelineShouldDimTheContentOfADisabledTimeline()
     {
         var disabled = SourceFiles.GetScssBlock(SourceFiles.StripScssComments(ReadStylesheet()), "\n.bit-rtm.bit-dis {");

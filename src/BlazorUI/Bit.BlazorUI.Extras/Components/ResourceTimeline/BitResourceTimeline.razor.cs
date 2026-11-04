@@ -374,7 +374,8 @@ public partial class BitResourceTimeline : BitComponentBase
     /// <summary>
     /// Removes allocations by id from the current set, the selection and the keyboard focus. The other selected bars are
     /// left alone, and unknown ids are ignored. The <see cref="BitResourceTimelineConfig.Allocations"/> list is not
-    /// changed.
+    /// changed. When the engine fails to apply the batch, the timeline is reloaded as by <see cref="ReloadAsync"/>, so
+    /// neither side is left holding a part of it, and the failure is rethrown.
     /// </summary>
     public async Task RemoveAllocationsAsync(IReadOnlyList<string> ids)
     {
@@ -385,7 +386,16 @@ public partial class BitResourceTimeline : BitComponentBase
             _allocationsById.Remove(id);
         }
 
-        await _js.BitResourceTimelineRemoveAllocations(UniqueId, ids);
+        try
+        {
+            await _js.BitResourceTimelineRemoveAllocations(UniqueId, ids);
+        }
+        catch (Exception exception) when (exception is not JSDisconnectedException)
+        {
+            await ResyncAfterFailedBatchAsync();
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -457,7 +467,9 @@ public partial class BitResourceTimeline : BitComponentBase
     /// Merges the given allocations into the current set by id (the last one wins) without clearing the selection or the
     /// keyboard focus. Instances changed in place, or new instances replacing the previous ones of the same id, are both
     /// fine. The <see cref="BitResourceTimelineConfig.Allocations"/> list is not changed - a new <see cref="Config"/> (or
-    /// a <see cref="ReloadAsync"/>) replaces everything. In the windowed mode only the current window is updated.
+    /// a <see cref="ReloadAsync"/>) replaces everything. In the windowed mode only the current window is updated. When the
+    /// engine fails to apply the batch, the timeline is reloaded as by <see cref="ReloadAsync"/>, so neither side is left
+    /// holding a part of it, and the failure is rethrown.
     /// </summary>
     public async Task UpsertAllocationsAsync(IReadOnlyList<BitResourceTimelineAllocation> allocations)
     {
@@ -468,7 +480,16 @@ public partial class BitResourceTimeline : BitComponentBase
             _allocationsById[allocation.Id] = allocation;
         }
 
-        await _js.BitResourceTimelineUpsertAllocations(UniqueId, allocations);
+        try
+        {
+            await _js.BitResourceTimelineUpsertAllocations(UniqueId, allocations);
+        }
+        catch (Exception exception) when (exception is not JSDisconnectedException)
+        {
+            await ResyncAfterFailedBatchAsync();
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -925,6 +946,21 @@ public partial class BitResourceTimeline : BitComponentBase
         {
             _loadGate.Release();
         }
+    }
+
+    // Brings the engine and the allocations the ids resolve to back in step after an upsert or a removal it failed to
+    // apply: the engine may have taken a part of the batch, and the map has taken all of it, so the data is loaded again
+    // from where the app keeps it (the Config, or the current window) rather than either side being guessed back. The
+    // failure of the batch is what its caller is told about, so one of this reload is not thrown over it.
+    private async Task ResyncAfterFailedBatchAsync()
+    {
+        if (IsDisposing) return;
+
+        try
+        {
+            await ReloadAsync();
+        }
+        catch (Exception) { }
     }
 
     // Waits for the engine to paint what it was last given, which is when the loading overlay goes. It only ever delays

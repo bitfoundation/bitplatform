@@ -1071,16 +1071,19 @@
 
             // Seed the viewport size so data arriving before the first
             // ResizeObserver delivery can still be laid out.
-            const wrapperRect = this.wrapper.getBoundingClientRect();
-            this._viewportW = wrapperRect.width;
-            this._viewportH = wrapperRect.height;
+            this._measureViewport();
 
             // Resolvers waiting for the next completed paint (see whenRendered).
             this._renderedResolvers = [];
             this._renderPending = false;
 
             // Bound handlers so we can remove them on dispose
-            this._onResize = () => { this._surfaceRect = null; this._relayout(); };
+            this._onResize = () => {
+                // Without a ResizeObserver (see _setupResizeObserver) the viewport is measured here instead.
+                if (!this._resizeObserver) this._measureViewport();
+                this._surfaceRect = null;
+                this._relayout();
+            };
             this._onScroll = () => this._handleScroll();
             // Capture phase so scrolling in *any* ancestor is seen (scroll events
             // do not bubble). Only drops the cached rect; no layout is read here.
@@ -1415,7 +1418,16 @@
         // the initial layout: the observer fires once the wrapper has a size.
         // Renderer-specific surface observation (e.g. device-pixel tracking for
         // crisp HiDPI canvas output) lives inside the renderer itself.
+        //
+        // A browser without ResizeObserver (an old WebView) gets no observer:
+        // the viewport is measured again on every resize of the window instead
+        // (see _onResize), which misses only a change of the layout around the
+        // timeline that leaves the window as it is.
         private _setupResizeObserver(): void {
+            if (typeof ResizeObserver === 'undefined') {
+                this._resizeObserver = null;
+                return;
+            }
             this._resizeObserver = new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     const size = entry.contentBoxSize && entry.contentBoxSize[0];
@@ -1426,6 +1438,14 @@
                 this._relayout();
             });
             this._resizeObserver.observe(this.wrapper);
+        }
+
+        // Reads the viewport size off the wrapper's layout box: the seed of the
+        // constructor, and the whole sizing where there is no ResizeObserver.
+        private _measureViewport(): void {
+            const wrapperRect = this.wrapper.getBoundingClientRect();
+            this._viewportW = wrapperRect.width;
+            this._viewportH = wrapperRect.height;
         }
 
         private _handleScroll(): void {

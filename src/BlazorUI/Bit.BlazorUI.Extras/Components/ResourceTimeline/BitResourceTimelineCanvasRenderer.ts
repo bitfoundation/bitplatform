@@ -229,7 +229,14 @@
             // Observe the canvas backing-store size in device pixels (via
             // device-pixel-content-box where supported) so devicePixelRatio
             // changes (browser zoom, moving between monitors) are picked up.
-            this._resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+            // Without a ResizeObserver at all (an old WebView) the backing store
+            // follows devicePixelRatio on every resize the engine passes on, as
+            // where device-pixel-content-box is not supported.
+            this._resizeObserver = null;
+            this._observesDevicePixels = false;
+            if (typeof ResizeObserver === 'undefined') return;
+
+            const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
                 for (const entry of entries) {
                     const dpc = entry.devicePixelContentBoxSize && entry.devicePixelContentBoxSize[0];
                     if (dpc) {
@@ -250,14 +257,13 @@
                 }
             });
             try {
-                this._resizeObserver.observe(this.surface, { box: 'device-pixel-content-box' });
+                observer.observe(this.surface, { box: 'device-pixel-content-box' });
+                this._resizeObserver = observer;
                 this._observesDevicePixels = true;
             } catch {
                 // Safari does not support device-pixel-content-box; fall back to
                 // CSS pixels multiplied by devicePixelRatio on each resize.
-                this._resizeObserver.disconnect();
-                this._resizeObserver = null;
-                this._observesDevicePixels = false;
+                observer.disconnect();
             }
         }
 

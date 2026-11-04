@@ -1306,6 +1306,32 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldReloadWhenTheEngineFailsToApplyABatch()
+    {
+        var config = SampleConfig();
+        var component = RenderLoaded(p => p.Add(x => x.LoadingMinDurationMs, 0), config);
+
+        Context.JSInterop.SetupVoid(UpsertAllocationsFn, _ => true).SetException(new JSException("upsert failed"));
+        Context.JSInterop.SetupVoid(RemoveAllocationsFn, _ => true).SetException(new JSException("remove failed"));
+
+        // The engine may have taken a part of the batch: the caller is told it failed, and the data is loaded again from
+        // the Config, which also drops what the component took of the batch.
+        await Assert.ThrowsExactlyAsync<JSException>(() =>
+            component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a2", "r1", 0, 1)])));
+
+        WaitForLoads(component, 2);
+        Assert.AreSame(config.Allocations, Calls(SetDataFn)[1].Arguments[4]);
+        Assert.AreEqual(0, (await ResolveAsync(component, "a2")).Count);
+
+        await Assert.ThrowsExactlyAsync<JSException>(() =>
+            component.InvokeAsync(() => component.Instance.RemoveAllocationsAsync(["a1"])));
+
+        WaitForLoads(component, 3);
+        Assert.AreEqual(3, Calls(SetDataFn).Count);
+        Assert.AreEqual(1, (await ResolveAsync(component, "a1")).Count);
+    }
+
+    [TestMethod]
     public async Task BitResourceTimelineShouldSelectBarsInTheEngine()
     {
         var component = RenderLoaded();

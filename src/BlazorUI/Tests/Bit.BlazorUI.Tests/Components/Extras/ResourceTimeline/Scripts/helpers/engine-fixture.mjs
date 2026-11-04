@@ -274,6 +274,8 @@ export function genAllocations(rand, count, resources) {
 export function indexViolations(engine) {
     const errs = [];
     let indexed = 0;
+    // How many times each allocation object of the global list sits in a row.
+    const occurrences = new Map(engine.allocations.map(a => [a, 0]));
 
     for (const [resourceId, row] of engine.allocationsByResource) {
         indexed += row.items.length;
@@ -282,6 +284,11 @@ export function indexViolations(engine) {
 
         for (let i = 0; i < row.items.length; i++) {
             const a = row.items[i];
+            if (occurrences.has(a)) {
+                occurrences.set(a, occurrences.get(a) + 1);
+            } else {
+                errs.push(`row ${resourceId}: holds allocation ${a.id}, which the global list does not`);
+            }
             if (i > 0 && row.items[i - 1].startTime > a.startTime) {
                 errs.push(`row ${resourceId}: items not sorted at index ${i}`);
             }
@@ -312,6 +319,11 @@ export function indexViolations(engine) {
     }
     if (indexed !== engine.allocations.length) {
         errs.push(`index holds ${indexed} allocations, global list has ${engine.allocations.length}`);
+    }
+    // The count alone lets a missing allocation and a duplicated one cancel out.
+    for (const [a, count] of occurrences) {
+        if (count === 0) errs.push(`allocation ${a.id} is in no row`);
+        else if (count > 1) errs.push(`allocation ${a.id} is in the rows ${count} times`);
     }
     const ids = new Set(engine.allocations.map(a => a.id));
     if (ids.size !== engine.allocations.length) {
