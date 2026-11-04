@@ -1739,6 +1739,7 @@ function Invoke-AgentsTest {
             Use-PrereleaseFeedForNewProjects $lab
         }
 
+        $env:PATH = "$(Split-Path $bit.Path)$([IO.Path]::PathSeparator)$env:PATH"
         New-BitProject $lab $bit $scenarios.project $scenarios.options -setup | Out-Null
         Write-Host "Running $($runs.Count) agent runs in $lab..."
 
