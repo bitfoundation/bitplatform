@@ -9,8 +9,7 @@ The Workbench is a web app of its own in `src/Workbench`. It runs pages on sampl
 side by side, and switches what a page would otherwise wait for: the data's state, the theme, the language, the
 signed-in user. It references Client.Core for the theme, the styles and the components, and nothing that needs the
 API, the database or a session. A page designed here is built from the components and the theme the app ships, so
-what the user approves is how the real page will look. The landing page (`src/LandingPage`) is not designed here: it
-has a look of its own, and the **landing-page** skill (`.github/agents/landing-page.agent.md`) covers it.
+what the user approves is how the real page will look.
 
 ## 1. Run it
 
@@ -80,6 +79,11 @@ has a look of its own, and the **landing-page** skill (`.github/agents/landing-p
   `src/Workbench/Components/Pages/AppPages`, the way the Settings page is there: the same markup, styles, strings and
   validation, with the server calls replaced by sample data and a store, and the same template conditions as the
   original. Both copies start with a `[mirror]` comment that names the other.
+- A page of the landing page (`src/LandingPage`) comes over the same way, the way
+  `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so its catalog entry sets
+  `HasAppShell` to false and no app shell is drawn around it.
+- Each app of the product can have its pages here with a theme of its own: such a page sets the theme's tokens for itself
+  while it is on the screen, as that landing page does, and the other pages keep theirs.
 
 ## 4. Look at it the way the user will
 
