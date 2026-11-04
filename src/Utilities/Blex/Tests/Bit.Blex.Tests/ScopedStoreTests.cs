@@ -240,8 +240,9 @@ public class ScopedStoreTests
     }
 
     [TestMethod]
-    public async Task A_store_registered_during_startup_hydration_is_held_before_Hydrated_handlers_run()
+    public async Task A_store_registered_during_startup_hydration_is_read_before_hydration_is_announced()
     {
+        using var dispatcher = new DispatcherContext();
         var manager = new BlexManager();
         manager.Register(new SettingsStore());
         var storage = new GatedStorage();
@@ -249,26 +250,65 @@ public class ScopedStoreTests
         var persistor = new BlexStatePersistor(manager, storage);
 
         var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lateRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        string? themeAnnounced = null;
+        var (start, scope) = await dispatcher.InvokeAsync(() =>
+        {
+            storage.ReadGate = startupRead;
+            var started = persistor.StartAsync();   // reading "settings"
+
+            // Its stored state is read past the end of the startup read.
+            storage.ReadGate = lateRead;
+            var created = manager.CreateScope(new SettingsStore(), "dialog");   // not in the startup read's snapshot
+            persistor.Hydrated += () =>
+            {
+                themeAnnounced = created.Store.Theme;
+                created.Store.SetTheme("chosen");
+            };
+
+            return (started, created);
+        });
+
+        // Queued behind the rest of the startup read, so it runs once that has gone as far as it can on its own.
+        startupRead.SetResult();
+        await dispatcher.InvokeAsync(lateRead.TrySetResult);
+        await start.WaitAsync(TimeSpan.FromSeconds(5));
+        await persistor.FlushAsync();
+
+        // Announced any earlier, "chosen" would be dropped with the save the store held back, or overwritten by
+        // the stored "dark" landing after it.
+        Assert.AreEqual("dark", themeAnnounced, "Hydration was announced before the store's stored state was read.");
+        Assert.AreEqual("chosen", scope.Store.Theme);
+        StringAssert.Contains(storage.Data["blex:settings:dialog"], "chosen");
+        scope.Dispose();
+    }
+
+    [TestMethod]
+    public async Task A_store_registered_during_startup_hydration_is_reported_before_HasHydrated_turns_true()
+    {
+        var manager = new BlexManager();
+        manager.Register(new SettingsStore());
+        var storage = new GatedStorage();
+        var reported = new List<(string Name, bool HasHydrated)>();
+        BlexStatePersistor persistor = null!;
+        persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions
+        {
+            OnRehydrated = (name, _) => reported.Add((name, persistor.HasHydrated)),
+        });
+
+        var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = startupRead;
         var start = persistor.StartAsync();   // reading "settings"
 
-        using var scope = manager.CreateScope(new SettingsStore(), "dialog");   // not in the startup read's snapshot
-        persistor.Hydrated += () => scope.Store.SetTheme("early");
+        // Nothing stored for it, and storage answers at once: it is read before its registration returns.
+        storage.ReadGate = null;
+        using var scope = manager.CreateScope(new SettingsStore(), "dialog");
 
-        var lateRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        storage.ReadGate = lateRead;
         startupRead.SetResult();
         await start;
 
-        // The persistor listens by the time Hydrated is raised; writing "early" now would overwrite the stored
-        // "dark" before anyone read it.
-        Assert.IsEmpty(storage.Writes);
-
-        lateRead.SetResult();
-        await persistor.FlushAsync();
-
-        Assert.AreEqual("dark", scope.Store.Theme);
-        Assert.IsEmpty(storage.Writes);
+        // A callback that saw HasHydrated already true would expect what it dispatches to be saved.
+        CollectionAssert.AreEqual(new[] { ("settings:dialog", false), ("settings", false) }, reported);
     }
 
     [TestMethod]

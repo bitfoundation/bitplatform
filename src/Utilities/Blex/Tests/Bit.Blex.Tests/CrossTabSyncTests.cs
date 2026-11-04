@@ -299,6 +299,20 @@ public class CrossTabSyncTests
     }
 
     [TestMethod]
+    public async Task OtherTabs_AreWatchedBeforeHydrationIsAnnounced()
+    {
+        var (_, manager, storage) = Setup();
+        await using var persistor = new BlexStatePersistor(manager, storage, Synced());
+        var watchStartsAnnounced = -1;
+        persistor.Hydrated += () => watchStartsAnnounced = storage.WatchStarts;
+
+        await persistor.StartAsync();
+
+        // What hears of it may change a store at once; another tab's change after that must not go unheard.
+        Assert.AreEqual(1, watchStartsAnnounced);
+    }
+
+    [TestMethod]
     public async Task AStorageWithoutTheInterface_IsSimplyNotWatched()
     {
         // SyncAcrossTabs on a storage that cannot report changes must be inert, not a failure.
