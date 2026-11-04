@@ -78,7 +78,7 @@ public class ReviewApiTests
         var open = await reviewer.Comment(server, "shifts", "Open one");
         var done = await reviewer.Comment(server, "shifts", "Done one");
 
-        reviewer.Session.SetStatus(done, WorkbenchReviewStatus.Done);
+        await reviewer.Change(session => session.SetStatus(done, WorkbenchReviewStatus.Done));
 
         await WorkbenchTestReviewer.WaitFor(() => GetReview(includeDone: true), review => (string?)CommentOf(review, done)?["status"] == "done");
 
@@ -125,7 +125,7 @@ public class ReviewApiTests
 
         Assert.DoesNotContain(t => t.Id == id, threads);
 
-        reviewer.Session.Reply(id, "Sarah", "Still too small");
+        await reviewer.Change(session => session.Reply(id, "Sarah", "Still too small"));
 
         var (_, woken) = await server.Agent.Wait("Agent", sequence, TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 

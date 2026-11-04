@@ -78,7 +78,7 @@ public class ReviewMcpTests
         Assert.AreEqual(("Test Agent", "Shortened to \"Hi, Sarah\"."), (thread.Messages[^1].Author, thread.Messages[^1].Text));
         Assert.AreSequenceEqual(new[] { new WorkbenchReviewTask("Shorten it", true), new WorkbenchReviewTask("Check RTL", false) }, thread.Tasks);
 
-        reviewer.Session.Reply(id, "Sarah", "One more thing");
+        await reviewer.Change(session => session.Reply(id, "Sarah", "One more thing"));
 
         var waited = JsonNode.Parse(await Call("wait_for_review", new() { ["cursor"] = cursor }))!;
 
