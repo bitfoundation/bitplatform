@@ -757,22 +757,24 @@ $tpc-private-properties: rl-clr, rl-fg, rl-txt, rl-hover, rl-active, rl-focus, i
 .bit-tpc-res {
     @include lt-sm {
         @include responsive-panel-closed;
-        // The panel comes down from the top edge of the screen, so it makes room for the safe area there - the status
-        // bar and the notch of a phone, which an app shell's top bar paints over - the way BitPanel does: the surface
-        // is painted behind that room and still runs to the edge, while the picker starts below it. The side insets
-        // are left out, since a phone turned on its side, the only screen that has them, is wider than the panel is
-        // shown on.
-        --bit-tpc-sa-top: env(safe-area-inset-top, 0px);
+        // The panel comes down from the top edge of the screen, so the picker starts below the safe area there.
+        @include responsive-panel-safe-area(tpc);
         top: 0;
         left: 0;
         width: 100%;
         overflow: hidden;
         animation-name: unset;
-        padding-top: var(--bit-tpc-sa-top);
         transform: translateY(-100%);
         box-shadow: $box-shadow-sheet;
-        background-color: var(--bit-TimePicker-callout-background, #{$clr-bg-pri});
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        // The container is the surface of the panel - its background is the one a consumer restyles it with - so the
+        // safe area is drawn as its border, and it is the box capped at the height Callouts.position gives the panel: a
+        // screen an on-screen keyboard has shortened scrolls the picker in it rather than cutting its bottom off.
+        .bit-tpc-cac {
+            max-height: inherit;
+            border-top: var(--bit-tpc-sa-top) solid transparent;
+        }
 
         .bit-tpc-tdv {
             font-size: calc(#{$tg-fs-4xl} * 1.75);

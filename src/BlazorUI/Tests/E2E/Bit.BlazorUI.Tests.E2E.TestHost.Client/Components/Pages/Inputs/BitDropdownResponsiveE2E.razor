@@ -84,6 +84,23 @@
                  Responsive
                  Items="_longItems"
                  DefaultValue="@string.Empty" />
+    @* A padding of the consumer's own on the panel, which replaces the one the stylesheet gives it. *@
+    <BitDropdown Id="dd-resp-long-padded"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive long padded"
+                 Responsive
+                 Styles="_paddedStyles"
+                 Items="_longItems"
+                 DefaultValue="@string.Empty" />
+    @* A search box the panel focuses, which raises the on-screen keyboard of a phone. *@
+    <BitDropdown Id="dd-resp-long-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive long search"
+                 Responsive
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Items="_longItems"
+                 DefaultValue="@string.Empty" />
 </E2ESection>
 
 <E2EStatus />
@@ -108,6 +125,8 @@
 
     // Far more rows than a phone's screen holds, so the panel caps its list to the room the screen leaves.
     private readonly List<BitDropdownItem<string>> _longItems = [.. Enumerable.Range(1, 60).Select(i => new BitDropdownItem<string> { Text = $"Item {i}", Value = $"i-{i}" })];
+
+    private readonly BitDropdownClassStyles _paddedStyles = new() { Callout = "padding: 0" };
 
     private static string GenerateValue(BitDropdownItem<string>? item) => $"dyn-{item?.Text?.ToLowerInvariant()}";
 

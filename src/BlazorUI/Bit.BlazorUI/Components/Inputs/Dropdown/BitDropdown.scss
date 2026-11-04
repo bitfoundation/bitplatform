@@ -1437,13 +1437,9 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 .bit-drp-res {
     @include lt-sm {
         @include responsive-panel-closed;
-        // The panel runs from the top edge of the screen to the bottom one, so it makes room for the safe areas there -
-        // the status bar and the notch of a phone, its home indicator, which an app shell's bars paint over - the way
-        // BitPanel does: the surface still runs to both edges, while the header and the list stay clear of what covers
-        // them. The side insets are left out, since a phone turned on its side, the only screen that has them, is wider
-        // than the panel is shown on.
-        --bit-drp-sa-top: env(safe-area-inset-top, 0px);
-        --bit-drp-sa-bottom: env(safe-area-inset-bottom, 0px);
+        // The panel runs from the top edge of the screen to the bottom one: the header starts below the safe area at
+        // the top, drawn as the border of the panel, and Callouts.position ends the list above the one at the bottom.
+        @include responsive-panel-safe-area(drp, $bottom: true);
         top: 0;
         right: 0;
         height: 100%;
@@ -1455,10 +1451,8 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
         animation-name: unset;
         transform: translateX(100%);
         box-shadow: $box-shadow-sheet;
-        // The bottom is the safe area alone: the list ends where Callouts.position caps it, the gap it keeps from the
-        // bottom of the screen or this padding where that is the larger, so a padding of its own there would only be
-        // run over.
-        padding: calc(#{spacing(3)} + var(--bit-drp-sa-top)) spacing(2.5) var(--bit-drp-sa-bottom);
+        padding: spacing(3) spacing(2.5);
+        border-top: var(--bit-drp-sa-top) solid transparent;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-drp-rlc {

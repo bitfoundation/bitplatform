@@ -429,13 +429,17 @@
                     const transform = calloutStyle.transform;
                     const slide = transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m42 : 0;
                     const top = Math.min(box - slide, rawTop + (box - callout.getBoundingClientRect().y));
-                    // The list stops short of the bottom of the screen by the gap it has always kept, or by the padding
-                    // at the bottom of the panel where that is the larger: the safe area a panel running down to the
-                    // bottom of a phone's screen makes room for, whose home indicator (or an app shell's bottom bar)
-                    // would cover the last items. A callout that scrolls itself has that padding inside the cap.
-                    const bottomGap = scrollContainer === callout
-                        ? 10
-                        : Math.max(10, parseFloat(calloutStyle.paddingBottom) || 0);
+                    // The list stops short of the bottom of the screen by the gap it has always kept, or by the safe area
+                    // at the bottom of the screen where that is the larger - the room a phone's home indicator (or an app
+                    // shell's bottom bar) takes, which would cover the last items. Only a panel of a component that lays
+                    // its content out itself names that safe area (responsive-panel-safe-area, functions.scss), in a
+                    // length that is not inherited, so the cap of any other callout keeps the gap alone, whatever its
+                    // consumer pads it with. While the on-screen keyboard is up the bottom of the visible band is the
+                    // top of the keyboard rather than the bottom edge of the screen, and nothing of the safe area is
+                    // left showing above it. The keyboard is told by the focus, for the reason the placement below is.
+                    const keyboardUp = Utils.hasOnScreenKeyboard() && Utils.isEditableElementFocused();
+                    const safeArea = keyboardUp ? 0 : (parseFloat(calloutStyle.getPropertyValue('--bit-callout-sa-bottom')) || 0);
+                    const bottomGap = Math.max(10, safeArea);
                     scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - bottomGap)) + 'px';
                 });
 

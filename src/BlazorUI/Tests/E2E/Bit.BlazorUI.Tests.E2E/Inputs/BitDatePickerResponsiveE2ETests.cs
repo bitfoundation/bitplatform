@@ -69,10 +69,15 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
         var pid = await TapOpenAsync("dp-resp");
         await Expect(Callout(pid)).ToHaveCSSAsync("transform", "matrix(1, 0, 0, 1, 0, 0)");
 
-        // The surface still runs to the top edge of the screen, behind the status bar, painted all the way up.
+        // The surface - the container, whose background a consumer restyles - still runs to the top edge of the screen,
+        // behind the status bar, painted all the way up: the safe area is a border of its own, which that background fills.
         var box = await BoxAsync(Callout(pid));
         Assert.AreEqual(0, box.Y, 1);
-        Assert.AreNotEqual("rgba(0, 0, 0, 0)", await Callout(pid).EvaluateAsync<string>("el => getComputedStyle(el).backgroundColor"));
+        var container = Callout(pid).Locator(".bit-dtp-cac");
+        Assert.AreEqual(0, (await BoxAsync(container)).Y, 1);
+        Assert.AreNotEqual("rgba(0, 0, 0, 0)", await container.EvaluateAsync<string>("el => getComputedStyle(el).backgroundColor"));
+        Assert.AreEqual("border-box", await container.EvaluateAsync<string>("el => getComputedStyle(el).backgroundClip"));
+        await Expect(container).ToHaveCSSAsync("border-top-width", "47px");
 
         // The month header and the buttons that move between the months start below the notch (and an app shell's
         // top bar), where they can be read and pressed.

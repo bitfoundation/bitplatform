@@ -337,6 +337,48 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_APaddingOfTheConsumersOwnStillLeavesTheSafeAreasClear()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-padded");
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        // The padding the consumer gave the panel replaced the one of the stylesheet, and neither safe area was part of it.
+        await Expect(callout).ToHaveCSSAsync("padding-top", "0px");
+
+        var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
+        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+
+        var listBox = await BoxAsync(list);
+        Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_TheKeyboardTakesOverTheSafeAreaAtTheBottom()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-search");
+        await Expect(callout.Locator("input.bit-drp-sin")).ToBeFocusedAsync();
+
+        // The keyboard the focused search box raises leaves the room above it, which the viewport is shortened to. The
+        // bottom of what is left is the top of the keyboard, with nothing of the home indicator showing above it, so the
+        // list keeps the gap it has always kept from there rather than a safe area the keyboard already covers.
+        await Page.SetViewportSizeAsync(390, 544);
+
+        var list = await callout.Locator(".bit-drp-scn").ElementHandleAsync();
+        await Page.WaitForFunctionAsync("el => Math.abs(el.getBoundingClientRect().bottom - (544 - 10)) <= 1.5", list);
+    }
+
+    [TestMethod]
     public async Task NotResponsive_OnAPhone_StaysAPlainCalloutUnderTheField()
     {
         await OpenAsync(Url);

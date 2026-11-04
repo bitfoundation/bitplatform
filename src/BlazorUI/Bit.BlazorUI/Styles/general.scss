@@ -29,6 +29,17 @@
     inherits: false;
 }
 
+// The safe area at the bottom of the screen a responsive panel running down to it hands Callouts.position, which caps
+// the list of the panel that far short of the bottom (responsive-panel-safe-area, functions.scss). Registered as a
+// length, so the script reads it resolved - env() and the max() around it included - and as not inherited, so only the
+// panel that declares it is capped by it, never a callout opened from inside its content. An engine too old for
+// @property hands the script the unresolved text, which it reads as no safe area at all.
+@property --bit-callout-sa-bottom {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
 button {
     border: none;
     outline: none;

@@ -5,7 +5,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* viewport-fit=cover, as every page that lays itself out under a phone's notch and home indicator asks for: only
+       then does a phone report the safe areas the tests emulate. It changes nothing while they are zero. *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <base href="/" />
     @* No favicon request: a 404 for one would be a console error every test would have to excuse. *@
     <link rel="icon" href="data:," />
