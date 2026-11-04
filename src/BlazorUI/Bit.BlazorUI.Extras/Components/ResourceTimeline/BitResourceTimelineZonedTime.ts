@@ -30,6 +30,19 @@
         public timeZone: string | null;
         public locale: string | null;
 
+        // The instant of a UTC wall-clock time (`month` 1-12). Date.UTC alone reads
+        // a year of 0-99 as 1900-1999, so such a year is set explicitly; the month,
+        // day and time still normalize their overflow (a day 0, a day 32) the way
+        // Date.UTC does. Every other year takes Date.UTC itself, which allocates
+        // nothing (the axis converts many boundaries per frame).
+        public static utc(year: number, month: number, day: number, hour: number = 0, minute: number = 0, second: number = 0): number {
+            if (year < 0 || year > 99) return Date.UTC(year, month - 1, day, hour, minute, second);
+            const date = new Date(0);
+            date.setUTCFullYear(year, month - 1, day);
+            date.setUTCHours(hour, minute, second, 0);
+            return date.getTime();
+        }
+
         private _partsDtf: Intl.DateTimeFormat;
         private _dateDtf: Intl.DateTimeFormat;
         private _dateTimeDtf: Intl.DateTimeFormat;
@@ -88,7 +101,7 @@
         // Offset (zone - UTC, in ms) in effect at the given instant.
         public offsetMs(ts: number): number {
             const p = this.parts(ts);
-            const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+            const asUtc = ResourceTimelineZonedTime.utc(p.year, p.month, p.day, p.hour, p.minute, p.second);
             return asUtc - Math.floor(ts / 1000) * 1000;
         }
 
@@ -104,7 +117,7 @@
         // the earlier candidate, 23:00 of the previous day, would make startOfDay
         // and nextDay hand back the same instant again and again.
         public wallClockToTs(year: number, month: number, day: number, hour: number, minute: number, second: number): number {
-            const guess = Date.UTC(year, month - 1, day, hour, minute, second);
+            const guess = ResourceTimelineZonedTime.utc(year, month, day, hour, minute, second);
             const offset1 = this.offsetMs(guess);
             const ts1 = guess - offset1;
             const offset2 = this.offsetMs(ts1);
@@ -123,11 +136,11 @@
 
         // Local midnight of the day `n` calendar days after the day containing
         // `ts` (`n` may be negative). The time of day is discarded, so a DST
-        // 23- or 25-hour day is a single step. Date.UTC normalizes month/year
+        // 23- or 25-hour day is a single step. ResourceTimelineZonedTime.utc normalizes month/year
         // rollover.
         public addDays(ts: number, n: number): number {
             const p = this.parts(ts);
-            const next = new Date(Date.UTC(p.year, p.month - 1, p.day + n));
+            const next = new Date(ResourceTimelineZonedTime.utc(p.year, p.month, p.day + n));
             return this.wallClockToTs(
                 next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0, 0);
         }

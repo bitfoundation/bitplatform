@@ -72,6 +72,15 @@ public partial class BitResourceTimeline : BitComponentBase
     private BitResourceTimelineTexts? _loadedTexts;
     private bool _loadedDisabled;
 
+    // The editing capabilities in force on the engine. Applying an Options instance merges (a value left null keeps the
+    // one in force), so they are kept the same way, for the shortcuts aria-keyshortcuts advertises.
+    private bool _editable;
+    private bool _allowDelete;
+
+    // Whether the last data load started was windowed, so setting or clearing LoadAllocationsAsync loads the same Config
+    // again the other way.
+    private bool _loadedWindowed;
+
     // Serializes the window fetches of the windowed mode, and tracks the newest request so a slow fetch a newer one has
     // superseded is dropped instead of being pushed to the engine.
     private readonly SemaphoreSlim _windowGate = new(1, 1);
@@ -524,7 +533,8 @@ public partial class BitResourceTimeline : BitComponentBase
 
     /// <summary>
     /// Applies the Options, the Texts and the disabled state again when one of them changed, and loads the Config when a
-    /// new instance was assigned. Both are compared by reference, so changing one in place does not reach the engine.
+    /// new instance was assigned (or the loading mode changed), or empties the timeline when it was taken away. Both are
+    /// compared by reference, so changing one in place does not reach the engine.
     /// </summary>
     protected override async Task OnParametersSetAsync()
     {
@@ -536,9 +546,18 @@ public partial class BitResourceTimeline : BitComponentBase
 
         if (IsDisposing) return;
 
-        if (Config is not null && DataChanged())
+        if (Config is null)
+        {
+            await ClearDataAsync();
+        }
+        else if (DataChanged())
         {
             await LoadDataAsync();
+        }
+        else if (LoadModeChanged())
+        {
+            // The same Config, with LoadAllocationsAsync set or cleared since it was loaded.
+            await LoadDataAsync(force: true);
         }
     }
 
@@ -570,12 +589,16 @@ public partial class BitResourceTimeline : BitComponentBase
 
     private bool IsWindowed => LoadAllocationsAsync is not null;
 
+    // What the engine does or will run with: the value of the Options when it sets one, else the one in force.
+    private bool Editable => Options?.Editable ?? _editable;
+    private bool AllowDelete => Options?.AllowDelete ?? _allowDelete;
+
     // A disabled timeline is view-only: the engine handles nothing but the paging keys there.
     private string KeyShortcuts => Disabled
                                    ? DisabledKeyShortcuts
                                    : BaseKeyShortcuts
-                                     + (Options?.Editable is true ? EditingKeyShortcuts + CopyKeyShortcuts : string.Empty)
-                                     + (Options?.Editable is true && Options?.AllowDelete is true ? DeleteKeyShortcuts : string.Empty);
+                                     + (Editable ? EditingKeyShortcuts + CopyKeyShortcuts : string.Empty)
+                                     + (Editable && AllowDelete ? DeleteKeyShortcuts : string.Empty);
 
     // Whether the engine is running, which is all the zoom calls need.
     private bool IsStarted() => IsDisposing is false && _started;
@@ -591,6 +614,10 @@ public partial class BitResourceTimeline : BitComponentBase
 
     // A load of this very instance in flight counts as already handled, so a render of the parent cannot replay it.
     private bool DataChanged() => ReferenceEquals(_loadedConfig, Config) is false && ReferenceEquals(_loadingConfig, Config) is false;
+
+    // The Config loaded (or being loaded) is the current one, but the other way than LoadAllocationsAsync now asks for.
+    private bool LoadModeChanged() => _loadedWindowed != IsWindowed
+                                      && (ReferenceEquals(_loadedConfig, Config) || ReferenceEquals(_loadingConfig, Config));
 
     private string GetCornerStyle() => FormattableString.Invariant($"width:{_layout.ResourceAxisWidth}px;height:{_layout.TimeAxisHeight}px");
 
@@ -613,9 +640,7 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _loadedOptions = Options;
-        _loadedTexts = Texts;
-        _loadedDisabled = Disabled;
+        TrackLoadedConfiguration();
 
         var layout = await _js.BitResourceTimelineSetup(UniqueId, _viewportRef, _dotnetObj, Options, ActiveTexts, Disabled);
 
@@ -650,9 +675,7 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         if (ConfigurationChanged() is false) return;
 
-        _loadedOptions = Options;
-        _loadedTexts = Texts;
-        _loadedDisabled = Disabled;
+        TrackLoadedConfiguration();
 
         var layout = await _js.BitResourceTimelineSetOptions(UniqueId, Options, ActiveTexts, Disabled);
 
@@ -663,6 +686,24 @@ public partial class BitResourceTimeline : BitComponentBase
             _layout = l;
             _resourceRowsRenderKey++;
             StateHasChanged();
+        }
+    }
+
+    // Records what the engine is configured with, merging the editing capabilities the way the engine merges the Options.
+    private void TrackLoadedConfiguration()
+    {
+        _loadedOptions = Options;
+        _loadedTexts = Texts;
+        _loadedDisabled = Disabled;
+
+        if (Options?.Editable is { } editable)
+        {
+            _editable = editable;
+        }
+
+        if (Options?.AllowDelete is { } allowDelete)
+        {
+            _allowDelete = allowDelete;
         }
     }
 
@@ -764,13 +805,16 @@ public partial class BitResourceTimeline : BitComponentBase
         // whatever this one loads.
         var session = ++_windowSession;
 
+        var windowed = IsWindowed;
+        _loadedWindowed = windowed;
+
         try
         {
             var allocations = config.Allocations;
             var start = config.StartDate.ToUnixTimeMilliseconds();
             var end = config.EndDate.ToUnixTimeMilliseconds();
 
-            if (IsWindowed)
+            if (windowed)
             {
                 // Reset before the engine starts the windowed mode, so a window it asks for right away is neither wiped
                 // from the map nor outranked by the initial one.
@@ -854,6 +898,32 @@ public partial class BitResourceTimeline : BitComponentBase
             {
                 StateHasChanged();
             }
+        }
+    }
+
+    // Empties the engine once the Config was taken away, so the data it held is neither shown nor reachable through the
+    // calls about bars any more. Behind the gate of the loads, so a load still running cannot land after it.
+    private async Task ClearDataAsync()
+    {
+        await _loadGate.WaitAsync();
+
+        try
+        {
+            if (IsDisposing || Config is not null || _dataLoaded is false) return;
+
+            // A window fetch of the cleared load still running is dropped.
+            _windowSession++;
+            _loadedConfig = null;
+            _dataLoaded = false;
+            _allocationsById = [];
+            _resourcesById = [];
+            _hoverAllocation = null;
+
+            await _js.BitResourceTimelineClearData(UniqueId);
+        }
+        finally
+        {
+            _loadGate.Release();
         }
     }
 
@@ -1156,16 +1226,19 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     /// <summary>
-    /// Called by the engine after it previewed an edit (a <c>move</c>, a <c>resize</c> or a <c>create</c>, as the kind
-    /// says), before it commits it. Returns true (keep the preview) when no <see cref="OnAllocationChanging"/> is set.
-    /// Public only because the interop requires it; not part of the API of the component.
+    /// Called by the engine after it previewed an edit (a <c>move</c> or a <c>resize</c>, as the kind says), before it
+    /// commits it. Refuses an allocation the loaded Config does not hold, and otherwise returns true (keep the preview)
+    /// when no <see cref="OnAllocationChanging"/> is set. Public only because the interop requires it; not part of the
+    /// API of the component.
     /// </summary>
     [JSInvokable("OnAllocationChanging")]
     public async Task<bool> _OnAllocationChanging(string id, string resourceId, long startTime, long endTime,
                                                   string previousResourceId, long previousStartTime, long previousEndTime,
                                                   string kind)
     {
-        if (IsDisposing) return false;
+        // An id the loaded Config does not hold (of a Config swapped in the middle of the edit) is refused whatever is
+        // set, so the engine never commits an edit nothing here can apply.
+        if (IsDisposing || _allocationsById.TryGetValue(id, out var allocation) is false) return false;
 
         if (OnAllocationChanging is null)
         {
@@ -1175,8 +1248,6 @@ public partial class BitResourceTimeline : BitComponentBase
                                                 [previousResourceId], [previousStartTime], [previousEndTime],
                                                 kind);
         }
-
-        if (_allocationsById.TryGetValue(id, out var allocation) is false) return false;
 
         allocation.ResourceId = resourceId;
         allocation.StartTime = DateTimeOffset.FromUnixTimeMilliseconds(startTime);
@@ -1217,6 +1288,13 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         if (IsDisposing || ids is null || ids.Length == 0) return false;
 
+        // The whole commit is refused when the loaded Config misses one of its bars, whatever is set, before anything
+        // is previewed onto the instances.
+        foreach (var id in ids)
+        {
+            if (_allocationsById.ContainsKey(id) is false) return false;
+        }
+
         if (OnAllocationsChanging is null)
         {
             if (ids.Length == 1 && OnAllocationChanging is not null)
@@ -1234,16 +1312,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
         for (var i = 0; i < ids.Length; i++)
         {
-            if (_allocationsById.TryGetValue(ids[i], out var allocation) is false)
-            {
-                // The bars previewed so far are put back before the whole commit is refused.
-                for (var j = 0; j < changes.Count; j++)
-                {
-                    RestoreAllocation(changes[j].Allocation, previousResourceIds[j], previousStartTimes[j], previousEndTimes[j]);
-                }
-
-                return false;
-            }
+            var allocation = _allocationsById[ids[i]];
 
             allocation.ResourceId = resourceIds[i];
             allocation.StartTime = DateTimeOffset.FromUnixTimeMilliseconds(startTimes[i]);

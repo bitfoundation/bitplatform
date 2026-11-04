@@ -88,6 +88,11 @@ internal static class BitResourceTimelineJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.setData", id, resources, start, end, allocations);
     }
 
+    public static ValueTask BitResourceTimelineClearData(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.clearData", id);
+    }
+
     [DynamicDependency(All, typeof(BitResourceTimelineResource))]
     public static ValueTask BitResourceTimelineBeginData(this IJSRuntime jsRuntime,
                                                          string id,

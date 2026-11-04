@@ -56,6 +56,13 @@
         // better than making the user wait out the delay again.
         public show(subject: any, content: string, delayMs: number): void {
             if (subject === this._subject) {
+                // The same subject may describe itself differently by now (a bar
+                // whose times were edited, a +N marker hiding other bars): the
+                // text is kept current, and rewritten only when it changed.
+                if (content !== this._content) {
+                    this._content = content;
+                    if (this._visible && this._el && content) this._el.textContent = content;
+                }
                 if (this._visible) this._position();
                 return;
             }

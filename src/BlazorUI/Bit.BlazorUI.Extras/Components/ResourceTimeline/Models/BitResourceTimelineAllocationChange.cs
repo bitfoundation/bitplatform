@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// A pending move, resize or create, handed to
-/// <c>OnAllocationChanging</c> before it is committed. <see cref="Allocation"/>
+/// A pending move or resize, handed to
+/// <c>OnAllocationChanging</c> before it is committed (a bar drawn on empty
+/// content is created through <c>OnAllocationCreating</c> instead). <see cref="Allocation"/>
 /// is the same instance supplied in the config, already updated with the
 /// previewed resource and times. Return <c>false</c> from the callback to
 /// restore <see cref="PreviousResourceId"/> / <see cref="PreviousStartTime"/> /
@@ -25,6 +26,6 @@ public sealed class BitResourceTimelineAllocationChange
     /// <summary>End time before this edit.</summary>
     public DateTimeOffset PreviousEndTime { get; init; }
 
-    /// <summary>Whether this is a move, a resize or a create.</summary>
+    /// <summary>Whether this is a move or a resize.</summary>
     public BitResourceTimelineAllocationChangeKind Kind { get; init; }
 }

@@ -1489,6 +1489,12 @@ public static class BitResourceTimelineDemoData
     /// <summary>The local midnight of today, which every example lays its bars out around.</summary>
     public static DateTimeOffset Today => new(DateTime.Today);
 
+    /// <summary>
+    /// The local midnight <paramref name="days"/> days from today, with the offset in force on that day - which a
+    /// daylight saving change in between makes differ from the one <see cref="Today"/> carries.
+    /// </summary>
+    public static DateTimeOffset Day(int days) => new(DateTime.Today.AddDays(days));
+
     /// <summary>Gates named Gate A1, Gate A2, ... - optionally the children of a group row.</summary>
     public static List<BitResourceTimelineResource> Gates(int count, string terminal = "A", string? parentId = null) =>
         [.. Enumerable.Range(1, count).Select(n => new BitResourceTimelineResource { Id = $"{terminal}{n}", Name = $"Gate {terminal}{n}", ParentId = parentId })];
@@ -1516,9 +1522,9 @@ public static class BitResourceTimelineDemoData
     public static BitResourceTimelineConfig Airport(List<BitResourceTimelineResource> resources, int fromDay = -7, int toDay = 7, bool labeled = false) => new()
     {
         Resources = resources,
-        StartDate = Today.AddDays(fromDay),
-        EndDate = Today.AddDays(toDay),
-        Allocations = Flights(resources, Today.AddDays(fromDay), Today.AddDays(toDay), labeled),
+        StartDate = Day(fromDay),
+        EndDate = Day(toDay),
+        Allocations = Flights(resources, Day(fromDay), Day(toDay), labeled),
     };
 
     /// <summary>
@@ -1540,9 +1546,12 @@ public static class BitResourceTimelineDemoData
 
             for (var day = firstDay; day < lastDay; day++)
             {
-                // Seeded by the gate and the day, so a day reads the same whichever window asks for it.
-                var random = new Random(r * 100_003 + day + 50_000);
-                var dayStart = Today.AddDays(day);
+                var dayStart = Day(day);
+                var dayEnd = Day(day + 1);
+
+                // Seeded by the gate and the calendar date, so a day reads the same whichever window asks for it, and
+                // whenever it is asked for (a fetch after midnight still finds the flights the earlier ones loaded).
+                var random = new Random(unchecked(r * 100_003 + dayStart.Year * 10_000 + dayStart.Month * 100 + dayStart.Day));
                 var start = dayStart.AddMinutes(random.Next(0, 12) * 15);
 
                 for (var n = 0; ; n++)
@@ -1550,7 +1559,7 @@ public static class BitResourceTimelineDemoData
                     var end = start.AddMinutes(random.Next(3, 13) * 15);
                     var flightNumber = $"{Airlines[random.Next(Airlines.Length)]}{random.Next(100, 1000)}";
 
-                    if (end > dayStart.AddDays(1)) break;
+                    if (end > dayEnd) break;
 
                     if (end > from && start < to)
                     {

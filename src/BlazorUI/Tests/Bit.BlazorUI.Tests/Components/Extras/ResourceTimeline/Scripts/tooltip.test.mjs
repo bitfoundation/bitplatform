@@ -95,6 +95,41 @@ test('hiding before the delay elapses cancels the pending show', async () => {
     }
 });
 
+test('the same subject describing itself differently refreshes the visible text', async () => {
+    const { body } = installDom();
+    try {
+        const tip = new Tooltip(STYLE);
+        tip.trackPointer(100, 100);
+        const bar = { id: 'a' };
+        tip.show(bar, 'Bar A 08:00', 10);
+        await tick(40);
+
+        tip.show(bar, 'Bar A 09:00', 10000);
+        assert.equal(body.children[0].textContent, 'Bar A 09:00');
+        assert.equal(body.children[0].style.display, 'block');
+        tip.dispose();
+    } finally {
+        uninstallDom();
+    }
+});
+
+test('the same subject describing itself differently before it shows appears with the new text', async () => {
+    const { body } = installDom();
+    try {
+        const tip = new Tooltip(STYLE);
+        tip.trackPointer(100, 100);
+        const bar = { id: 'a' };
+        tip.show(bar, 'Bar A 08:00', 30);
+        tip.show(bar, 'Bar A 09:00', 30);
+
+        await tick(80);
+        assert.equal(body.children[0].textContent, 'Bar A 09:00');
+        tip.dispose();
+    } finally {
+        uninstallDom();
+    }
+});
+
 test('moving to another bar while visible swaps content immediately', async () => {
     const { body } = installDom();
     try {

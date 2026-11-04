@@ -29,9 +29,11 @@
         return node;
     }
 
-    // Maps the scene's canvas-style align/baseline to SVG text attributes.
+    // Maps the scene's canvas-style align/baseline to SVG text attributes. A
+    // bottom anchor is the bottom edge of the text, descenders included, as it is
+    // for canvas and the HTML renderer - not the alphabetic baseline 'auto' is.
     const ANCHOR: { [align: string]: string } = { left: 'start', center: 'middle', right: 'end' };
-    const BASELINE: { [baseline: string]: string } = { top: 'hanging', middle: 'central', bottom: 'auto' };
+    const BASELINE: { [baseline: string]: string } = { top: 'hanging', middle: 'central', bottom: 'text-after-edge' };
 
     /** An element of one of the SVG renderer's pools. */
     type SvgPooledNode = SVGElement & ResourceTimelinePooledNodeState;
@@ -137,7 +139,9 @@
             this._surfaceGroup = group();
             this._washGroup = group();
             this._gridGroup = group();
-            this._barsGroup = group();
+            // Clipped to the content area, as the overlays are: the axes painted
+            // later cover the rest of a bar's overhang, but not the top-start corner.
+            this._barsGroup = group({ 'clip-path': `url(#${this._contentClipId})` });
             this._nowGroup = group();
             this._timeAxisGroup = group();
             // Fill, then column tints, then ticks, then day labels. The label group
@@ -542,10 +546,12 @@
                 this._rect(rects, g.x, g.y, g.width, g.height, g.color, null, undefined, null, 0.7);
                 this._rect(rects, g.x + 0.5, g.y - 0.5, g.width, g.height + 1,
                     null, c.colors.barSelectedBorder, 1, '4 2');
-                // Time readout above the ghost for precise feedback while dragging.
+                // Time readout above the ghost for precise feedback while dragging
+                // (below it next to the time axis, see labelBelow).
                 if (g.label) {
-                    this._text(this._pools.overlayLabels, g.label, g.x, g.y - 2,
-                        c.barLabelFont, colors.dateLabel, 'left', 'bottom');
+                    this._text(this._pools.overlayLabels, g.label, g.x,
+                        g.labelBelow ? g.y + g.height + 2 : g.y - 2,
+                        c.barLabelFont, colors.dateLabel, 'left', g.labelBelow ? 'top' : 'bottom');
                 }
             }
         }

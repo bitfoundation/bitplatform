@@ -46,6 +46,10 @@
             ResourceTimeline._instances.get(id)?.engine.setData(resources, start, end, allocations);
         }
 
+        public static clearData(id: string) {
+            ResourceTimeline._instances.get(id)?.engine.clearData();
+        }
+
         public static beginData(id: string, resources: any[], start: number, end: number, expectedCount: number) {
             ResourceTimeline._instances.get(id)?.engine.beginData(resources, start, end, expectedCount);
         }
@@ -209,6 +213,12 @@
     // the engine, which warns about a text it does not know.
     const MARKUP_TEXTS = ['ariaLabel', 'roleDescription', 'loading', 'expandGroupFormat', 'collapseGroupFormat'];
 
+    // The attributes of the root and its ancestors a theme is switched through: a class or an inline style carrying
+    // variables, the bit-theme scope (and the bit-theme-overlay of an inline theme), the theme-scoping data-*theme /
+    // -scheme / -mode ones. Any other attribute (an aria-expanded, a data-state) changes no color, so its mutations are
+    // not worth a read of the theme.
+    const THEME_ATTRIBUTE = /^(class|style|bit-theme|bit-theme-overlay|data-.*(theme|scheme|mode))$/;
+
     class ResourceTimelineInstance {
         public engine: ResourceTimelineEngine;
 
@@ -242,8 +252,8 @@
         public setOptions(options: any, texts: any, disabled: boolean) {
             this.engine.setOptions(ResourceTimelineInstance.engineOptions(options, texts, disabled));
 
-            // An app switching the theme of a region of the page (a [bit-theme] scope around the timeline) is seen by no
-            // observer, but it re-renders the component, which lands here.
+            // The colors are read again with the options, which covers what no observer sees (a stylesheet rule the page
+            // swapped in).
             this.applyTheme(false);
         }
 
@@ -345,16 +355,25 @@
             return THEME_COLORS.map(([key]) => theme.colors[key] || '').join('|') + '|' + (theme.fontFamily || '');
         }
 
-        // A theme is switched on the document (a bit-theme attribute, a class or a style of the html or the body element)
-        // or by the color scheme of the system. Nothing reports a change of a variable, so those are watched, and the
-        // colors read again after the frame every mutation of one switch has landed in: the fingerprint of what was read
-        // decides whether anything actually changed.
+        // A theme is switched on the document (a bit-theme attribute, a class or a style of the html or the body element),
+        // on a region of the page around the timeline (a [bit-theme] scope, a BitThemeProvider's inline variables, a
+        // class of an ancestor), on the root itself (its Class or Style), or by the color scheme of the system. Nothing
+        // reports a change of a variable, so the theme attributes (THEME_ATTRIBUTE) of the root and of every ancestor up
+        // to the html element are watched, and the colors read again after the frame every mutation of one switch has
+        // landed in: the fingerprint of what was read decides whether anything actually changed. A change of the
+        // stylesheet rules alone mutates no attribute, and is read again with the next options instead.
         private watchTheme() {
             try {
-                this._themeObserver = new MutationObserver(this._onThemeChange);
-                this._themeObserver.observe(document.documentElement, { attributes: true });
-                if (document.body) {
-                    this._themeObserver.observe(document.body, { attributes: true });
+                this._themeObserver = new MutationObserver(records => {
+                    for (const record of records) {
+                        if (record.attributeName && THEME_ATTRIBUTE.test(record.attributeName)) {
+                            this.scheduleThemeCheck();
+                            return;
+                        }
+                    }
+                });
+                for (let el: Element | null = this._root; el; el = el.parentElement) {
+                    this._themeObserver.observe(el, { attributes: true });
                 }
             } catch { /* no observer: the theme is still read on every change of the options */ }
 

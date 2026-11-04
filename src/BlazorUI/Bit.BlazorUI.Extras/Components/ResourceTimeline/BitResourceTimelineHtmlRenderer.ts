@@ -74,6 +74,7 @@
         private _surfaceLayer: HtmlPooledNode;
         private _washLayer: HtmlPooledNode;
         private _gridLayer: HtmlPooledNode;
+        private _barsClip: HtmlPooledNode;
         private _barsLayer: HtmlPooledNode;
         private _nowLayer: HtmlPooledNode;
         private _timeAxis: HtmlPooledNode;
@@ -111,7 +112,14 @@
             this._surfaceLayer = layer();
             this._washLayer = layer();
             this._gridLayer = layer();
-            this._barsLayer = layer();
+            // The bars are clipped to the content area, as the marquee and the
+            // ghost are: the axes painted later cover the rest of their overhang,
+            // but not the top-start corner. The inner element shifts the
+            // viewport-space coordinates back into the clip box.
+            this._barsClip = div({ position: 'absolute', overflow: 'hidden' });
+            this._barsLayer = div({ position: 'absolute' });
+            this._barsClip.appendChild(this._barsLayer);
+            this._frame.appendChild(this._barsClip);
             this._nowLayer = layer();
 
             // The two axes clip their own contents; an inner element shifts the
@@ -284,6 +292,15 @@
         private _buildBars(scene: ResourceTimelineScene): void {
             const p = this._pools;
             const c = scene.config;
+            const v = scene.viewport;
+
+            ResourceTimelineNodePool.applyStyle(this._barsClip, {
+                left: px(v.axisWidth),
+                top: px(v.axisHeight),
+                width: px(Math.max(0, v.width - v.axisWidth)),
+                height: px(Math.max(0, v.height - v.axisHeight))
+            });
+            ResourceTimelineNodePool.applyStyle(this._barsLayer, { left: px(-v.axisWidth), top: px(-v.axisHeight) });
 
             for (const bar of scene.bars) {
                 if (bar.edges) {
@@ -526,10 +543,12 @@
                 this._rect(rects, g.x, g.y, g.width, g.height, g.color, null, 0.7);
                 this._rect(rects, g.x, g.y - 1, g.width, g.height + 2,
                     null, `1px dashed ${colors.barSelectedBorder}`);
-                // Time readout above the ghost for precise feedback while dragging.
+                // Time readout above the ghost for precise feedback while dragging
+                // (below it next to the time axis, see labelBelow).
                 if (g.label) {
-                    this._text(this._pools.overlayLabels, g.label, g.x, g.y - 2,
-                        c.barLabelFont, colors.dateLabel, 'left', 'bottom');
+                    this._text(this._pools.overlayLabels, g.label, g.x,
+                        g.labelBelow ? g.y + g.height + 2 : g.y - 2,
+                        c.barLabelFont, colors.dateLabel, 'left', g.labelBelow ? 'top' : 'bottom');
                 }
             }
         }

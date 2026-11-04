@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -73,15 +74,41 @@ public partial class BitResourceTimelineStylesheetTests
         var declared = Regex.Matches(root, @"(--bit-rtm-thm-[a-z-]+):\s*([^;]+);").ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
         CollectionAssert.AreEquivalent(themeColors.Values.ToArray(), declared.Keys.ToArray());
+        CollectionAssert.AreEquivalent(ThemePublicVariables.Keys.ToArray(), declared.Keys.ToArray(), "A theme color has no public variable pinned below.");
 
         foreach (var (variable, value) in declared)
         {
             // A Sass variable of the stylesheet ($rtm-focus) stands for its own value.
             var resolved = Regex.Replace(value, @"#\{(\$rtm-[a-z-]+)\}", m => Regex.Match(stylesheet, $@"\n{Regex.Escape(m.Groups[1].Value)}:\s*([^;]+);").Groups[1].Value);
 
-            Assert.IsTrue(resolved.StartsWith("var(--bit-ResourceTimeline-", StringComparison.Ordinal), $"{variable} is not resolved from a public variable first: {value}");
+            var expected = $"var({ThemePublicVariables[variable]}, ";
+
+            Assert.IsTrue(resolved.StartsWith(expected, StringComparison.Ordinal), $"{variable} is not resolved from {ThemePublicVariables[variable]} first: {value}");
         }
     }
+
+    // The public variable each theme color of the script is resolved from first.
+    private static readonly Dictionary<string, string> ThemePublicVariables = new()
+    {
+        ["--bit-rtm-thm-content-bg"] = "--bit-ResourceTimeline-content-background",
+        ["--bit-rtm-thm-axis-bg"] = "--bit-ResourceTimeline-axis-background",
+        ["--bit-rtm-thm-axis-border"] = "--bit-ResourceTimeline-axis-border-color",
+        ["--bit-rtm-thm-tick"] = "--bit-ResourceTimeline-tick-color",
+        ["--bit-rtm-thm-label"] = "--bit-ResourceTimeline-label-color",
+        ["--bit-rtm-thm-date-label"] = "--bit-ResourceTimeline-date-label-color",
+        ["--bit-rtm-thm-grid"] = "--bit-ResourceTimeline-grid-color",
+        ["--bit-rtm-thm-bar"] = "--bit-ResourceTimeline-bar-color",
+        ["--bit-rtm-thm-bar-selected"] = "--bit-ResourceTimeline-bar-selected-color",
+        ["--bit-rtm-thm-bar-selected-border"] = "--bit-ResourceTimeline-bar-selected-border-color",
+        ["--bit-rtm-thm-bar-label"] = "--bit-ResourceTimeline-bar-label-color",
+        ["--bit-rtm-thm-now"] = "--bit-ResourceTimeline-now-color",
+        ["--bit-rtm-thm-selection-fill"] = "--bit-ResourceTimeline-selection-background",
+        ["--bit-rtm-thm-selection-border"] = "--bit-ResourceTimeline-selection-border-color",
+        ["--bit-rtm-thm-focus"] = "--bit-ResourceTimeline-focus-color",
+        ["--bit-rtm-thm-tooltip-bg"] = "--bit-ResourceTimeline-tooltip-background",
+        ["--bit-rtm-thm-tooltip-text"] = "--bit-ResourceTimeline-tooltip-color",
+        ["--bit-rtm-thm-non-working"] = "--bit-ResourceTimeline-non-working-background",
+    };
 
     [TestMethod]
     public void BitResourceTimelineShouldStyleEveryPartItsMarkupAndScriptsRender()

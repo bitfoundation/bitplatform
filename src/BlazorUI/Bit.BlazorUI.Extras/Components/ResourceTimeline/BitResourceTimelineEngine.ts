@@ -584,7 +584,7 @@
         private _utcTickNodes!: any[];
         private _rowNodes!: any[];
         private _marqueeNode!: { x: number; y: number; width: number; height: number };
-        private _ghostNode!: { x: number; y: number; width: number; height: number; color: string; label: string | null };
+        private _ghostNode!: { x: number; y: number; width: number; height: number; color: string; label: string | null; labelBelow: boolean };
         private _surfaceNodes!: any[];
         private _surfaceUsed!: number;
 
@@ -601,13 +601,16 @@
         private _onWheel: (e: WheelEvent) => void;
         private _onContextMenu: (e: MouseEvent) => void;
         // Wheel and touch input over the ResourceTemplate overlay, forwarded to the
-        // viewport (see _bindOverlayScroll).
+        // viewport, and its clicks and right-clicks, reported as the resource
+        // axis' own (see _bindOverlayInput).
         private _overlayHost: HTMLElement | null;
         private _overlayTouch: { x: number; y: number } | null;
         private _onOverlayWheel: (e: WheelEvent) => void;
         private _onOverlayTouchStart: (e: TouchEvent) => void;
         private _onOverlayTouchMove: (e: TouchEvent) => void;
         private _onOverlayTouchEnd: () => void;
+        private _onOverlayClick: (e: MouseEvent) => void;
+        private _onOverlayContextMenu: (e: MouseEvent) => void;
         private _onKeyDown: (e: KeyboardEvent) => void;
         private _onFocusIn: () => void;
         private _onFocusOut: () => void;
@@ -1101,6 +1104,12 @@
             };
             this._onOverlayTouchMove = (e) => this._forwardOverlayTouch(e);
             this._onOverlayTouchEnd = () => { this._overlayTouch = null; };
+            this._onOverlayClick = (e) => this._forwardOverlayClick(e);
+            this._onOverlayContextMenu = (e) => {
+                // A fresh rect: nothing over the overlay keeps the cached one current.
+                this._surfaceRect = null;
+                this.handleContextMenu(e);
+            };
             this._onKeyDown = (e) => this.handleKeyDown(e);
             this._onFocusIn = () => { this._hasFocus = true; this.render(); };
             this._onFocusOut = () => { this._hasFocus = false; this.render(); };
@@ -1910,8 +1919,9 @@
         //   background -> surface -> non-working -> grid -> bars -> now line ->
         //   sticky axes (column/row tints under the labels) -> marquee -> ghost
         // Bars may extend under the axes; the (opaque) axes are drawn after them,
-        // exactly like the original canvas z-order. Marquee and ghost must be
-        // clipped to the content area.
+        // exactly like the original canvas z-order. Bars (with their overflow
+        // markers), marquee and ghost must be clipped to the content area: no
+        // axis covers the top-start corner.
         // The scene object, its arrays and the bar/day/tick nodes inside it are
         // pooled and refilled in place each frame rather than reallocated. A dense
         // frame builds hundreds of nodes, so at 60fps this was the bulk of the
@@ -1955,7 +1965,7 @@
                 this._utcTickNodes = [];
                 this._rowNodes = [];
                 this._marqueeNode = { x: 0, y: 0, width: 0, height: 0 };
-                this._ghostNode = { x: 0, y: 0, width: 0, height: 0, color: '', label: null };
+                this._ghostNode = { x: 0, y: 0, width: 0, height: 0, color: '', label: null, labelBelow: false };
             }
             scene.days.length = 0;
             scene.hourTicks.length = 0;
@@ -2480,11 +2490,11 @@
         }
 
         private _dayOrdinal(parts: ResourceTimelineWallClock): number {
-            return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000);
+            return Math.floor(ResourceTimelineZonedTime.utc(parts.year, parts.month, parts.day) / 86400000);
         }
 
         private _weekday(parts: ResourceTimelineWallClock): number {
-            return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay();
+            return new Date(ResourceTimelineZonedTime.utc(parts.year, parts.month, parts.day)).getUTCDay();
         }
 
         // Weeks aligned to Options.FirstDayOfWeek, so adjacent weeks differ by 1.
@@ -2763,7 +2773,7 @@
                 const dayEnd = this._time.nextDay(dayStart);
                 if (!(dayEnd > dayStart)) break;
                 const p = this._time.parts(dayStart);
-                const weekday = new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay();
+                const weekday = new Date(ResourceTimelineZonedTime.utc(p.year, p.month, p.day)).getUTCDay();
                 const left = this.getTimeToX(Math.max(dayStart, visStart));
                 const right = this.getTimeToX(Math.min(dayEnd, visEnd));
                 const x0 = Math.max(axisX, left);
@@ -3295,9 +3305,12 @@
             ghost.width = Math.max(c.minBarWidth, x2 - x1);
             ghost.height = barHeight;
             ghost.color = ed.alloc.color || c.colors.barSelected;
-            // Time readout above the ghost for precise feedback while dragging.
+            // Time readout above the ghost for precise feedback while dragging -
+            // below it where the row sits so close to the time axis that the
+            // readout would be cut off by the clip of the content area.
             ghost.label = this._text('timeRangeFormat',
                 this._time.formatDateTime(ed.previewStart), this._time.formatDateTime(ed.previewEnd));
+            ghost.labelBelow = barTop - 2 - this._labelMetrics().lineHeight < c.timeAxisHeight;
             scene.ghost = ghost;
         }
 
@@ -5299,7 +5312,7 @@
             this.config.resourceTemplate = true;
             this._configGen++;
             this._resourceOverlay = overlayInner || null;
-            this._bindOverlayScroll(overlayInner ? (overlayInner.parentElement || overlayInner) : null);
+            this._bindOverlayInput(overlayInner ? (overlayInner.parentElement || overlayInner) : null);
             this._reportedRowsKey = null;
             this._reportResourceRows();
             this._syncResourceOverlay();
@@ -5314,7 +5327,7 @@
             this._configGen++;
             if (this._resourceOverlay) this._resourceOverlay.style.transform = '';
             this._resourceOverlay = null;
-            this._bindOverlayScroll(null);
+            this._bindOverlayInput(null);
             this.render();
         }
 
@@ -5322,8 +5335,10 @@
         // sibling of the scroll viewport, not inside it, so the browser would
         // scroll the page under a wheel or a touch pan over it. Its input is
         // forwarded to the viewport instead, so the rows scroll there exactly as
-        // they do over the column the renderer draws without a template.
-        private _bindOverlayScroll(host: HTMLElement | null): void {
+        // they do over the column the renderer draws without a template. Its
+        // clicks and right-clicks never reach the surface either, so they are
+        // reported from here as the surface reports those of the resource axis.
+        private _bindOverlayInput(host: HTMLElement | null): void {
             const prev = this._overlayHost;
             if (prev === host) return;
             if (prev) {
@@ -5332,6 +5347,8 @@
                 prev.removeEventListener('touchmove', this._onOverlayTouchMove);
                 prev.removeEventListener('touchend', this._onOverlayTouchEnd);
                 prev.removeEventListener('touchcancel', this._onOverlayTouchEnd);
+                prev.removeEventListener('click', this._onOverlayClick);
+                prev.removeEventListener('contextmenu', this._onOverlayContextMenu);
             }
             this._overlayHost = host;
             this._overlayTouch = null;
@@ -5341,6 +5358,23 @@
             host.addEventListener('touchmove', this._onOverlayTouchMove, { passive: false });
             host.addEventListener('touchend', this._onOverlayTouchEnd, { passive: true });
             host.addEventListener('touchcancel', this._onOverlayTouchEnd, { passive: true });
+            host.addEventListener('click', this._onOverlayClick);
+            host.addEventListener('contextmenu', this._onOverlayContextMenu);
+        }
+
+        // A click on a row of the overlay raises OnClick (and OnDoubleClick on the
+        // second of a pair) with that row, as one on the resource column the
+        // renderer draws does. A click with no pointer position (a key pressed on
+        // a control of the template) is left to that control.
+        private _forwardOverlayClick(e: MouseEvent): void {
+            if (this.config.disabled || e.detail === 0) return;
+            this._surfaceRect = null;
+            const { x, y } = this._eventToCanvas(e);
+            const hit = this._pointerHit(x, y);
+            this._notifyPointer('OnTimelineClick', e, hit);
+            if (this._recordClick(x, y)) {
+                this._notifyPointer('OnTimelineDoubleClick', e, hit);
+            }
         }
 
         // A wheel over the overlay: Ctrl/Cmd zooms as it does over the surface,
@@ -6288,6 +6322,29 @@
             this._relayout();
         }
 
+        // Empties the timeline of its rows and bars (the host's data was taken
+        // away). The time range stays, so the axis is painted over an empty
+        // content pane rather than the last frame being left on screen. A
+        // windowed load ends with it, so no window is asked for or taken any more.
+        public clearData(): void {
+            this._windowed = false;
+            this._windowPending = false;
+            clearTimeout(this._windowCheckTimer as number);
+            this._windowCheckTimer = null;
+            this.resources = [];
+            this._rebuildResourceStructure();
+            this.allocations = [];
+            this._indexAllocations();
+            this._resetSelectionForLoad();
+            this.drag = null;
+            this.edit = null;
+            this._hideTooltip();
+            this._focusResource = -1;
+            this._focusAlloc = null;
+            this._renderPending = true;
+            this._relayout();
+        }
+
         // Merges allocations by id (last-wins) without clearing selection or
         // keyboard focus. Replacing a focused bar retargets focus onto the new
         // object; other selected ids stay selected.
@@ -7011,7 +7068,7 @@
             this.wrapper.removeAttribute('data-bit-esc');
             this._escClaimed = false;
             this._unbindSurfaceEvents();
-            this._bindOverlayScroll(null);
+            this._bindOverlayInput(null);
             this._teardownAxisSplitter();
             if (this.renderer) {
                 this.renderer.dispose();

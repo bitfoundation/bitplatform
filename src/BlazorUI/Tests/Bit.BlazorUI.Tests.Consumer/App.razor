@@ -78,7 +78,8 @@
 
     private readonly BitResourceTimelineConfig _planning = new()
     {
-        StartDate = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+        // The range starts on the day of the shift, so its bar is in view as the timeline opens.
+        StartDate = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero),
         EndDate = new DateTimeOffset(2026, 1, 8, 0, 0, 0, TimeSpan.Zero),
         Resources = [new() { Id = "crew", Name = "Crew" }, new() { Id = "ada", Name = "Ada", ParentId = "crew" }],
         Allocations =

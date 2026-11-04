@@ -269,13 +269,23 @@ public class BitResourceTimelineTests : BunitTestContext
     [TestMethod]
     public void BitResourceTimelineShouldAdvertiseTheEditingShortcutsOnlyWhenEditable()
     {
+        PlanStart();
+
         var component = RenderTimeline(p => p.Add(x => x.Options, new BitResourceTimelineOptions { Editable = true }));
 
         var shortcuts = component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!;
         StringAssert.Contains(shortcuts, "Alt+ArrowLeft");
         StringAssert.Contains(shortcuts, "Alt+Shift+ArrowUp");
 
+        // Options that leave Editable (and AllowDelete) unset keep what is in force, as the engine merges them.
+        component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions { AllowDelete = true }));
         component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions()));
+
+        shortcuts = component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!;
+        StringAssert.Contains(shortcuts, "Alt+ArrowLeft");
+        StringAssert.Contains(shortcuts, "Delete");
+
+        component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions { Editable = false }));
 
         Assert.IsFalse(component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
     }
@@ -745,6 +755,60 @@ public class BitResourceTimelineTests : BunitTestContext
 
         Assert.AreEqual(2, Calls(SetDataFn).Count);
         Assert.AreSame(next.Allocations, Calls(SetDataFn)[1].Arguments[4]);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldEmptyTheEngineWhenTheConfigIsTakenAway()
+    {
+        var config = SampleConfig();
+        var component = RenderLoaded(config: config);
+
+        component.Render(p => p.Add(x => x.Config, null));
+
+        await WaitUntil(() => Calls(ClearDataFn).Count == 1);
+        Assert.AreEqual(component.Instance.UniqueId, Calls(ClearDataFn).Single().Arguments[0]);
+
+        // The data it held is gone from the calls about bars too: nothing asks the engine about them any more.
+        Assert.IsEmpty(await ResolveAsync(component, "a1"));
+        Assert.IsFalse(await component.InvokeAsync(() => component.Instance.ScrollToAllocationAsync("a1")));
+        Assert.AreEqual(0, Calls(GetSelectedBarIdsFn).Count);
+        Assert.AreEqual(0, Calls(ScrollToAllocationFn).Count);
+
+        // Another render without a Config clears nothing again, and a Config assigned again loads.
+        component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
+        Assert.AreEqual(1, Calls(ClearDataFn).Count);
+
+        component.Render(p => p.Add(x => x.Config, config));
+        WaitForLoads(component, 2);
+        Assert.AreEqual(2, Calls(SetDataFn).Count);
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineShouldLoadTheSameConfigAgainWhenTheLoadingModeChanges()
+    {
+        Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);
+
+        var config = SampleConfig();
+        var component = RenderLoaded(config: config);
+
+        Func<BitResourceTimelineWindow, Task<IReadOnlyList<BitResourceTimelineAllocation>>> load =
+            _ => Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>>(config.Allocations);
+
+        component.Render(p => p.Add(x => x.LoadAllocationsAsync, load));
+        WaitForLoads(component, 2);
+
+        Assert.AreEqual(1, Calls(BeginWindowedFn).Count);
+        Assert.AreEqual(1, Calls(ApplyAllocationWindowFn).Count);
+
+        // Another render with the same delegate loads nothing.
+        component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
+        Assert.AreEqual(1, Calls(BeginWindowedFn).Count);
+
+        component.Render(p => p.Add(x => x.LoadAllocationsAsync, null));
+        WaitForLoads(component, 3);
+
+        Assert.AreEqual(2, Calls(SetDataFn).Count);
+        Assert.AreSame(config.Allocations, Calls(SetDataFn)[1].Arguments[4]);
     }
 
     [TestMethod]
@@ -1514,6 +1578,24 @@ public class BitResourceTimelineTests : BunitTestContext
         });
 
         Assert.IsTrue(allowed);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldRefuseAnEditOfAnUnknownBarWithoutAHandler()
+    {
+        var component = RenderLoaded();
+
+        var single = true;
+        var several = true;
+        await component.InvokeAsync(async () =>
+        {
+            single = await component.Instance._OnAllocationChanging("unknown", "r2", 10_000, 70_000, "r1", 0, 60_000, "move");
+            several = await component.Instance._OnAllocationsChanging(["a1", "unknown"], ["r2", "r2"], [10_000, 0], [70_000, 1],
+                                                                      ["r1", "r1"], [0, 0], [60_000, 1], "move");
+        });
+
+        Assert.IsFalse(single);
+        Assert.IsFalse(several);
     }
 
     [TestMethod]

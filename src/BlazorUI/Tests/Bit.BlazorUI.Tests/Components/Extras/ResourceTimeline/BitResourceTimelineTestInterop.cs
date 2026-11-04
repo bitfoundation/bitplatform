@@ -22,6 +22,7 @@ internal static class BitResourceTimelineTestInterop
     public const string EnableTooltipTemplateFn = Prefix + "enableTooltipTemplate";
     public const string DisableTooltipTemplateFn = Prefix + "disableTooltipTemplate";
     public const string SetDataFn = Prefix + "setData";
+    public const string ClearDataFn = Prefix + "clearData";
     public const string BeginDataFn = Prefix + "beginData";
     public const string AppendAllocationsFn = Prefix + "appendAllocations";
     public const string EndDataFn = Prefix + "endData";

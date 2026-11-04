@@ -540,6 +540,9 @@ test('the "now" indicator timer is off when its interval is zero', () => {
 test('the "now" indicator repaints on its interval, but only when it would move', (t) => {
     t.mock.timers.enable({ apis: ['setInterval'] });
     const engine = makeLaidOutEngine({ config: { nowLineRefreshMs: 1000 } });
+    // The wall clock the timer reads, held still until the test moves it.
+    let clock = Date.now();
+    t.mock.method(Date, 'now', () => clock);
     let renders = 0;
     engine.render = () => { renders++; };
     engine._lastNowX = NaN;
@@ -550,10 +553,15 @@ test('the "now" indicator repaints on its interval, but only when it would move'
         t.mock.timers.tick(1000);
         assert.equal(renders, 1, 'the first tick moves the line off its unknown position');
 
-        // The wall clock has not really advanced, so the line would land on the
-        // same pixel and the frame would be identical.
+        // The clock has not advanced, so the line would land on the same pixel
+        // and the frame would be identical.
         t.mock.timers.tick(1000);
         assert.equal(renders, 1, 'a tick that would not move the line must not repaint');
+
+        // Two minutes at 60px/hour move the line two pixels.
+        clock += 2 * 60000;
+        t.mock.timers.tick(1000);
+        assert.equal(renders, 2, 'a tick that moves the line must repaint');
     } finally {
         engine._stopNowTimer();
     }

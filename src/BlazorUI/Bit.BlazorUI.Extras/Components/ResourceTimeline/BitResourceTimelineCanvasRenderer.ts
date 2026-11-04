@@ -108,6 +108,8 @@
     export interface ResourceTimelineSceneGhost extends ResourceTimelineSceneRect {
         color: string;
         label: string | null;
+        /** Whether the label goes below the ghost: above it, the time axis would cover it. */
+        labelBelow: boolean;
     }
 
     /** The size of the viewport and of its sticky axes. */
@@ -320,8 +322,13 @@
             this._drawSurface(scene);
             this._drawNonWorking(scene);
             this._drawGrid(scene);
+            // The bars are clipped to the content area: the axes drawn after them
+            // cover the rest of their overhang, but not the top-start corner.
+            this.ctx.save();
+            this._clipContent(scene);
             this._drawBars(scene);
             this._drawOverflow(scene);
+            this.ctx.restore();
             this._drawNowLine(scene);
             this._drawTimeAxis(scene);
             this._drawResourceAxis(scene);
@@ -736,13 +743,14 @@
             ctx.strokeRect(g.x + 0.5, g.y - 0.5, g.width, g.height + 1);
             ctx.setLineDash([]);
 
-            // Time readout above the ghost for precise feedback while dragging.
+            // Time readout above the ghost for precise feedback while dragging
+            // (below it next to the time axis, see labelBelow).
             if (g.label) {
                 ctx.font = c.barLabelFont;
                 ctx.fillStyle = c.colors.dateLabel;
                 ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                ctx.fillText(g.label, g.x, g.y - 2);
+                ctx.textBaseline = g.labelBelow ? 'top' : 'bottom';
+                ctx.fillText(g.label, g.x, g.labelBelow ? g.y + g.height + 2 : g.y - 2);
             }
             ctx.restore();
         }

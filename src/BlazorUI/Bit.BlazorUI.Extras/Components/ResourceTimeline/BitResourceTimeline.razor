@@ -34,7 +34,8 @@
 
     @* The rows render behind a gate (_BitResourceTimelineRenderGate), so a render of the timeline for state none of them
        depends on - the hovered bar of the TooltipTemplate, the loading overlay - does not run every row's template again.
-       The script forwards a wheel or a touch pan over the overlay to the viewport, which it is not inside of. *@
+       The script forwards a wheel or a touch pan over the overlay to the viewport, which it is not inside of, and reports
+       its clicks and right-clicks as those of the resource axis (OnClick, OnContextMenu). *@
     @if (ResourceTemplate is not null)
     {
         <div class="bit-rtm-rov @Classes?.ResourceOverlay" style="@JoinStyles(GetResourceOverlayStyle(), Styles?.ResourceOverlay)">

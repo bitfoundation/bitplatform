@@ -282,7 +282,8 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         var viewport = component.Find(".bit-rtm-vpt");
         Assert.AreEqual("Resource timeline", viewport.GetAttribute("aria-label"));
         Assert.IsFalse(viewport.ClassList.Contains("cascaded-viewport"));
-        Assert.IsFalse(viewport.GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
+        // Options taken away set nothing, and the engine merges them: it stays editable, and says so.
+        Assert.IsTrue(viewport.GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
 
         // The engine is told the options and texts it was configured with are gone.
         var setOptions = Calls(SetOptionsFn).Single();

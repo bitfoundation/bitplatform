@@ -235,6 +235,20 @@ test('addDays lands on local midnight and inverts', () => {
     }
 });
 
+test('a two-digit year keeps its calendar year', () => {
+    // Date.UTC reads a year of 0-99 as 1900-1999.
+    const z = new ZonedTime('UTC');
+    const ts = z.wallClockToTs(50, 3, 1, 0, 0, 0);
+    const expected = new Date(0);
+    expected.setUTCFullYear(50, 2, 1);
+
+    assert.equal(ts, expected.getTime());
+    assert.equal(z.startOfDay(ts + 5 * 3600000), ts);
+    const next = z.parts(z.addDays(ts, 1));
+    assert.deepEqual([next.year, next.month, next.day, next.hour], [50, 3, 2, 0]);
+    assert.equal(z.offsetMs(ts), 0);
+});
+
 test('addDays treats a DST transition as one calendar day', () => {
     const z = new ZonedTime('America/New_York');
     const sunday = z.wallClockToTs(2026, 3, 8, 0, 0, 0);
