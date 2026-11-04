@@ -128,8 +128,12 @@ export function makeBareEngine(overrides = {}) {
         tooltipTemplate: false,
         disabled: false,
         ...(overrides.config || {}),
-        // Always present on the real config, and _applyOptions merges into it.
-        colors: { bar: '#74c0fc', barSelected: '#4dabf7', label: '#495057', nonWorking: 'rgba(0,0,0,0.06)' }
+        // Always present on the real config, and _applyOptions merges into it. Colors a caller passes are merged over
+        // the defaults in the same way, so the keys it does not name keep theirs.
+        colors: {
+            bar: '#74c0fc', barSelected: '#4dabf7', label: '#495057', nonWorking: 'rgba(0,0,0,0.06)',
+            ...((overrides.config && overrides.config.colors) || {})
+        }
     };
 
     // Theme layering (setTheme): no theme, and nothing set explicitly yet.

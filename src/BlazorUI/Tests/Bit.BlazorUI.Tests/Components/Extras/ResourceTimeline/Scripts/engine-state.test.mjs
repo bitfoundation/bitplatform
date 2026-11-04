@@ -100,7 +100,8 @@ test('the scene config snapshot is frozen and reused until the config changes', 
     const engine = makeBareEngine();
     const first = engine._configSnapshot();
     assert.ok(Object.isFrozen(first));
-    assert.ok(Object.isFrozen(first.colors ?? Object.freeze({})));
+    assert.ok(first.colors, 'the snapshot carries the colors');
+    assert.ok(Object.isFrozen(first.colors));
     assert.equal(engine._configSnapshot(), first, 'unchanged config must reuse the snapshot');
 
     engine._applyOptions({ barHeight: 7 });

@@ -48,6 +48,9 @@ public partial class BitResourceTimeline : BitComponentBase
     private bool _resourceTemplateEnabled;
     private bool _tooltipTemplateEnabled;
     private bool _dataLoaded;
+    // Whether the engine may hold data: set as a load starts handing it any, completed or not (a batched or windowed load
+    // that failed part way leaves what it sent), and reset when ClearDataAsync empties it.
+    private bool _engineHasData;
     private bool _isLoading;
     private bool _warnedMissingCreate;
     private bool _warnedMissingCopy;
@@ -871,6 +874,8 @@ public partial class BitResourceTimeline : BitComponentBase
         _resourcesById = IndexResources(config.Resources);
         _resourceRowsRenderKey++;
 
+        _engineHasData = true;
+
         try
         {
             var allocations = config.Allocations;
@@ -965,19 +970,22 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     // Empties the engine once the Config was taken away, so the data it held is neither shown nor reachable through the
-    // calls about bars any more. Behind the gate of the loads, so a load still running cannot land after it.
+    // calls about bars any more. Behind the gate of the loads, so a load still running cannot land after it. The engine is
+    // emptied whether or not a load completed (_engineHasData): a batched or windowed load that failed part way has handed
+    // it data all the same.
     private async Task ClearDataAsync()
     {
         await _loadGate.WaitAsync();
 
         try
         {
-            if (IsDisposing || Config is not null || _dataLoaded is false) return;
+            if (IsDisposing || Config is not null || _engineHasData is false) return;
 
             // A window fetch of the cleared load still running is dropped.
             _windowSession++;
             _loadedConfig = null;
             _dataLoaded = false;
+            _engineHasData = false;
             _allocationsById = [];
             _resourcesById = [];
             _hoverAllocation = null;

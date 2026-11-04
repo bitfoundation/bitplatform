@@ -221,9 +221,9 @@ public class BitResourceTimelineOptions
     public bool? Hour12 { get; set; }
 
     /// <summary>
-    /// Weekdays shaded as non-working (0 = Sunday … 6 = Saturday). Empty /
-    /// <c>null</c> draws no weekend wash. Visual only; does not change snap or
-    /// scale.
+    /// Weekdays shaded as non-working (0 = Sunday … 6 = Saturday). An empty array
+    /// turns the weekend wash off; <c>null</c> keeps the days in force (none,
+    /// until an instance sets some). Visual only; does not change snap or scale.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int[]? NonWorkingDays { get; set; }

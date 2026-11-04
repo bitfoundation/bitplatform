@@ -261,8 +261,10 @@
         private _themeFingerprint = '';
         private _themeFrame: number | null = null;
         private _themeObserver: MutationObserver | null = null;
+        private _styleObserver: MutationObserver | null = null;
         private _schemeQuery: MediaQueryList | null = null;
         private _onThemeChange: () => void;
+        private _onStyleLoad: (e: Event) => void;
 
         constructor(viewport: HTMLElement, dotnetObj: DotNetObject, options: any, texts: any, disabled: boolean) {
             this._root = viewport.parentElement || viewport;
@@ -276,6 +278,9 @@
             this.engine = new ResourceTimelineEngine(viewport, dotnetObj, ResourceTimelineInstance.engineOptions(options, texts, disabled), registry);
 
             this._onThemeChange = () => this.scheduleThemeCheck();
+            this._onStyleLoad = (e: Event) => {
+                if (ResourceTimelineInstance.isStyleNode(e.target as Node | null)) this.scheduleThemeCheck();
+            };
 
             // Read before the first frame (no data has arrived yet), so the timeline never paints in the built-in colors
             // first and in the theme's a frame later.
@@ -286,8 +291,8 @@
         public setOptions(options: any, texts: any, disabled: boolean) {
             this.engine.setOptions(ResourceTimelineInstance.engineOptions(options, texts, disabled));
 
-            // The colors are read again with the options, which covers what no observer sees (a stylesheet rule the page
-            // swapped in).
+            // The colors are read again with the options, which covers what no observer sees (a rule inserted through the
+            // CSSOM, an adopted stylesheet).
             this.applyTheme(false);
         }
 
@@ -299,6 +304,10 @@
 
             this._themeObserver?.disconnect();
             this._themeObserver = null;
+
+            this._styleObserver?.disconnect();
+            this._styleObserver = null;
+            document.removeEventListener('load', this._onStyleLoad, true);
 
             if (this._schemeQuery) {
                 try {
@@ -394,8 +403,12 @@
         // class of an ancestor), on the root itself (its Class or Style), or by the color scheme of the system. Nothing
         // reports a change of a variable, so the theme attributes (THEME_ATTRIBUTE) of the root and of every ancestor up
         // to the html element are watched, and the colors read again after the frame every mutation of one switch has
-        // landed in: the fingerprint of what was read decides whether anything actually changed. A change of the
-        // stylesheet rules alone mutates no attribute, and is read again with the next options instead.
+        // landed in: the fingerprint of what was read decides whether anything actually changed. A stylesheet swapped in
+        // or out mutates none of those attributes, so the <link> and <style> elements of the head are watched as well
+        // (one added, removed or edited), and a stylesheet loading anywhere in the page (a new <link>, or one whose href
+        // was replaced, which applies only once it has loaded) is heard through the load event, captured on the
+        // document since it does not bubble. What none of these sees (a rule inserted through the CSSOM) is read again
+        // with the next options.
         private watchTheme() {
             try {
                 this._themeObserver = new MutationObserver(records => {
@@ -412,12 +425,62 @@
             } catch { /* no observer: the theme is still read on every change of the options */ }
 
             try {
+                const head = document.head;
+                if (head) {
+                    this._styleObserver = new MutationObserver(records => {
+                        for (const record of records) {
+                            if (ResourceTimelineInstance.touchesStyles(record)) {
+                                this.scheduleThemeCheck();
+                                return;
+                            }
+                        }
+                    });
+                    this._styleObserver.observe(head, {
+                        childList: true,
+                        subtree: true,
+                        characterData: true,
+                        attributes: true,
+                        attributeFilter: ['href', 'rel', 'media', 'disabled']
+                    });
+                }
+            } catch { /* no observer: the theme is still read on every change of the options */ }
+
+            document.addEventListener('load', this._onStyleLoad, true);
+
+            try {
                 const scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
                 if (scheme) {
                     scheme.addEventListener('change', this._onThemeChange);
                     this._schemeQuery = scheme;
                 }
             } catch { /* an engine without the EventTarget form of MediaQueryList */ }
+        }
+
+        // A <link> or a <style> element: what a stylesheet of the page comes from.
+        private static isStyleNode(node: Node | null) {
+            const name = node ? node.nodeName : '';
+            return name === 'LINK' || name === 'STYLE';
+        }
+
+        // Whether a mutation of the head adds, removes or edits a stylesheet: a <link> or <style> element added or
+        // removed, an attribute of one changed, or the text of a <style> rewritten.
+        private static touchesStyles(record: MutationRecord) {
+            if (record.type === 'childList') {
+                if (ResourceTimelineInstance.isStyleNode(record.target)) return true;
+                for (let i = 0; i < record.addedNodes.length; i++) {
+                    if (ResourceTimelineInstance.isStyleNode(record.addedNodes[i])) return true;
+                }
+                for (let i = 0; i < record.removedNodes.length; i++) {
+                    if (ResourceTimelineInstance.isStyleNode(record.removedNodes[i])) return true;
+                }
+                return false;
+            }
+
+            if (record.type === 'characterData') {
+                return ResourceTimelineInstance.isStyleNode(record.target.parentNode);
+            }
+
+            return ResourceTimelineInstance.isStyleNode(record.target);
         }
 
         private scheduleThemeCheck() {

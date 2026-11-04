@@ -148,6 +148,56 @@ test('moving to another bar while visible swaps content immediately', async () =
     }
 });
 
+test('empty content takes a visible tooltip down, for the same subject and for another', async () => {
+    const { body } = installDom();
+    try {
+        const tip = new Tooltip(STYLE);
+        tip.trackPointer(100, 100);
+        const bar = { id: 'a' };
+        tip.show(bar, 'Bar A', 10);
+        await tick(40);
+        assert.equal(body.children[0].style.display, 'block');
+
+        tip.show(bar, '', 10);
+        assert.equal(body.children[0].style.display, 'none', 'the same subject with nothing to say');
+
+        tip.show(bar, 'Bar A again', 10);
+        assert.equal(body.children[0].style.display, 'none', 'content coming back waits out the delay');
+        await tick(40);
+        assert.equal(body.children[0].style.display, 'block');
+        assert.equal(body.children[0].textContent, 'Bar A again');
+
+        tip.show({ id: 'b' }, '', 10);
+        assert.equal(body.children[0].style.display, 'none', 'another subject with nothing to say');
+        await tick(40);
+        assert.equal(body.children[0].style.display, 'none', 'nothing shows for it later either');
+        tip.dispose();
+    } finally {
+        uninstallDom();
+    }
+});
+
+test('content arriving for a hidden subject that had none shows after the delay', async () => {
+    const { body } = installDom();
+    try {
+        const tip = new Tooltip(STYLE);
+        tip.trackPointer(100, 100);
+        const bar = { id: 'a' };
+        tip.show(bar, '', 10);
+        await tick(40);
+        assert.equal(body.children.length, 0, 'nothing to show yet');
+
+        tip.show(bar, 'Bar A', 10);
+        await tick(40);
+        assert.equal(body.children.length, 1);
+        assert.equal(body.children[0].textContent, 'Bar A');
+        assert.equal(body.children[0].style.display, 'block');
+        tip.dispose();
+    } finally {
+        uninstallDom();
+    }
+});
+
 test('re-showing the same subject does not restart the delay', async () => {
     const { body, made } = installDom();
     try {
@@ -270,8 +320,10 @@ test('setStyle restyles the element in place, and one not created yet starts wit
         live.trackPointer(10, 10);
         live.show({ id: 'b' }, 'B', 0);
         await tick(20);
+        body.children[0].style.left = 'stale';
         live.setStyle(next);
         const el = body.children[0];
+        assert.equal(el.style.left, '22px', 'a visible tooltip is placed again for its new size');
         assert.equal(el.style.font, next.font);
         assert.equal(el.style.background, next.background);
         assert.equal(el.style.color, next.color);

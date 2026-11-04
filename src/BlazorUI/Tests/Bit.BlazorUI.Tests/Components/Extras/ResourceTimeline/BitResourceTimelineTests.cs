@@ -784,6 +784,31 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldEmptyTheEngineAfterAStreamThatFailedPartWay()
+    {
+        PlanStart();
+        var append = Context.JSInterop.SetupVoid(AppendAllocationsFn, _ => true);
+
+        var config = SampleConfig();
+        config.Allocations = Enumerable.Range(1, 5).Select(i => Allocation($"a{i}", "r1", i * 60_000, i * 60_000 + 30_000)).ToList();
+
+        var component = RenderTimeline(p =>
+        {
+            p.Add(x => x.LoadBatchSize, 2);
+            p.Add(x => x.LoadingMinDurationMs, 0);
+        }, config);
+        await WaitUntil(() => Calls(AppendAllocationsFn).Count == 1);
+
+        // The Config is taken away while the first load streams, and the stream then fails: it never completed, but the
+        // engine holds what it was sent before the failure all the same.
+        component.Render(p => p.Add(x => x.Config, null));
+        append.SetException(new JSException("append failed"));
+
+        await WaitUntil(() => Calls(ClearDataFn).Count == 1);
+        Assert.AreEqual(0, Calls(EndDataFn).Count);
+    }
+
+    [TestMethod]
     public void BitResourceTimelineShouldLoadTheSameConfigAgainWhenTheLoadingModeChanges()
     {
         Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);

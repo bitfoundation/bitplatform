@@ -155,6 +155,25 @@ test('zoned parts and the wall-clock round trip agree across a DST year', () => 
                 `${zone}: wall-clock round trip lost the instant at day ${day}`);
         }
     }
+
+    // 2026-10-25: Berlin falls back 03:00 CEST -> 02:00 CET, so 02:30 happens twice, at 00:30Z (+02:00) and 01:30Z
+    // (+01:00). It is the first of them, the one hourBoundaries emits for the repeated hour.
+    const berlin = new ZonedTime('Europe/Berlin');
+    const first = Date.parse('2026-10-25T00:30:00Z');
+    assert.equal(berlin.wallClockToTs(2026, 10, 25, 2, 30, 0), first);
+    const two = berlin.hourBoundaries(Date.parse('2026-10-24T23:30:00Z'), Date.parse('2026-10-25T02:30:00Z'), 1)
+        .find(b => b.hour === 2);
+    assert.equal(berlin.wallClockToTs(2026, 10, 25, 2, 0, 0), two.ts);
+});
+
+test('wall-clock snap in a repeated hour stays in the occurrence it was in', () => {
+    const engine = makeZonedEngine('Europe/Berlin');
+    engine.config.editSnapMinutes = 15;
+    engine.config.snapToTimeZone = true;
+
+    // 02:40 of each occurrence of Berlin's repeated hour snaps to 02:45 of the same one.
+    assert.equal(engine._snapTime(Date.parse('2026-10-25T00:40:00Z')), Date.parse('2026-10-25T00:45:00Z'));
+    assert.equal(engine._snapTime(Date.parse('2026-10-25T01:40:00Z')), Date.parse('2026-10-25T01:45:00Z'));
 });
 
 test('the UTC row\'s boundaries match the zoned walk through UTC', () => {

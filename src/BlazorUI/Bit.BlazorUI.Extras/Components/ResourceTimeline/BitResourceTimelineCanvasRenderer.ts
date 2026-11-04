@@ -207,6 +207,10 @@
         private _scaleY: number;
         private _resizeObserver: ResizeObserver | null;
         private _observesDevicePixels: boolean;
+        // Where device-pixel-content-box is not observed: the query matching the
+        // devicePixelRatio in force, whose change is the next ratio change.
+        private _dprQuery: MediaQueryList | null;
+        private _onDprChange: () => void;
 
         constructor(wrapper: HTMLElement, host: ResourceTimelineRendererHost) {
             this.wrapper = wrapper;
@@ -229,12 +233,25 @@
             // Observe the canvas backing-store size in device pixels (via
             // device-pixel-content-box where supported) so devicePixelRatio
             // changes (browser zoom, moving between monitors) are picked up.
-            // Without a ResizeObserver at all (an old WebView) the backing store
-            // follows devicePixelRatio on every resize the engine passes on, as
-            // where device-pixel-content-box is not supported.
+            // Without a ResizeObserver at all (an old WebView), or where
+            // device-pixel-content-box is not supported, the backing store
+            // follows devicePixelRatio on every resize the engine passes on, and
+            // on a change of the ratio alone through a resolution media query
+            // (a zoom or a move to another monitor need not resize the canvas in
+            // CSS pixels).
             this._resizeObserver = null;
             this._observesDevicePixels = false;
-            if (typeof ResizeObserver === 'undefined') return;
+            this._dprQuery = null;
+            this._onDprChange = () => {
+                // The query matched the ratio that just changed; the next one
+                // matches the new ratio.
+                this._watchDevicePixelRatio();
+                this._refreshBackingStore();
+            };
+            if (typeof ResizeObserver === 'undefined') {
+                this._watchDevicePixelRatio();
+                return;
+            }
 
             const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
                 for (const entry of entries) {
@@ -244,17 +261,7 @@
                         this._deviceH = dpc.blockSize;
                     }
                 }
-                // Re-apply the backing store at the new density and repaint.
-                // Changing canvas.width/height clears the bitmap; paint synchronously
-                // when that happens so a blank frame is never presented.
-                if (this._cssW > 0 && this._cssH > 0) {
-                    if (this._applyBackingStore()) {
-                        if (typeof this.host.paintNow === 'function') this.host.paintNow();
-                        else this.host.requestRender();
-                    } else {
-                        this.host.requestRender();
-                    }
-                }
+                this._refreshBackingStore();
             });
             try {
                 observer.observe(this.surface, { box: 'device-pixel-content-box' });
@@ -264,7 +271,51 @@
                 // Safari does not support device-pixel-content-box; fall back to
                 // CSS pixels multiplied by devicePixelRatio on each resize.
                 observer.disconnect();
+                this._watchDevicePixelRatio();
             }
+        }
+
+        // Re-applies the backing store at the current density and repaints.
+        // Changing canvas.width/height clears the bitmap; paint synchronously
+        // when that happens so a blank frame is never presented.
+        private _refreshBackingStore(): void {
+            if (this._cssW <= 0 || this._cssH <= 0) return;
+            if (this._applyBackingStore()) {
+                if (typeof this.host.paintNow === 'function') this.host.paintNow();
+                else this.host.requestRender();
+            } else {
+                this.host.requestRender();
+            }
+        }
+
+        // Listens for the next change of devicePixelRatio, through a query of the
+        // ratio in force: it stops matching as the ratio changes, and is then
+        // replaced by one of the new ratio (see _onDprChange).
+        private _watchDevicePixelRatio(): void {
+            this._unwatchDevicePixelRatio();
+            if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+            try {
+                const query = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+                if (typeof query.addEventListener === 'function') {
+                    query.addEventListener('change', this._onDprChange);
+                } else {
+                    query.addListener(this._onDprChange);
+                }
+                this._dprQuery = query;
+            } catch { /* no resolution query: the ratio is still read on every resize */ }
+        }
+
+        private _unwatchDevicePixelRatio(): void {
+            const query = this._dprQuery;
+            if (!query) return;
+            this._dprQuery = null;
+            try {
+                if (typeof query.removeEventListener === 'function') {
+                    query.removeEventListener('change', this._onDprChange);
+                } else {
+                    query.removeListener(this._onDprChange);
+                }
+            } catch { /* nothing to remove */ }
         }
 
         // Returns true when the device-pixel backing store was resized (and thus
@@ -638,12 +689,19 @@
             ctx.textAlign = 'center';
             ctx.font = scene.config.hourLabelFont;
             ctx.fillStyle = colors.label;
+            // A label centered on a tick at the edge of the resource column would
+            // reach into the corner; clipped to the time axis, as the day titles are.
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(startX, 0, visibleEndX - startX, axisHeight);
+            ctx.clip();
             for (const tick of scene.hourTicks) {
                 ctx.fillText(tick.label, tick.x, tick.labelY);
             }
             for (const tick of scene.utcTicks) {
                 ctx.fillText(tick.label, tick.x, tick.labelY);
             }
+            ctx.restore();
         }
 
         private _drawResourceAxis(scene: ResourceTimelineScene): void {
@@ -766,6 +824,7 @@
                 this._resizeObserver.disconnect();
                 this._resizeObserver = null;
             }
+            this._unwatchDevicePixelRatio();
             this.surface.remove();
         }
     }

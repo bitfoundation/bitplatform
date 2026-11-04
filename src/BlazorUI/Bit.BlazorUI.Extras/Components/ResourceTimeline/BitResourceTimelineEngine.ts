@@ -484,8 +484,9 @@
         public drag: ResourceTimelineMarqueeDrag | null;
         private _marqueeDirty: boolean;
         public edit: ResourceTimelineEditGesture | null;
-        // A keyboard edit is waiting for the host's answer (see _keyboardEdit).
-        private _keyboardEditPending: boolean;
+        // An edit (a keyboard one, a pointer one or a multi-bar move) is waiting
+        // for the host's answer (see _keyboardEdit).
+        private _editPending: boolean;
         // Advanced by every load that replaces the allocations (setData, the
         // batched beginData / endData, beginWindowed, clearData). A host callback
         // of an edit, a create, a paste or a delete captures it before it awaits
@@ -909,7 +910,7 @@
             // the change can be drawn as a ghost and committed (or discarded) on
             // pointer up. See handlePointerDown/Move/Up and _buildGhostScene.
             this.edit = null;
-            this._keyboardEditPending = false;
+            this._editPending = false;
             this._dataGeneration = 0;
 
             // Hover tooltip, created on first hover (see _ensureTooltip). Owns its
@@ -3477,11 +3478,14 @@
 
             // Editing: a press that lands on an unlocked bar begins a move/resize
             // instead of a marquee. Locked bars (and misses) fall through to marquee
-            // / click-select below, unless EmptyDragAction is Create.
+            // / click-select below, unless EmptyDragAction is Create. While another
+            // edit waits for the host, a press on a bar begins none (it would take
+            // that edit's unconfirmed preview as where the bars were, see
+            // _keyboardEdit) and only selects.
             if (this.config.editable) {
                 const hit = this._barAt(canvasX, canvasY);
                 const zone = hit && this._editZone(hit.alloc, canvasX);
-                if (zone) {
+                if (zone && !this._editPending) {
                     try { this.renderer!.surface.setPointerCapture(e.pointerId); } catch { /* ignore */ }
                     e.preventDefault();
                     const content = this._canvasToContent(canvasX, canvasY);
@@ -3504,7 +3508,7 @@
                     };
                     return;
                 }
-                if (!this._isAdditiveEvent(e) && this._isCreateEmptyDrag()) {
+                if (!zone && !this._isAdditiveEvent(e) && this._isCreateEmptyDrag()) {
                     const rowIndex = this.getYToResource(canvasY);
                     if (rowIndex >= 0) {
                         try { this.renderer!.surface.setPointerCapture(e.pointerId); } catch { /* ignore */ }
@@ -4433,6 +4437,14 @@
                 const nextTs = dayEnd;
                 return Math.abs(t - prevTs) <= Math.abs(nextTs - t) ? prevTs : nextTs;
             }
+            // A repeated wall-clock time (fall-back) resolves to its first
+            // occurrence; a time in the second one snaps within it rather than
+            // jumping back by the length of the overlap.
+            const later = ts + (time.offsetMs(ts) - time.offsetMs(t));
+            if (later > ts && Math.abs(later - t) < Math.abs(ts - t)) {
+                const again = time.parts(later);
+                if (again.hour === h && again.minute === m) return later;
+            }
             return ts;
         }
 
@@ -4447,15 +4459,16 @@
         // pointer editing rules (snap, minimum duration, range and row clamping).
         // kind: 'move-time' | 'resize-end' | 'move-resource'; dir is -1 or +1.
         //
-        // One keyboard edit at a time. A held Alt+Arrow repeats faster than the
-        // host answers OnAllocationChanging, and an edit started from the
-        // unconfirmed preview of the one before would record that preview as its
-        // previous position: refusing both would then restore (here and in the
-        // app's own instance) a position the host had refused as well. So the
-        // repeats arriving while an answer is out are dropped, and the next one
-        // starts from where the bar actually is.
+        // One edit at a time. A held Alt+Arrow repeats faster than the host
+        // answers OnAllocationChanging, and an edit started from the unconfirmed
+        // preview of the one before would record that preview as its previous
+        // position: refusing both would then restore (here and in the app's own
+        // instance) a position the host had refused as well. So the repeats
+        // arriving while an answer is out are dropped, and the next one starts
+        // from where the bar actually is. A pointer edit and a multi-bar move
+        // share the flag (_commitEdit, _commitMultiMove, handlePointerDown).
         private async _keyboardEdit(kind: string, dir: number): Promise<void> {
-            if (this._keyboardEditPending) return;
+            if (this._editPending) return;
             const alloc = this._focusAlloc;
             if (!alloc) return;
 
@@ -4527,12 +4540,12 @@
             const changeKind = kind === 'move-time' || kind === 'move-resource' ? 'move' : 'resize';
             const generation = this._dataGeneration;
             let allowed: boolean;
-            this._keyboardEditPending = true;
+            this._editPending = true;
             try {
                 allowed = await this._askHostChanging(
                     alloc, prevResourceId, prevStartTime, prevEndTime, changeKind);
             } finally {
-                this._keyboardEditPending = false;
+                this._editPending = false;
             }
             // The data was replaced while the host answered: the bar is no longer
             // loaded, so there is nothing to revert or to report.
@@ -4639,6 +4652,13 @@
                 await this._commitCreate(ed);
                 return;
             }
+            // Another edit is still waiting for the host: this one would record
+            // that edit's unconfirmed preview as its previous position (see
+            // _keyboardEdit), so it is dropped and the bar stays where it is.
+            if (this._editPending) {
+                this.render();
+                return;
+            }
             if (ed.mode === 'move' && ed.companions && ed.companions.length) {
                 await this._commitMultiMove(ed, ed.companions);
                 return;
@@ -4669,8 +4689,14 @@
             this._relayout();
 
             const generation = this._dataGeneration;
-            const allowed = await this._askHostChanging(
-                alloc, prevResourceId, prevStartTime, prevEndTime, kind);
+            let allowed: boolean;
+            this._editPending = true;
+            try {
+                allowed = await this._askHostChanging(
+                    alloc, prevResourceId, prevStartTime, prevEndTime, kind);
+            } finally {
+                this._editPending = false;
+            }
             // Replaced while the host answered: see _keyboardEdit.
             if (generation !== this._dataGeneration) return;
             if (!allowed) {
@@ -4711,6 +4737,11 @@
         }
 
         private async _commitMultiMove(ed: ResourceTimelineEditGesture, companions: ResourceTimelineEditCompanion[]): Promise<void> {
+            // See _commitEdit: no commit while another one waits for the host.
+            if (this._editPending) {
+                this.render();
+                return;
+            }
             const deltaT = ed.previewStart - ed.origStart;
             const deltaRow = ed.previewResourceIndex - ed.origResourceIndex;
             const except = new Set([ed.alloc.id]);
@@ -4759,7 +4790,13 @@
             this._finishReindex(moved);
             this._relayout();
             const generation = this._dataGeneration;
-            const allowed = await this._askHostChangingMany(moves, 'move');
+            let allowed: boolean;
+            this._editPending = true;
+            try {
+                allowed = await this._askHostChangingMany(moves, 'move');
+            } finally {
+                this._editPending = false;
+            }
             // Replaced while the host answered: see _keyboardEdit.
             if (generation !== this._dataGeneration) return;
             if (!allowed) {

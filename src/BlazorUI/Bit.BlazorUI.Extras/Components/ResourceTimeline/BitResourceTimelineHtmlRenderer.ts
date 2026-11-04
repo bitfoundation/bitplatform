@@ -29,10 +29,7 @@
         nonWorking: HtmlNodePool;
         gridH: HtmlNodePool;
         gridV: HtmlNodePool;
-        barEdges: HtmlNodePool;
-        barRects: HtmlNodePool;
-        barSections: HtmlNodePool;
-        barOutlines: HtmlNodePool;
+        barShapes: HtmlNodePool;
         barIcons: HtmlNodePool;
         barLabels: HtmlNodePool;
         now: HtmlNodePool;
@@ -57,6 +54,21 @@
 
     function px(value: number): string {
         return value + 'px';
+    }
+
+    // Takes the identity of a bar (its data-bar-id and className) off an element of
+    // the bar-shape pool that is something else this frame (an edge, a section, an
+    // outline) or that the frame did not use, so a reused element never surfaces a
+    // stale id or class.
+    function clearBarIdentity(node: HtmlPooledNode): void {
+        if (node.__barId !== undefined) {
+            node.removeAttribute('data-bar-id');
+            node.__barId = undefined;
+        }
+        if (node.__className !== undefined) {
+            node.className = '';
+            node.__className = undefined;
+        }
     }
 
     // Maps the scene's canvas-style align/baseline onto CSS transforms so the
@@ -146,31 +158,20 @@
             this._overlayClip.appendChild(this._overlayInner);
             this._frame.appendChild(this._overlayClip);
 
-            // One pool per homogeneous run. Splitting the bar layer this way also
-            // fixes element identity: only the barRects pool ever carries a
-            // data-bar-id, so a reused element can never surface a stale one.
-            // Elements are grouped by kind within a layer, which puts icons and
-            // labels above every bar rect - the intended stacking anyway.
-            const clearBarId = (node: HtmlPooledNode) => {
-                if (node.__barId !== undefined) {
-                    node.removeAttribute('data-bar-id');
-                    node.__barId = undefined;
-                }
-                if (node.__className !== undefined) {
-                    node.className = '';
-                    node.__className = undefined;
-                }
-            };
+            // One pool per homogeneous run. A bar's shapes - its edges, its rect,
+            // its sections, its outline and focus ring, all divs - share one pool
+            // and are acquired bar by bar, so each bar's outline paints before the
+            // next bar, which covers it where they overlap, as on the canvas. Only
+            // the element acquired as a bar rect carries a data-bar-id (see
+            // clearBarIdentity). Icons and labels have pools of their own above
+            // every bar shape - the intended stacking anyway.
             this._pools = {
                 bg: new ResourceTimelineNodePool(this._bgLayer),
                 surface: new ResourceTimelineNodePool(this._surfaceLayer),
                 nonWorking: new ResourceTimelineNodePool(this._washLayer),
                 gridH: new ResourceTimelineNodePool(this._gridLayer),
                 gridV: new ResourceTimelineNodePool(this._gridLayer),
-                barEdges: new ResourceTimelineNodePool(this._barsLayer),
-                barRects: new ResourceTimelineNodePool(this._barsLayer, null, clearBarId),
-                barSections: new ResourceTimelineNodePool(this._barsLayer),
-                barOutlines: new ResourceTimelineNodePool(this._barsLayer),
+                barShapes: new ResourceTimelineNodePool(this._barsLayer, null, clearBarIdentity),
                 barIcons: new ResourceTimelineNodePool(this._barsLayer),
                 barLabels: new ResourceTimelineNodePool(this._barsLayer),
                 now: new ResourceTimelineNodePool(this._nowLayer),
@@ -305,11 +306,11 @@
             for (const bar of scene.bars) {
                 if (bar.edges) {
                     for (const edge of bar.edges) {
-                        this._rect(p.barEdges, edge.x, edge.y, edge.width, edge.height, edge.color);
+                        clearBarIdentity(this._rect(p.barShapes, edge.x, edge.y, edge.width, edge.height, edge.color));
                     }
                 }
 
-                const barEl = this._rect(p.barRects, bar.x, bar.y, bar.width, bar.height, bar.color);
+                const barEl = this._rect(p.barShapes, bar.x, bar.y, bar.width, bar.height, bar.color);
                 if (barEl.__barId !== bar.id) {
                     barEl.dataset.barId = bar.id;
                     barEl.__barId = bar.id;
@@ -322,23 +323,23 @@
 
                 if (bar.sections) {
                     for (const s of bar.sections) {
-                        this._rect(p.barSections, s.x, s.y, s.width, s.height, s.color,
-                            s.borderColor ? `1px solid ${s.borderColor}` : null);
+                        clearBarIdentity(this._rect(p.barShapes, s.x, s.y, s.width, s.height, s.color,
+                            s.borderColor ? `1px solid ${s.borderColor}` : null));
                     }
                 }
 
                 // A 2px stroke centred on the rect covers one extra pixel on each
                 // side; a border-box div grown by 1px per side matches that.
                 if (bar.outline) {
-                    this._rect(p.barOutlines, bar.outline.x - 1, bar.outline.y - 1,
+                    clearBarIdentity(this._rect(p.barShapes, bar.outline.x - 1, bar.outline.y - 1,
                         bar.outline.width + 2, bar.outline.height + 2,
-                        null, `2px solid ${c.colors.barSelectedBorder}`);
+                        null, `2px solid ${c.colors.barSelectedBorder}`));
                 }
 
                 if (bar.focusRing) {
-                    this._rect(p.barOutlines, bar.focusRing.x - 1, bar.focusRing.y - 1,
+                    clearBarIdentity(this._rect(p.barShapes, bar.focusRing.x - 1, bar.focusRing.y - 1,
                         bar.focusRing.width + 2, bar.focusRing.height + 2,
-                        null, `2px dashed ${c.colors.focus}`);
+                        null, `2px dashed ${c.colors.focus}`));
                 }
 
                 if (bar.icons) {
@@ -374,8 +375,8 @@
             }
 
             for (const n of scene.overflow || []) {
-                this._rect(p.barOutlines, n.x, n.y, n.width, n.height,
-                    c.colors.axisBg, `1px solid ${c.colors.axisBorder}`);
+                clearBarIdentity(this._rect(p.barShapes, n.x, n.y, n.width, n.height,
+                    c.colors.axisBg, `1px solid ${c.colors.axisBorder}`));
                 this._text(p.barLabels, n.text, n.x + 3, n.y + n.height / 2,
                     c.barLabelFont, c.colors.dateLabel, 'left', 'middle');
             }

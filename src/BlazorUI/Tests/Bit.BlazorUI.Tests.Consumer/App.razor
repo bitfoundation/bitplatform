@@ -43,6 +43,7 @@
                     <ResourceTemplate Context="row">@row.Resource.Name</ResourceTemplate>
                 </BitResourceTimeline>
             </div>
+            <BitText id="timeline-selection">@_selectedBars selected</BitText>
 
             @* The AI package: a chat over the transport Program.cs registers, with starter prompts and a model picker
                bound two ways in its header template. The chat takes the height of its container. *@

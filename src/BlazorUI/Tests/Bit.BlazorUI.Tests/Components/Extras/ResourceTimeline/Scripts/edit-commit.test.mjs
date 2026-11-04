@@ -457,8 +457,48 @@ test('a keyboard edit the host accepts after the data was replaced is not report
 
     assert.equal(host.told.includes('OnAllocationEdited'), false);
     assert.deepEqual(engine._announcements, []);
-    assert.equal(engine._keyboardEditPending, false);
+    assert.equal(engine._editPending, false);
     assert.deepEqual(loaded(engine), LOADED);
+});
+
+test('a pointer edit or a multi-bar move committed while another edit waits for the host is dropped', async () => {
+    const engine = makeEditEngine(BARS.map(b => ({ ...b })));
+    engine._focusAlloc = engine.allocations[0];
+    engine._focusResource = 0;
+    const asked = [];
+    const answers = [];
+    engine.dotNetRef = {
+        invokeMethodAsync: (name) => {
+            if (name !== 'OnAllocationChanging' && name !== 'OnAllocationsChanging') return Promise.resolve();
+            asked.push(name);
+            return new Promise(resolve => answers.push(resolve));
+        }
+    };
+
+    const edit = engine._keyboardEdit('move-time', 1);
+    assert.equal(asked.length, 1);
+
+    const b = engine.allocations.find(x => x.id === 'b');
+    await engine._commitEdit(preview(engine, b, { start: 600, end: 700 }));
+    engine.selectedBars.add('a');
+    engine.selectedBars.add('b');
+    const multi = preview(engine, b, { start: 650, end: 750 });
+    multi.companions = engine._companionEdits(b);
+    await engine._commitEdit(multi);
+
+    assert.equal(asked.length, 1, 'no other edit asks the host while an answer is out');
+    assert.deepEqual([b.startTime, b.endTime], [400, 500]);
+
+    answers[0](false);
+    await edit;
+    assert.deepEqual(loaded(engine), LOADED, 'the refused keyboard edit is put back');
+
+    // With the answer in, the next pointer edit goes through.
+    const next = engine._commitEdit(preview(engine, b, { start: 600, end: 700 }));
+    assert.equal(asked.length, 2);
+    answers[1](true);
+    await next;
+    assert.deepEqual([b.startTime, b.endTime], [600, 700]);
 });
 
 test('a multi-bar move the host answers after the data was replaced leaves the new data alone', async () => {

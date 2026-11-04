@@ -53,17 +53,26 @@
 
         // Shows `content` for `subject` after `delayMs`. Moving to a different
         // subject while a tooltip is already up swaps it immediately, which reads
-        // better than making the user wait out the delay again.
+        // better than making the user wait out the delay again. Empty content
+        // shows nothing, and takes down a tooltip that is up.
         public show(subject: any, content: string, delayMs: number): void {
             if (subject === this._subject) {
                 // The same subject may describe itself differently by now (a bar
                 // whose times were edited, a +N marker hiding other bars): the
                 // text is kept current, and rewritten only when it changed.
-                if (content !== this._content) {
-                    this._content = content;
-                    if (this._visible && this._el && content) this._el.textContent = content;
+                if (content === this._content) {
+                    if (this._visible) this._position();
+                    return;
                 }
-                if (this._visible) this._position();
+                this._content = content;
+                if (this._visible) {
+                    this._render();
+                } else if (content && this._timer === null) {
+                    // Nothing was waiting to show (the subject had nothing to say
+                    // until now): the delay starts over, as for a new subject. A
+                    // show already waiting keeps its timer and takes the new text.
+                    this._schedule(delayMs);
+                }
                 return;
             }
             this._subject = subject;
@@ -71,8 +80,7 @@
             if (this._visible) {
                 this._render();
             } else {
-                clearTimeout(this._timer as number);
-                this._timer = setTimeout(() => this._render(), delayMs || 0);
+                this._schedule(delayMs);
             }
         }
 
@@ -88,7 +96,8 @@
         }
 
         // Replaces the presentation the engine's config controls (a theme or an
-        // options change), on the element as well once it exists.
+        // options change), on the element as well once it exists. A tooltip that
+        // is up is placed again, since a new font changes its size.
         public setStyle(style: ResourceTimelineTooltipStyle): void {
             this.style = style;
             const el = this._el;
@@ -97,6 +106,7 @@
             s.font = style.font;
             s.background = style.background;
             s.color = style.color;
+            if (this._visible) this._position();
         }
 
         public dispose(): void {
@@ -127,8 +137,22 @@
             return el;
         }
 
+        private _schedule(delayMs: number): void {
+            clearTimeout(this._timer as number);
+            this._timer = setTimeout(() => {
+                this._timer = null;
+                this._render();
+            }, delayMs || 0);
+        }
+
+        // Shows the content, or takes the tooltip down while there is none (the
+        // subject is kept, so the content it gets later shows after the delay).
         private _render(): void {
-            if (!this._content) return;
+            if (!this._content) {
+                if (this._visible && this._el) this._el.style.display = 'none';
+                this._visible = false;
+                return;
+            }
             const el = this._ensureElement();
             el.textContent = this._content;
             el.style.display = 'block';

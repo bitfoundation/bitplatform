@@ -160,6 +160,8 @@ test('_recordClick ignores a second press that moved or waited too long', () => 
     const engine = makeHitEngine([bar('a', 1, 2)]);
     engine._recordClick(100, 80, 0);
     assert.equal(engine._recordClick(100, 80, 501), false);
+    // The late press starts a pair of its own: the next still press within the window completes it.
+    assert.equal(engine._recordClick(100, 80, 600), true);
     engine._recordClick(100, 80, 0);
     assert.equal(engine._recordClick(100 + engine.config.dragThreshold + 1, 80, 100), false);
 });

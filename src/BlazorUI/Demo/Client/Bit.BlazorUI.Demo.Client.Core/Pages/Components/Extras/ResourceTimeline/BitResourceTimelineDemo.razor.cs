@@ -921,12 +921,16 @@ public partial class BitResourceTimelineDemo
 
     private static BitResourceTimelineConfig CreateBasicConfig()
     {
-        var today = new DateTimeOffset(DateTime.Today);
+        var today = DateTime.Today;
+
+        // A local time of today (or of a day after it), converted with the offset of its own date, so a DST change in
+        // the range does not move the bars after it off their wall-clock times.
+        DateTimeOffset At(double hours, int days = 0) => new(today.AddDays(days).AddHours(hours));
 
         return new()
         {
-            StartDate = today,
-            EndDate = today.AddDays(3),
+            StartDate = At(0),
+            EndDate = At(0, days: 3),
             Resources =
             [
                 new() { Id = "A1", Name = "Gate A1" },
@@ -936,16 +940,16 @@ public partial class BitResourceTimelineDemo
             ],
             Allocations =
             [
-                new() { Id = "f1", ResourceId = "A1", StartTime = today.AddHours(1), EndTime = today.AddHours(3.5) },
-                new() { Id = "f2", ResourceId = "A1", StartTime = today.AddHours(6), EndTime = today.AddHours(8) },
-                new() { Id = "f3", ResourceId = "A1", StartTime = today.AddHours(13), EndTime = today.AddHours(16) },
-                new() { Id = "f4", ResourceId = "A2", StartTime = today.AddHours(2), EndTime = today.AddHours(4) },
-                new() { Id = "f5", ResourceId = "A2", StartTime = today.AddHours(9.5), EndTime = today.AddHours(12) },
-                new() { Id = "f6", ResourceId = "A3", StartTime = today.AddHours(4), EndTime = today.AddHours(9) },
-                new() { Id = "f7", ResourceId = "A3", StartTime = today.AddHours(17), EndTime = today.AddHours(20) },
-                new() { Id = "f8", ResourceId = "A4", StartTime = today.AddHours(7), EndTime = today.AddHours(10) },
-                new() { Id = "f9", ResourceId = "A4", StartTime = today.AddHours(20), EndTime = today.AddHours(27) },
-                new() { Id = "f10", ResourceId = "A2", StartTime = today.AddDays(1).AddHours(8), EndTime = today.AddDays(1).AddHours(11) },
+                new() { Id = "f1", ResourceId = "A1", StartTime = At(1), EndTime = At(3.5) },
+                new() { Id = "f2", ResourceId = "A1", StartTime = At(6), EndTime = At(8) },
+                new() { Id = "f3", ResourceId = "A1", StartTime = At(13), EndTime = At(16) },
+                new() { Id = "f4", ResourceId = "A2", StartTime = At(2), EndTime = At(4) },
+                new() { Id = "f5", ResourceId = "A2", StartTime = At(9.5), EndTime = At(12) },
+                new() { Id = "f6", ResourceId = "A3", StartTime = At(4), EndTime = At(9) },
+                new() { Id = "f7", ResourceId = "A3", StartTime = At(17), EndTime = At(20) },
+                new() { Id = "f8", ResourceId = "A4", StartTime = At(7), EndTime = At(10) },
+                new() { Id = "f9", ResourceId = "A4", StartTime = At(20), EndTime = At(3, days: 1) },
+                new() { Id = "f10", ResourceId = "A2", StartTime = At(8, days: 1), EndTime = At(11, days: 1) },
             ],
         };
     }
@@ -1668,15 +1672,27 @@ public partial class BitResourceTimelineDemo
     private int windowRequests;
     private string windowedStatus = "Waiting for the first window";
 
+    // The timeline drops a window when a newer request arrives before it is applied - while this call works, or while
+    // its result waits for the one ahead of it - and every newer request calls this again. So a call says it is loading
+    // as it starts, which replaces the status of any window before it, and reports its flights only while no newer call
+    // has started: the status never names a window the timeline dropped.
     private async Task<IReadOnlyList<BitResourceTimelineAllocation>> LoadWindowAsync(BitResourceTimelineWindow window)
     {
+        var request = ++windowRequests;
+        var range = $"{window.Start.ToLocalTime():d MMM HH:mm} - {window.End.ToLocalTime():d MMM HH:mm}";
+
+        windowedStatus = $"Request {request}: loading {range}";
+        StateHasChanged();
+
         await Task.Delay(400); // simulate a query of the server
 
         var flights = BitResourceTimelineDemoData.Flights(windowedConfig.Resources, window.Start, window.End, labeled: true);
 
-        windowRequests++;
-        windowedStatus = $"Request {windowRequests}: {window.Start.ToLocalTime():d MMM HH:mm} - {window.End.ToLocalTime():d MMM HH:mm}, {flights.Count:N0} flights";
-        StateHasChanged();
+        if (request == windowRequests)
+        {
+            windowedStatus = $"Request {request}: {range}, {flights.Count:N0} flights";
+            StateHasChanged();
+        }
 
         return flights;
     }

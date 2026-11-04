@@ -513,17 +513,18 @@ test('a streamed load restores the view once the batches have landed', () => {
     engine._firstLoadDone = true;
     engine._setVirtualScrollX(1000);
     const leadTime = engine.getXToTime(engine.config.resourceAxisWidth);
+    // The layout applies the queued view, as the real one does once it has a size.
+    engine._relayout = function () { this._applyPendingScroll(); };
+    engine._hideTooltip = () => {};
+    const { start, end } = engine.timeRange;
+    const resources = engine._rows.map(r => r.resource);
 
     // beginData queues the view and hands it to endData, because the rows only
     // reach their final heights once the batches have been indexed.
-    engine._prepareLoadScroll();
-    engine._streamScroll = engine._pendingScroll;
-    engine._applyPendingScroll();
+    engine.beginData(resources, start, end, 0);
     engine._setVirtualScrollX(0);
 
-    engine._pendingScroll = engine._streamScroll;
-    engine._streamScroll = null;
-    engine._applyPendingScroll();
+    engine.endData();
 
     assert.ok(Math.abs(engine.getXToTime(engine.config.resourceAxisWidth) - leadTime) < 1);
 });

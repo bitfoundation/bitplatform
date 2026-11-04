@@ -116,15 +116,31 @@
         // America/Asuncion), it resolves to the first instant of the day, where
         // the earlier candidate, 23:00 of the previous day, would make startOfDay
         // and nextDay hand back the same instant again and again.
+        //
+        // A wall-clock time inside a fall-back overlap happens twice, and both
+        // offsets round-trip. It resolves to the earlier instant, as Temporal's
+        // 'compatible' disambiguation does - the first occurrence, which is the
+        // one hourBoundaries emits for a repeated hour.
         public wallClockToTs(year: number, month: number, day: number, hour: number, minute: number, second: number): number {
             const guess = ResourceTimelineZonedTime.utc(year, month, day, hour, minute, second);
             const offset1 = this.offsetMs(guess);
             const ts1 = guess - offset1;
             const offset2 = this.offsetMs(ts1);
-            if (offset2 === offset1) return ts1;
+            if (offset2 === offset1) return this._firstOccurrence(guess, ts1, offset1);
             const ts2 = guess - offset2;
-            if (this.offsetMs(ts2) === offset2) return ts2;
+            if (this.offsetMs(ts2) === offset2) return this._firstOccurrence(guess, ts2, offset2);
             return Math.max(ts1, ts2);
+        }
+
+        // The earlier instant reading the wall clock `guess` (as a UTC number)
+        // reads at `ts` under `offset`, when there is one: under the larger offset
+        // in force a day earlier, when that offset round-trips too - which is only
+        // the case in a fall-back overlap. Otherwise `ts` itself.
+        private _firstOccurrence(guess: number, ts: number, offset: number): number {
+            const earlierOffset = this.offsetMs(ts - 86400000);
+            if (earlierOffset <= offset) return ts;
+            const earlier = guess - earlierOffset;
+            return this.offsetMs(earlier) === earlierOffset ? earlier : ts;
         }
 
         // Start of the day containing the given instant: local midnight, or the

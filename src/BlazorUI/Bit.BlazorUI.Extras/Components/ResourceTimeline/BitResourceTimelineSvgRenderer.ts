@@ -39,16 +39,23 @@
     type SvgPooledNode = SVGElement & ResourceTimelinePooledNodeState;
     type SvgNodePool = ResourceTimelineNodePool<SvgPooledNode>;
 
+    // Takes a bar's data-bar-id off an element of the bar-shape pool that is
+    // something else this frame (an edge, a section, an outline) or that the frame
+    // did not use, so a reused element never surfaces a stale id.
+    function clearBarIdentity(node: SvgPooledNode): void {
+        if (node.__barId !== undefined) {
+            node.removeAttribute('data-bar-id');
+            node.__barId = undefined;
+        }
+    }
+
     type SvgRendererPools = {
         bg: SvgNodePool;
         surface: SvgNodePool;
         nonWorking: SvgNodePool;
         gridH: SvgNodePool;
         gridV: SvgNodePool;
-        barEdges: SvgNodePool;
-        barRects: SvgNodePool;
-        barSections: SvgNodePool;
-        barOutlines: SvgNodePool;
+        barShapes: SvgNodePool;
         barIcons: SvgNodePool;
         barLabels: SvgNodePool;
         now: SvgNodePool;
@@ -76,9 +83,11 @@
         private _contentClipId: string;
         private _axisClipId: string;
         private _timeAxisClipId: string;
+        private _tickLabelClipId: string;
         private _contentClipRect: SVGElement;
         private _axisClipRect: SVGElement;
         private _timeAxisClipRect: SVGElement;
+        private _tickLabelClipRect: SVGElement;
         private _bgGroup: SVGElement;
         private _surfaceGroup: SVGElement;
         private _washGroup: SVGElement;
@@ -89,6 +98,7 @@
         private _timeAxisFillGroup: SVGElement;
         private _timeAxisTintGroup: SVGElement;
         private _timeAxisMarkGroup: SVGElement;
+        private _timeAxisTickLabelGroup: SVGElement;
         private _timeAxisLabelGroup: SVGElement;
         private _resourceAxisGroup: SVGElement;
         private _resourceFillGroup: SVGElement;
@@ -110,12 +120,14 @@
             this._contentClipId = `bit-rtm-svg-content-clip-${id}`;
             this._axisClipId = `bit-rtm-svg-axis-clip-${id}`;
             this._timeAxisClipId = `bit-rtm-svg-time-axis-clip-${id}`;
+            this._tickLabelClipId = `bit-rtm-svg-tick-label-clip-${id}`;
 
             // Persistent structure: <defs> with the clip paths, then one group
             // per layer in paint order, each backed by a pool.
             this._contentClipRect = el('rect');
             this._axisClipRect = el('rect');
             this._timeAxisClipRect = el('rect');
+            this._tickLabelClipRect = el('rect');
             const defs = el('defs');
             const contentClip = el('clipPath', { id: this._contentClipId });
             contentClip.appendChild(this._contentClipRect);
@@ -123,9 +135,12 @@
             axisClip.appendChild(this._axisClipRect);
             const timeAxisClip = el('clipPath', { id: this._timeAxisClipId });
             timeAxisClip.appendChild(this._timeAxisClipRect);
+            const tickLabelClip = el('clipPath', { id: this._tickLabelClipId });
+            tickLabelClip.appendChild(this._tickLabelClipRect);
             defs.appendChild(contentClip);
             defs.appendChild(axisClip);
             defs.appendChild(timeAxisClip);
+            defs.appendChild(tickLabelClip);
             this.surface.appendChild(defs);
 
             const group = (attrs?: { [key: string]: string }): SVGElement => {
@@ -144,16 +159,20 @@
             this._barsGroup = group({ 'clip-path': `url(#${this._contentClipId})` });
             this._nowGroup = group();
             this._timeAxisGroup = group();
-            // Fill, then column tints, then ticks, then day labels. The label group
-            // is last so a date-row tint cannot cover the titles (and so the titles
-            // stay above the axis fill).
+            // Fill, then column tints, then ticks, then the hour labels, then day
+            // labels. The label group is last so a date-row tint cannot cover the
+            // titles (and so the titles stay above the axis fill). The hour (and
+            // UTC) labels are clipped to the time axis, so one centered on a tick
+            // at the edge of the resource column does not paint into the corner.
             this._timeAxisFillGroup = el('g');
             this._timeAxisTintGroup = el('g');
             this._timeAxisMarkGroup = el('g');
+            this._timeAxisTickLabelGroup = el('g', { 'clip-path': `url(#${this._tickLabelClipId})` });
             this._timeAxisLabelGroup = el('g', { 'clip-path': `url(#${this._timeAxisClipId})` });
             this._timeAxisGroup.appendChild(this._timeAxisFillGroup);
             this._timeAxisGroup.appendChild(this._timeAxisTintGroup);
             this._timeAxisGroup.appendChild(this._timeAxisMarkGroup);
+            this._timeAxisGroup.appendChild(this._timeAxisTickLabelGroup);
             this._timeAxisGroup.appendChild(this._timeAxisLabelGroup);
             this._resourceAxisGroup = group();
             this._resourceFillGroup = el('g');
@@ -166,15 +185,12 @@
             this._overlayGroup = group({ 'clip-path': `url(#${this._contentClipId})` });
 
             // One pool per homogeneous run of elements - see BitResourceTimelineNodePool.ts
-            // for why a pool must not be fed a varying mix of tags. Splitting the bar group
-            // this way also keeps data-bar-id confined to the barRects pool, so a
-            // reused element can never surface a stale id.
-            const clearBarId = (node: SvgPooledNode) => {
-                if (node.__barId !== undefined) {
-                    node.removeAttribute('data-bar-id');
-                    node.__barId = undefined;
-                }
-            };
+            // for why a pool must not be fed a varying mix of tags. A bar's shapes - its
+            // edges, its rect, its sections, its outline and focus ring, all <rect>s -
+            // share one pool and are acquired bar by bar, so each bar's outline paints
+            // before the next bar, which covers it where they overlap, as on the
+            // canvas. Only the element acquired as a bar rect carries a data-bar-id
+            // (see clearBarIdentity).
             const pool = (parent: SVGElement, onHide?: (node: SvgPooledNode) => void) =>
                 new ResourceTimelineNodePool<SvgPooledNode>(parent, SVG_NS, onHide);
             this._pools = {
@@ -183,10 +199,7 @@
                 nonWorking: pool(this._washGroup),
                 gridH: pool(this._gridGroup),
                 gridV: pool(this._gridGroup),
-                barEdges: pool(this._barsGroup),
-                barRects: pool(this._barsGroup, clearBarId),
-                barSections: pool(this._barsGroup),
-                barOutlines: pool(this._barsGroup),
+                barShapes: pool(this._barsGroup, clearBarIdentity),
                 barIcons: pool(this._barsGroup),
                 barLabels: pool(this._barsGroup),
                 now: pool(this._nowGroup),
@@ -195,7 +208,7 @@
                 axisLines: pool(this._timeAxisMarkGroup),
                 axisDayLabels: pool(this._timeAxisLabelGroup),
                 axisTicks: pool(this._timeAxisMarkGroup),
-                axisTickLabels: pool(this._timeAxisMarkGroup),
+                axisTickLabels: pool(this._timeAxisTickLabelGroup),
                 resourceAxis: pool(this._resourceFillGroup),
                 resourceTints: pool(this._resourceTintGroup),
                 resourceBorder: pool(this._resourceMarkGroup),
@@ -236,6 +249,13 @@
                 x: v.axisWidth, y: 0,
                 width: Math.max(0, v.width - v.axisWidth),
                 height: Math.max(0, v.dateRowHeight)
+            });
+            // Hour-label clip: the whole height of the time axis, the hour row(s)
+            // under the date row included, from the edge of the resource column.
+            ResourceTimelineNodePool.applyAttrs(this._tickLabelClipRect, {
+                x: v.axisWidth, y: 0,
+                width: Math.max(0, v.width - v.axisWidth),
+                height: Math.max(0, v.axisHeight)
             });
 
             for (const key in this._pools) this._pools[key as keyof SvgRendererPools].begin();
@@ -348,11 +368,11 @@
             for (const bar of scene.bars) {
                 if (bar.edges) {
                     for (const edge of bar.edges) {
-                        this._rect(p.barEdges, edge.x, edge.y, edge.width, edge.height, edge.color);
+                        clearBarIdentity(this._rect(p.barShapes, edge.x, edge.y, edge.width, edge.height, edge.color));
                     }
                 }
 
-                const barEl = this._rect(p.barRects, bar.x, bar.y, bar.width, bar.height, bar.color);
+                const barEl = this._rect(p.barShapes, bar.x, bar.y, bar.width, bar.height, bar.color);
                 if (barEl.__barId !== bar.id) {
                     barEl.setAttribute('data-bar-id', bar.id);
                     barEl.__barId = bar.id;
@@ -364,22 +384,22 @@
                         // keeps the 1px border inside it and the fill still
                         // reaching its edges under the stroke.
                         if (s.borderColor) {
-                            this._rect(p.barSections, s.x + 0.5, s.y + 0.5, s.width - 1, s.height - 1,
-                                s.color, s.borderColor, 1);
+                            clearBarIdentity(this._rect(p.barShapes, s.x + 0.5, s.y + 0.5, s.width - 1, s.height - 1,
+                                s.color, s.borderColor, 1));
                         } else {
-                            this._rect(p.barSections, s.x, s.y, s.width, s.height, s.color);
+                            clearBarIdentity(this._rect(p.barShapes, s.x, s.y, s.width, s.height, s.color));
                         }
                     }
                 }
 
                 if (bar.outline) {
-                    this._rect(p.barOutlines, bar.outline.x, bar.outline.y, bar.outline.width, bar.outline.height,
-                        null, c.colors.barSelectedBorder, 2);
+                    clearBarIdentity(this._rect(p.barShapes, bar.outline.x, bar.outline.y, bar.outline.width, bar.outline.height,
+                        null, c.colors.barSelectedBorder, 2));
                 }
 
                 if (bar.focusRing) {
-                    this._rect(p.barOutlines, bar.focusRing.x, bar.focusRing.y, bar.focusRing.width, bar.focusRing.height,
-                        null, c.colors.focus, 2, '3 2');
+                    clearBarIdentity(this._rect(p.barShapes, bar.focusRing.x, bar.focusRing.y, bar.focusRing.width, bar.focusRing.height,
+                        null, c.colors.focus, 2, '3 2'));
                 }
 
                 if (bar.icons) {
@@ -410,8 +430,8 @@
             }
 
             for (const n of scene.overflow || []) {
-                this._rect(p.barOutlines, n.x, n.y, n.width, n.height,
-                    c.colors.axisBg, c.colors.axisBorder, 1);
+                clearBarIdentity(this._rect(p.barShapes, n.x, n.y, n.width, n.height,
+                    c.colors.axisBg, c.colors.axisBorder, 1));
                 this._text(p.barLabels, n.text, n.x + 3, n.y + n.height / 2,
                     c.barLabelFont, c.colors.dateLabel, 'left', 'middle');
             }
