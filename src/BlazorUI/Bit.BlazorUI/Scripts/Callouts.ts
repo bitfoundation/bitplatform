@@ -169,6 +169,16 @@
                 return false;
             }
 
+            // WebKit brings the element a focus() lands on into view at its next rendering update rather than at once,
+            // so a callout that a key opens right after that focus would be laid out against a component still out
+            // of view - and hidden as detached from it, where nothing inside can take the focus. The scroll the
+            // browser is about to make is made here first, the way the other engines have already made it; one it
+            // still makes after it is followed rather than dismissing the callout (see focusScrollDue).
+            const focusScrollPending = Callouts.isFocusOutOfView(componentId);
+            if (focusScrollPending) {
+                document.activeElement?.scrollIntoView({ block: 'center', inline: 'nearest' });
+            }
+
             Callouts.makeOverlayTappable(overlayId ? document.getElementById(overlayId) : null);
 
             Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId, rootId);
@@ -176,7 +186,8 @@
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
                 noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId, nestedEscape,
-                openedMidScroll: performance.now() - Callouts._lastScroll < Callouts.SCROLL_PAUSE
+                openedMidScroll: performance.now() - Callouts._lastScroll < Callouts.SCROLL_PAUSE,
+                focusScrollDue: focusScrollPending ? performance.now() + Callouts.FOCUS_SCROLL_WAIT : 0
             });
 
             if (nestedEscape) {
@@ -2007,6 +2018,16 @@ namespace BitBlazorUI {
         // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
         // component instead, so that it follows what it points at rather than being left behind by it.
         if (currentCallout.noScrollDismiss) {
+            repositionOnNextFrame();
+            return;
+        }
+
+        // The scroll that brings the focused part of the component into view, which WebKit had not made yet when the
+        // callout opened (see focusScrollDue), is the start of a scroll the callout follows like one it opened in the
+        // middle of.
+        if (now < (currentCallout.focusScrollDue ?? 0)) {
+            currentCallout.focusScrollDue = 0;
+            currentCallout.openedMidScroll = true;
             repositionOnNextFrame();
             return;
         }

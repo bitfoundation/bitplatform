@@ -12,6 +12,11 @@ internal static class BitOtpInputJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.OtpInput.blur", root);
     }
 
+    internal static ValueTask BitOtpInputFocusAfterArrow(this IJSRuntime jsRuntime, ElementReference input)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.OtpInput.focusAfterArrow", input);
+    }
+
     internal static ValueTask BitOtpInputSubmit(this IJSRuntime jsRuntime, ElementReference root)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.OtpInput.submit", root);

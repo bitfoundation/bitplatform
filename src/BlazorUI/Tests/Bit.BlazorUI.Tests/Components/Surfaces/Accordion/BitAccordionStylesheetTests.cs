@@ -132,6 +132,11 @@ public class BitAccordionStylesheetTests
         // without the attribute) is opened by the stylesheet before the render that expands the accordion.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "visibility: inherit;");
         StringAssert.Contains(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {\n    grid-template-rows: 1fr;");
+
+        // At once, the row and the padding alike: the browser scrolls to the match as it reveals it, and a panel still
+        // growing around it would move it away again.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {"), "transition: none;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "transition: none;");
     }
 
     [TestMethod]

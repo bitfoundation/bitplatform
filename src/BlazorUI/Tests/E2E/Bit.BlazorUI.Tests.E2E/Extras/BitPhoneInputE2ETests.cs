@@ -673,7 +673,9 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("phi-events");
         await Expect(Page.Locator("#ev-open")).ToHaveTextAsync("1");
-        await callout.Locator(".bit-phi-srch").PressSequentiallyAsync("fra");
+        // Filled in one go rather than typed: the search is bound through the circuit, and on a loaded one the render of
+        // a keystroke can come back after the keys typed since and put the shorter search back over them.
+        await callout.Locator(".bit-phi-srch").FillAsync("fra");
         await Expect(Page.Locator("#ev-search")).ToHaveTextAsync("fra");
         await Page.Keyboard.PressAsync("Enter");
 

@@ -47,6 +47,14 @@ public partial class BitSlider : BitInputBase<double>
     private double? _rawB;
     private double? _rawBar;
 
+    // The value attributes the inputs were rendered with when a pointer pressed one of them, held for as long as the
+    // press lasts. WebKit fires no change event at the release of a range input whose value was written after the
+    // last move of the drag - which is where the render of an earlier step lands, a round trip behind the pointer -
+    // so OnChangeEnd would be lost there; an input under the pointer is therefore not written to until the press is
+    // over. Nothing is drawn from those values in the meantime: the thumbs follow the value the component holds.
+    private (string? Value, string Lower, string Upper, string Track)? _pressedValueAttributes;
+    private EventCallback<PointerEventArgs> _onPointerEnd;
+
     // The keydown handler exists only to note where the next change is coming from, and a render per keystroke
     // for a flag nothing is drawn from would double the round trips of every arrow key. Bound to a receiver
     // that is not the component, it does not go through ComponentBase and so does not re-render: the input
@@ -564,6 +572,8 @@ public partial class BitSlider : BitInputBase<double>
         _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
         _onTrackPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerDown);
         _onTrackPointerEnd = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerEndAsync);
+        // The end of a press re-renders, which is what writes into the inputs the value the press held back.
+        _onPointerEnd = EventCallback.Factory.Create<PointerEventArgs>(this, HandleOnPointerEnd);
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
@@ -1383,6 +1393,10 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     private void HandleOnKeyDown(KeyboardEventArgs e)
     {
+        // A press released off the input raises no pointerup on it, and one that moved nothing no change either;
+        // the key that comes after it is the input's own again, and is stepped from what it was rendered with.
+        _pressedValueAttributes = null;
+
         var isArrow = e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown";
         var isPage = e.Key is "PageUp" or "PageDown";
 
@@ -1403,7 +1417,27 @@ public partial class BitSlider : BitInputBase<double>
     {
         _keyboardChange = false;
         _largeStepChange = false;
+
+        _pressedValueAttributes ??= GetValueAttributes();
     }
+
+    /// <summary>
+    /// The end of a press of one of the inputs, which hands the inputs back the values the component holds.
+    /// </summary>
+    private void HandleOnPointerEnd(PointerEventArgs e)
+    {
+        _pressedValueAttributes = null;
+    }
+
+    /// <summary>
+    /// The value attributes of the inputs: the value the component holds, except for the single pass
+    /// ResyncInputAsync spends on the one the browser is holding - see there for why that pass exists.
+    /// </summary>
+    private (string? Value, string Lower, string Upper, string Track) GetValueAttributes()
+        => (_rawValue.HasValue ? ToInvariant(_rawValue.Value) : CurrentValueAsString,
+            ToInvariant(_rawA ?? _thumbA),
+            ToInvariant(_rawB ?? _thumbB),
+            ToInvariant(_rawBar ?? LowerValue));
 
     /// <summary>
     /// The value a change actually lands on: the one the browser produced, except for the larger keyboard
@@ -1457,6 +1491,9 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
+        // The change that ends a drag ends its press as well, released off the input or not.
+        _pressedValueAttributes = null;
+
         if (_IsInteractive is false) return;
 
         await OnChangeEnd.InvokeAsync(CurrentValue);
@@ -1552,6 +1589,8 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnRangeChange(ChangeEventArgs e, bool isLower)
     {
+        _pressedValueAttributes = null;
+
         if (_IsInteractive is false) return;
 
         await OnRangeChangeEnd.InvokeAsync(new BitSliderRangeValue(LowerValue, UpperValue));
@@ -1593,6 +1632,8 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnTrackChange(ChangeEventArgs e)
     {
+        _pressedValueAttributes = null;
+
         if (_IsInteractive is false) return;
 
         await OnRangeChangeEnd.InvokeAsync(new BitSliderRangeValue(LowerValue, UpperValue));
@@ -1622,7 +1663,12 @@ public partial class BitSlider : BitInputBase<double>
     /// band that turns into a scroll of the page is taken over by the browser part way through. Without it the
     /// focus would be left resting on the hidden band, and the press flag set for a press long since over.
     /// </remarks>
-    private Task HandleOnTrackPointerEndAsync(PointerEventArgs e) => ReleaseBandFocusAsync();
+    private Task HandleOnTrackPointerEndAsync(PointerEventArgs e)
+    {
+        _pressedValueAttributes = null;
+
+        return ReleaseBandFocusAsync();
+    }
 
     /// <summary>
     /// Hands the focus a band press took back to the lower thumb.

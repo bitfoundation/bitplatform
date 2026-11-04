@@ -499,14 +499,17 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Page.Locator("#nf-hideinput label")).ToHaveTextAsync("HideInput: 1");
         await Expect(Status("nf-hideinput")).ToHaveTextAsync("1");
 
-        await Increment("nf-hideinput").ClickAsync();
-        await Expect(Text("hideinput-value")).ToHaveTextAsync("[2]");
-        await Expect(Increment("nf-hideinput")).ToBeFocusedAsync();
-
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(Decrement("nf-hideinput")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync(" ");
+        await Expect(Text("hideinput-value")).ToHaveTextAsync("[0]");
+
+        // Clicked after the keys rather than before them: WebKit starts the keyboard from where it was last clicked
+        // while the focus is on the element around that spot, so a Shift+Tab right after a click on the button
+        // would land on that very button again.
+        await Increment("nf-hideinput").ClickAsync();
         await Expect(Text("hideinput-value")).ToHaveTextAsync("[1]");
+        await Expect(Increment("nf-hideinput")).ToBeFocusedAsync();
 
         // Without a Mode a stepper falls back to the compact stack.
         await Expect(Root("nf-hideinput-default")).ToHaveClassAsync(HasClass("bit-nfl-mcp"));

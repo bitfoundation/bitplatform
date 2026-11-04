@@ -558,6 +558,13 @@ public class BitMapE2ETests : E2ETestBase
         await OpenAsync(Route);
         await ReadyAsync("map-camera");
 
+        // Without the permission Chromium and WebKit deny the request at once, where Firefox leaves it waiting on a prompt
+        // nobody is there to answer; the denial is handed over there the way the browser hands it over.
+        if (IsFirefox)
+        {
+            await Page.EvaluateAsync("() => navigator.geolocation.getCurrentPosition = (_, error) => error({ code: 1, PERMISSION_DENIED: 1, message: 'User denied Geolocation' })");
+        }
+
         await Page.Locator("#btn-locate").ClickAsync();
         await Expect(Page.Locator("#located")).ToHaveTextAsync("null");
         await Expect(Page.Locator("#interop-error")).ToHaveTextAsync(new Regex("Locate"));

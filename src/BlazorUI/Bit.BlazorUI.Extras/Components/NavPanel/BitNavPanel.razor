@@ -9,11 +9,16 @@
     @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
        of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
        none at all: nothing of it answers a click while it is disabled, and an overlay over a page that
-       nothing left can dismiss is a page that cannot be used any more. *@
+       nothing left can dismiss is a page that cannot be used any more.
+       A tap is answered on its touchend as well: WebKit (iOS) makes no click of a tap on an element that
+       only a listener of the document answers, which every Blazor one is. The click the other engines make
+       of the tap is cancelled with it, so a tap closes the panel once and lands on nothing under it. *@
     <div style="@Styles?.Overlay"
          class="bit-npn-ovl @_ShapeClass @Classes?.Overlay"
          aria-hidden="true"
-         @onclick="HandleOverlayClick"></div>
+         @onclick="HandleOverlayClick"
+         @ontouchend="HandleOverlayClick"
+         @ontouchend:preventDefault="true"></div>
 }
 
 @* Reports which of its two shapes the panel currently has: the off-canvas drawer of a small screen, or the

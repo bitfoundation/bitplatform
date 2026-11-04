@@ -42,6 +42,7 @@
                 // the height measured before any of that would leave the field either clipped or half empty.
                 if (typeof ResizeObserver !== 'undefined') {
                     let lastWidth = inputElement.clientWidth;
+                    let frame = 0;
 
                     const observer = new ResizeObserver(() => {
                         // Only the width can re-wrap the content. Measuring again on every height change
@@ -51,12 +52,20 @@
                         if (width === lastWidth) return;
 
                         lastWidth = width;
-                        TextField.resize(inputElement, TextField._maxRows[id]);
 
-                        // Growing the element can take a scrollbar away, which widens it again. Reading the
-                        // width back is what keeps that second notification from being taken for a new
-                        // change and measuring all over again.
-                        lastWidth = inputElement.clientWidth;
+                        // The height is written on the next frame rather than in here: a size changed inside the
+                        // callback is one the observer has to report again within the same frame, which it refuses
+                        // with the "loop completed with undelivered notifications" error - an uncaught error of the
+                        // page in WebKit - even though the notification it held back would only have been ignored.
+                        cancelAnimationFrame(frame);
+                        frame = requestAnimationFrame(() => {
+                            TextField.resize(inputElement, TextField._maxRows[id]);
+
+                            // Growing the element can take a scrollbar away, which widens it again. Reading the
+                            // width back is what keeps that second notification from being taken for a new
+                            // change and measuring all over again.
+                            lastWidth = inputElement.clientWidth;
+                        });
                     });
 
                     observer.observe(inputElement);

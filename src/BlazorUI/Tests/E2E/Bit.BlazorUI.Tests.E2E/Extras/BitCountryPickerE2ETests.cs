@@ -308,6 +308,9 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var callout = await OpenCalloutAsync("cnp-search");
+        // The open moves the focus into the search box a moment after the list is shown; a Tab pressed before that
+        // is one from the field, which goes on into the open list rather than out of it.
+        await Expect(callout.Locator(".bit-cnp-srch")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(callout).ToBeHiddenAsync();
         await Expect(Field("cnp-search")).ToHaveAttributeAsync("aria-expanded", "false");

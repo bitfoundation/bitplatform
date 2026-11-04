@@ -1703,6 +1703,21 @@
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
                 case 'insertMedia':
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
+                case 'justifyLeft':
+                case 'justifyCenter':
+                case 'justifyRight':
+                case 'justifyFull': {
+                    // Blink and WebKit align a block with a text-align style whatever styleWithCSS says, while
+                    // Gecko with it off writes the presentational align attribute instead (<p align="center">),
+                    // so the same button would store other markup in Firefox. Styled with CSS for the alignment
+                    // alone, every engine writes the style, and every other command still writes its tags.
+                    try { document.execCommand('styleWithCSS', false, 'true'); } catch { /* ignore */ }
+                    try {
+                        return RichTextEditor.execNative(editor, command);
+                    } finally {
+                        try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
+                    }
+                }
                 default:
                     return RichTextEditor.execNative(editor, command, args?.value ?? null);
             }

@@ -24,10 +24,13 @@ public abstract class E2ETestBase
 
     private static readonly SemaphoreSlim _browserLock = new(1, 1);
     private static IPlaywright? _playwright;
-    private static IBrowser? _browser;
-    // How many tests have a context open on each browser, guarded by _browserLock: the test classes run beside each
-    // other on one browser, so one that is retired is closed only once the last of them has let go of it.
-    private static readonly Dictionary<IBrowser, int> _browserUsers = [];
+    // Every test runs on a browser of its own, which it hands on to the next test to start once it is done; these are
+    // the ones no test is on, guarded by _browserLock. The test classes that run beside each other never share one:
+    // Firefox drops and merges the pointer moves of a page while other pages of its browser are being driven, so a
+    // drag delivers a fraction of its moves and lands short of where it was taken, and a swipe ends somewhere else.
+    private static readonly Stack<IBrowser> _idleBrowsers = new();
+    // Every browser launched and not retired, for the run to close at its end.
+    private static readonly List<IBrowser> _browsers = [];
 
     private IBrowser? _contextBrowser;
     private IBrowserContext? _context;
@@ -115,8 +118,13 @@ public abstract class E2ETestBase
         await _browserLock.WaitAsync();
         try
         {
-            browser = _browser ??= await LaunchBrowserAsync();
-            _browserUsers[browser] = _browserUsers.GetValueOrDefault(browser) + 1;
+            if (_idleBrowsers.TryPop(out var idle) is false)
+            {
+                idle = await LaunchBrowserAsync();
+                _browsers.Add(idle);
+            }
+
+            browser = idle;
             _contextBrowser = browser;
         }
         finally
@@ -275,6 +283,13 @@ public abstract class E2ETestBase
     protected static Regex HasClass(string className) => new($@"(^|\s){Regex.Escape(className)}(\s|$)");
 
     /// <summary>
+    /// A regular expression matching a text with a 12-hour time in it, for ToHaveValueAsync and ToHaveTextAsync: the
+    /// space before each AM and PM may also be the narrow no-break space (U+202F) the en-US patterns of ICU's data carry,
+    /// which .NET reads on Linux, where on Windows it reads a plain space.
+    /// </summary>
+    protected static Regex TwelveHour(string text) => new($"^{Regex.Escape(text).Replace(@"\ AM", "[  ]AM").Replace(@"\ PM", "[  ]PM")}$");
+
+    /// <summary>
     /// Waits for two animation frames, the way a layout a script takes after a render is waited for.
     /// </summary>
     protected Task NextFramesAsync()
@@ -283,23 +298,30 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
-    /// Closes the browser and stops the test host the run started, once every test of it is done.
+    /// Closes the browsers and stops the test host the run started, once every test of it is done.
     /// </summary>
     internal static async Task ShutdownAsync()
     {
         await _browserLock.WaitAsync();
         try
         {
-            if (_browser is not null) await _browser.CloseAsync();
-        }
-        catch (PlaywrightException)
-        {
-            // already unusable; the driver reaps it with the Playwright instance
+            foreach (var browser in _browsers)
+            {
+                try
+                {
+                    await browser.CloseAsync();
+                }
+                catch (PlaywrightException)
+                {
+                    // already unusable; the driver reaps it with the Playwright instance
+                }
+            }
         }
         finally
         {
             _playwright?.Dispose();
-            _browser = null;
+            _browsers.Clear();
+            _idleBrowsers.Clear();
             _playwright = null;
             _browserLock.Release();
         }
@@ -331,42 +353,30 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
-    /// Lets go of the browser a test ran on. A broken one is retired - the next test to start launches a fresh
-    /// browser - but closed only once no test is left on it: the tests of the other classes running beside this one
-    /// share it, and closing it under them would fail every one of them as if the component had.
+    /// Lets go of the browser a test ran on, for the next test to start to run on. A broken one is retired and closed
+    /// instead - no other test is on it - and the next test to find no browser left launches a fresh one.
     /// </summary>
     private static async Task ReleaseBrowserAsync(IBrowser browser, bool broken)
     {
-        IBrowser? retired = null;
-
         await _browserLock.WaitAsync();
         try
         {
-            if (broken && ReferenceEquals(_browser, browser)) _browser = null;
-
-            var users = _browserUsers.GetValueOrDefault(browser) - 1;
-
-            if (users > 0)
+            if (broken is false)
             {
-                _browserUsers[browser] = users;
+                _idleBrowsers.Push(browser);
+                return;
             }
-            else
-            {
-                _browserUsers.Remove(browser);
 
-                if (ReferenceEquals(_browser, browser) is false) retired = browser;
-            }
+            _browsers.Remove(browser);
         }
         finally
         {
             _browserLock.Release();
         }
 
-        if (retired is null) return;
-
         try
         {
-            await retired.CloseAsync();
+            await browser.CloseAsync();
         }
         catch (PlaywrightException)
         {

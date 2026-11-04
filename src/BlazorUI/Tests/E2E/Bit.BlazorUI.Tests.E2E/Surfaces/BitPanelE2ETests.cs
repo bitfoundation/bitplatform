@@ -118,10 +118,13 @@ public class BitPanelE2ETests : E2ETestBase
     // A mouse drag of the panel. The swipe follows pointer events on desktop. It starts on the side of the element away
     // from the direction of the drag, so the whole drag stays inside the window: a pointer leaving the window leaves the
     // panel, which ends the gesture where it is.
+    // The swipes are dragged by the panel's drag handle, the part of it no text can be selected in: WebKit starts a
+    // selection wherever a mouse drag starts and extends it over the text of the surface the drag crosses, and the
+    // swipe rightly hands such a drag back to the selection (see Swipe_AMouseDragThatSelectsText_IsGivenBackToTheSelection).
+    private ILocator DragHandle => Page.Locator("#swipe-noselect");
+
     private async Task MouseSwipeAsync(ILocator from, double dx, double dy)
     {
-        if (IsWebKit) Assert.Inconclusive("Playwright's WebKit reports a screenX of 0 on every pointer event, and the swipe measures the drag in screen coordinates.");
-
         var box = await BoxAsync(from);
         var x = dx > 0 ? box.X + 12 : dx < 0 ? box.X + box.Width - 12 : box.X + box.Width / 2;
         var y = dy > 0 ? box.Y + 10 : dy < 0 ? box.Y + box.Height - 10 : box.Y + box.Height / 2;
@@ -674,7 +677,7 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync();
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), 200, 0);
+        await MouseSwipeAsync(DragHandle, 200, 0);
 
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnDismissing:Swipe,OnSwipeEnd");
@@ -688,7 +691,7 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync();
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), 50, 0);
+        await MouseSwipeAsync(DragHandle, 50, 0);
 
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnSwipeEnd");
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
@@ -700,7 +703,7 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync();
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), -200, 0);
+        await MouseSwipeAsync(DragHandle, -200, 0);
 
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnSwipeEnd");
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
@@ -716,7 +719,11 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync(placement);
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), dx, dy);
+        // A vertical swipe is dragged across the whole surface rather than along the handle at its top, which a panel
+        // pinned to the top is pushed up off the screen from before the drag is long enough - and across the text of
+        // the surface with it, which is made unselectable for this drag (see DragHandle).
+        if (dy != 0) await Page.Locator("#swipe-text").EvaluateAsync("el => el.style.webkitUserSelect = el.style.userSelect = 'none'");
+        await MouseSwipeAsync(dy == 0 ? DragHandle : Page.Locator("#swipe-surface"), dx, dy);
 
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
         await Expect(Page.Locator("#swipe-log")).ToContainTextAsync("OnDismissing:Swipe");
@@ -731,7 +738,7 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync(trigger: trigger);
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), distance, 0);
+        await MouseSwipeAsync(DragHandle, distance, 0);
 
         await Expect(Page.Locator("#swipe-log")).ToContainTextAsync("OnSwipeEnd");
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync(staysOpen ? "True" : "False");
@@ -754,7 +761,7 @@ public class BitPanelE2ETests : E2ETestBase
         await Page.WaitForFunctionAsync("() => { const el = document.querySelector('#swipe-panel > .bit-pnl-cnt'); return BitBlazorUI.Swipes._swipes.filter(s => s.id === el.id).length === 1; }");
 
         await OpenPanelAsync("btn-swipe-open", "swipe-panel");
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), 200, 0);
+        await MouseSwipeAsync(DragHandle, 200, 0);
 
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
         await Page.WaitForTimeoutAsync(300);
@@ -766,7 +773,7 @@ public class BitPanelE2ETests : E2ETestBase
     {
         await OpenSwipeAsync(noSwipe: true);
 
-        await MouseSwipeAsync(Page.Locator("#swipe-surface"), 250, 0);
+        await MouseSwipeAsync(DragHandle, 250, 0);
         await Page.WaitForTimeoutAsync(300);
 
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("");

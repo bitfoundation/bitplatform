@@ -140,6 +140,10 @@
             let keyPercent = 0;
             let keyTimer = 0;
             let keyResizing = false;
+            // The key moves whose end .NET has not answered yet. Until it has, the render of a move made before the
+            // last one can still land and put that older size back on the panels, so the next press steps from where
+            // the last one put the gutter (keyPercent) rather than from what the panels show.
+            let unansweredKeyEnds = 0;
             let snapshot: (string)[] = [];
             let rafId = 0;
 
@@ -262,6 +266,15 @@
                 if (signal.aborted === false) invoke('HandleResizeEnd', keyPercent, false);
             };
 
+            const endKeyResize = (percent: number) => {
+                if (signal.aborted) return;
+
+                unansweredKeyEnds++;
+                entry.dotnetObj.invokeMethodAsync('HandleResizeEnd', percent, false)
+                     .catch(e => console.error('BitBlazorUI.Splitter:', 'HandleResizeEnd', e))
+                     .finally(() => unansweredKeyEnds--);
+            };
+
             const notifyKeyResize = (percent: number, repeat: boolean, from: number) => {
                 keyPercent = percent;
 
@@ -288,7 +301,7 @@
                     }
 
                     keyResizing = false;
-                    invoke('HandleResizeEnd', percent, false);
+                    endKeyResize(percent);
                     return;
                 }
 
@@ -297,7 +310,7 @@
                 keyTimer = setTimeout(() => {
                     keyTimer = 0;
                     keyResizing = false;
-                    if (signal.aborted === false) invoke('HandleResizeEnd', keyPercent, false);
+                    endKeyResize(keyPercent);
                 }, Splitter.KEY_REPEAT_DELAY);
             };
 
@@ -453,7 +466,9 @@
                     const awayFromPanel = entry.options.collapseSecond ? towardsStart : towardsEnd;
                     const collapse = Splitter.getAxisSign(entry) > 0 ? towardsPanel : awayFromPanel;
 
-                    if (collapse !== entry.options.collapsed) invoke('HandleToggleCollapse');
+                    // Handed over as the fold it asks for, which .NET applies to the state it holds: the one here is a
+                    // round trip behind a press made just before, and a toggle decided from it would undo that press.
+                    invoke('HandleSetCollapsed', collapse);
                     return;
                 }
 
@@ -508,12 +523,13 @@
                 // Home and End are the two ends of the range the panel may move through, so they are taken
                 // as they are rather than put on the grid a step gives the drag: a rounded limit is one the
                 // key was pressed to reach and stopped short of.
+                const from = unansweredKeyEnds > 0 ? keyPercent / 100 * bounds.total : bounds.current;
                 const target = home
                     ? bounds.min
                     : end
                         ? bounds.max
                         : Splitter.applyKeyStep(entry,
-                                                bounds.current,
+                                                from,
                                                 step * factor * Splitter.getAxisSign(entry) * entry.options.keyboardStep);
 
                 const size = Splitter.clamp(target, bounds.min, bounds.max);
@@ -521,7 +537,7 @@
                 const applied = Splitter.applySize(entry, size, bounds);
                 if (applied === null) return;
 
-                notifyKeyResize(applied, e.repeat, Splitter.toPercent(bounds.current, bounds.total));
+                notifyKeyResize(applied, e.repeat, Splitter.toPercent(from, bounds.total));
             }, { signal });
 
             gutter.addEventListener('keyup', () => flushKeyResize(), { signal });

@@ -48,7 +48,11 @@ public class BitPullToRefreshE2ETests : E2ETestBase
 
         await Page.Mouse.MoveAsync(x, y);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(x, y + 150, new() { Steps = 15 });
+        // The pull is reported once a frame, so a pull that gets past the Trigger within one frame never reports the
+        // Pulling short of it; this one rests there first (60px over the Factor of 1.5 is 40).
+        await Page.Mouse.MoveAsync(x, y + 60, new() { Steps = 6 });
+        await Expect(Page.Locator("#states")).ToHaveTextAsync("Pulling");
+        await Page.Mouse.MoveAsync(x, y + 150, new() { Steps = 9 });
 
         await Expect(Page.Locator("#starts")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#start-args")).ToHaveTextAsync($"{box.Y:0}|{box.X:0}|{box.Width:0}");
@@ -419,8 +423,7 @@ public class BitPullToRefreshE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-toggle-disabled");
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-dis"));
         await Page.Locator("#disabled-anchor").EvaluateAsync("el => el.scrollTop = 0");
-        // Firefox has no pan-up / pan-down touch-action values, so the one the script writes is dropped there.
-        if (IsFirefox is false) await Expect(root).ToHaveCSSAsync("touch-action", "pan-x pan-down pinch-zoom");
+        if (await HasDirectionalPanningAsync()) await Expect(root).ToHaveCSSAsync("touch-action", "pan-x pan-down pinch-zoom");
         await Expect(Page.Locator("#disabled-anchor")).ToHaveCSSAsync("overscroll-behavior-y", "contain");
 
         (x, y) = await PullStartPointAsync("#ptr-disabled", fromTop: 40);
@@ -523,6 +526,8 @@ public class BitPullToRefreshE2ETests : E2ETestBase
     public async Task TouchAction_SurvivesARenderThatRewritesTheRootStyle()
     {
         await OpenAsync(Route);
+
+        if (await HasDirectionalPanningAsync() is false) Assert.Inconclusive("The browser has no pan-up / pan-down touch-action values, so the one the script writes is dropped.");
 
         // The script hands the pull's direction to the browser as an inline touch-action on the root.
         var root = Page.Locator("#ptr-color");
@@ -732,6 +737,10 @@ public class BitPullToRefreshE2ETests : E2ETestBase
 
         return (MathF.Round(box.X + 150), MathF.Round(box.Y + fromTop));
     }
+
+    // Firefox and WebKit have no pan-up / pan-down touch-action values, so the one the script writes is dropped there
+    // (the pull still works: its touchmove listener is not passive).
+    private Task<bool> HasDirectionalPanningAsync() => Page.EvaluateAsync<bool>("() => CSS.supports('touch-action', 'pan-down')");
 
     private async Task MousePullAsync(float x, float y, float dy, int steps = 10)
     {

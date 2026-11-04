@@ -30,6 +30,11 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
 
     private static string ServerOrWasm(string server, string wasm) => IsWasm ? wasm : server;
 
+    // The day names the server writes, read here from the same culture data the host has on this machine: .NET gives
+    // GetShortestDayName the narrow names of that data on Windows ("S", "M") and its short ones on Linux ("Su", "Mo.").
+    private static string[] ServerDayNames(string culture, DayOfWeek first, int count = 1)
+        => [.. Enumerable.Range(0, count).Select(i => CultureInfo.GetCultureInfo(culture).DateTimeFormat.GetShortestDayName((DayOfWeek)(((int)first + i) % 7)))];
+
     private ILocator Dialog(ILocator calendar) => calendar.Locator(".bit-bfc-dialog[role='dialog']");
 
     private ILocator Badge(ILocator calendar, string id) => calendar.Locator($"[data-bit-bfc-event='{id}'][role='button']");
@@ -103,7 +108,7 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
         await Expect(Title(Cal)).ToHaveTextAsync("July 2025");
         await Expect(Cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("16");
         await Expect(Cal.Locator(".bit-bfc-month-cell:not(.bit-bfc-month-cell-blank)")).ToHaveCountAsync(35);
-        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(ServerOrWasm(["S", "M", "T", "W", "T", "F", "S"], ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]));
+        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(ServerOrWasm(ServerDayNames("en-US", DayOfWeek.Sunday, 7), ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]));
 
         var body = Page.Locator("#cal-body");
         await Expect(body).ToHaveAttributeAsync("role", "tabpanel");

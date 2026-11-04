@@ -69,12 +69,18 @@
 
             const endDrag = () => {
                 if (dragging === false) return;
-                dragging = false;
-                latestPosition = null;
                 if (rafId !== 0) {
                     cancelAnimationFrame(rafId);
                     rafId = 0;
                 }
+                // A release can come before the frame the last move was waiting for, and that move is where the
+                // pointer let go: dropping it would end the drag on an earlier position - short of the edge a drag
+                // carried off the area was clamped to. It is sent ahead of the release, which .NET hears in order.
+                if (latestPosition !== null) {
+                    invoke(pointerHandler, latestPosition.x, latestPosition.y);
+                    latestPosition = null;
+                }
+                dragging = false;
                 invoke(pointerUpHandler);
             };
 

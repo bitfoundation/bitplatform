@@ -133,10 +133,10 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(Page.Locator("#lifecycle .bit-ctp-lbl")).ToHaveTextAsync("Relabelled");
 
         await Page.ClickAsync("#btn-twelve");
-        await Expect(Field("lifecycle")).ToHaveValueAsync("03:20 PM");
+        await Expect(Field("lifecycle")).ToHaveValueAsync(TwelveHour("03:20 PM"));
 
         await Page.ClickAsync("#btn-seconds");
-        await Expect(Field("lifecycle")).ToHaveValueAsync("03:20:10 PM");
+        await Expect(Field("lifecycle")).ToHaveValueAsync(TwelveHour("03:20:10 PM"));
 
         var callout = await OpenCalloutAsync("lifecycle");
         await Expect(SecondButton(callout)).ToHaveTextAsync("10");
@@ -1388,7 +1388,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(callout).ToBeVisibleAsync();
 
         await Page.Keyboard.PressAsync("Escape");
-        await Expect(Field("keyboard")).ToHaveValueAsync("03:59:00 AM");
+        await Expect(Field("keyboard")).ToHaveValueAsync(TwelveHour("03:59:00 AM"));
     }
 
     [TestMethod]

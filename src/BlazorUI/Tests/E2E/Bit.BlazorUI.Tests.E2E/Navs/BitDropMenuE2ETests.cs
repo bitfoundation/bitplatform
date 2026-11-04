@@ -1319,8 +1319,6 @@ public class BitDropMenuE2ETests : E2ETestBase
     [TestMethod]
     public async Task Responsive_AtAPhoneWidth_TheCalloutIsAPanelPinnedToTheEnd_AndASwipeDismissesIt()
     {
-        if (IsWebKit) Assert.Inconclusive("Playwright's WebKit reports a screenX of 0 on the pointer events of a synthesized mouse drag, and screenX is what the swipe measures.");
-
         await Page.SetViewportSizeAsync(400, 800);
         await OpenAsync(Url);
 

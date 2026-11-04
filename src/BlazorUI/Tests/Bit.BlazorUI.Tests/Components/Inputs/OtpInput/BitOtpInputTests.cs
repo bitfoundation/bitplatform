@@ -14,6 +14,14 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.OtpInput;
 [TestClass]
 public class BitOtpInputTests : BunitTestContext
 {
+    // The inputs the component asked the browser to focus, in order: a horizontal arrow asks through the component's
+    // own script, which drops a focus the user has since moved on from (see BitOtpInput.ts focusAfterArrow), and every
+    // other move asks through Blazor's.
+    private ElementReference[] FocusedInputs() => Context.JSInterop.Invocations
+        .Where(i => i.Identifier is "Blazor._internal.domWrapper.focus" or "BitBlazorUI.OtpInput.focusAfterArrow")
+        .Select(i => (ElementReference)i.Arguments[0]!)
+        .ToArray();
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
@@ -1568,7 +1576,7 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
 
         Assert.AreEqual(asked, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
-        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][^1].Arguments[0]!;
+        var focused = FocusedInputs()[^1];
         Assert.AreEqual(com.Instance.InputElements[expected].Id, focused.Id);
     }
 
@@ -1625,7 +1633,7 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
 
         Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.AreEqual(0, FocusedInputs().Length);
         CollectionAssert.AreEqual(new[] { "ArrowLeft" }, keys);
     }
 
@@ -3245,10 +3253,10 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = key, Key = key });
 
-        var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        var focuses = FocusedInputs();
 
-        Assert.AreEqual(1, focuses.Count);
-        Assert.AreEqual(com.Instance.InputElements[expected].Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
+        Assert.AreEqual(1, focuses.Length);
+        Assert.AreEqual(com.Instance.InputElements[expected].Id, focuses[0].Id);
     }
 
     [TestMethod,
@@ -3267,7 +3275,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowRight", Key = "ArrowRight" });
 
-        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][^1].Arguments[0]!;
+        var focused = FocusedInputs()[^1];
 
         Assert.AreEqual(com.Instance.InputElements[expected].Id, focused.Id);
     }
@@ -3331,7 +3339,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[0].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowRight", Key = "ArrowRight" });
 
-        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][^1].Arguments[0]!;
+        var focused = FocusedInputs()[^1];
 
         Assert.AreEqual(com.Instance.InputElements[1].Id, focused.Id);
         Assert.AreEqual("123", com.Instance.Value);

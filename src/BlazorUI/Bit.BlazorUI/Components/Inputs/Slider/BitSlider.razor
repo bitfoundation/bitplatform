@@ -69,17 +69,14 @@
     var upperAriaMin = interactive ? upperInputMin : min;
     var upperAriaMax = interactive ? upperInputMax : max;
 
-    @* The value each input is rendered with. It is the value the component holds, except for the single pass
-       ResyncInputAsync spends on the one the browser is holding - see there for why that pass exists. *@
-    var valueAttr = _rawValue.HasValue ? ToInvariant(_rawValue.Value) : CurrentValueAsString;
-    var lowerValueAttr = ToInvariant(_rawA ?? _thumbA);
-    var upperValueAttr = ToInvariant(_rawB ?? _thumbB);
+    @* The value each input is rendered with (see GetValueAttributes), held at what it was when a pointer pressed
+       one of them for as long as the press lasts (see _pressedValueAttributes). *@
+    var (valueAttr, lowerValueAttr, upperValueAttr, trackValueAttr) = _pressedValueAttributes ?? GetValueAttributes();
 
     @* The draggable band, and the room it has left to travel: its value is the lower end of the range, and
        the highest lower end there is room for is the one that puts the upper end at the end of the scale. *@
     var canDragTrack = _CanDragTrack;
     var trackInputMax = _TrackInputMax;
-    var trackValueAttr = ToInvariant(_rawBar ?? lower);
 }
 
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
@@ -236,6 +233,8 @@
                            @onchange="@(e => HandleOnRangeChange(e, true))"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
+                           @onpointerup="_onPointerEnd"
+                           @onpointercancel="_onPointerEnd"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"
@@ -268,6 +267,8 @@
                            @onchange="@(e => HandleOnRangeChange(e, false))"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
+                           @onpointerup="_onPointerEnd"
+                           @onpointercancel="_onPointerEnd"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            name="@upperInputName"
@@ -333,6 +334,8 @@
                            @onchange="HandleOnChange"
                            @onkeydown="_onKeyDown"
                            @onpointerdown="_onPointerDown"
+                           @onpointerup="_onPointerEnd"
+                           @onpointercancel="_onPointerEnd"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"

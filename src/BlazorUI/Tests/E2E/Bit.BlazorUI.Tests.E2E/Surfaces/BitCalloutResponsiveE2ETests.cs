@@ -176,9 +176,11 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
         await PollAsync(() => Callout.EvaluateAsync<bool>("el => el.getAnimations().length === 0 && getComputedStyle(el).opacity === '1'"), done => done, "the panel never settled");
     }
 
+    // WebKit has a Touch constructor that refuses to construct, so a page there cannot build the touch events a swipe
+    // is driven with; it is tried rather than only looked for.
     private async Task SkipWithoutTouchEventsAsync()
     {
-        if (await Page.EvaluateAsync<bool>("() => typeof Touch === 'function' && typeof TouchEvent === 'function'") is false)
+        if (await Page.EvaluateAsync<bool>("() => { try { new TouchEvent('touchstart', { touches: [new Touch({ identifier: 1, target: document.body })] }); return true; } catch { return false; } }") is false)
         {
             Assert.Inconclusive($"{BrowserName} cannot construct the touch events a swipe is driven with.");
         }

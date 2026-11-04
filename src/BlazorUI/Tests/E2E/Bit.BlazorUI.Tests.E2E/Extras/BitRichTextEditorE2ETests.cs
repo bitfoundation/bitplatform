@@ -772,7 +772,11 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await panel.Locator("input[aria-label='Match case']").UncheckAsync();
         await Expect(count).ToHaveTextAsync(new Regex("^(1 of 2|2 matches)$"));
 
+        // The step is waited for to land before the count is taken as where it went: "of 2" is already what the count
+        // reads before it, and taking that as the current match would measure every step after against the wrong one.
+        var start = await count.TextContentAsync();
         await panel.Locator("button[aria-label='Next match']").ClickAsync();
+        await Expect(count).Not.ToHaveTextAsync(start!);
         await Expect(count).ToHaveTextAsync(new Regex("of 2$"));
         var current = await count.TextContentAsync();
         await panel.Locator("button[aria-label='Next match']").ClickAsync();
@@ -800,10 +804,10 @@ public class BitRichTextEditorE2ETests : E2ETestBase
     [TestMethod]
     public async Task Sanitization_APolicyKeepsOnlyItsTags_AndThePastesFollowIt()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit does not let a page construct a ClipboardEvent with data.");
-
         await OpenAsync(Route);
 
+        // The data is handed to the event as its own clipboardData rather than through the constructor, which
+        // WebKit refuses and Firefox gives an empty one of its own instead.
         async Task PasteAsync(string id, string text, string html)
         {
             await Page.Locator($"#{id}").EvaluateAsync(@"(root, d) => {
@@ -812,7 +816,9 @@ public class BitRichTextEditorE2ETests : E2ETestBase
                 const dt = new DataTransfer();
                 dt.setData('text/plain', d.text);
                 dt.setData('text/html', d.html);
-                ed.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+                const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+                Object.defineProperty(e, 'clipboardData', { value: dt });
+                ed.dispatchEvent(e);
             }", new { text, html });
         }
 
@@ -928,7 +934,9 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(options).ToHaveCountAsync(10);
         await Expect(options.First).ToHaveAttributeAsync("aria-selected", "true");
 
-        await Page.Keyboard.TypeAsync("numb");
+        // Filled in one go rather than typed: the filter is bound through the circuit, and on a loaded one the render of
+        // a keystroke can come back after the keys typed since and put the shorter filter back over them.
+        await filter.FillAsync("numb");
         await Expect(options).ToHaveCountAsync(1);
         await Expect(options).ToHaveTextAsync("Numbered list");
         await Page.Keyboard.PressAsync("Enter");
@@ -1092,9 +1100,11 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await toggle.ClickAsync();
         await Expect(root).ToHaveClassAsync(HasClass("bit-rte-fsc"));
         await Expect(toggle).ToHaveAttributeAsync("aria-pressed", "true");
-        var box = (await root.BoundingBoxAsync())!;
-        Assert.AreEqual(Page.ViewportSize!.Width, box.Width, 2);
-        Assert.AreEqual(Page.ViewportSize!.Height, box.Height, 2);
+        // Against the viewport the page has in full screen, which in Firefox is the whole screen rather than the size
+        // the browser context gives the page outside it; read together, so a resize cannot fall between the two.
+        var sizes = await root.EvaluateAsync<double[]>("el => { const r = el.getBoundingClientRect(); return [r.width, r.height, innerWidth, innerHeight]; }");
+        Assert.AreEqual(sizes[2], sizes[0], 2);
+        Assert.AreEqual(sizes[3], sizes[1], 2);
 
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => document.fullscreenElement !== null"), "the browser is not in full screen");
 
@@ -1494,12 +1504,18 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-open-dialog");
         await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");
         await Expect(Surface("rte-dialog")).ToBeVisibleAsync();
+        // The shortcut is the script's, which the editor of a dialog opened just now is wired to a round trip after it
+        // shows: pressed before that, Ctrl+K is the browser's.
+        await Page.WaitForFunctionAsync("ed => typeof ed._onKeyDown === 'function'", await Surface("rte-dialog").ElementHandleAsync());
 
         await SelectTextAsync("rte-dialog", "dialog");
         await Page.Keyboard.PressAsync("Control+k");
         var panel = Page.Locator("#rte-dialog .bit-rte-bar[role='group']");
         await Expect(panel).ToBeVisibleAsync();
         await Expect(panel).ToHaveAttributeAsync("data-bit-esc", "claim");
+        // The panel claims the Escapes pressed in it, and its field takes the focus a round trip after the panel shows:
+        // an Escape pressed before that is pressed in the text, and is the dialog's.
+        await Expect(panel.Locator("input[type='url']")).ToBeFocusedAsync();
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(panel).ToHaveCountAsync(0);

@@ -76,9 +76,28 @@ public class BitVirtualizeE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await List("vir-basic").HoverAsync();
-        await Page.Mouse.WheelAsync(0, 1000);
-        await Page.WaitForFunctionAsync("e => e.scrollTop >= 900", await List("vir-basic").ElementHandleAsync());
+        // A thousand pixels of wheel, sent a page of the list at a time and each let land: Firefox moves a scroller by no
+        // more than a page for one wheel event however large its delta is, where the other engines go the whole way.
+        var list = List("vir-basic");
+        await list.HoverAsync();
+        var page = (int)(await list.EvaluateAsync<double>("e => e.clientHeight") * 0.8);
+        for (var sent = 0; sent < 1000; sent += page)
+        {
+            var before = await list.EvaluateAsync<double>("e => e.scrollTop");
+            await Page.Mouse.WheelAsync(0, Math.Min(page, 1000 - sent));
+            await Page.WaitForFunctionAsync("([e, before]) => e.scrollTop > before", new object[] { await list.ElementHandleAsync(), before });
+        }
+        await Page.WaitForFunctionAsync("e => e.scrollTop >= 900", await list.ElementHandleAsync());
+        // And let come to rest before the window is read, since an engine that animates the wheel (WebKit) is still
+        // moving the list when it passes 900.
+        await list.EvaluateAsync(@"e => new Promise(resolve => {
+            let last = -1, stable = 0;
+            const tick = () => {
+                if (e.scrollTop === last) stable++; else { stable = 0; last = e.scrollTop; }
+                if (stable >= 5) resolve(); else requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        })");
         await Expect(ItemAt("vir-basic", 0)).ToHaveCountAsync(0);
         var indices = await RenderedIndicesAsync("vir-basic");
         Assert.IsTrue(indices.Length is > 0 and <= 13, string.Join(",", indices));
@@ -328,7 +347,10 @@ public class BitVirtualizeE2ETests : E2ETestBase
     public async Task ScrollerSelector_AnAncestorScrollsAndTheListStillVirtualizes()
     {
         await OpenAsync(Route);
-        await ShowAsync("vir-scroller");
+        // The scroller is brought into view rather than the list, which is far taller than it: for a list like that the
+        // engines scroll different things - Firefox the scroller alone, WebKit the page past it - and can leave the
+        // scroller off the screen, with every row of it out of the viewport.
+        await Page.Locator("#vir-outer").ScrollIntoViewIfNeededAsync();
 
         var list = List("vir-scroller");
         await Expect(list).ToHaveClassAsync(HasClass("bit-vir-ext"));

@@ -125,7 +125,7 @@ public class BitDateRangePickerTimeE2ETests : BitDatePickersE2ETestBase
         await Expect(endAm).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(endPm).ToHaveAttributeAsync("aria-pressed", "false");
         await Expect(Page.Locator("#twelve-value")).ToHaveTextAsync("2024-06-10 12:00 / 2024-06-14 11:59");
-        await Expect(Input("drp-12h")).ToHaveValueAsync("Start: 6/10/2024 12:00 PM - End: 6/14/2024 11:59 AM");
+        await Expect(Input("drp-12h")).ToHaveValueAsync(TwelveHour("Start: 6/10/2024 12:00 PM - End: 6/14/2024 11:59 AM"));
     }
 
     [TestMethod]

@@ -105,6 +105,21 @@
         }
 
         /**
+         * Moves the focus to the input a horizontal arrow went to, unless the user has moved on from that arrow
+         * since. The arrow is acted on two round trips after it was pressed - one for the direction the row is
+         * laid out in (see Utils.isRtl), which refuses an arrow a Tab has already overtaken, and this one - and a
+         * Tab that arrives between the two, as it does whenever the first is answered quickly, would otherwise
+         * have its focus pulled back by the arrow it came after.
+         */
+        public static focusAfterArrow(input: HTMLInputElement) {
+            if (!input) return;
+
+            if (Utils._arrowKeyOvertaken && Utils._arrowKeyTarget && document.activeElement !== Utils._arrowKeyTarget) return;
+
+            input.focus();
+        }
+
+        /**
          * Submits the form the component sits in the way pressing Enter would. requestSubmit rather than
          * submit, since only the former runs the constraint validation and raises the submit event, which
          * is the one an EditForm listens to.

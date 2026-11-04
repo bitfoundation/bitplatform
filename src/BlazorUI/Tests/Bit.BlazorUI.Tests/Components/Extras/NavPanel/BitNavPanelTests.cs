@@ -181,6 +181,25 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavPanelOverlayTapShouldCloseOnItsTouchEnd()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // WebKit (iOS) makes no click of a tap on the overlay, so the tap's touchend closes the panel - and cancels the
+        // click the other engines make of it, which would otherwise land on whatever the closing overlay uncovers.
+        component.Find(".bit-npn-ovl").TouchEnd();
+
+        component.WaitForAssertion(() => Assert.IsFalse(isOpen));
+        Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-cls"));
+    }
+
+    [TestMethod]
     public void BitNavPanelShouldNotRenderOverlayWhenNoOverlay()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>

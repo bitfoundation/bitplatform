@@ -338,6 +338,17 @@
                     el.offsetParent !== null);
         }
 
+        // Whether the rendered rows include the first or the last option of the whole list, which every option of a
+        // virtualized one states (aria-posinset of aria-setsize). Rows that state no position are taken as holding it.
+        private static _holdsEnd(items: HTMLElement[], end: 'first' | 'last') {
+            const options = items.filter(item => item.hasAttribute('aria-posinset'));
+            if (options.length === 0) return items.length > 0;
+
+            return options.some(option => end === 'first'
+                ? option.getAttribute('aria-posinset') === '1'
+                : option.getAttribute('aria-posinset') === option.getAttribute('aria-setsize'));
+        }
+
         private static _isScrollable(scroller: HTMLElement | null) {
             return !!scroller && scroller.scrollHeight > scroller.clientHeight + 1;
         }
@@ -389,7 +400,25 @@
             }
 
             top = Math.max(0, Math.min(max, top));
-            if (top === scroller.scrollTop) return null;
+
+            if (top === scroller.scrollTop) {
+                // The list can already be at the end a Home or an End asks for - the Virtualize of .NET 11 scrolls
+                // itself for those two keys before this runs - while the rows rendered are still those of the window it
+                // was scrolled from. The focus would land on one of them and be lost as the rows of that end replace
+                // them, so it waits for rows that hold that end of the list instead.
+                if ((mode === 'first' || mode === 'last') && Dropdowns._holdsEnd(items, mode) === false) {
+                    for (let i = 0; i < Dropdowns.VIRTUALIZE_RENDER_FRAMES; i++) {
+                        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                        const rendered = Dropdowns._getItems(callout);
+                        if (Dropdowns._holdsEnd(rendered, mode)) return { items: rendered, mode: nextMode };
+                    }
+
+                    return { items: Dropdowns._getItems(callout), mode: nextMode };
+                }
+
+                return null;
+            }
 
             // Which window is rendered, rather than which elements: Blazor updates the reused rows of a
             // Virtualize in place, so the ends of the new window are usually the same elements carrying

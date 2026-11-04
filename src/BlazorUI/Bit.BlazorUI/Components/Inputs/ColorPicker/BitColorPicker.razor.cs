@@ -790,6 +790,24 @@ public partial class BitColorPicker : BitInputBase<string?>
 
     private string _AlphaValue => _color.A.ToString(CultureInfo.InvariantCulture);
 
+    // The values the hue and alpha sliders were rendered with when a pointer pressed one of them, held for as long as
+    // the press lasts. WebKit fires no change event at the release of a range input whose value was written after the
+    // last move of the drag - which is where the render of an earlier step lands, a round trip behind the pointer - so
+    // OnChangeEnd would be lost there; a slider under the pointer is therefore not written to until the press is over.
+    // The thumb it draws is its own, so it follows the pointer in the meantime all the same.
+    private (string Hue, string Alpha)? _pressedSliderValues;
+
+    private void HoldSliderValues()
+    {
+        _pressedSliderValues ??= (_HueValue, _AlphaValue);
+    }
+
+    // The re-render this causes is what writes into the sliders the values the press held back.
+    private void ReleaseSliderValues()
+    {
+        _pressedSliderValues = null;
+    }
+
     private string _AlphaPercentValue => Math.Round(_color.A * 100).ToString(CultureInfo.InvariantCulture);
 
     private bool _ShowEyeDropper => ShowEyeDropper && _eyeDropperSupported;
@@ -1128,6 +1146,9 @@ public partial class BitColorPicker : BitInputBase<string?>
     // of them only ends the gesture - it does not report a change that has already been reported.
     private async Task HandleOnHueInput(ChangeEventArgs args, bool final)
     {
+        // The change that ends a drag ends its press as well, released off the slider or not.
+        if (final) ReleaseSliderValues();
+
         // A read-only picker keeps its sliders focusable, and a native range has no readonly state to refuse
         // an arrow key with, so the thumb has already moved by the time this runs and is put back here. The
         // renderer would not do it: the value it last rendered has not changed.
@@ -1148,6 +1169,8 @@ public partial class BitColorPicker : BitInputBase<string?>
 
     private async Task HandleOnAlphaInput(ChangeEventArgs args, bool final)
     {
+        if (final) ReleaseSliderValues();
+
         if (_IsInteractive is false)
         {
             await RestoreInputAsync(_alphaSliderRef, args.Value as string, _AlphaValue);

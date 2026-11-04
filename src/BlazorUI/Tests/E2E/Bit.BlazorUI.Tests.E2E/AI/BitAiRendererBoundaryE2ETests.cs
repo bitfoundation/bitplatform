@@ -54,10 +54,20 @@ public class BitAiRendererBoundaryE2ETests : E2ETestBase
         await Expect(tag.Locator(".bit-tag-icn")).ToHaveClassAsync(HasClass("bit-icon--Warning"));
         await Expect(tag).ToHaveCSSAsync("border-top-color", await Page.ResolveColorAsync("var(--bit-clr-err)"));
 
-        // The tag is as wide as what it says, not stretched across the line its block takes.
+        // The tag is as wide as what it says, not stretched across the line its block takes: its box is what it holds and
+        // its own padding and border, and short of the line. Not weighed against half of the line, which the same words
+        // take more than in the wider sans-serif Firefox and WebKit fall back to on Linux.
         var (tagLeft, _, tagRight, _) = await tag.RectAsync();
         var (boxLeft, _, boxRight, _) = await Page.Locator("#rbd-notice-box").RectAsync();
-        Assert.IsTrue(tagRight - tagLeft < (boxRight - boxLeft) / 2, "The tag is as wide as its text.");
+        var held = await tag.EvaluateAsync<double>(@"el => {
+            const cs = getComputedStyle(el);
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            return range.getBoundingClientRect().width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+                 + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+        }");
+        Assert.AreEqual(held, tagRight - tagLeft, 1, "The tag is as wide as its text.");
+        Assert.IsTrue(tagRight - tagLeft < boxRight - boxLeft - 1, "The tag is not stretched across the line.");
 
         // Nothing else of the page went down with it; and a render of the page, which tries the content again, keeps
         // the notice for content that still fails.

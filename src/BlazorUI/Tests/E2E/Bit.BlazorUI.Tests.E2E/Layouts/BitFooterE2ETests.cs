@@ -717,24 +717,36 @@ public class BitFooterE2ETests : E2ETestBase
         var box = Page.Locator(selector);
         await box.ScrollIntoViewIfNeededAsync();
         var rect = await box.BoundingBoxAsync();
-        var before = await box.EvaluateAsync<double>("el => el.scrollTop");
         await Page.Mouse.MoveAsync(rect!.X + rect.Width / 2, rect.Y + 20);
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await WaitForScrollToSettleAsync(selector, before);
+        await WheelInPagesAsync(selector, deltaY);
     }
 
-    private async Task WheelWindowAsync(int deltaY)
+    private Task WheelWindowAsync(int deltaY) => WheelInPagesAsync("window", deltaY);
+
+    // Wheels the scroller to where one wheel of that delta takes it in Chromium: as far as asked, or to the end it has
+    // when the wheel starts. Firefox moves a scroller by no more than a page for one wheel event however large its
+    // delta is, so the way there is wheeled a page at a time, each step let come to rest.
+    private async Task WheelInPagesAsync(string selector, int deltaY)
     {
-        var before = await Page.EvaluateAsync<double>("() => document.scrollingElement.scrollTop");
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await WaitForScrollToSettleAsync("window", before);
+        var range = await Page.EvaluateAsync<double[]>(@"s => {
+            const el = s === 'window' ? document.scrollingElement : document.querySelector(s);
+            return [el.scrollTop, el.scrollHeight - el.clientHeight, el.clientHeight * 0.8];
+        }", selector);
+        var target = Math.Clamp(range[0] + deltaY, 0, range[1]);
+        for (var now = range[0]; Math.Abs(target - now) >= 1;)
+        {
+            await Page.Mouse.WheelAsync(0, (int)(Math.Sign(target - now) * Math.Min(Math.Abs(target - now), Math.Max(1, range[2]))));
+            var after = await WaitForScrollToSettleAsync(selector, now);
+            if (after == now) break;
+            now = after;
+        }
     }
 
     // Waits for a wheel scroll to have moved the element and come to rest: a wheel scroll is animated, and a second
     // wheel sent while the first is still running only moves the target of the same animation.
-    private Task WaitForScrollToSettleAsync(string selector, double before)
+    private Task<double> WaitForScrollToSettleAsync(string selector, double before)
     {
-        return Page.EvaluateAsync(@"([selector, before]) => new Promise(resolve => {
+        return Page.EvaluateAsync<double>(@"([selector, before]) => new Promise(resolve => {
             const el = selector === 'window' ? document.scrollingElement : document.querySelector(selector);
             let last = el.scrollTop, stable = 0, frames = 0;
             const tick = () => {

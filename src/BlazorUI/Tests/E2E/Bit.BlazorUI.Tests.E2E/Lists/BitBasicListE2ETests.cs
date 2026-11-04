@@ -683,15 +683,32 @@ public class BitBasicListE2ETests : E2ETestBase
         }", new[] { row, list });
     }
 
+    // Scrolls the list with the real wheel to where one wheel of that delta takes it in Chromium: as far as asked, or to
+    // the end the list has when the wheel starts. Firefox moves a scroller by no more than a page for one wheel event
+    // however large its delta is, so the way there is wheeled a page at a time - each step waited for until it comes to
+    // rest, since a step sent while the last one is still animating only moves that animation's target - and stops at
+    // that end even when reaching it loads more rows.
     private async Task ScrollAsync(string selector, int deltaY)
     {
         var list = Page.Locator(selector);
         await list.ScrollIntoViewIfNeededAsync();
         var rect = await list.BoundingBoxAsync();
-        var before = await list.EvaluateAsync<double>("el => el.scrollTop");
         await Page.Mouse.MoveAsync(rect!.X + rect.Width / 2, rect.Y + Math.Min(rect.Height / 2, 100));
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await Page.EvaluateAsync(@"([selector, before]) => new Promise(resolve => {
+
+        var range = await list.EvaluateAsync<double[]>("el => [el.scrollTop, el.scrollHeight - el.clientHeight, el.clientHeight * 0.8]");
+        var target = Math.Clamp(range[0] + deltaY, 0, range[1]);
+        for (var now = range[0]; Math.Abs(target - now) >= 1;)
+        {
+            await Page.Mouse.WheelAsync(0, (int)(Math.Sign(target - now) * Math.Min(Math.Abs(target - now), Math.Max(1, range[2]))));
+            var after = await WheelSettledAsync(selector, now);
+            if (after == now) break;
+            now = after;
+        }
+    }
+
+    private Task<double> WheelSettledAsync(string selector, double before)
+    {
+        return Page.EvaluateAsync<double>(@"([selector, before]) => new Promise(resolve => {
             const el = document.querySelector(selector);
             let last = el.scrollTop, stable = 0, frames = 0;
             const tick = () => {

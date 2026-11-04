@@ -26,7 +26,7 @@
                     // after Blazor has rendered the freshly appended rows; reading scrollHeight in the
                     // synchronous continuation would otherwise observe stale layout. The disposed guard
                     // is preserved so a circuit teardown between callback and frame stops the loop.
-                    dotNetRef.invokeMethodAsync<boolean>('OnInfiniteScrollNearEndAsync')
+                    invokeDotNet(dotNetRef, 'OnInfiniteScrollNearEndAsync')
                         .then(
                             (more) => { pending = false; if (!disposed && more) requestAnimationFrame(check); },
                             () => { pending = false; }
@@ -71,7 +71,7 @@
                 if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
                 lastLeft = left;
                 lastWidth = width;
-                dotNetRef.invokeMethodAsync('OnHorizontalScrollAsync', left, width).catch(() => { });
+                invokeDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width).catch(() => { });
             };
             const onScroll = () => {
                 if (!ticking) {
@@ -166,9 +166,9 @@
                 if (to != null && to !== from) {
                     // Swallow rejections: the circuit may be tearing down mid-drop.
                     if (kind === 'row') {
-                        dotNetRef.invokeMethodAsync('OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
+                        invokeDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
                     } else {
-                        dotNetRef.invokeMethodAsync('OnPointerColumnDropAsync', from, to).catch(() => { });
+                        invokeDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to).catch(() => { });
                     }
                 }
             };
@@ -343,7 +343,7 @@
             let away: { cell: HTMLElement, version: number } | null = null;
             // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
             let pressed: Node | null = null;
-            const commit = (version: number) => dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', version);
+            const commit = (version: number) => invokeDotNet(dotNetRef, 'OnCellEditBlurAsync', version);
             const onFocusOut = (e: FocusEvent) => {
                 const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
                 if (!cell || cell.closest('.bit-dtg') !== root) return;
@@ -737,10 +737,21 @@
     // leave .NET on the stale one for as long as the user's clicks happen to agree with the script's.
     type NestedTargetWatch = { dotNetRef: DotNetObject, nested?: boolean, onControl?: boolean };
     const nestedTargetWatches = new WeakMap<HTMLElement, NestedTargetWatch>();
+    // A call to .NET over a connection that is already closed throws before it has a promise to reject - which Firefox
+    // runs into as it leaves the page, since it keeps running the page's scripts after closing that connection - so it
+    // is handed back as the rejection every caller here already lets go of.
+    function invokeDotNet(dotNetRef: DotNetObject, method: string, ...args: any[]): Promise<any> {
+        try {
+            return dotNetRef.invokeMethodAsync(method, ...args);
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+
     function tellNestedTarget(watch: NestedTargetWatch, field: 'nested' | 'onControl', method: string, value: boolean) {
         if (watch[field] === value) return;
         watch[field] = value;
-        watch.dotNetRef.invokeMethodAsync(method, value).catch(() => { watch[field] = undefined; });
+        invokeDotNet(watch.dotNetRef, method, value).catch(() => { watch[field] = undefined; });
     }
 
     // A click on a control in a cell - a button, a link or an input of a template, the grid's own checkbox and

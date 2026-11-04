@@ -2250,11 +2250,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await OnFocusOut.InvokeAsync(e);
     }
 
-    private async Task HandleOnInput(ChangeEventArgs e)
+    private async Task HandleOnInput(string? value)
     {
         if (Disabled || ReadOnly) return;
 
-        var text = e.Value?.ToString() ?? string.Empty;
+        var text = value ?? string.Empty;
 
         // Typing is the answer to whatever was refused a moment ago, so the mark of that refusal goes
         // with the first keystroke rather than waiting for the next Enter - except for the text of a refusal
