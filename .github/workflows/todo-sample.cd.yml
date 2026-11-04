@@ -526,7 +526,7 @@ jobs:
     # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
     - name: Sign the executables with Artifact Signing
       if: vars.CODE_SIGNING_ACCOUNT != ''
-      uses: ./.github/actions/boilerplate/artifact-signing
+      uses: ./.github/actions/bit-bp/artifact-signing
       with:
         endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
         account: ${{ vars.CODE_SIGNING_ACCOUNT }}
