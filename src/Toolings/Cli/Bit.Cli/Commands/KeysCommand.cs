@@ -242,7 +242,7 @@ public static partial class KeysCommand
         {
             return cli.UsageError("bundle-id-missing", projectName is null
                 ? "Pass the app's bundle id with --bundle-id, e.g. --bundle-id com.contoso.shop, or run this in a bit Boilerplate project's folder to use its app id."
-                : $"{Platforms.MauiProject(projectName)} has no <ApplicationId>. Pass the app's bundle id with --bundle-id.");
+                : $"{ProjectContext.FindMauiProject(directory, projectName)} has no <ApplicationId>. Pass the app's bundle id with --bundle-id.");
         }
 
         if (BundleIdRegex().IsMatch(bundleId) is false)
