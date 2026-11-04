@@ -239,7 +239,7 @@ Where the pin's comment is a moving major (`# v2`), rewrite it to the concrete r
 belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
 **bit platform's own actions in the Boilerplate stay on a tag.** The template's workflows use
-`bitfoundation/bitplatform/.github/actions/boilerplate/<action>@v-<the in-development version>`, with no SHA and
+`bitfoundation/bitplatform/.github/actions/bit-bp/<action>@v-<the in-development version>`, with no SHA and
 no comment. The release's commit only exists once its PR is squash merged, so a SHA pin would always be a release
 behind; the version bump moves the tag with every other version string instead. Leave them as they are.
 
