@@ -62,7 +62,8 @@ public sealed class BelemetryDiagnosticsOptions
     /// <summary>
     /// Whether an exception keeps its message (after the privacy rules). Defaults to <see langword="true"/>: it is
     /// usually what tells one failure from another. Turn it off when the app's exception messages carry user data the
-    /// privacy patterns cannot recognize; the message template is kept for grouping either way.
+    /// privacy patterns cannot recognize: the message, its template and the message lines of the stack text go (the stack
+    /// keeps its frames), while grouping still uses the message, hashed.
     /// </summary>
     public bool IncludeExceptionMessages { get; set; } = true;
 
@@ -109,8 +110,9 @@ public sealed class BelemetryDiagnosticsOptions
     public TimeSpan CaptureRetention { get; set; } = TimeSpan.FromMinutes(30);
 
     /// <summary>
-    /// The largest support bundle, in bytes of uncompressed JSON; past it the oldest timeline events are left out
-    /// (and the manifest says how many). Defaults to 4 MiB.
+    /// The largest support bundle, in bytes of uncompressed JSON - every part of it, snapshots, exception groups and
+    /// components included; past it the oldest timeline events are left out (never the capture's subject), and the oldest
+    /// snapshots first when the rest alone does not fit. The manifest says how many. Defaults to 4 MiB.
     /// </summary>
     public int MaxBundleBytes { get; set; } = 4 * 1024 * 1024;
 

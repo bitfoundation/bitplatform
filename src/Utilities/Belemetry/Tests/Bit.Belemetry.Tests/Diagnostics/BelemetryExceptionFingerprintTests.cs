@@ -76,6 +76,10 @@ public class BelemetryExceptionFingerprintTests
         // A change of this value is a change of the algorithm: bump BelemetryExceptionFingerprint.Version with it.
         Assert.AreEqual("1", BelemetryExceptionFingerprint.Version);
         Assert.AreEqual(BelemetryExceptionFingerprint.Compute("E", "boom", "   at App.A.B()"), BelemetryExceptionFingerprint.Compute("E", "boom", "   at App.A.B()"));
+
+        // The value itself, as version 1 computes it: a change of how a fingerprint is composed fails here until the
+        // version and this literal are updated together.
+        Assert.AreEqual("d6be29f485e66723be94acbe", BelemetryExceptionFingerprint.Compute("System.InvalidOperationException", "Order 10423 not found", DotnetStack));
         Assert.AreNotEqual(BelemetryExceptionFingerprint.FromKey("orders"), BelemetryExceptionFingerprint.Compute("orders", null, null));
     }
 

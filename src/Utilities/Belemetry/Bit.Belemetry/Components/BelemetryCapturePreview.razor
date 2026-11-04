@@ -167,7 +167,10 @@
     /// <summary>The confirm button's text.</summary>
     [Parameter] public string ConfirmText { get; set; } = "Confirm and download";
 
-    /// <summary>Raised once the user confirmed (and, with <see cref="Download"/>, after the download started); the capture is confirmed then.</summary>
+    /// <summary>
+    /// Raised once the user confirmed (and, with <see cref="Download"/>, after the download started - not when it could not
+    /// start); the capture is confirmed then.
+    /// </summary>
     [Parameter] public EventCallback<BelemetryDiagnosticCapture> OnConfirmed { get; set; }
 
     /// <summary>Raised when the user cancels.</summary>
@@ -203,7 +206,13 @@
             Capture.Confirm();
             if (Download)
             {
-                _status = await Diagnostics.DownloadAsync(Capture) ? "The report was saved." : "The report could not be saved here.";
+                // A download that did not start is not a confirmation the app may act on (dismiss the capture, say it was sent).
+                if (await Diagnostics.DownloadAsync(Capture) is false)
+                {
+                    _status = "The report could not be saved here.";
+                    return;
+                }
+                _status = "The report was saved.";
             }
             await OnConfirmed.InvokeAsync(Capture);
         }

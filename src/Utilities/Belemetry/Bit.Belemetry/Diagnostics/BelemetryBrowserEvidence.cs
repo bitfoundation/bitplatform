@@ -140,6 +140,11 @@ internal static class BelemetryBrowserEvidence
         var parentSpanId = BelemetryDiagnosticJson.String(e, "parentSpanId");
         var name = BelemetryDiagnosticJson.String(e, "name") ?? "event";
 
+        // The consent a capture checks an event against is its feature: one that does not carry the feature its category
+        // belongs to (feature 0 passes every check) is not what the script sends, and is not kept.
+        var feature = (BelemetryFeatures)(BelemetryDiagnosticJson.Int(e, "feature") ?? 0) & BelemetryFeatures.All;
+        if ((feature & RequiredFeatures(category, name)) == 0) return null;
+
         return new BelemetryDiagnosticEvent
         {
             Sequence = BelemetryDiagnosticJson.Long(e, "seq") ?? 0,
@@ -150,7 +155,7 @@ internal static class BelemetryBrowserEvidence
             Severity = SeverityOf(BelemetryDiagnosticJson.Int(e, "sev")),
             Outcome = BelemetryDiagnosticJson.ParseOutcome(BelemetryDiagnosticJson.String(e, "outcome")),
             Source = BelemetryDiagnosticSource.Browser,
-            Feature = (BelemetryFeatures)(BelemetryDiagnosticJson.Int(e, "feature") ?? 0) & BelemetryFeatures.All,
+            Feature = feature,
             TraceId = IsHex(traceId, 32) ? traceId : null,
             SpanId = IsHex(spanId, 16) ? spanId : null,
             ParentSpanId = IsHex(parentSpanId, 16) ? parentSpanId : null,
@@ -166,6 +171,24 @@ internal static class BelemetryBrowserEvidence
             PreviousPage = e.TryGetProperty("prev", out var previous) && previous.ValueKind == JsonValueKind.True,
         };
     }
+
+    /// <summary>
+    /// The features a browser event of <paramref name="category"/> belongs to, one of which it must carry - as the script
+    /// records them (<c>diagnostics.ts</c>, <c>bit-belemetry.ts</c>). None for a category the page never produces.
+    /// </summary>
+    internal static BelemetryFeatures RequiredFeatures(BelemetryDiagnosticCategories category, string name) => category switch
+    {
+        BelemetryDiagnosticCategories.Exception or BelemetryDiagnosticCategories.Circuit => BelemetryFeatures.Errors,
+        BelemetryDiagnosticCategories.Http => BelemetryFeatures.Dependencies,
+        BelemetryDiagnosticCategories.Navigation => BelemetryFeatures.PageViews,
+        // Console capture: below error Logs, at error Errors.
+        BelemetryDiagnosticCategories.Log => BelemetryFeatures.Logs | BelemetryFeatures.Errors,
+        BelemetryDiagnosticCategories.Custom => BelemetryFeatures.Events,
+        BelemetryDiagnosticCategories.Browser => name == "long_task" ? BelemetryFeatures.Performance
+                                               : name.StartsWith("page.", StringComparison.Ordinal) ? BelemetryFeatures.PageViews
+                                               : BelemetryFeatures.Interactions,
+        _ => BelemetryFeatures.None,
+    };
 
     private static BelemetrySeverity SeverityOf(int? number) => number switch
     {

@@ -79,6 +79,18 @@ public class BelemetryDiagnosticSanitizerTests
     }
 
     [TestMethod]
+    public void ALongKey_IsRedactedByItsWholeName_NotByItsCutOne()
+    {
+        var sanitizer = Create();
+        var counters = new BelemetrySanitizeCounters();
+        var key = new string('x', 130) + "Password";
+
+        var tree = sanitizer.Tree(new Dictionary<string, object?> { [key] = "hunter2" }, new BelemetrySnapshotOptions(), ref counters);
+
+        Assert.AreEqual("REDACTED", tree[key[..128]], "The cut takes off the part that names the secret.");
+    }
+
+    [TestMethod]
     public void Trees_AreBounded_InDepthItemsLengthAndSize()
     {
         var sanitizer = Create();

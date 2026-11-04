@@ -58,6 +58,7 @@ public class BelemetryDiagnosticTimelineTests
         var exception = host.Diagnostics.GetEvents().Single().Exception!;
         Assert.IsNull(exception.Message);
         Assert.IsNull(exception.MessageTemplate, "A template keeps quoted text whole when there is no stack.");
+        Assert.DoesNotContain("Jane Doe", exception.StackTrace ?? string.Empty, "Nor in the stack text, which starts with it.");
         Assert.AreEqual(24, exception.Fingerprint.Length);
     }
 

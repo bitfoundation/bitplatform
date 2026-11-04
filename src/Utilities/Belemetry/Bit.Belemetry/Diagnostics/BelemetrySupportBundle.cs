@@ -84,6 +84,21 @@ public static class BelemetrySupportBundle
         return buffer.ToArray();
     }
 
+    /// <summary>
+    /// The bytes a capture's parts other than its timeline take in a bundle, written as <see cref="Write"/> writes them
+    /// (with every group, component and snapshot: what the preview leaves out only makes it smaller).
+    /// </summary>
+    internal static long MeasureParts(BelemetryReleaseInfo? release, IReadOnlyList<BelemetryExceptionGroup> groups, IReadOnlyList<BelemetryComponentInfo> components,
+        IReadOnlyList<BelemetryDiagnosticSnapshot> snapshots)
+    {
+        long total = 0;
+        if (release is not null) total += Json(json => WriteRelease(json, release)).Length;
+        total += Json(json => WriteGroups(json, groups)).Length;
+        total += Json(json => WriteComponents(json, components)).Length;
+        if (snapshots.Count > 0) total += Json(json => WriteSnapshots(json, snapshots)).Length;
+        return total;
+    }
+
     private static byte[] Json(Action<Utf8JsonWriter> write)
     {
         var buffer = new ArrayBufferWriter<byte>(4096);
@@ -354,6 +369,7 @@ public static class BelemetrySupportBundle
         if (manifest is null) return BelemetrySupportBundleContents.Invalid(errors);
 
         var root = manifest.RootElement;
+        if (root.ValueKind != JsonValueKind.Object) return BelemetrySupportBundleContents.Invalid("manifest.json is not a JSON object.");
         if (BelemetryDiagnosticJson.String(root, "format") != Format) return BelemetrySupportBundleContents.Invalid($"The manifest's format is not '{Format}'.");
         var version = BelemetryDiagnosticJson.Int(root, "schemaVersion");
         if (version is null or < 1) return BelemetrySupportBundleContents.Invalid("The manifest has no valid schemaVersion.");
@@ -370,10 +386,17 @@ public static class BelemetrySupportBundle
                     errors.Add($"The manifest lists '{Clean(name)}', which the bundle does not hold.");
                     continue;
                 }
-                if (BelemetryDiagnosticJson.Long(file, "bytes") is { } size && size != bytes.Length) errors.Add($"'{name}' does not have the size the manifest says.");
-                if (BelemetryDiagnosticJson.String(file, "sha256") is { } hash && string.Equals(hash, Convert.ToHexStringLower(SHA256.HashData(bytes)), StringComparison.OrdinalIgnoreCase) is false)
+                if (BelemetryDiagnosticJson.Long(file, "bytes") is { } size && size != bytes.Length) errors.Add($"'{Clean(name)}' does not have the size the manifest says.");
+
+                // Without its checksum a listed file cannot be told from a changed one: it is not read.
+                if (BelemetryDiagnosticJson.String(file, "sha256") is not { } hash)
                 {
-                    errors.Add($"'{name}' does not match its SHA-256 in the manifest: it was changed or damaged.");
+                    errors.Add($"The manifest lists '{Clean(name)}' without its SHA-256: it cannot be verified.");
+                    files.Remove(name);
+                }
+                else if (string.Equals(hash, Convert.ToHexStringLower(SHA256.HashData(bytes)), StringComparison.OrdinalIgnoreCase) is false)
+                {
+                    errors.Add($"'{Clean(name)}' does not match its SHA-256 in the manifest: it was changed or damaged.");
                 }
             }
         }
@@ -401,7 +424,8 @@ public static class BelemetrySupportBundle
         if (files.TryGetValue("timeline.json", out var timelineBytes))
         {
             using var timeline = Parse(timelineBytes, "timeline.json", errors);
-            if (timeline is not null && timeline.RootElement.TryGetProperty("events", out var items) && items.ValueKind == JsonValueKind.Array)
+            // TryGetProperty throws on anything but an object: a bundle can hold any JSON.
+            if (timeline is not null && timeline.RootElement.ValueKind == JsonValueKind.Object && timeline.RootElement.TryGetProperty("events", out var items) && items.ValueKind == JsonValueKind.Array)
             {
                 foreach (var item in items.EnumerateArray().Take(BelemetryDiagnosticJson.MaxArrayItems))
                 {
@@ -438,7 +462,7 @@ public static class BelemetrySupportBundle
     private static List<BelemetryExceptionGroup> ReadGroups(JsonElement root)
     {
         var groups = new List<BelemetryExceptionGroup>();
-        if (root.TryGetProperty("groups", out var items) is false || items.ValueKind != JsonValueKind.Array) return groups;
+        if (root.ValueKind != JsonValueKind.Object || root.TryGetProperty("groups", out var items) is false || items.ValueKind != JsonValueKind.Array) return groups;
 
         foreach (var g in items.EnumerateArray().Take(1000))
         {

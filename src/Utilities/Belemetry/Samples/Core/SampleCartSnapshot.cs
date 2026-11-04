@@ -7,8 +7,13 @@
 /// </summary>
 public sealed class SampleCartSnapshot(SampleCart cart) : IBelemetrySnapshotProvider
 {
+    /// <summary>The snapshot's name in a bundle: <c>cart</c>.</summary>
     public string Name => "cart";
 
+    /// <summary>
+    /// Describes the cart now: its item count, the products in it, whether a coupon is applied (not the code) and its
+    /// owner's e-mail address, which Belemetry scrubs.
+    /// </summary>
     public ValueTask<IReadOnlyDictionary<string, object?>?> CaptureAsync(BelemetrySnapshotContext context, CancellationToken cancellationToken)
     {
         IReadOnlyDictionary<string, object?> snapshot = new Dictionary<string, object?>

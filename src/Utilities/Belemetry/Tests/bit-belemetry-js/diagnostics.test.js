@@ -151,6 +151,20 @@ describe('DiagnosticRecorder', () => {
         malformed.restore();
         expect(malformed.size).toBe(0);
     });
+
+    it('keeps the restored events within the capacity, newest first', () => {
+        const recorder = new DiagnosticRecorder(recorderConfig({ persist: true, maxEvents: 10 }));
+        for (let i = 0; i < 8; i++) recorder.record(log({ eventName: 'exception', scope: 'bit.belemetry.errors', feature: 1, severityNumber: 17, attributes: { 'exception.type': 'Old' + i } }));
+        recorder.persist(4095);
+
+        const next = new DiagnosticRecorder(recorderConfig({ persist: true, maxEvents: 5 }));
+        next.record(log({ eventName: 'exception', scope: 'bit.belemetry.errors', feature: 1, severityNumber: 17, attributes: { 'exception.type': 'New' } }));
+        next.restore();
+
+        const snapshot = next.snapshot(4095, {});
+        expect(snapshot.events.map(e => e.exc.type)).toEqual(['Old4', 'Old5', 'Old6', 'Old7', 'New']);
+        expect(snapshot.dropped.capacity).toBe(4);
+    });
 });
 
 describe('getDiagnostics', () => {

@@ -16,7 +16,11 @@ public enum BelemetryDiagnosticCategories
     /// <summary>Exceptions: .NET (logged, unhandled, caught by an error boundary, tracked) and browser (errors, unhandled rejections).</summary>
     Exception = 4,
 
-    /// <summary>HTTP requests: browser fetch/XHR and .NET <c>HttpClient</c> client spans, server request spans.</summary>
+    /// <summary>
+    /// HTTP requests: browser fetch/XHR and .NET <c>HttpClient</c> client spans, server request spans. Belemetry collects
+    /// the .NET spans only with an exporter configured: without one this category holds the browser's requests alone,
+    /// even when another tracer (an OpenTelemetry SDK) records the app's.
+    /// </summary>
     Http = 8,
 
     /// <summary>JS interop failures (<c>JSException</c>, <c>JSDisconnectedException</c>, interop timeouts).</summary>
@@ -31,7 +35,10 @@ public enum BelemetryDiagnosticCategories
     /// <summary><c>ILogger</c> entries at or above <see cref="BelemetryDiagnosticsOptions.MinimumLogLevel"/>.</summary>
     Log = 128,
 
-    /// <summary>Other spans (an app's own <c>ActivitySource</c>).</summary>
+    /// <summary>
+    /// Other spans (an app's own <c>ActivitySource</c>). Belemetry collects them only with an exporter configured: without
+    /// one this category stays empty, even when another tracer (an OpenTelemetry SDK) records them.
+    /// </summary>
     Trace = 256,
 
     /// <summary>Events the app records itself (<see cref="IBelemetryDiagnostics.Record"/>), and recorded snapshots.</summary>

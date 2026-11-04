@@ -34,6 +34,7 @@ internal sealed class BelemetryDiagnosticHub : IDisposable
     private readonly object _registrationLock = new();
     private BelemetryDiagnosticEventFactory? _factory;
     private BelemetryDiagnosticSanitizer? _sanitizer;
+    private IBelemetryDiagnosticComponentFilter[]? _componentFilters;
     private ActivityListener? _listener;
     private MeterListener? _meters;
     private int _started;
@@ -372,12 +373,45 @@ internal sealed class BelemetryDiagnosticHub : IDisposable
                            ?? Resolve();
             if (recorder is null || recorder.IsClosed) return;
 
+            // A tool's own UI (BevTools' panels) handles events through the app's renderer: its activity, not the app's.
+            if (activity.GetTagItem(BelemetryDiagnosticEventFactory.ComponentTypeTag) is string type && IsExcludedComponent(type)) return;
+
             if (Factory.FromFrameworkActivity(activity, recorder) is { } e && CanRecordFor(e.Feature)) Record(recorder, e);
         }
         catch
         {
             // Never break the renderer.
         }
+    }
+
+    /// <summary>Whether a tool registered <paramref name="componentType"/> as its own (<see cref="IBelemetryDiagnosticComponentFilter"/>).</summary>
+    internal bool IsExcludedComponent(string componentType)
+    {
+        if (_componentFilters is null)
+        {
+            try
+            {
+                _componentFilters = _services.GetServices<IBelemetryDiagnosticComponentFilter>().ToArray();
+            }
+            catch
+            {
+                // Registered other than as a singleton (scope validation refuses it here): it excludes nothing.
+                _componentFilters = [];
+            }
+        }
+
+        foreach (var filter in _componentFilters)
+        {
+            try
+            {
+                if (filter.IsExcluded(componentType)) return true;
+            }
+            catch
+            {
+                // A filter that throws excludes nothing.
+            }
+        }
+        return false;
     }
 
     private void OnRenderMeasured(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)

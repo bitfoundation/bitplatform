@@ -131,6 +131,23 @@ public class BelemetryIntegrationTests : BunitContext
         cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-belemetry-preview")));
         Assert.Contains("InvalidOperationException in SupportChild", cut.Find(".bit-belemetry-preview-title").TextContent, StringComparison.Ordinal);
     }
+
+    [TestMethod]
+    public void BevTools_own_UI_events_stay_off_Belemetrys_timeline()
+    {
+        RenderFailingTree();
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Support", StringComparison.Ordinal)).Click();
+        cut.Find("#bev-belemetry-capture").Click();
+        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-belemetry-preview")));
+
+        var filter = Services.GetServices<IBelemetryDiagnosticComponentFilter>().Single();
+        Assert.IsTrue(filter.IsExcluded(typeof(BevBelemetryPanel).FullName!));
+        Assert.IsTrue(filter.IsExcluded(typeof(BevToolsPanel).FullName!));
+        Assert.IsFalse(filter.IsExcluded(typeof(SupportChild).FullName!), "Exact namespace: an application under Bit.BevTools.* is the application.");
+        Assert.IsFalse(Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents().Any(e => e.ComponentType is { } type && filter.IsExcluded(type)));
+    }
 }
 
 /// <summary>The Support panel under <see cref="BevValueAccess.None"/>: BevTools' own rule applies to Belemetry's values too.</summary>

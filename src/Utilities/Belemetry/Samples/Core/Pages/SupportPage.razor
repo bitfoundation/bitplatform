@@ -173,6 +173,8 @@
 
     private void Cancel()
     {
+        // A declined automatic capture leaves the review queue: its evidence is not kept for a later look.
+        if (_capture is not null) Diagnostics.Dismiss(_capture);
         _capture = null;
         _status = "Nothing was sent.";
     }

@@ -286,6 +286,9 @@ export class DiagnosticRecorder {
                 restored.push({ seq: copy.seq, elapsed: typeof copy.elapsed === 'number' ? copy.elapsed : 0, event: copy });
             }
             this.entries = restored.concat(this.entries);
+            // The previous load's events count against the capacity like any other: the oldest go first.
+            const max = Math.max(1, this.config.maxEvents);
+            if (this.entries.length > max) this.count('capacity', this.entries.splice(0, this.entries.length - max).length);
         } catch (e) {
             debug('diagnostics: restore failed', e);
         }

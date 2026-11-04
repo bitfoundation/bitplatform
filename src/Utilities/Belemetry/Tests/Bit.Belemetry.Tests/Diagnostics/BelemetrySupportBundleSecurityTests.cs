@@ -96,6 +96,43 @@ public class BelemetrySupportBundleSecurityTests
     }
 
     [TestMethod]
+    public async Task AListedFile_WithoutItsChecksum_IsRejected_AndNotRead()
+    {
+        await using var host = DiagnosticsTestHost.Create();
+        host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "e");
+        var capture = await host.Diagnostics.CaptureAsync();
+        capture.Confirm();
+
+        // Dropping the checksum would otherwise let a changed file through unverified.
+        var files = Unzip(await capture.ExportAsync());
+        var manifest = System.Text.Json.Nodes.JsonNode.Parse(files["manifest.json"])!;
+        manifest["files"]!.AsArray().Single(f => (string?)f!["name"] == "timeline.json")!.AsObject().Remove("sha256");
+        files["manifest.json"] = manifest.ToJsonString();
+        var read = await BelemetrySupportBundle.ReadAsync(Zip(files.Select(p => (p.Key, p.Value)).ToArray()));
+
+        Assert.IsFalse(read.IsValid);
+        Assert.IsTrue(read.Errors.Any(e => e.Contains("'timeline.json' without its SHA-256")), string.Join("; ", read.Errors));
+        Assert.IsEmpty(read.Events, "An unverified file is not read.");
+        Assert.IsFalse(read.Files.ContainsKey("timeline.json"));
+    }
+
+    [TestMethod]
+    public async Task DocumentsThatAreNotObjects_AreReported_NeverThrown()
+    {
+        var manifest = """{"format":"bit-belemetry-support-bundle","schemaVersion":1,"files":[]}""";
+        var report = """{"schemaVersion":1,"title":"t","summary":"s"}""";
+
+        var arrays = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("report.json", report), ("timeline.json", "[]"), ("exceptions.json", "42")));
+        Assert.IsTrue(arrays.IsValid, string.Join("; ", arrays.Errors));
+        Assert.IsEmpty(arrays.Events);
+        Assert.IsEmpty(arrays.ExceptionGroups);
+
+        var notAnObject = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", "[1]")));
+        Assert.IsFalse(notAnObject.IsValid);
+        Assert.Contains("not a JSON object", notAnObject.Errors.Single());
+    }
+
+    [TestMethod]
     public async Task PathTraversal_UnknownFiles_AndDecompressionBombs_AreHandled()
     {
         var manifest = """{"format":"bit-belemetry-support-bundle","schemaVersion":1,"files":[]}""";
@@ -146,6 +183,26 @@ public class BelemetrySupportBundleSecurityTests
         Assert.IsFalse(e.Attributes.ContainsKey("target.text"));
         Assert.AreEqual("en-US", result.Browser["browser.language"]);
         Assert.IsFalse(result.Browser.ContainsKey("user_agent.original"));
+    }
+
+    [TestMethod]
+    public async Task ABrowserEvent_WithoutItsCategorysFeature_IsNotKept()
+    {
+        // A capture checks a browser event against the page's consent by its feature, and feature 0 passes every check.
+        await using var host = DiagnosticsTestHost.Create();
+        using var json = JsonDocument.Parse("""
+            {"v":1,"events":[
+              {"seq":1,"time":1700000000000,"cat":"exception","name":"exception","sev":17,"feature":0,"exc":{"type":"TypeError","message":"boom"}},
+              {"seq":2,"time":1700000000000,"cat":"http","name":"GET","sev":17,"outcome":"failure","feature":2},
+              {"seq":3,"time":1700000000000,"cat":"component","name":"handle_event","sev":9,"feature":256},
+              {"seq":4,"time":1700000000000,"cat":"exception","name":"exception","sev":17,"feature":1,"exc":{"type":"TypeError","message":"kept"}}
+            ]}
+            """);
+
+        var result = BelemetryBrowserEvidence.Read(json.RootElement, host.Hub);
+
+        Assert.AreEqual(4, Assert.ContainsSingle(result.Events).Sequence);
+        Assert.AreEqual(3, result.Dropped["browser.malformed"]);
     }
 
     private static string AllText(byte[] bundle) => string.Join('\n', Unzip(bundle).Values);

@@ -87,6 +87,12 @@ public sealed class BelemetryDiagnosticEvent
     /// <summary>Whether it was recorded before the page last reloaded (browser timeline kept with <see cref="BelemetryDiagnosticsOptions.PersistBrowserTimeline"/>).</summary>
     public bool PreviousPage { get; init; }
 
+    /// <summary>
+    /// Which logged exception object it records (<see cref="BelemetryDiagnosticEventFactory.OccurrenceOf"/>), process-wide;
+    /// zero when none. Never exported: a capture given that exception finds this occurrence of its group, not the latest.
+    /// </summary>
+    internal long OccurrenceId { get; init; }
+
     internal static readonly IReadOnlyDictionary<string, object?> EmptyAttributes = new Dictionary<string, object?>();
 
     /// <summary>The same event under another sequence: one numbered by another timeline (the server's trace index) joining a capture.</summary>
@@ -115,6 +121,7 @@ public sealed class BelemetryDiagnosticEvent
         Redactions = Redactions,
         Truncated = Truncated,
         PreviousPage = PreviousPage,
+        OccurrenceId = OccurrenceId,
     };
 
     /// <summary>Whether this is a failure: an exception, a failed outcome, or Error severity and above.</summary>

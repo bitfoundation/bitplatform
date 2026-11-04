@@ -71,9 +71,18 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
             var converted = hub.Factory.FromException(exception, "tracked", ref counters);
 
             // Observed through the timeline already (an ErrorBoundary or the renderer logged it moments ago): that event is
-            // the subject, with its origin and trace, rather than a second report of one failure.
-            var recent = BelemetryTime.NowUnixNano() - (TimeSpan.FromMinutes(1).Ticks * 100);
-            subject = converted is null ? null : events.LastOrDefault(e => e.Exception?.Fingerprint == converted.Fingerprint && e.TimeUnixNano >= recent);
+            // the subject, with its origin and trace, rather than a second report of one failure. The occurrence that logged
+            // this very object - not the latest of its group, which may be another one's. Only an object never logged here
+            // (or dropped by the error limits before it was recorded) is matched by its fingerprint, if it is recent.
+            if (converted is not null && hub.Factory.OccurrenceOf(exception) is { } occurrence)
+            {
+                subject = events.LastOrDefault(e => e.OccurrenceId == occurrence);
+            }
+            else if (converted is not null)
+            {
+                var recent = BelemetryTime.NowUnixNano() - (TimeSpan.FromMinutes(1).Ticks * 100);
+                subject = events.LastOrDefault(e => e.Exception?.Fingerprint == converted.Fingerprint && e.TimeUnixNano >= recent);
+            }
 
             if (subject is null && converted is not null)
             {
@@ -152,16 +161,16 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
         }
 
         events.Sort(static (a, b) => a.TimeUnixNano != b.TimeUnixNano ? a.TimeUnixNano.CompareTo(b.TimeUnixNano) : a.Sequence.CompareTo(b.Sequence));
-        events = EnforceLimit(events, content);
-        content.Events = events;
 
+        // Chosen from every event, before the size limit: the limit never takes the subject out.
         subject ??= trigger.EventSequence is { } sequence ? events.LastOrDefault(e => e.Sequence == sequence && e.Source != BelemetryDiagnosticSource.Browser && e.Exception is not null) : null;
         subject ??= trigger.Fingerprint is { } fingerprint ? events.LastOrDefault(e => e.Exception?.Fingerprint == fingerprint) : null;
         subject ??= events.LastOrDefault(e => e.Exception is not null && e.Exception.Origin is "unhandled" or "error-boundary" or "circuit");
         subject ??= events.LastOrDefault(e => e.Exception is not null);
-        content.Subject = subject;
 
-        content.Groups = Groups(events, content);
+        // The groups the timeline knows with their full history, as they are now: the size limit makes the rest again.
+        var history = hub.MayCapture(BelemetryFeatures.Errors) ? recorder.Groups() : [];
+        content.Groups = Groups(events, content, history);
         content.Components = await ComponentsAsync(options, events, subject, content, cancellationToken);
 
         if (options.IncludeSnapshots)
@@ -173,7 +182,11 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
 
         content.Release = Release(settings, hub, browserInfo);
 
-        if (content.Components.Count == 0 && events.Count > 0) content.Unavailable.Add("Components: no event of the timeline names a component (the framework's component activities need .NET 10; they are not reported for static rendering).");
+        // Last, once every part of the bundle is known: the limit is the whole bundle's.
+        content.Events = EnforceLimit(events, subject, content, history);
+        content.Subject = subject;
+
+        if (content.Components.Count == 0 && content.Events.Count > 0) content.Unavailable.Add("Components: no event of the timeline names a component (the framework's component activities need .NET 10; they are not reported for static rendering).");
         return new BelemetryDiagnosticCapture(content);
     }
 
@@ -190,34 +203,86 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
         return page is null ? static _ => true : page.Allows;
     }
 
-    /// <summary>Keeps the timeline under <see cref="BelemetryDiagnosticsOptions.MaxBundleBytes"/>: the oldest activity goes first, then the oldest failures.</summary>
-    private static List<BelemetryDiagnosticEvent> EnforceLimit(List<BelemetryDiagnosticEvent> events, BelemetryCaptureContent content)
+    /// <summary>
+    /// Keeps the whole bundle under <see cref="BelemetryDiagnosticsOptions.MaxBundleBytes"/>: the release, the exception
+    /// groups, the components and the snapshots as written, and the timeline in the room left. When the parts other than
+    /// the timeline alone are too large the oldest snapshots' data goes; then the oldest activity, then the oldest
+    /// failures - never the subject. The groups and components are made again from the events kept.
+    /// </summary>
+    private List<BelemetryDiagnosticEvent> EnforceLimit(List<BelemetryDiagnosticEvent> events, BelemetryDiagnosticEvent? subject, BelemetryCaptureContent content, List<BelemetryExceptionGroup> history)
     {
-        // JSON is roughly the estimate's half (UTF-8, not UTF-16) plus its field names; the estimate errs on the large side.
+        // The timeline's JSON is roughly its estimate's half (UTF-8, not UTF-16) plus its field names: the estimate errs on
+        // the large side. The quarter left is the manifest's and the report's.
         var budget = Math.Max(64 * 1024, content.Options.MaxBundleBytes) * 3L / 4;
+
+        var parts = BelemetrySupportBundle.MeasureParts(content.Release, content.Groups, content.Components, content.Snapshots);
+        var snapshotsLeftOut = 0;
+        while (parts > budget && content.Snapshots.FindIndex(s => s.Data is not null) is var index and >= 0)
+        {
+            content.Snapshots.RemoveAt(index);
+            snapshotsLeftOut++;
+            parts = BelemetrySupportBundle.MeasureParts(content.Release, content.Groups, content.Components, content.Snapshots);
+        }
+        content.AddDropped("snapshot_size_limit", snapshotsLeftOut);
+
+        var room = Math.Max(0, budget - parts);
         long total = events.Sum(e => (long)e.EstimatedBytes);
-        if (total <= budget) return events;
+        if (total <= room) return events;
 
         var removed = new HashSet<BelemetryDiagnosticEvent>(ReferenceEqualityComparer.Instance);
         foreach (var pass in new[] { false, true })
         {
             foreach (var e in events)
             {
-                if (total <= budget) break;
-                if (e.IsFailure != pass) continue;
+                if (total <= room) break;
+                if (e.IsFailure != pass || ReferenceEquals(e, subject)) continue;
                 removed.Add(e);
                 total -= e.EstimatedBytes;
             }
         }
 
         content.LimitOmitted = removed.Count;
-        return events.Where(e => removed.Contains(e) is false).ToList();
+        var kept = events.Where(e => removed.Contains(e) is false).ToList();
+
+        // Made from fewer events and the same history, both only shrink: the measure above still holds.
+        content.Groups = Groups(kept, content, history);
+        content.Components = Recount(content.Components, kept);
+        return kept;
+    }
+
+    /// <summary>The components with the events that name them counted again, among the events kept.</summary>
+    private static List<BelemetryComponentInfo> Recount(List<BelemetryComponentInfo> components, List<BelemetryDiagnosticEvent> events)
+    {
+        var counts = new Dictionary<string, (int Events, int Failures)>(StringComparer.Ordinal);
+        foreach (var e in events)
+        {
+            if (e.ComponentType is not { } type) continue;
+            var (n, failures) = counts.GetValueOrDefault(type);
+            counts[type] = (n + 1, failures + (e.IsFailure ? 1 : 0));
+        }
+
+        return components.Select(c =>
+        {
+            var (n, failures) = counts.GetValueOrDefault(c.Type);
+            return n == c.Events && failures == c.Failures ? c : new BelemetryComponentInfo
+            {
+                Type = c.Type,
+                InstanceKey = c.InstanceKey,
+                Ancestors = c.Ancestors,
+                RenderCount = c.RenderCount,
+                RenderMilliseconds = c.RenderMilliseconds,
+                Events = n,
+                Failures = failures,
+                Association = c.Association,
+                Source = c.Source,
+            };
+        }).ToList();
     }
 
     /// <summary>The exception groups of the captured exceptions: the timeline's (with their full history) and the browser's.</summary>
-    private List<BelemetryExceptionGroup> Groups(List<BelemetryDiagnosticEvent> events, BelemetryCaptureContent content)
+    private List<BelemetryExceptionGroup> Groups(List<BelemetryDiagnosticEvent> events, BelemetryCaptureContent content, List<BelemetryExceptionGroup> history)
     {
-        var groups = hub.MayCapture(BelemetryFeatures.Errors) ? recorder.Groups() : [];
+        var groups = history.ToList();
         var known = new HashSet<string>(groups.Select(g => g.Fingerprint), StringComparer.Ordinal);
 
         foreach (var byFingerprint in events.Where(e => e.Exception is not null && known.Contains(e.Exception.Fingerprint) is false).GroupBy(e => e.Exception!.Fingerprint, StringComparer.Ordinal))
@@ -283,11 +348,19 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
             {
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeout.CancelAfter(_providerTimeout);
-                var described = await provider.DescribeAsync(new BelemetryComponentContextRequest
+                var task = provider.DescribeAsync(new BelemetryComponentContextRequest
                 {
                     ComponentTypes = components.Select(c => c.Type).ToList(),
                     Route = subject?.Route ?? events.LastOrDefault(e => e.Route is not null)?.Route,
-                }, timeout.Token);
+                }, timeout.Token).AsTask();
+
+                // Raced, not trusted to honor its token: a provider that ignores it cannot hold the capture.
+                if (await CompletesWithinAsync(task, _providerTimeout, cancellationToken) is false)
+                {
+                    content.Unavailable.Add($"Components: the provider '{provider.Name}' timed out.");
+                    continue;
+                }
+                var described = await task;
 
                 content.ComponentProvider ??= provider.Name;
                 components = Merge(components, described, provider.Name);
@@ -377,17 +450,19 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
             if (names is not null && names.Contains(name) is false) continue;
 
             var time = DateTimeOffset.UtcNow;
+            var started = Stopwatch.GetTimestamp();
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(timeout);
             try
             {
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter(timeout);
                 var task = provider.CaptureAsync(context, cts.Token).AsTask();
-                var finished = await Task.WhenAny(task, Task.Delay(timeout, cancellationToken));
-                if (finished != task)
+
+                // A provider that blocks before it returns its task is only seen once it returned: the time it took decides.
+                // Its data is not used then, however complete - a capture's providers are bounded by the timeout.
+                var finished = await CompletesWithinAsync(task, timeout, cancellationToken);
+                if (finished is false || Stopwatch.GetElapsedTime(started) > timeout)
                 {
-                    // Observed, so a late failure is not an unobserved task exception.
-                    _ = task.ContinueWith(static t => _ = t.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (finished) Observe(task);
                     snapshots.Add(new BelemetryDiagnosticSnapshot { Name = name, Label = label, Status = BelemetrySnapshotStatus.TimedOut, Time = time });
                     continue;
                 }
@@ -417,6 +492,11 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
             {
                 throw;
             }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                // It gave up at the timeout, as its token asked.
+                snapshots.Add(new BelemetryDiagnosticSnapshot { Name = name, Label = label, Status = BelemetrySnapshotStatus.TimedOut, Time = time });
+            }
             catch (Exception ex)
             {
                 // Only the type: the message of a state provider's failure may hold the state.
@@ -426,6 +506,30 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
 
         return snapshots;
     }
+
+    /// <summary>
+    /// Waits for a provider's task, at most <paramref name="timeout"/>: raced rather than trusted to honor its token. False
+    /// when it timed out - and the task is observed then, so a late failure is not an unobserved task exception. The
+    /// caller's own cancellation is thrown.
+    /// </summary>
+    private static async Task<bool> CompletesWithinAsync(Task task, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        if (task.IsCompleted) return true;
+
+        using var delay = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var finished = await Task.WhenAny(task, Task.Delay(timeout, delay.Token));
+
+        // Its timer is not left running for the rest of the timeout.
+        delay.Cancel();
+        if (finished == task) return true;
+
+        Observe(task);
+        cancellationToken.ThrowIfCancellationRequested();
+        return false;
+    }
+
+    private static void Observe(Task task) =>
+        _ = task.ContinueWith(static t => _ = t.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     private static int MeasureJson(Dictionary<string, object?> tree)
     {

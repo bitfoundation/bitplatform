@@ -295,7 +295,9 @@ internal sealed class BelemetryDiagnosticSanitizer
 
             var safeKey = key.Length > 128 ? key[..128] : key;
             budget -= 16 + (safeKey.Length * 2);
-            result[safeKey] = Node(Join(path, safeKey), item, depth + 1, limits, ref budget, ref counters);
+
+            // Redaction reads the whole key: the cut could take off the part that names a secret ("...Password").
+            result[safeKey] = Node(Join(path, key), item, depth + 1, limits, ref budget, ref counters);
         }
         return result;
     }

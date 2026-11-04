@@ -10,12 +10,16 @@ namespace Bit.Belemetry.Samples.Server;
 /// </summary>
 public sealed class SampleCircuitDiagnostics(IBelemetryDiagnostics diagnostics) : CircuitHandler
 {
+    /// <inheritdoc />
     public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken) => Record("circuit.opened");
 
+    /// <inheritdoc />
     public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken) => Record("circuit.connection_up");
 
+    /// <inheritdoc />
     public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken) => Record("circuit.connection_down", BelemetrySeverity.Warn);
 
+    /// <inheritdoc />
     public override Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken) => Record("circuit.closed");
 
     private Task Record(string name, BelemetrySeverity severity = BelemetrySeverity.Info)

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Bit.Belemetry;
 
@@ -32,6 +33,10 @@ internal sealed class BelemetryDiagnosticEventFactory
     private readonly BelemetryDiagnosticSanitizer _sanitizer;
     private readonly IBelemetryExceptionClassifier[] _classifiers;
 
+    // The logged exception objects and the occurrence each was recorded as. Weak: the table keeps no exception alive.
+    private readonly ConditionalWeakTable<Exception, StrongBox<long>> _occurrences = new();
+    private long _lastOccurrence;
+
     public BelemetryDiagnosticEventFactory(BelemetrySettings settings, BelemetryDiagnosticSanitizer sanitizer, IEnumerable<IBelemetryExceptionClassifier>? classifiers)
     {
         _settings = settings;
@@ -43,6 +48,12 @@ internal sealed class BelemetryDiagnosticEventFactory
 
     /// <summary>The release occurrences are attributed to: the service version.</summary>
     public string? Release => _settings.ServiceVersion;
+
+    /// <summary>
+    /// The occurrence a logged exception object was last recorded as (<see cref="BelemetryDiagnosticEvent.OccurrenceId"/>);
+    /// null when it was never logged here - or was dropped before (the error limits).
+    /// </summary>
+    public long? OccurrenceOf(Exception exception) => _occurrences.TryGetValue(exception, out var occurrence) ? occurrence.Value : null;
 
     /// <summary>A log record; null when its category is switched off or it is filtered out.</summary>
     public BelemetryDiagnosticEvent? FromLog(BelemetryLogRecord log, BelemetryDiagnosticRecorder recorder)
@@ -86,6 +97,13 @@ internal sealed class BelemetryDiagnosticEventFactory
             }
         }
 
+        long occurrence = 0;
+        if (exception is not null && log.Exception is { } thrown)
+        {
+            occurrence = Interlocked.Increment(ref _lastOccurrence);
+            _occurrences.AddOrUpdate(thrown, new StrongBox<long>(occurrence));
+        }
+
         return new BelemetryDiagnosticEvent
         {
             Sequence = recorder.NextSequence(),
@@ -106,6 +124,7 @@ internal sealed class BelemetryDiagnosticEventFactory
             Attributes = attributes,
             Redactions = counters.Redactions,
             Truncated = counters.Truncations > 0,
+            OccurrenceId = occurrence,
         };
     }
 
@@ -332,6 +351,26 @@ internal sealed class BelemetryDiagnosticEventFactory
         return last >= 0 ? stackTrace[(last + marker.Length)..] : stackTrace;
     }
 
+    /// <summary>
+    /// A stack text without its message lines: a .NET exception's text (<c>exception.ToString()</c>) and a JavaScript
+    /// stack start with <c>Type: message</c>, and an inner exception adds <c>---&gt; Type: message</c>. Only the frames and
+    /// the runtime's <c>--- End of ... ---</c> markers stay.
+    /// </summary>
+    private static string? FramesOnly(string? stack)
+    {
+        if (stack is null) return null;
+
+        var builder = new System.Text.StringBuilder(stack.Length);
+        foreach (var line in stack.AsSpan().EnumerateLines())
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("--- ", StringComparison.Ordinal) is false && BelemetryExceptionFingerprint.NormalizeFrame(trimmed.ToString()) is null) continue;
+            if (builder.Length > 0) builder.Append('\n');
+            builder.Append(line);
+        }
+        return builder.Length == 0 ? null : builder.ToString();
+    }
+
     private bool RendersRedactedValue(BelemetryLogRecord log)
     {
         foreach (var (key, value) in log.Attributes)
@@ -368,7 +407,8 @@ internal sealed class BelemetryDiagnosticEventFactory
             // the fingerprint, which is a hash.
             Message = Options.IncludeExceptionMessages ? scrubbed : null,
             MessageTemplate = Options.IncludeExceptionMessages ? template : null,
-            StackTrace = stack,
+            // The frames were read from the whole text above, so the fingerprint does not change with the option.
+            StackTrace = Options.IncludeExceptionMessages ? stack : FramesOnly(stack),
             Fingerprint = BelemetryExceptionFingerprint.FromParts(type, rawTemplate, frames, classification: null, release),
             Anchor = frames.Count > 0 ? frames[0] : null,
             Origin = origin,

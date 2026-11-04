@@ -122,8 +122,11 @@
     {
         try
         {
-            await JS.InvokeAsync<JsonElement>("blDemo.fetch", "/api/demo/fail");
-            _status = "GET /api/demo/fail answered 500.";
+            var result = await JS.InvokeAsync<JsonElement>("blDemo.fetch", "/api/demo/fail");
+
+            // Status 0: the request never got an answer (offline, blocked).
+            var status = result.TryGetProperty("status", out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var code) ? code : 0;
+            _status = status == 0 ? "GET /api/demo/fail got no answer." : $"GET /api/demo/fail answered {status}.";
         }
         catch (JSException)
         {

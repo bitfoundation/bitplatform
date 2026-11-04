@@ -769,8 +769,11 @@ builder.Services.AddBitBelemetryServices(o =>
 ```
 
 Call it in every project that hosts Blazor, as for the rest of Belemetry. It needs **no exporter**: an app can use
-support bundles without sending any telemetry. Keep `<BelemetryInitializer />` in `Routes.razor` (it registers a Blazor
-Server circuit's timeline and connects the browser's).
+support bundles without sending any telemetry. Without one, though, Belemetry does not collect .NET spans, so the
+timeline has no `HttpClient` or server request spans and none of the app's own `ActivitySource`s (the `Http` and `Trace`
+categories hold the browser's requests only) - even when another tracer, such as an OpenTelemetry SDK, records them.
+Logs, exceptions, the framework's navigation and UI events and the browser's evidence are there either way. Keep
+`<BelemetryInitializer />` in `Routes.razor` (it registers a Blazor Server circuit's timeline and connects the browser's).
 
 The defaults are the production-safe ones:
 
@@ -780,10 +783,10 @@ The defaults are the production-safe ones:
 | `MaxMemoryBytes` | 1 MiB | Estimated memory of one timeline; the oldest activity is evicted first |
 | `MinimumLogLevel` | `Warning` | `ILogger` entries recorded (independent of the export's level) |
 | `IncludeSuccessfulActivity` | `true` | Successful navigations, UI events and requests kept as context |
-| `IncludeLogMessages` / `IncludeExceptionMessages` | `false` / `true` | Log entries keep their template (`Order {OrderId} failed`), not the rendered message (and always their template when the message renders a redacted key such as a circuit id); exceptions keep their scrubbed message - off, neither the message nor its template is kept (grouping still uses it, hashed) |
+| `IncludeLogMessages` / `IncludeExceptionMessages` | `false` / `true` | Log entries keep their template (`Order {OrderId} failed`), not the rendered message (and always their template when the message renders a redacted key such as a circuit id); exceptions keep their scrubbed message - off, neither the message nor its template is kept, and the stack text keeps its frames only (grouping still uses the message, hashed) |
 | `CreateFrameworkActivities` | null: yes on WebAssembly and Hybrid, no on a server | Whether Belemetry makes the framework create its `Navigate`/`HandleEvent` activities when its own traces do not cover them (see below) |
 | `BrowserMaxEvents` | 200 | The browser script's own timeline |
-| `MaxBundleBytes` | 4 MiB | A bundle's JSON; past it the oldest activity is left out, and the manifest says how much |
+| `MaxBundleBytes` | 4 MiB | A bundle's JSON, snapshots, groups and components included; past it the oldest activity is left out, then the oldest failures (never the subject) - and the oldest snapshots first when they alone do not fit - and the manifest says how much |
 | `MaxExceptionGroups` | 50 | Groups remembered (least recently seen forgotten first) |
 | `PostTriggerWindow` / `AutoCaptureCooldown` | 2 s / 10 min | What follows a trigger is included; one automatic capture per failure per cooldown |
 | `MaxPendingCaptures` / `CaptureRetention` | 3 / 30 min | Automatic captures waiting for review (a new one replaces the oldest) |
@@ -997,8 +1000,10 @@ server's span share one trace. A session id is neither a trace id nor a user id,
 (`builder.Services.AddBitBevToolsBelemetry()`) adds a **Support** panel that lists this session's timeline and exception
 groups, opens the component tree at the component a failure is associated with, filters the timeline to a trace,
 previews and exports bundles and validates imported ones - and gives captures the component hierarchy and render counts
-BevTools observes (`IBelemetryComponentContextProvider`). Belemetry works without it: BevTools is a development tool,
-and in production a capture names the component types the framework reported and says the hierarchy is unavailable.
+BevTools observes (`IBelemetryComponentContextProvider`). BevTools' own UI events (its panels' buttons and tabs) stay off
+the timeline (`IBelemetryDiagnosticComponentFilter`, which any tool rendered in the app can implement). Belemetry works
+without it: BevTools is a development tool, and in production a capture names the component types the framework
+reported and says the hierarchy is unavailable.
 
 ### The bundle format
 
@@ -1012,8 +1017,8 @@ A ZIP (deterministic: sorted keys, fixed entry times) holding:
 
 Events are ordered by time, then by sequence; sequences count per source (browser events are prefixed `b` in
 references), and `elapsedMs` is each source's monotonic clock. `BelemetrySupportBundle.ReadAsync` reads and validates
-a bundle - format, version (a newer one is refused), checksums - with bounded decompression and no extraction to disk,
-ignoring files the format does not define.
+a bundle - format, version (a newer one is refused), checksums (a listed file without one is an error, and is not read) -
+with bounded decompression and no extraction to disk, ignoring files the format does not define.
 
 ### Troubleshooting incomplete captures
 
@@ -1306,8 +1311,8 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 - **New APIs:** `IBelemetryDiagnostics`, `BelemetryDiagnosticsOptions`, `BelemetryDiagnosticCapture`,
   `<BelemetryCapturePreview>`, `BelemetrySupportBundle`, `BelemetryIssueReport`, `BelemetryExceptionFingerprint`,
   `IBelemetrySnapshotProvider` (`AddBitBelemetrySnapshotProvider<T>()`), `IBelemetryExceptionClassifier`,
-  `IBelemetryDiagnosticSanitizer`, `IBelemetryComponentContextProvider`; in the script `getDiagnostics`,
-  `getDiagnosticsStream`, `clearDiagnostics` and `downloadFile`.
+  `IBelemetryDiagnosticSanitizer`, `IBelemetryComponentContextProvider`, `IBelemetryDiagnosticComponentFilter`; in the
+  script `getDiagnostics`, `getDiagnosticsStream`, `clearDiagnostics` and `downloadFile`.
 
 **New APIs:** `BelemetryOtlpExporterOptions.BrowserHeaders`, `BelemetryOptions.Errors`, `BelemetryOptions.MaxValueLength`,
 `BelemetryPrivacyOptions.RedactedAttributes`, `BelemetryBrowserOptions.TrackRageClicks`, the `Bit.Belemetry` meter, and

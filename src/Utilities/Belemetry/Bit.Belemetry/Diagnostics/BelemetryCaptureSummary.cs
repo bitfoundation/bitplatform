@@ -58,6 +58,7 @@ internal static class BelemetryCaptureSummary
                 "memory_limit" => "events were evicted at the timeline's memory budget (MaxMemoryBytes)",
                 "consent_revoked" => "events were purged when the user revoked consent",
                 "exception_group_limit" => "exception groups were forgotten (MaxExceptionGroups)",
+                "snapshot_size_limit" => "snapshots were left out at the bundle size limit (MaxBundleBytes)",
                 "browser.capacity" => "older browser events were evicted from the browser timeline (BrowserMaxEvents)",
                 "browser.malformed" => "browser events could not be read",
                 _ => null,

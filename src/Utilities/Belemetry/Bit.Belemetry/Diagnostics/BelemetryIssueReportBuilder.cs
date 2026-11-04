@@ -78,10 +78,15 @@ internal static class BelemetryIssueReportBuilder
         }
 
         // Failed requests: in the subject's trace (observed), or just before it (a possible cause, inferred).
-        // The page's fetch span and the server's span of the same request share a trace: one failed request, told once,
-        // from the caller's side (it has the URL and the duration the user waited).
-        var failedRequests = events.Where(e => e.Category == BelemetryDiagnosticCategories.Http && e.Outcome == BelemetryDiagnosticOutcome.Failure)
-            .GroupBy(e => e.TraceId ?? BelemetryDiagnosticJson.EventId(e), StringComparer.Ordinal)
+        // The page's fetch span and the server's span of that request - its child - are one failed request, told once,
+        // from the caller's side (it has the URL and the duration the user waited). Other requests of one trace (a
+        // handler's two calls) are told apart.
+        var failedHttp = events.Where(e => e.Category == BelemetryDiagnosticCategories.Http && e.Outcome == BelemetryDiagnosticOutcome.Failure).ToList();
+        var browserSpans = failedHttp.Where(e => e.Source == BelemetryDiagnosticSource.Browser && e.TraceId is not null && e.SpanId is not null)
+            .Select(e => (e.TraceId!, e.SpanId!)).ToHashSet();
+        var failedRequests = failedHttp
+            .Where(e => e.Source == BelemetryDiagnosticSource.Browser || e.TraceId is null || e.ParentSpanId is null || browserSpans.Contains((e.TraceId, e.ParentSpanId)) is false)
+            .GroupBy(e => e.TraceId is not null && e.SpanId is not null ? e.TraceId + "/" + e.SpanId : BelemetryDiagnosticJson.EventId(e), StringComparer.Ordinal)
             .Select(g => g.OrderBy(e => e.Source == BelemetryDiagnosticSource.Browser ? 0 : 1).ThenBy(e => e.TimeUnixNano).First())
             .OrderBy(e => e.TimeUnixNano)
             .ToList();

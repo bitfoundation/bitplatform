@@ -28,14 +28,15 @@ public sealed class BevBelemetryComponentContext(IServiceProvider services) : IB
             var instances = Find(session, type);
             if (instances.Count == 0) continue;
 
-            // The most recently rendered instance stands for its type: a failure is about what is on screen now.
+            // The most recently rendered instance stands for its type: a failure is about what is on screen now. Its own
+            // facts, all of them: its ancestry with another instance's render totals would describe no component.
             var record = instances.OrderByDescending(r => r.LastRenderTicks).First();
             described.Add(new BelemetryComponentInfo
             {
                 Type = type,
                 Ancestors = Ancestors(record),
-                RenderCount = instances.Sum(r => r.RenderCount),
-                RenderMilliseconds = instances.Sum(r => r.TotalRenderMs),
+                RenderCount = record.RenderCount,
+                RenderMilliseconds = record.TotalRenderMs,
                 Association = "provider",
                 Source = Name,
             });

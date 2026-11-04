@@ -400,7 +400,12 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   the source (its decision, `IgnoredActivityNames` respected), or `Diagnostics.CreateFrameworkActivities` (default: not
   on a server). An unsampled parent makes a parent-based sampler drop the spans under it. `Belemetry.cs` registers the
   component source (`AddComponentsTracing`) on every host, but on WebAssembly and Hybrid the export listens to it only
-  with diagnostics on (`BelemetrySettings.ExportsTraceSource`): an app without diagnostics traces as before.
+  with diagnostics on (`BelemetrySettings.ExportsTraceSource`): an app without diagnostics traces as before. A framework
+  activity naming a component an `IBelemetryDiagnosticComponentFilter` excludes (BevTools' own UI) is not recorded.
+- **The size limit is the whole bundle's** (`BelemetryDiagnosticCaptureBuilder.EnforceLimit`, run last): release, groups,
+  components and snapshots measured as written (`BelemetrySupportBundle.MeasureParts`), the timeline in the room left;
+  the subject is never cut. A capture given an exception finds the occurrence that logged that object
+  (`BelemetryDiagnosticEvent.OccurrenceId`), by fingerprint only when it was never logged.
 - **Exceptions of a log record** are read from its attributes (after privacy and processors); the exception object
   only gives the inner exceptions' types, and their messages when the record's stack text still holds them.
 - **The bundle format** (`BelemetrySupportBundle`, schema 1): see the README. A format change bumps `SchemaVersion`; a

@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Bit.Belemetry.Tests.Components;
 
@@ -7,7 +8,7 @@ namespace Bit.Belemetry.Tests.Components;
 [TestClass]
 public class BelemetryCapturePreviewTests
 {
-    private static async Task<(BunitContext Context, BelemetryDiagnosticCapture Capture)> CreateAsync()
+    private static async Task<(BunitContext Context, BelemetryDiagnosticCapture Capture)> CreateAsync(Action<BunitContext>? setup = null)
     {
         var context = new BunitContext();
         context.Services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
@@ -19,6 +20,7 @@ public class BelemetryCapturePreviewTests
             o.AddExporter(new BelemetryInMemoryExporter());
         });
         context.JSInterop.Mode = JSRuntimeMode.Loose;
+        setup?.Invoke(context);
 
         var logger = context.Services.GetRequiredService<ILoggerFactory>().CreateLogger("MyApp.Orders");
         context.Services.GetRequiredService<BelemetryPipeline>().Start();
@@ -82,6 +84,25 @@ public class BelemetryCapturePreviewTests
 
         preview.Find(".bit-belemetry-preview-cancel").Click();
         Assert.IsTrue(cancelled);
+    }
+
+    [TestMethod]
+    public async Task ADownloadThatCouldNotStart_IsNotAConfirmationTheAppActsOn()
+    {
+        // The browser refused the download: the app must not dismiss the capture or tell the user it was sent.
+        var (context, capture) = await CreateAsync(c => c.JSInterop.SetupModule(BelemetryJsBridge.ModulePath)
+            .SetupVoid(i => i.Identifier == "downloadFile").SetException(new JSException("The download was blocked.")));
+        await using var _ = context;
+        BelemetryDiagnosticCapture? confirmed = null;
+
+        var preview = context.Render<BelemetryCapturePreview>(p => p
+            .Add(c => c.Capture, capture)
+            .Add(c => c.OnConfirmed, c => confirmed = c));
+        await preview.Find(".bit-belemetry-preview-confirm").ClickAsync(new());
+
+        Assert.IsNull(confirmed);
+        Assert.AreEqual("The report could not be saved here.", preview.Find(".bit-belemetry-preview-status").TextContent);
+        Assert.IsFalse(preview.Find(".bit-belemetry-preview-confirm").HasAttribute("disabled"), "The user can try again.");
     }
 
     [TestMethod]

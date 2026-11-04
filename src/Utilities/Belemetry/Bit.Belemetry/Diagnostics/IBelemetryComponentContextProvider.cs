@@ -11,6 +11,9 @@ public interface IBelemetryComponentContextProvider
     /// <summary>The provider's name, reported in the manifest.</summary>
     string Name { get; }
 
-    /// <summary>Describes the live components of the given types; an empty list when it knows none.</summary>
+    /// <summary>
+    /// Describes the live components of the given types; an empty list when it knows none. It must return without
+    /// blocking: an answer still pending after two seconds is left behind and the provider reported as timed out.
+    /// </summary>
     ValueTask<IReadOnlyList<BelemetryComponentInfo>> DescribeAsync(BelemetryComponentContextRequest request, CancellationToken cancellationToken);
 }
