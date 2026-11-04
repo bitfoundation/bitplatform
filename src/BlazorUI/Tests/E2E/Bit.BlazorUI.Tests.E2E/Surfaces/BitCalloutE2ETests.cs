@@ -341,19 +341,24 @@ public class BitCalloutE2ETests : E2ETestBase
 
         // At the top of the viewport, so a callout opened at a point inside it has the room to open below it.
         await El("ctx-area").EvaluateAsync("el => el.scrollIntoView({ block: 'start' })");
-        var area = await BoxAsync(El("ctx-area"));
+        // The point is the one the browser reports for the press rather than the one it was aimed at: Firefox hands mouse
+        // events whole pixels, and the area can sit a fraction of a pixel off them once it is scrolled to the top.
+        await El("ctx-area").EvaluateAsync("el => el.addEventListener('contextmenu', e => window.__ctxPoint = [e.clientX, e.clientY], { capture: true })");
+        Task<double[]> PointAsync() => Page.EvaluateAsync<double[]>("() => window.__ctxPoint");
         await El("ctx-area").ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
 
         var callout = Cal("ctx-body");
         await Expect(callout).ToBeVisibleAsync();
         await SettleAsync(callout);
         var box = await BoxAsync(callout);
-        Near(area.X + 40, box.X, "left at the point");
-        Near(area.Y + 30 + 1, box.Y, "top at the point");
+        var point = await PointAsync();
+        Near(point[0], box.X, "left at the point");
+        Near(point[1] + 1, box.Y, "top at the point");
 
         await El("ctx-area").ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 300, Y = 60 }, Force = true });
-        await PollAsync(async () => (await BoxAsync(callout)).X, x => Math.Abs(x - (area.X + 300)) < 1.5, "the callout did not move to the new point");
-        Near(area.Y + 60 + 1, (await BoxAsync(callout)).Y, "top at the new point");
+        point = await PointAsync();
+        await PollAsync(async () => (await BoxAsync(callout)).X, x => Math.Abs(x - point[0]) < 1.5, "the callout did not move to the new point");
+        Near(point[1] + 1, (await BoxAsync(callout)).Y, "top at the new point");
         await Expect(El("ctx-opens")).ToHaveTextAsync("1");
 
         await El("ctx-copy").ClickAsync();

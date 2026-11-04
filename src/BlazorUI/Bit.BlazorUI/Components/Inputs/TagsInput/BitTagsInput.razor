@@ -129,7 +129,7 @@
             <div role="list"
                  id="@_tagsId"
                  data-bit-esc="@(_pickedUpTagIndex >= 0 && Disabled is false ? "claim" : null)"
-                 aria-label="@(TagsAriaLabel ?? "Tags")"
+                 aria-label="@(TagsAriaLabel ?? BitStrings.Current.Tags)"
                  style="@Styles?.TagsContainer"
                  class="bit-tgi-tgs @Classes?.TagsContainer">
                 @for (var i = 0; i < displayedTagCount; i++)
@@ -192,7 +192,7 @@
                                     @ondblclick:stopPropagation="true"
                                     type="button"
                                     tabindex="-1"
-                                    title="@(ReorderTitle ?? "Move")"
+                                    title="@(ReorderTitle ?? BitStrings.Current.Move)"
                                     aria-pressed="@GetReorderPressed(index)"
                                     aria-label="@GetReorderAriaLabel(tag, index, carriedTag)"
                                     style="@Styles?.ReorderButton"
@@ -264,7 +264,7 @@
                                     @onclick:stopPropagation="true"
                                     type="button"
                                     tabindex="-1"
-                                    title="@(DismissTitle ?? "Remove")"
+                                    title="@(DismissTitle ?? BitStrings.Current.Remove)"
                                     aria-label="@GetDismissAriaLabel(tag)"
                                     style="@Styles?.DismissButton"
                                     class="bit-tgi-dbt @Classes?.DismissButton">
@@ -291,7 +291,7 @@
                     aria-label="@(_tagsExpanded ? null : GetMoreTagsAriaLabel(hiddenTagCount))"
                     style="@Styles?.ToggleButton"
                     class="bit-tgi-tgl @Classes?.ToggleButton">
-                @(_tagsExpanded ? (LessTagsText ?? "Show less") : GetMoreTagsText(hiddenTagCount))
+                @(_tagsExpanded ? (LessTagsText ?? BitStrings.Current.ShowLess) : GetMoreTagsText(hiddenTagCount))
             </button>
         }
 
@@ -301,20 +301,28 @@
            Spell checking is off for the same kind of reason - a tag is a value rather than a sentence - and
            SpellCheck turns it back on for a field that does collect words.
            data-bit-esc claims the Escape that takes back the text being typed or clears the tags (see
-           Utils.claimEscape), so a dialog around the field does not close on that same press. *@
+           Utils.claimEscape), so a dialog around the field does not close on that same press.
+           The text is bound rather than written as a value next to an input handler: a binding hands the
+           renderer the text each input event carries, so the render of an older keystroke - a round trip
+           behind the typing - writes nothing over the newer text already in the field. Written by hand, the
+           render that empties the field after a separator lands on the keys typed since and takes them away.
+           It is also what puts back the text the component did not keep - a cut to the MaxLength, a word
+           turned into a tag, a text set from code - since the renderer compares that with the text typed
+           rather than with the one it rendered last, so nothing has to be pushed into the element by hand. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
-               @oninput="HandleOnInput"
+               @bind:get="_inputText"
+               @bind:set="HandleOnInput"
+               @bind:event="oninput"
                type="text"
                id="@_inputId"
                autocorrect="off"
                autocapitalize="none"
                readonly="@ReadOnly"
                data-bit-esc="@EscapeClaim(hasRemovableTag)"
-               value="@_inputText"
                style="@Styles?.Input"
                autofocus="@AutoFocus"
                inputmode="@_inputMode"
@@ -344,7 +352,7 @@
         @if (IsLoading)
         {
             <div role="progressbar"
-                 aria-label="@(LoadingAriaLabel ?? "Loading")"
+                 aria-label="@(LoadingAriaLabel ?? BitStrings.Current.Loading)"
                  style="@Styles?.Spinner"
                  class="bit-tgi-spn @Classes?.Spinner"></div>
         }
@@ -356,8 +364,8 @@
                     @onclick:stopPropagation="true"
                     type="button"
                     tabindex="-1"
-                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? "Clear all tags")"
-                    aria-label="@(ClearButtonAriaLabel ?? "Clear all tags")"
+                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? BitStrings.Current.ClearAllTags)"
+                    aria-label="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearAllTags)"
                     style="@Styles?.ClearButton"
                     class="bit-tgi-cbt @Classes?.ClearButton">
                 <i style="@Styles?.ClearIcon" class="bit-tgi-cli @clearIcon?.GetCssClasses() @Classes?.ClearIcon" aria-hidden="true" />

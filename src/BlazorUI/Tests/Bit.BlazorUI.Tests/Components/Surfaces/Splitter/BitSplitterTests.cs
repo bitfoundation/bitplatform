@@ -933,6 +933,29 @@ public class BitSplitterTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSplitterHandleSetCollapsedShouldApplyTheFoldItIsGivenWhateverTheStateAlreadyIs()
+    {
+        var changes = 0;
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsedChange, (bool _) => changes++);
+        });
+
+        // A Ctrl+arrow repeated before the render of the first has come back asks for the same fold twice, and the
+        // second ask leaves it as it is rather than toggling it back.
+        await component.InvokeAsync(() => component.Instance.HandleSetCollapsed(true));
+        await component.InvokeAsync(() => component.Instance.HandleSetCollapsed(true));
+        Assert.IsTrue(component.Instance.Collapsed);
+
+        await component.InvokeAsync(() => component.Instance.HandleSetCollapsed(false));
+        await component.InvokeAsync(() => component.Instance.HandleSetCollapsed(false));
+        Assert.IsFalse(component.Instance.Collapsed);
+
+        Assert.AreEqual(2, changes);
+    }
+
+    [TestMethod]
     public async Task BitSplitterHandleResetShouldClearThePercent()
     {
         var component = RenderComponent<BitSplitter>();

@@ -15,6 +15,10 @@
         // How long in milliseconds the page goes without a scroll event before a scroll counts as stopped. A running
         // scroll raises one every frame; a smooth one in a busy page can skip a few.
         export const SCROLL_PAUSE = 100;
+        // How long in milliseconds a callout opened ahead of the scroll a focus() made follows the scroll raised for it
+        // (see BitCallout.focusScrollDue): WebKit raises it at its next rendering update, a frame after the focus on an
+        // idle page and several frames later on a busy one.
+        export const FOCUS_SCROLL_WAIT = 500;
 
         // The innermost open callout, which is the one the page-level handlers speak for. It reads as the
         // single open callout it used to be for everything that never nests. A getter, defined on the namespace
@@ -51,6 +55,17 @@
             });
         }
 
+        // True when the focus is on an element of the given component that is not in the viewport yet - one a
+        // focus() has just landed on and WebKit has still to scroll into view (see BitCallout.focusScrollDue).
+        export function isFocusOutOfView(componentId: string | undefined): boolean {
+            const component = componentId ? document.getElementById(componentId) : null;
+            const active = document.activeElement;
+            if (component == null || active == null || component.contains(active) === false) return false;
+
+            const rect = active.getBoundingClientRect();
+            return rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth;
+        }
+
         // True when the node lives inside one of the open callouts. A scroll that started in there is the
         // user reading the callout rather than the page moving out from under it.
         export function calloutContains(node: Node | null): boolean {
@@ -83,6 +98,13 @@
         // Whether the page was still scrolling when the callout opened (see _lastScroll). The rest of that scroll
         // re-anchors the callout instead of dismissing it, and only a scroll started after it has stopped dismisses it.
         openedMidScroll?: boolean;
+        // Until when (performance.now()) the scroll a focus() inside the component made is still being raised, for a
+        // callout opened before WebKit got to it: it brings the element a focus() lands on into view at its next
+        // rendering update rather than at once, and a key pressed right after the focus can open the callout in
+        // between. The toggle makes that scroll itself (see toggle); a first scroll raised by then is that one, or
+        // WebKit's own after it, and is followed like the rest of one the callout opened in the middle of (see
+        // openedMidScroll). 0 when no such scroll was to come.
+        focusScrollDue?: number;
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;

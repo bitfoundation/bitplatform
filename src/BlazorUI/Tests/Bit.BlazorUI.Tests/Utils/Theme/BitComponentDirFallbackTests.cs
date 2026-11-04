@@ -74,6 +74,9 @@ public sealed class BitComponentDirFallbackTests
         // its root, so the class is what it is laid out in - never a [dir="rtl"] ancestor, which also matched the page
         // around a calendar laid out left to right.
         ".bit-bfc-rtl ",
+        // The carousel writes the direction its slides are laid out in (its Dir's, or the one read back with their
+        // measurement) in bit-csl-rtl on its root and places the next/prev buttons by it, so they agree with the slides.
+        ":where(.bit-csl-rtl ",
         // The safe-area insets of the page, mapped onto the inline sides of whatever declares a direction.
         ":root [dir=\"rtl\"]",
     ];

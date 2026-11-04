@@ -190,9 +190,9 @@ public class BitScrollablePaneE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        await Expect(El("scp-sbw-thin")).ToHaveCSSAsync("scrollbar-width", "thin");
-        await Expect(El("scp-sbw-none")).ToHaveCSSAsync("scrollbar-width", "none");
-        await Expect(El("scp-sbw-auto")).ToHaveCSSAsync("scrollbar-width", "auto");
+        await El("scp-sbw-thin").ExpectScrollbarWidthAsync("thin");
+        await El("scp-sbw-none").ExpectScrollbarWidthAsync("none");
+        await El("scp-sbw-auto").ExpectScrollbarWidthAsync("auto");
         await El("scp-sbw-none").EvaluateAsync("el => el.scrollTop = 20");
         Assert.IsTrue(await ScrollTopAsync(El("scp-sbw-none")) > 0, "A hidden scrollbar stops the pane from scrolling.");
 
@@ -673,11 +673,11 @@ public class BitScrollablePaneE2ETests : E2ETestBase
 
         Near(48, (await BoxAsync(El("scp-par-1"))).Height, "a cascaded Height of 3rem");
         await Expect(El("scp-par-1")).ToHaveClassAsync(HasClass("bit-scp-mod"));
-        await Expect(El("scp-par-1")).ToHaveCSSAsync("scrollbar-width", "thin");
+        await El("scp-par-1").ExpectScrollbarWidthAsync("thin");
 
         Near(96, (await BoxAsync(El("scp-par-own"))).Height, "its own Height");
         await Expect(El("scp-par-own")).Not.ToHaveClassAsync(HasClass("bit-scp-mod"));
-        await Expect(El("scp-par-own")).ToHaveCSSAsync("scrollbar-width", "thin");
+        await El("scp-par-own").ExpectScrollbarWidthAsync("thin");
     }
 
     [TestMethod]

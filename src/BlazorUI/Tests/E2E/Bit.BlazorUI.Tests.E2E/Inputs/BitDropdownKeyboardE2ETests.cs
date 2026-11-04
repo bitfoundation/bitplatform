@@ -415,7 +415,11 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
         await Page.Locator("#btn-open-dialog").ClickAsync();
         await Expect(Page.Locator(".bit-dlg-ctn")).ToBeVisibleAsync();
 
+        // The dialog puts the focus on its close button a round trip after it shows: the field is focused once that has
+        // happened, or the dialog takes the focus back from it before the Escape is pressed.
+        await Page.WaitForFunctionAsync("() => document.querySelector('.bit-dlg-ctn')?.contains(document.activeElement)");
         await Trigger("dd-dlg-clear").FocusAsync();
+        await Expect(Trigger("dd-dlg-clear")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Page.Locator("#dlg-clear-value")).ToHaveTextAsync("");

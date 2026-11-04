@@ -480,14 +480,19 @@ $acd-private-properties:
     transition: opacity var(--bit-acd-dur) $mot-easing 0ms,
                 padding-block var(--bit-acd-dur) $mot-easing 0ms;
 
+    // A panel the browser reveals opens at once rather than the way a click opens it: the browser scrolls to the match
+    // as it reveals it, and a panel still growing around the match moves it away again - out of the view altogether
+    // where scroll anchoring holds the content after the panel in place as the panel grows (WebKit).
     &:not([hidden]) {
         opacity: 1;
         padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));
+        transition: none;
     }
 }
 
 .bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {
     grid-template-rows: 1fr;
+    transition: none;
 }
 
 

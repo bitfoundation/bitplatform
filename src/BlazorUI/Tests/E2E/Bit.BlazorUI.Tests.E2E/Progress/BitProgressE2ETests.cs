@@ -69,7 +69,7 @@ public class BitProgressE2ETests : E2ETestBase
         await Expect(Page.Locator("#prg-circular .bit-prb-crp")).Not.ToHaveAttributeAsync("role", new Regex(".*"));
 
         // The arc is 42% of the circle's circumference.
-        await Expect(Page.Locator("#prg-circular .bit-prb-cbr")).ToHaveCSSAsync("stroke-dasharray", $"{Css(3.141 * 42 * 0.8)}%, 500%");
+        await ExpectDashArrayAsync(Page.Locator("#prg-circular .bit-prb-cbr"), 3.141 * 42 * 0.8);
         await Expect(Page.Locator("#prg-circular .bit-prb-cbr")).ToHaveCSSAsync("stroke", await ResolveAsync("color", "var(--bit-clr-pri)"));
         await Expect(Page.Locator("#prg-circular .bit-prb-crt")).ToHaveCSSAsync("stroke", await ResolveAsync("color", "var(--bit-clr-bg-sec)"));
         Assert.AreEqual((50, 50), await SizeAsync("#prg-circular svg"));
@@ -264,7 +264,7 @@ public class BitProgressE2ETests : E2ETestBase
         // Against a Value, the buffer is in the same units.
         await Page.WaitForFunctionAsync("() => { const b = document.querySelector('#prg-buffer-value .bit-prb-buf').getBoundingClientRect(); const c = document.querySelector('#prg-buffer-value .bit-prb-bcn').getBoundingClientRect(); return Math.abs(b.width / c.width - 0.8) < 0.01; }");
 
-        await Expect(Page.Locator("#prg-cir-buffer .bit-prb-cbf")).ToHaveCSSAsync("stroke-dasharray", $"{Css(3.141 * 55 * 0.8)}%, 500%");
+        await ExpectDashArrayAsync(Page.Locator("#prg-cir-buffer .bit-prb-cbf"), 3.141 * 55 * 0.8);
         await Expect(Page.Locator("#prg-buffer-indeterminate .bit-prb-buf")).ToHaveCountAsync(0);
     }
 
@@ -382,7 +382,7 @@ public class BitProgressE2ETests : E2ETestBase
         // The arc starts right after the gap, and the track is shortened by it too.
         await Expect(root.Locator(".bit-prb-cbr")).ToHaveCSSAsync("transform", transform);
         var arc = (360 - double.Parse(gap.Replace("deg", ""), CultureInfo.InvariantCulture)) / 360;
-        await Expect(root.Locator(".bit-prb-crt")).ToHaveCSSAsync("stroke-dasharray", $"{Css(Math.Round(3.141 * 100 * 0.8 * arc, 3))}%, 500%");
+        await ExpectDashArrayAsync(root.Locator(".bit-prb-crt"), 3.141 * 100 * 0.8 * arc);
     }
 
     [TestMethod]
@@ -699,7 +699,14 @@ public class BitProgressE2ETests : E2ETestBase
         return ((int)Math.Round(box!.Width), (int)Math.Round(box.Height));
     }
 
-    private static string Css(double value) => Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
+    // A stroke-dasharray of the arc's length and the 500% gap after it, the length compared as a number: WebKit writes it
+    // in single precision ("188.460007%"), where the other engines round it ("188.46%").
+    private async Task ExpectDashArrayAsync(ILocator part, double length)
+    {
+        await Expect(part).ToHaveCSSAsync("stroke-dasharray", new Regex(@"^[\d.]+%, 500%$"));
+        await Page.WaitForFunctionAsync("([el, length]) => Math.abs(parseFloat(getComputedStyle(el).strokeDasharray) - length) < 0.001",
+                                        new object[] { await part.ElementHandleAsync(), Math.Round(length, 3) });
+    }
 
     private static double Px(string value) => double.Parse(value.Replace("px", ""), CultureInfo.InvariantCulture);
 

@@ -54,7 +54,17 @@ public class BitSnackBarE2ETests : E2ETestBase
 
     private ILocator Item(string text) => Page.Locator("#snb .bit-snb-itm", new() { HasText = text });
 
-    private Task OpenSnackBarAsync(string query = "") => OpenAsync($"/e2e/snack-bar{(query.Length > 0 ? "?" + query : "")}");
+    // A page left while its icon fonts are still on their way has their downloads aborted, which Firefox logs as an
+    // error of the page; a test that opens the page again with other settings lets the fonts of the last one arrive.
+    private async Task OpenSnackBarAsync(string query = "")
+    {
+        if (Page.Url.StartsWith(BaseUrl, StringComparison.Ordinal))
+        {
+            await Page.EvaluateAsync("() => document.fonts.ready.then(() => true)");
+        }
+
+        await OpenAsync($"/e2e/snack-bar{(query.Length > 0 ? "?" + query : "")}");
+    }
 
     private Task SettleAsync(ILocator item) => item.EvaluateAsync("el => Promise.all(el.getAnimations().map(a => a.finished.catch(() => null)))");
 

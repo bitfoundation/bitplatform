@@ -971,6 +971,8 @@ span.bit-ctp-txt {
 .bit-ctp-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel comes down from the top edge of the screen, so the dial starts below the safe area there.
+        @include responsive-panel-safe-area(ctp);
         top: 0;
         left: 0;
         width: 100%;
@@ -980,11 +982,32 @@ span.bit-ctp-txt {
         box-shadow: $box-shadow-sheet;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
+        // Capped at the height Callouts.position gives the panel, so a screen an on-screen keyboard has shortened
+        // scrolls the dial in the container rather than cutting its bottom off.
+        .bit-ctp-cac {
+            max-height: inherit;
+            box-sizing: border-box;
+        }
+
+        // The safe area is drawn as the top border of the first part of the container, which its own background
+        // paints: the toolbar, which runs up under the status bar in its accent the way an app bar does, or the
+        // header a template puts above it, in whatever the consumer paints that with.
+        .bit-ctp-tlb,
+        .bit-ctp-chd {
+            border-top: var(--bit-ctp-sa-top) solid transparent;
+        }
+
+        .bit-ctp-chd ~ .bit-ctp-tlb {
+            border-top-width: 0;
+        }
+
         .bit-ctp-clk {
             margin: spacing(2) auto;
         }
 
+        // Laid over the top corner of the container, which the band of the part below it does not move.
         .bit-ctp-cbn {
+            top: var(--bit-ctp-sa-top);
             width: 100%;
             min-width: spacing(4);
             max-width: spacing(5);

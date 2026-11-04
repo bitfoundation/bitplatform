@@ -181,7 +181,7 @@
                         tabindex="@TabIndex"
                         style="@Styles?.ClearButton"
                         class="bit-tfl-cbt @Classes?.ClearButton"
-                        aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
+                        aria-label="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearText)"
                         disabled="@clearDisabled"
                         aria-disabled="@(clearDisabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
@@ -207,7 +207,7 @@
                         disabled="@(Disabled)"
                         aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
-                        aria-label="@(RevealPasswordAriaLabel ?? "Reveal password")"
+                        aria-label="@(RevealPasswordAriaLabel ?? BitStrings.Current.RevealPassword)"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">

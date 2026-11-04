@@ -286,6 +286,7 @@ public class BitAiChatE2ETests : E2ETestBase
         Assert.IsTrue(floating.Bottom <= footer.Top + 1, "The button floats above the footer.");
         Assert.AreEqual((footer.Left + footer.Right) / 2, (floating.Left + floating.Right) / 2, 1.5, "The button is centered.");
 
+        await transcript.WaitForScrollToRestAsync();
         var before = await transcript.ScrollStateAsync();
         Assert.IsTrue(before.FromBottom > 48, "The reader is away from the newest message.");
 

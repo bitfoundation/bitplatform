@@ -121,6 +121,52 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(7, true)]
+    [DataRow(42, false)]
+    [DataRow("A", true)]
+    [DataRow("👍", true)]
+    [DataRow("New", false)]
+    public void BitBadgeShouldMarkASingleCharacterToBeDrawnAsACircle(object content, bool isSingle)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, content);
+        });
+
+        Assert.AreEqual(isSingle, component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-one"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldMarkASingleCharacterOnlyWhileItIsAllTheBadgeShows()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 9);
+        });
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-one"));
+
+        // A second digit, a cap and a glyph beside the digit are each more than one character on the badge.
+        component.Render(parameters => parameters.Add(p => p.Content, 10));
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-one"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Content, 12);
+            parameters.Add(p => p.Max, 9);
+        });
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-one"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+            parameters.Add(p => p.Max, (int?)null);
+            parameters.Add(p => p.IconName, "Ringer");
+        });
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-one"));
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BitBadgeShouldRespectDot(bool dot)

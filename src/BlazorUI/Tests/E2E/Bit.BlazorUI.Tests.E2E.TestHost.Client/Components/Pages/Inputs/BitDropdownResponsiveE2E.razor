@@ -3,7 +3,8 @@
 
 @* The Responsive mode of BitDropdown on a phone: the side panel with its label and close button, the swipe that
    dismisses it, the RTL panel, the ComboBox panel input and add button (with their icons and accessible names), the
-   search box in the panel, the parts' Styles and Classes, and a dropdown that is not responsive on the same phone. *@
+   search box in the panel, the parts' Styles and Classes, a list longer than the screen, and a dropdown that is not
+   responsive on the same phone. *@
 
 <PageTitle>BitDropdown responsive E2E</PageTitle>
 
@@ -76,6 +77,32 @@
     <p>Values: <span id="resp-combo-multi-values">@string.Join(',', _respComboMultiValues ?? [])</span></p>
 </E2ESection>
 
+<E2ESection Id="responsive-long" Title="Responsive panel of a long list">
+    <BitDropdown Id="dd-resp-long"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive long"
+                 Responsive
+                 Items="_longItems"
+                 DefaultValue="@string.Empty" />
+    @* A padding of the consumer's own on the panel, which replaces the one the stylesheet gives it. *@
+    <BitDropdown Id="dd-resp-long-padded"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive long padded"
+                 Responsive
+                 Styles="_paddedStyles"
+                 Items="_longItems"
+                 DefaultValue="@string.Empty" />
+    @* A search box the panel focuses, which raises the on-screen keyboard of a phone. *@
+    <BitDropdown Id="dd-resp-long-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive long search"
+                 Responsive
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Items="_longItems"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
 <E2EStatus />
 
 @code {
@@ -95,6 +122,11 @@
 
         return list;
     }
+
+    // Far more rows than a phone's screen holds, so the panel caps its list to the room the screen leaves.
+    private readonly List<BitDropdownItem<string>> _longItems = [.. Enumerable.Range(1, 60).Select(i => new BitDropdownItem<string> { Text = $"Item {i}", Value = $"i-{i}" })];
+
+    private readonly BitDropdownClassStyles _paddedStyles = new() { Callout = "padding: 0" };
 
     private static string GenerateValue(BitDropdownItem<string>? item) => $"dyn-{item?.Text?.ToLowerInvariant()}";
 

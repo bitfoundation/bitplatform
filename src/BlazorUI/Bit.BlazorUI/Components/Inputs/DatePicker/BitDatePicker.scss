@@ -1032,6 +1032,8 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
 .bit-dtp-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel comes down from the top edge of the screen, so the calendar starts below the safe area there.
+        @include responsive-panel-safe-area(dtp);
         top: 0;
         left: 0;
         width: 100%;
@@ -1040,6 +1042,15 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
         transform: translateY(-100%);
         box-shadow: $box-shadow-sheet;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        // The container is the surface of the panel - its background is the one a consumer restyles it with - so the
+        // safe area is drawn as its border, and it is the box capped at the height Callouts.position gives the panel: a
+        // screen an on-screen keyboard has shortened scrolls the calendar in it rather than cutting its bottom off.
+        .bit-dtp-cac {
+            max-height: inherit;
+            box-sizing: border-box;
+            border-top: var(--bit-dtp-sa-top) solid transparent;
+        }
 
         .bit-dtp-dwp,
         .bit-dtp-mwp,

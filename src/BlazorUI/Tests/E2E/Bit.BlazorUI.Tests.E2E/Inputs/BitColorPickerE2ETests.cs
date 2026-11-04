@@ -72,6 +72,17 @@ public class BitColorPickerE2ETests : E2ETestBase
         return ((float)(box.X + box.Width * x), (float)(box.Y + box.Height * y));
     }
 
+    // A point the given distance past the edges of the area, held inside the viewport: Playwright's Firefox raises no
+    // pointerup for a release outside it (it does for the moves), which would leave the drag going on. A point at the
+    // edge of the screen is as far past an area beside that edge as the clamp needs it to be.
+    private (float X, float Y) PastTheArea(LocatorBoundingBoxResult box, float dx, float dy)
+    {
+        var x = dx < 0 ? box.X + dx : box.X + box.Width + dx;
+        var y = dy < 0 ? box.Y + dy : box.Y + box.Height + dy;
+
+        return (Math.Clamp(x, 1, Page.ViewportSize!.Width - 1), Math.Clamp(y, 1, Page.ViewportSize!.Height - 1));
+    }
+
     private static async Task<double> ValueNowAsync(ILocator area) => double.Parse((await area.GetAttributeAsync("aria-valuenow"))!, CultureInfo.InvariantCulture);
 
     // ------------------------------------------------------------------ lifecycle
@@ -225,7 +236,8 @@ public class BitColorPickerE2ETests : E2ETestBase
 
         // A drag carried off the area is clamped to its edge: the bottom-right corner is black.
         var box = (await area.BoundingBoxAsync())!;
-        await Page.Mouse.MoveAsync(box.X + box.Width + 60, box.Y + box.Height + 60, new() { Steps = 6 });
+        (x, y) = PastTheArea(box, 60, 60);
+        await Page.Mouse.MoveAsync(x, y, new() { Steps = 6 });
         await Expect(Out("drag-value")).ToHaveTextAsync("#000000");
         await Page.Mouse.UpAsync();
 
@@ -241,7 +253,8 @@ public class BitColorPickerE2ETests : E2ETestBase
         (x, y) = await PointAsync(area, 0.1, 0.1);
         await Page.Mouse.MoveAsync(x, y);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X - 40, box.Y - 40, new() { Steps = 6 });
+        (x, y) = PastTheArea(box, -40, -40);
+        await Page.Mouse.MoveAsync(x, y, new() { Steps = 6 });
         await Page.Mouse.UpAsync();
         await Expect(Out("drag-value")).ToHaveTextAsync("#FFFFFF");
         await Expect(Out("drag-ends")).ToHaveTextAsync("2");
@@ -1304,7 +1317,8 @@ public class BitColorPickerE2ETests : E2ETestBase
         box = (await area.BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(x, y);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X + box.Width + 40, box.Y - 40, new() { Steps = 6 });
+        (x, y) = PastTheArea(box, 40, -40);
+        await Page.Mouse.MoveAsync(x, y, new() { Steps = 6 });
         await Page.Mouse.UpAsync();
         await Expect(Out("rtl-value")).ToHaveTextAsync("#FFFFFF");
 
@@ -1340,7 +1354,8 @@ public class BitColorPickerE2ETests : E2ETestBase
         box = (await area.BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(x, y);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X - 40, box.Y - 40, new() { Steps = 6 });
+        (x, y) = PastTheArea(box, -40, -40);
+        await Page.Mouse.MoveAsync(x, y, new() { Steps = 6 });
         await Page.Mouse.UpAsync();
         await Expect(Out("rtl-inherited-value")).ToHaveTextAsync("#FF0000");
 

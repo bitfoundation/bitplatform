@@ -113,7 +113,7 @@
                 RichTextEditor.stripEngineStyles(editor);
                 RichTextEditor.updateEmpty(editor);
                 if (editor._dotNetRef)
-                    editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
+                    RichTextEditor.tellDotNet(editor, 'OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             };
             editor._notify = notify;
 
@@ -129,12 +129,12 @@
             editor._onBlur = () => {
                 if (timer) { clearTimeout(timer); timer = null; }
                 notify();
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnBlurred');
+                RichTextEditor.tellDotNet(editor, 'OnBlurred');
             };
             editor.addEventListener('blur', editor._onBlur);
 
             editor._onFocus = () => {
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnFocused');
+                RichTextEditor.tellDotNet(editor, 'OnFocused');
             };
             editor.addEventListener('focus', editor._onFocus);
 
@@ -160,7 +160,7 @@
                 if (editor._cssFullScreen) return;
                 const root = editor.closest('.bit-rte');
                 const isFs = !!document.fullscreenElement && document.fullscreenElement === root;
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnFullScreenChanged', isFs);
+                RichTextEditor.tellDotNet(editor, 'OnFullScreenChanged', isFs);
             };
             document.addEventListener('fullscreenchange', editor._onFullScreenChange);
 
@@ -376,7 +376,7 @@
             // edit: refresh the cached content facts so count-dependent state stays accurate, but
             // do not route this through the user-change callback (OnContentChanged) or emit an edit.
             if (editor._dotNetRef) {
-                editor._dotNetRef.invokeMethodAsync('OnFactsChanged', RichTextEditor.computeFacts(editor));
+                RichTextEditor.tellDotNet(editor, 'OnFactsChanged', RichTextEditor.computeFacts(editor));
                 editor._factsReported = true;
             }
         }
@@ -1648,7 +1648,7 @@
                 return RichTextEditor.engineRun(editor, command, args || {});
             } catch (err: any) {
                 if (editor._dotNetRef) {
-                    editor._dotNetRef.invokeMethodAsync('OnCommandError', String(command), String(err?.message ?? err));
+                    RichTextEditor.tellDotNet(editor, 'OnCommandError', String(command), String(err?.message ?? err));
                 }
                 return false;
             }
@@ -1703,6 +1703,21 @@
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
                 case 'insertMedia':
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
+                case 'justifyLeft':
+                case 'justifyCenter':
+                case 'justifyRight':
+                case 'justifyFull': {
+                    // Blink and WebKit align a block with a text-align style whatever styleWithCSS says, while
+                    // Gecko with it off writes the presentational align attribute instead (<p align="center">),
+                    // so the same button would store other markup in Firefox. Styled with CSS for the alignment
+                    // alone, every engine writes the style, and every other command still writes its tags.
+                    try { document.execCommand('styleWithCSS', false, 'true'); } catch { /* ignore */ }
+                    try {
+                        return RichTextEditor.execNative(editor, command);
+                    } finally {
+                        try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
+                    }
+                }
                 default:
                     return RichTextEditor.execNative(editor, command, args?.value ?? null);
             }
@@ -1903,7 +1918,7 @@
 
             if (e.inputType === 'insertText' && e.data === '/' && text === '/') {
                 RichTextEditor.rememberTriggerCaret(editor);
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnSlashTrigger');
+                RichTextEditor.tellDotNet(editor, 'OnSlashTrigger');
                 return;
             }
 
@@ -1912,7 +1927,7 @@
             if (editor._mentions && e.inputType === 'insertText' && e.data === '@'
                 && RichTextEditor.atMentionBoundary(editor)) {
                 RichTextEditor.rememberTriggerCaret(editor);
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnMentionTrigger');
+                RichTextEditor.tellDotNet(editor, 'OnMentionTrigger');
                 return;
             }
 
@@ -2326,7 +2341,7 @@
             const checked = li.getAttribute('data-checked') !== 'true';
             li.setAttribute('data-checked', checked ? 'true' : 'false');
             RichTextEditor.afterChange(editor);
-            if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnTaskToggled', checked);
+            RichTextEditor.tellDotNet(editor, 'OnTaskToggled', checked);
         }
 
         // Whether the "@" just typed begins a word: the caret sits right after it, and what comes
@@ -2783,7 +2798,7 @@
                 }
             }
             if (editor._notify) editor._notify();
-            if (inserted > 0 && editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnImagesInserted', inserted);
+            if (inserted > 0) RichTextEditor.tellDotNet(editor, 'OnImagesInserted', inserted);
         }
 
         private static readAsDataUrl(file: File): Promise<string> {
@@ -2798,7 +2813,7 @@
         // An error is sent as its localization key, its English template and the values that fill it, so the component
         // can put it in the app's language before it is shown.
         private static reportClientError(editor: any, code: string, key: string, template: string, ...args: string[]) {
-            if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', code, key, template, args);
+            RichTextEditor.tellDotNet(editor, 'OnClientError', code, key, template, args);
         }
 
         // How a size limit is written in a message, the same way the component writes it ("10 MB", "512 KB").
@@ -2944,7 +2959,7 @@
             if (e.key === 'Escape' && editor._cssFullScreen) {
                 e.preventDefault();
                 editor._cssFullScreen = false;
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnFullScreenChanged', false);
+                RichTextEditor.tellDotNet(editor, 'OnFullScreenChanged', false);
                 return;
             }
 
@@ -2965,7 +2980,7 @@
             if (e.altKey && !primaryDown && !e.shiftKey && e.code === 'Digit0'
                 && (!RichTextEditor.ALT_TYPES_TEXT || e.key === '0')) {
                 e.preventDefault();
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnHelpRequested');
+                RichTextEditor.tellDotNet(editor, 'OnHelpRequested');
                 return;
             }
 
@@ -3076,7 +3091,7 @@
             RichTextEditor.stripEngineStyles(editor);
             RichTextEditor.updateEmpty(editor);
             if (!editor._dotNetRef) return;
-            editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
+            RichTextEditor.tellDotNet(editor, 'OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);
         }
 
@@ -3091,7 +3106,15 @@
 
         private static reportState(editor: any) {
             if (!editor._dotNetRef) return;
-            editor._dotNetRef.invokeMethodAsync('OnSelectionChanged', RichTextEditor.currentState(editor));
+            RichTextEditor.tellDotNet(editor, 'OnSelectionChanged', RichTextEditor.currentState(editor));
+        }
+
+        // Every notification nobody waits for the answer to goes through here. A call landing after the circuit (or the
+        // component) is gone rejects, and one over a connection that is already closed fails as well (see
+        // Utils.invokeDotNet) - a blur or a last edit as Firefox leaves the page - neither of which the editor can act on.
+        private static tellDotNet(editor: any, method: string, ...args: any[]) {
+            if (!editor?._dotNetRef) return;
+            Utils.invokeDotNet(editor._dotNetRef, method, ...args).catch(() => { });
         }
 
         private static currentState(editor: any): any {

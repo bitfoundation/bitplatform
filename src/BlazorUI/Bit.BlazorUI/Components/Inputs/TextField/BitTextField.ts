@@ -42,6 +42,7 @@
                 // the height measured before any of that would leave the field either clipped or half empty.
                 if (typeof ResizeObserver !== 'undefined') {
                     let lastWidth = inputElement.clientWidth;
+                    let frame = 0;
 
                     const observer = new ResizeObserver(() => {
                         // Only the width can re-wrap the content. Measuring again on every height change
@@ -51,13 +52,32 @@
                         if (width === lastWidth) return;
 
                         lastWidth = width;
-                        TextField.resize(inputElement, TextField._maxRows[id]);
 
-                        // Growing the element can take a scrollbar away, which widens it again. Reading the
-                        // width back is what keeps that second notification from being taken for a new
-                        // change and measuring all over again.
-                        lastWidth = inputElement.clientWidth;
+                        // The height is written on the next frame rather than in here: a size changed inside the
+                        // callback is one the observer has to report again within the same frame, which it refuses
+                        // with the "loop completed with undelivered notifications" error - an uncaught error of the
+                        // page in WebKit - even though the notification it held back would only have been ignored.
+                        cancelAnimationFrame(frame);
+                        frame = requestAnimationFrame(() => {
+                            frame = 0;
+
+                            // The observer may have been let go of since the frame was asked for - the auto growing
+                            // turned off, the feature set up again, the field disposed - and a height written now
+                            // would be one nothing clears any more.
+                            if (signal.aborted) return;
+
+                            TextField.resize(inputElement, TextField._maxRows[id]);
+
+                            // Growing the element can take a scrollbar away, which widens it again. Reading the
+                            // width back is what keeps that second notification from being taken for a new
+                            // change and measuring all over again.
+                            lastWidth = inputElement.clientWidth;
+                        });
                     });
+
+                    // Every way the observer is let go of (setting the feature up again, disposeFeature, dispose)
+                    // aborts this feature's signal too, which takes a frame still waiting along with it.
+                    signal.addEventListener('abort', () => cancelAnimationFrame(frame), { once: true });
 
                     observer.observe(inputElement);
                     TextField._resizeObservers[id] = observer;

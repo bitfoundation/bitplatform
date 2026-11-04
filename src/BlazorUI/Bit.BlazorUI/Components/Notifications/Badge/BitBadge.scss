@@ -58,7 +58,7 @@
 // a circle of --bit-Badge-dot-size.
 
 $bdg-private-properties:
-    dot-size, dot-padding, dot-radius, dis-txt, dis-bg, dis-brd,
+    dot-size, dot-padding, dot-radius, one-padding, dis-txt, dis-bg, dis-brd,
     // The offsets, set on the style of the root that asks for them.
     ofs-x, ofs-y,
     // The values the Color, Size and Shape classes publish, which those classes - declared further down at
@@ -143,9 +143,10 @@ $bdg-private-properties:
     width: var(--bit-bdg-dot-size);
     height: var(--bit-bdg-dot-size, var(--bit-bdg-height, var(--bit-Badge-height, #{$siz-badge-md})));
     // A counter is only ever as wide as it is tall until a second digit pushes it wider, which is what
-    // keeps a single digit a circle instead of an upright oval.
+    // keeps a single digit a circle instead of an upright oval - with no side padding around it (see
+    // .bit-bdg-one), which would otherwise be what pushes it wider in a font with wide figures.
     min-width: var(--bit-bdg-dot-size, var(--bit-bdg-height, var(--bit-Badge-height, #{$siz-badge-md})));
-    padding: var(--bit-bdg-dot-padding, var(--bit-bdg-padding, var(--bit-Badge-padding, 0 #{spacing(0.75)})));
+    padding: var(--bit-bdg-dot-padding, var(--bit-bdg-one-padding, var(--bit-bdg-padding, var(--bit-Badge-padding, 0 #{spacing(0.75)}))));
     border-style: $shp-border-style;
     border-width: var(--bit-Badge-border-width, #{$shp-border-width});
     font-size: var(--bit-bdg-fontsize, var(--bit-Badge-font-size, #{$tg-fs-sm}));
@@ -656,6 +657,15 @@ $bdg-private-properties:
     --bit-bdg-dot-padding: 0;
     --bit-bdg-dot-radius: #{$shp-radius-full};
     --bit-bdg-dot-size: var(--bit-bdg-dotsize, var(--bit-Badge-dot-size, #{$siz-badge-dot-md}));
+}
+
+// A badge showing one character - a digit, a letter, an emoji - is a circle at every size, in every font. The
+// side padding is room for the characters that follow the first one, and what it leaves the first is narrower
+// than most figures are - 6px of a large badge for a 16px figure, which a narrow Segoe UI one fits in and an
+// Arial, Roboto or Liberation Sans one does not - so it is dropped, and the minimum width (the height) is the
+// width. Set on the badge itself and read next after the dot's, like it.
+.bit-bdg-one {
+    --bit-bdg-one-padding: 0;
 }
 
 

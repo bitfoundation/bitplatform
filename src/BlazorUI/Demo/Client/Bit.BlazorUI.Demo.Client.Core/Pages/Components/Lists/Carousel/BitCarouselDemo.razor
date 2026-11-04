@@ -490,7 +490,7 @@
             <li><b>AriaLabel</b> names the region; a slide's own <b>AriaLabel</b> names that slide.</li>
             <li><b>ItemAriaLabelFormat</b> names the other slides ("{0} of {1}" by default).</li>
             <li><b>DotsAriaLabel</b> names the dots group; <b>DotAriaLabel</b> prefixes each dot's page number.</li>
-            <li><b>GoLeftAriaLabel</b> / <b>GoRightAriaLabel</b> name the buttons (by default after what they do, which flips in RTL).</li>
+            <li><b>NextAriaLabel</b> / <b>PrevAriaLabel</b> name the buttons ("Next slide" / "Previous slide" by default); each label goes with its button to the side the direction puts it on.</li>
             <li><b>PlayButtonAriaLabel</b> / <b>PauseButtonAriaLabel</b> name the rotation control in each state.</li>
         </ul>
         <div>
@@ -501,8 +501,8 @@
                          ItemAriaLabelFormat="Photo {0} of {1}"
                          DotAriaLabel="Photo"
                          DotsAriaLabel="Choose a photo to display"
-                         GoLeftAriaLabel="Next photo"
-                         GoRightAriaLabel="Previous photo"
+                         NextAriaLabel="Next photo"
+                         PrevAriaLabel="Previous photo"
                          PlayButtonAriaLabel="Start the photo slide show"
                          PauseButtonAriaLabel="Stop the photo slide show">
                 <BitCarouselItem AriaLabel="Aurora over a frozen lake">
@@ -642,8 +642,9 @@
 
     <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            Use icons from external libraries like FontAwesome and Bootstrap Icons with <b>GoLeftIcon</b> and <b>GoRightIcon</b>
-            (and <b>PlayIcon</b> / <b>PauseIcon</b> for the play/pause button).
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with <b>NextIcon</b> and <b>PrevIcon</b>
+            (and <b>PlayIcon</b> / <b>PauseIcon</b> for the play/pause button). The next/prev icons are given for a
+            left-to-right carousel and are mirrored in a right-to-left one, where their buttons swap edges.
         </div>
         <br />
         <div>
@@ -654,8 +655,8 @@
             <div>FontAwesome:</div>
             <br />
             <BitCarousel InfiniteScrolling
-                         GoLeftIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
-                         GoRightIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
+                         NextIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
+                         PrevIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
                 <BitCarouselItem>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 </BitCarouselItem>
@@ -670,8 +671,8 @@
             <div>Bootstrap Icons:</div>
             <br />
             <BitCarousel InfiniteScrolling
-                         GoLeftIcon="@BitIconInfo.Bi("arrow-right-circle")"
-                         GoRightIcon="@BitIconInfo.Bi("arrow-left-circle")">
+                         NextIcon="@BitIconInfo.Bi("arrow-right-circle")"
+                         PrevIcon="@BitIconInfo.Bi("arrow-left-circle")">
                 <BitCarouselItem>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 </BitCarouselItem>

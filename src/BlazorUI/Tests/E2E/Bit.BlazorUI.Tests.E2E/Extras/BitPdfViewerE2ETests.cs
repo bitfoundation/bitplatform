@@ -131,8 +131,18 @@ public class BitPdfViewerE2ETests : E2ETestBase
     {
         await OpenLoadedAsync();
 
+        // Scrolled the way a reader scrolls, landing where it is aimed: an offset assigned to the surface is a smooth
+        // scroll there (its scroll-behavior), which Firefox drops on the viewer before it has moved at all - the way the
+        // viewer's own jumps are completed for when a browser drops one (see holdScrollSpy in BitPdfViewer.ts). And
+        // scrolled again until it stays: the pages are re-sized a few times as the document settles on its zoom, and
+        // the reading position kept through each (stashViewAnchor / restoreZoomAnchor) puts a scroll made in between
+        // back on the first page.
         var surface = Page.Locator("#pdv-main .bit-pdv-surface");
-        await surface.EvaluateAsync("s => s.scrollTop = s.scrollHeight");
+        await Page.WaitForFunctionAsync(@"() => {
+            const s = document.querySelector('#pdv-main .bit-pdv-surface');
+            s.scrollTo({ top: s.scrollHeight, behavior: 'instant' });
+            return document.querySelector('#page-value').textContent === '3';
+        }", null, new() { PollingInterval = 250 });
         await Expect(Page.Locator("#page-value")).ToHaveTextAsync("3");
         await Expect(PageOf("pdv-main", 3).Locator(".bit-pdv-page-placeholder")).ToHaveCountAsync(0);
         // Pages render as they come near the viewport, so a jump from the first page to the last one leaves the middle
@@ -142,7 +152,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
 
         await surface.EvaluateAsync(@"s => {
             const page = s.querySelector('[data-page=""2""]');
-            s.scrollTop += page.getBoundingClientRect().top - s.getBoundingClientRect().top;
+            s.scrollTo({ top: s.scrollTop + page.getBoundingClientRect().top - s.getBoundingClientRect().top, behavior: 'instant' });
         }");
         await Expect(Page.Locator("#page-value")).ToHaveTextAsync("2");
         await Expect(Page.Locator("#rendered-pages")).ToHaveTextAsync("1,2,3");
@@ -383,7 +393,11 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var layer = PageOf("pdv-main", 1).Locator(".bit-pdv-text-layer");
         var span = layer.Locator("span", new() { HasTextString = "Searchable alpha keyword" });
         await Expect(span).ToHaveCountAsync(1);
-        Assert.AreEqual("text", await span.EvaluateAsync<string>("s => getComputedStyle(s).userSelect"));
+        // The layer makes its text selectable, and the spans in it take that from it: user-select is not inherited, so
+        // Firefox and WebKit compute auto for a span - which defers to the layer - where Chromium reports the text it ends
+        // up with.
+        Assert.AreEqual("text", await layer.EvaluateAsync<string>("l => getComputedStyle(l).userSelect"));
+        CollectionAssert.Contains(new[] { "text", "auto" }, await span.EvaluateAsync<string>("s => getComputedStyle(s).userSelect"));
         Assert.AreEqual("rgba(0, 0, 0, 0)", await span.EvaluateAsync<string>("s => getComputedStyle(s).color"));
         await Expect(Viewer("pdv-main").Locator(".bit-pdv-surface")).Not.ToHaveClassAsync(HasClass("bit-pdv-nocopy"));
 
@@ -686,7 +700,10 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Page.Locator("#pdv-main .bit-pdv-surface").FocusAsync();
         await Page.Keyboard.PressAsync("Control+Alt+p");
         await Expect(Viewer("pdv-main")).ToHaveClassAsync(HasClass("bit-pdv-presenting"));
-        await Page.ClickAsync("#btn-api-presentation", new() { Force = true });
+        // The page's button is under the viewer once that is fullscreen, which covers the whole viewport and takes any
+        // pointer aimed at the button - so the click is dispatched to the button itself, whether the browser has made
+        // the viewer fullscreen by then or not.
+        await Page.Locator("#btn-api-presentation").DispatchEventAsync("click");
         await Expect(Viewer("pdv-main")).Not.ToHaveClassAsync(HasClass("bit-pdv-presenting"));
     }
 

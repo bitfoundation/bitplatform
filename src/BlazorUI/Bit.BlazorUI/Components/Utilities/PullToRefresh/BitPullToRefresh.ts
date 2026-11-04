@@ -113,6 +113,8 @@
         private diff = 0;
         private refreshing = false;
         private pointerId = -1;
+        // Whether the pointer being followed is a pen, whose touches may yet take the pull over (see onTouchStart).
+        private penPull = false;
 
         // The pull is reported to .NET at most once per frame, and never twice with the same rendered pixel:
         // a move event arrives far more often than a frame, and every report is an interop round trip that
@@ -284,6 +286,18 @@
             // Anything but a single finger is a pinch or a two-finger scroll, never a pull.
             if (e.touches.length !== 1) return this.abandon();
 
+            // A pen raises both kinds of event on most touch screens - its pointer events first, then the touch events
+            // of the same contact - and the two are followed in different coordinates. Its touches take over the pull
+            // its pointerdown has just started: the start is read again in the coordinates of the touches, and letting
+            // go of the pointer leaves its pointer events to the listeners below to ignore. A pen that raises no touch
+            // events (Windows) is followed through its pointer events from start to end.
+            if (this.penPull && this.startY !== -1) {
+                this.releasePointer();
+                this.startX = e.touches[0].screenX;
+                this.startY = e.touches[0].screenY;
+                return;
+            }
+
             this.start(e.touches[0].screenX, e.touches[0].screenY, e.target);
         };
 
@@ -303,14 +317,19 @@
             if (e.pointerType === 'mouse' && this.options.noMouse) return;
             if (e.target instanceof Element && e.target.closest(EDITABLE)) return;
 
+            // A mouse or a pen is followed in the coordinates of the viewport rather than the screen ones a finger
+            // is: nothing moves the viewport under one the way a mobile browser's own bars can move it under a
+            // finger, and the screen position of a mouse is not always there to read - WebKit gives the mouse
+            // events it synthesizes none (0, 0), which would read as a pull that never moves.
             this.pointerId = e.pointerId;
-            this.start(e.screenX, e.screenY, e.target);
+            this.penPull = e.pointerType === 'pen';
+            this.start(e.clientX, e.clientY, e.target);
         };
 
         private onPointerMove = (e: PointerEvent) => {
             if (e.pointerType === 'touch' || e.pointerId !== this.pointerId) return;
 
-            this.move(e, e.screenX, e.screenY);
+            this.move(e, e.clientX, e.clientY);
         };
 
         private onPointerUp = (e: PointerEvent) => {
@@ -355,8 +374,13 @@
             if (this.startY === -1 || this.axis === BitPullAxis.Abandoned || this.refreshing) return;
 
             // A scroller that has left the edge the pull starts at while the finger is down means the gesture
-            // belongs to the scroller, not to the pull.
-            if (this.isAwayFromEdge()) return this.abandon();
+            // belongs to the scroller, not to the pull. Not under a mouse, though, which cannot scroll the content by
+            // dragging it (see onScroll): the scroller is put back at the edge instead.
+            if (this.isAwayFromEdge()) {
+                if (this.isMousePull() === false) return this.abandon();
+
+                this.returnToEdge();
+            }
 
             // The travel is measured along the pull's direction, so from here on a pull up reads exactly as a pull
             // down does: a positive dy is the finger going the way that refreshes.
@@ -482,6 +506,8 @@
         }
 
         private releasePointer() {
+            this.penPull = false;
+
             if (this.pointerId === -1) return;
 
             const pointerId = this.pointerId;
@@ -674,7 +700,27 @@
             this.scrollerEl.style.overscrollBehaviorY = this.scrollerOverscroll;
         }
 
-        private onScroll = () => this.syncScrollStyles();
+        private onScroll = () => {
+            // A mouse cannot scroll the content by dragging it, so a scroller that leaves the edge under a mouse pull is
+            // moved by the browser: WebKit autoscrolls a scroller a held mouse is dragged past, which a pull longer than
+            // the anchor always is, and the pull would then be abandoned as the content's own gesture. It is put back.
+            if (this.isMousePull() && this.isAwayFromEdge()) {
+                this.returnToEdge();
+            }
+
+            this.syncScrollStyles();
+        };
+
+        private returnToEdge() {
+            const el = this.scrollerEl;
+            const scroller = (el === document.body || el === document.documentElement)
+                ? (document.scrollingElement ?? document.documentElement) as HTMLElement
+                : el;
+
+            scroller.scrollTop = this.options.direction === BitPullToRefreshDirection.Up
+                ? scroller.scrollHeight - scroller.clientHeight
+                : 0;
+        }
 
         private onStyleRendered = (records: MutationRecord[]) => {
             if (records.some(r => r.target === this.anchorEl) && this.anchorEl.style.touchAction !== this.touchActionInEffect) {

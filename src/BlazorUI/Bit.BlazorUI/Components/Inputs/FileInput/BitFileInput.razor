@@ -41,7 +41,7 @@
                        class="bit-fin-dzi @dropZoneIcon.GetCssClasses() @Classes?.DropZoneIcon" aria-hidden="true" />
                 }
             }
-            <span class="bit-fin-lbt">@(Label ?? "Browse")</span>
+            <span class="bit-fin-lbt">@(Label ?? BitStrings.Current.Browse)</span>
         </button>
     }
 
@@ -75,7 +75,7 @@
 
     @if (Files is not null && HideFileList is false)
     {
-        var removeTitle = RemoveButtonTitle ?? "Remove";
+        var removeTitle = RemoveButtonTitle ?? BitStrings.Current.Remove;
         var removeIcon = ShowRemoveButton ? BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete") : null;
 
         @* the list is named so that it is announced as the selected files rather than as one more
@@ -86,7 +86,7 @@
            the tab stop itself so the arrow keys can scroll it. *@
         <div role="list"
              tabindex="@(Files.Count > 0 && ShowRemoveButton is false && FileViewTemplate is null ? "0" : null)"
-             aria-label="@(FileListAriaLabel ?? "Selected files")"
+             aria-label="@(FileListAriaLabel ?? BitStrings.Current.SelectedFiles)"
              style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
             @foreach (var file in Files)
             {

@@ -17,7 +17,7 @@
     var describedByValue = describedBy.HasValue() ? describedBy : null;
     // The chevron of a split button carries no text of its own, so without a name it reaches a screen reader
     // as an unlabelled button (WCAG 4.1.2). The fallback is what keeps that from being the default.
-    var chevronLabel = ChevronDownAriaLabel ?? "More options";
+    var chevronLabel = ChevronDownAriaLabel ?? BitStrings.Current.MoreOptions;
     var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
     // The main half of a split button is a command of its own, so it can be the submit button of the form it
     // sits in - but only where the page asked for that. The type is left at "button" unless ButtonType was set,

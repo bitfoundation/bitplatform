@@ -905,17 +905,17 @@ public partial class BitFileInput : BitInputBase<string?>
         if (MaxSize > 0 && file.Size > MaxSize)
         {
             file.IsValid = false;
-            file.Message = MaxSizeErrorMessage ?? "The file size is larger than the max size";
+            file.Message = MaxSizeErrorMessage ?? BitStrings.Current.FileTooLarge;
         }
         else if (MinSize > 0 && file.Size < MinSize)
         {
             file.IsValid = false;
-            file.Message = MinSizeErrorMessage ?? "The file size is smaller than the min size";
+            file.Message = MinSizeErrorMessage ?? BitStrings.Current.FileTooSmall;
         }
         else if (IsFileTypeNotAllowed(file, allowedTypes))
         {
             file.IsValid = false;
-            file.Message = NotAllowedExtensionErrorMessage ?? "The file type is not allowed";
+            file.Message = NotAllowedExtensionErrorMessage ?? BitStrings.Current.FileTypeNotAllowed;
         }
         else if (FileValidator is not null)
         {
@@ -1005,7 +1005,7 @@ public partial class BitFileInput : BitInputBase<string?>
                 // which would otherwise be lost as soon as the duplication is resolved.
                 if (file.IsValid is false) continue;
 
-                Invalidate(file, DuplicateErrorMessage ?? "The file is already selected");
+                Invalidate(file, DuplicateErrorMessage ?? BitStrings.Current.FileAlreadySelected);
             }
         }
 
@@ -1019,11 +1019,11 @@ public partial class BitFileInput : BitInputBase<string?>
 
             if (MaxCount > 0 && count >= MaxCount)
             {
-                Invalidate(file, MaxCountErrorMessage ?? "The maximum number of files is exceeded");
+                Invalidate(file, MaxCountErrorMessage ?? BitStrings.Current.TooManyFiles);
             }
             else if (MaxTotalSize > 0 && totalSize + file.Size > MaxTotalSize)
             {
-                Invalidate(file, MaxTotalSizeErrorMessage ?? "The total size of the files is larger than the max total size");
+                Invalidate(file, MaxTotalSizeErrorMessage ?? BitStrings.Current.FilesTooLarge);
             }
             else
             {

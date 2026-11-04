@@ -9,7 +9,8 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// accessibility tree and the tab order (and out of the page once the screen widens), an open one hides with the part of
 /// the page it was opened from, an RTL panel slides in from the left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
 /// icons by name and by BitIconInfo), Enter in a multi select panel keeps it open, the search box takes the focus inside
-/// the panel, the panel's parts take Styles and Classes, and a dropdown that is not Responsive stays a plain callout.
+/// the panel, the panel's parts take Styles and Classes, a long list ends short of the bottom of the screen and clear of
+/// a phone's safe areas and scrolls to its last item, and a dropdown that is not Responsive stays a plain callout.
 /// </summary>
 [TestClass]
 public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
@@ -293,6 +294,100 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         await Expect(input).ToBeFocusedAsync();
         await input.FillAsync("gr");
         await Expect(Options(callout)).ToHaveTextAsync(["Grape"]);
+    }
+
+    [TestMethod]
+    public async Task Responsive_ALongList_EndsJustShortOfTheBottomOfTheScreen()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-long");
+
+        // The list is capped once the panel has slid in, which writes the cap onto it.
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        var box = await BoxAsync(list);
+        Assert.AreEqual(844 - 10, box.Y + box.Height, 1.5, "The list keeps its gap from the bottom of a screen with no safe area.");
+
+        // The cap is only half of it: the user still reaches the last item by scrolling the list itself. Wheeled over
+        // the list rather than scrolled into view from script, which would move a list that clips its overflow too.
+        var last = callout.GetByRole(AriaRole.Option, new() { Name = "Item 60", Exact = true });
+
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.WheelAsync(0, 10000);
+        await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
+
+        var item = await BoxAsync(last);
+        Assert.IsTrue(item.Y >= box.Y - 0.5 && item.Y + item.Height <= box.Y + box.Height + 0.5,
+            $"The last item ({item.Y}..{item.Y + item.Height}px) is not within the visible part of the list ({box.Y}..{box.Y + box.Height}px).");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_KeepsTheHeaderAndTheListClearOfTheSafeAreas()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long");
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        // The surface still runs from the top edge of the screen to the bottom one, behind the bars of the phone.
+        var box = await BoxAsync(callout);
+        Assert.AreEqual(0, box.Y, 1.5);
+        Assert.AreEqual(844, box.Height, 1.5);
+
+        // What is in it starts below the notch and ends above the home indicator, which an app shell's bars paint over.
+        var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
+        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+
+        var listBox = await BoxAsync(list);
+        Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_APaddingOfTheConsumersOwnStillLeavesTheSafeAreasClear()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-padded");
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        // The padding the consumer gave the panel replaced the one of the stylesheet, and neither safe area was part of it.
+        await Expect(callout).ToHaveCSSAsync("padding-top", "0px");
+
+        var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
+        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+
+        var listBox = await BoxAsync(list);
+        Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_TheKeyboardTakesOverTheSafeAreaAtTheBottom()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-search");
+        await Expect(callout.Locator("input.bit-drp-sin")).ToBeFocusedAsync();
+
+        // The keyboard the focused search box raises leaves the room above it, which the viewport is shortened to. The
+        // bottom of what is left is the top of the keyboard, with nothing of the home indicator showing above it, so the
+        // list keeps the gap it has always kept from there rather than a safe area the keyboard already covers.
+        await Page.SetViewportSizeAsync(390, 544);
+
+        var list = await callout.Locator(".bit-drp-scn").ElementHandleAsync();
+        await Page.WaitForFunctionAsync("el => Math.abs(el.getBoundingClientRect().bottom - (544 - 10)) <= 1.5", list);
     }
 
     [TestMethod]

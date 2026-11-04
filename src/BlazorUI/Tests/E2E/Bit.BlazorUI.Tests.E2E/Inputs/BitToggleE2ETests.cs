@@ -852,8 +852,10 @@ public class BitToggleE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         // The extent of the column through the middle of the track that a pointer lands on the switch in; hit
-        // testing only reaches what is in the viewport.
-        await Button("tg-plain").ScrollIntoViewIfNeededAsync();
+        // testing only reaches what is in the viewport. The track is scrolled to the middle of it rather than just
+        // into it: scrolled no further than needed, it can end on the edge of the viewport, with the part of the target
+        // that overhangs the track left outside.
+        await Button("tg-plain").EvaluateAsync("btn => btn.scrollIntoView({ block: 'center' })");
         var span = await Button("tg-plain").EvaluateAsync<double[]>(@"btn => {
             const r = btn.getBoundingClientRect();
             const x = r.left + r.width / 2;

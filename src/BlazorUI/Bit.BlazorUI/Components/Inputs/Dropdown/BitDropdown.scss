@@ -1437,6 +1437,9 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 .bit-drp-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel runs from the top edge of the screen to the bottom one: the header starts below the safe area at
+        // the top, drawn as the border of the panel, and Callouts.position ends the list above the one at the bottom.
+        @include responsive-panel-safe-area(drp);
         top: 0;
         right: 0;
         height: 100%;
@@ -1449,6 +1452,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
         transform: translateX(100%);
         box-shadow: $box-shadow-sheet;
         padding: spacing(3) spacing(2.5);
+        border-top: var(--bit-drp-sa-top) solid transparent;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-drp-rlc {

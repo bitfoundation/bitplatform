@@ -235,17 +235,49 @@ public class BitImageE2ETests : E2ETestBase
     [TestMethod]
     public async Task ReloadAsync_FetchesTheImageAgain()
     {
+        AllowConsoleErrors = true; // the failed first request is the subject, and Chromium logs it
+
+        // The image fails the way the network can, which is what a reload is the answer to. An image that did load can
+        // be handed to the new element from the copy the browser keeps of it without being asked for again - Firefox
+        // does, and so do WebKit and Chromium unless a route added since has turned their cache off - but one that failed
+        // is always asked for again. It keeps failing until the component has reported it: a failure the prerendered
+        // page met before it was interactive is asked for again as the component takes the image over.
+        var failing = true;
+        await Page.RouteAsync(new Regex(@"image-slow\.svg\?case=template$"), async route =>
+        {
+            if (failing) await route.AbortAsync();
+            else await route.FallbackAsync();
+        });
+
         await OpenAsync(Path);
 
-        await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(new Regex(@"(^|>)Error$"));
+        var before = await Page.Locator("#slow-states").TextContentAsync();
+        failing = false;
 
         var gate = await HoldAsync("template");
         await Page.Locator("#btn-reload").ClickAsync();
 
-        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(">Loaded>Loading");
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync($"{before}>Loading");
         await Expect(Page.Locator("#loading-template")).ToBeVisibleAsync();
 
         gate.SetResult();
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync($"{before}>Loading>Loaded");
+        await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task ReloadAsync_ALoadedImage_GoesThroughLoadingAgain()
+    {
+        await OpenAsync(Path);
+
+        await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(">Loaded");
+        await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("1");
+
+        await Page.Locator("#btn-reload").ClickAsync();
+
+        // Read off the states the component reports rather than off the network: a loaded image can be handed to the
+        // new element from the copy the browser keeps of it without being asked for again.
         await Expect(Page.Locator("#slow-states")).ToHaveTextAsync(">Loaded>Loading>Loaded");
         await Expect(Page.Locator("#slow-loads")).ToHaveTextAsync("2");
     }
@@ -739,6 +771,8 @@ public class BitImageE2ETests : E2ETestBase
         AllowConsoleErrors = true; // the 404 the browser logs is the subject
 
         await OpenAsync(ErrorsPath);
+        // The 404 is read off the response itself: Chromium also writes it to the console, Firefox does not.
+        var notFound = Page.WaitForResponseAsync(response => response.Status == 404);
         await Page.Locator("#btn-show").ClickAsync();
 
         await Expect(Page.Locator("#error-template")).ToHaveTextAsync("Could not load the picture");
@@ -746,7 +780,7 @@ public class BitImageE2ETests : E2ETestBase
         await Expect(Page.Locator("#errors")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#states")).ToHaveTextAsync(">Error");
 
-        Assert.IsTrue(ConsoleErrors.Any(e => e.Contains("404")), "The browser reported the 404.");
+        Assert.AreEqual(404, (await notFound).Status, "The browser was answered with a 404.");
     }
 
     [TestMethod]

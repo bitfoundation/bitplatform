@@ -13,10 +13,10 @@
     .csl-cur-class { letter-spacing: 3px; }
     .csl-btns-class { letter-spacing: 4px; }
     .csl-btn-icons-class { letter-spacing: 5px; }
-    .csl-left-class { word-spacing: 6px; }
-    .csl-left-icon-class { word-spacing: 7px; }
-    .csl-right-class { word-spacing: 8px; }
-    .csl-right-icon-class { word-spacing: 9px; }
+    .csl-next-class { word-spacing: 6px; }
+    .csl-next-icon-class { word-spacing: 7px; }
+    .csl-prev-class { word-spacing: 8px; }
+    .csl-prev-icon-class { word-spacing: 9px; }
     .csl-dcn-class { letter-spacing: 10px; }
     .csl-dots-class { outline: 1px solid rgb(2, 2, 2); }
     .csl-cud-class { outline-color: rgb(3, 3, 3); }
@@ -138,7 +138,7 @@
 
 <E2ESection Id="sec-a11y" Title="Accessibility">
     <div class="csl-host">
-        <BitCarousel Id="a11y" ItemAriaLabelFormat="Slide {0} of {1}" GoLeftAriaLabel="Forwards" GoRightAriaLabel="Backwards"
+        <BitCarousel Id="a11y" ItemAriaLabelFormat="Slide {0} of {1}" NextAriaLabel="Forwards" PrevAriaLabel="Backwards"
                      AutoPlay ShowPlayPause AutoPlayInterval="100000" PlayButtonAriaLabel="Play it" PauseButtonAriaLabel="Pause it">
             @Slides(3)
             <BitCarouselItem AriaLabel="The named slide"><div class="csl-slide">Named</div></BitCarouselItem>
@@ -171,20 +171,20 @@
 <E2ESection Id="sec-icons" Title="External icons and icon names">
     <div class="csl-host">
         <BitCarousel Id="icons" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000"
-                     GoLeftIcon="@BitIconInfo.Css("csl-ext-left")" GoRightIcon="@BitIconInfo.Css("csl-ext-right")"
+                     NextIcon="@BitIconInfo.Css("csl-ext-next")" PrevIcon="@BitIconInfo.Css("csl-ext-prev")"
                      PauseIcon="@BitIconInfo.Css("csl-ext-pause")" PlayIcon="@BitIconInfo.Css("csl-ext-play")">@Slides(3)</BitCarousel>
     </div>
     <div class="csl-host">
         <BitCarousel Id="icon-names" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000"
-                     GoLeftIconName="Forward" GoRightIconName="Back" PauseIconName="CirclePause" PlayIconName="PlaySolid">@Slides(3)</BitCarousel>
+                     NextIconName="Forward" PrevIconName="Back" PauseIconName="CirclePause" PlayIconName="PlaySolid">@Slides(3)</BitCarousel>
     </div>
 </E2ESection>
 
 <E2ESection Id="sec-style" Title="Style, Class, Styles, Classes">
     <div class="csl-host">
         <BitCarousel Id="styled" InfiniteScrolling AutoPlay ShowPlayPause AutoPlayInterval="100000" Class="csl-root-class" Style="height: 150px"
-                     Styles="@(new() { Root = "padding: 1px", Container = "margin-top: 2px", Item = "padding-top: 3px", CurrentItem = "padding-bottom: 4px", Buttons = "padding-left: 5px", ButtonIcons = "padding-left: 6px", GoLeftButton = "padding-right: 7px", GoLeftButtonIcon = "padding-right: 8px", GoRightButton = "padding-right: 9px", GoRightButtonIcon = "padding-right: 10px", DotsContainer = "padding-top: 11px", Dots = "margin-top: 12px", CurrentDot = "margin-bottom: 13px", PlayPauseButton = "margin-left: 14px", PlayPauseButtonIcon = "margin-left: 15px" })"
-                     Classes="@(new() { Root = "csl-extra-root", Container = "csl-cnt-class", Item = "csl-item-class", CurrentItem = "csl-cur-class", Buttons = "csl-btns-class", ButtonIcons = "csl-btn-icons-class", GoLeftButton = "csl-left-class", GoLeftButtonIcon = "csl-left-icon-class", GoRightButton = "csl-right-class", GoRightButtonIcon = "csl-right-icon-class", DotsContainer = "csl-dcn-class", Dots = "csl-dots-class", CurrentDot = "csl-cud-class", PlayPauseButton = "csl-ppb-class", PlayPauseButtonIcon = "csl-ppb-icon-class" })">
+                     Styles="@(new() { Root = "padding: 1px", Container = "margin-top: 2px", Item = "padding-top: 3px", CurrentItem = "padding-bottom: 4px", Buttons = "padding-left: 5px", ButtonIcons = "padding-left: 6px", NextButton = "padding-right: 7px", NextButtonIcon = "padding-right: 8px", PrevButton = "padding-right: 9px", PrevButtonIcon = "padding-right: 10px", DotsContainer = "padding-top: 11px", Dots = "margin-top: 12px", CurrentDot = "margin-bottom: 13px", PlayPauseButton = "margin-left: 14px", PlayPauseButtonIcon = "margin-left: 15px" })"
+                     Classes="@(new() { Root = "csl-extra-root", Container = "csl-cnt-class", Item = "csl-item-class", CurrentItem = "csl-cur-class", Buttons = "csl-btns-class", ButtonIcons = "csl-btn-icons-class", NextButton = "csl-next-class", NextButtonIcon = "csl-next-icon-class", PrevButton = "csl-prev-class", PrevButtonIcon = "csl-prev-icon-class", DotsContainer = "csl-dcn-class", Dots = "csl-dots-class", CurrentDot = "csl-cud-class", PlayPauseButton = "csl-ppb-class", PlayPauseButtonIcon = "csl-ppb-icon-class" })">
             @Slides(3)
         </BitCarousel>
     </div>
@@ -205,6 +205,7 @@
 <E2ESection Id="sec-rtl" Title="RTL">
     <div class="csl-host"><BitCarousel Id="rtl" Dir="BitDir.Rtl" AnimationDuration="0.1">@Slides(3)</BitCarousel></div>
     <div class="csl-host" dir="rtl"><BitCarousel Id="rtl-inherited" AnimationDuration="0.1">@Slides(3)</BitCarousel></div>
+    <div class="csl-host"><BitCarousel Id="rtl-labels" Dir="BitDir.Rtl" AnimationDuration="0.1" NextAriaLabel="Next" PrevAriaLabel="Previous">@Slides(3)</BitCarousel></div>
 </E2ESection>
 
 <E2ESection Id="sec-lifecycle" Title="Lifecycle">

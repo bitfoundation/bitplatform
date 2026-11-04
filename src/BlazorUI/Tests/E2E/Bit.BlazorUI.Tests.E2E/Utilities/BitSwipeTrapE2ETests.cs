@@ -504,7 +504,9 @@ public class BitSwipeTrapE2ETests : E2ETestBase
             await Expect(Page.Locator("#keyboard-trigger")).ToHaveTextAsync($"{expected[i].Item2}|0,0|00|keyboard|nodur");
         }
 
-        Assert.AreEqual(scrollY, await Page.EvaluateAsync<double>("() => window.scrollY"), "An arrow key scrolled the page.");
+        // An arrow key scrolls by a line, tens of pixels; the pixel Firefox's scroll anchoring can move the page by as the
+        // page re-renders the reports is not one.
+        Assert.AreEqual(scrollY, await Page.EvaluateAsync<double>("() => window.scrollY"), 2, "An arrow key scrolled the page.");
     }
 
     [TestMethod]

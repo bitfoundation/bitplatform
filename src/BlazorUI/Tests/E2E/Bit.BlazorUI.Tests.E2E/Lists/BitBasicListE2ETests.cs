@@ -683,26 +683,14 @@ public class BitBasicListE2ETests : E2ETestBase
         }", new[] { row, list });
     }
 
+    // Scrolls the list with the real wheel, the mouse over it (see WheelInPagesAsync).
     private async Task ScrollAsync(string selector, int deltaY)
     {
         var list = Page.Locator(selector);
         await list.ScrollIntoViewIfNeededAsync();
         var rect = await list.BoundingBoxAsync();
-        var before = await list.EvaluateAsync<double>("el => el.scrollTop");
         await Page.Mouse.MoveAsync(rect!.X + rect.Width / 2, rect.Y + Math.Min(rect.Height / 2, 100));
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await Page.EvaluateAsync(@"([selector, before]) => new Promise(resolve => {
-            const el = document.querySelector(selector);
-            let last = el.scrollTop, stable = 0, frames = 0;
-            const tick = () => {
-                frames++;
-                const now = el.scrollTop;
-                if (now === last) stable++; else { stable = 0; last = now; }
-                if ((now !== before && stable >= 5) || frames > 120) return resolve(now);
-                requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        })", new object[] { selector, before });
+        await WheelInPagesAsync(selector, deltaY);
     }
 
     private Task<string> ResolveAsync(string property, string value)

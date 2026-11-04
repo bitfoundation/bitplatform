@@ -48,8 +48,8 @@ public class BitCarouselE2ETests : E2ETestBase
 
         await ExpectCurrentAsync("basic", "S1");
         await ExpectSlideInPlaceAsync("basic", "S1");
-        var next = Page.Locator("#basic .bit-csl-lbt");
-        var prev = Page.Locator("#basic .bit-csl-rbt");
+        var next = Page.Locator("#basic .bit-csl-nbt");
+        var prev = Page.Locator("#basic .bit-csl-pbt");
         await Expect(next).ToBeVisibleAsync();
         await Expect(prev).ToBeHiddenAsync();
         await Expect(next).ToHaveAttributeAsync("aria-label", "Next slide");
@@ -131,8 +131,8 @@ public class BitCarouselE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/carousel");
 
-        var prev = Page.Locator("#infinite .bit-csl-rbt");
-        var next = Page.Locator("#infinite .bit-csl-lbt");
+        var prev = Page.Locator("#infinite .bit-csl-pbt");
+        var next = Page.Locator("#infinite .bit-csl-nbt");
         await Expect(prev).ToBeVisibleAsync();
 
         await prev.ClickAsync();
@@ -150,14 +150,14 @@ public class BitCarouselE2ETests : E2ETestBase
         await OpenAsync("/e2e/carousel");
 
         await Expect(Page.Locator("#hide-dots .bit-csl-dot")).ToHaveCountAsync(0);
-        await Expect(Page.Locator("#hide-dots .bit-csl-lbt")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#hide-buttons .bit-csl-lbt")).ToHaveCountAsync(0);
-        await Expect(Page.Locator("#hide-buttons .bit-csl-rbt")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#hide-dots .bit-csl-nbt")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#hide-buttons .bit-csl-nbt")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#hide-buttons .bit-csl-pbt")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#hide-buttons .bit-csl-dot")).ToHaveCountAsync(3);
 
         // A single slide has nothing to page through.
         await Expect(Page.Locator("#single .bit-csl-dot")).ToHaveCountAsync(0);
-        await Expect(Page.Locator("#single .bit-csl-lbt")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#single .bit-csl-nbt")).ToBeHiddenAsync();
         await ExpectCurrentAsync("single", "S1");
     }
 
@@ -176,11 +176,11 @@ public class BitCarouselE2ETests : E2ETestBase
             AssertClose(container.X + i * container.W / 3, slide.X, $"slide {i} in place");
         }
 
-        await Page.Locator("#multiple .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#multiple .bit-csl-nbt").ClickAsync();
         await Expect(Page.Locator("#multiple .bit-crsi-cur")).ToHaveTextAsync(new[] { "S2", "S3", "S4" });
 
         await Expect(Page.Locator("#multiple-scroll .bit-csl-dot")).ToHaveCountAsync(2);
-        await Page.Locator("#multiple-scroll .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#multiple-scroll .bit-csl-nbt").ClickAsync();
         await Expect(Page.Locator("#multiple-scroll .bit-crsi-cur")).ToHaveTextAsync(new[] { "S4", "S5", "S6" });
     }
 
@@ -228,7 +228,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Expect(Page.Locator("#options-1000 .bit-crsi-cur")).ToHaveCountAsync(3);
 
         // The option's ScrollItemsCount moves two at once.
-        await Page.Locator("#options-800 .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#options-800 .bit-csl-nbt").ClickAsync();
         await Expect(Page.Locator("#options-800 .bit-crsi-cur")).ToHaveTextAsync(new[] { "S3", "S4" });
     }
 
@@ -240,7 +240,7 @@ public class BitCarouselE2ETests : E2ETestBase
         var root = Page.Locator("#vertical");
         await Expect(root).ToHaveClassAsync(HasClass("bit-csl-vrt"));
         var container = await BoxAsync("#vertical .bit-csl-cnt");
-        AssertClose(container.Bottom, (await BoxAsync("#vertical .bit-csl-lbt")).Bottom, "the next button at the bottom");
+        AssertClose(container.Bottom, (await BoxAsync("#vertical .bit-csl-nbt")).Bottom, "the next button at the bottom");
 
         await WaitForKeysAsync("vertical");
         await root.FocusAsync();
@@ -293,7 +293,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Expect(slides.Nth(1)).ToHaveCSSAsync("opacity", "0");
         AssertClose((await BoxAsync("#fade .bit-crsi >> nth=0")).X, (await BoxAsync("#fade .bit-crsi >> nth=1")).X, "the slides share one place");
 
-        await Page.Locator("#fade .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#fade .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("fade", "S2");
         await Expect(slides.Nth(1)).ToHaveCSSAsync("opacity", "1");
         await Expect(slides.Nth(0)).ToHaveCSSAsync("opacity", "0");
@@ -307,12 +307,12 @@ public class BitCarouselE2ETests : E2ETestBase
         await OpenAsync("/e2e/carousel");
 
         await Expect(Page.Locator("#duration")).ToHaveAttributeAsync("style", new System.Text.RegularExpressions.Regex("--bit-csl-dur-full:0.3s"));
-        await Page.Locator("#duration .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#duration .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("duration", "S2");
         await Expect(Page.Locator("#duration .bit-crsi-cur")).ToHaveCSSAsync("transition-duration", "0.3s");
         await ExpectSlideInPlaceAsync("duration", "S2");
 
-        await Page.Locator("#duration-zero .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#duration-zero .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("duration-zero", "S2");
         await Expect(Page.Locator("#duration-zero .bit-crsi-cur")).ToHaveCSSAsync("transition-duration", "0s");
         await ExpectSlideInPlaceAsync("duration-zero", "S2");
@@ -383,7 +383,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await OpenAsync("/e2e/carousel");
 
         await ExpectAutoPlayStateAsync("stop", "playing=True;paused=False");
-        await Page.Locator("#stop-on-interaction .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#stop-on-interaction .bit-csl-nbt").ClickAsync();
         await Page.Mouse.MoveAsync(0, 0);
         await ExpectAutoPlayStateAsync("stop", "playing=False;paused=True");
     }
@@ -412,7 +412,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Expect(Page.Locator("#forced")).ToHaveClassAsync(HasClass("bit-fam"));
 
         // The slide transition collapses with the motion tokens (to a hundred-thousandth of a second).
-        await Page.Locator("#duration .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#duration .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("duration", "S2");
         var duration = await ComputedStyleAsync("#duration .bit-crsi-cur", "transition-duration");
         Assert.IsTrue(double.Parse(duration.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture) < 0.001, $"the transition collapsed ({duration})");
@@ -479,7 +479,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Page.Locator("#no-keyboard .bit-csl-dot").First.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("End");
-        await Page.Locator("#no-keyboard .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#no-keyboard .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("no-keyboard", "S2");
     }
 
@@ -491,7 +491,7 @@ public class BitCarouselE2ETests : E2ETestBase
         var root = Page.Locator("#disabled");
         await Expect(root).ToHaveClassAsync(HasClass("bit-dis"));
         Assert.IsNull(await root.GetAttributeAsync("tabindex"));
-        foreach (var selector in new[] { "#disabled .bit-csl-lbt", "#disabled .bit-csl-ppb", "#disabled .bit-csl-dot >> nth=0" })
+        foreach (var selector in new[] { "#disabled .bit-csl-nbt", "#disabled .bit-csl-ppb", "#disabled .bit-csl-dot >> nth=0" })
         {
             await Expect(Page.Locator(selector)).ToBeDisabledAsync();
             await Expect(Page.Locator(selector)).ToHaveAttributeAsync("aria-disabled", "true");
@@ -500,7 +500,7 @@ public class BitCarouselE2ETests : E2ETestBase
 
         // A drag and a click delivered anyway move nothing.
         await DragAsync("#disabled .bit-csl-cnt", -150);
-        await Page.Locator("#disabled .bit-csl-lbt").DispatchEventAsync("click");
+        await Page.Locator("#disabled .bit-csl-nbt").DispatchEventAsync("click");
         await ExpectCurrentAsync("disabled", "S1");
 
         // The carousel hosts content: a click on a slide still reaches the page's handler.
@@ -510,7 +510,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-toggle-disabled");
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(root).ToHaveAttributeAsync("tabindex", "0");
-        await Page.Locator("#disabled .bit-csl-lbt").ClickAsync();
+        await Page.Locator("#disabled .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("disabled", "S2");
     }
 
@@ -601,7 +601,7 @@ public class BitCarouselE2ETests : E2ETestBase
 
         // The controls name what they control.
         var containerId = await Page.Locator("#basic .bit-csl-cnt").GetAttributeAsync("id");
-        await Expect(Page.Locator("#basic .bit-csl-lbt")).ToHaveAttributeAsync("aria-controls", containerId!);
+        await Expect(Page.Locator("#basic .bit-csl-nbt")).ToHaveAttributeAsync("aria-controls", containerId!);
         await Expect(Page.Locator("#basic .bit-csl-dot").First).ToHaveAttributeAsync("aria-controls", containerId!);
         await Expect(Page.Locator("#basic .bit-csl-cnt")).ToHaveAttributeAsync("aria-live", "polite");
 
@@ -609,8 +609,8 @@ public class BitCarouselE2ETests : E2ETestBase
         var a11y = Page.Locator("#a11y");
         await Expect(a11y.Locator(".bit-crsi").Nth(1)).ToHaveAttributeAsync("aria-label", "Slide 2 of 4");
         await Expect(a11y.Locator(".bit-crsi").Nth(3)).ToHaveAttributeAsync("aria-label", "The named slide");
-        await Expect(a11y.Locator(".bit-csl-lbt")).ToHaveAttributeAsync("aria-label", "Forwards");
-        await Expect(a11y.Locator(".bit-csl-rbt")).ToHaveAttributeAsync("aria-label", "Backwards");
+        await Expect(a11y.Locator(".bit-csl-nbt")).ToHaveAttributeAsync("aria-label", "Forwards");
+        await Expect(a11y.Locator(".bit-csl-pbt")).ToHaveAttributeAsync("aria-label", "Backwards");
         await Expect(a11y.Locator(".bit-csl-ppb")).ToHaveAttributeAsync("aria-label", "Pause it");
         await a11y.Locator(".bit-csl-ppb").ClickAsync();
         await Expect(a11y.Locator(".bit-csl-ppb")).ToHaveAttributeAsync("aria-label", "Play it");
@@ -628,13 +628,13 @@ public class BitCarouselE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#casc .bit-csl-dot")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#casc")).ToHaveClassAsync(HasClass("bit-csl-lg"));
-        await Expect(Page.Locator("#casc .bit-csl-rbt")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#casc .bit-csl-pbt")).ToBeVisibleAsync();
 
         await Expect(Page.Locator("#casc-own .bit-csl-dot")).ToHaveCountAsync(3);
-        await Expect(Page.Locator("#casc-own .bit-csl-rbt")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#casc-own .bit-csl-pbt")).ToBeVisibleAsync();
 
         await Expect(Page.Locator("#casc-out .bit-csl-dot")).ToHaveCountAsync(3);
-        await Expect(Page.Locator("#casc-out .bit-csl-rbt")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#casc-out .bit-csl-pbt")).ToBeHiddenAsync();
         await Expect(Page.Locator("#casc-out")).Not.ToHaveClassAsync(HasClass("bit-csl-lg"));
     }
 
@@ -648,7 +648,7 @@ public class BitCarouselE2ETests : E2ETestBase
             var color = await ResolveAsync($"var({main})");
             await Expect(Page.Locator($"#color-{name}")).ToHaveClassAsync(HasClass($"bit-csl-{suffix}"));
             await Expect(Page.Locator($"#color-{name} .bit-csl-cud")).ToHaveCSSAsync("background-color", color);
-            await Expect(Page.Locator($"#color-{name} .bit-csl-lbt")).ToHaveCSSAsync("color", color);
+            await Expect(Page.Locator($"#color-{name} .bit-csl-nbt")).ToHaveCSSAsync("color", color);
         }
     }
 
@@ -683,21 +683,21 @@ public class BitCarouselE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/carousel");
 
-        await Expect(Page.Locator("#icons .bit-csl-lbt i")).ToHaveClassAsync(HasClass("csl-ext-left"));
-        await Expect(Page.Locator("#icons .bit-csl-rbt i")).ToHaveClassAsync(HasClass("csl-ext-right"));
+        await Expect(Page.Locator("#icons .bit-csl-nbt i")).ToHaveClassAsync(HasClass("csl-ext-next"));
+        await Expect(Page.Locator("#icons .bit-csl-pbt i")).ToHaveClassAsync(HasClass("csl-ext-prev"));
         await Expect(Page.Locator("#icons .bit-csl-ppb i")).ToHaveClassAsync(HasClass("csl-ext-pause"));
         await Page.Locator("#icons .bit-csl-ppb").ClickAsync();
         await Expect(Page.Locator("#icons .bit-csl-ppb i")).ToHaveClassAsync(HasClass("csl-ext-play"));
 
-        await Expect(Page.Locator("#icon-names .bit-csl-lbt i")).ToHaveClassAsync(HasClass("bit-icon--Forward"));
-        await Expect(Page.Locator("#icon-names .bit-csl-rbt i")).ToHaveClassAsync(HasClass("bit-icon--Back"));
+        await Expect(Page.Locator("#icon-names .bit-csl-nbt i")).ToHaveClassAsync(HasClass("bit-icon--Forward"));
+        await Expect(Page.Locator("#icon-names .bit-csl-pbt i")).ToHaveClassAsync(HasClass("bit-icon--Back"));
         await Expect(Page.Locator("#icon-names .bit-csl-ppb i")).ToHaveClassAsync(HasClass("bit-icon--CirclePause"));
         await Page.Locator("#icon-names .bit-csl-ppb").ClickAsync();
         await Expect(Page.Locator("#icon-names .bit-csl-ppb i")).ToHaveClassAsync(HasClass("bit-icon--PlaySolid"));
 
         // The defaults.
-        await Expect(Page.Locator("#basic .bit-csl-lbt i")).ToHaveClassAsync(HasClass("bit-icon--ChevronRight"));
-        await Expect(Page.Locator("#vertical .bit-csl-lbt i")).ToHaveClassAsync(HasClass("bit-icon--ChevronDown"));
+        await Expect(Page.Locator("#basic .bit-csl-nbt i")).ToHaveClassAsync(HasClass("bit-icon--ChevronRight"));
+        await Expect(Page.Locator("#vertical .bit-csl-nbt i")).ToHaveClassAsync(HasClass("bit-icon--ChevronDown"));
     }
 
     [TestMethod]
@@ -715,12 +715,12 @@ public class BitCarouselE2ETests : E2ETestBase
             ("#styled .bit-csl-cnt", "csl-cnt-class", "margin-top", "2px"),
             ("#styled .bit-crsi >> nth=1", "csl-item-class", "padding-top", "3px"),
             ("#styled .bit-crsi-cur", "csl-cur-class", "padding-bottom", "4px"),
-            ("#styled .bit-csl-lbt", "csl-btns-class", "padding-left", "5px"),
-            ("#styled .bit-csl-lbt i", "csl-btn-icons-class", "padding-left", "6px"),
-            ("#styled .bit-csl-lbt", "csl-left-class", "padding-right", "7px"),
-            ("#styled .bit-csl-lbt i", "csl-left-icon-class", "padding-right", "8px"),
-            ("#styled .bit-csl-rbt", "csl-right-class", "padding-right", "9px"),
-            ("#styled .bit-csl-rbt i", "csl-right-icon-class", "padding-right", "10px"),
+            ("#styled .bit-csl-nbt", "csl-btns-class", "padding-left", "5px"),
+            ("#styled .bit-csl-nbt i", "csl-btn-icons-class", "padding-left", "6px"),
+            ("#styled .bit-csl-nbt", "csl-next-class", "padding-right", "7px"),
+            ("#styled .bit-csl-nbt i", "csl-next-icon-class", "padding-right", "8px"),
+            ("#styled .bit-csl-pbt", "csl-prev-class", "padding-right", "9px"),
+            ("#styled .bit-csl-pbt i", "csl-prev-icon-class", "padding-right", "10px"),
             ("#styled .bit-csl-dcn", "csl-dcn-class", "padding-top", "11px"),
             ("#styled .bit-csl-dot >> nth=1", "csl-dots-class", "margin-top", "12px"),
             ("#styled .bit-csl-cud", "csl-cud-class", "margin-bottom", "13px"),
@@ -745,8 +745,8 @@ public class BitCarouselE2ETests : E2ETestBase
         await OpenAsync("/e2e/carousel");
 
         // At the first slide there is nothing to go back to, whatever the page styled the buttons with.
-        var prev = Page.Locator("#styled-buttons .bit-csl-rbt");
-        var next = Page.Locator("#styled-buttons .bit-csl-lbt");
+        var prev = Page.Locator("#styled-buttons .bit-csl-pbt");
+        var next = Page.Locator("#styled-buttons .bit-csl-nbt");
         await Expect(next).ToHaveCSSAsync("color", "rgb(1, 2, 3)");
         await Expect(prev).ToBeHiddenAsync();
 
@@ -772,7 +772,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Expect(root).ToHaveCSSAsync("row-gap", "9px");
         await Expect(Page.Locator("#vars .bit-crsi").First).ToHaveCSSAsync("padding-left", "5px");
 
-        var button = Page.Locator("#vars .bit-csl-lbt");
+        var button = Page.Locator("#vars .bit-csl-nbt");
         await Expect(button).ToHaveCSSAsync("color", "rgb(1, 2, 3)");
         await Expect(button).ToHaveCSSAsync("background-color", "rgb(7, 8, 9)");
         await Expect(button).ToHaveCSSAsync("opacity", "0.3");
@@ -797,7 +797,7 @@ public class BitCarouselE2ETests : E2ETestBase
 
         // The easing of the slide transition.
         await Page.Mouse.MoveAsync(0, 0);
-        await Page.Locator("#vars .bit-csl-rbt").ClickAsync();
+        await Page.Locator("#vars .bit-csl-pbt").ClickAsync();
         await Expect(Page.Locator("#vars .bit-crsi-cur").First).ToHaveCSSAsync("transition-timing-function", "linear");
 
         // The focus ring of the keyboard-focused root.
@@ -822,13 +822,17 @@ public class BitCarouselE2ETests : E2ETestBase
         await Expect(rtl).ToHaveAttributeAsync("dir", "rtl");
         await Expect(rtl).ToHaveClassAsync(HasClass("bit-rtl"));
 
-        // The button at the left edge goes forwards in a right-to-left carousel.
-        var leftEdge = Page.Locator("#rtl .bit-csl-rbt");
-        await Expect(leftEdge).ToHaveAttributeAsync("aria-label", "Next slide");
-        await Expect(Page.Locator("#rtl .bit-csl-lbt")).ToBeHiddenAsync();
-        await leftEdge.ClickAsync();
+        // The next button sits at the left edge of a right-to-left carousel, and the previous one at the right edge.
+        await Expect(rtl).ToHaveClassAsync(HasClass("bit-csl-rtl"));
+        var next = Page.Locator("#rtl .bit-csl-nbt");
+        await Expect(next).ToHaveAttributeAsync("aria-label", "Next slide");
+        await Expect(Page.Locator("#rtl .bit-csl-pbt")).ToBeHiddenAsync();
+        var container = await BoxAsync("#rtl .bit-csl-cnt");
+        AssertClose(container.X, (await BoxAsync("#rtl .bit-csl-nbt")).X, "the next button at the left edge");
+        await next.ClickAsync();
         await ExpectCurrentAsync("rtl", "S2");
         await ExpectSlideInPlaceAsync("rtl", "S2");
+        AssertClose(container.Right, (await BoxAsync("#rtl .bit-csl-pbt")).Right, "the previous button at the right edge");
 
         await WaitForKeysAsync("rtl");
         await rtl.FocusAsync();
@@ -838,9 +842,18 @@ public class BitCarouselE2ETests : E2ETestBase
         await ExpectCurrentAsync("rtl", "S2");
 
         // Inherited from an ancestor, read off the page.
-        await Expect(Page.Locator("#rtl-inherited .bit-csl-rbt")).ToHaveAttributeAsync("aria-label", "Next slide");
-        await Page.Locator("#rtl-inherited .bit-csl-rbt").ClickAsync();
+        await Expect(Page.Locator("#rtl-inherited")).ToHaveClassAsync(HasClass("bit-csl-rtl"));
+        var inherited = await BoxAsync("#rtl-inherited .bit-csl-cnt");
+        AssertClose(inherited.X, (await BoxAsync("#rtl-inherited .bit-csl-nbt")).X, "the next button of an inherited direction at the left edge");
+        await Page.Locator("#rtl-inherited .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("rtl-inherited", "S2");
+
+        // A label the page gives a button stays on the button it names, at whichever edge it sits.
+        var labelled = Page.Locator("#rtl-labels .bit-csl-nbt");
+        await Expect(labelled).ToHaveAttributeAsync("aria-label", "Next");
+        await labelled.ClickAsync();
+        await ExpectCurrentAsync("rtl-labels", "S2");
+        await Expect(Page.Locator("#rtl-labels .bit-csl-pbt")).ToHaveAttributeAsync("aria-label", "Previous");
     }
 
     [TestMethod]
@@ -999,7 +1012,7 @@ public class BitCarouselTouchE2ETests : E2ETestBase
         // synthesized swipe too closely into the end of that gesture rather than a click.
         await Page.Locator("#touch .bit-csl-dot").Nth(3).TapAsync();
         await Expect(Page.Locator("#touch .bit-crsi-cur")).ToHaveTextAsync(new[] { "S4" });
-        await Page.Locator("#touch .bit-csl-rbt").TapAsync();
+        await Page.Locator("#touch .bit-csl-pbt").TapAsync();
         await Expect(Page.Locator("#touch .bit-crsi-cur")).ToHaveTextAsync(new[] { "S3" });
 
         await SwipeAsync("#touch .bit-csl-cnt", -150, 0);

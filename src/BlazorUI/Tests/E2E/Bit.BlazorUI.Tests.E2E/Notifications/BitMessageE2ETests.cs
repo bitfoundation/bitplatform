@@ -133,7 +133,10 @@ public class BitMessageE2ETests : E2ETestBase
         Assert.IsTrue(await Part("ml-single", "bit-msg-cnt").EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The single line is clipped.");
         Assert.AreEqual("ellipsis", await ComputedStyleAsync("#ml-single .bit-msg-cnt", "text-overflow"));
 
-        var lineHeight = (await Page.BoxAsync("#ml-single .bit-msg-cnt")).Height;
+        // The content keeps room for its focus outline above and below its text, so a line is its box less that room -
+        // which the cap drops below the last line it keeps.
+        var room = await NumberAsync("#ml-single .bit-msg-cnt", "padding-top");
+        var lineHeight = (await Page.BoxAsync("#ml-single .bit-msg-cnt")).Height - room * 2;
 
         await Expect(Part("ml-multi", "bit-msg-cnt")).ToHaveClassAsync(HasClass("bit-msg-mcn"));
         var multiHeight = (await Page.BoxAsync("#ml-multi .bit-msg-cnt")).Height;
@@ -142,7 +145,8 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Part("ml-max", "bit-msg-cnt")).ToHaveClassAsync(HasClass("bit-msg-clp"));
         await Expect(Root("ml-max")).ToHaveAttributeAsync("style", new Regex("--bit-msg-maxlines:2"));
         var cappedHeight = (await Page.BoxAsync("#ml-max .bit-msg-cnt")).Height;
-        Assert.IsTrue(cappedHeight < multiHeight && cappedHeight > lineHeight * 1.5, $"MaxLines=2 caps the wrap at two lines ({cappedHeight}).");
+        Assert.IsTrue(cappedHeight < multiHeight, $"MaxLines=2 caps the wrap ({cappedHeight} vs {multiHeight}).");
+        Assert.AreEqual(room + lineHeight * 2, cappedHeight, 1, $"MaxLines=2 caps the wrap at two lines of {lineHeight}px.");
         Assert.IsTrue(await Part("ml-max", "bit-msg-cnt").EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight + 1"), "What is past the cap is clipped.");
     }
 

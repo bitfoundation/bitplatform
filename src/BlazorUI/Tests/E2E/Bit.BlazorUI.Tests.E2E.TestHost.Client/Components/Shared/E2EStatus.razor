@@ -1,6 +1,7 @@
 ﻿@* The one line every page carries: "Loading" in the prerendered HTML, "Ready" once the first interactive render has
    run, which is what E2ETestBase.OpenAsync waits for before a test drives the page. A page that has something of its
    own to say puts it in Status. *@
+@inject IJSRuntime JS
 <p class="e2e-status">Status: <span id="status">@(Status ?? _status)</span></p>
 
 @code {
@@ -11,9 +12,18 @@
 
     private string _status = "Loading";
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false) return;
+
+        // This component is a direct child of the page, so it renders - and gets its first OnAfterRender - ahead of every
+        // component nested in an E2ESection. Saying "Ready" right here would reach the browser before those components
+        // had sent their first interop calls (the listeners of a splitter's gutter, a tooltip's Escape), and a test would
+        // drive a component whose script is not wired yet. The yield lets the rest of the page's first after-render calls
+        // go out first, and the round trip (to a built-in that does nothing here) comes back only behind them, since the
+        // browser runs interop calls in the order they were sent.
+        await Task.Yield();
+        await JS.InvokeVoidAsync("Math.max");
 
         _status = "Ready";
         StateHasChanged();

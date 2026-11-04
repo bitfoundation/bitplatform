@@ -377,8 +377,8 @@ public class BitSwiperE2ETests : E2ETestBase
         await OpenAsync("/e2e/swiper");
 
         await Expect(Page.Locator("#scrollbar")).ToHaveClassAsync(HasClass("bit-swp-scb"));
-        await Expect(Page.Locator("#scrollbar .bit-swp-cnt")).ToHaveCSSAsync("scrollbar-width", "thin");
-        await Expect(Page.Locator("#basic .bit-swp-cnt")).ToHaveCSSAsync("scrollbar-width", "none");
+        await Page.Locator("#scrollbar .bit-swp-cnt").ExpectScrollbarWidthAsync("thin");
+        await Page.Locator("#basic .bit-swp-cnt").ExpectScrollbarWidthAsync("none");
 
         Assert.IsNull(await Page.Locator("#no-keyboard").GetAttributeAsync("tabindex"));
         await Page.Locator("#no-keyboard .bit-swp-rbt").FocusAsync();

@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -95,6 +96,14 @@ public partial class BitBadge : BitComponentBase
     // a "99+" a reader cannot get the real count out of is the whole reason the tooltip is worth having. A
     // Title of its own always wins, and a badge showing its content in full has nothing left to reveal.
     private string? _titleText => Title ?? (_isContentCapped && _shownContent is not null ? Content?.ToString() : null);
+
+    // A badge showing one character on its own - a digit, a letter, an emoji - is drawn as a circle whatever
+    // font it is set in (see .bit-bdg-one). Counted in text elements, so an emoji spelled in several chars is
+    // still one; a glyph next to it is a second thing on the badge.
+    private string? _singleCharClass => Icon is null && IconName.HasNoValue() && _shownContent is { Length: > 0 } shown
+                                        && new StringInfo(shown).LengthInTextElements == 1
+                                        ? "bit-bdg-one"
+                                        : null;
 
 
 

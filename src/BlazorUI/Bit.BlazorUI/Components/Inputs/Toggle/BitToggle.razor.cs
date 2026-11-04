@@ -617,7 +617,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// the one rejection only announced with a label of its own, its reason being explained elsewhere.
     /// </remarks>
     private string? LiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
-                                : ErrorMessageTemplate is not null ? "Invalid input"
+                                : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
                                 : ErrorMessage.HasValue() ? ErrorMessage
                                 : null;
 

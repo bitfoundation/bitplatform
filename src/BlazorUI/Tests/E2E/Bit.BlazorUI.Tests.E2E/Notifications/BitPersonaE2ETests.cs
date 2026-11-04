@@ -417,8 +417,10 @@ public class BitPersonaE2ETests : E2ETestBase
         await Expect(Page.Locator("#image-click-empty .bit-prs-imo")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#image-click-empty .bit-prs-cne")).ToHaveAttributeAsync("aria-label", "Xafan Salina");
 
-        // The keyboard reaches it, rings it and unveils it; Space activates it.
-        await Page.Mouse.MoveAsync(0, 0);
+        // The keyboard reaches it, rings it and unveils it; Space activates it. The pointer is clicked off the coins
+        // first rather than only moved off them: WebKit starts the keyboard from the spot last clicked while the focus
+        // is on the element around it - the coin clicked above - and the status line is a spot nothing answers.
+        await Page.Locator("#status").ClickAsync();
         await Page.Locator("#image-click-initials .bit-prs-cne").FocusAsync();
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(coin).ToBeFocusedAsync();

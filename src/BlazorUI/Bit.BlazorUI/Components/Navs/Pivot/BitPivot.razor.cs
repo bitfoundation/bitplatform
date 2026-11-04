@@ -887,8 +887,8 @@ public partial class BitPivot : BitComponentBase
                  : item.Title;
 
         return name.HasValue()
-                ? string.Format(DismissAriaLabelFormat ?? "Remove {0}", name)
-                : (DismissTitle ?? "Remove");
+                ? string.Format(DismissAriaLabelFormat ?? BitStrings.Current.RemoveFormat, name)
+                : (DismissTitle ?? BitStrings.Current.Remove);
     }
 
     // A tab folded into the overflow menu is out of the accessibility tree, so the position and the count a

@@ -1,4 +1,5 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+﻿@import '../../Styles/extra-variables.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
 @import '../../../Bit.BlazorUI/Styles/media-queries.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
@@ -513,6 +514,12 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
 .bit-tzp-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel runs from the top edge of the screen to the bottom one: the header and the close button start below
+        // the safe area at the top, drawn as the top border of the panel, and Callouts.position ends the list above the
+        // one at the bottom. The insets of the device are the ones the package publishes, which an app adjusts them with.
+        @include responsive-panel-safe-area(tzp,
+            $device-top: ($bit-env-inset-top, $bit-env-max-inset-top),
+            $device-bottom: ($bit-env-inset-bottom, $bit-env-max-inset-bottom));
         top: 0;
         right: 0;
         height: 100%;
@@ -520,6 +527,7 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
         max-height: unset;
         animation-name: unset;
         border-radius: $shp-radius-sheet;
+        border-top: var(--bit-tzp-sa-top) solid transparent;
         transform: translateX(100%);
         width: var(--bit-TimeZonePicker-responsive-width, #{spacing(34)});
         box-shadow: var(--bit-TimeZonePicker-callout-shadow, #{$box-shadow-sheet});
@@ -534,6 +542,7 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
             padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
         }
 
+        // Placed against the padding box of the panel, which starts below its top border: the safe area there.
         .bit-tzp-cls {
             display: flex;
             position: absolute;

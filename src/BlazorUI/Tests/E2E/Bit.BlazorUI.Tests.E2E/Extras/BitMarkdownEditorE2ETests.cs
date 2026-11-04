@@ -229,19 +229,24 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(body).ToHaveCSSAsync("min-height", "96px");
         await Expect(body).ToHaveCSSAsync("max-height", "320px");
 
-        // Drag the handle well past the maximum, then well past the minimum.
-        await body.ScrollIntoViewIfNeededAsync();
+        if (IsWebKit) Assert.Inconclusive("Playwright's WebKit does not drag a resize handle with the mouse it synthesizes - a bare box of resize: vertical stays put as well.");
+
+        // Drag the handle well past the maximum, then well past the minimum - each as far as the viewport goes and no
+        // further: a synthesized move outside it is one the resize handle of Firefox and WebKit takes no position from,
+        // which drops the body to its minimum at once. The body is scrolled to the top of the viewport for the room.
+        await body.EvaluateAsync("el => el.scrollIntoView({ block: 'start' })");
+        var viewportHeight = Page.ViewportSize!.Height;
         var box = (await body.BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(box.X + box.Width - 3, box.Y + box.Height - 3);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X + box.Width - 3, box.Y + box.Height + 400, new() { Steps = 8 });
+        await Page.Mouse.MoveAsync(box.X + box.Width - 3, Math.Min(box.Y + box.Height + 400, viewportHeight - 5), new() { Steps = 8 });
         await Page.Mouse.UpAsync();
         await Expect(body).ToHaveCSSAsync("height", "320px");
 
         box = (await body.BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(box.X + box.Width - 3, box.Y + box.Height - 3);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X + box.Width - 3, box.Y - 300, new() { Steps = 8 });
+        await Page.Mouse.MoveAsync(box.X + box.Width - 3, Math.Max(box.Y - 300, 5), new() { Steps = 8 });
         await Page.Mouse.UpAsync();
         await Expect(body).ToHaveCSSAsync("height", "96px");
     }
@@ -1317,15 +1322,17 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     [TestMethod]
     public async Task ImageUpload_APastedAndADroppedImage_AreUploaded()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit does not let a page construct a ClipboardEvent carrying files.");
-
         await OpenAsync(Route);
 
         await SetTextAsync("mde-image", "");
+        // The data is handed to the event as its own clipboardData: an event constructed with it gets an empty one
+        // of its own in Firefox.
         await TextArea("mde-image").EvaluateAsync(@"(t, bytes) => {
             const dt = new DataTransfer();
             dt.items.add(new File([new Uint8Array(bytes)], 'pasted.png', { type: 'image/png' }));
-            t.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+            const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(e, 'clipboardData', { value: dt });
+            t.dispatchEvent(e);
         }", TinyPng.Select(b => (int)b).ToArray());
         await Expect(TextArea("mde-image")).ToHaveValueAsync("![pasted.png](/samples/mdv-sample.png)");
 
@@ -1347,17 +1354,19 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     [TestMethod]
     public async Task Paste_HtmlTablesSpreadsheetRowsAndUrlsBecomeMarkdown()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit does not let a page construct a ClipboardEvent with data.");
-
         await OpenAsync(Route);
 
         async Task PasteAsync(string text, string? html)
         {
+            // The data is handed to the event as its own clipboardData: an event constructed with it gets an empty one
+            // of its own in Firefox.
             await TextArea("mde-paste").EvaluateAsync(@"(t, d) => {
                 const dt = new DataTransfer();
                 dt.setData('text/plain', d[0]);
                 if (d[1]) dt.setData('text/html', d[1]);
-                t.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+                const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+                Object.defineProperty(e, 'clipboardData', { value: dt });
+                t.dispatchEvent(e);
             }", new[] { text, html });
         }
 
@@ -1687,6 +1696,9 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");
         var textArea = TextArea("mde-dialog");
         await Expect(textArea).ToBeVisibleAsync();
+        // Ctrl+F is the editor's once its script has been set up for the field, which a dialog's content gets only after
+        // the dialog has opened; pressed before that, the key is the browser's own find bar's.
+        await Page.WaitForFunctionAsync("ta => Object.values(BitBlazorUI.MarkdownEditor._editors).some(e => e.textArea === ta)", await textArea.ElementHandleAsync());
 
         await textArea.FocusAsync();
         await Page.Keyboard.PressAsync("Control+f");

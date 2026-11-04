@@ -145,10 +145,14 @@ public class BitFileUploadE2ETests : E2ETestBase
 
     private Task PasteAsync(ILocator target, params string[] names)
     {
+        // The data is handed to the event as its own clipboardData: an event constructed with it gets an empty one
+        // of its own in Firefox.
         return target.EvaluateAsync(@"(el, names) => {
             const data = new DataTransfer();
             for (const name of names) data.items.add(new File(['pasted ' + name], name, { type: 'text/plain' }));
-            el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+            const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(e, 'clipboardData', { value: data });
+            el.dispatchEvent(e);
         }", names);
     }
 

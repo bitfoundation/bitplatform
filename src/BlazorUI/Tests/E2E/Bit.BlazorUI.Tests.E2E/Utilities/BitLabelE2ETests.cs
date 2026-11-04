@@ -246,11 +246,18 @@ public class BitLabelE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#lbl-noselect")).ToHaveClassAsync(HasClass("bit-lbl-nsl"));
         await Expect(Page.Locator("#lbl-noselect")).ToHaveCSSAsync("user-select", "none");
+        // WebKit goes by the prefixed property alone.
+        await Expect(Page.Locator("#lbl-noselect")).ToHaveCSSAsync("-webkit-user-select", "none");
 
-        await Page.Locator("#selectable-caption").DblClickAsync();
-        Assert.AreNotEqual("", (await SelectionAsync()).Trim(), "A double click selects a word of a plain label.");
+        // WebKit selects no text of a label around its control at all - a press on the caption is a press of the
+        // control, and the control takes the focus - so a plain label has nothing selected there to compare with.
+        if (IsWebKit is false)
+        {
+            await Page.Locator("#selectable-caption").DblClickAsync();
+            Assert.AreNotEqual("", (await SelectionAsync()).Trim(), "A double click selects a word of a plain label.");
 
-        await Page.EvaluateAsync("() => getSelection().removeAllRanges()");
+            await Page.EvaluateAsync("() => getSelection().removeAllRanges()");
+        }
 
         await Page.Locator("#noselect-caption").DblClickAsync();
         Assert.AreEqual("", (await SelectionAsync()).Trim(), "A NoSelect label's caption is never selected.");

@@ -88,7 +88,7 @@
                 @onkeydown:stopPropagation="true"
                 type="button"
                 tabindex="-1"
-                title="@(Parent.DismissTitle ?? "Remove")"
+                title="@(Parent.DismissTitle ?? BitStrings.Current.Remove)"
                 aria-label="@Parent.GetDismissAriaLabel(this)"
                 style="@Parent.Styles?.DismissButton"
                 class="bit-pvti-dbt @Parent.Classes?.DismissButton">
