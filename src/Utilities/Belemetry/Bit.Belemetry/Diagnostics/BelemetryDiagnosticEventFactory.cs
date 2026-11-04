@@ -113,7 +113,7 @@ internal sealed class BelemetryDiagnosticEventFactory
     public BelemetryDiagnosticEvent? FromSpan(BelemetrySpan span, BelemetryDiagnosticRecorder recorder)
     {
         var counters = new BelemetrySanitizeCounters();
-        var outcome = OutcomeOf(span.Status, span.Attributes.GetString(BelemetrySemanticConventions.ErrorType));
+        var outcome = OutcomeOf(span);
         var failed = outcome == BelemetryDiagnosticOutcome.Failure;
         if (failed is false && Options.IncludeSuccessfulActivity is false) return null;
 
@@ -418,20 +418,28 @@ internal sealed class BelemetryDiagnosticEventFactory
     /// <summary>
     /// Where an exception logged by <paramref name="scope"/> was observed. The categories are the framework's own logger
     /// categories (.NET 10): the renderers and the circuit host log what nothing handled, <c>ErrorBoundary</c> what one caught.
+    /// Only the framework's own categories mean "unhandled": an app's <c>PdfRenderer</c> logs what it handled.
     /// </summary>
     internal static string OriginOf(string scope, string? exceptionType)
     {
         // Who reported it first: an unhandled JSException is unhandled (it ends a circuit) before it is an interop failure.
         if (scope.Contains("ErrorBoundary", StringComparison.Ordinal)) return "error-boundary";
         if (scope == ApiScope) return "tracked";
-        if (scope.EndsWith(".CircuitHost", StringComparison.Ordinal)
-            || scope.EndsWith("Renderer", StringComparison.Ordinal)
+        if (IsFrameworkRendererScope(scope)
+            || (IsCircuitScope(scope) && scope.EndsWith(".CircuitHost", StringComparison.Ordinal))
             || scope == "Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost") return "unhandled";
         if (IsCircuitScope(scope)) return "circuit";
         if (scope.StartsWith("Microsoft.JSInterop", StringComparison.Ordinal)) return "js-interop";
         if (exceptionType is not null && exceptionType.StartsWith("Microsoft.JSInterop.", StringComparison.Ordinal)) return "js-interop";
         return "log";
     }
+
+    /// <summary>
+    /// A renderer of the framework's (<c>RenderTree.Renderer</c>, <c>RemoteRenderer</c>, <c>WebAssemblyRenderer</c>,
+    /// <c>WebViewRenderer</c>, <c>EndpointHtmlRenderer</c>, ...), never one of the app's.
+    /// </summary>
+    private static bool IsFrameworkRendererScope(string scope) =>
+        scope.StartsWith("Microsoft.AspNetCore.Components.", StringComparison.Ordinal) && scope.EndsWith("Renderer", StringComparison.Ordinal);
 
     internal static bool IsCircuitScope(string scope) =>
         scope.StartsWith("Microsoft.AspNetCore.Components.Server.Circuits", StringComparison.Ordinal)
@@ -474,6 +482,11 @@ internal sealed class BelemetryDiagnosticEventFactory
         var status = span.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
         return status is >= 400 and < 500;
     }
+
+    /// <summary>Whether a span failed, as <see cref="FromSpan"/> decides it - without converting it.</summary>
+    internal static bool IsFailure(BelemetrySpan span) => OutcomeOf(span) == BelemetryDiagnosticOutcome.Failure;
+
+    private static BelemetryDiagnosticOutcome OutcomeOf(BelemetrySpan span) => OutcomeOf(span.Status, span.Attributes.GetString(BelemetrySemanticConventions.ErrorType));
 
     /// <summary>
     /// How a span ended. A cancellation first: HttpClient marks a cancelled request with an Error status and the

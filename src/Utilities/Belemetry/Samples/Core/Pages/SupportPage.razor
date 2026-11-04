@@ -53,7 +53,8 @@
 {
     @* The library's preview: sections, findings, events with a Remove button each, missing evidence, the report as it
        will be sent - then Confirm and download, or Cancel. *@
-    <BelemetryCapturePreview Capture="_capture" OnConfirmed="Done" OnCancelled="Cancel" />
+    <BelemetryCapturePreview Capture="_capture" Download="Settings.SaveBundle is null" ConfirmText="@(Settings.SaveBundle is null ? "Confirm and download" : "Confirm and save")"
+                             OnConfirmed="DoneAsync" OnCancelled="Cancel" />
 }
 
 @if (_status is not null)
@@ -148,11 +149,26 @@
         _status = null;
     }
 
-    private void Done(BelemetryDiagnosticCapture capture)
+    private async Task DoneAsync(BelemetryDiagnosticCapture capture)
     {
         Diagnostics.Dismiss(capture);
         _capture = null;
-        _status = $"Report {capture.Id} exported as {capture.SuggestedFileName}.";
+
+        // A web view that does not save downloads (MAUI on a phone): the app writes the bundle itself.
+        if (Settings.SaveBundle is { } save)
+        {
+            try
+            {
+                _status = $"Report {capture.Id} saved to {await save(capture)}.";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _status = $"Report {capture.Id} could not be saved: {ex.GetType().Name}.";
+            }
+            return;
+        }
+
+        _status = $"Report {capture.Id} downloaded as {capture.SuggestedFileName}.";
     }
 
     private void Cancel()

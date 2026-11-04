@@ -279,7 +279,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
 | `getDiagnostics()` | The browser diagnostic timeline as the grant allows now (`{v:1,capacity,dropped,resource,events}`), after running the app's processors on the queued records; null when diagnostics are off |
-| `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused) |
+| `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused). Trimmed under .NET's 4 MiB read limit (`BelemetryJsBridge.MaxDiagnosticsBytes`): oldest activity first, then oldest failures, counted as `size_limit`; a larger stream is missing evidence, never a failed capture |
 | `clearDiagnostics()` | Forgets the browser timeline and its stored copy |
 | `downloadFile(name, content)` | Saves a support bundle: `content` is bytes (WASM, Hybrid) or a .NET stream reference (Server); the name is reduced to `[A-Za-z0-9._-]` |
 
@@ -291,8 +291,10 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   process attributes.
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
 - `"Belemetry.DiagnosticTrigger"`. Receives `{type, message}` of a JS error the page recorded, when
-  `diagnostics.triggerBrowserErrors` (at most every 10 s per page). Untrusted on a server: only cut strings are read, as
-  the key of an automatic capture whose own cooldown and pending limit bound what a page can cause.
+  `diagnostics.triggerBrowserErrors` (at most every 10 s per page), on the next task and only once the app's processors
+  kept the record (`Pipeline.keeps`; an error a processor drops triggers nothing and uses no interval). Untrusted on a
+  server: only cut strings are read, as the key of an automatic capture whose own cooldown and in-progress limit bound
+  what a page can cause.
 - `"Belemetry.DrainForUnload"` (synchronous, WASM only). Called on `pagehide` / `visibilitychange:hidden`. Returns
   the pending .NET records serialized as requests, which JS sends with `fetch(..., { keepalive: true })` because
   async .NET work does not survive unload. Elsewhere it returns nothing: on a server any client of a circuit can call
@@ -381,12 +383,24 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   renderer's `SynchronizationContext` (`BelemetryDiagnosticHub.Acquire`, reference counted; the last release closes it).
   A record goes to a recorder only when produced on that context, or under an activity the hub tagged (weakly) while it
   started there *and that has not stopped* - a timer or loop started under a click handler outlives it and is nobody's.
-  Never "the only circuit". Unattributed server failures go to the trace index, found only by trace ids from that page's
-  own fetch spans, and renumbered when they join a capture.
+  Never "the only circuit". Unattributed server failures (error logs, failed spans - never a successful request's span)
+  go to the trace index, found only by trace ids from that page's own fetch spans, and renumbered when they join a capture.
+- **A capture holds no scope**: its consent checks hold the hub (singleton) and the bridge's `BelemetryPageConsent`
+  (the page's last grant), never the session, the bridge or the JS runtime - an app may keep a capture past its circuit.
+  The report is cached per consent key (each feature, for the process's events and the page's apart).
+- **Generations**: a revoke and `Clear` both bump the recorder's generation; an automatic capture built across either is
+  discarded (counted `consent_revoked_capture` for a revoke only). A full review queue drops its oldest capture
+  (`pending_capture_limit`); only `MaxPendingCaptures` captures in progress refuse a trigger.
+- **Exception groups in a capture** export the occurrences of the events the capture exports only; a group known only from
+  its history keeps its counts and template (the preview lists those), with no occurrence.
+- **Unhandled**: only the framework's categories (`Microsoft.AspNetCore.Components.*Renderer`, the circuit host, the
+  WebAssembly host) mark an exception unhandled; an app's `PdfRenderer` logs a handled one.
 - **Framework activities** (`BelemetryDiagnosticHub.CreatesActivity`): the hub's listener makes the framework create
   `Navigate`/`HandleEvent`/`StartCircuit` only when that changes nothing for the app's traces - Belemetry's export covers
   the source (its decision, `IgnoredActivityNames` respected), or `Diagnostics.CreateFrameworkActivities` (default: not
-  on a server). An unsampled parent makes a parent-based sampler drop the spans under it.
+  on a server). An unsampled parent makes a parent-based sampler drop the spans under it. `Belemetry.cs` registers the
+  component source (`AddComponentsTracing`) on every host, but on WebAssembly and Hybrid the export listens to it only
+  with diagnostics on (`BelemetrySettings.ExportsTraceSource`): an app without diagnostics traces as before.
 - **Exceptions of a log record** are read from its attributes (after privacy and processors); the exception object
   only gives the inner exceptions' types, and their messages when the record's stack text still holds them.
 - **The bundle format** (`BelemetrySupportBundle`, schema 1): see the README. A format change bumps `SchemaVersion`; a

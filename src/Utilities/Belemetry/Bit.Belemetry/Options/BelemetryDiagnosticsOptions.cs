@@ -99,7 +99,10 @@ public sealed class BelemetryDiagnosticsOptions
     /// </summary>
     public TimeSpan AutoCaptureCooldown { get; set; } = TimeSpan.FromMinutes(10);
 
-    /// <summary>The most automatic captures kept for review; the oldest is discarded first. Defaults to 3.</summary>
+    /// <summary>
+    /// The most automatic captures kept for review (and built at once); a new one replaces the oldest, so the latest
+    /// failures are never refused for a queue nobody reviewed. Defaults to 3.
+    /// </summary>
     public int MaxPendingCaptures { get; set; } = 3;
 
     /// <summary>How long an automatic capture is kept for review. Defaults to 30 minutes.</summary>

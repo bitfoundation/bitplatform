@@ -191,6 +191,19 @@ export class Pipeline {
         return kept;
     }
 
+    /**
+     * Runs the app's processors on one record now (memoized: the export gets the same answer); false when one dropped
+     * it. What depends on the processors' verdict before the export (a diagnostic trigger) asks here.
+     */
+    keeps(record: TelemetryRecord): boolean {
+        try {
+            return this.process(record);
+        } catch (e) {
+            debug('processing failed', e);
+            return false;
+        }
+    }
+
     /** Runs the processors on the queued records now (memoized), so the diagnostic timeline reflects them before export. */
     processQueued(): void {
         for (const record of this.queue) this.process(record);

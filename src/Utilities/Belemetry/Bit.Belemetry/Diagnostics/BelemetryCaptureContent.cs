@@ -63,9 +63,6 @@ internal sealed class BelemetryCaptureContent
     /// </summary>
     public Func<BelemetryFeatures, bool>? MayCaptureBrowser { get; init; }
 
-    /// <summary>The user's grant now, to rebuild the report when it changed.</summary>
-    public Func<BelemetryFeatures>? CurrentGrant { get; init; }
-
     /// <summary>The fingerprints of the groups made from browser events only (left out with the Browser section).</summary>
     public HashSet<string> BrowserGroups { get; } = new(StringComparer.Ordinal);
 

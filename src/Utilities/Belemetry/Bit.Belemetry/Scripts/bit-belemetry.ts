@@ -20,7 +20,7 @@ import { installPageViews, resetPageViewState, trackPageView as trackPageViewCor
 import { installResources } from './instrumentations/resources';
 import { installWebVitals, resetWebVitalsState } from './instrumentations/web-vitals';
 import { installXhr } from './instrumentations/xhr';
-import { DiagnosticRecorder, type DiagnosticsSnapshot } from './diagnostics';
+import { DiagnosticRecorder, type DiagnosticEvent, type DiagnosticsSnapshot } from './diagnostics';
 import { onHidden } from './lifecycle';
 import { debug, setDebug } from './log';
 import { Severity, type Attributes, type TelemetryRecord } from './model';
@@ -290,13 +290,28 @@ let lastTrigger = 0;
 function installDiagnostics(s: State, diagnostics: DiagnosticRecorder): void {
     if (diagnostics.config.persist && (effective(s) & Features.Persistence)) diagnostics.restore();
 
-    diagnostics.onException = (type, message) => {
+    diagnostics.onException = record => {
         if (!diagnostics.config.triggerBrowserErrors || !bridge) return;
-        const time = Date.now();
-        if (time - lastTrigger < TRIGGER_INTERVAL_MS) return;
-        lastTrigger = time;
-        bridge.ref.invokeMethodAsync(DotNetCallbacks.diagnosticTrigger, { type: String(type).slice(0, 256), message: String(message).slice(0, 1024) })
-            .catch(e => debug('diagnostic trigger failed', e));
+        // Once the app's processors had their say: they run at export, after the record reached the timeline, and an error
+        // one of them drops is neither exported nor evidence, so it starts no capture either. Deferred, so a processor the
+        // app adds right after start still sees it, as the export would.
+        setTimeout(() => {
+            try {
+                if (!bridge || state !== s || !s.pipeline.keeps(record) || !diagnostics.has(record)) return;
+                const time = Date.now();
+                if (time - lastTrigger < TRIGGER_INTERVAL_MS) return;
+                lastTrigger = time;
+                const type = record.attributes['exception.type'];
+                const message = record.attributes['exception.message'];
+                const error = {
+                    type: (typeof type === 'string' && type ? type : 'Error').slice(0, 256),
+                    message: (typeof message === 'string' ? message : '').slice(0, 1024),
+                };
+                bridge.ref.invokeMethodAsync(DotNetCallbacks.diagnosticTrigger, error).catch(e => debug('diagnostic trigger failed', e));
+            } catch (e) {
+                debug('diagnostic trigger failed', e);
+            }
+        }, 0);
     };
 
     // Blazor dispatches it on the reconnect dialog (#components-reconnect-modal) without bubbling: a capturing listener on
@@ -509,7 +524,35 @@ export function getDiagnostics(): DiagnosticsSnapshot | null {
  */
 export function getDiagnosticsStream(): Blob | null {
     const snapshot = getDiagnostics();
-    return snapshot ? new Blob([JSON.stringify(snapshot)], { type: 'application/json' }) : null;
+    return snapshot ? fitDiagnostics(snapshot) : null;
+}
+
+// What .NET reads of the stream at most (C# BelemetryJsBridge.MaxDiagnosticsBytes), with room to spare.
+const MAX_DIAGNOSTICS_BYTES = 4 * 1024 * 1024 - 64 * 1024;
+
+/**
+ * The timeline as a Blob .NET accepts: past its read limit the whole stream would be refused, so the oldest activity
+ * goes first, then the oldest failures (as the capture's own limit does), counted as `size_limit`.
+ */
+function fitDiagnostics(snapshot: DiagnosticsSnapshot): Blob {
+    let blob = new Blob([JSON.stringify(snapshot)], { type: 'application/json' });
+    for (let pass = 0; blob.size > MAX_DIAGNOSTICS_BYTES && snapshot.events.length && pass < 8; pass++) {
+        // Characters, not bytes: an underestimate for non-ASCII text, which the next pass makes up for.
+        let excess = blob.size - MAX_DIAGNOSTICS_BYTES;
+        const removed = new Set<DiagnosticEvent>();
+        for (const failures of [false, true]) {
+            for (const event of snapshot.events) {
+                if (excess <= 0) break;
+                if ((event.outcome === 'failure' || !!event.exc) !== failures) continue;
+                removed.add(event);
+                excess -= JSON.stringify(event).length + 1;
+            }
+        }
+        snapshot.events = snapshot.events.filter(event => !removed.has(event));
+        snapshot.dropped.size_limit = (snapshot.dropped.size_limit || 0) + removed.size;
+        blob = new Blob([JSON.stringify(snapshot)], { type: 'application/json' });
+    }
+    return blob;
 }
 
 /** Forgets the diagnostic timeline (and its copy kept for the next load). */

@@ -31,9 +31,18 @@ public static class BelemetryTime
     /// <summary>Converts a <see cref="DateTimeOffset"/> to Unix-epoch nanoseconds.</summary>
     public static long ToUnixNano(DateTimeOffset value) => (value.UtcTicks - _unixEpochTicks) * NanosPerTick;
 
-    /// <summary>Converts Unix-epoch milliseconds (as the browser reports them, possibly fractional) to Unix-epoch nanoseconds.</summary>
+    // The most milliseconds whose nanoseconds still fit a long (about the year 2262).
+    private const double MaxUnixMilliseconds = 9_223_372_036_853d;
+
+    /// <summary>
+    /// Converts Unix-epoch milliseconds (as the browser reports them, possibly fractional) to Unix-epoch nanoseconds. A
+    /// value whose nanoseconds would not fit a long (a page is untrusted on a server) is clamped, never wrapped; NaN is 0.
+    /// </summary>
     public static long FromUnixMilliseconds(double milliseconds)
     {
+        if (double.IsNaN(milliseconds)) return 0;
+        milliseconds = Math.Clamp(milliseconds, -MaxUnixMilliseconds, MaxUnixMilliseconds);
+
         // Multiplying the whole value by 1e6 lands around 1.7e18, past the 2^53 a double holds exactly, which would
         // cost up to ~256 ns; scaling only the fractional part keeps every representable input exact.
         var whole = Math.Floor(milliseconds);

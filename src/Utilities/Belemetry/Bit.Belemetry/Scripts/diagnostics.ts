@@ -108,9 +108,11 @@ export function templateUrl(url: string, allowed: string[]): string {
     let rest = url;
     const scheme = url.indexOf('://');
     if (scheme > 0) {
-        const pathStart = url.indexOf('/', scheme + 3);
-        origin = pathStart < 0 ? url : url.slice(0, pathStart);
-        rest = pathStart < 0 ? '/' : url.slice(pathStart);
+        // The authority ends at the path, the query or the fragment, whichever comes first.
+        const authorityEnd = url.slice(scheme + 3).search(/[/?#]/);
+        const end = authorityEnd < 0 ? -1 : scheme + 3 + authorityEnd;
+        origin = end < 0 ? url : url.slice(0, end);
+        rest = end < 0 ? '/' : url.slice(end);
         const at = origin.indexOf('@', scheme + 3);
         if (at > 0) origin = origin.slice(0, scheme + 3) + origin.slice(at + 1);
     }
@@ -155,8 +157,11 @@ export class DiagnosticRecorder {
     private dropped: Record<string, number> = {};
     private byRecord = new WeakMap<TelemetryRecord, Entry>();
 
-    /** Called for every JS exception recorded (the .NET trigger, when the bridge is attached). */
-    onException: ((type: string, message: string) => void) | null = null;
+    /**
+     * Called for every JS exception recorded (the .NET trigger, when the bridge is attached). The app's processors may not
+     * have run on the record yet: the listener decides when it is final (`Pipeline.keeps`) and whether it is still here (`has`).
+     */
+    onException: ((record: TelemetryRecord) => void) | null = null;
 
     constructor(public config: DiagnosticsConfig) { }
 
@@ -190,10 +195,7 @@ export class DiagnosticRecorder {
             const entry: Entry = { seq: ++this.seq, elapsed: perfNow(), record };
             this.byRecord.set(record, entry);
             this.push(entry);
-            if (category === 'exception' && this.onException) {
-                const attributes = record.attributes;
-                this.onException(str(attributes, 'exception.type') || 'Error', str(attributes, 'exception.message') || '');
-            }
+            if (category === 'exception' && this.onException) this.onException(record);
         } catch (e) {
             debug('diagnostics: record failed', e);
         }
@@ -206,6 +208,12 @@ export class DiagnosticRecorder {
         if (outcome) event.outcome = outcome;
         if (attrs) event.attrs = attrs;
         this.push({ seq: event.seq, elapsed: event.elapsed, event });
+    }
+
+    /** Whether a record is on the timeline now (not dropped by a processor, evicted, purged or cleared). */
+    has(record: TelemetryRecord): boolean {
+        const entry = this.byRecord.get(record);
+        return !!entry && this.entries.indexOf(entry) >= 0;
     }
 
     /** A record an app processor dropped: it is not exported, so it is not evidence either. */

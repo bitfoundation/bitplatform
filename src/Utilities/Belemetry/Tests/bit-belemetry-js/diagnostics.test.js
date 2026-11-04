@@ -51,6 +51,12 @@ describe('templates (C# BelemetryUrlTemplate)', () => {
         expect(templateUrl('https://jane:pw@api.shop.test/orders/42?page=2&token=x#top', ['page'])).toBe('https://api.shop.test/orders/{n}?page=2');
         expect(templateUrl('/orders/42?token=x', [])).toBe('/orders/{n}');
     });
+
+    it('ends the origin at a query or fragment when the URL has no path', () => {
+        expect(templateUrl('https://api.example.com?customer=jdoe&orderId=991#tab', ['page'])).toBe('https://api.example.com/');
+        expect(templateUrl('https://api.example.com?page=2&token=x', ['page'])).toBe('https://api.example.com/?page=2');
+        expect(templateUrl('https://jane:pw@api.example.com#top', [])).toBe('https://api.example.com/');
+    });
 });
 
 describe('DiagnosticRecorder', () => {
@@ -80,7 +86,7 @@ describe('DiagnosticRecorder', () => {
     it('keeps JS errors with their type, message and stack', () => {
         const recorder = new DiagnosticRecorder(recorderConfig());
         const seen = [];
-        recorder.onException = (type, message) => seen.push([type, message]);
+        recorder.onException = record => seen.push([record.attributes['exception.type'], record.attributes['exception.message']]);
         recorder.record(log({ eventName: 'exception', scope: 'bit.belemetry.errors', feature: 1, severityNumber: 17, attributes: { 'exception.type': 'TypeError', 'exception.message': 'x is undefined', 'exception.stacktrace': 'at f (https://a/app.js:1:2)' } }));
         const e = recorder.snapshot(4095, {}).events[0];
         expect(e.exc).toEqual({ type: 'TypeError', message: 'x is undefined', stack: 'at f (https://a/app.js:1:2)' });
@@ -201,9 +207,42 @@ describe('getDiagnostics', () => {
 
         api.trackException('TypeError', 'first');
         api.trackException('RangeError', 'second');
+        await new Promise(resolve => setTimeout(resolve, 0));
 
         const triggers = calls.filter(([id]) => id === 'Belemetry.DiagnosticTrigger');
         expect(triggers).toEqual([['Belemetry.DiagnosticTrigger', { type: 'TypeError', message: 'first' }]]);
+    });
+
+    it('offers no trigger for an error an app processor drops, nor uses up the interval on it', async () => {
+        await load();
+        api.addProcessor(record => record.attributes['exception.message'] !== 'third-party noise');
+        api.start(config({ triggerBrowserErrors: true }));
+        const calls = [];
+        api.attachDotNet({ invokeMethodAsync: vi.fn(async (id, arg) => calls.push([id, arg])), invokeMethod: vi.fn() }, { relay: true });
+
+        api.trackException('TypeError', 'third-party noise');
+        api.trackException('TypeError', 'the real one');
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        const triggers = calls.filter(([id]) => id === 'Belemetry.DiagnosticTrigger');
+        expect(triggers).toEqual([['Belemetry.DiagnosticTrigger', { type: 'TypeError', message: 'the real one' }]]);
+        expect(api.getDiagnostics().events.filter(e => e.cat === 'exception').map(e => e.exc.message)).toEqual(['the real one']);
+    });
+
+    it('trims a timeline too large for a server to read: activity first, counted', async () => {
+        await load();
+        api.start(config({ maxEvents: 1000, includeLogMessages: true }));
+        api.trackException('TypeError', 'kept');
+        const s = api._getState();
+        const big = 'x'.repeat(40 * 1024);
+        for (let i = 0; i < 150; i++) s.diagnostics.add('custom', 'filler-' + i, 0, 9, undefined, { pad: big });
+
+        const blob = api.getDiagnosticsStream();
+
+        expect(blob.size).toBeLessThanOrEqual(4 * 1024 * 1024);
+        const snapshot = JSON.parse(await blob.text());
+        expect(snapshot.dropped.size_limit).toBeGreaterThan(0);
+        expect(snapshot.events.some(e => e.cat === 'exception' && e.exc.message === 'kept')).toBe(true);
     });
 
     it('keeps its timeline for a session sampled out of the export', async () => {

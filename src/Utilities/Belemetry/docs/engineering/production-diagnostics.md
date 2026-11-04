@@ -123,6 +123,28 @@ A fresh-context review of the whole change found 18 defects; all were real and a
 | 17 | Cancelled .NET requests were failures | low | cancellation checked first |
 | 18 | Page hides recorded without PageViews | low | gated |
 
+### Second review
+
+A second review of the support-bundle work found 14 more; all are fixed, each with a test
+(`BelemetryDiagnosticSecondReviewTests`, `diagnostics.test.js`, BevTools' `BelemetryIntegrationValueAccessTests`):
+
+| # | Finding | Severity | Fix |
+| --- | --- | --- | --- |
+| 1 | A URL without a path (`https://host?customer=x#tab`) kept its query and fragment in `url.template`, in C# and TypeScript | high | the authority ends at `/`, `?` or `#` |
+| 2 | A page's revoke on a server did not rebuild the cached report (the cache key was the union of the server's and the page's grant) | high | keyed per feature, for the process's events and the page's apart |
+| 3 | `Clear` did not discard an automatic capture being built from the timeline it forgot | high | `Clear` bumps the generation too (not counted as a revoke) |
+| 4 | A browser timeline over 4 MiB failed the whole capture on a server (`ArgumentOutOfRangeException`) | medium | the script trims it under the limit; .NET reports a larger one as missing evidence |
+| 5 | Any logger category ending in `Renderer` (an app's `PdfRenderer`) marked its exceptions unhandled | medium | only the framework's renderers and circuit host |
+| 6 | A full review queue refused new failures for 30 minutes, contrary to "the oldest is discarded first" | medium | only captures in progress refuse a trigger; the newest replaces the oldest |
+| 7 | `AddComponentsTracing` made WebAssembly and Hybrid apps without diagnostics export `Navigate`/`HandleEvent` spans and reparent HttpClient spans | medium | there, the export listens to the component source only with diagnostics on |
+| 8 | A JS error an app processor drops still triggered a .NET capture | medium | the trigger waits for the processors' verdict (next task) |
+| 9 | `exceptions.json` exported occurrences (messages, traces, routes) of failures the capture did not hold | medium | only the occurrences of exported events; history keeps its counts |
+| 10 | A page's huge `time` overflowed the conversion and threw while rendering the preview (ending a circuit) | medium | out-of-range times are malformed; the conversion clamps |
+| 11 | `DownloadAsync` reported success in MAUI on Android and Apple web views, which ignore downloads | medium | false there; the MAUI sample writes `ExportAsync` to a file |
+| 12 | A capture kept by the app held its circuit's scope (session, bridge, JS runtime) | medium | it holds the page's last grant (`BelemetryPageConsent`) only |
+| 13 | Every unattributed server span (every request) was converted and indexed under one lock | medium | failed spans only, as for logs |
+| 14 | BevTools' Support panel rendered messages around `ValueAccess` | medium | messages and templates hidden under `None`, credential shapes redacted otherwise; no capture under `None` |
+
 ## 5. Performance
 
 Measured with `DiagnosticsBenchmarks` (details in `Tests/Bit.Belemetry.Benchmarks/README.md`, "Production diagnostics"):
@@ -145,7 +167,8 @@ exception costs bounded by the existing error limits.
 - **Prerendering** gets its own short-lived .NET timeline; the browser timeline spans the transition.
 - **Server-side HTTP spans** need the server pipeline's traces (`Server.CollectDotnetTelemetry`).
 - **Render statistics** in WebAssembly/Hybrid need `services.AddComponentsMetrics()` by the app.
-- **Hybrid downloads** depend on the WebView; apps write `ExportAsync` to a file or share sheet.
+- **Hybrid downloads** work in WebView2 (Windows); on Android, iOS and Mac Catalyst `DownloadAsync` returns false and the
+  app writes `ExportAsync` to a file or share sheet (the MAUI sample's `SampleSettings.SaveBundle`).
 - **The trace index** (Server) returns server events for trace ids the page reports from its own fetch spans; a page
   that knew another user's 128-bit trace id could ask for that trace's sanitized metadata. Trace ids are not exposed by
   default, so this needs a separate leak first.

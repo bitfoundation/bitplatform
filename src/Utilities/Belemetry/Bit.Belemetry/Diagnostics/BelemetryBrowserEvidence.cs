@@ -10,6 +10,7 @@ namespace Bit.Belemetry;
 internal static class BelemetryBrowserEvidence
 {
     private const int AbsoluteMaxEvents = 1000;
+    private const double MaxUnixMilliseconds = 9_223_372_036_853d;
 
     private static readonly HashSet<string> _keptAttributes = new(StringComparer.Ordinal)
     {
@@ -97,8 +98,9 @@ internal static class BelemetryBrowserEvidence
         var category = BelemetryDiagnosticJson.ParseCategory(BelemetryDiagnosticJson.String(e, "cat"));
         if ((hub.Options.Categories & category) == 0) return null;
 
+        // No browser clock reads 0, or past the year 2262 (the most Unix-epoch nanoseconds a long holds): malformed.
         var time = BelemetryDiagnosticJson.Double(e, "time");
-        if (time is null or <= 0) return null;
+        if (time is null or <= 0 or > MaxUnixMilliseconds) return null;
 
         BelemetryDiagnosticException? exception = null;
         if (e.TryGetProperty("exc", out var exc) && exc.ValueKind == JsonValueKind.Object)

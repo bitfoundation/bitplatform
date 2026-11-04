@@ -127,7 +127,7 @@ internal sealed class BelemetryDiagnosticHub : IDisposable
     internal bool CreatesActivity(string source, string name)
     {
         var exportCollects = _settings.CollectDotnet && _settings.HasExporters && (_settings.ConfiguredFeatures & BelemetryFeatures.Traces) != 0;
-        if (exportCollects && BelemetrySettings.Matches(source, _settings.TraceSources))
+        if (exportCollects && _settings.ExportsTraceSource(source))
         {
             return _settings.Options.Traces.IgnoredActivityNames.Count == 0 || BelemetrySettings.Matches(name, _settings.Options.Traces.IgnoredActivityNames) is false;
         }
@@ -250,12 +250,17 @@ internal sealed class BelemetryDiagnosticHub : IDisposable
         try
         {
             var recorder = Resolve();
-            if (recorder is null && TraceIndex is null) return;
+            if (recorder is null)
+            {
+                // Nobody's span (a request's, a background job's) is indexed by trace only when it failed, as nobody's logs
+                // are: converting and indexing every request of every user, under one lock, would cost the whole server for
+                // the rare capture that looks a trace up.
+                if (TraceIndex is null || BelemetryDiagnosticEventFactory.IsFailure(span) is false) return;
+                if (Factory.FromSpan(span, _indexRecorder.Value) is { } indexed) TraceIndex.Add(indexed);
+                return;
+            }
 
-            if (Factory.FromSpan(span, recorder ?? _indexRecorder.Value) is not { } e) return;
-
-            if (recorder is null) TraceIndex!.Add(e);
-            else Record(recorder, e);
+            if (Factory.FromSpan(span, recorder) is { } e) Record(recorder, e);
         }
         catch
         {

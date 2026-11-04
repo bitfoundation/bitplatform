@@ -39,7 +39,11 @@ internal sealed class BelemetryDiagnosticRecorder
     public DateTimeOffset Started { get; } = DateTimeOffset.UtcNow;
 
     private readonly List<BelemetryDiagnosticsService> _owners = [];
-    private long _purges;
+
+    // Bumped by a revoke and by Clear: an automatic capture built across either is discarded. _revokedGeneration is the
+    // generation of the last revoke, so a capture discarded by a clear is not counted as a revoke's.
+    private long _generation;
+    private long _revokedGeneration;
 
     /// <summary>
     /// The session that takes browser evidence and snapshots for its automatic captures: the first service of the scope
@@ -231,20 +235,21 @@ internal sealed class BelemetryDiagnosticRecorder
 
     /// <summary>
     /// Whether a failure with this fingerprint may trigger an automatic capture now: not within the cooldown of the last
-    /// one, not while too many captures are in progress, and only while the review queue has room.
+    /// one, and not while <see cref="BelemetryDiagnosticsOptions.MaxPendingCaptures"/> captures are in progress. A full
+    /// review queue does not refuse it: the newest failure replaces the oldest capture waiting for review.
     /// </summary>
     public bool TryBeginAutomaticCapture(string fingerprint, DateTimeOffset now) => TryBeginAutomaticCapture(fingerprint, now, out _);
 
     /// <param name="fingerprint">The trigger's key.</param>
     /// <param name="now">Now.</param>
-    /// <param name="generation">The revocations so far: a capture built across a revoke is discarded (<see cref="EndAutomaticCapture"/>).</param>
+    /// <param name="generation">The revocations and clears so far: a capture built across either is discarded (<see cref="EndAutomaticCapture"/>).</param>
     public bool TryBeginAutomaticCapture(string fingerprint, DateTimeOffset now, out long generation)
     {
         lock (_lock)
         {
-            generation = _purges;
+            generation = _generation;
             PruneLocked(now);
-            if (_capturesInProgress + _pending.Count >= Math.Max(1, _options.MaxPendingCaptures)) return false;
+            if (_capturesInProgress >= Math.Max(1, _options.MaxPendingCaptures)) return false;
             if (_lastTriggers.TryGetValue(fingerprint, out var last) && now - last < _options.AutoCaptureCooldown) return false;
 
             if (_lastTriggers.Count >= MaxRememberedTriggers)
@@ -265,16 +270,21 @@ internal sealed class BelemetryDiagnosticRecorder
         {
             _capturesInProgress = Math.Max(0, _capturesInProgress - 1);
 
-            // Built while the user revoked consent: it may hold what was just taken back.
-            if (capture is not null && generation >= 0 && generation != _purges)
+            // Built while the user revoked consent (it may hold what was just taken back) or cleared the timeline (it holds
+            // what the user asked to forget).
+            if (capture is not null && generation >= 0 && generation != _generation)
             {
-                CountDroppedLocked("consent_revoked_capture", 1);
+                if (_revokedGeneration > generation) CountDroppedLocked("consent_revoked_capture", 1);
                 capture = null;
             }
             if (capture is null) return;
 
             _pending.Add(capture);
-            while (_pending.Count > Math.Max(1, _options.MaxPendingCaptures)) _pending.RemoveAt(0);
+            while (_pending.Count > Math.Max(1, _options.MaxPendingCaptures))
+            {
+                _pending.RemoveAt(0);
+                CountDroppedLocked("pending_capture_limit", 1);
+            }
         }
 
         if (capture is not null)
@@ -330,7 +340,7 @@ internal sealed class BelemetryDiagnosticRecorder
                 _lastTriggers.Clear();
             }
 
-            if (discardCaptures) _purges++;
+            if (discardCaptures) _revokedGeneration = ++_generation;
             if (discardCaptures && _pending.Count > 0)
             {
                 CountDroppedLocked("consent_revoked_capture", _pending.Count);
@@ -374,11 +384,15 @@ internal sealed class BelemetryDiagnosticRecorder
         return count - kept.Count;
     }
 
-    /// <summary>Forgets everything (the app's own <see cref="IBelemetryDiagnostics.ClearAsync"/>).</summary>
+    /// <summary>
+    /// Forgets everything (the app's own <see cref="IBelemetryDiagnostics.ClearAsync"/>), automatic captures still being
+    /// built included: they were made from the timeline being forgotten.
+    /// </summary>
     public void Clear()
     {
         lock (_lock)
         {
+            _generation++;
             _activity.Clear();
             _failures.Clear();
             _groups.Clear();

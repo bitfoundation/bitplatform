@@ -21,7 +21,7 @@ public sealed class BelemetryDiagnosticCapture
     private readonly List<string> _userChanges = [];
     private readonly BelemetryCaptureContent _content;
     private BelemetryIssueReport? _report;
-    private BelemetryFeatures _reportGrant;
+    private long _reportConsent;
     private string? _description;
 
     internal BelemetryDiagnosticCapture(BelemetryCaptureContent content)
@@ -76,8 +76,11 @@ public sealed class BelemetryDiagnosticCapture
     public BelemetryDiagnosticEvent? Subject => _content.Subject is { } subject && IsExported(subject) ? subject : null;
 
     /// <summary>
-    /// The exception groups the export will hold: without the occurrences of the events the user removed (or left out
-    /// with their section), and without a group that has none left - nor any while the user does not grant Errors.
+    /// The exception groups the export will hold, each with the occurrences of the events the export holds only: an
+    /// occurrence's message, trace and route are evidence the user must have been able to see, so neither one of an event
+    /// they removed (or left out with its section) nor one of an older failure the capture does not hold (evicted, before
+    /// the lookback) is exported. A group keeps its counts; it goes when every event of it the capture held was taken
+    /// out - and all go while the user does not grant Errors.
     /// </summary>
     public IReadOnlyList<BelemetryExceptionGroup> ExceptionGroups
     {
@@ -85,24 +88,30 @@ public sealed class BelemetryDiagnosticCapture
         {
             if (Includes(BelemetryBundleSections.Exceptions) is false || MayCapture(BelemetryFeatures.Errors) is false) return [];
 
-            var removed = new HashSet<(string, long, bool)>();
+            var exported = new HashSet<(string, long, bool)>();
+            var exportedGroups = new HashSet<string>(StringComparer.Ordinal);
+            var removedGroups = new HashSet<string>(StringComparer.Ordinal);
             foreach (var e in _events)
             {
-                if (e.Exception is { } x && IsExported(e) is false) removed.Add((x.Fingerprint, e.Sequence, e.Source == BelemetryDiagnosticSource.Browser));
+                if (e.Exception is not { } x) continue;
+                if (IsExported(e))
+                {
+                    exported.Add((x.Fingerprint, e.Sequence, e.Source == BelemetryDiagnosticSource.Browser));
+                    exportedGroups.Add(x.Fingerprint);
+                }
+                else
+                {
+                    removedGroups.Add(x.Fingerprint);
+                }
             }
 
             var groups = new List<BelemetryExceptionGroup>(_content.Groups.Count);
             foreach (var group in _content.Groups)
             {
                 if (Includes(BelemetryBundleSections.Browser) is false && _content.BrowserGroups.Contains(group.Fingerprint)) continue;
-                if (removed.Count == 0)
-                {
-                    groups.Add(group);
-                    continue;
-                }
+                if (removedGroups.Contains(group.Fingerprint) && exportedGroups.Contains(group.Fingerprint) is false) continue;
 
-                var occurrences = group.Occurrences.Where(o => o.Sequence is not { } sequence || removed.Contains((group.Fingerprint, sequence, o.Origin == "browser")) is false).ToList();
-                if (occurrences.Count == 0) continue;
+                var occurrences = group.Occurrences.Where(o => o.Sequence is { } sequence && exported.Contains((group.Fingerprint, sequence, o.Origin == "browser"))).ToList();
                 groups.Add(occurrences.Count == group.Occurrences.Count ? group : new BelemetryExceptionGroup
                 {
                     Fingerprint = group.Fingerprint,
@@ -156,14 +165,31 @@ public sealed class BelemetryDiagnosticCapture
     {
         get
         {
-            var grant = _content.CurrentGrant?.Invoke() ?? BelemetryFeatures.All;
-            if (_report is null || grant != _reportGrant)
+            var consent = ConsentKey();
+            if (_report is null || consent != _reportConsent)
             {
-                _reportGrant = grant;
+                _reportConsent = consent;
                 _report = BelemetryIssueReportBuilder.Build(this, _content);
             }
             return _report;
         }
+    }
+
+    /// <summary>
+    /// What consent lets the export hold now, per feature, for the process's events and the page's apart: on a server the
+    /// page's grant changes independently of the server's own, and either change must rebuild the report.
+    /// </summary>
+    private long ConsentKey()
+    {
+        long key = 0;
+        var bit = 0;
+        for (var feature = 1; feature <= (int)BelemetryFeatures.All; feature <<= 1, bit += 2)
+        {
+            var f = (BelemetryFeatures)feature;
+            if (_content.MayCapture is not { } process || process(f)) key |= 1L << bit;
+            if (_content.MayCaptureBrowser is not { } page || page(f)) key |= 2L << bit;
+        }
+        return key;
     }
 
     internal BelemetryCaptureContent Content => _content;

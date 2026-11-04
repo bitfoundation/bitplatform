@@ -9,6 +9,8 @@ namespace Bit.Belemetry;
 /// </summary>
 internal static class BelemetryUrlTemplate
 {
+    private static readonly char[] AuthorityTerminators = ['/', '?', '#'];
+
     /// <summary>
     /// The URL as <c>scheme://host[:port]/templated/path[?allowed=value]</c>, or the templated path of a relative URL;
     /// null for something that is not a URL.
@@ -24,9 +26,11 @@ internal static class BelemetryUrlTemplate
         var scheme = trimmed.IndexOf("://", StringComparison.Ordinal);
         if (scheme > 0)
         {
-            var pathStart = trimmed.IndexOf('/', scheme + 3);
-            origin = pathStart < 0 ? trimmed : trimmed[..pathStart];
-            rest = pathStart < 0 ? "/" : trimmed[pathStart..];
+            // The authority ends at the path, the query or the fragment, whichever comes first
+            // ("https://host?q=1#f" has no path, but its query and fragment are not part of the origin).
+            var authorityEnd = trimmed.IndexOfAny(AuthorityTerminators, scheme + 3);
+            origin = authorityEnd < 0 ? trimmed : trimmed[..authorityEnd];
+            rest = authorityEnd < 0 ? "/" : trimmed[authorityEnd..];
 
             // Credentials in the authority ("https://user:pass@host") never stay.
             var at = origin.IndexOf('@', scheme + 3);

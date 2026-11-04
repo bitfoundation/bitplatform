@@ -499,6 +499,11 @@ parent-based with `Traces.SamplingRatio` for new traces, compatible with the Ope
 sampler. Names in `Traces.IgnoredActivityNames` are never created at all - their children attach to the parent - which
 is the cheapest way to drop a chatty source, such as Blazor's per-event spans.
 
+Blazor's component spans (`Navigate`, `HandleEvent`) exist on a server; in WebAssembly and Hybrid only with
+`Diagnostics.Enabled` (Belemetry registers the framework's component source for diagnostics). With diagnostics on, they
+are exported there too when `Traces.Sources` matches `Microsoft.AspNetCore.Components` (the default), and the HttpClient
+spans a click or navigation starts are their children.
+
 ```csharp
 options.Traces.Sources.Add("MyApp*");
 options.Traces.SamplingRatio = 0.25;
@@ -781,7 +786,7 @@ The defaults are the production-safe ones:
 | `MaxBundleBytes` | 4 MiB | A bundle's JSON; past it the oldest activity is left out, and the manifest says how much |
 | `MaxExceptionGroups` | 50 | Groups remembered (least recently seen forgotten first) |
 | `PostTriggerWindow` / `AutoCaptureCooldown` | 2 s / 10 min | What follows a trigger is included; one automatic capture per failure per cooldown |
-| `MaxPendingCaptures` / `CaptureRetention` | 3 / 30 min | Automatic captures waiting for review |
+| `MaxPendingCaptures` / `CaptureRetention` | 3 / 30 min | Automatic captures waiting for review (a new one replaces the oldest) |
 | `Snapshots.*` | depth 6, 50 items, 1024 chars, 32 KiB, 2 s | One snapshot provider's output |
 
 ### Report a problem: capture, preview, confirm, export
@@ -824,7 +829,9 @@ await capture.ExportAsync(body);                             // throws unless co
 ```
 
 `DownloadAsync` saves `capture.SuggestedFileName` in the browser (WebAssembly and Server; on Server the bundle is
-streamed over the circuit). A Hybrid app writes `ExportAsync` to a file or a share sheet instead.
+streamed over the circuit), and in WebView2 on Windows. It returns false in a Hybrid app on Android, iOS or Mac Catalyst,
+whose web view ignores downloads: write `ExportAsync` to a file or a share sheet there (the MAUI sample's
+`SampleSettings.SaveBundle`), and pass `Download="false"` to `<BelemetryCapturePreview>`.
 
 An `ErrorBoundary` is the natural place to offer it: pass its `CurrentException` as `Exception`, and the report is
 about that failure. With `AutoCaptureTriggers`, `IBelemetryDiagnostics.CaptureAvailable` fires when an automatic
@@ -836,7 +843,7 @@ capture is ready (raised outside any render: use `InvokeAsync(StateHasChanged)`)
 | Section | Content |
 | --- | --- |
 | Release | `service.name`, version, environment, commit, build id, configuration version, metadata, host kind, runtime, OS family, architecture, browser brands/platform/language |
-| Exceptions | Groups by fingerprint: type, message template, anchor frame, classification, count, first/last seen, releases, the last five occurrences |
+| Exceptions | Groups by fingerprint: type, message template, anchor frame, classification, count, first/last seen, releases, and the occurrences (at most the last five) of the events the bundle holds - an older failure the timeline no longer holds counts, but its message, trace and route are not exported |
 | Timeline (.NET) | Navigation (route templates from the router), component UI events (`HandleEvent`: component type, method, event attribute), exceptions (type, scrubbed message, stack without file paths, inner exceptions, origin), logs (category, template), HTTP client and server spans (method, status, URL template, error type), framework circuit activities, the app's own events and recorded snapshots |
 | Browser | Page views (path template), fetch/XHR (method, status, URL template, trace ids), JS errors and rejections (type, message, stack), clicks (event type and element only), long tasks, reconnection transitions, page hide/restore |
 | Components | The component types the timeline names, ranked by association - `trace` (the failure happened in that component's event-handler trace), `stack` (inferred from the first application frame), `framework` - with render statistics when measured, and ancestry when a component-context provider (BevTools) knows it |

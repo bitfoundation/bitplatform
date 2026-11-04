@@ -119,6 +119,16 @@ internal sealed class BelemetrySettings
 
     public List<string> TraceSources { get; }
 
+    /// <summary>
+    /// Whether the export records the activities of <paramref name="source"/>: it matches <see cref="TraceSources"/>, and
+    /// it is not the framework's component source on a WebAssembly or Hybrid host without diagnostics. That source exists
+    /// there only because Belemetry registers it (<c>AddComponentsTracing</c>) for diagnostics; without them, an app gets
+    /// no <c>Navigate</c>/<c>HandleEvent</c> spans - nor HttpClient spans reparented under them - it never asked for.
+    /// </summary>
+    public bool ExportsTraceSource(string source) =>
+        Matches(source, TraceSources)
+        && (IsServer || Options.Diagnostics.Enabled || source != BelemetryDiagnosticEventFactory.ComponentsSource);
+
     public List<string> Meters { get; }
 
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;

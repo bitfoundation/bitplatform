@@ -53,7 +53,8 @@ public static class Belemetry
 
         // The framework registers its component ActivitySource for server-side rendering only. Registered here (public,
         // idempotent) so the Navigate and HandleEvent activities - the route templates and component names diagnostics
-        // and traces rest on - exist in WebAssembly and Hybrid too. Nothing is created until something listens.
+        // rest on - exist in WebAssembly and Hybrid too. Nothing is created until something listens, and there the export
+        // listens only with diagnostics on (BelemetrySettings.ExportsTraceSource): an app without them traces as before.
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         return services;

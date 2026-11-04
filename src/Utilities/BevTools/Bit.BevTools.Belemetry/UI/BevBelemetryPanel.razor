@@ -4,7 +4,9 @@
 
 @* Belemetry's production diagnostics in BevTools: the timeline and exception groups of this session, a jump from a
    failure to its component in the tree and to the events of its trace, support bundles to preview and export, and
-   bundles from elsewhere to import. Every value is Belemetry's, already sanitized; it is rendered as text. *@
+   bundles from elsewhere to import. Every value is Belemetry's, already sanitized; it is rendered as text, and BevTools'
+   own rule applies on top: under ValueAccess None no application value (a message, a message template, a query value)
+   reaches the panel, and no bundle is captured here, since an export may not show more than the panels do. *@
 
 @if (Diagnostics.IsEnabled is false)
 {
@@ -19,8 +21,17 @@ else
         <div class="bev-stat"><div class="bev-stat-value">@_groups.Count</div><div class="bev-stat-label">exception groups</div></div>
         <div class="bev-stat"><div class="bev-stat-value">@Diagnostics.PendingCaptures.Count</div><div class="bev-stat-label">automatic captures to review</div></div>
         <div class="bev-stat">
-            <div class="bev-stat-value"><button type="button" class="bev-btn" id="bev-belemetry-capture" @onclick="CaptureAsync">Capture</button></div>
-            <div class="bev-stat-label">a support bundle of what happened so far</div>
+            <div class="bev-stat-value"><button type="button" class="bev-btn" id="bev-belemetry-capture" disabled="@ValuesHidden" @onclick="CaptureAsync">Capture</button></div>
+            <div class="bev-stat-label">
+                @if (ValuesHidden)
+                {
+                    @:value access is None: a support bundle holds messages, so it is not captured here (the app's own support flow is unaffected)
+                }
+                else
+                {
+                    @:a support bundle of what happened so far
+                }
+            </div>
         </div>
     </div>
 
@@ -51,7 +62,7 @@ else
                             var component = g.Occurrences.LastOrDefault(o => o.ComponentType is not null)?.ComponentType;
                             <tr class="@(_selectedGroup == g.Fingerprint ? "bev-selected" : "")" @onclick="() => SelectGroup(g)">
                                 <td class="bev-mono">@g.ExceptionType @if (g.Classification is not null) { <span class="bev-chip">@g.Classification</span> }</td>
-                                <td>@g.MessageTemplate</td>
+                                <td>@Value(g.MessageTemplate)</td>
                                 <td class="bev-num">@g.Count</td>
                                 <td>@string.Join(", ", g.Releases)</td>
                                 <td>@BevFmt.Ago(g.LastSeen)</td>
@@ -166,6 +177,7 @@ else
 
     private async Task CaptureAsync()
     {
+        if (ValuesHidden) return;
         _capture = await Diagnostics.CaptureAsync(new BelemetryDiagnosticCaptureOptions { Reason = "bevtools" });
         _status = null;
     }
@@ -197,9 +209,25 @@ else
         return dot >= 0 ? type[(dot + 1)..] : type;
     }
 
-    private static string Describe(BelemetryDiagnosticEvent e) =>
-        e.Exception is { } x ? $"{x.Type}{(x.Message is null ? "" : ": " + x.Message)}"
-        : e.Attributes.TryGetValue("url.template", out var url) ? $"{e.Name} {url}"
+    /// <summary>Whether this session reads no application value (<see cref="BevValueAccess.None"/>).</summary>
+    private bool ValuesHidden => Session.ValueAccess == BevValueAccess.None;
+
+    /// <summary>
+    /// An application value as the panel may show it: hidden under <see cref="BevValueAccess.None"/>, else with BevTools'
+    /// credential shapes redacted on top of Belemetry's sanitizing - as the Logs and Errors panels show theirs.
+    /// </summary>
+    private string? Value(string? text) => text is null ? null : ValuesHidden ? BevRedactor.HiddenValue : BevRedactor.RedactText(text);
+
+    /// <summary>A URL template: its path is the route's shape; the allowlisted query values are values.</summary>
+    private string Url(string url)
+    {
+        var q = url.IndexOf('?');
+        return ValuesHidden && q >= 0 ? url[..q] + "?" + BevRedactor.HiddenValue : url;
+    }
+
+    private string Describe(BelemetryDiagnosticEvent e) =>
+        e.Exception is { } x ? $"{x.Type}{(x.Message is null ? "" : ": " + Value(x.Message))}"
+        : e.Attributes.TryGetValue("url.template", out var url) && url is string template ? $"{e.Name} {Url(template)}"
         : e.Route is not null ? $"{e.Name} {e.Route}"
-        : e.Message ?? e.Name;
+        : Value(e.Message) ?? e.Name;
 }

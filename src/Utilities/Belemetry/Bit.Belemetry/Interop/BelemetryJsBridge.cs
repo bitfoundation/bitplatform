@@ -55,6 +55,9 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     /// <summary>The last context the script reported (per circuit on Blazor Server).</summary>
     public BelemetryJsContext? Context { get; private set; }
 
+    /// <summary>The page's last grant, apart from the bridge: what a capture keeps instead of the bridge.</summary>
+    public BelemetryPageConsent PageConsent { get; } = new();
+
     public bool IsStarted => _module is not null;
 
     private bool UnloadDrain => _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
@@ -65,7 +68,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     /// <summary>Raised when the page reports a JavaScript error as a diagnostic trigger (type, message).</summary>
     public event Action<string?, string?>? DiagnosticTriggered;
 
-    // A browser timeline is at most BrowserMaxEvents (1000) small events; anything larger is not one.
+    // A browser timeline is at most BrowserMaxEvents (1000) events; the script trims a larger one to fit (getDiagnosticsStream).
     private const long MaxDiagnosticsBytes = 4 * 1024 * 1024;
 
     /// <summary>Starts the script (idempotent). Returns false when it cannot run here or now.</summary>
@@ -131,6 +134,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     internal void Apply(BelemetryJsContext context)
     {
         Context = context;
+        PageConsent.Update(context.Consent);
 
         if (_settings.IsServer is false)
         {
@@ -194,7 +198,9 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
             var element = await _module.InvokeAsync<JsonElement>("getDiagnostics", cancellationToken);
             return element.ValueKind == JsonValueKind.Object ? element : null;
         }
-        catch (Exception ex) when (IsUnavailable(ex) || ex is JsonException or IOException)
+        // ArgumentOutOfRangeException: a stream larger than MaxDiagnosticsBytes (a page that did not trim it, or an
+        // untrusted one) - the browser evidence is missing, the capture still goes on.
+        catch (Exception ex) when (IsUnavailable(ex) || ex is JsonException or IOException or ArgumentOutOfRangeException)
         {
             return null;
         }
@@ -203,10 +209,14 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     /// <summary>Forgets the page's diagnostic timeline and its stored copy.</summary>
     public ValueTask ClearDiagnosticsAsync() => InvokeAsync("clearDiagnostics");
 
-    /// <summary>Saves a file in the browser (a download). False when there is no browser to save it in.</summary>
+    /// <summary>
+    /// Saves a file in the browser (a download). False when there is no browser to save it in - nor a web view that
+    /// saves downloads: Android's WebView and WKWebView (MAUI on Android, iOS and Mac Catalyst) ignore one without a
+    /// download handler of the app's, so the script's click would report a save that never happened.
+    /// </summary>
     public async ValueTask<bool> DownloadAsync(string fileName, byte[] bytes, CancellationToken cancellationToken)
     {
-        if (await StartAsync() is false || _module is null) return false;
+        if (SavesDownloads is false || await StartAsync() is false || _module is null) return false;
 
         try
         {
@@ -227,6 +237,9 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
             return false;
         }
     }
+
+    // WebView2 (Windows: WinForms, WPF, MAUI) saves downloads by default; the mobile and Apple web views do not.
+    private bool SavesDownloads => _settings.Host != BelemetryHostKind.Hybrid || OperatingSystem.IsWindows();
 
     internal void OnDiagnosticTrigger(JsonElement error)
     {

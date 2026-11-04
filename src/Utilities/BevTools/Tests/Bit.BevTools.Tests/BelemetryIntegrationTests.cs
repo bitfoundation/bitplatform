@@ -132,3 +132,45 @@ public class BelemetryIntegrationTests : BunitContext
         Assert.Contains("InvalidOperationException in SupportChild", cut.Find(".bit-belemetry-preview-title").TextContent, StringComparison.Ordinal);
     }
 }
+
+/// <summary>The Support panel under <see cref="BevValueAccess.None"/>: BevTools' own rule applies to Belemetry's values too.</summary>
+[TestClass]
+public class BelemetryIntegrationValueAccessTests : BunitContext
+{
+    public BelemetryIntegrationValueAccessTests()
+    {
+        Services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+        Services.AddBitBelemetryServices(o =>
+        {
+            o.ServiceName = "bevtools-tests";
+            o.UseEnvironmentVariables = false;
+            o.Consent.Default = BelemetryFeatures.All;
+            o.Consent.Persist = false;
+            o.Persistence.Enabled = false;
+            o.Diagnostics.Enabled = true;
+        });
+        Services.AddBitBevToolsBelemetry(o =>
+        {
+            o.Enabled = true;
+            o.ValueAccess = BevValueAccess.None;
+        });
+        this.UseRenderer("Server");
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
+    [TestMethod]
+    public void Under_value_access_None_the_panel_shows_no_message_and_captures_no_bundle()
+    {
+        // Belemetry sanitized the message; BevTools still keeps every application value out of its panels under None.
+        Services.GetRequiredService<ILoggerFactory>();
+        Render<SupportParent>();
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Support", StringComparison.Ordinal)).Click();
+
+        Assert.Contains("System.InvalidOperationException", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("The child broke", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(BevRedactor.HiddenValue, cut.Markup, StringComparison.Ordinal);
+        Assert.IsTrue(cut.Find("#bev-belemetry-capture").HasAttribute("disabled"));
+    }
+}

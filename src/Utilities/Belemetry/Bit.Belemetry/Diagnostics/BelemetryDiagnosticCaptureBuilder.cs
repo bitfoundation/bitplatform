@@ -30,7 +30,6 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
             SnapshotsRequested = options.IncludeSnapshots,
             MayCapture = hub.MayCapture,
             MayCaptureBrowser = BrowserConsent(),
-            CurrentGrant = () => hub.ConsentState().Granted | (BelemetryFeatures)(session?.Bridge.Context?.Consent ?? 0),
         };
         (content.Granted, content.ConsentDecided) = hub.ConsentState();
 
@@ -181,12 +180,14 @@ internal sealed class BelemetryDiagnosticCaptureBuilder(BelemetryDiagnosticHub h
     /// <summary>
     /// The page's consent for its own events: on a client host the state .NET keeps in step with the script; on a server
     /// the grant the page last reported over this circuit (a revoke made in the page reaches it as a context change).
+    /// Only the small grant holder is kept, never the session or its bridge: a capture outlives the circuit when the app
+    /// keeps it, and must not keep the circuit's scope alive.
     /// </summary>
     private Func<BelemetryFeatures, bool> BrowserConsent()
     {
         if (hub.Settings.IsServer is false) return hub.MayCapture;
-        var bridge = session?.Bridge;
-        return feature => bridge?.Context is not { } context || ((BelemetryFeatures)context.Consent & feature) == feature;
+        var page = session?.Bridge.PageConsent;
+        return page is null ? static _ => true : page.Allows;
     }
 
     /// <summary>Keeps the timeline under <see cref="BelemetryDiagnosticsOptions.MaxBundleBytes"/>: the oldest activity goes first, then the oldest failures.</summary>

@@ -14,4 +14,11 @@ public sealed class SampleSettings
     /// the MAUI and WinForms apps ask for a file their <c>wwwroot</c> does not have (a 404).
     /// </summary>
     public string FailUrl { get; set; } = "api/fail";
+
+    /// <summary>
+    /// Where the support page saves a confirmed support bundle when the host's web view does not save downloads (the
+    /// MAUI app on Android, iOS and Mac Catalyst): returns where it was written. Null (the web hosts, WinForms' WebView2)
+    /// lets the preview download it in the browser.
+    /// </summary>
+    public Func<BelemetryDiagnosticCapture, Task<string>>? SaveBundle { get; set; }
 }

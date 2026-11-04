@@ -53,8 +53,9 @@ public interface IBelemetryDiagnostics
 
     /// <summary>
     /// Saves a confirmed capture's bundle in the browser (a download of <see cref="BelemetryDiagnosticCapture.SuggestedFileName"/>).
-    /// Returns false when there is no browser to save it in (prerendering, a disconnected circuit) - export it with
-    /// <see cref="BelemetryDiagnosticCapture.ExportAsync(Stream, CancellationToken)"/> instead, as a Hybrid app would to a file.
+    /// Returns false when there is no browser to save it in (prerendering, a disconnected circuit), or a web view that
+    /// does not save downloads (a Hybrid app on Android, iOS or Mac Catalyst) - export it with
+    /// <see cref="BelemetryDiagnosticCapture.ExportAsync(Stream, CancellationToken)"/> instead, as such an app would to a file.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when the capture is not confirmed.</exception>
     ValueTask<bool> DownloadAsync(BelemetryDiagnosticCapture capture, CancellationToken cancellationToken = default);
