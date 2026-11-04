@@ -54,6 +54,8 @@ public class PosDashboardUITests : ShowcaseUITest
     {
         var options = Widget(title).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosWidgetOptions });
 
+        // In the middle of the screen, so its menu opens clear of a phone's floating Tools button.
+        await options.EvaluateAsync("button => button.scrollIntoView({ block: 'center' })");
         await ScrollToAndWaitUntilStill(options);
         await Press(options);
         await Press(OpenMenu.GetByText(item, new() { Exact = true }));

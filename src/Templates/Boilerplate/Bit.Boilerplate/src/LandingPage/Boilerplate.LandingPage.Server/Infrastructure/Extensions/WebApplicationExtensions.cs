@@ -129,6 +129,9 @@ public static class WebApplicationExtensions
         {
             app.UseExceptionHandler(new ExceptionHandlerOptions
             {
+                // A bad request is the caller's fault: it isn't a 500, and it isn't worth an error in the log
+                StatusCodeSelector = exception => exception is BadHttpRequestException badRequest ? badRequest.StatusCode : StatusCodes.Status500InternalServerError,
+                SuppressDiagnosticsCallback = context => context.Exception is BadHttpRequestException,
                 ExceptionHandler = async context =>
                 {
                     var path = context.Features.Get<IExceptionHandlerPathFeature>()?.Path ?? string.Empty;

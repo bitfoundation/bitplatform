@@ -940,6 +940,23 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AndroidDependencies_Should_ComeThroughTheMauiProjectTheSolutionListsOnTheProjectsOwnNetVersion()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        const string core = "src/Client/Contoso.Client.Operations.Core/Contoso.Client.Operations.Core.csproj";
+        const string maui = "src/Client/Contoso.Client.Operations.Maui/Contoso.Client.Operations.Maui.csproj";
+        Directory.Delete(project.ClientCoreDirectory, true);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(project.Directory, core))!);
+        File.WriteAllText(Path.Combine(project.Directory, core), "<Project><PropertyGroup><TargetFramework>net99.0</TargetFramework></PropertyGroup></Project>");
+        File.WriteAllText(project.Solution, $"""<Solution><Project Path="{core}" /><Project Path="{maui}" /></Solution>""");
+
+        await new ProjectSteps(host.Services, project).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        CollectionAssert.Contains(DotnetCommands(host), $"build {maui} -t:InstallAndroidDependencies -f net99.0-android -p:AcceptAndroidSDKLicenses=True");
+    }
+
+    [TestMethod]
     public void TheNativeBuild_Should_CoverOnlyWhatTheWebFilterAndTheWorkbenchLeaveOut()
     {
         using var host = new TestHost();

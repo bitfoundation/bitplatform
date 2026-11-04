@@ -108,7 +108,7 @@ public sealed class NativeRun(CliServices cli, ProjectContext project)
         if (platform is not Platform.Android)
             return StepResult.Succeeded($"{title} build support is installed");
 
-        string[] arguments = ["build", Platforms.MauiProject(project.Name), "-t:GetAndroidDependencies", "-f", TargetFramework(platform), "-getProperty:AndroidSdkDirectory", "-getProperty:JavaSdkDirectory", "-getProperty:TargetPlatformVersion"];
+        string[] arguments = ["build", project.MauiProject, "-t:GetAndroidDependencies", "-f", TargetFramework(platform), "-getProperty:AndroidSdkDirectory", "-getProperty:JavaSdkDirectory", "-getProperty:TargetPlatformVersion"];
         var probe = await Dotnet(arguments, progress, TimeSpan.FromMinutes(30), cancellationToken);
 
         if (probe.Succeeded is false)
@@ -277,7 +277,7 @@ public sealed class NativeRun(CliServices cli, ProjectContext project)
     public async Task<StepResult> MauiAppAsync(Platform platform, Action<string> progress, CancellationToken cancellationToken)
     {
         var title = Platforms.Title(platform);
-        string[] arguments = ["build", Platforms.MauiProject(project.Name), "-t:Run", "-f", TargetFramework(platform), .. serial is null ? Array.Empty<string>() : [$"-p:AdbTarget=-s {serial}"], .. project.BuildProperties.Select(p => $"-p:{p}")];
+        string[] arguments = ["build", project.MauiProject, "-t:Run", "-f", TargetFramework(platform), .. serial is null ? Array.Empty<string>() : [$"-p:AdbTarget=-s {serial}"], .. project.BuildProperties.Select(p => $"-p:{p}")];
         var result = await Dotnet(arguments, progress, TimeSpan.FromMinutes(60), cancellationToken);
 
         return StepResult.FromProcess(result, $"Started the {title} app", $"Couldn't build and start the {title} app",
@@ -286,7 +286,7 @@ public sealed class NativeRun(CliServices cli, ProjectContext project)
 
     public async Task<StepResult> WindowsAppAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var windowsProject = Platforms.WindowsProject(project.Name);
+        var windowsProject = project.WindowsProject;
         string[] arguments = ["build", windowsProject, .. project.BuildProperties.Select(p => $"-p:{p}")];
         var built = await Dotnet(arguments, progress, TimeSpan.FromMinutes(60), cancellationToken);
 

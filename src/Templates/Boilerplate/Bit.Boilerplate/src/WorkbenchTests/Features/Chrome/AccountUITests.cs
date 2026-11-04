@@ -15,7 +15,7 @@ public class AccountUITests : AppViewPageTest
     private async Task OpenSection()
     {
         await OpenWorkbench("settings");
-        await Press(View().GetByRole(AriaRole.Button, new() { Name = AppStrings.PrivacyTitle, Exact = true }));
+        await Press(View().GetByRole(AriaRole.Heading, new() { Name = AppStrings.PrivacyTitle, Exact = true }).GetByRole(AriaRole.Button));
         await Expect(View().GetByRole(AriaRole.Region, new() { Name = AppStrings.ProfileTitle, Exact = true })).Not.ToBeVisibleAsync();
     }
 
