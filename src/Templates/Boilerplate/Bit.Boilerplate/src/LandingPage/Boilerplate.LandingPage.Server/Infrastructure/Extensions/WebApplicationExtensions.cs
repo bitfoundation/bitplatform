@@ -29,6 +29,8 @@ public static class WebApplicationExtensions
 
             foreach (var host in section.GetSection(nameof(ForwardedHeadersOptions.AllowedHosts)).Get<string[]>() ?? [])
                 options.AllowedHosts.Add(host);
+            foreach (var host in app.Services.GetRequiredService<LandingServerSettings>().TrustedOrigins.Select(LandingServerSettings.GetTrustedOriginHost))
+                options.AllowedHosts.Add(host);
             foreach (var proxy in section.GetSection("KnownProxies").Get<string[]>() ?? [])
                 options.KnownProxies.Add(IPAddress.Parse(proxy));
             foreach (var network in section.GetSection("KnownIPNetworks").Get<string[]>() ?? [])

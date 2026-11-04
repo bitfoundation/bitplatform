@@ -114,7 +114,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 
 | Name | Kind | Holds |
 | --- | --- | --- |
-| `SERVER_ADDRESS` | variable | The environment's public address |
+| `SERVER_ADDRESS` | variable | The environment's public address, which the deployment adds to the app's `TrustedOrigins` |
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
@@ -123,7 +123,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
 | `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
 | `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
-| `LANDING_PAGE_ADDRESS` | variable, optional | The landing page's public address, which the deployment checks answers |
+| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
 <!--#endif-->

@@ -1,5 +1,6 @@
 //-:cnd:noEmit
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
@@ -17,6 +18,50 @@ public partial class LandingServerSettings
 
     [ValidateObjectMembers]
     public AIOptions AI { get; set; } = new();
+
+    // [mirror] trusted origins - keep in sync with:
+    // - src/Server/Boilerplate.Server.Shared/ServerSharedSettings.cs
+    public string[] TrustedOrigins { get; set; } = [];
+
+    public bool IsTrustedOrigin(Uri origin)
+    {
+        var requestOrigin = origin.GetLeftPart(UriPartial.Authority);
+
+        return TrustedOrigins.Any(trustedOrigin => MatchTrustedOrigin(trustedOrigin, requestOrigin))
+            || TrustedOriginsRegex().IsMatch(origin.ToString());
+    }
+
+    private static bool MatchTrustedOrigin(string trustedOrigin, string requestOrigin)
+    {
+        trustedOrigin = trustedOrigin.TrimEnd('/');
+
+        if (trustedOrigin.Contains('*') is false)
+            return string.Equals(trustedOrigin, requestOrigin, StringComparison.OrdinalIgnoreCase);
+
+        var pattern = $"^{Regex.Escape(trustedOrigin).Replace("\\*", "[^/]*")}$";
+        return Regex.IsMatch(requestOrigin, pattern, RegexOptions.IgnoreCase);
+    }
+
+    public static string GetTrustedOriginHost(string trustedOrigin)
+    {
+        var host = trustedOrigin;
+
+        var schemeSeparatorIndex = host.IndexOf("://", StringComparison.Ordinal);
+        if (schemeSeparatorIndex >= 0)
+            host = host[(schemeSeparatorIndex + 3)..];
+
+        host = host.Split('/')[0];
+        host = host.Split(':')[0];
+
+        return host;
+    }
+
+#if Development
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|[\w\-]+(\.[\w\-]+)*\.devtunnels\.ms|[\w\-]+(\.[\w\-]+)*\.github\.dev|[\w\-]+(\.[\w\-]+)*\.trycloudflare\.com)(:\d+)?(\/.*)?$")]
+#else
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
+#endif
+    public partial Regex TrustedOriginsRegex();
 }
 
 [OptionsValidator]

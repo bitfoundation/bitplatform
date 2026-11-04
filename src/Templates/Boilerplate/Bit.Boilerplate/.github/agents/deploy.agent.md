@@ -232,6 +232,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 - The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: the `smtp` connection string its waitlist
   emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
+- The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
+  to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 

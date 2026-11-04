@@ -295,6 +295,7 @@ public class PageTests
         {
             builder.Configuration["Site:Url"] = "https://ignored.example.com/";
             builder.Configuration["Site:AllowIndexing"] = "true";
+            builder.Configuration["TrustedOrigins:0"] = "http://www.example.com";
         });
         using var indexedClient = indexed.CreateClient();
         var path = SamplePath();
@@ -312,7 +313,7 @@ public class PageTests
     [TestMethod]
     public async Task TheSeoFiles_Should_ComeFromTheOutputCache_ForEachHost()
     {
-        await using var cached = await new LandingTestServer().Start();
+        await using var cached = await new LandingTestServer().Start(before: builder => builder.Configuration["TrustedOrigins:0"] = "http://*.example.com");
         using var cachedClient = cached.CreateClient();
 
         foreach (var file in new[] { "robots.txt", "sitemap.xml", "llms.txt" })

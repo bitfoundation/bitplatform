@@ -110,6 +110,22 @@ public class ServiceTests
         Assert.AreEqual(HttpStatusCode.BadRequest, plain.StatusCode, "The chat only speaks WebSocket.");
     }
 
+    [TestMethod]
+    [DataRow("robots.txt")]
+    [DataRow("sitemap.xml")]
+    public async Task AForgedHost_Should_GetA400InsteadOfLinksToIt(string url)
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production");
+        using var productionClient = production.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Host = "evil.example";
+
+        using var response = await productionClient.SendAsync(request);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.DoesNotContain("evil.example", await response.Content.ReadAsStringAsync());
+    }
+
     private static async Task<string> SampleWithRatings(int ratingCount, Action<WebApplicationBuilder>? before = null)
     {
         if (LandingSites.Find("ecommerce") is not { } sample)

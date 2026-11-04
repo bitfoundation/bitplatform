@@ -140,6 +140,7 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 
 | Setting | What it does |
 | --- | --- |
+| `TrustedOrigins` | The addresses the site is served from, such as `https://landing.example.com`, as in the app. The waitlist emails, the sitemap and the download QR code link to the address a request came in on only when it's listed here, since any client can write the `Host` header. Any other address gets a 400. Localhost needs no entry, and the template's CD adds `LANDING_PAGE_ADDRESS` on its own. |
 | `Site:AllowIndexing` | Whether search engines may index the site. On only in `appsettings.Production.json`. |
 | `Site:GoogleSiteVerification`, `Site:BingSiteVerification` | The search consoles' verification codes. |
 | `Email:DefaultFromEmail`, `Email:DefaultFromName` | The sender of the waitlist emails. |

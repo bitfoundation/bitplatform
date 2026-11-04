@@ -348,8 +348,10 @@ A few rules sit on top of the mechanism:
 - **A wrong code counts as a failed attempt**, the codes that change the email and phone number included.
 - **Signing up again can't leave a password on an unconfirmed account.** A later sign-up with another password removes
   the one already there.
-- **Set `WebAppUrl` when any `Host` header can reach the app** (Kestrel exposed directly, a catch-all binding).
-  Reset, confirmation and magic links otherwise follow the request's host.
+- **List the app's own address in `TrustedOrigins`, or set `WebAppUrl`.** Reset, confirmation and magic links use
+  `WebAppUrl` when it's set, and otherwise the request's host, but only when `TrustedOrigins` lists it, since any
+  client can write the `Host` header. A request on any other host gets a 400 instead of a link to that host. Localhost
+  needs no entry, and the template's CD adds `SERVER_ADDRESS` on its own.
 
 ---
 

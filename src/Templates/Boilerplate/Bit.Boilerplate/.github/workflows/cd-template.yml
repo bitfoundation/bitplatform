@@ -140,6 +140,8 @@ jobs:
       - name: Deploy
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+          LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
           SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
@@ -211,6 +213,25 @@ jobs:
           while IFS= read -r file; do
             settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
             : > "$deploy_dir/$file"
+
+            # Each app first trusts its own public address. The Host header is the client's to write, so the apps link
+            # emails, the sitemap and the like only to a host in TrustedOrigins, and answer any other host with a 400.
+            # The web app (and the api, whose links point to the web app) trusts SERVER_ADDRESS; the landing page its own.
+            address="$SERVER_ADDRESS"
+            if [[ "$file" == "landingpage.env" ]]; then
+              address="$LANDING_PAGE_ADDRESS"
+            fi
+            # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries are matched.
+            origin="$(printf '%s' "$address" | grep -oE '^https?://[^/]+' || true)"
+            # Without it the app would refuse its own address, so stop here rather than deploy one that answers 400.
+            if [[ -z "$origin" ]]; then
+              echo "::error::$file has no public address to trust: set SERVER_ADDRESS, and LANDING_PAGE_ADDRESS for the landing page."
+              exit 1
+            fi
+            # Index 100 adds the address after the TrustedOrigins of appsettings.json (the binder keeps the order and skips
+            # the missing indexes) instead of replacing its first entry. The lines below can still add more.
+            printf "TrustedOrigins__100='%s'\n" "$origin" >> "$deploy_dir/$file"
+
             while IFS= read -r line; do
               line="${line%$'\r'}"
               if [[ -z "$line" || "$line" == "#"* ]]; then
@@ -267,7 +288,6 @@ jobs:
           exit 1
 
       - name: Check the landing page's public address
-        if: vars.LANDING_PAGE_ADDRESS != ''
         env:
           LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
         run: |

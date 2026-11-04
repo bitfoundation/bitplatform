@@ -108,33 +108,65 @@ public class WebAppUrlOriginHardeningTests
     }
 
     [TestMethod]
-    [DataRow(null, "https://evil.example", false)]
-    [DataRow("https://app.example/", "https://evil.example", true)]
-    [DataRow("https://app.example/", "https://app.example", false)]
-    [DataRow("https://app.example/", "https://tenant.app.example", false)]
-    [DataRow("https://app.example/", "http://app.example", true)]
-    [DataRow("https://app.example:443/", "https://app.example:8443", true)]
-    public void TheRequestsOwnHost_Should_OnlyBeTrusted_UnderTheConfiguredWebAppUrl(string? webAppUrl, string requestOrigin, bool refused)
+    [DataRow(null, null, "https://evil.example", true)]
+    [DataRow(null, "https://app.example", "https://app.example", false)]
+    [DataRow(null, null, "http://localhost:5030", false)]
+    [DataRow("https://app.example/", null, "https://evil.example", true)]
+    [DataRow("https://app.example/", null, "https://app.example", false)]
+    [DataRow("https://app.example/", null, "https://tenant.app.example", false)]
+    [DataRow("https://app.example/", null, "http://app.example", true)]
+    [DataRow("https://app.example:443/", null, "https://app.example:8443", true)]
+    public void TheRequestsOwnHost_Should_OnlyBeTrusted_UnderTheConfiguredWebAppUrlOrTrustedOrigins(string? webAppUrl, string? trustedOrigin, string requestOrigin, bool refused)
     {
         var requestUri = new Uri(requestOrigin);
 
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = new ServiceCollection().AddSingleton(new ServerApiSettings { WebAppUrl = webAppUrl }).BuildServiceProvider()
-        };
-        httpContext.Request.Scheme = requestUri.Scheme;
-        httpContext.Request.Host = new HostString(requestUri.Host, requestUri.Port);
+        var httpContext = CreateHttpContext(webAppUrl, trustedOrigin, requestUri);
         httpContext.Request.Headers["X-Origin"] = requestOrigin;
 
         if (refused)
         {
             Assert.ThrowsExactly<BadRequestException>(() => httpContext.Request.GetWebAppUrl(),
-                "With WebAppUrl set, a forged Host header must not decide where e-mailed links point.");
+                "A forged Host header must not decide where e-mailed links point.");
         }
         else
         {
             Assert.AreEqual(requestUri, httpContext.Request.GetWebAppUrl());
         }
+    }
+
+    [TestMethod]
+    [DataRow(null, null, "https://evil.example", null)]
+    [DataRow(null, "https://app.example", "https://app.example", "https://app.example/")]
+    [DataRow(null, "https://*.app.example", "https://tenant.app.example", "https://tenant.app.example/")]
+    [DataRow(null, null, "http://localhost:5030", "http://localhost:5030/")]
+    [DataRow("https://app.example/", null, "https://evil.example", "https://app.example/")]
+    public void WithoutAnOrigin_TheRequestsOwnHost_Should_OnlyBeUsedWhenTrusted(string? webAppUrl, string? trustedOrigin, string requestOrigin, string? expected)
+    {
+        var httpContext = CreateHttpContext(webAppUrl, trustedOrigin, new Uri(requestOrigin));
+
+        if (expected is null)
+        {
+            Assert.ThrowsExactly<BadRequestException>(() => httpContext.Request.GetWebAppUrl(),
+                "A forged Host header must not decide where e-mailed links point.");
+        }
+        else
+        {
+            Assert.AreEqual(new Uri(expected), httpContext.Request.GetWebAppUrl());
+        }
+    }
+
+    private static DefaultHttpContext CreateHttpContext(string? webAppUrl, string? trustedOrigin, Uri requestUri)
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton(new ServerApiSettings { WebAppUrl = webAppUrl, TrustedOrigins = trustedOrigin is null ? [] : [trustedOrigin] })
+                .BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = requestUri.Scheme;
+        httpContext.Request.Host = new HostString(requestUri.Host, requestUri.Port);
+
+        return httpContext;
     }
 
     public TestContext TestContext { get; set; } = default!;

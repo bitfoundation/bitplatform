@@ -42,7 +42,13 @@ public static class HttpContextExtensions
 
         public Uri GetSiteUrl()
         {
-            return new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}/");
+            var siteUrl = new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}/");
+
+            // Any client can write the Host header, so it only becomes a link when TrustedOrigins vouches for it
+            if (context.RequestServices.GetRequiredService<LandingServerSettings>().IsTrustedOrigin(siteUrl) is false)
+                throw new BadHttpRequestException($"Untrusted host {siteUrl.Authority}");
+
+            return siteUrl;
         }
     }
 }
