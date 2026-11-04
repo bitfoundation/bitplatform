@@ -82,7 +82,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
-    /// Without it the button is named <c>Clear value</c>, in English.
+    /// Unset or blank, the button is named <see cref="BitStrings.ClearValue"/> ("Clear value" by default).
     /// </summary>
     public string? ClearButtonAriaLabel { get; set; }
 
@@ -92,7 +92,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? ClearButtonIcon { get; set; }
 
     /// <summary>
-    /// The name of the icon for the clear button from the built-in Fluent UI icons.
+    /// The name of the icon for the clear button from the built-in Fluent UI icons. Unset, the button shows Cancel.
     /// </summary>
     public string? ClearButtonIconName { get; set; }
 
@@ -116,7 +116,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Accessible label text for the decrement button (for screen reader users), useful for localization.
-    /// Without it the button is named <c>Decrease value</c>, in English.
+    /// Unset or blank, the button is named <see cref="BitStrings.DecreaseValue"/> ("Decrease value" by default).
     /// </summary>
     public string? DecrementAriaLabel { get; set; }
 
@@ -126,7 +126,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? DecrementIcon { get; set; }
 
     /// <summary>
-    /// The name of the icon for the decrement button from the built-in Fluent UI icons.
+    /// The name of the icon for the decrement button from the built-in Fluent UI icons. Unset, the button shows ChevronDownSmall.
     /// </summary>
     public string? DecrementIconName { get; set; }
 
@@ -190,7 +190,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Accessible label text for the increment button (for screen reader users), useful for localization.
-    /// Without it the button is named <c>Increase value</c>, in English.
+    /// Unset or blank, the button is named <see cref="BitStrings.IncreaseValue"/> ("Increase value" by default).
     /// </summary>
     public string? IncrementAriaLabel { get; set; }
 
@@ -200,7 +200,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? IncrementIcon { get; set; }
 
     /// <summary>
-    /// The name of the icon for the increment button from the built-in Fluent UI icons.
+    /// The name of the icon for the increment button from the built-in Fluent UI icons. Unset, the button shows
+    /// ChevronDownSmall turned upside down.
     /// </summary>
     public string? IncrementIconName { get; set; }
 
@@ -231,8 +232,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
-    /// What a screen reader announces while the field shows its busy indicator, in place of the
-    /// default "Loading".
+    /// What a screen reader announces while the field shows its busy indicator, useful for localization.
+    /// Unset or blank, it is <see cref="BitStrings.Loading"/> ("Loading" by default).
     /// </summary>
     public string? LoadingAriaLabel { get; set; }
 

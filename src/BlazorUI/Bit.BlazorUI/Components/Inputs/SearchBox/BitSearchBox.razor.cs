@@ -937,7 +937,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     // text, while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than
     // left in silence.
     private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
-                                     : ErrorMessageTemplate is not null ? "Invalid input"
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
                                      : ErrorMessage.HasValue() ? ErrorMessage
                                      : null;
 
@@ -1795,21 +1795,21 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             return AnnouncementProvider(new(term, _viewSuggestedItems, _isLoading, isTermTooShort, MinSuggestTriggerChars, _suggestFailed));
         }
 
-        if (_isLoading) return LoadingText.HasValue() ? LoadingText : "Loading suggestions.";
+        if (_isLoading) return LoadingText.HasValue() ? LoadingText : BitStrings.Current.LoadingSuggestions;
 
-        if (_suggestFailed) return SuggestFailedText.HasValue() ? SuggestFailedText : "Suggestions could not be loaded.";
+        if (_suggestFailed) return SuggestFailedText.HasValue() ? SuggestFailedText : BitStrings.Current.SuggestionsFailed;
 
         if (isTermTooShort)
         {
             // An empty field is the starting state rather than a failed search, so it says nothing.
             if (term.HasNoValue()) return null;
 
-            return GetMinSuggestTriggerCharsText() ?? $"Type {MinSuggestTriggerChars} or more characters for suggestions.";
+            return GetMinSuggestTriggerCharsText() ?? string.Format(BitStrings.Current.MinSuggestTriggerCharsFormat, MinSuggestTriggerChars);
         }
 
         var count = _viewSuggestedItems.Count;
 
-        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : "No suggestion found.";
+        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : BitStrings.Current.NoSuggestionFound;
 
         return $"{count} suggestion{(count == 1 ? string.Empty : "s")} available. " +
                "Use the up and down arrow keys to review them and enter to select one.";

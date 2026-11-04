@@ -57,7 +57,7 @@
             }
             else
             {
-                @(EmptyText ?? (HasSearchText ? "No results found" : "No items found"))
+                @(EmptyText ?? (HasSearchText ? BitStrings.Current.NoResultsFound : BitStrings.Current.NoItemsFound))
             }
         </div>;
 
@@ -73,7 +73,7 @@
             else
             {
                 <div style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
-                <span style="@Styles?.LoadingText" class="@Classes?.LoadingText">@(LoadingText ?? "Loading...")</span>
+                <span style="@Styles?.LoadingText" class="@Classes?.LoadingText">@(LoadingText ?? BitStrings.Current.LoadingText)</span>
             }
         </div>;
 }
@@ -312,8 +312,8 @@
                keys keep operating the dropdown. *@
             <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
                     type="button"
-                    title="@(ClearButtonAriaLabel ?? "Clear selection")"
-                    aria-label="@(ClearButtonAriaLabel ?? "Clear selection")"
+                    title="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearSelection)"
+                    aria-label="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearSelection)"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
                 <i aria-hidden="true" class="@clearButtonIconCss" />
@@ -444,7 +444,7 @@
                a spinner, an image, something interactive - and rendering it a second time here would
                duplicate its ids and its handlers and hand the screen reader whatever it happens to
                contain instead of an announcement. *@
-            @(LoadingText ?? "Loading...")
+            @(LoadingText ?? BitStrings.Current.LoadingText)
         }
         else if (IsMaxSelectedItemsReached)
         {
@@ -504,8 +504,8 @@
 
             <button @onclick="CloseCalloutAndRestoreFocus"
                     type="button"
-                    title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
-                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    title="@(ResponsiveCloseButtonAriaLabel ?? BitStrings.Current.Close)"
+                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? BitStrings.Current.Close)"
                     style="@Styles?.ResponsiveCloseButton"
                     class="bit-drp-cls @Classes?.ResponsiveCloseButton">
                 <span>
@@ -538,7 +538,7 @@
                    type="text"
                    role="searchbox"
                    value="@_searchInputText"
-                   aria-label="@(SearchBoxAriaLabel ?? "Search text")"
+                   aria-label="@(SearchBoxAriaLabel ?? BitStrings.Current.SearchText)"
                    aria-controls="@_scrollContainerId"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
@@ -554,8 +554,8 @@
                             type="button"
                             style="@Styles?.SearchBoxClearButton"
                             class="bit-drp-sbc @Classes?.SearchBoxClearButton"
-                            title="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
-                            aria-label="@(SearchBoxClearButtonAriaLabel ?? "Clear text")">
+                            title="@(SearchBoxClearButtonAriaLabel ?? BitStrings.Current.ClearText)"
+                            aria-label="@(SearchBoxClearButtonAriaLabel ?? BitStrings.Current.ClearText)">
                         <span>
                             <i aria-hidden="true"
                                style="@Styles?.SearchBoxClearIcon"
@@ -597,8 +597,8 @@
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
-                    title="@(ComboBoxAddButtonAriaLabel ?? "Add")"
-                    aria-label="@(ComboBoxAddButtonAriaLabel ?? "Add")"
+                    title="@(ComboBoxAddButtonAriaLabel ?? BitStrings.Current.Add)"
+                    aria-label="@(ComboBoxAddButtonAriaLabel ?? BitStrings.Current.Add)"
                     style="@Styles?.ResponsiveComboAddButton"
                     class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
                 <i aria-hidden="true" class="@comboBoxAddButtonIconCss" />
@@ -644,7 +644,7 @@
                     </div>
                     <span style="@Styles?.SelectAllText"
                           class="bit-drp-itx @Classes?.SelectAllText">
-                        @(SelectAllText ?? "Select all")
+                        @(SelectAllText ?? BitStrings.Current.SelectAll)
                     </span>
                 </button>
             </div>

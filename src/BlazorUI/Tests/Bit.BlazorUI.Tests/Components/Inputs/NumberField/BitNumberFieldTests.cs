@@ -3216,6 +3216,56 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldLoadingShouldBeAnnouncedAlongWithAnErrorMessage()
+    {
+        // A rejected value is often exactly the one being checked again, so the rejection must not hide the check.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Out of stock");
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Checking stock");
+        });
+
+        Assert.AreEqual("Out of stock, Checking stock", component.Find("span[role=status]").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
+
+        Assert.AreEqual("Out of stock", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitNumberFieldBlankLoadingAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        // A label a localization lookup came back blank for must not turn the busy state into silence.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, label);
+        });
+
+        Assert.AreEqual("Loading", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitNumberFieldBlankButtonAriaLabelsShouldFallBackToTheDefaults(string label)
+    {
+        // The buttons show only an icon, so a blank label would leave them with no accessible name at all.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.IncrementAriaLabel, label);
+            parameters.Add(p => p.DecrementAriaLabel, label);
+            parameters.Add(p => p.ClearButtonAriaLabel, label);
+        });
+
+        Assert.AreEqual("Increase value", component.Find(".bit-nfl-aup").GetAttribute("aria-label"));
+        Assert.AreEqual("Decrease value", component.Find(".bit-nfl-adn").GetAttribute("aria-label"));
+        Assert.AreEqual("Clear value", component.Find(".bit-nfl-cbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitNumberFieldLoadingTemplateShouldReplaceTheSpinner()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>

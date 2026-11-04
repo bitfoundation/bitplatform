@@ -12,11 +12,6 @@ namespace Bit.BlazorUI;
 public partial class BitDialog : BitComponentBase
 {
     /// <summary>
-    /// The title (and aria-label) used for the close button when none is provided.
-    /// </summary>
-    internal const string DefaultCloseButtonTitle = "Close";
-
-    /// <summary>
     /// How long the container carries the class that plays back a refused dismissal, in milliseconds.
     /// It outlasts the animation itself, whose duration comes from the motion tokens and collapses to
     /// nothing under prefers-reduced-motion.

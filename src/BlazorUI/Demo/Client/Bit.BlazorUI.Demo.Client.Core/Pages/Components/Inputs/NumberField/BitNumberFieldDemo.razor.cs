@@ -102,8 +102,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "DecrementAriaLabel",
             Type = "string?",
-            DefaultValue = "\"Decrease value\"",
-            Description = "Accessible label text for the decrement button (for screen reader users). The button is icon-only, so it is always given a name: without this parameter it is the English \"Decrease value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
+            DefaultValue = "null",
+            Description = "Accessible label text for the decrement button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.DecreaseValue (\"Decrease value\" by default).",
         },
         new()
         {
@@ -119,7 +119,7 @@ public partial class BitNumberFieldDemo
             Name = "DecrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons. For external icon libraries, use DecrementIcon instead.",
+            Description = "Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons. For external icon libraries, use DecrementIcon instead. Unset, the button shows ChevronDownSmall.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -222,8 +222,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "IncrementAriaLabel",
             Type = "string?",
-            DefaultValue = "\"Increase value\"",
-            Description = "Accessible label text for the increment button (for screen reader users). The button is icon-only, so it is always given a name: without this parameter it is the English \"Increase value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
+            DefaultValue = "null",
+            Description = "Accessible label text for the increment button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.IncreaseValue (\"Increase value\" by default).",
         },
         new()
         {
@@ -239,7 +239,7 @@ public partial class BitNumberFieldDemo
             Name = "IncrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons. For external icon libraries, use IncrementIcon instead.",
+            Description = "Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons. For external icon libraries, use IncrementIcon instead. Unset, the button shows ChevronDownSmall turned upside down.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -321,8 +321,8 @@ public partial class BitNumberFieldDemo
         {
             Name = "LoadingAriaLabel",
             Type = "string?",
-            DefaultValue = "\"Loading\"",
-            Description = "What a screen reader announces while Loading is on, in place of the default, English \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
+            DefaultValue = "null",
+            Description = "What a screen reader announces while Loading is on, useful for localization. Unset or blank, it is BitStrings.Current.Loading (\"Loading\" by default). It is announced whichever indicator is drawn, and along with any error message shown at the time, so a LoadingTemplate drawing a bare spinner of its own, or a rejected value being checked again, still tells an assistive technology that something is running.",
         },
         new()
         {
@@ -484,7 +484,7 @@ public partial class BitNumberFieldDemo
         {
             Name = "ParsingErrorMessage",
             Type = "string",
-            DefaultValue="The {0} field is not valid.",
+            DefaultValue = "\"The {0} field is not valid.\"",
             Description = "The message format used for invalid values entered in the input.",
         },
         new()
@@ -529,7 +529,7 @@ public partial class BitNumberFieldDemo
             Name = "ClearButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead.",
+            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead. Unset, the button shows Cancel.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -537,15 +537,15 @@ public partial class BitNumberFieldDemo
         {
             Name = "ClearButtonAriaLabel",
             Type = "string?",
-            DefaultValue = "\"Clear value\"",
-            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. The button is icon-only, so it is always given a name: without this parameter it is the English \"Clear value\", which a page in another language has to replace here or, for every number field, through BitNumberFieldParams.",
+            DefaultValue = "null",
+            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.ClearValue (\"Clear value\" by default), whatever a ClearButtonTemplate shows in it.",
         },
         new()
         {
             Name = "ClearButtonTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same.",
+            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same. That name is ClearButtonAriaLabel, not the template: a template showing words (a visible \"Reset\") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.",
         },
         new()
         {

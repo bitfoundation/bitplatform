@@ -86,7 +86,7 @@
                         @if (ShowCloseButton)
                         {
                             var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
-                            var closeTitle = CloseButtonTitle ?? DefaultCloseButtonTitle;
+                            var closeTitle = CloseButtonTitle ?? BitStrings.Current.Close;
 
                             var closeDisabled = IsCloseButtonDisabled;
                             <button @ref="_closeButtonRef" @onclick="HandleOnCloseClick"

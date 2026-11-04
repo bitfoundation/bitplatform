@@ -11,6 +11,17 @@ namespace Bit.BlazorUI;
 /// (Up/Down arrows, PageUp/PageDown, Home/End), mouse wheel interaction, non-Latin digit normalization and full
 /// form validation integration.
 /// </summary>
+/// <remarks>
+/// The words the field says by itself - the names of its increment, decrement and clear buttons, its busy
+/// announcement and the "Invalid input" an <see cref="ErrorMessageTemplate"/> is announced as - come from
+/// <see cref="BitStrings.Current"/> while <see cref="IncrementAriaLabel"/>, <see cref="DecrementAriaLabel"/>,
+/// <see cref="ClearButtonAriaLabel"/>, <see cref="LoadingAriaLabel"/> or <see cref="ErrorMessageAriaLabel"/> is unset
+/// or blank, so an app translates them for every component at once by setting a <see cref="BitStrings"/> of its own.
+/// One field can still say something else through those parameters, set on it or on a
+/// <see cref="BitNumberFieldParams"/> cascaded to it (by a <see cref="BitParams"/>, for instance); cascaded params
+/// only reach the number fields rendered inside the component that cascades them, and only for what a field does
+/// not set in its own markup. <see cref="ParsingErrorMessage"/> has an English default of its own.
+/// </remarks>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
     private int? _precision;
@@ -201,9 +212,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public CultureInfo? Culture { get; set; }
 
     /// <summary>
-    /// Accessible label text for the decrement button (for screen reader users).
-    /// Defaults to <c>Decrease value</c>: the button is icon-only, so it is always given a name, and a page in
-    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
+    /// Accessible label text for the decrement button (for screen reader users), useful for localization.
+    /// Unset or blank, the button is named <see cref="BitStrings.DecreaseValue"/> ("Decrease value" by default).
     /// </summary>
     [Parameter] public string? DecrementAriaLabel { get; set; }
 
@@ -224,7 +234,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons.
-    /// For external icon libraries, use <see cref="DecrementIcon"/> instead.
+    /// For external icon libraries, use <see cref="DecrementIcon"/> instead. Unset, the button shows ChevronDownSmall.
     /// </summary>
     [Parameter] public string? DecrementIconName { get; set; }
 
@@ -343,9 +353,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Accessible label text for the increment button (for screen reader users).
-    /// Defaults to <c>Increase value</c>: the button is icon-only, so it is always given a name, and a page in
-    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
+    /// Accessible label text for the increment button (for screen reader users), useful for localization.
+    /// Unset or blank, the button is named <see cref="BitStrings.IncreaseValue"/> ("Increase value" by default).
     /// </summary>
     [Parameter] public string? IncrementAriaLabel { get; set; }
 
@@ -366,7 +375,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons.
-    /// For external icon libraries, use <see cref="IncrementIcon"/> instead.
+    /// For external icon libraries, use <see cref="IncrementIcon"/> instead. Unset, the button shows ChevronDownSmall turned upside down.
     /// </summary>
     [Parameter] public string? IncrementIconName { get; set; }
 
@@ -436,9 +445,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool Loading { get; set; }
 
     /// <summary>
-    /// What a screen reader announces while <see cref="Loading"/> is on, in place of the default "Loading".
-    /// It is announced whichever indicator is drawn, so a <see cref="LoadingTemplate"/> drawing a bare
-    /// spinner of its own still tells an assistive technology that something is running.
+    /// What a screen reader announces while <see cref="Loading"/> is on, useful for localization.
+    /// Unset or blank, it is <see cref="BitStrings.Loading"/> ("Loading" by default). It is announced whichever indicator is drawn, and along with
+    /// any error message shown at the time, so a <see cref="LoadingTemplate"/> drawing a bare spinner of its own,
+    /// or a rejected value being checked again, still tells an assistive technology that something is running.
     /// </summary>
     [Parameter] public string? LoadingAriaLabel { get; set; }
 
@@ -649,20 +659,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons.
-    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead. Unset, the button shows Cancel.
     /// </summary>
     [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
     /// A custom template rendered inside the clear button in place of its icon. The button itself - its
     /// accessible name, its click and Escape handling - stays the same, so only what it looks like changes.
+    /// That name is <see cref="ClearButtonAriaLabel"/>, not the template: a template showing words (a visible
+    /// "Reset") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.
     /// </summary>
     [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
-    /// Defaults to <c>Clear value</c>: the button is icon-only, so it is always given a name, and a page in
-    /// another language has to replace that English text here or, for every number field, through <see cref="BitNumberFieldParams"/>.
+    /// Unset or blank, the button is named <see cref="BitStrings.ClearValue"/> ("Clear value" by default), whatever a
+    /// <see cref="ClearButtonTemplate"/> shows in it.
     /// </summary>
     [Parameter] public string? ClearButtonAriaLabel { get; set; }
 
@@ -1427,7 +1439,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // left in silence. The forced state is the one rejection only announced with a label of its own, its reason
     // being explained - and announced - elsewhere.
     private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
-                                     : ErrorMessageTemplate is not null ? "Invalid input"
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
                                      : ErrorMessage.HasValue() ? ErrorMessage
                                      : null;
 
@@ -1473,11 +1485,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // assistive technology activated), until the input takes the focus back and announces the value itself.
     // A rejection or a busy state is said along with that value rather than in place of it: the region is the
     // only thing announcing the value then, and a state that hid it would leave every step taken in silence.
+    // For the same reason the two states are said along with each other: a rejected value is often exactly the
+    // one being checked again, and a rejection that hid the busy state would leave that check unannounced.
     private string? LiveText
     {
         get
         {
-            var state = ErrorLiveText ?? (Loading ? (LoadingAriaLabel ?? "Loading") : null);
+            var busy = Loading ? (LoadingAriaLabel.HasValue() ? LoadingAriaLabel : BitStrings.Current.Loading) : null;
+            var error = ErrorLiveText;
+            var state = error is not null && busy is not null ? $"{error}, {busy}" : error ?? busy;
             var value = HideInput || _announceValue ? GetDisplayValueAsString() : null;
 
             if (state.HasNoValue()) return value;

@@ -1082,7 +1082,7 @@ public partial class BitPagination : BitComponentBase
 
     private string GetPageLabel(int page, bool isSelected)
     {
-        return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
+        return GetPageAriaLabel?.Invoke(page, isSelected) ?? string.Format(CultureInfo.CurrentCulture, BitStrings.Current.PageFormat, page);
     }
 
     // A gap that jumps somewhere is named by where it jumps to as well, since the two gaps of a range are otherwise

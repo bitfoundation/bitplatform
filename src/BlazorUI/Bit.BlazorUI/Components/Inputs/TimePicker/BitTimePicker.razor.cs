@@ -2092,7 +2092,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // left in silence. The forced state is the one rejection only announced with a label of its own, its reason
     // being explained - and announced - elsewhere.
     private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
-                                     : ErrorMessageTemplate is not null ? "Invalid input"
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
                                      : ErrorMessage.HasValue() ? ErrorMessage
                                      : null;
 

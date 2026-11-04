@@ -8,9 +8,12 @@
     var decrementIcon = BitIconInfo.From(DecrementIcon, DecrementIconName ?? "ChevronDownSmall");
     var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
 
-    // The spin buttons are icon-only, so they always need an accessible name.
-    var incrementLabel = IncrementAriaLabel ?? "Increase value";
-    var decrementLabel = DecrementAriaLabel ?? "Decrease value";
+    // The spin buttons (and, unless templated, the clear button) show only an icon, so they always need an
+    // accessible name - and a blank label, say one a localization lookup came back empty for, is no name at all.
+    // HasValue is what BitNumberFieldParams goes by too, so a blank label falls back the same way either side.
+    var incrementLabel = IncrementAriaLabel.HasValue() ? IncrementAriaLabel : BitStrings.Current.IncreaseValue;
+    var decrementLabel = DecrementAriaLabel.HasValue() ? DecrementAriaLabel : BitStrings.Current.DecreaseValue;
+    var clearButtonLabel = ClearButtonAriaLabel.HasValue() ? ClearButtonAriaLabel : BitStrings.Current.ClearValue;
 
     // The buttons normally stay out of the tab order (the focused input is the spinbutton and already
     // handles the whole keyboard set). In HideInput mode there is no focusable input left, so they
@@ -202,7 +205,7 @@
                         class="bit-nfl-cbt @Classes?.ClearButton"
                         type="button"
                         tabindex="-1"
-                        aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
+                        aria-label="@clearButtonLabel"
                         disabled="@(Disabled)"
                         aria-disabled="@(Disabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
