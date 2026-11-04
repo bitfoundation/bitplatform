@@ -1813,14 +1813,14 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, new TimeSpan(10, 30, 0));
         });
 
-        var focusCalls = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+        var focusCalls = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.focusDial"].Count;
 
         await component.InvokeAsync(() => component.Find(".bit-ctp-abn").Click());
 
         // the button disables itself on the empty value, which would drop the focus onto the document
         Assert.IsTrue(component.Find(".bit-ctp-abn").HasAttribute("disabled"));
 
-        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.focusDial"];
 
         Assert.AreEqual(focusCalls + 1, invocations.Count);
         Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
@@ -3196,10 +3196,13 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        // the dial, not the field: an opened picker is the one the arrow keys have to move - and without scrolling
+        // the page, which the script focusing it leaves alone
+        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
 
-        // the dial, not the field: an opened picker is the one the arrow keys have to move
-        Assert.AreEqual(before + 1, invocations.Count);
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.focusDial"];
+
+        Assert.AreEqual(1, invocations.Count);
         Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
     }
 

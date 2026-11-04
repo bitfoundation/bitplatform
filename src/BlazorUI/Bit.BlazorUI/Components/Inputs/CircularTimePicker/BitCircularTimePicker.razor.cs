@@ -2065,11 +2065,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await FocusDial();
     }
 
+    // Without scrolling the page: the script reveals a dial out of sight in the callout's own scroller only.
     private async Task FocusDial()
     {
         if (IsRendered is false || IsDisposed) return;
 
-        await _clockRef.FocusSafelyAsync();
+        await ElementReferenceExtensions.FocusSafelyAsync(() => _js.BitCircularTimePickerFocusDial(_clockRef));
     }
 
     private string? GetHourButtonStyle()

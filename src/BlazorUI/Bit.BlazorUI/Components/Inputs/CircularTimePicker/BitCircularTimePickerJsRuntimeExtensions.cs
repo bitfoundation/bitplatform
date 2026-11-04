@@ -14,6 +14,11 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
                                  pointerDownHandler, pointerMoveHandler, pointerUpHandler);
     }
 
+    internal static ValueTask BitCircularTimePickerFocusDial(this IJSRuntime jSRuntime, ElementReference clock)
+    {
+        return jSRuntime.InvokeVoid("BitBlazorUI.CircularTimePicker.focusDial", clock);
+    }
+
     internal static ValueTask BitCircularTimePickerDispose(this IJSRuntime jSRuntime, string? abortControllerId)
     {
         return jSRuntime.InvokeVoid("BitBlazorUI.CircularTimePicker.dispose", abortControllerId);
