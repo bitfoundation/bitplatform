@@ -181,6 +181,52 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavPanelOverlayTapShouldCloseOnItsTouchEnd()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // WebKit (iOS) makes no click of a tap on the overlay, so the tap's touchend closes the panel - and cancels the
+        // click the other engines make of it, which would otherwise land on whatever the closing overlay uncovers.
+        var overlay = component.Find(".bit-npn-ovl");
+        overlay.TouchStart(new TouchEventArgs { Touches = [Touch(100, 200)], ChangedTouches = [Touch(100, 200)] });
+        overlay.TouchEnd(new TouchEventArgs { Touches = [], ChangedTouches = [Touch(103, 198)] });
+
+        component.WaitForAssertion(() => Assert.IsFalse(isOpen));
+        Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-cls"));
+    }
+
+    [TestMethod,
+        DataRow(1, 160, 200, DisplayName = "a drag"),
+        DataRow(2, 100, 200, DisplayName = "a pinch")]
+    public void BitNavPanelOverlayTouchThatIsNoTapShouldNotClose(int fingers, double endX, double endY)
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // A touchend also ends a drag, a scroll attempt or a pinch begun on the overlay, none of which ever made a
+        // click: only a tap - one finger lifted where it came down - closes the panel.
+        var overlay = component.Find(".bit-npn-ovl");
+        overlay.TouchStart(new TouchEventArgs { Touches = [.. Enumerable.Repeat(Touch(100, 200), fingers)], ChangedTouches = [Touch(100, 200)] });
+        overlay.TouchEnd(new TouchEventArgs { Touches = [], ChangedTouches = [Touch(endX, endY)] });
+
+        Assert.IsTrue(isOpen);
+        Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-cls"));
+    }
+
+    private static TouchPoint Touch(double x, double y) => new() { ClientX = x, ClientY = y };
+
+    [TestMethod]
     public void BitNavPanelShouldNotRenderOverlayWhenNoOverlay()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>

@@ -6183,7 +6183,7 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitTagsInputShouldPushTheTruncatedTextBackIntoTheElementTest()
+    public async Task BitTagsInputShouldWriteTheTruncatedTextBackIntoTheElementTest()
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
@@ -6192,12 +6192,12 @@ public class BitTagsInputTests : BunitTestContext
 
         await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "toolongtext" });
 
-        // The browser has already put the typed text into the element, and the renderer only writes an attribute it
-        // sees changing, so what the component refused to keep is pushed back by hand.
-        var sync = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last();
-
-        Assert.AreEqual("value", sync.Arguments[1]);
-        Assert.AreEqual("toolo", sync.Arguments[2]);
+        // The text is bound, so the renderer compares what the component kept with the text typed and writes the cut
+        // back itself. Nothing is pushed into the element by hand after the render: a push lands a round trip later,
+        // on whatever has been typed since.
+        Assert.AreEqual("toolo", com.Find(".bit-tgi-inp").GetAttribute("value"));
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.setProperty" &&
+                                                              Equals(i.Arguments[1], "value")));
     }
 
     [TestMethod,

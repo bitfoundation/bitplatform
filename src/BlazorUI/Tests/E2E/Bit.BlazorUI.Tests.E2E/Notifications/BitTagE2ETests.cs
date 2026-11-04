@@ -788,7 +788,9 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(content).ToHaveCSSAsync("background-color", "rgb(200, 190, 250)");
         await Page.Mouse.UpAsync();
 
-        await Page.Mouse.MoveAsync(0, 0);
+        // Clicked off the tag rather than only moved off it: WebKit starts the keyboard from the spot last pressed while
+        // the focus is on the element around it - the tag pressed above - and the status line is a spot nothing answers.
+        await Page.Locator("#status").ClickAsync();
         await content.FocusAsync();
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Page.Keyboard.PressAsync("Tab");

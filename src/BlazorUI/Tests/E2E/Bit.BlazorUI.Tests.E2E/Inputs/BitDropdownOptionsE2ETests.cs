@@ -183,7 +183,12 @@ public class BitDropdownOptionsE2ETests : BitDropdownE2ETestBase
         var rendered = await Options(callout).CountAsync();
         Assert.IsTrue(rendered < 80, $"Only a window of the 300 options is rendered, was {rendered}.");
 
+        // Aimed again until the last option is in: the list measures its rows again as each window of them lands, which
+        // changes how tall it is - on a loaded host after this scroll as well as before it - and a scroll aimed once at
+        // the old height stops short of the end.
         await ListBox(callout).EvaluateAsync("el => el.scrollTop = el.scrollHeight");
+        await Page.WaitForFunctionAsync("el => { const last = [...el.querySelectorAll('[role=\"option\"]')].some(o => o.textContent.includes('Option 300')); if (!last) el.scrollTop = el.scrollHeight; return last; }",
+                                        await ListBox(callout).ElementHandleAsync(), new() { PollingInterval = 100 });
         await Expect(Option(callout, "Option 300")).ToBeVisibleAsync();
         await WaitForStableListAsync(callout);
 

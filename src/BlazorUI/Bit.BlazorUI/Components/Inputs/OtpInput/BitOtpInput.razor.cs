@@ -1282,7 +1282,18 @@ public partial class BitOtpInput : BitInputBase<string?>
         // pressed at either end of the code, or the vertical pair of arrows in a horizontal row.
         if (targetIndex is not -1 && targetIndex != index)
         {
-            await _inputRefs[targetIndex].FocusSafelyAsync();
+            // A horizontal arrow can still be overtaken by a Tab after its direction came back, while the focus it
+            // asks for is on its way; the script drops it then (see BitOtpInput.ts focusAfterArrow).
+            var target = _inputRefs[targetIndex];
+
+            if (navKey is "ArrowLeft" or "ArrowRight")
+            {
+                await ElementReferenceExtensions.FocusSafelyAsync(() => _js.BitOtpInputFocusAfterArrow(target));
+            }
+            else
+            {
+                await target.FocusSafelyAsync();
+            }
         }
     }
 

@@ -518,11 +518,14 @@ public class BitButtonE2ETests : E2ETestBase
         await Expect(button.Locator(".bit-btn-spn")).ToBeVisibleAsync();
 
         // The spinner is drawn at the icon size with its stroke outside it on a page without a border-box reset (the
-        // ring leaves box-sizing to the page), which is a pixel taller than a line of text in this host; the width
-        // holds exactly.
+        // ring leaves box-sizing to the page), which is taller than a line of text in this host - by a pixel in Segoe
+        // UI, by four in the Liberation Sans Linux falls back to - so the box is as tall as the taller of the two
+        // stacked over each other, never the two of them added up; the width holds exactly.
         var during = await button.BoxAsync();
         ButtonsE2EHelpers.AreClose(before.Width, during.Width, 0.5, "The spinner is stacked over the content: the width holds");
-        ButtonsE2EHelpers.AreClose(before.Height, during.Height, 1.5, "The spinner is stacked over the content: the height holds");
+        var loading = await button.Locator(".bit-btn-ldg").BoxAsync();
+        var frame = await button.EvaluateAsync<double>("b => { const s = getComputedStyle(b); return parseFloat(s.paddingTop) + parseFloat(s.paddingBottom) + parseFloat(s.borderTopWidth) + parseFloat(s.borderBottomWidth); }");
+        ButtonsE2EHelpers.AreClose(Math.Max(before.Height, loading.Height + frame), during.Height, 0.5, "The spinner is stacked over the content: the height is the taller one's");
 
         await button.ClickAsync(new() { Force = true });
         await Btn("btn-release-auto").ClickAsync();

@@ -135,6 +135,27 @@ internal static class AiE2EHelpers
     }
 
     /// <summary>
+    /// Waits until a scroll container has stopped moving. WebKit animates a wheel scroll: a position read while it runs
+    /// is not where the wheel leaves the view, and a turn of the wheel while it runs starts the animation over from where
+    /// it got to rather than adding to it.
+    /// </summary>
+    public static Task WaitForScrollToRestAsync(this ILocator scroller)
+    {
+        return scroller.EvaluateAsync(
+            """
+            e => new Promise(resolve => {
+                let last = -1, stable = 0;
+                const tick = () => {
+                    if (e.scrollTop === last) stable++; else { stable = 0; last = e.scrollTop; }
+                    if (stable >= 5) return resolve();
+                    requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            })
+            """);
+    }
+
+    /// <summary>
     /// Turns the wheel down over a scroll container until it is at the end of its content: one long turn is clamped
     /// short by some engines (Firefox).
     /// </summary>

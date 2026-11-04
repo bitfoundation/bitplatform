@@ -50,10 +50,11 @@
 
             // A .NET handler that throws - or a consumer callback behind it that does - rejects the promise
             // this returns. Nothing awaits it, so an unhandled rejection is all the page would see of it,
-            // reported without the call that raised it; the .NET side handles the exception either way.
+            // reported without the call that raised it; the .NET side handles the exception either way. A call
+            // over a connection that is already closed fails the same way rather than throwing (Utils.invokeDotNet).
             const invoke = (method: string, ...args: any[]) => {
-                dotnetObj.invokeMethodAsync(method, ...args)
-                         .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
+                Utils.invokeDotNet(dotnetObj, method, ...args)
+                     .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
             };
 
             const flushMove = () => {
@@ -69,12 +70,18 @@
 
             const endDrag = () => {
                 if (dragging === false) return;
-                dragging = false;
-                latestPosition = null;
                 if (rafId !== 0) {
                     cancelAnimationFrame(rafId);
                     rafId = 0;
                 }
+                // A release can come before the frame the last move was waiting for, and that move is where the
+                // pointer let go: dropping it would end the drag on an earlier position - short of the edge a drag
+                // carried off the area was clamped to. It is sent ahead of the release, which .NET hears in order.
+                if (latestPosition !== null) {
+                    invoke(pointerHandler, latestPosition.x, latestPosition.y);
+                    latestPosition = null;
+                }
+                dragging = false;
                 invoke(pointerUpHandler);
             };
 

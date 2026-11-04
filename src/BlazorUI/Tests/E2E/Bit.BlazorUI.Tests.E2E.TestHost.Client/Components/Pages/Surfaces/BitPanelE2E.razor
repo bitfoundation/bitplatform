@@ -236,9 +236,10 @@
               OnSwipeMove="v => { _swipeMove = v; _swipeMoves++; }"
               OnSwipeEnd="v => { _swipeEnd = v; _swipeLog.Add(nameof(BitPanel.OnSwipeEnd)); }"
               OnDismissing="a => _swipeLog.Add(nameof(BitPanel.OnDismissing) + ':' + a.Reason)">
-        <div id="swipe-surface" style="padding: 24px; height: 100%; box-sizing: border-box; user-select: none;">
-            <div id="swipe-noselect" style="height: 60px; user-select: none; background: #ddd;">Drag handle</div>
-            <p id="swipe-text" style="user-select: text;">Drag me towards my edge.</p>
+        @* WebKit goes by the prefixed user-select alone, so each is written in both forms. *@
+        <div id="swipe-surface" style="padding: 24px; height: 100%; box-sizing: border-box; -webkit-user-select: none; user-select: none;">
+            <div id="swipe-noselect" style="height: 60px; -webkit-user-select: none; user-select: none; background: #ddd;">Drag handle</div>
+            <p id="swipe-text" style="-webkit-user-select: text; user-select: text;">Drag me towards my edge.</p>
             <input id="swipe-input" />
             <div id="swipe-noswipe" data-no-swipe style="height: 60px; background: #eee;">data-no-swipe region</div>
         </div>

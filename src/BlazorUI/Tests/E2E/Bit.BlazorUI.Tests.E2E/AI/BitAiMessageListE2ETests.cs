@@ -151,8 +151,11 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(PinLog).ToHaveTextAsync(Log(log, "False"));
         await Expect(PinButton).ToBeVisibleAsync();
 
-        // Scrolling on, further away, is the same transition: nothing more is reported.
+        // Scrolling on, further away, is the same transition: nothing more is reported. Each turn of the wheel is let come
+        // to rest first, so the turns add up (see WaitForScrollToRestAsync).
+        await list.WaitForScrollToRestAsync();
         await Page.WheelOverAsync(list, -300);
+        await list.WaitForScrollToRestAsync();
         await Page.WheelOverAsync(list, -300);
         await AiE2EHelpers.PollAsync(async () => (await list.ScrollStateAsync()).FromBottom > 600, "The view scrolled further up.");
         await NextFramesAsync();
@@ -198,7 +201,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await SettledLogAsync();
         await Page.WheelOverAsync(list, -500);
         await Expect(Pinned).ToHaveTextAsync("False");
-        await NextFramesAsync();
+        await list.WaitForScrollToRestAsync();
         var before = await list.ScrollStateAsync();
 
         await Page.Locator("#msl-pin-ask").ClickAsync();

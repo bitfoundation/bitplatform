@@ -357,6 +357,9 @@ public class BitSliderE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("End");
         await ExpectTextAsync("range-value", "0-10");
 
+        // Pressed without waiting for each step to come back: the value of the input is bound, so the render of a step
+        // that lands after the key pressed since writes nothing over it, and the next press steps from where the last
+        // one left the thumb.
         await Lower("sld-range").FocusAsync();
         for (var i = 0; i < 3; i++) await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectTextAsync("range-value", "3-10");
@@ -1448,14 +1451,32 @@ public class BitSliderE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
+        // The arrows are the native input's, and WebKit's range input steps ArrowLeft down and ArrowRight up
+        // whichever way it is laid out, where the other engines turn the two round in a right-to-left one.
+        if (IsWebKit) Assert.Inconclusive("WebKit's range input does not mirror the horizontal arrow keys in a right-to-left layout.");
+
         await Input("sld-rtl").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await ExpectTextAsync("rtl-value", "4");
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectTextAsync("rtl-value", "2");
-        await Page.Keyboard.PressAsync("ArrowUp");
+    }
+
+    [TestMethod]
+    public async Task Rtl_TheVerticalArrowKeysStepUpAndDownWhateverTheDirection()
+    {
+        await OpenAsync(Route);
+
+        // Up and Down are no direction of the layout, so every engine - WebKit included - steps them alike.
         await ExpectTextAsync("rtl-value", "3");
+
+        await Input("sld-rtl").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await ExpectTextAsync("rtl-value", "4");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await ExpectTextAsync("rtl-value", "2");
     }
 
     [TestMethod]

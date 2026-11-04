@@ -403,10 +403,14 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(Live("tgi-sep")).ToHaveTextAsync("3 tags added.");
 
         // A column copied out of a spreadsheet: its line breaks are joined over the first separator.
+        // The data is handed to the event as its own clipboardData: an event constructed with it gets an empty one
+        // of its own in Firefox.
         await Input("tgi-sep").EvaluateAsync(@"el => {
             const data = new DataTransfer();
             data.setData('text/plain', 'x1\r\ny2\nz3');
-            el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+            const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(e, 'clipboardData', { value: data });
+            el.dispatchEvent(e);
         }");
         await ExpectTextAsync("sep-value", "red|green|blue|x1|y2|z3");
     }

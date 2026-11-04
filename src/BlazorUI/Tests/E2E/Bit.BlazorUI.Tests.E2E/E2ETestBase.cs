@@ -24,10 +24,13 @@ public abstract class E2ETestBase
 
     private static readonly SemaphoreSlim _browserLock = new(1, 1);
     private static IPlaywright? _playwright;
-    private static IBrowser? _browser;
-    // How many tests have a context open on each browser, guarded by _browserLock: the test classes run beside each
-    // other on one browser, so one that is retired is closed only once the last of them has let go of it.
-    private static readonly Dictionary<IBrowser, int> _browserUsers = [];
+    // Every test runs on a browser of its own, which it hands on to the next test to start once it is done; these are
+    // the ones no test is on, guarded by _browserLock. The test classes that run beside each other never share one:
+    // Firefox drops and merges the pointer moves of a page while other pages of its browser are being driven, so a
+    // drag delivers a fraction of its moves and lands short of where it was taken, and a swipe ends somewhere else.
+    private static readonly Stack<IBrowser> _idleBrowsers = new();
+    // Every browser launched and not retired, for the run to close at its end.
+    private static readonly List<IBrowser> _browsers = [];
 
     private IBrowser? _contextBrowser;
     private IBrowserContext? _context;
@@ -115,8 +118,13 @@ public abstract class E2ETestBase
         await _browserLock.WaitAsync();
         try
         {
-            browser = _browser ??= await LaunchBrowserAsync();
-            _browserUsers[browser] = _browserUsers.GetValueOrDefault(browser) + 1;
+            if (_idleBrowsers.TryPop(out var idle) is false)
+            {
+                idle = await LaunchBrowserAsync();
+                _browsers.Add(idle);
+            }
+
+            browser = idle;
             _contextBrowser = browser;
         }
         finally
@@ -275,11 +283,62 @@ public abstract class E2ETestBase
     protected static Regex HasClass(string className) => new($@"(^|\s){Regex.Escape(className)}(\s|$)");
 
     /// <summary>
+    /// A regular expression matching a text with a 12-hour time in it, for ToHaveValueAsync and ToHaveTextAsync: the
+    /// space before each AM and PM may also be the narrow no-break space (U+202F) the en-US patterns of ICU's data carry,
+    /// which .NET reads on Linux, where on Windows it reads a plain space.
+    /// </summary>
+    protected static Regex TwelveHour(string text) => new($"^{Regex.Escape(text).Replace(@"\ AM", "[  ]AM").Replace(@"\ PM", "[  ]PM")}$");
+
+    /// <summary>
     /// Waits for two animation frames, the way a layout a script takes after a render is waited for.
     /// </summary>
     protected Task NextFramesAsync()
     {
         return Page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+    }
+
+    /// <summary>
+    /// Wheels a scroller - the element the selector finds, or the page itself for "window" - with the mouse where it
+    /// already is, to where one wheel of that delta takes it in Chromium: as far as asked, or to the end it has when the
+    /// wheel starts. Firefox moves a scroller by no more than a page for one wheel event however large its delta is, so
+    /// the way there is wheeled a page at a time, each step let come to rest - a step sent while the last one is still
+    /// animating only moves that animation's target - and it stops at that end even when reaching it loads more content.
+    /// </summary>
+    protected async Task WheelInPagesAsync(string selector, int deltaY)
+    {
+        var range = await Page.EvaluateAsync<double[]>(@"s => {
+            const el = s === 'window' ? document.scrollingElement : document.querySelector(s);
+            return [el.scrollTop, el.scrollHeight - el.clientHeight, el.clientHeight * 0.8];
+        }", selector);
+        var target = Math.Clamp(range[0] + deltaY, 0, range[1]);
+        for (var now = range[0]; Math.Abs(target - now) >= 1;)
+        {
+            await Page.Mouse.WheelAsync(0, (int)(Math.Sign(target - now) * Math.Min(Math.Abs(target - now), Math.Max(1, range[2]))));
+            var after = await WaitForWheelToSettleAsync(selector, now);
+            if (after == now) break;
+            now = after;
+        }
+    }
+
+    /// <summary>
+    /// Waits for a wheel scroll to have moved the scroller and come to rest, and returns where it came to rest: a wheel
+    /// scroll is animated, and a second wheel sent while the first is still running only moves the target of the same
+    /// animation.
+    /// </summary>
+    protected Task<double> WaitForWheelToSettleAsync(string selector, double before)
+    {
+        return Page.EvaluateAsync<double>(@"([selector, before]) => new Promise(resolve => {
+            const el = selector === 'window' ? document.scrollingElement : document.querySelector(selector);
+            let last = el.scrollTop, stable = 0, frames = 0;
+            const tick = () => {
+                frames++;
+                const now = el.scrollTop;
+                if (now === last) stable++; else { stable = 0; last = now; }
+                if ((now !== before && stable >= 5) || frames > 120) return resolve(now);
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        })", new object[] { selector, before });
     }
 
     /// <summary>
@@ -297,23 +356,30 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
-    /// Closes the browser and stops the test host the run started, once every test of it is done.
+    /// Closes the browsers and stops the test host the run started, once every test of it is done.
     /// </summary>
     internal static async Task ShutdownAsync()
     {
         await _browserLock.WaitAsync();
         try
         {
-            if (_browser is not null) await _browser.CloseAsync();
-        }
-        catch (PlaywrightException)
-        {
-            // already unusable; the driver reaps it with the Playwright instance
+            foreach (var browser in _browsers)
+            {
+                try
+                {
+                    await browser.CloseAsync();
+                }
+                catch (PlaywrightException)
+                {
+                    // already unusable; the driver reaps it with the Playwright instance
+                }
+            }
         }
         finally
         {
             _playwright?.Dispose();
-            _browser = null;
+            _browsers.Clear();
+            _idleBrowsers.Clear();
             _playwright = null;
             _browserLock.Release();
         }
@@ -328,14 +394,23 @@ public abstract class E2ETestBase
     {
         var query = paths is null ? string.Empty : $"&paths={Uri.EscapeDataString(string.Join(',', paths))}";
 
-        // A read that fails is tried again, and then fails the test, rather than being taken for "no errors": an empty
-        // answer would let the test's own errors through, and a baseline of 0 would blame it for every error the host
-        // logged before it began.
+        // A read that fails fails the test rather than being taken for "no errors": an empty answer would let the
+        // test's own errors through, and a baseline of 0 would blame it for every error the host logged before it began.
+        return await ReadFromHostAsync<ServerErrors>($"/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
+    }
+
+    /// <summary>
+    /// Reads what an endpoint of the test host answers (an <c>/api/...</c> path with its query), for what only the host
+    /// knows - what it logged, the culture data it formats with on the machine it runs on, which need not be the one the
+    /// tests run on (<c>E2E_HOST_URL</c>). A read that fails is tried again, and then fails the test.
+    /// </summary>
+    protected static async Task<T?> ReadFromHostAsync<T>(string pathAndQuery)
+    {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
+                return await _http.GetFromJsonAsync<T>($"{BaseUrl}/{pathAndQuery.TrimStart('/')}");
             }
             catch (Exception ex) when ((ex is HttpRequestException or TaskCanceledException) && attempt < 3)
             {
@@ -345,42 +420,30 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
-    /// Lets go of the browser a test ran on. A broken one is retired - the next test to start launches a fresh
-    /// browser - but closed only once no test is left on it: the tests of the other classes running beside this one
-    /// share it, and closing it under them would fail every one of them as if the component had.
+    /// Lets go of the browser a test ran on, for the next test to start to run on. A broken one is retired and closed
+    /// instead - no other test is on it - and the next test to find no browser left launches a fresh one.
     /// </summary>
     private static async Task ReleaseBrowserAsync(IBrowser browser, bool broken)
     {
-        IBrowser? retired = null;
-
         await _browserLock.WaitAsync();
         try
         {
-            if (broken && ReferenceEquals(_browser, browser)) _browser = null;
-
-            var users = _browserUsers.GetValueOrDefault(browser) - 1;
-
-            if (users > 0)
+            if (broken is false)
             {
-                _browserUsers[browser] = users;
+                _idleBrowsers.Push(browser);
+                return;
             }
-            else
-            {
-                _browserUsers.Remove(browser);
 
-                if (ReferenceEquals(_browser, browser) is false) retired = browser;
-            }
+            _browsers.Remove(browser);
         }
         finally
         {
             _browserLock.Release();
         }
 
-        if (retired is null) return;
-
         try
         {
-            await retired.CloseAsync();
+            await browser.CloseAsync();
         }
         catch (PlaywrightException)
         {

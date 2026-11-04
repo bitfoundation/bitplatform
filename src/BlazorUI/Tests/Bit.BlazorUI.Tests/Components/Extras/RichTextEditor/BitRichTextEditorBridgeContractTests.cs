@@ -23,9 +23,9 @@ public sealed class BitRichTextEditorBridgeContractTests
     private static readonly Regex ExportedFunction =
         new(@"public\s+static\s+(?:async\s+)?(?<name>\w+)\s*\(", RegexOptions.Compiled);
 
-    // editor._dotNetRef.invokeMethodAsync('OnContentChanged', ...)
+    // editor._dotNetRef.invokeMethodAsync('OnShortcut', ...)   /   RichTextEditor.tellDotNet(editor, 'OnContentChanged', ...)
     private static readonly Regex InvokedCallback =
-        new(@"invokeMethodAsync\(\s*'(?<name>\w+)'", RegexOptions.Compiled);
+        new(@"(?:invokeMethodAsync\(|tellDotNet\(\s*editor\s*,)\s*'(?<name>\w+)'", RegexOptions.Compiled);
 
     // options.plainTextPaste === true
     private static readonly Regex ReadOption =

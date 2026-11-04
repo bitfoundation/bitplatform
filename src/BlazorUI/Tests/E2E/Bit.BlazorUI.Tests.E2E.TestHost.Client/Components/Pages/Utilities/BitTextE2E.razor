@@ -62,16 +62,18 @@
 
 <E2ESection Id="wrapping" Title="Wrapping">
     <div style="width: 200px;">
-        <BitText Id="txt-breakword" BreakWord>/a/very/long/path/segment/that/never/breaks/on/its/own.txt</BitText>
-        <BitText Id="txt-nobreak">/a/very/long/path/segment/that/never/breaks/on/its/own.txt</BitText>
+        @* An identifier rather than a path: Firefox breaks a path after each of its slashes on its own. *@
+        <BitText Id="txt-breakword" BreakWord>a_very_long_identifier_that_never_breaks_on_its_own</BitText>
+        <BitText Id="txt-nobreak">a_very_long_identifier_that_never_breaks_on_its_own</BitText>
         <BitText Id="txt-forcebreak" ForceBreak>12345678901234567890123456789012345678901234567890</BitText>
         @foreach (var wrap in _wraps)
         {
             <BitText Id="@($"txt-wrap-{wrap}")" Wrap="wrap">A heading whose lines are balanced against each other</BitText>
         }
         <BitText Id="txt-hyphenate" Hyphenate Lang="en">An incomprehensibly complicated internationalization responsibility.</BitText>
-        <BitText Id="txt-pws" PreserveWhitespace>@("Line one\n    indented line two")</BitText>
-        <BitText Id="txt-no-pws">@("Line one\n    indented line two")</BitText>
+        @* Short enough to stay on one line in any font once its line break is collapsed. *@
+        <BitText Id="txt-pws" PreserveWhitespace>@("One\n    indented")</BitText>
+        <BitText Id="txt-no-pws">@("One\n    indented")</BitText>
     </div>
 </E2ESection>
 

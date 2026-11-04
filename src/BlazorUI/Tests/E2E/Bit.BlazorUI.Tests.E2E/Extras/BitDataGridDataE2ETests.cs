@@ -267,10 +267,15 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Table(id)).ToHaveAttributeAsync("aria-rowcount", "2002");
         Assert.IsTrue(await DataRows(id).CountAsync() < 100);
 
-        await Viewport(id).EvaluateAsync("el => el.scrollTop = el.scrollHeight * 0.75");
-
+        // Aimed again on every try: the list measures its rows again as each window of them lands, which changes how
+        // tall it is - on a loaded host after this scroll as well as before it - and so which rows three quarters of
+        // the way down are, which a scroll aimed once at the old height would no longer be looking at.
         int[] first = [];
-        await UntilAsync(async () => (first = await FirstRowInViewAsync(id))[0] is > 1300 and < 1700, "The rows three quarters down were not fetched into view.");
+        await UntilAsync(async () =>
+        {
+            await Viewport(id).EvaluateAsync("el => { const top = el.scrollHeight * 0.75; if (Math.abs(el.scrollTop - top) > 1) el.scrollTop = top; }");
+            return (first = await FirstRowInViewAsync(id))[0] is > 1300 and < 1700;
+        }, "The rows three quarters down were not fetched into view.");
         Assert.AreEqual(first[0] + 1, first[1], "A row's aria-rowindex is not its place in the whole set.");
         Assert.IsTrue(int.Parse(await Text("virtual-max-skip").InnerTextAsync()) > 1000, "No window of the scrolled-to rows was asked for.");
         Assert.IsTrue(await DataRows(id).CountAsync() < 100, "The scrolled-past rows piled up in the DOM.");

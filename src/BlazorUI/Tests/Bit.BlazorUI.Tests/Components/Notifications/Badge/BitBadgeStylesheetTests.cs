@@ -86,9 +86,21 @@ public partial class BitBadgeStylesheetTests
         // A dot is a circle of its own size whatever the public height, padding and radius say, read first by the one
         // rule painting the badge rather than set by a heavier rule, so a Classes.Badge class can still re-size it.
         StringAssert.Contains(stylesheet, "height: var(--bit-bdg-dot-size, var(--bit-bdg-height, var(--bit-Badge-height, ");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-bdg-dot-padding, var(--bit-bdg-padding, var(--bit-Badge-padding, ");
+        StringAssert.Contains(stylesheet, "padding: var(--bit-bdg-dot-padding, var(--bit-bdg-one-padding, var(--bit-bdg-padding, var(--bit-Badge-padding, ");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-bdg-dot-radius, var(--bit-bdg-radius, var(--bit-Badge-radius, ");
         Assert.IsFalse(stylesheet.Contains("\n.bit-bdg-dot .bit-bdg-ctn {"), "The dot is set by a heavier rule of its own.");
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldDropTheSidePaddingOfASingleCharacterTheWayTheDotDoes()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A single character takes no side padding, so the minimum width - the height - is its width in any font. It is
+        // read next after the dot's by the one rule painting the badge, like the dot's, rather than set by a rule of its own.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-one {"), "--bit-bdg-one-padding: 0;");
+        StringAssert.Contains(stylesheet, "min-width: var(--bit-bdg-dot-size, var(--bit-bdg-height, var(--bit-Badge-height, ");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-bdg-one .bit-bdg-ctn {"), "The single character is set by a heavier rule of its own.");
     }
 
     [TestMethod,

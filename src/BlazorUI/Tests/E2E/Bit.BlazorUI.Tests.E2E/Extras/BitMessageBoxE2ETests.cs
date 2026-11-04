@@ -43,6 +43,10 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Page.Locator("#msb-pings")).ToHaveTextAsync((pings + 1).ToString(CultureInfo.InvariantCulture));
     }
 
+    // The box takes the focus from its markup as it shows, while the surface around it starts listening for Escape a
+    // round trip later, marking its root as it does: an Escape pressed in between is heard by nothing.
+    private Task EscapeWatchedAsync() => Page.WaitForFunctionAsync("() => { for (let e = document.activeElement; e; e = e.parentElement) if (e.__bitEscapeRoot) return true; return false; }");
+
     // ---------- basic ----------
 
     [TestMethod]
@@ -663,6 +667,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
         await Page.Locator("#btn-open-modal").ClickAsync();
         await Expect(Actions("modal-msb").First).ToBeFocusedAsync();
+        await EscapeWatchedAsync();
         await Page.Keyboard.PressAsync("Escape");
         await Expect(Page.Locator("#modal-open")).ToHaveTextAsync("False");
     }
@@ -723,7 +728,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
         switch (how)
         {
-            case "escape": await Page.Keyboard.PressAsync("Escape"); break;
+            case "escape": await EscapeWatchedAsync(); await Page.Keyboard.PressAsync("Escape"); break;
             case "overlay": await Page.Locator(".bit-mdl > .bit-mdl-ovl").ClickAsync(new() { Position = new() { X = 4, Y = 4 } }); break;
             case "close": await DialogBox.Locator(".bit-msb-hdr > .bit-btn").ClickAsync(); break;
             case "cancel": await DialogActions.Last.ClickAsync(); break;
@@ -953,6 +958,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
         await Page.Locator("#btn-confirm").ClickAsync();
         await Expect(DialogActions.First).ToBeFocusedAsync();
+        await EscapeWatchedAsync();
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Page.Locator("#confirm-result")).ToHaveTextAsync("False");
@@ -1031,7 +1037,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         switch (how)
         {
             case "cancel": await DialogActions.Last.ClickAsync(); break;
-            case "escape": await Page.Keyboard.PressAsync("Escape"); break;
+            case "escape": await EscapeWatchedAsync(); await Page.Keyboard.PressAsync("Escape"); break;
             case "close": await DialogBox.Locator(".bit-msb-hdr > .bit-btn").ClickAsync(); break;
         }
 
@@ -1115,6 +1121,10 @@ public class BitMessageBoxE2ETests : E2ETestBase
         var area = Box("svc-feedback").Locator(".bit-msb-pfl textarea");
         await Expect(area).ToBeFocusedAsync();
         await Expect(area).ToHaveAttributeAsync("rows", "3");
+        // The field selects what it holds once it has the focus, through a script its first render wires a few round
+        // trips after the focus is given; typed before that, "First" is what it would select, for the Enter below to
+        // replace. So the typing waits for it.
+        await Page.WaitForFunctionAsync("area => !!BitBlazorUI.TextField._abortControllers[area.closest('.bit-tfl').id]?.selectOnFocus", await area.ElementHandleAsync());
         // Each part is let round trip before the next: on a loaded circuit the render of a keystroke can come back after
         // the keystrokes typed since and put the older value back over them.
         await Page.Keyboard.TypeAsync("First");
@@ -1156,6 +1166,8 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
         await Page.Locator("#btn-prompt-throws").ClickAsync();
         await Expect(Box("svc-throws")).ToBeVisibleAsync();
+        // The Enter is the field's once the focus is on it; pressed before, it goes to the button that opened the box.
+        await Expect(Box("svc-throws").Locator(".bit-msb-pfl input")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Enter");
 
         await Expect(Page.Locator("#prompt-result")).ToHaveTextAsync("threw");

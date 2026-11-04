@@ -232,9 +232,13 @@ public class BitTextShimmerE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         // An h3 of a 2em band: the stop sits two font sizes off the middle, whatever the length of the text.
+        // Compared as a number: every engine writes the lengths it serializes to a precision of its own (37.438px for one
+        // font size in one, 37.4375px in another).
         var fontSize = ParsePx(await ComputedStyleAsync("#tsh-spread-length", "font-size"));
         var image = await ComputedStyleAsync("#tsh-spread-length", "background-image");
-        StringAssert.Contains(image, $"50% - {(fontSize * 2).ToString("0.###", CultureInfo.InvariantCulture)}px");
+        var stop = Regex.Match(image, @"50% - ([\d.]+)px");
+        Assert.IsTrue(stop.Success, $"The band has no stop off the middle: {image}");
+        Assert.AreEqual(fontSize * 2, double.Parse(stop.Groups[1].Value, CultureInfo.InvariantCulture), 0.01, image);
     }
 
     [TestMethod]
@@ -390,6 +394,9 @@ public class BitTextShimmerE2ETests : E2ETestBase
         await Expect(shimmer).ToHaveCSSAsync("animation-play-state", "paused");
         await Page.WaitForFunctionAsync("() => document.getElementById('tsh-paused').getAnimations()[0].playState === 'paused'");
 
+        // Read once the paused frame has been drawn: WebKit's computed style of the animated position can still be the
+        // one of the frame before the pause right after it.
+        await NextFramesAsync();
         var heldAt = (await AnimationAsync("#tsh-paused"))!.Value.GetProperty("current").GetDouble();
         var heldPosition = await ComputedStyleAsync("#tsh-paused", "background-position-x");
         await NextFramesAsync();

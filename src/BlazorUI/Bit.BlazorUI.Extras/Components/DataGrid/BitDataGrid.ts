@@ -22,7 +22,7 @@
                 // Only re-check once the load settles if the .NET callback reports more data was
                 // appended and remains; otherwise stop, so end-of-data (a no-op load) doesn't spin
                 // a load()->invoke->check() loop forever.
-                dotNetRef.invokeMethodAsync<boolean>('OnInfiniteScrollNearEndAsync')
+                Utils.invokeDotNet<boolean>(dotNetRef, 'OnInfiniteScrollNearEndAsync')
                     .then(
                         (more) => { pending = false; if (more) check(); },
                         () => { pending = false; }
@@ -79,7 +79,7 @@
                 if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
                 lastLeft = left;
                 lastWidth = width;
-                dotNetRef.invokeMethodAsync('OnHorizontalScrollAsync', left, width).catch(() => { });
+                Utils.invokeDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width).catch(() => { });
             };
             const onScroll = () => {
                 if (!ticking) {
@@ -174,9 +174,9 @@
                 if (to != null && to !== from) {
                     // Swallow rejections: the circuit may be tearing down mid-drop.
                     if (kind === 'row') {
-                        dotNetRef.invokeMethodAsync('OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
+                        Utils.invokeDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
                     } else {
-                        dotNetRef.invokeMethodAsync('OnPointerColumnDropAsync', from, to).catch(() => { });
+                        Utils.invokeDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to).catch(() => { });
                     }
                 }
             };
@@ -351,7 +351,9 @@
             let away: { cell: HTMLElement, version: number } | null = null;
             // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
             let pressed: Node | null = null;
-            const commit = (version: number) => dotNetRef.invokeMethodAsync('OnCellEditBlurAsync', version);
+            // A commit nobody waits for: one that fails is an edit whose grid (or whose page) went away under it, which
+            // the focus moving on cannot do anything about.
+            const commit = (version: number) => { Utils.invokeDotNet(dotNetRef, 'OnCellEditBlurAsync', version).catch(() => { }); };
             const onFocusOut = (e: FocusEvent) => {
                 const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
                 if (!cell || cell.closest('.bit-dtg') !== root) return;
@@ -748,7 +750,7 @@
     function tellNestedTarget(watch: NestedTargetWatch, field: 'nested' | 'onControl', method: string, value: boolean) {
         if (watch[field] === value) return;
         watch[field] = value;
-        watch.dotNetRef.invokeMethodAsync(method, value).catch(() => { watch[field] = undefined; });
+        Utils.invokeDotNet(watch.dotNetRef, method, value).catch(() => { watch[field] = undefined; });
     }
 
     // A click on a control in a cell - a button, a link or an input of a template, the grid's own checkbox and

@@ -29,7 +29,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     private bool _hasFocus;
-    private bool _syncInputValue;
     private string _inputText = string.Empty;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
@@ -1012,10 +1011,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                 _inputText = _inputText[..MaxLength];
             }
 
-            // The element already holds whatever the user typed, and the renderer only writes an
-            // attribute it sees changing, so the new text is pushed into it by hand.
-            _syncInputValue = true;
-
             StateHasChanged();
 
             await RaiseOnInput(immediate: true);
@@ -1210,22 +1205,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             {
                 await InputElement.FocusAsync();
             }
-        }
-
-        // The input is rendered with value="@_inputText", so Blazor only writes it to the DOM when it
-        // differs from what it rendered the previous time. A keystroke the component refused to keep -
-        // a character beyond the MaxLength, or the part of a paste that was turned into tags - leaves
-        // _inputText unchanged while the browser has already put the typed text into the element, and
-        // that divergence is what this pushes back.
-        if (_syncInputValue)
-        {
-            _syncInputValue = false;
-
-            try
-            {
-                await _js.BitUtilsSetProperty(InputElement, "value", _inputText);
-            }
-            catch { }
         }
 
         // The three requests are exclusive by construction (each of the members that arms one clears the
@@ -2250,11 +2229,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await OnFocusOut.InvokeAsync(e);
     }
 
-    private async Task HandleOnInput(ChangeEventArgs e)
+    private async Task HandleOnInput(string? value)
     {
         if (Disabled || ReadOnly) return;
 
-        var text = e.Value?.ToString() ?? string.Empty;
+        var text = value ?? string.Empty;
 
         // Typing is the answer to whatever was refused a moment ago, so the mark of that refusal goes
         // with the first keystroke rather than waiting for the next Enter - except for the text of a refusal
@@ -2292,8 +2271,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             {
                 _inputText = pieces[0];
             }
-
-            _syncInputValue = true;
         }
         else
         {
@@ -2303,7 +2280,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (MaxLength > 0 && _inputText.Length > MaxLength)
         {
             _inputText = _inputText[..MaxLength];
-            _syncInputValue = true;
         }
 
         await RaiseOnInput();
@@ -2363,7 +2339,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             // list of tags away over a half typed word is not an undo but a loss. Only a plain one: an Escape
             // with a modifier is never claimed from the surface around the field (see EscapeClaim).
             _inputText = string.Empty;
-            _syncInputValue = true;
 
             ClearInvalid();
 
@@ -3257,7 +3232,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (removed is false || BackspaceEditsLastTag is false) return;
 
         _inputText = last;
-        _syncInputValue = true;
 
         await RaiseOnInput(immediate: true);
     }
@@ -3272,7 +3246,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (_inputText.Length == 0) return;
 
         _inputText = string.Empty;
-        _syncInputValue = true;
 
         await RaiseOnInput(immediate: true);
     }

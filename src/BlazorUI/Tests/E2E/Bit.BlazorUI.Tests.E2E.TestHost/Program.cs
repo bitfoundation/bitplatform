@@ -1,6 +1,13 @@
 ﻿using Bit.BlazorUI;
 using Bit.BlazorUI.Tests.E2E.TestHost;
 using Bit.BlazorUI.Tests.E2E.TestHost.AI;
+using System.Globalization;
+
+// A page that sets no culture formats with the current one (a price of "C0", a date), and the tests read it the way
+// en-US writes it: the culture the browser side runs in, the browsers Playwright starts being en-US. The server would
+// take the machine's instead, which on a Linux runner (LANG=C.UTF-8) is the invariant culture - "¤200" for "$200" - so
+// it is pinned to the same.
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en-US");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +29,14 @@ builder.Services.AddScoped(_ => new HttpClient());
 // Every page can run on the server or in the browser: App.razor picks the mode per request from the e2e-render-mode
 // cookie the tests set on their browser context (E2E_RENDER_MODE).
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
+    .AddInteractiveServerComponents(options =>
+    {
+        // A test closes its browser context without unloading the page, so the circuit only sees its connection drop
+        // and would be kept for a reconnect that never comes - by default up to 100 of them for 3 minutes, every one
+        // with its components, timers and streams still running on a host the next tests share, and disposed minutes
+        // later, when what its disposal logs lands on whichever test is on the same page by then. None is kept.
+        options.DisconnectedCircuitMaxRetained = 0;
+    })
     .AddInteractiveWebAssemblyComponents();
 
 var app = builder.Build();
@@ -91,6 +105,16 @@ app.MapDelete("/api/server-errors", () =>
 {
     ServerErrorLog.Clear();
     return Results.Ok();
+});
+
+// The shortest day names a page on the server writes (?culture=en-US&first=0&count=7, first a DayOfWeek number), read
+// off this host's culture data: .NET gives the narrow ones of its ICU data on Windows ("S", "M") and the short ones on
+// Linux ("Su", "Mo."), and the tests need not run on the machine the host does (E2E_HOST_URL).
+app.MapGet("/api/day-names", (string culture, int first, int? count) =>
+{
+    var format = CultureInfo.GetCultureInfo(culture).DateTimeFormat;
+
+    return Results.Ok(Enumerable.Range(0, count ?? 1).Select(i => format.GetShortestDayName((DayOfWeek)((first + i) % 7))).ToArray());
 });
 
 app.Run();

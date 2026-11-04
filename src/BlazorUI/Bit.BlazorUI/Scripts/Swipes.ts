@@ -43,20 +43,32 @@
             // is registered - a panel given a new size, a callout whose content grew - would otherwise be
             // weighed against a box it no longer has.
             let bcr = element.getBoundingClientRect();
-            const isTouchDevice = Utils.isTouchDevice();
+            // Whether the gesture under way is a mouse's or a pen's rather than a finger's.
+            let isPointerGesture = false;
+            // The events the gesture under way is followed through: 'touch' for the touch events, or the pointerType
+            // of the pointer events. A gesture is only ever followed through one of the two, since a pen raises both
+            // on most touch screens and the two read different coordinates (see getX).
+            let gestureSource: string | null = null;
 
             // The physical edge the surface is pinned to: the logical pair is read against the direction it is
             // laid out in, the physical pair stays where it is named in both.
             const onLeftEdge = () => position === 'left' || (!rtl && position === 'start') || (rtl && position === 'end');
             const onRightEdge = () => position === 'right' || (!rtl && position === 'end') || (rtl && position === 'start');
 
-            const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
-            const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
+            // A finger is followed on the screen, where the viewport a mobile browser's own bars move under it does
+            // not drag the gesture along. A mouse or a pen is followed in the viewport, which nothing moves under
+            // one - and whose coordinates are always there to read, where WebKit gives the mouse events it
+            // synthesizes no screen position (0, 0) at all.
+            const isTouch = (e: TouchEvent | PointerEvent): e is TouchEvent => 'touches' in e;
+            const getX = (e: TouchEvent | PointerEvent) => isTouch(e) ? e.touches[0].screenX : e.clientX;
+            const getY = (e: TouchEvent | PointerEvent) => isTouch(e) ? e.touches[0].screenY : e.clientY;
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (belongsElsewhere(e.target)) return;
 
                 rtl = isRtl ?? Utils.isRtl(element);
+                isPointerGesture = isTouch(e) === false;
+                gestureSource = isTouch(e) ? 'touch' : e.pointerType;
 
                 startX = getX(e);
                 startY = getY(e);
@@ -76,7 +88,7 @@
                 // A mouse dragged across text is selecting it, which is what a mouse drag inside a surface
                 // nearly always means: the drag is given back to the selection before it can throw the
                 // surface away with the text the user was about to copy.
-                if (!isTouchDevice && isSelectingText()) return abort();
+                if (isPointerGesture && isSelectingText()) return abort();
 
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
@@ -172,7 +184,11 @@
                         if (diffX > 0 && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
                     }
 
-                    e.preventDefault();
+                    // Only a finger's move has a default the swipe takes over - the scroll it would make. A mouse's is
+                    // the selection its drag extends, which the swipe gives the drag back to (see isSelectingText)
+                    // rather than prevents: WebKit stops extending a selection under a move that is prevented, and
+                    // the swipe would then throw the surface away with the text being selected.
+                    if (isTouch(e)) e.preventDefault();
                     e.stopPropagation();
                 }
             };
@@ -183,6 +199,7 @@
                 if (startX === -1 || startY === -1) return;
 
                 startX = startY = -1;
+                gestureSource = null;
                 element.style.transitionDuration = '';
                 try {
                     if (onLeftEdge() && diffX < 0) {
@@ -238,6 +255,7 @@
             // the consumer hears the gesture end where it began.
             const abort = () => {
                 startX = startY = -1;
+                gestureSource = null;
                 diffX = diffY = 0;
                 orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
@@ -265,50 +283,76 @@
                 return element.contains(selection.anchorNode) && selection.toString().length > 0;
             };
 
-            if (isTouchDevice) {
-                if (scrollContainer) {
-                    scrollContainer.addEventListener('touchstart', e => {
-                        touchOnScrollContainer = true;
+            // A finger is heard through the touch events and a mouse or a pen through the pointer events, both of them
+            // on every device: a touch screen laptop, a tablet with a mouse, a phone with a stylus each have the two,
+            // and listening for only the one the device was guessed to have left the other dead there. A finger
+            // raises pointer events as well, which are left to the touch events it also raises.
+            const onScrollContainerTouchStart = (e: TouchEvent) => {
+                touchOnScrollContainer = true;
 
-                        // This runs before the surface's own touchstart, so the direction is read here as well.
-                        rtl = isRtl ?? Utils.isRtl(element);
+                // This runs before the surface's own touchstart, so the direction is read here as well.
+                rtl = isRtl ?? Utils.isRtl(element);
 
-                        // The two flags are the start and the end of the scroll (scrollLeft is 0 at the start in
-                        // both directions), while the gesture that dismisses the surface runs toward the physical
-                        // edge it is pinned to. A drag toward the right asks the content to scroll to its left,
-                        // which is the start left to right and the end right to left, so it is the surface's to
-                        // take once the content has no further to go that way; a drag toward the left mirrors it.
-                        const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
+                // The two flags are the start and the end of the scroll (scrollLeft is 0 at the start in
+                // both directions), while the gesture that dismisses the surface runs toward the physical
+                // edge it is pinned to. A drag toward the right asks the content to scroll to its left,
+                // which is the start left to right and the end right to left, so it is the surface's to
+                // take once the content has no further to go that way; a drag toward the left mirrors it.
+                const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (onRightEdge() && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
-                        if (onLeftEdge() && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
+                if (onRightEdge() && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
+                if (onLeftEdge() && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
 
-                        e.stopPropagation();
-                    });
+                e.stopPropagation();
+            };
+            // A pen raises both on most touch screens - its pointer events first, then the touch events of the same
+            // contact - so its touches take over the gesture its pointerdown has just started, read again in the
+            // coordinates the touch events are followed in, and its pointer events are left alone from there on: its
+            // pointer events stop the moment the browser pans under it, where its touch events go on. A pen that raises
+            // no touch events (Windows) is followed through its pointer events from start to end.
+            const onTouchStart = (e: TouchEvent) => {
+                if (gestureSource === 'pen' && startX !== -1 && startY !== -1) {
+                    gestureSource = 'touch';
+                    isPointerGesture = false;
+                    startX = getX(e);
+                    startY = getY(e);
+                    return;
                 }
-                element.addEventListener('touchstart', onStart);
-                element.addEventListener('touchmove', onMove);
-                element.addEventListener('touchend', onEnd);
-            } else {
-                element.addEventListener('pointerdown', onStart);
-                element.addEventListener('pointermove', onMove);
-                element.addEventListener('pointerup', onEnd);
-                element.addEventListener('pointerleave', onEnd, false);
-            }
+
+                void onStart(e);
+            };
+            const ownsTouches = () => gestureSource === null || gestureSource === 'touch';
+            const onTouchMove = (e: TouchEvent) => { if (ownsTouches()) void onMove(e); };
+            const onTouchEnd = (e: TouchEvent) => { if (ownsTouches()) void onEnd(e); };
+            const ownsPointer = (e: PointerEvent) => e.pointerType !== 'touch' && e.pointerType === gestureSource;
+            const onPointerStart = (e: PointerEvent) => {
+                if (e.pointerType === 'touch' || (gestureSource === 'touch' && startX !== -1)) return;
+
+                void onStart(e);
+            };
+            const onPointerMove = (e: PointerEvent) => { if (ownsPointer(e)) void onMove(e); };
+            const onPointerEnd = (e: PointerEvent) => { if (ownsPointer(e)) void onEnd(e); };
+
+            scrollContainer?.addEventListener('touchstart', onScrollContainerTouchStart);
+            element.addEventListener('touchstart', onTouchStart);
+            element.addEventListener('touchmove', onTouchMove);
+            element.addEventListener('touchend', onTouchEnd);
+            element.addEventListener('pointerdown', onPointerStart);
+            element.addEventListener('pointermove', onPointerMove);
+            element.addEventListener('pointerup', onPointerEnd);
+            element.addEventListener('pointerleave', onPointerEnd, false);
 
             const swipe = new BitSwipe(id, element, trigger, dotnetObj);
             swipe.setDisposer(() => {
                 disposed = true;
-                if (isTouchDevice) {
-                    element.removeEventListener('touchstart', onStart);
-                    element.removeEventListener('touchmove', onMove);
-                    element.removeEventListener('touchend', onEnd);
-                } else {
-                    element.removeEventListener('pointerdown', onStart);
-                    element.removeEventListener('pointermove', onMove);
-                    element.removeEventListener('pointerup', onEnd);
-                    element.removeEventListener('pointerleave', onEnd, false);
-                }
+                scrollContainer?.removeEventListener('touchstart', onScrollContainerTouchStart);
+                element.removeEventListener('touchstart', onTouchStart);
+                element.removeEventListener('touchmove', onTouchMove);
+                element.removeEventListener('touchend', onTouchEnd);
+                element.removeEventListener('pointerdown', onPointerStart);
+                element.removeEventListener('pointermove', onPointerMove);
+                element.removeEventListener('pointerup', onPointerEnd);
+                element.removeEventListener('pointerleave', onPointerEnd, false);
             });
             Swipes._swipes.push(swipe);
 

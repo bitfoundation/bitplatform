@@ -284,7 +284,11 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await note.FillAsync("mine");
         var anchorTop = await list.Locator(".msg[data-id='35']").EvaluateAsync<double>("e => e.getBoundingClientRect().top");
 
-        await list.EvaluateAsync("e => e.scrollTop = 0");
+        // Scrolled to the top again until the older page is in: Firefox can leave the list a few pixels short of its top
+        // after the scroll (16 of them, with the note just typed still focused in it), which keeps the sentinel there
+        // out of view - a reader would simply scroll up again.
+        await Page.WaitForFunctionAsync("e => { if (e.querySelectorAll('.msg').length >= 20) return true; if (e.scrollTop > 0) e.scrollTop = 0; return false; }",
+                                        await list.ElementHandleAsync(), new() { PollingInterval = 100 });
         await Expect(ItemsOf("isc-reversed", "msg")).ToHaveCountAsync(20);
         await Expect(ItemsOf("isc-reversed", "msg").First).ToContainTextAsync("Message 20");
         await Expect(list.Locator(".msg[data-id='35'] .note")).ToHaveValueAsync("mine");

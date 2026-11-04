@@ -145,7 +145,7 @@ public class BitDatePickerTimeE2ETests : BitDatePickersE2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Input("dp-12h")).ToHaveValueAsync("6/12/2024 3:30 PM");
+        await Expect(Input("dp-12h")).ToHaveValueAsync(TwelveHour("6/12/2024 3:30 PM"));
 
         var pid = await OpenPickerAsync("dp-12h");
         var am = Callout(pid).Locator(".bit-dtp-bam");
@@ -166,7 +166,7 @@ public class BitDatePickerTimeE2ETests : BitDatePickersE2ETestBase
         await Expect(Page.Locator("#twelve-value")).ToHaveTextAsync("2024-06-12 03:30");
         await Expect(am).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(pm).ToHaveAttributeAsync("aria-pressed", "false");
-        await Expect(Input("dp-12h")).ToHaveValueAsync("6/12/2024 3:30 AM");
+        await Expect(Input("dp-12h")).ToHaveValueAsync(TwelveHour("6/12/2024 3:30 AM"));
 
         await pm.ClickAsync();
         await Expect(Page.Locator("#twelve-value")).ToHaveTextAsync("2024-06-12 15:30");

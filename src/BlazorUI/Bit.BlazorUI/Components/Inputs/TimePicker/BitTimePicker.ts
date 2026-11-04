@@ -63,13 +63,35 @@
             // instead of being appended to it. It is selected here, as the focus lands, rather than from .NET a round
             // trip later: by then the focus may have moved on - a quick Tab, the advance of AutoAdvance - and select()
             // pulls it back onto the input in Chromium and WebKit.
+            // A press that brings the focus in is let go of afterwards, and WebKit takes that mouseup as placing the
+            // caret where it landed - undoing the selection made as the focus arrived, so the digit typed next goes
+            // in beside the old ones ("1|4" and a 7 is 174). Only that mouseup is swallowed: a press on an input that
+            // already has the focus still places the caret where it lands.
+            let justFocused: HTMLInputElement | null = null;
+
             callout.addEventListener('focusin', e => {
                 const target = e.target as HTMLInputElement | null;
                 if (target === null || target.classList.contains('bit-tpc-tin') === false) return;
 
+                justFocused = target;
+
                 try {
                     target.select();
                 } catch { } // an input that takes no selection keeps what it has
+            }, { signal: bitController.controller.signal });
+
+            callout.addEventListener('mousedown', e => {
+                if (e.target === justFocused && document.activeElement === justFocused) {
+                    justFocused = null;
+                }
+            }, { signal: bitController.controller.signal });
+
+            callout.addEventListener('mouseup', e => {
+                if (justFocused !== null && e.target === justFocused) {
+                    e.preventDefault();
+                }
+
+                justFocused = null;
             }, { signal: bitController.controller.signal });
 
             // A whole time pasted into one of the time inputs - "14:30", "2:30 PM" - is a time rather than a

@@ -86,7 +86,7 @@
                    @onclick:stopPropagation="true"
                    @onclick:preventDefault="@(Disabled)"
                    style="@Styles?.Badge"
-                   class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
+                   class="bit-bdg-ctn bit-bdg-clk @_bumpClass @_singleCharClass @Classes?.Badge"
                    href="@(Disabled ? null : Href)"
                    role="@(Disabled ? "link" : null)"
                    rel="@_rel"
@@ -108,7 +108,7 @@
                 <button @onclick="HandleOnClick"
                         @onclick:stopPropagation="true"
                         style="@Styles?.Badge"
-                        class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
+                        class="bit-bdg-ctn bit-bdg-clk @_bumpClass @_singleCharClass @Classes?.Badge"
                         type="button"
                         title="@_titleText"
                         tabindex="@TabIndex"
@@ -123,7 +123,7 @@
             }
             else
             {
-                <span style="@Styles?.Badge" class="bit-bdg-ctn @_bumpClass @Classes?.Badge" title="@_titleText">
+                <span style="@Styles?.Badge" class="bit-bdg-ctn @_bumpClass @_singleCharClass @Classes?.Badge" title="@_titleText">
                     @badgeContent
                 </span>
             }

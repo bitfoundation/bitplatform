@@ -243,11 +243,15 @@ public class BitOverlayE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-open-dismiss");
         await Expect(Page.Locator("#ovl-dismiss")).ToHaveClassAsync(HasClass("bit-ovl-opn"));
 
+        // Pressed on the first line and dragged forward through the text, then out past its end onto the layer. Not
+        // pressed halfway down the box, which can be the gap between two wrapped lines, nor dragged back out over its
+        // start, where an engine may extend the selection to the very point it was pressed at and leave it empty.
         var text = (await Page.Locator("#dismiss-text").BoundingBoxAsync())!;
-        await Page.Mouse.MoveAsync(text.X + 5, text.Y + text.Height / 2);
+        var viewport = Page.ViewportSize!;
+        await Page.Mouse.MoveAsync(text.X + 5, text.Y + 5);
         await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(text.X + text.Width / 2, text.Y + text.Height / 2, new() { Steps = 5 });
-        await Page.Mouse.MoveAsync(10, 10, new() { Steps = 5 });
+        await Page.Mouse.MoveAsync(text.X + text.Width / 2, text.Y + text.Height - 5, new() { Steps = 5 });
+        await Page.Mouse.MoveAsync(viewport.Width - 10, viewport.Height - 10, new() { Steps = 5 });
         await Page.Mouse.UpAsync();
 
         // The click the browser raised on the layer did not dismiss.

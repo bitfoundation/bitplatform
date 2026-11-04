@@ -717,37 +717,11 @@ public class BitFooterE2ETests : E2ETestBase
         var box = Page.Locator(selector);
         await box.ScrollIntoViewIfNeededAsync();
         var rect = await box.BoundingBoxAsync();
-        var before = await box.EvaluateAsync<double>("el => el.scrollTop");
         await Page.Mouse.MoveAsync(rect!.X + rect.Width / 2, rect.Y + 20);
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await WaitForScrollToSettleAsync(selector, before);
+        await WheelInPagesAsync(selector, deltaY);
     }
 
-    private async Task WheelWindowAsync(int deltaY)
-    {
-        var before = await Page.EvaluateAsync<double>("() => document.scrollingElement.scrollTop");
-        await Page.Mouse.WheelAsync(0, deltaY);
-        await WaitForScrollToSettleAsync("window", before);
-    }
-
-    // Waits for a wheel scroll to have moved the element and come to rest: a wheel scroll is animated, and a second
-    // wheel sent while the first is still running only moves the target of the same animation.
-    private Task WaitForScrollToSettleAsync(string selector, double before)
-    {
-        return Page.EvaluateAsync(@"([selector, before]) => new Promise(resolve => {
-            const el = selector === 'window' ? document.scrollingElement : document.querySelector(selector);
-            let last = el.scrollTop, stable = 0, frames = 0;
-            const tick = () => {
-                frames++;
-                const now = el.scrollTop;
-                if (now === last) stable++; else { stable = 0; last = now; }
-                if ((now !== before && stable >= 5) || frames > 120) return resolve(now);
-                requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        })", new object[] { selector, before });
-    }
-
+    private Task WheelWindowAsync(int deltaY) => WheelInPagesAsync("window", deltaY);
 
     private async Task SyncAsync()
     {

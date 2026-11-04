@@ -255,8 +255,8 @@ public class BitTextE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#txt-breakword")).ToHaveCSSAsync("overflow-wrap", "anywhere");
-        Assert.IsFalse(await OverflowsAsync("#txt-breakword"), "BreakWord breaks the path.");
-        Assert.IsTrue(await OverflowsAsync("#txt-nobreak"), "The same path overflows without it.");
+        Assert.IsFalse(await OverflowsAsync("#txt-breakword"), "BreakWord breaks the identifier.");
+        Assert.IsTrue(await OverflowsAsync("#txt-nobreak"), "The same identifier overflows without it.");
 
         await Expect(Page.Locator("#txt-forcebreak")).ToHaveCSSAsync("word-break", "break-all");
         Assert.IsFalse(await OverflowsAsync("#txt-forcebreak"));

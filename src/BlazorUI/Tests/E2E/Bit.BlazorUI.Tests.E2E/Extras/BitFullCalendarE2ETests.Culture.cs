@@ -70,6 +70,8 @@ public partial class BitFullCalendarE2ETests
         await cal.Locator(".bit-bfc-view-tab.active").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await Expect(cal.Locator(".bit-bfc-view-tab.active")).ToHaveTextAsync("سال");
+        // The next arrow steps from the tab the focus is on, which follows the active one a moment after it changes.
+        await Expect(cal.Locator(".bit-bfc-view-tab.active")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         await Expect(cal.Locator(".bit-bfc-view-tab.active")).ToHaveTextAsync("ماه");
     }

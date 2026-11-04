@@ -469,6 +469,9 @@ public partial class BitColorPicker : BitInputBase<string?>
 
     protected override async Task OnInitializedAsync()
     {
+        _onHueSliderPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HoldHueSlider);
+        _onAlphaSliderPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HoldAlphaSlider);
+
         // The cascade is read here as well as in OnParametersSet, since DefaultInputsMode is only acted on
         // while the picker initializes and a cascaded one applied there alone would arrive one lifecycle
         // step after the mode it is the default for has already been settled.
@@ -789,6 +792,90 @@ public partial class BitColorPicker : BitInputBase<string?>
     private string _AlphaValueText => string.Format(CultureInfo.InvariantCulture, _Texts.AlphaValueFormat, _AlphaPercentValue);
 
     private string _AlphaValue => _color.A.ToString(CultureInfo.InvariantCulture);
+
+    // The value the hue slider and the one the alpha slider were rendered with when a pointer pressed it, each held for
+    // as long as its own press lasts. WebKit fires no change event at the release of a range input whose value was
+    // written after the last move of the drag - which is where the render of an earlier step lands, a round trip behind
+    // the pointer - so OnChangeEnd would be lost there; a slider under a pointer is therefore not written to until its
+    // press is over. The thumb it draws is its own, so it follows the pointer in the meantime all the same. The two are
+    // held apart, so the release of one - and the render it causes - never writes into the other while it is pressed.
+    // A press released off the slider can reach it with neither a pointerup nor a change, so the color the presses
+    // themselves last left the picker on is kept with the values: once the color has moved by anything else - a Value
+    // pushed in, a hex typed, the saturation area dragged - the presses are over, and the holds are let go of (see
+    // DropStaleSliderHolds).
+    private string? _heldHueValue;
+    private string? _heldAlphaValue;
+    private ((double Hue, double Saturation, double Value) Hsv, double A) _sliderPressColor;
+
+    // Bound to a receiver that is not the component, so the press costs no render: nothing changes until it moves.
+    private EventCallback<PointerEventArgs> _onHueSliderPointerDown;
+    private EventCallback<PointerEventArgs> _onAlphaSliderPointerDown;
+
+    private string _HueSliderValue
+    {
+        get
+        {
+            DropStaleSliderHolds();
+
+            return _heldHueValue ?? _HueValue;
+        }
+    }
+
+    private string _AlphaSliderValue
+    {
+        get
+        {
+            DropStaleSliderHolds();
+
+            return _heldAlphaValue ?? _AlphaValue;
+        }
+    }
+
+    private void DropStaleSliderHolds()
+    {
+        if (_heldHueValue is null && _heldAlphaValue is null) return;
+
+        if (_sliderPressColor.Hsv != _color.Hsv || _sliderPressColor.A != _color.A)
+        {
+            _heldHueValue = _heldAlphaValue = null;
+        }
+    }
+
+    private void HoldHueSlider()
+    {
+        DropStaleSliderHolds();
+
+        _heldHueValue ??= _HueValue;
+        _sliderPressColor = (_color.Hsv, _color.A);
+    }
+
+    private void HoldAlphaSlider()
+    {
+        DropStaleSliderHolds();
+
+        _heldAlphaValue ??= _AlphaValue;
+        _sliderPressColor = (_color.Hsv, _color.A);
+    }
+
+    // A move of a slider under a press is the presses' own, and keeps the holds.
+    private void FollowSliderPress()
+    {
+        if (_heldHueValue is null && _heldAlphaValue is null) return;
+
+        _sliderPressColor = (_color.Hsv, _color.A);
+    }
+
+    // The re-render these cause is what writes into the slider the value its press held back; the other slider, still
+    // pressed, keeps rendering the value it holds, which is the one it was last rendered with.
+    private void ReleaseHueSlider()
+    {
+        _heldHueValue = null;
+    }
+
+    private void ReleaseAlphaSlider()
+    {
+        _heldAlphaValue = null;
+    }
 
     private string _AlphaPercentValue => Math.Round(_color.A * 100).ToString(CultureInfo.InvariantCulture);
 
@@ -1128,6 +1215,9 @@ public partial class BitColorPicker : BitInputBase<string?>
     // of them only ends the gesture - it does not report a change that has already been reported.
     private async Task HandleOnHueInput(ChangeEventArgs args, bool final)
     {
+        // The change that ends a drag ends its press as well, released off the slider or not.
+        if (final) ReleaseHueSlider();
+
         // A read-only picker keeps its sliders focusable, and a native range has no readonly state to refuse
         // an arrow key with, so the thumb has already moved by the time this runs and is put back here. The
         // renderer would not do it: the value it last rendered has not changed.
@@ -1142,12 +1232,15 @@ public partial class BitColorPicker : BitInputBase<string?>
         var before = _color.Hsv;
 
         _color.Update(hue, before.Saturation, before.Value, _color.A);
+        FollowSliderPress();
 
         await ChangeAsync(final, notifyChange: _color.Hsv != before);
     }
 
     private async Task HandleOnAlphaInput(ChangeEventArgs args, bool final)
     {
+        if (final) ReleaseAlphaSlider();
+
         if (_IsInteractive is false)
         {
             await RestoreInputAsync(_alphaSliderRef, args.Value as string, _AlphaValue);
@@ -1159,6 +1252,7 @@ public partial class BitColorPicker : BitInputBase<string?>
         var before = _color.A;
 
         _color.A = alpha;
+        FollowSliderPress();
 
         await ChangeAsync(final, notifyChange: _color.A != before);
     }

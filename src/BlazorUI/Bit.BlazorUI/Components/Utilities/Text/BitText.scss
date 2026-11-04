@@ -295,9 +295,13 @@
 }
 
 // Tabular figures share one advance width so that a column of numbers lines up and a number changing in place
-// stops shifting; lining figures put them all on the baseline. A font carrying neither is left as it is.
+// stops shifting; lining figures put them all on the baseline. A font carrying neither is left as it is. The
+// kerning is turned off with them: a font whose figures are tabular to begin with and so has no tabular variant
+// to switch to - Arial, and Liberation Sans in its place on Linux - still kerns some pairs of them ("11"), which
+// would pull a number set in them narrower than another with as many digits.
 .bit-txt-num {
     font-variant-numeric: tabular-nums lining-nums;
+    font-kerning: none;
 }
 
 // Every character at the same width, so that a column of them lines up down the page. Declared after the variants

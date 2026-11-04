@@ -59,6 +59,8 @@ public class BitFileInputE2ETests : E2ETestBase
     /// </summary>
     private Task DropAsync(ILocator target, params string[] names)
     {
+        // The data is handed to the event as its own clipboardData: an event constructed with it gets an empty one
+        // of its own in Firefox.
         return target.EvaluateAsync(@"(el, names) => {
             const data = new DataTransfer();
             for (const name of names) data.items.add(new File(['dropped ' + name], name, { type: 'text/plain' }));
@@ -74,7 +76,9 @@ public class BitFileInputE2ETests : E2ETestBase
         return target.EvaluateAsync(@"(el, names) => {
             const data = new DataTransfer();
             for (const name of names) data.items.add(new File(['pasted ' + name], name, { type: 'text/plain' }));
-            el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+            const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(e, 'clipboardData', { value: data });
+            el.dispatchEvent(e);
         }", names);
     }
 
@@ -624,7 +628,11 @@ public class BitFileInputE2ETests : E2ETestBase
         var thumbnail = Item("fin-preview", "fileinput-photo.png").Locator("img.bit-fin-prv");
         await Expect(thumbnail).ToHaveAttributeAsync("src", new Regex("^blob:"));
         await Expect(thumbnail).ToHaveAttributeAsync("alt", "");
-        Assert.IsTrue(await thumbnail.EvaluateAsync<bool>("img => img.complete && img.naturalWidth === 40"), "The thumbnail did not load the image.");
+        // The thumbnail loads lazily, which Firefox does not do for one out of view, so it is brought into view first;
+        // and it is waited for rather than read once, since it decodes on its own time after that.
+        await thumbnail.ScrollIntoViewIfNeededAsync();
+        await Expect(thumbnail).ToHaveJSPropertyAsync("naturalWidth", 40);
+        Assert.IsTrue(await thumbnail.EvaluateAsync<bool>("img => img.complete"), "The thumbnail did not load the image.");
 
         foreach (var (name, icon) in new[]
         {

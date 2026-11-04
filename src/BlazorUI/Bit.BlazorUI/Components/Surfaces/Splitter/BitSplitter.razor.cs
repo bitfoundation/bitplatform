@@ -590,6 +590,12 @@ public partial class BitSplitter : BitComponentBase
     [JSInvokable(nameof(HandleToggleCollapse))]
     public Task HandleToggleCollapse() => SetCollapsed(Collapsed is false, BitSplitterCollapseReason.Gutter);
 
+    // The fold a Ctrl+arrow on the gutter asks for, handed over as that fold rather than as a toggle: the script tells
+    // which one it is from the state it was last given, and a second press made before the render of the first has come
+    // back reads it from before that fold - a toggle would then undo the very press the user repeated.
+    [JSInvokable(nameof(HandleSetCollapsed))]
+    public Task HandleSetCollapsed(bool collapsed) => SetCollapsed(collapsed, BitSplitterCollapseReason.Gutter);
+
     [JSInvokable(nameof(HandleReset))]
     public Task HandleReset() => ResetSize();
 

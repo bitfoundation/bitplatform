@@ -125,10 +125,10 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Page.Locator("#lifecycle .bit-tpc-lbl")).ToHaveTextAsync("Relabelled");
 
         await Page.ClickAsync("#btn-twelve");
-        await Expect(Field("lifecycle")).ToHaveValueAsync("03:20 PM");
+        await Expect(Field("lifecycle")).ToHaveValueAsync(TwelveHour("03:20 PM"));
 
         await Page.ClickAsync("#btn-seconds");
-        await Expect(Field("lifecycle")).ToHaveValueAsync("03:20:10 PM");
+        await Expect(Field("lifecycle")).ToHaveValueAsync(TwelveHour("03:20:10 PM"));
 
         var callout = await OpenCalloutAsync("lifecycle");
         await Expect(callout.Locator(".bit-tpc-tin")).ToHaveCountAsync(3);
@@ -445,7 +445,7 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Hour(callout)).ToHaveValueAsync("01");
         await Expect(Am(callout)).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(Am(callout)).ToHaveClassAsync(HasClass("bit-tpc-bns"));
-        await Expect(Field("format-12")).ToHaveValueAsync("01:00 AM");
+        await Expect(Field("format-12")).ToHaveValueAsync(TwelveHour("01:00 AM"));
 
         await Pm(callout).ClickAsync();
         await Expect(Out("format-12-value")).ToHaveTextAsync("13:00:00");
@@ -453,17 +453,17 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Pm(callout)).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(Pm(callout)).ToHaveClassAsync(HasClass("bit-tpc-bns"));
         await Expect(Am(callout)).Not.ToHaveClassAsync(HasClass("bit-tpc-bns"));
-        await Expect(Field("format-12")).ToHaveValueAsync("01:00 PM");
+        await Expect(Field("format-12")).ToHaveValueAsync(TwelveHour("01:00 PM"));
 
         await Spin(callout, "Decrease hour").ClickAsync();
         await Expect(Out("format-12-value")).ToHaveTextAsync("12:00:00");
         await Expect(Hour(callout)).ToHaveValueAsync("12");
-        await Expect(Field("format-12")).ToHaveValueAsync("12:00 PM");
+        await Expect(Field("format-12")).ToHaveValueAsync(TwelveHour("12:00 PM"));
 
         await Spin(callout, "Decrease hour").ClickAsync();
         await Expect(Out("format-12-value")).ToHaveTextAsync("11:00:00");
         await Expect(Am(callout)).ToHaveAttributeAsync("aria-pressed", "true");
-        await Expect(Field("format-12")).ToHaveValueAsync("11:00 AM");
+        await Expect(Field("format-12")).ToHaveValueAsync(TwelveHour("11:00 AM"));
 
         await Am(callout).ClickAsync();
         await Expect(Out("format-12-value")).ToHaveTextAsync("11:00:00");
@@ -498,7 +498,7 @@ public class BitTimePickerE2ETests : E2ETestBase
 
         await Expect(Out("format-12-seconds-value")).ToHaveTextAsync("00:00:01");
         await Expect(Hour(callout)).ToHaveValueAsync("12");
-        await Expect(Field("format-12-seconds")).ToHaveValueAsync("12:00:01 AM");
+        await Expect(Field("format-12-seconds")).ToHaveValueAsync(TwelveHour("12:00:01 AM"));
     }
 
     // ------------------------------------------------------------------ text input
@@ -549,7 +549,7 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Out("text-input-12s-value")).ToHaveTextAsync("14:05:09");
 
         await Page.Locator("#text-input-12s-value").ClickAsync();
-        await Expect(field).ToHaveValueAsync("02:05:09 PM");
+        await Expect(field).ToHaveValueAsync(TwelveHour("02:05:09 PM"));
 
         await field.FillAsync("3:04 AM");
         await Expect(Out("text-input-12s-value")).ToHaveTextAsync("03:04:00");
@@ -855,7 +855,7 @@ public class BitTimePickerE2ETests : E2ETestBase
 
         await Pm(callout).ClickAsync();
         await Expect(Out("standalone-12-value")).ToHaveTextAsync("13:00:00");
-        await Expect(Page.Locator("#standalone-12 input.bit-input-hidden")).ToHaveValueAsync("01:00 PM");
+        await Expect(Page.Locator("#standalone-12 input.bit-input-hidden")).ToHaveValueAsync(TwelveHour("01:00 PM"));
     }
 
     [TestMethod]
@@ -2011,7 +2011,7 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Spin(callout, "Increase minute").ClickAsync();
         await Expect(Out("cascade-1-value")).ToHaveTextAsync("00:15:00");
         await Page.Keyboard.PressAsync("Escape");
-        await Expect(Field("cascade-1")).ToHaveValueAsync("12:15 AM");
+        await Expect(Field("cascade-1")).ToHaveValueAsync(TwelveHour("12:15 AM"));
 
         callout = await OpenCalloutAsync("cascade-3");
         await Expect(callout.Locator(".bit-tpc-am-pm")).ToHaveCountAsync(0);
@@ -2429,10 +2429,14 @@ public class BitTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var callout = StandaloneCallout("paste");
+        // The data is handed to the event as its own clipboardData rather than through the constructor, which
+        // Firefox gives an empty one of its own instead.
         const string paste = @"(el, text) => {
             const data = new DataTransfer();
             data.setData('text', text);
-            el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+            const e = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(e, 'clipboardData', { value: data });
+            el.dispatchEvent(e);
         }";
 
         await Minute(callout).EvaluateAsync(paste, "14:30");
