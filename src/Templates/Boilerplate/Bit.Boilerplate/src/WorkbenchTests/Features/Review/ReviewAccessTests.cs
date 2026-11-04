@@ -75,7 +75,7 @@ public class ReviewAccessTests
         remote.Session.SetPageStatus("assistant", WorkbenchPageStatus.Built, "Visitor");
         remote.Session.Delete(id);
 
-        local.Session.Reply(id, "Reviewer", "A marker after the visitor's attempts");
+        await local.Change(session => session.Reply(id, "Reviewer", "A marker after the visitor's attempts"));
 
         var thread = await WorkbenchTestReviewer.WaitFor(() => server.Agent.GetThreads(TestContext.CancellationToken), threads => threads.Single(t => t.Id == id).Messages.Length == 2);
         var result = thread.Single(t => t.Id == id);

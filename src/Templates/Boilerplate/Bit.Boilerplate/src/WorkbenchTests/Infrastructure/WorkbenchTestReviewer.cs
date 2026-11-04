@@ -8,9 +8,13 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
 {
     private readonly AsyncServiceScope scope;
 
-    private WorkbenchTestReviewer(AsyncServiceScope scope, WorkbenchReviewSession session, string name)
+    // The review document isn't thread-safe, so it runs on a dispatcher, as on a circuit.
+    private readonly Dispatcher dispatcher;
+
+    private WorkbenchTestReviewer(AsyncServiceScope scope, Dispatcher dispatcher, WorkbenchReviewSession session, string name)
     {
         this.scope = scope;
+        this.dispatcher = dispatcher;
         Session = session;
         Name = name;
     }
@@ -30,9 +34,11 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
         // Decided once, while the request above is the current one.
         _ = session.CanWrite;
 
-        await session.Open(name);
+        var dispatcher = Dispatcher.CreateDefault();
 
-        return new(scope, session, name);
+        await dispatcher.InvokeAsync(() => session.Open(name));
+
+        return new(scope, dispatcher, session, name);
     }
 
     /// <summary>The request a circuit starts from: on this machine, or through a tunnel that names the visitor.</summary>
@@ -55,13 +61,16 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
     /// <summary>Adds a comment on a page and waits until the server's copy of the review has it.</summary>
     public async Task<string> Comment(WorkbenchTestServer server, string pageKey, string text, string query = "", string? component = "BitButton", string? state = null)
     {
-        var id = await Session.AddThread(pageKey, query, new("main button", component, "Save", 0.5, 0.5), Name, text, state)
+        var id = await dispatcher.InvokeAsync(() => Session.AddThread(pageKey, query, new("main button", component, "Save", 0.5, 0.5), Name, text, state))
             ?? throw new InvalidOperationException("The review session refused the comment.");
 
         await WaitFor(() => server.Agent.GetThreads(CancellationToken.None), threads => threads.Any(t => t.Id == id));
 
         return id;
     }
+
+    /// <summary>Changes the review on the session's dispatcher.</summary>
+    public Task Change(Action<WorkbenchReviewSession> change) => dispatcher.InvokeAsync(() => change(Session));
 
     /// <summary>Reads until the condition holds, or fails after the timeout.</summary>
     public static async Task<T> WaitFor<T>(Func<Task<T>> read, Func<T, bool> condition, TimeSpan? timeout = null)
@@ -84,6 +93,6 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await scope.DisposeAsync();
+        await dispatcher.InvokeAsync(() => scope.DisposeAsync().AsTask());
     }
 }

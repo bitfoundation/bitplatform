@@ -301,8 +301,8 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         await CloseTools();
 
         await Expect(Page).Not.ToHaveURLAsync(new Regex("vision="));
-        await WaitForViews();
         await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-vision", new Regex("."));
+        await WaitForViews();
 
         Assert.IsGreaterThan(60, await ColorOfTheSwatches(), "The colors are back.");
     }
