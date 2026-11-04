@@ -13,8 +13,8 @@
                 aria-describedby="@ErrorId"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
-            <option value="true">@Grid.Strings.BooleanTrueText</option>
-            <option value="false">@Grid.Strings.BooleanFalseText</option>
+            <option value="true">@(Column.BooleanText(true) ?? Grid.Strings.BooleanTrueText)</option>
+            <option value="false">@(Column.BooleanText(false) ?? Grid.Strings.BooleanFalseText)</option>
         </select>
         break;
 

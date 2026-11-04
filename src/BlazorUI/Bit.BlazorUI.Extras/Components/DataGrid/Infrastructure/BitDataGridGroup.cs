@@ -11,7 +11,9 @@ public sealed class BitDataGridGroup<TItem>
     public required string ColumnId { get; init; }
     public required object? Key { get; init; }
 
-    /// <summary>The display text for this group's key, shown in the group header row.</summary>
+    /// <summary>The display text for this group's key as it was when the view was built. The group header row writes
+    /// the key again on each render, so it follows a later change to the column's <c>ValueText</c> or to the UI culture
+    /// of a translated enum name, which this text only takes up on the next refresh of the view.</summary>
     public string KeyText { get; init; } = string.Empty;
 
     /// <summary>Zero-based nesting depth (0 = top level).</summary>
