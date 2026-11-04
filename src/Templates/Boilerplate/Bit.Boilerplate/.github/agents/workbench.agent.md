@@ -9,8 +9,7 @@ The Workbench is a web app of its own in `src/Workbench`. It runs pages on sampl
 side by side, and switches what a page would otherwise wait for: the data's state, the theme, the language, the
 signed-in user. It references Client.Core for the theme, the styles and the components, and nothing that needs the
 API, the database or a session. A page designed here is built from the components and the theme the app ships, so
-what the user approves is how the real page will look. The landing page (`src/LandingPage`) is not designed here: it
-has a look of its own, and the **landing-page** skill (`.github/agents/landing-page.agent.md`) covers it.
+what the user approves is how the real page will look.
 
 ## 1. Run it
 
@@ -80,6 +79,11 @@ has a look of its own, and the **landing-page** skill (`.github/agents/landing-p
   `src/Workbench/Components/Pages/AppPages`, the way the Settings page is there: the same markup, styles, strings and
   validation, with the server calls replaced by sample data and a store, and the same template conditions as the
   original. Both copies start with a `[mirror]` comment that names the other.
+- A page of the landing page (`src/LandingPage`) comes over the same way, the way
+  `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so its catalog entry sets
+  `HasAppShell` to false and no app shell is drawn around it.
+- Each app of the product can have its pages here with a theme of its own: such a page sets the theme's tokens for itself
+  while it is on the screen, as that landing page does, and the other pages keep theirs.
 
 ## 4. Look at it the way the user will
 
@@ -146,7 +150,11 @@ has a look of its own, and the **landing-page** skill (`.github/agents/landing-p
 
 ## 7. Settle it with the user
 
-- Show the result per device and state, as links or images, and change it until the user approves it.
+- Open the page in the user's own browser, with the views they need to decide on side by side, rather than only handing
+  over a link or looking at it in a browser you drive. From a session that can't reach their screen, hand over a link
+  the way section 6 says.
+- Show the rest per device and state, as links or images, and change it until the user approves it. Approval is the user
+  telling you to go ahead: an answer or a review comment is not, and nothing of the page goes into the app before it.
 - The user pins comments on the page in Comment mode. The comments reach you as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
   user says the review is over. Tell the user you are listening.
 - For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick

@@ -2880,4 +2880,181 @@
     <data name="TourCaption" xml:space="preserve">
         <value>每笔销售，实时呈现</value>
     </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>加入候补名单</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>2027 年春季，登陆 iPhone 和 Android</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>每天一行。一年，一分钟读完。</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch 是一本只有一条规则的日记：每天一行，最多 140 个字符。没有要回答的问题，也没有要保持的连续记录。只有这一行，和它所属的日期。</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>为我留个位置</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>Notch 准备好后，我们只写信一次。仅此而已。</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>Notch 应用预览：今天的一行、本周，以及往年的同一天</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>今天的一行</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>今天，你想用什么来记住它？</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>还剩 {0} 个</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>记下来</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>已保存。明天的一行将在午夜开放。</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>本周</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>7 天中的 {0} 天</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>历史上的今天</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>骑车时遇到第一场霜。从今天起，手套就放在包里了。</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>Mia 一口气大声读完了一整页，一次都没停。</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>三条规则，这就是整个应用</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>每天一行</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>最多 140 个字符。短到排队买咖啡时就能写完，长到足以记住这一天。</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>同一天，相隔数年</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>打开今天，读读去年和前年这一天写下的内容。每天一行的价值，就从这里开始显现。</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>只有你能读</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>每一行在离开手机之前都会先加密。没有信息流，没有点赞，没有关注者，随时可以导出为纯文本。</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>每天一行，永久保存。</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>你的文字去了哪里</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>你的手机</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>每一行都在这里写下并保存，用一把永不离开手机的密钥加密。</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>备份</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>默认关闭，需要时再打开。开启后，加密副本会把每一行带回新手机。</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>我们的服务器</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>把这份副本保存在赫尔辛基。我们只能看到大小和日期，看不到其中的任何内容。</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>广告商和数据经纪人</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>什么也得不到。没有任何东西可以卖给他们。</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>如果你愿意</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>绝不</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>跳到内容</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>公司</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>联系我们</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>法律信息</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>Cookie</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>版本说明</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>无障碍</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}。保留所有权利。</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>这是一个示例网站。其中的企业、人物和数字均为虚构。</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>正在添加…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>发布时通知我，平台：</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone 和 iPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>发布时发送一封邮件。没有垃圾邮件，可随时退出。</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>请查看收件箱</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>我们已向 {0} 发送确认链接。打开它以保留你的位置：第 {1} 位。</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>这个电子邮件地址看起来不对。</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>着陆页</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>着陆页：Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>着陆页的示例之一，拥有自己的主题，周围没有应用外壳：候补名单、可操作的手机演示、浅色和深色，以及从右到左。</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>每天一行</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>一个设计器，多个应用</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>把你的不同应用都添加到这里，每个应用都有自己的主题，就像这个 Workbench 把外观独立的着陆页放在应用页面旁边一样。</value>
+    </data>
 </root>

@@ -95,7 +95,7 @@ public partial class ChromeShell
             Text = Localizer[nameof(WorkbenchStrings.NavShowcases)],
             IconName = BitIconName.Tiles,
             IsExpanded = true,
-            ChildItems = [.. WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages) && (authUser.IsAuthenticated() || page.NeedsSignIn is false)).Select(page => new BitNavItem
+            ChildItems = [.. WorkbenchPageCatalog.Pages.Where(page => page.HasAppShell && page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages) && (authUser.IsAuthenticated() || page.NeedsSignIn is false)).Select(page => new BitNavItem
             {
                 Text = Localizer[page.TitleKey],
                 IconName = page.IconName,

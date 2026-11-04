@@ -45,8 +45,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 
 ## 2. Ground rules
 
-- **Designed in place, not in the Workbench.** The Workbench designs the app's pages on the app's components and
-  theme; the landing page has its own look, so change and review it on the running landing page itself (section 3).
+- **In the Workbench, without the app shell.** When the user wants one of its pages in the Workbench, it comes over as
+  the **workbench** skill's section 3 says (`.github/agents/workbench.agent.md`), with no app shell around it.
 - **Its own conventions** where `AGENTS.md` section 5 names the app's types: components inherit
   `LandingComponentBase` and pages `LandingPageBase`, and text goes into resx keys, read through `nameof`: a
   sample's own text into its `<Sample>Strings`, shared text into `LandingStrings`, the English and the Persian in the
@@ -86,8 +86,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
    Gallery page has (`/` and `/{culture:nonfile}`) instead of the ones built from `Path`. Its other pages then answer
    at `/about`, `/fa-IR/about` and so on.
 3. Delete `Components/Pages/Gallery/`, every other sample's folder, styles, images and chat facts, and their entries
-   in `LandingSites.cs` and the project file. `Components/Layout/SiteLayout.razor` and the gallery's texts in
-   `LandingStrings` go with the gallery when nothing else uses them, and so does its tour: `Components/Tour/`,
+   in `LandingSites.cs` and the project file. A deleted sample's copy in the Workbench goes with it, with its catalog
+   entry, its import in `src/Workbench/Styles/workbench.scss` and its strings. `Components/Layout/SiteLayout.razor` and
+   the gallery's texts in `LandingStrings` go with the gallery when nothing else uses them, and so does its tour: `Components/Tour/`,
    `<LandingTour />` in `Components/Routes.razor`, `LandingTourLauncher` and its registration, and the
    `Bit.Bonboarding` and `TourStrings` lines in the client's project file.
 4. Replace the sample's name, logo, texts, images (its link preview included), company details, store links and chat

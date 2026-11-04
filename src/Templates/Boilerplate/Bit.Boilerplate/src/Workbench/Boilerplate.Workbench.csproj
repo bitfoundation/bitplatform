@@ -45,6 +45,7 @@
         <Using Include="Boilerplate.Workbench.Components.Chrome" />
         <Using Include="Boilerplate.Workbench.Components.Preview" />
         <Using Include="Boilerplate.Workbench.Components.Pages.AppPages.Settings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.LandingPages.Minimal" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Buildings" />

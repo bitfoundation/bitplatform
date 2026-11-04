@@ -14,6 +14,7 @@ public partial class WorkbenchViewPage
     private const string TourStoreDevice = "store-apple-iphone-69";
     private const string TourDataStatesAnchor = "data-states";
     private const string TourComponentsPage = "shifts";
+    private const string TourLandingPage = "landing-minimal";
 
     private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
 
@@ -35,6 +36,8 @@ public partial class WorkbenchViewPage
         var pageBefore = pageInfo!.Key;
         // Another page than the one the tour starts on, for a change; without it, that page.
         var componentsPage = WorkbenchPageCatalog.Find(TourComponentsPage)?.Key ?? pageBefore;
+        // A page with a theme other than the app's, to show one Workbench holding several apps; without it, that page.
+        var landingPage = WorkbenchPageCatalog.Find(TourLandingPage)?.Key ?? pageBefore;
 
         // Replaces the address, as the phone's Back from a page the tour opened by itself would lead nowhere useful.
         void ShowPage(string pageKey) => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageKey)}{store.QueryString}", replace: true);
@@ -68,7 +71,9 @@ public partial class WorkbenchViewPage
                 store.ShowColumn(columnBefore);
                 store.ShowViews(viewsBefore);
 
-                if (IsOnFlowsPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), NavigationManager.ToBaseRelativePath(NavigationManager.Uri)))
+                var address = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+                if (IsOnFlowsPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), address) || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(landingPage), address))
                 {
                     ShowPage(pageBefore);
                 }
@@ -185,6 +190,16 @@ public partial class WorkbenchViewPage
                     Title = nameof(WorkbenchStrings.Flows),
                     Description = nameof(WorkbenchStrings.AllFlowsHint),
                     Placement = BonboardingPlacement.InlineStart,
+                    OnBeforeLeave = _ => ShowInTour(() => ShowPage(pageBefore))
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "many-apps",
+                    Target = BonboardingStepTarget.Css(".canvas"),
+                    Title = nameof(WorkbenchStrings.HomeWhyManyAppsTitle),
+                    Description = nameof(WorkbenchStrings.HomeWhyManyAppsText),
+                    Placement = BonboardingPlacement.InlineStart,
+                    OnBeforeShow = _ => ShowInTour(() => ShowPage(landingPage)),
                     OnBeforeLeave = _ => ShowInTour(() => ShowPage(pageBefore))
                 },
                 new BonboardingStepDefinition

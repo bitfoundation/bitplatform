@@ -46,6 +46,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBlexServices(options => options.DevToolsName = "bit Workbench");
             services.AddBitBlexStore<WorkbenchStore>();
             services.AddBitBlexStore<ChromeStore>();
+            services.AddBitBlexStore<MinimalLandingStore>();
             services.AddBitBlexStore<BuildingsStore>();
             services.AddBitBlexStore<PosDashboardStore>();
             services.AddBitBlexStore<AssistantStore>();

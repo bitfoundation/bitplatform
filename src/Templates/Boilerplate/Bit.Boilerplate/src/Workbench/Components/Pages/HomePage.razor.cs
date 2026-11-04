@@ -24,6 +24,7 @@ public partial class HomePage
         (BitIconName.Devices2, nameof(WorkbenchStrings.HomeWhyDevicesTitle), nameof(WorkbenchStrings.HomeWhyDevicesText)),
         (BitIconName.Camera, nameof(WorkbenchStrings.HomeWhyStoresTitle), nameof(WorkbenchStrings.HomeWhyStoresText)),
         (BitIconName.Lightbulb, nameof(WorkbenchStrings.HomeWhyHeadStartTitle), nameof(WorkbenchStrings.HomeWhyHeadStartText)),
+        (BitIconName.Tiles, nameof(WorkbenchStrings.HomeWhyManyAppsTitle), nameof(WorkbenchStrings.HomeWhyManyAppsText)),
         (BitIconName.Lock, nameof(WorkbenchStrings.HomeWhySafeTitle), nameof(WorkbenchStrings.HomeWhySafeText)),
         (BitIconName.Repair, nameof(WorkbenchStrings.HomeWhyCustomizeTitle), nameof(WorkbenchStrings.HomeWhyCustomizeText))
     ];

@@ -104,7 +104,18 @@ public static class WorkbenchPageCatalog
             typeof(SettingsPage),
             nameof(WorkbenchStrings.CategoryAppPages),
             ["BitAccordionList", "BitPivot", "BitOtpInput", "BitFileUpload"],
-            nameof(WorkbenchStrings.SettingsCaption))
+            nameof(WorkbenchStrings.SettingsCaption)),
+        new("landing-minimal",
+            nameof(WorkbenchStrings.LandingMinimalTitle),
+            nameof(WorkbenchStrings.LandingMinimalDescription),
+            BitIconName.Globe,
+            typeof(MinimalLandingPage),
+            nameof(WorkbenchStrings.CategoryLandingPages),
+            ["BitTextField", "BitCheckbox", "BitPanel"],
+            nameof(WorkbenchStrings.LandingMinimalCaption))
+        {
+            HasAppShell = false
+        }
     ];
 
     /// <summary>The page with this key, ignoring case, or null.</summary>

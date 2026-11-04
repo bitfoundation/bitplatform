@@ -165,7 +165,7 @@ public partial class PreviewPane
         if (scenario.Auth is not WorkbenchAuthState.SignedOut && scenario.User != 0)
             yield return Localizer[WorkbenchDemoUsers.Find(scenario.User).RoleKey];
 
-        if (scenario.Chrome is false)
+        if (scenario.Chrome is false && Page.HasAppShell)
             yield return Localizer[nameof(WorkbenchStrings.NoChrome)];
 
         if (scenario.Backdrop is { } backdrop)

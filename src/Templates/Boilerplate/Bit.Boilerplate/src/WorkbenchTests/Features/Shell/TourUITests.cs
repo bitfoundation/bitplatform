@@ -54,6 +54,10 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
 
+        await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
+        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.NotchHeroTitle, Level = 1, Exact = true })).ToBeVisibleAsync();
+
         await Advance(WorkbenchStrings.HomeWhySafeTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
 
@@ -185,6 +189,10 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
         await ExpectAboveTheCard(Page.Locator(".flow-board"));
+
+        await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
+        await ExpectAboveTheCard(Views.First);
 
         await Advance(WorkbenchStrings.HomeWhySafeTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));

@@ -130,6 +130,18 @@ public class ShellComponentsTests
     }
 
     [TestMethod]
+    public async Task TheAppShellSwitch_Should_ShowOnlyForAPageOfTheApp()
+    {
+        await using var ctx = WorkbenchBunit.Create();
+
+        var shifts = ctx.Render<ScenarioInspector>(p => p.Add(x => x.Page, WorkbenchPageCatalog.Find("shifts")));
+        var landing = ctx.Render<ScenarioInspector>(p => p.Add(x => x.Page, WorkbenchPageCatalog.Find("landing-minimal")));
+
+        Assert.Contains(WorkbenchStrings.AppChrome, shifts.Markup);
+        Assert.DoesNotContain(WorkbenchStrings.AppChrome, landing.Markup);
+    }
+
+    [TestMethod]
     public async Task AStoreSize_Should_ShowThatStoresRules()
     {
         await using var ctx = WorkbenchBunit.Create();

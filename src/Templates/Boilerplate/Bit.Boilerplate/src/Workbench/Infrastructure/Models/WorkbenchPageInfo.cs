@@ -19,6 +19,9 @@ public sealed record WorkbenchPageInfo(string Key,
 
     public WorkbenchPageSwitch[] Switches { get; init; } = [];
 
+    /// <summary>False for a page that isn't a page of the app, like a landing page: the app's shell is never drawn around it.</summary>
+    public bool HasAppShell { get; init; } = true;
+
     /// <summary>True when the page has an [Authorize] rule, so a signed-out visitor gets the not-authorized page instead.</summary>
     public bool NeedsSignIn => ComponentType.IsDefined(typeof(AuthorizeAttribute), inherit: true);
 
