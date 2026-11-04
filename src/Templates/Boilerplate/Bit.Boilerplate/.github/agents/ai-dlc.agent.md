@@ -80,7 +80,7 @@ In the same step, look at the branch you are on and what it holds that `develop`
 - Confirm the fix against the same test and evidence that showed the problem, then re-run phase 5
 
 ### 7. Delivery
-Merging into `develop` updates the Test environment and merging into `main` updates Production, so a change goes into `develop` only once it is finished, and into `main` only when the user asks for a release.
+Merging into `develop` updates the Test environment and merging into `main` updates Production, once the **deploy** skill (`.github/agents/deploy.agent.md`) has set each one up, so a change goes into `develop` only once it is finished, and into `main` only when the user asks for a release.
 - Settle what the change still leaves open before it goes:
     - The `Localizer["..."]` literals it added move into the `.resx` files, through the **localize-strings** skill (`.github/agents/localize-strings.agent.md`).
     - The specs, the plan and the diff agree. Every task is ticked, and every open question this work depended on is answered.
@@ -88,7 +88,7 @@ Merging into `develop` updates the Test environment and merging into `main` upda
     - The diff holds only this change: no debugging leftovers, and no files of other work.
 - Commit, push the branch and open a PR into `develop` (`gh pr create` on GitHub). Write its title and description from every commit on the branch, not only the last one: what changes for the user, then a test plan that lists each acceptance criterion with the test and the check that cover it, and links to the spec and the change plan. In the same message, tell the user that you will merge it yourself once CI passes, unless they want to review it first
 - Wait for CI (`gh pr checks`) the way `AGENTS.md` section 6 caps every wait. When it fails, fix the cause on the branch as phase 6 does, and push again
-- Once CI passes and the user hasn't asked to review, merge the PR and delete its branch. Tell the user it is on its way to the Test environment, and what to try there
+- Once CI passes and the user hasn't asked to review, merge the PR and delete its branch. If the repository's `TEST_DEPLOY_ON_PUSH` variable is `true` (`gh variable get`), tell the user it is on its way to the Test environment, and what to try there. If it isn't, say that nothing has been deployed, since the Test environment isn't set up yet
 - A release is a PR from `develop` into `main`. Open it when the user asks for one, and merge it only on their go-ahead, since it updates Production
 - When nothing deploys `develop` and `main` yet - no remote, no runner, no environments or secrets - offer the **deploy** skill (`.github/agents/deploy.agent.md`), which sets that up
 

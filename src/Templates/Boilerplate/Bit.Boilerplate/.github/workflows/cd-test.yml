@@ -16,6 +16,8 @@ concurrency:
 jobs:
   build_and_deploy_test:
     name: build and deploy to test
+    # A push deploys only once the first deployment to Test has worked: the deploy skill sets this variable then. By hand it always runs.
+    if: ${{ github.event_name != 'push' || vars.TEST_DEPLOY_ON_PUSH == 'true' }}
     permissions:
       contents: read
       id-token: write

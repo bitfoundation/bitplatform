@@ -16,6 +16,8 @@ concurrency:
 jobs:
   ci:
     name: ci
+    # A push deploys only once the first deployment to Production has worked: the deploy skill sets this variable then. By hand it always runs.
+    if: ${{ github.event_name != 'push' || vars.PRODUCTION_DEPLOY_ON_PUSH == 'true' }}
     permissions:
       contents: read
     uses: ./.github/workflows/ci.yml
@@ -23,6 +25,7 @@ jobs:
   build_and_deploy_prod:
     name: build and deploy to production
     needs: ci
+    if: ${{ github.event_name != 'push' || vars.PRODUCTION_DEPLOY_ON_PUSH == 'true' }}
     permissions:
       contents: read
       id-token: write

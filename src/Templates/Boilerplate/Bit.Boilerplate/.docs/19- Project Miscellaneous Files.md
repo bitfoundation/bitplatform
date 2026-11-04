@@ -661,11 +661,11 @@ slnf
    - Ensures code quality
 
 2. **`cd-test.yml`**: Deploy to Test environment
-   - Triggered manually or on merge to `develop` branch
+   - Triggered manually, or on merge to `develop` branch once `TEST_DEPLOY_ON_PUSH` is on
    - Deploys to test/staging servers
 
 3. **`cd-production.yml`**: Deploy to Production
-   - Triggered manually or on merge to `main` branch
+   - Triggered manually, or on merge to `main` branch once `PRODUCTION_DEPLOY_ON_PUSH` is on
    - Deploys to production servers
 
 4. **`cd-template.yml`**: Template for creating custom CD workflows
