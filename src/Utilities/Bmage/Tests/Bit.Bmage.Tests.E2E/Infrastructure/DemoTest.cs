@@ -22,11 +22,14 @@ public abstract class DemoTest
 
     public TestContext TestContext { get; set; } = default!;
 
-    /// <summary>The demo's origin, without a trailing slash.</summary>
+    /// <summary>The origin of the app under test - the demo's, unless a suite drives another - without a trailing slash.</summary>
     protected string BaseUrl { get; private set; } = string.Empty;
 
     [TestInitialize]
-    public async Task ResolveHostAsync() => BaseUrl = await DemoHost.BaseUrlAsync();
+    public async Task ResolveHostAsync() => BaseUrl = await StartHostAsync();
+
+    /// <summary>Starts the app the suite drives, once for the run, and returns its origin: the demo, unless a suite drives another.</summary>
+    protected virtual Task<string> StartHostAsync() => DemoHost.BaseUrlAsync();
 
     [TestCleanup]
     public async Task ClosePagesAsync()

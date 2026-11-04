@@ -108,6 +108,12 @@
                 items.Add(new Item("Network", http.Method + " " + http.Url, http.StatusCode?.ToString() ?? http.Error ?? "pending", () => { Host.SelectHttp(id); return Task.CompletedTask; }));
             }
 
+            foreach (var log in session.Logs.Snapshot().Reverse().Where(l => l.Text.Contains(q, StringComparison.OrdinalIgnoreCase) || l.Category.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))
+            {
+                var id = log.Id;
+                items.Add(new Item("Log", log.Text, log.LevelLabel + " · " + log.ShortCategory + " · " + BevFmt.Time(log.At), () => { Host.SelectLog(id); return Task.CompletedTask; }));
+            }
+
             if (Host.Graph is { } graph)
             {
                 foreach (var service in graph.Services.Where(s => !s.IsShadowed && s.ServiceTypeName.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))

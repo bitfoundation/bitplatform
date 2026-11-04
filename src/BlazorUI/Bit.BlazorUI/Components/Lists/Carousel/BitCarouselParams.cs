@@ -102,38 +102,6 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
     public string? Gap { get; set; }
 
     /// <summary>
-    /// The accessible label of the go to left button of the carousel.
-    /// </summary>
-    public string? GoLeftAriaLabel { get; set; }
-
-    /// <summary>
-    /// The icon of the go to left button using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="GoLeftIconName"/> when both are set.
-    /// </summary>
-    public BitIconInfo? GoLeftIcon { get; set; }
-
-    /// <summary>
-    /// The name of the icon of the go to left button from the built-in Fluent UI icons.
-    /// </summary>
-    public string? GoLeftIconName { get; set; }
-
-    /// <summary>
-    /// The accessible label of the go to right button of the carousel.
-    /// </summary>
-    public string? GoRightAriaLabel { get; set; }
-
-    /// <summary>
-    /// The icon of the go to right button using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="GoRightIconName"/> when both are set.
-    /// </summary>
-    public BitIconInfo? GoRightIcon { get; set; }
-
-    /// <summary>
-    /// The name of the icon of the go to right button from the built-in Fluent UI icons.
-    /// </summary>
-    public string? GoRightIconName { get; set; }
-
-    /// <summary>
     /// Hides the dots indicator of the carousel.
     /// </summary>
     public bool? HideDots { get; set; }
@@ -153,6 +121,22 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
     /// (<c>{0}</c> is the 1 based position of the slide and <c>{1}</c> the number of slides).
     /// </summary>
     public string? ItemAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// The accessible label of the next button of the carousel.
+    /// </summary>
+    public string? NextAriaLabel { get; set; }
+
+    /// <summary>
+    /// The icon of the next button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="NextIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? NextIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the next button from the built-in Fluent UI icons.
+    /// </summary>
+    public string? NextIconName { get; set; }
 
     /// <summary>
     /// Disables dragging the carousel with the pointer.
@@ -203,6 +187,22 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
     /// The name of the icon of the play/pause button while the auto scrolling is paused, from the built-in Fluent UI icons.
     /// </summary>
     public string? PlayIconName { get; set; }
+
+    /// <summary>
+    /// The accessible label of the previous button of the carousel.
+    /// </summary>
+    public string? PrevAriaLabel { get; set; }
+
+    /// <summary>
+    /// The icon of the previous button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="PrevIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? PrevIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the previous button from the built-in Fluent UI icons.
+    /// </summary>
+    public string? PrevIconName { get; set; }
 
     /// <summary>
     /// Adapts the visible and scroll items counts to the width of the carousel.
@@ -373,38 +373,6 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(Gap), Gap, static c => c.Gap, static (c, v) => c.Gap = v);
         }
 
-        if (GoLeftAriaLabel.HasValue())
-        {
-            bitCarousel.TakeFromCascade(nameof(GoLeftAriaLabel), GoLeftAriaLabel, static c => c.GoLeftAriaLabel, static (c, v) => c.GoLeftAriaLabel = v);
-        }
-
-
-        if (GoLeftIcon is not null)
-        {
-            bitCarousel.TakeFromCascade(nameof(GoLeftIcon), GoLeftIcon, static c => c.GoLeftIcon, static (c, v) => c.GoLeftIcon = v);
-        }
-
-        if (GoLeftIconName.HasValue())
-        {
-            bitCarousel.TakeFromCascade(nameof(GoLeftIconName), GoLeftIconName, static c => c.GoLeftIconName, static (c, v) => c.GoLeftIconName = v);
-        }
-
-        if (GoRightAriaLabel.HasValue())
-        {
-            bitCarousel.TakeFromCascade(nameof(GoRightAriaLabel), GoRightAriaLabel, static c => c.GoRightAriaLabel, static (c, v) => c.GoRightAriaLabel = v);
-        }
-
-
-        if (GoRightIcon is not null)
-        {
-            bitCarousel.TakeFromCascade(nameof(GoRightIcon), GoRightIcon, static c => c.GoRightIcon, static (c, v) => c.GoRightIcon = v);
-        }
-
-        if (GoRightIconName.HasValue())
-        {
-            bitCarousel.TakeFromCascade(nameof(GoRightIconName), GoRightIconName, static c => c.GoRightIconName, static (c, v) => c.GoRightIconName = v);
-        }
-
         if (HideDots.HasValue)
         {
             bitCarousel.TakeFromCascade(nameof(HideDots), HideDots.Value, static c => c.HideDots, static (c, v) => c.HideDots = v);
@@ -423,6 +391,21 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
         if (ItemAriaLabelFormat.HasValue())
         {
             bitCarousel.TakeFromCascade(nameof(ItemAriaLabelFormat), ItemAriaLabelFormat, static c => c.ItemAriaLabelFormat, static (c, v) => c.ItemAriaLabelFormat = v);
+        }
+
+        if (NextAriaLabel.HasValue())
+        {
+            bitCarousel.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static c => c.NextAriaLabel, static (c, v) => c.NextAriaLabel = v);
+        }
+
+        if (NextIcon is not null)
+        {
+            bitCarousel.TakeFromCascade(nameof(NextIcon), NextIcon, static c => c.NextIcon, static (c, v) => c.NextIcon = v);
+        }
+
+        if (NextIconName.HasValue())
+        {
+            bitCarousel.TakeFromCascade(nameof(NextIconName), NextIconName, static c => c.NextIconName, static (c, v) => c.NextIconName = v);
         }
 
         if (NoDrag.HasValue)
@@ -475,6 +458,21 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
         if (PlayIconName.HasValue())
         {
             bitCarousel.TakeFromCascade(nameof(PlayIconName), PlayIconName, static c => c.PlayIconName, static (c, v) => c.PlayIconName = v);
+        }
+
+        if (PrevAriaLabel.HasValue())
+        {
+            bitCarousel.TakeFromCascade(nameof(PrevAriaLabel), PrevAriaLabel, static c => c.PrevAriaLabel, static (c, v) => c.PrevAriaLabel = v);
+        }
+
+        if (PrevIcon is not null)
+        {
+            bitCarousel.TakeFromCascade(nameof(PrevIcon), PrevIcon, static c => c.PrevIcon, static (c, v) => c.PrevIcon = v);
+        }
+
+        if (PrevIconName.HasValue())
+        {
+            bitCarousel.TakeFromCascade(nameof(PrevIconName), PrevIconName, static c => c.PrevIconName, static (c, v) => c.PrevIconName = v);
         }
 
         if (ResponsiveOptions is not null)

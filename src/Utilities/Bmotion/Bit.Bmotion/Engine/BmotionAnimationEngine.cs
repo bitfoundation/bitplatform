@@ -180,6 +180,12 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             state.SetInstant(initialValues);
     }
 
+    /// <summary>
+    /// Drops the values kept for <paramref name="elementId"/> (see <see cref="_retained"/>): the element that answers to
+    /// it now is another one, which shows none of them.
+    /// </summary>
+    internal void ForgetRetained(string elementId) => _retained.Remove(elementId);
+
     /// <summary>Release one owner; cancels animations and removes the element only when the last owner releases it.</summary>
     public void UnregisterElement(string elementId)
     {

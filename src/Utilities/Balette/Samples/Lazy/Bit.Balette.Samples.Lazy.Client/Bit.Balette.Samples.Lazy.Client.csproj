@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The browser half of the lazy loading sample: it downloads Bit.Balette.wasm only when the admin page, the part of
+         the app with the palette, opens. It does everything the README's "Lazy loading on WebAssembly" section asks of
+         such a project, and the end-to-end suite (Tests/Bit.Balette.Tests.E2E, LazyLoadingTests) publishes it and checks
+         it in a browser. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <ProjectReference Include="..\..\..\Bit.Balette\Bit.Balette.csproj" />
+    </ItemGroup>
+
+    <!-- AOT builds load Bit.Balette with the rest of the app. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Balette.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.Balette.Samples.Lazy.LazyLoadsBalette" Value="true" Trim="true" />
+    </ItemGroup>
+
+</Project>

@@ -342,6 +342,20 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
+    /// Gives the page the safe areas of a phone - its status bar and notch at the top, its home indicator at the bottom -
+    /// as env(safe-area-inset-*) reads them, through the Chrome DevTools Protocol, which only Chromium speaks.
+    /// </summary>
+    protected async Task SetSafeAreaInsetsAsync(int top, int bottom)
+    {
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+
+        await cdp.SendAsync("Emulation.setSafeAreaInsetsOverride", new Dictionary<string, object>
+        {
+            ["insets"] = new Dictionary<string, object> { ["top"] = top, ["topMax"] = top, ["bottom"] = bottom, ["bottomMax"] = bottom }
+        });
+    }
+
+    /// <summary>
     /// Closes the browsers and stops the test host the run started, once every test of it is done.
     /// </summary>
     internal static async Task ShutdownAsync()

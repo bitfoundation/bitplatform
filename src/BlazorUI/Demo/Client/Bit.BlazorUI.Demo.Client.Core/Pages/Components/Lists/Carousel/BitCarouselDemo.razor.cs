@@ -126,56 +126,6 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "GoLeftAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The accessible label of the go to left button. When not set, the button is labelled after what it does (next or previous slide, depending on the direction)."
-        },
-        new()
-        {
-            Name = "GoLeftIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "Gets or sets the icon for the go to left button using custom CSS classes for external icon libraries. Takes precedence over GoLeftIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "GoLeftIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the go to left button from the built-in Fluent UI icons.",
-            LinkType = LinkType.Link,
-            Href = "https://blazorui.bitplatform.dev/iconography",
-        },
-        new()
-        {
-            Name = "GoRightAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The accessible label of the go to right button. When not set, the button is labelled after what it does (previous or next slide, depending on the direction)."
-        },
-        new()
-        {
-            Name = "GoRightIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "Gets or sets the icon for the go to right button using custom CSS classes for external icon libraries. Takes precedence over GoRightIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "GoRightIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the go to right button from the built-in Fluent UI icons.",
-            LinkType = LinkType.Link,
-            Href = "https://blazorui.bitplatform.dev/iconography",
-        },
-        new()
-        {
             Name = "HideDots",
             Type = "bool",
             DefaultValue = "false",
@@ -201,6 +151,31 @@ public partial class BitCarouselDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The accessible label of a slide of the carousel, as a composite format string whose {0} is the 1 based position of the slide and whose {1} is the number of slides (\"{0} of {1}\" when not set). It is only used for the slides that were not given an AriaLabel of their own."
+        },
+        new()
+        {
+            Name = "NextAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the next button (\"Next slide\" when not set). It goes with the button to the side the direction puts it on: the right edge in LTR, the left edge in RTL and the bottom when Vertical."
+        },
+        new()
+        {
+            Name = "NextIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the next button using custom CSS classes for external icon libraries. Takes precedence over NextIconName when both are set. The icon is given for LTR, where the button sits at the right edge, and is mirrored in RTL, where it sits at the left edge.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon for the next button from the built-in Fluent UI icons. Like NextIcon, it is given for LTR and mirrored in RTL.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -283,6 +258,31 @@ public partial class BitCarouselDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the icon of the play/pause button while the auto scrolling is paused, from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "PrevAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the previous button (\"Previous slide\" when not set). It goes with the button to the side the direction puts it on: the left edge in LTR, the right edge in RTL and the top when Vertical."
+        },
+        new()
+        {
+            Name = "PrevIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the previous button using custom CSS classes for external icon libraries. Takes precedence over PrevIconName when both are set. The icon is given for LTR, where the button sits at the left edge, and is mirrored in RTL, where it sits at the right edge.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PrevIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon for the previous button from the built-in Fluent UI icons. Like PrevIcon, it is given for LTR and mirrored in RTL.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -519,31 +519,31 @@ public partial class BitCarouselDemo
                },
                new()
                {
-                   Name = "GoLeftButton",
+                   Name = "NextButton",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the go to left button of the BitCarousel."
+                   Description = "Custom CSS classes/styles for the next button of the BitCarousel."
                },
                new()
                {
-                   Name = "GoLeftButtonIcon",
+                   Name = "NextButtonIcon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon of the go to left button of the BitCarousel."
+                   Description = "Custom CSS classes/styles for the icon of the next button of the BitCarousel."
                },
                new()
                {
-                   Name = "GoRightButton",
+                   Name = "PrevButton",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the go to right button of the BitCarousel."
+                   Description = "Custom CSS classes/styles for the previous button of the BitCarousel."
                },
                new()
                {
-                   Name = "GoRightButtonIcon",
+                   Name = "PrevButtonIcon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon of the go to right button of the BitCarousel."
+                   Description = "Custom CSS classes/styles for the icon of the previous button of the BitCarousel."
                },
                new()
                {

@@ -1236,7 +1236,7 @@ public partial class BitSnackBar : BitComponentBase
 
 
 
-    private string _DismissAriaLabel => DismissAriaLabel ?? "Close";
+    private string _DismissAriaLabel => DismissAriaLabel ?? BitStrings.Current.Close;
 
     // The shortcut is spelled out in the default name, the way Radix Toast names its viewport, so the people it is
     // for can discover it from the landmark list. An aria-label the page splatted on is kept rather than replaced by it.

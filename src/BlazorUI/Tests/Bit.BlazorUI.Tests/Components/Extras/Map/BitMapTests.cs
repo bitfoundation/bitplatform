@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bit.BlazorUI;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.Map;
@@ -781,6 +782,70 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, identifiers.Count(i => i == CHROME_DETACH));
         Assert.IsTrue(identifiers.LastIndexOf(CHROME_DETACH) < identifiers.LastIndexOf(DISPOSE),
             "The chrome must be detached before the provider disposes the map");
+    }
+
+    [TestMethod]
+    public async Task BitMapDisposeShouldKeepItsDotNetReferenceUntilTheProviderIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until the provider is disposed its listeners still
+        // call back through the reference the map was set up with.
+        SetupSuccessfulMount();
+        var dispose = Context.JSInterop.SetupVoid(DISPOSE, _ => true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var init = Context.JSInterop.Invocations.Single(i => i.Identifier == INIT);
+        var reference = (DotNetObjectReference<BitMap<BitLeafletMapProvider>>)init.Arguments[3]!;
+        var map = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        component.WaitForAssertion(() => Assert.HasCount(1, dispose.Invocations));
+        Assert.AreSame(map, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldIgnoreWhatItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // The chrome and the provider go on reporting until the teardown has detached them, through the reference
+        // that is alive until then - about a map that is going away.
+        SetupSuccessfulMount();
+        var dispose = Context.JSInterop.SetupVoid(DISPOSE, _ => true);
+        var views = 0;
+        var fullscreens = 0;
+        var lost = 0;
+        BitMapLatLng? boundCenter = new(0, 0);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Bind(p => p.Center, boundCenter, v => boundCenter = v);
+            parameters.Add(p => p.OnViewChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapViewState>(this, _ => views++));
+            parameters.Add(p => p.OnFullscreenChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<bool>(this, _ => fullscreens++));
+            parameters.Add(p => p.OnRenderContextLost, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => lost++));
+        });
+
+        var map = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        component.WaitForAssertion(() => Assert.HasCount(1, dispose.Invocations));
+
+        await component.InvokeAsync(() => map._OnViewChanged(ViewPayload(51.5, -0.12, 13)));
+        await component.InvokeAsync(() => map._OnFullscreenChanged(true));
+        await component.InvokeAsync(() => map._OnRenderContextLost());
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.AreEqual(0, views);
+        Assert.AreEqual(0, fullscreens);
+        Assert.AreEqual(0, lost);
+        Assert.AreEqual(0d, boundCenter!.Value.Latitude);
     }
 
     [TestMethod]

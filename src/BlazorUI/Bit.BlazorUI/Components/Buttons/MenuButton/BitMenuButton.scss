@@ -44,6 +44,9 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
 //   --bit-MenuButton-focus-color               focus ring color                                (default: $clr-pri-focus)
 //   --bit-MenuButton-min-height                smallest height of the button, and the width of
 //                                              the chevron half and of an IconOnly header       (default: $siz-ctrl-md)
+//   --bit-MenuButton-min-width                 smallest width of the button; 0 lets a row
+//                                              shrink it past its icon and chevron             (default: min-content, the icon, the chevron
+//                                                                                              and the padding, the label ellipsized away)
 //   --bit-MenuButton-padding                   padding of each half of the button              (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-sm,
 //                                                                                              $siz-ctrl-pad-y-md on a square half)
 //   --bit-MenuButton-gap                       room between the icon, the text and the chevron (default: spacing(1))
@@ -128,6 +131,13 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
     display: flex;
     overflow: hidden;
     width: fit-content;
+    // The floor of the root is the parts that never give up room: the icon, the chevron, the chevron half and the
+    // padding and gaps around them. The label is the one part that does, all the way down, since its min-content
+    // width is zero (see .bit-mnb-btl), so a row narrower than the button ellipsizes the label and stops at the
+    // floor. Without one, the automatic minimum of the scroll container overflow: hidden makes is zero, which let a
+    // flex row too narrow for the button shrink the root under its own icon and chevron - the part left outside was
+    // clipped away, and a tap there reached nothing. The same rule holds in a grid track, a table cell and a block.
+    min-width: var(--bit-MenuButton-min-width, min-content);
     position: relative;
     outline: transparent;
     box-sizing: border-box;
@@ -176,6 +186,8 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
     }
 }
 
+// A full-width menu button keeps the same floor: its label still gives up its room, so it shrinks with the row or
+// the grid track that holds it, down to its icon and chevron.
 .bit-mnb-flw {
     width: 100%;
 }
@@ -344,6 +356,23 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
     white-space: nowrap;
     display: inline-block;
     vertical-align: middle;
+    text-overflow: ellipsis;
+}
+
+// The label of the header is a one-column grid around its text, whose column can give up all of its width: the
+// min-content width of the label is zero while its max-content width is still the text, so the button keeps its
+// width at rest but its floor (see .bit-mnb) is made of the parts that never shrink. A flex item or a block cannot
+// do that - the min-content width of either is the whole line of a nowrap text. The column is a fraction rather
+// than max-content so the text still spans a label wider than it (a full-width one), centered as before. Held in
+// :where() so the rule weighs a single class, and one an app hands the label still wins over it.
+:where(.bit-mnb-opb) > .bit-mnb-btx {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.bit-mnb-btl {
+    min-width: 0;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 

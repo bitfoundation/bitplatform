@@ -3,9 +3,11 @@ name: bit platform CI - Bonboarding E2E
 # The demo app in Chromium, Firefox and WebKit: tours driven with the mouse and the keyboard, spotlight and popover
 # geometry, targets that render late, hide, move or are revealed by the user, focus management, the default theme in a
 # real cascade, and every demo page's accessibility (axe-core, WCAG 2.2 AA), against the demo published the way it
-# ships. It takes far longer than the build-and-unit pipeline (bit.ci.Bonboarding.yml), so it runs only when started
-# by hand. See src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/README.md for what the browser suite proves
-# and how to run it locally.
+# ships - and the published lazy loading sample, which downloads Bit.Bonboarding.wasm only when its admin page opens,
+# trimmed in every engine and, in a job of its own, compiled ahead of time. It takes far longer than the
+# build-and-unit pipeline (bit.ci.Bonboarding.yml), so it runs only when started by hand. See
+# src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/README.md for what the browser suite proves and how to run
+# it locally.
 
 on:
   workflow_dispatch:
@@ -36,7 +38,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -52,6 +54,12 @@ jobs:
     # only there.
     - name: Publish the demo
       run: dotnet publish src/Utilities/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads ships,
+    # trimmed, and only a publish writes the lazy mark into the boot configuration. The suite starts it from its
+    # publish folder. Not ahead of time here: the lazy-loading-aot job below covers that.
+    - name: Publish the lazy loading sample
+      run: dotnet publish src/Utilities/Bonboarding/Samples/Lazy/Bit.Bonboarding.Samples.Lazy/Bit.Bonboarding.Samples.Lazy.csproj -c Release
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj -c Release
@@ -88,4 +96,60 @@ jobs:
         path: |
           **/bonboarding-e2e-${{ matrix.browser }}.trx
           demo.log
+        if-no-files-found: ignore
+
+  # The README's setup for an AOT build: the sample's project file leaves the lazy mark and the router's switch out when
+  # RunAOTCompilation is true, so Bit.Bonboarding loads with the app. LazyLoadingTests (BONBOARDING_E2E_LAZY_AOT=1)
+  # checks that the tour then works all the same and nothing is downloaded on demand.
+  lazy-loading-aot:
+    name: Bonboarding lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # From inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK that publishes.
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # Every test opens the session the suite shares, which starts the demo before anything else. These tests do not
+    # drive it, so its build output is enough here.
+    - name: Build the demo, publish the lazy loading sample with AOT and build the E2E suite
+      run: |
+        dotnet build src/Utilities/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bonboarding/Samples/Lazy/Bit.Bonboarding.Samples.Lazy/Bit.Bonboarding.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+        dotnet build src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run the lazy loading tests against the AOT publish
+      env:
+        BONBOARDING_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E &&
+        dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename bonboarding-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bonboarding-e2e-lazy-aot
+        path: '**/bonboarding-e2e-lazy-aot.trx'
         if-no-files-found: ignore

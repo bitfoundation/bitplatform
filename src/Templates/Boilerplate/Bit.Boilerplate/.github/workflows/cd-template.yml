@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -144,6 +144,7 @@ jobs:
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
           SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
+          LANDINGPAGE_SETTINGS: ${{ secrets.LANDINGPAGE_SETTINGS }}
 #if (api == "Standalone")
           SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
 #endif
@@ -206,7 +207,7 @@ jobs:
           fi
           mv "$deploy_dir/.env.new" "$deploy_dir/.env"
 
-          # The settings no parameter carries - serverweb.env (and serverapi.env) - from KEY=value lines, the same way.
+          # The settings no parameter carries - serverweb.env, landingpage.env (and serverapi.env) - from KEY=value lines, the same way.
           while IFS= read -r file; do
             settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
             : > "$deploy_dir/$file"
@@ -264,6 +265,20 @@ jobs:
           done
           echo "::error::${SERVER_ADDRESS%/}/alive did not answer for five minutes."
           exit 1
+
+      - name: Check the landing page's public address
+        if: vars.LANDING_PAGE_ADDRESS != ''
+        env:
+          LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
+        run: |
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error --max-time 10 "${LANDING_PAGE_ADDRESS%/}/alive"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::${LANDING_PAGE_ADDRESS%/}/alive did not answer for five minutes."
+          exit 1
 #if (cloudflare == true)
 
       - name: Purge Cloudflare cache
@@ -297,7 +312,7 @@ jobs:
           persist-credentials: false
   
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -370,7 +385,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -435,7 +450,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 

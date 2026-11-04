@@ -147,7 +147,12 @@ public class BitBhCommandItem : BitBhComponentBase, IBitBhCollectionItem, IDispo
 
     private void HandlePointerMove(PointerEventArgs e)
     {
-        if (Disabled || CommandContext is null || CommandContext.IsActive(this)) return;
+        if (CommandContext is null) return;
+        // The pointer did not move: the content moved under it.
+        var position = (e.ClientX, e.ClientY);
+        if (CommandContext.LastPointer == position) return;
+        CommandContext.LastPointer = position;
+        if (Disabled || CommandContext.IsActive(this)) return;
         CommandContext.SetActive(this, scroll: false);
     }
 

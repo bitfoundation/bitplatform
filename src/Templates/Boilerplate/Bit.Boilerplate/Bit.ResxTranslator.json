@@ -7,7 +7,7 @@
     "SupportedLanguages__Comment__1": "Add or remove languages as needed. Use ISO language codes (e.g., 'es' for Spanish, 'fr' for French).",
     "SupportedLanguages__Comment__2": "Update MainActivity's DataPathPrefixes and CultureInfoManager's SupportedCultures as required.",
 
-    "ResxPaths": [ "/src/**/*.resx" ],
+    "ResxPaths": [ "/src/Shared/**/*.resx", "/src/Server/**/*.resx", "/src/Client/**/*.resx", "/src/Workbench/**/*.resx" ],
 
     "ChatOptions": {
         "Temperature": "0"

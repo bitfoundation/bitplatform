@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Sumwise: صدور فاکتور و دفترداری برای فریلنسرهای اروپا</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>در یک دقیقه فاکتور بفرستید، پولتان را با کارت یا کد QR بانکی بگیرید و بگذارید Sumwise پرداخت‌ها را تطبیق دهد، رسیدها را بایگانی کند و پیش‌نویس اظهارنامه‌ی ارزش افزوده را آماده کند. تا 3 فاکتور در ماه رایگان.</value>
+    </data>
+    <data name="NavMonth" xml:space="preserve">
+        <value>چطور کار می‌کند</value>
+    </data>
+    <data name="NavSavings" xml:space="preserve">
+        <value>وقتی که پس می‌گیرید</value>
+    </data>
+    <data name="NavSecurity" xml:space="preserve">
+        <value>امنیت</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>قیمت‌ها</value>
+    </data>
+    <data name="NavStart" xml:space="preserve">
+        <value>شروع رایگان</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>صدور فاکتور و دفترداری برای فریلنسرها و کسب‌وکارهای کوچک در اروپا. ساخت وین، از سال 2021.</value>
+    </data>
+    <data name="FooterSavings" xml:space="preserve">
+        <value>ماشین‌حساب صرفه‌جویی</value>
+    </data>
+    <data name="FooterGuarantee" xml:space="preserve">
+        <value>ضمانت 30 روزه‌ی بازگشت پول</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>از Sumwise بپرسید</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>فریلنسر هستم و در آلمان کار می‌کنم. به کار من می‌آید؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>حسابدارم می‌تواند دفترهایم را ببیند؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>ضمانت بازگشت پول چطور کار می‌کند؟</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>صدور فاکتور و دفترداری برای فریلنسرها</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>شما فاکتور را بفرستید؛ دفترداری با Sumwise.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>در یک دقیقه فاکتور بنویسید، پولتان را با کارت یا حواله‌ی بانکی بگیرید و بگذارید Sumwise پرداخت را تطبیق دهد، رسید را بایگانی کند و اظهارنامه‌ی ارزش افزوده را آماده کند. برای فریلنسرها و کسب‌وکارهای کوچک در سراسر اتحادیه‌ی اروپا، بریتانیا و سوئیس.</value>
+    </data>
+    <data name="HeroStart" xml:space="preserve">
+        <value>شروع رایگان</value>
+    </data>
+    <data name="HeroPricing" xml:space="preserve">
+        <value>دیدن قیمت‌ها</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>تا 3 فاکتور در ماه رایگان، بدون کارت بانکی. پلن‌های پولی از ماهی 9 یورو، بدون ارزش افزوده.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>یک فاکتور از داخل اپ. ساعت، نرخ یا ارزش افزوده را عوض کنید و بعد بفرستیدش.</value>
+    </data>
+    <data name="DemoFromTrade" xml:space="preserve">
+        <value>تصویرگری · وین</value>
+    </data>
+    <data name="DemoInvoice" xml:space="preserve">
+        <value>فاکتور</value>
+    </data>
+    <data name="DemoBilledTo" xml:space="preserve">
+        <value>خریدار</value>
+    </data>
+    <data name="DemoClientCity" xml:space="preserve">
+        <value>گراتس، اتریش</value>
+    </data>
+    <data name="DemoIssued" xml:space="preserve">
+        <value>تاریخ صدور</value>
+    </data>
+    <data name="DemoDue" xml:space="preserve">
+        <value>سررسید</value>
+    </data>
+    <data name="DemoDescription" xml:space="preserve">
+        <value>شرح</value>
+    </data>
+    <data name="DemoHours" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="DemoRateShort" xml:space="preserve">
+        <value>نرخ</value>
+    </data>
+    <data name="DemoAmount" xml:space="preserve">
+        <value>مبلغ</value>
+    </data>
+    <data name="DemoItem" xml:space="preserve">
+        <value>تصویرگری کاتالوگ پاییزه</value>
+    </data>
+    <data name="DemoSubtotal" xml:space="preserve">
+        <value>جمع</value>
+    </data>
+    <data name="DemoVatLine" xml:space="preserve">
+        <value>ارزش افزوده 20%</value>
+    </data>
+    <data name="DemoVatExempt" xml:space="preserve">
+        <value>معاف از ارزش افزوده، طرح کسب‌وکارهای کوچک</value>
+    </data>
+    <data name="DemoVatExemptShort" xml:space="preserve">
+        <value>بدون ارزش افزوده (کسب‌وکار کوچک)</value>
+    </data>
+    <data name="DemoTotal" xml:space="preserve">
+        <value>مبلغ کل</value>
+    </data>
+    <data name="DemoPayWithin" xml:space="preserve">
+        <value>قابل پرداخت ظرف 14 روز</value>
+    </data>
+    <data name="DemoStamp" xml:space="preserve">
+        <value>ارسال شد</value>
+    </data>
+    <data name="DemoInvoices" xml:space="preserve">
+        <value>فاکتورها</value>
+    </data>
+    <data name="DemoNewInvoice" xml:space="preserve">
+        <value>فاکتور تازه</value>
+    </data>
+    <data name="DemoRate" xml:space="preserve">
+        <value>نرخ (یورو در ساعت)</value>
+    </data>
+    <data name="DemoAddVat" xml:space="preserve">
+        <value>افزودن ارزش افزوده (20%)</value>
+    </data>
+    <data name="DemoSend" xml:space="preserve">
+        <value>ارسال فاکتور</value>
+    </data>
+    <data name="DemoSentTitle" xml:space="preserve">
+        <value>فاکتور ارسال شد</value>
+    </data>
+    <data name="DemoSentTo" xml:space="preserve">
+        <value>به</value>
+    </data>
+    <data name="DemoSentDue" xml:space="preserve">
+        <value>سررسید {0}. اگر دیر شود، سه روز بعد یک یادآوری مؤدبانه برای مشتری می‌رود.</value>
+    </data>
+    <data name="DemoStepSent" xml:space="preserve">
+        <value>همین الان ارسال شد</value>
+    </data>
+    <data name="DemoStepOpened" xml:space="preserve">
+        <value>باز شدن توسط مشتری</value>
+    </data>
+    <data name="DemoStepPaid" xml:space="preserve">
+        <value>پرداخت و تطبیق</value>
+    </data>
+    <data name="DemoSentNote" xml:space="preserve">
+        <value>وقتی پول به حسابتان برسد، Sumwise خودش آن را با همین فاکتور تطبیق می‌دهد.</value>
+    </data>
+    <data name="DemoAnother" xml:space="preserve">
+        <value>فاکتور بعدی</value>
+    </data>
+    <data name="MoneyEUR" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="MoneyGBP" xml:space="preserve">
+        <value>{0} پوند</value>
+    </data>
+    <data name="MoneyCHF" xml:space="preserve">
+        <value>{0} فرانک</value>
+    </data>
+    <data name="MoneyPLN" xml:space="preserve">
+        <value>{0} زلوتی</value>
+    </data>
+    <data name="MoneySEK" xml:space="preserve">
+        <value>{0} کرون</value>
+    </data>
+    <data name="MonthEyebrow" xml:space="preserve">
+        <value>چطور کار می‌کند</value>
+    </data>
+    <data name="MonthTitle" xml:space="preserve">
+        <value>یک ماه با Sumwise</value>
+    </data>
+    <data name="MonthLede" xml:space="preserve">
+        <value>هر ماه همین پنج لحظه تکرار می‌شود و Sumwise پیش از آن‌که سراغشان بروید، بیشترِ کار هر کدام را کرده است.</value>
+    </data>
+    <data name="Month1When" xml:space="preserve">
+        <value>روز اول ماه</value>
+    </data>
+    <data name="Month1Title" xml:space="preserve">
+        <value>فاکتورها ارسال می‌شوند</value>
+    </data>
+    <data name="Month1Body" xml:space="preserve">
+        <value>فاکتورهای تکراری ساعت 08:00 خودشان ارسال می‌شوند. یک فاکتور تکی هم یک دقیقه روی موبایل وقت می‌گیرد.</value>
+    </data>
+    <data name="Month2When" xml:space="preserve">
+        <value>روز 2 تا 10</value>
+    </data>
+    <data name="Month2Title" xml:space="preserve">
+        <value>پرداخت‌ها خودشان تطبیق می‌خورند</value>
+    </data>
+    <data name="Month2Body" xml:space="preserve">
+        <value>حساب بانکی هر روز همگام می‌شود و هر پرداخت فاکتورش را پیدا می‌کند، حتی وقتی مشتری دو فاکتور را یک‌جا بپردازد.</value>
+    </data>
+    <data name="Month3When" xml:space="preserve">
+        <value>هر روز</value>
+    </data>
+    <data name="Month3Title" xml:space="preserve">
+        <value>رسید با یک عکس</value>
+    </data>
+    <data name="Month3Body" xml:space="preserve">
+        <value>پای صندوق از رسید عکس بگیرید. Sumwise تاریخ، مبلغ و ارزش افزوده را می‌خواند و بایگانی‌اش می‌کند تا شما فقط تأیید کنید.</value>
+    </data>
+    <data name="Month4When" xml:space="preserve">
+        <value>پایان دوره‌ی مالیاتی</value>
+    </data>
+    <data name="Month4Title" xml:space="preserve">
+        <value>پیش‌نویس ارزش افزوده، آماده‌ی بررسی</value>
+    </data>
+    <data name="Month4Body" xml:space="preserve">
+        <value>پیش‌نویس اظهارنامه آماده است و پشت هر عدد، فاکتور یا رسید مربوطش. ارسالش با شما یا حسابدارتان است.</value>
+    </data>
+    <data name="Month5When" xml:space="preserve">
+        <value>پایان سال</value>
+    </data>
+    <data name="Month5Title" xml:space="preserve">
+        <value>دفترهایی که حسابدارتان باز می‌کند</value>
+    </data>
+    <data name="Month5Body" xml:space="preserve">
+        <value>کل سال را در یک فایل خروجی بگیرید، یا به حسابدارتان دسترسی فقط‌خواندنی و رایگان بدهید.</value>
+    </data>
+    <data name="SavingsEyebrow" xml:space="preserve">
+        <value>وقتی که پس می‌دهد</value>
+    </data>
+    <data name="SavingsTitle" xml:space="preserve">
+        <value>یک ماه کار اداری واقعاً چقدر برایتان تمام می‌شود</value>
+    </data>
+    <data name="SavingsHoursLabel" xml:space="preserve">
+        <value>ساعت‌هایی که الان هر ماه صرف فاکتور، رسید و ارزش افزوده می‌کنید</value>
+    </data>
+    <data name="SavingsRateLabel" xml:space="preserve">
+        <value>ارزش یک ساعت کار شما</value>
+    </data>
+    <data name="SavingsHoursValue" xml:space="preserve">
+        <value>{0} ساعت در ماه</value>
+    </data>
+    <data name="SavingsRateValue" xml:space="preserve">
+        <value>{0} یورو در ساعت</value>
+    </data>
+    <data name="SavingsBasis" xml:space="preserve">
+        <value>بر پایه‌ی نظرسنجی سال 2026 از 1٬120 مشتری که بعد از سه ماه کار با Sumwise، 70% وقت کمتری صرف کارهای اداری می‌کنند.</value>
+    </data>
+    <data name="SavingsLead" xml:space="preserve">
+        <value>با Sumwise، حساب تقریباً این می‌شود</value>
+    </data>
+    <data name="SavingsHoursBack" xml:space="preserve">
+        <value>ساعت وقت آزاد در سال</value>
+    </data>
+    <data name="SavingsMoneyBack" xml:space="preserve">
+        <value>ارزش وقت شما در سال، بعد از کم کردن هزینه‌ی Solo</value>
+    </data>
+    <data name="SavingsMath" xml:space="preserve">
+        <value>{0} ساعت در ماه، 70% کمتر، در 12 ماه: {1} ساعت. {1} ساعت با نرخ {2}، منهای {3} هزینه‌ی Solo: {4}.</value>
+    </data>
+    <data name="FeaturesEyebrow" xml:space="preserve">
+        <value>چه چیزهایی دارد</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>هر چه دفترهای یک فریلنسر لازم دارد، ردیف‌به‌ردیف</value>
+    </data>
+    <data name="FeaturesLede" xml:space="preserve">
+        <value>همه‌ی این ردیف‌ها در همه‌ی پلن‌های پولی هست. پلن رایگان ردیف اول را دارد، برای سه فاکتور در ماه.</value>
+    </data>
+    <data name="ReceiptHead" xml:space="preserve">
+        <value>رسید 0412</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>فاکتور و پیش‌فاکتور</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>لوگو و شماره‌گذاری خودتان، کد QR بانکی که اپ بانک‌های اروپایی می‌خوانند، و پیوند پرداخت با کارت روی هر فاکتور.</value>
+    </data>
+    <data name="Feature1Tag" xml:space="preserve">
+        <value>1 دقیقه</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>حساب بانکی که خودش تطبیق می‌دهد</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>از راه بانکداری باز به بیش از 2٬500 بانک اروپایی وصل می‌شود و هر پرداخت را با فاکتورش تطبیق می‌دهد.</value>
+    </data>
+    <data name="Feature2Tag" xml:space="preserve">
+        <value>روزانه</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>رسید با عکس</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>تاریخ، مبلغ و ارزش افزوده‌ی رسید را در حدود دو ثانیه می‌خواند و عکسش را کنار همان ثبت نگه می‌دارد.</value>
+    </data>
+    <data name="Feature3Tag" xml:space="preserve">
+        <value>2 ثانیه</value>
+    </data>
+    <data name="Feature4Title" xml:space="preserve">
+        <value>ارزش افزوده، آماده</value>
+    </data>
+    <data name="Feature4Body" xml:space="preserve">
+        <value>پیش‌نویس اظهارنامه برای هر دوره‌ی مالیاتی، با فاکتور یا رسید پشت هر عدد. ارسالش با شما یا حسابدارتان.</value>
+    </data>
+    <data name="Feature4Tag" xml:space="preserve">
+        <value>هر دوره</value>
+    </data>
+    <data name="Feature5Title" xml:space="preserve">
+        <value>یادآوری‌های مؤدبانه</value>
+    </data>
+    <data name="Feature5Body" xml:space="preserve">
+        <value>یک یادآوری دوستانه سه روز بعد از سررسید و یک یادآوری جدی‌تر بعد از چهارده روز. یا هیچ‌کدام، اگر ترجیح بدهید.</value>
+    </data>
+    <data name="Feature5Tag" xml:space="preserve">
+        <value>خودکار</value>
+    </data>
+    <data name="Feature6Title" xml:space="preserve">
+        <value>حسابدارتان، به‌عنوان مهمان</value>
+    </data>
+    <data name="Feature6Body" xml:space="preserve">
+        <value>دسترسی فقط‌خواندنی برای حسابدارتان، رایگان در همه‌ی پلن‌های پولی، با خروجی در قالب‌هایی که خودش استفاده می‌کند.</value>
+    </data>
+    <data name="Feature6Tag" xml:space="preserve">
+        <value>رایگان</value>
+    </data>
+    <data name="ReceiptTotal" xml:space="preserve">
+        <value>کار اداری باقی‌مانده برای شما در ماه</value>
+    </data>
+    <data name="ReceiptTotalValue" xml:space="preserve">
+        <value>حدود 1 ساعت</value>
+    </data>
+    <data name="VoicesEyebrow" xml:space="preserve">
+        <value>فریلنسرهایی که با Sumwise کار می‌کنند</value>
+    </data>
+    <data name="VoicesTitle" xml:space="preserve">
+        <value>یکشنبه‌های کمتری پای کاغذبازی</value>
+    </data>
+    <data name="Voice1Trade" xml:space="preserve">
+        <value>مترجم · پورتو</value>
+    </data>
+    <data name="Voice1Quote" xml:space="preserve">
+        <value>اظهارنامه‌ی ارزش افزوده قبلاً یک یکشنبه‌ی کامل وقتم را می‌گرفت. حالا پیش‌نویسش پایان فصل آماده است و حسابدارم ده دقیقه‌ای بررسی‌اش می‌کند.</value>
+    </data>
+    <data name="Voice1Name" xml:space="preserve">
+        <value>اینس کاروالیو</value>
+    </data>
+    <data name="Voice2Trade" xml:space="preserve">
+        <value>عکاس · کراکوف</value>
+    </data>
+    <data name="Voice2Quote" xml:space="preserve">
+        <value>از وقتی هر فاکتور کد QR بانکی دارد، مشتری‌ها زودتر پول می‌دهند. حالا بیشترشان ظرف یک هفته پرداخت می‌کنند.</value>
+    </data>
+    <data name="Voice2Name" xml:space="preserve">
+        <value>توماش ووییچیک</value>
+    </data>
+    <data name="Voice3Trade" xml:space="preserve">
+        <value>طراح تجربه‌ی کاربری · گنت</value>
+    </data>
+    <data name="Voice3Quote" xml:space="preserve">
+        <value>از رسیدها پای صندوق عکس می‌گیرم و فراموششان می‌کنم. آخر سال، برای اولین بار در نُه سال، جعبه‌ای پر از رسید نداشتم که مرتبش کنم.</value>
+    </data>
+    <data name="Voice3Name" xml:space="preserve">
+        <value>لوته پترز</value>
+    </data>
+    <data name="SecurityEyebrow" xml:space="preserve">
+        <value>امنیت</value>
+    </data>
+    <data name="SecurityTitle" xml:space="preserve">
+        <value>امنیتی که بشود برای حسابدارتان توضیحش داد</value>
+    </data>
+    <data name="SecurityLede" xml:space="preserve">
+        <value>داده‌هایتان کجا نگه داشته می‌شود، چه کسی بازش می‌کند و تا کی می‌ماند، به زبان ساده.</value>
+    </data>
+    <data name="SecurityResidency" xml:space="preserve">
+        <value>نگهداری در وین و فرانکفورت</value>
+    </data>
+    <data name="Security1Title" xml:space="preserve">
+        <value>رمزگذاری‌شده در مسیر و در ذخیره</value>
+    </data>
+    <data name="Security1Body" xml:space="preserve">
+        <value>TLS 1.3 بین دستگاه شما و ما، AES-256 برای هر چه ذخیره می‌کنیم، و پشتیبان‌هایی که به همان شکل رمزگذاری شده‌اند.</value>
+    </data>
+    <data name="Security2Title" xml:space="preserve">
+        <value>در اتحادیه‌ی اروپا می‌ماند</value>
+    </data>
+    <data name="Security2Body" xml:space="preserve">
+        <value>دفترهای شما در مراکز داده‌ی وین و فرانکفورت نگه داشته می‌شوند و هیچ‌وقت از اتحادیه‌ی اروپا بیرون نمی‌روند.</value>
+    </data>
+    <data name="Security3Title" xml:space="preserve">
+        <value>ورود دومرحله‌ای</value>
+    </data>
+    <data name="Security3Body" xml:space="preserve">
+        <value>با اپ احراز هویت یا passkey. خودتان تعیین می‌کنید کدام دستگاه‌ها وارد بمانند.</value>
+    </data>
+    <data name="Security4Title" xml:space="preserve">
+        <value>تا هر وقت قانون بخواهد</value>
+    </data>
+    <data name="Security4Body" xml:space="preserve">
+        <value>به‌طور پیش‌فرض ده سال، یعنی طولانی‌ترین مدتی که هر یک از کشورهای ما می‌خواهد. هر وقت بخواهید از همه‌چیز خروجی بگیرید.</value>
+    </data>
+    <data name="SecuritySample" xml:space="preserve">
+        <value>متن نمونه. این‌جا تنظیمات واقعی خودتان را بنویسید، و فقط چیزی را که بتوانید به حسابرس نشان بدهید.</value>
+    </data>
+    <data name="PlansTeaserTitle" xml:space="preserve">
+        <value>شروع رایگان، 9 یورو وقتی همه‌چیز را لازم دارید</value>
+    </data>
+    <data name="PlansTeaserBody" xml:space="preserve">
+        <value>قیمت‌ها ماهانه و بدون ارزش افزوده‌اند. همه‌ی پلن‌های پولی ضمانت 30 روزه‌ی بازگشت پول دارند و هر ماه که بخواهید لغو می‌شوند.</value>
+    </data>
+    <data name="PlansTeaserCta" xml:space="preserve">
+        <value>مقایسه‌ی پلن‌ها</value>
+    </data>
+    <data name="PlanFree" xml:space="preserve">
+        <value>رایگان</value>
+    </data>
+    <data name="PlanSolo" xml:space="preserve">
+        <value>Solo</value>
+    </data>
+    <data name="PlanStudio" xml:space="preserve">
+        <value>Studio</value>
+    </data>
+    <data name="PlanCompany" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="TeaserFreePrice" xml:space="preserve">
+        <value>0 یورو</value>
+    </data>
+    <data name="TeaserFreeNote" xml:space="preserve">
+        <value>3 فاکتور در ماه</value>
+    </data>
+    <data name="TeaserSoloPrice" xml:space="preserve">
+        <value>9 یورو</value>
+    </data>
+    <data name="TeaserSoloNote" xml:space="preserve">
+        <value>برای یک فریلنسر</value>
+    </data>
+    <data name="TeaserStudioPrice" xml:space="preserve">
+        <value>19 یورو</value>
+    </data>
+    <data name="TeaserStudioNote" xml:space="preserve">
+        <value>تا 3 نفر</value>
+    </data>
+    <data name="TeaserCompanyPrice" xml:space="preserve">
+        <value>39 یورو</value>
+    </data>
+    <data name="TeaserCompanyNote" xml:space="preserve">
+        <value>تا 10 نفر</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>قیمت‌ها | Sumwise</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>Sumwise تا 3 فاکتور در ماه رایگان است. پلن Solo ماهی 9 یورو، Studio ماهی 19 یورو و Company ماهی 39 یورو است؛ با یا بدون ارزش افزوده‌ی کشور شما و با ضمانت 30 روزه‌ی بازگشت پول.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>پلن‌هایی برای یک نفر یا یک تیم کوچک، با یا بدون ارزش افزوده</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>با سه فاکتور در ماه رایگان شروع کنید. پلن‌های پولی ماهانه حساب می‌شوند، هر ماه قابل لغو هستند و ضمانت 30 روزه‌ی بازگشت پول دارند.</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>پلن‌ها</value>
+    </data>
+    <data name="CountryLabel" xml:space="preserve">
+        <value>کسب‌وکار شما کجاست؟</value>
+    </data>
+    <data name="VatToggle" xml:space="preserve">
+        <value>نمایش قیمت با ارزش افزوده</value>
+    </data>
+    <data name="VatRateNote" xml:space="preserve">
+        <value>{0}: ارزش افزوده {1}%، قیمت به {2}.</value>
+    </data>
+    <data name="CountryAT" xml:space="preserve">
+        <value>اتریش</value>
+    </data>
+    <data name="CountryBE" xml:space="preserve">
+        <value>بلژیک</value>
+    </data>
+    <data name="CountryFR" xml:space="preserve">
+        <value>فرانسه</value>
+    </data>
+    <data name="CountryDE" xml:space="preserve">
+        <value>آلمان</value>
+    </data>
+    <data name="CountryIE" xml:space="preserve">
+        <value>ایرلند</value>
+    </data>
+    <data name="CountryIT" xml:space="preserve">
+        <value>ایتالیا</value>
+    </data>
+    <data name="CountryNL" xml:space="preserve">
+        <value>هلند</value>
+    </data>
+    <data name="CountryPL" xml:space="preserve">
+        <value>لهستان</value>
+    </data>
+    <data name="CountryPT" xml:space="preserve">
+        <value>پرتغال</value>
+    </data>
+    <data name="CountryES" xml:space="preserve">
+        <value>اسپانیا</value>
+    </data>
+    <data name="CountrySE" xml:space="preserve">
+        <value>سوئد</value>
+    </data>
+    <data name="CountryCH" xml:space="preserve">
+        <value>سوئیس</value>
+    </data>
+    <data name="CountryGB" xml:space="preserve">
+        <value>بریتانیا</value>
+    </data>
+    <data name="CurrencyEUR" xml:space="preserve">
+        <value>یورو</value>
+    </data>
+    <data name="CurrencyGBP" xml:space="preserve">
+        <value>پوند</value>
+    </data>
+    <data name="CurrencyCHF" xml:space="preserve">
+        <value>فرانک سوئیس</value>
+    </data>
+    <data name="CurrencyPLN" xml:space="preserve">
+        <value>زلوتی</value>
+    </data>
+    <data name="CurrencySEK" xml:space="preserve">
+        <value>کرون سوئد</value>
+    </data>
+    <data name="PlanPopular" xml:space="preserve">
+        <value>انتخاب بیشتر فریلنسرها</value>
+    </data>
+    <data name="PerMonth" xml:space="preserve">
+        <value>در ماه</value>
+    </data>
+    <data name="PlanFreeForever" xml:space="preserve">
+        <value>بدون کارت بانکی و بدون محدودیت زمانی.</value>
+    </data>
+    <data name="PriceWithVat" xml:space="preserve">
+        <value>با {0}% ارزش افزوده. بدون ارزش افزوده: {1}.</value>
+    </data>
+    <data name="PriceWithoutVat" xml:space="preserve">
+        <value>بدون ارزش افزوده. با {1}% ارزش افزوده: {0}.</value>
+    </data>
+    <data name="PlanChoose" xml:space="preserve">
+        <value>انتخاب {0}</value>
+    </data>
+    <data name="PlanFreeSummary" xml:space="preserve">
+        <value>برای امتحان کردن Sumwise، یا کار جانبی با چند مشتری.</value>
+    </data>
+    <data name="PlanFreeFeature1" xml:space="preserve">
+        <value>3 فاکتور در ماه</value>
+    </data>
+    <data name="PlanFreeFeature2" xml:space="preserve">
+        <value>پیش‌فاکتور و یادآوری پرداخت</value>
+    </data>
+    <data name="PlanFreeFeature3" xml:space="preserve">
+        <value>کد QR بانکی و پیوند پرداخت با کارت</value>
+    </data>
+    <data name="PlanFreeFeature4" xml:space="preserve">
+        <value>اپ وب و موبایل، 1 نفر</value>
+    </data>
+    <data name="PlanSoloSummary" xml:space="preserve">
+        <value>هر چه یک فریلنسر برای دفترداری لازم دارد.</value>
+    </data>
+    <data name="PlanSoloFeature1" xml:space="preserve">
+        <value>فاکتور و پیش‌فاکتور نامحدود</value>
+    </data>
+    <data name="PlanSoloFeature2" xml:space="preserve">
+        <value>1 حساب بانکی، با همگام‌سازی روزانه</value>
+    </data>
+    <data name="PlanSoloFeature3" xml:space="preserve">
+        <value>رسید با عکس</value>
+    </data>
+    <data name="PlanSoloFeature4" xml:space="preserve">
+        <value>پیش‌نویس اظهارنامه در هر دوره</value>
+    </data>
+    <data name="PlanSoloFeature5" xml:space="preserve">
+        <value>دسترسی رایگان برای حسابدارتان</value>
+    </data>
+    <data name="PlanStudioSummary" xml:space="preserve">
+        <value>برای یک استودیوی کوچک که کار و کاغذبازی را با هم تقسیم می‌کند.</value>
+    </data>
+    <data name="PlanStudioFeature1" xml:space="preserve">
+        <value>هر چه Solo دارد</value>
+    </data>
+    <data name="PlanStudioFeature2" xml:space="preserve">
+        <value>تا 3 نفر</value>
+    </data>
+    <data name="PlanStudioFeature3" xml:space="preserve">
+        <value>3 حساب بانکی</value>
+    </data>
+    <data name="PlanStudioFeature4" xml:space="preserve">
+        <value>فاکتور تکراری</value>
+    </data>
+    <data name="PlanStudioFeature5" xml:space="preserve">
+        <value>فاکتور با هر واحد پول</value>
+    </data>
+    <data name="PlanCompanySummary" xml:space="preserve">
+        <value>برای کسب‌وکار کوچکی با کارمند، چند حساب و حقوق و دستمزد.</value>
+    </data>
+    <data name="PlanCompanyFeature1" xml:space="preserve">
+        <value>هر چه Studio دارد</value>
+    </data>
+    <data name="PlanCompanyFeature2" xml:space="preserve">
+        <value>تا 10 نفر</value>
+    </data>
+    <data name="PlanCompanyFeature3" xml:space="preserve">
+        <value>حساب بانکی نامحدود</value>
+    </data>
+    <data name="PlanCompanyFeature4" xml:space="preserve">
+        <value>خروجی حقوق و دستمزد برای حسابدار</value>
+    </data>
+    <data name="PlanCompanyFeature5" xml:space="preserve">
+        <value>پشتیبانی تلفنی</value>
+    </data>
+    <data name="PricingNote" xml:space="preserve">
+        <value>برای هر واحد پول یک قیمت ثابت تعیین کرده‌ایم که با نرخ ارز بالا و پایین نمی‌رود. ارزش افزوده‌ی نشان‌داده‌شده نرخ استاندارد کشور شماست. اگر کسب‌وکارتان در کشوری از اتحادیه‌ی اروپا به‌جز اتریش شماره‌ی مالیاتی دارد، به ما ارزش افزوده نمی‌پردازید و قاعده‌ی پرداخت معکوس (reverse charge) اعمال می‌شود.</value>
+    </data>
+    <data name="GuaranteeSealDays" xml:space="preserve">
+        <value>روز ضمانت بازگشت پول</value>
+    </data>
+    <data name="GuaranteeTitle" xml:space="preserve">
+        <value>30 روز برای تغییر تصمیم</value>
+    </data>
+    <data name="GuaranteeBody" xml:space="preserve">
+        <value>اگر Sumwise به کارتان نیامد، ظرف 30 روز از اولین پرداخت برایمان بنویسید تا کل مبلغ را برگردانیم.</value>
+    </data>
+    <data name="Guarantee1" xml:space="preserve">
+        <value>نه فرمی برای پر کردن، نه سؤالی درباره‌ی دلیلش.</value>
+    </data>
+    <data name="Guarantee2" xml:space="preserve">
+        <value>مبلغ ظرف 5 روز کاری به کارت یا حسابتان برمی‌گردد.</value>
+    </data>
+    <data name="Guarantee3" xml:space="preserve">
+        <value>دفترهایتان مال خودتان است: پیش از رفتن از آن‌ها خروجی بگیرید.</value>
+    </data>
+    <data name="BillingEyebrow" xml:space="preserve">
+        <value>پرداخت</value>
+    </data>
+    <data name="BillingTitle" xml:space="preserve">
+        <value>پرسش‌های پرداخت</value>
+    </data>
+    <data name="BillingLede" xml:space="preserve">
+        <value>بقیه‌ی پرسش‌ها را دستیار همین صفحه جواب می‌دهد. می‌تواند بگوید Sumwise چطور کار می‌کند، ولی مشاوره‌ی مالیاتی نمی‌دهد.</value>
+    </data>
+    <data name="BillingFaq1Question" xml:space="preserve">
+        <value>پلن رایگان واقعاً رایگان است؟</value>
+    </data>
+    <data name="BillingFaq1Answer" xml:space="preserve">
+        <value>بله. سه فاکتور در ماه، پیش‌فاکتور و یادآوری پرداخت، بدون کارت بانکی و بدون محدودیت زمانی. هر وقت بیشتر لازم داشتید، به یک پلن پولی بروید.</value>
+    </data>
+    <data name="BillingFaq2Question" xml:space="preserve">
+        <value>ارزش افزوده به قیمت اضافه می‌شود؟</value>
+    </data>
+    <data name="BillingFaq2Answer" xml:space="preserve">
+        <value>قیمت‌ها بدون ارزش افزوده نشان داده می‌شوند، مگر این‌که نمایشش را روشن کنید. ارزش افزوده را با نرخ استاندارد کشور شما می‌گیریم. کسب‌وکارهایی که در کشور دیگری از اتحادیه‌ی اروپا شماره‌ی مالیاتی دارند، طبق قاعده‌ی پرداخت معکوس چیزی نمی‌پردازند؛ کسب‌وکارهای اتریشی 20% می‌پردازند.</value>
+    </data>
+    <data name="BillingFaq3Question" xml:space="preserve">
+        <value>می‌شود پلن را عوض یا لغو کرد؟</value>
+    </data>
+    <data name="BillingFaq3Answer" xml:space="preserve">
+        <value>هر وقت بخواهید، از تنظیمات. ارتقا همان لحظه شروع می‌شود و فقط مابه‌التفاوت باقی‌مانده‌ی ماه را می‌پردازید. کاهش پلن یا لغو آن از پایان همان ماه اعمال می‌شود.</value>
+    </data>
+    <data name="BillingFaq4Question" xml:space="preserve">
+        <value>ضمانت بازگشت پول چطور کار می‌کند؟</value>
+    </data>
+    <data name="BillingFaq4Answer" xml:space="preserve">
+        <value>ظرف 30 روز از اولین پرداخت به hello@sumwise.example بنویسید. کل مبلغ را ظرف 5 روز کاری به همان کارت یا حسابی که با آن پرداخته‌اید برمی‌گردانیم.</value>
+    </data>
+    <data name="BillingFaq5Question" xml:space="preserve">
+        <value>اگر بروم، دفترهایم چه می‌شوند؟</value>
+    </data>
+    <data name="BillingFaq5Answer" xml:space="preserve">
+        <value>مال خودتان است. هر وقت بخواهید از همه‌چیز خروجی PDF و CSV بگیرید. بعد از لغو، حسابتان 12 ماه قابل خواندن می‌ماند و بعد حذفش می‌کنیم.</value>
+    </data>
+    <data name="BillingFaq6Question" xml:space="preserve">
+        <value>برای اشتراکم فاکتور می‌گیرم؟</value>
+    </data>
+    <data name="BillingFaq6Answer" xml:space="preserve">
+        <value>هر ماه، با ایمیل و در تنظیمات. البته که با خود Sumwise صادر می‌شود.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>درباره‌ی Sumwise</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Sumwise را یک مشاور مالیاتی و یک برنامه‌نویس فریلنسر سال 2021 در وین راه انداختند. حالا 31 نفر رویش کار می‌کنند، برای حدود 48٬000 فریلنسر و کسب‌وکار کوچک.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>ما نرم‌افزار فاکتور و دفترداری می‌سازیم برای آدم‌هایی که ترجیح می‌دهند وقتشان را صرف کار اصلی‌شان کنند. 31 نفریم در وین، برای حدود 48٬000 فریلنسر و کسب‌وکار کوچک.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>یک مشاور مالیاتی و یک فریلنسر</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>کلارا ونینگر یازده سال مشاور مالیاتی در وین بود. هر بهار مشتری‌های فریلنسرش با همان جعبه‌ی پر از رسید و همان عذرخواهی همیشگی سراغش می‌آمدند.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>سال 2021 او با یوناس پتروویچ، برنامه‌نویسی فریلنسر و یکی از همان مشتری‌ها، Sumwise را شروع کرد. ایده‌شان ساده بود: اگر فاکتورها، پرداخت‌ها و رسیدها از اول یک‌جا باشند، دفترها تقریباً خودشان نوشته می‌شوند و حسابدار به‌جای تایپ کردن، فقط بررسی می‌کند.</value>
+    </data>
+    <data name="StoryQuote" xml:space="preserve">
+        <value>ما مشاوره‌ی مالیاتی نمی‌دهیم و هیچ‌وقت هم نخواهیم داد. تایپ کردن با ما، فکر کردن با شما و حسابدارتان.</value>
+    </data>
+    <data name="StoryQuoteBy" xml:space="preserve">
+        <value>کلارا ونینگر، هم‌بنیان‌گذار</value>
+    </data>
+    <data name="PromisesTitle" xml:space="preserve">
+        <value>سه قولی که می‌دهیم</value>
+    </data>
+    <data name="Promise1Title" xml:space="preserve">
+        <value>دفترهایتان مال خودتان است</value>
+    </data>
+    <data name="Promise1Body" xml:space="preserve">
+        <value>هر وقت بخواهید از همه‌چیز خروجی بگیرید، در قالب‌هایی که هر حسابداری باز می‌کند. رفتن از پیش ما پنج دقیقه طول می‌کشد.</value>
+    </data>
+    <data name="Promise2Title" xml:space="preserve">
+        <value>مشاوره‌ی مالیاتیِ پنهان در کار نیست</value>
+    </data>
+    <data name="Promise2Body" xml:space="preserve">
+        <value>Sumwise عددها را آماده می‌کند و نشان می‌دهد هر کدام از کجا آمده. تصمیم‌ها با شما و حسابدارتان می‌ماند.</value>
+    </data>
+    <data name="Promise3Title" xml:space="preserve">
+        <value>قیمت‌هایی که یواشکی بالا نمی‌روند</value>
+    </data>
+    <data name="Promise3Body" xml:space="preserve">
+        <value>هر تغییر قیمت را 60 روز زودتر با ایمیل خبر می‌دهیم و قیمت ماهی را که پولش را داده‌اید هیچ‌وقت عوض نمی‌کنیم.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>چند نفر از آدم‌های پشت آن</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>کلارا ونینگر</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیرعامل، مشاور مالیاتی سابق</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>یوناس پتروویچ</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیر فنی</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>آیلین دمیر</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>مدیر پشتیبانی</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>ماتیاس لوند</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>طراح محصول</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>برایمان بنویسید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>پرسشی درباره‌ی حسابتان، پلن‌ها یا کار با حسابدارتان دارید؟ یک آدم ظرف یک روز کاری جواب می‌دهد.</value>
+    </data>
+    <data name="ContactHours" xml:space="preserve">
+        <value>دوشنبه تا جمعه، ساعت 08:00 تا 18:00 به وقت وین، با ایمیل و گفتگو. پشتیبانی تلفنی در پلن Company.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>مشخصات شرکت</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این صفحه در دفترها نیست</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>همه‌ی دفترها را گشتیم و پیدایش نکردیم. شاید جابه‌جا شده، یا نشانی غلط تایپ شده.</value>
+    </data>
+    <data name="NotFoundStamp" xml:space="preserve">
+        <value>پیدا نشد</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>نرم‌افزار مالی</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>صدور فاکتور و دفترداری برای فریلنسرهای اروپایی که روی وب، آیفون، اندروید و ویندوز منتشر شده: فاکتوری که می‌شود ساخت و فرستاد، ماشین‌حساب صرفه‌جویی و قیمت با یا بدون ارزش افزوده.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>ساخت فاکتور در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>ماشین‌حساب صرفه‌جویی</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>قیمت با یا بدون ارزش افزوده</value>
+    </data>
+    <data name="DemoIncludes" xml:space="preserve">
+        <value>قابل پرداخت ظرف 14 روز، با کد QR بانکی و پیوند پرداخت با کارت.</value>
+    </data>
+    <data name="DemoHoursUp" xml:space="preserve">
+        <value>یک ساعت بیشتر</value>
+    </data>
+    <data name="DemoHoursDown" xml:space="preserve">
+        <value>یک ساعت کمتر</value>
+    </data>
+    <data name="DemoRateUp" xml:space="preserve">
+        <value>نرخ بالاتر</value>
+    </data>
+    <data name="DemoRateDown" xml:space="preserve">
+        <value>نرخ پایین‌تر</value>
+    </data>
+</root>

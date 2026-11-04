@@ -18,7 +18,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Dialog_traps_focus_makes_the_page_inert_and_restores_focus()
     {
         var page = await OpenDemoAsync("/dialog");
-        var trigger = page.Locator("main button", new PageLocatorOptions { HasTextRegex = new Regex("open", RegexOptions.IgnoreCase) }).First;
+        var trigger = page.Locator($"{Content} button", new PageLocatorOptions { HasTextRegex = new Regex("open", RegexOptions.IgnoreCase) }).First;
         await trigger.FocusAsync();
         await page.Keyboard.PressAsync("Enter");
 
@@ -44,7 +44,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Menu_opens_with_ArrowDown_navigates_and_returns_focus_on_Escape()
     {
         var page = await OpenDemoAsync("/menu");
-        var button = page.Locator("main button[aria-haspopup=menu]").First;
+        var button = page.Locator($"{Content} button[aria-haspopup=menu]").First;
         await button.FocusAsync();
         await page.Keyboard.PressAsync("ArrowDown");
 
@@ -66,7 +66,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Listbox_arrows_move_the_active_option_and_Enter_selects()
     {
         var page = await OpenDemoAsync("/listbox");
-        var button = page.Locator("main [role=combobox]").First;
+        var button = page.Locator($"{Content} [role=combobox]").First;
         await button.FocusAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await Expect(button).ToHaveAttributeAsync("aria-expanded", "true");
@@ -88,7 +88,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Combobox_typing_filters_and_highlights_and_Enter_selects()
     {
         var page = await OpenDemoAsync("/combobox");
-        var input = page.Locator("main input[role=combobox]").First;
+        var input = page.Locator($"{Content} input[role=combobox]").First;
         await input.ClickAsync();
         await input.PressSequentiallyAsync("ap", new LocatorPressSequentiallyOptions { Delay = 50 });
         await Expect(input).ToHaveAttributeAsync("aria-expanded", "true");
@@ -107,7 +107,7 @@ public sealed class KeyboardTests : DemoTest
     {
         var page = await OpenDemoAsync("/tabs");
         // Pinned by id: the selector would follow the selection.
-        var id = await page.Locator("main [role=tab][aria-selected=true]").First.GetAttributeAsync("id");
+        var id = await page.Locator($"{Content} [role=tab][aria-selected=true]").First.GetAttributeAsync("id");
         var tab = page.Locator($"[id=\"{id}\"]");
         await tab.FocusAsync();
         var before = await page.EvaluateAsync<double>("() => window.scrollY");
@@ -123,7 +123,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Popover_opens_on_click_closes_on_Escape_and_restores_focus()
     {
         var page = await OpenDemoAsync("/popover");
-        var button = page.Locator("main button[aria-expanded]").First;
+        var button = page.Locator($"{Content} button[aria-expanded]").First;
         await button.ClickAsync();
         await Expect(button).ToHaveAttributeAsync("aria-expanded", "true");
         await ExpectAccessibleAsync(page);
@@ -136,7 +136,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Tooltip_shows_on_hover_and_hides_on_Escape()
     {
         var page = await OpenDemoAsync("/tooltip");
-        var trigger = page.Locator("main [aria-describedby]").First;
+        var trigger = page.Locator($"{Content} [aria-describedby]").First;
         await trigger.HoverAsync();
         await Expect(page.Locator("[role=tooltip]:visible")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 3_000 });
         await page.Keyboard.PressAsync("Escape");
@@ -147,7 +147,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Alert_dialog_ignores_outside_clicks_and_closes_on_Escape()
     {
         var page = await OpenDemoAsync("/alert-dialog");
-        var trigger = page.Locator("main button[aria-haspopup=dialog]").First;
+        var trigger = page.Locator($"{Content} button[aria-haspopup=dialog]").First;
         await trigger.ClickAsync();
         var dialog = page.Locator("[role=alertdialog]");
         await Expect(dialog).ToBeVisibleAsync();
@@ -163,7 +163,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Radio_group_arrows_move_the_focus_and_check()
     {
         var page = await OpenDemoAsync("/radiogroup");
-        var id = await page.Locator("main [role=radio][tabindex=\"0\"]").First.GetAttributeAsync("id");
+        var id = await page.Locator($"{Content} [role=radio][tabindex=\"0\"]").First.GetAttributeAsync("id");
         var radio = page.Locator($"[id=\"{id}\"]");
         await radio.FocusAsync();
         await page.Keyboard.PressAsync("ArrowDown");
@@ -177,7 +177,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Checkbox_toggles_with_Space_but_not_Enter()
     {
         var page = await OpenDemoAsync("/checkbox");
-        var box = page.Locator("main [role=checkbox]:not([disabled])").First;
+        var box = page.Locator($"{Content} [role=checkbox]:not([disabled])").First;
         await box.FocusAsync();
         var initial = await box.GetAttributeAsync("aria-checked");
         await page.Keyboard.PressAsync("Enter");
@@ -190,7 +190,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Tree_arrows_move_the_focus_and_Right_expands()
     {
         var page = await OpenDemoAsync("/tree");
-        var tree = page.Locator("main [role=tree]").First;
+        var tree = page.Locator($"{Content} [role=tree]").First;
         var id = await tree.Locator("[role=treeitem][tabindex=\"0\"]").First.GetAttributeAsync("id");
         await page.Locator($"[id=\"{id}\"]").FocusAsync();
         await page.Keyboard.PressAsync("ArrowDown");
@@ -247,7 +247,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Slider_arrow_keys_change_the_value_and_Home_End_jump()
     {
         var page = await OpenDemoAsync("/slider");
-        var thumb = page.Locator("main [role=slider]:not([aria-disabled=true])").First;
+        var thumb = page.Locator($"{Content} [role=slider]:not([aria-disabled=true])").First;
         await thumb.FocusAsync();
         var min = await thumb.GetAttributeAsync("aria-valuemin");
         var max = await thumb.GetAttributeAsync("aria-valuemax");
@@ -263,7 +263,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Sortable_keyboard_reordering_is_announced()
     {
         var page = await OpenDemoAsync("/sortable");
-        var handle = page.Locator("main [data-bit-bh-sortable-handle]").First;
+        var handle = page.Locator($"{Content} [data-bit-bh-sortable-handle]").First;
         var list = handle.Locator("xpath=ancestor::ul[1]");
         var firstText = (await list.Locator("> li").First.InnerTextAsync()).Trim();
         var liveRegion = page.Locator("[data-bit-bh-live-region]");
@@ -280,7 +280,7 @@ public sealed class KeyboardTests : DemoTest
     public async Task Toasts_are_announced_and_F8_moves_the_focus_to_them()
     {
         var page = await OpenDemoAsync("/toast");
-        await page.Locator("main button", new PageLocatorOptions { HasText = "Show toast" }).ClickAsync();
+        await page.Locator($"{Content} button", new PageLocatorOptions { HasText = "Show toast" }).ClickAsync();
         var region = page.Locator("[role=region][aria-label^=\"Notifications\"]").First;
         await Expect(region.Locator("li")).ToHaveCountAsync(1);
         await Expect(page.Locator("[data-bit-bh-live-region]")).Not.ToHaveTextAsync("");

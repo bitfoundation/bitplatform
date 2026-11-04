@@ -23,6 +23,9 @@ public static class RepoLayout
     public static string SampleAssembly(string sample, string configuration) =>
         Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net11.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
 
+    /// <summary>The server project of the lazy loading sample, which a publish of it publishes the client with.</summary>
+    public static string LazySampleProject() => FindUpward(Path.Combine("Samples", "Lazy", "Bit.Bmage.Samples.Lazy", "Bit.Bmage.Samples.Lazy.csproj"));
+
     public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "MAUI", "Bit.Bmage.Samples.Maui.csproj"));
 
     /// <summary>The MAUI sample's Windows executable, under its runtime identifier's folder, or null when it is not built.</summary>

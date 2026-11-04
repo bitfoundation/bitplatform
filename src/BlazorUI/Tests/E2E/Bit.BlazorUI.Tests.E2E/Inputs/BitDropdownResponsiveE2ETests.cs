@@ -5,10 +5,12 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// <summary>
 /// The Responsive mode of BitDropdown on a phone (<c>/e2e/dropdown/responsive</c>, a 390x844 touch viewport): a tap
 /// opens a full-height side panel at the end of the screen carrying the label and a close button
-/// (ResponsiveCloseButtonAriaLabel), the close button, a pick and a swipe dismiss it, an RTL panel slides in from the
-/// left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
+/// (ResponsiveCloseButtonAriaLabel), the close button, a pick and a swipe dismiss it, a closed panel is out of the
+/// accessibility tree and the tab order (and out of the page once the screen widens), an open one hides with the part of
+/// the page it was opened from, an RTL panel slides in from the left, the ComboBox panel brings its own combobox input and add button (ComboBoxAddButtonAriaLabel, the close and add
 /// icons by name and by BitIconInfo), Enter in a multi select panel keeps it open, the search box takes the focus inside
-/// the panel, the panel's parts take Styles and Classes, and a dropdown that is not Responsive stays a plain callout.
+/// the panel, the panel's parts take Styles and Classes, a long list ends short of the bottom of the screen and clear of
+/// a phone's safe areas and scrolls to its last item, and a dropdown that is not Responsive stays a plain callout.
 /// </summary>
 [TestClass]
 public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
@@ -79,6 +81,85 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
 
         await WaitForAnimationsAsync(callout);
         Assert.IsTrue((await BoxAsync(callout)).X >= 389, "The panel slid out past the right edge.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTreeAndTheTabOrder()
+    {
+        await OpenAsync(Url);
+
+        // Four of the responsive dropdowns on the page keep the default name of the close button, and none of them is
+        // open: a closed panel is only out of sight, laid out off the screen for its slide, and must not leave its close
+        // button (or its options) for a screen reader - or a test - to find.
+        var close = Page.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true });
+        await Expect(close).ToHaveCountAsync(0);
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+
+        var callout = await CalloutAsync("dd-resp-rtl");
+        await Expect(callout).ToBeHiddenAsync();
+
+        // The closed panel is rendered right after its field, and it is focusable while it is open.
+        await Trigger("dd-resp-rtl").FocusAsync();
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(Trigger("dd-resp-search")).ToBeFocusedAsync();
+
+        await TapOpenAsync("dd-resp-rtl");
+
+        await Expect(close).ToHaveCountAsync(1);
+        await Expect(callout.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true })).ToBeVisibleAsync();
+        await Expect(Options(callout)).ToHaveCountAsync(3);
+
+        await close.TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(close).ToHaveCountAsync(0);
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Responsive_APanelClosedBeforeTheScreenWidens_StaysClosedAndOpensAsAPlainCallout()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-rtl");
+        var close = callout.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true });
+
+        await close.TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToHaveCSSAsync("visibility", "hidden");
+
+        // The phone turned to landscape: wide enough for a plain callout, which is display:none while it is closed - the
+        // display the panel was opened with is not left behind to hold it in the page, invisible but there.
+        await Page.SetViewportSizeAsync(844, 390);
+
+        await Expect(callout).ToHaveCSSAsync("display", "none");
+        await Expect(Page.GetByRole(AriaRole.Option)).ToHaveCountAsync(0);
+
+        // Nor is the fade the panel closed with left on the plain callout it opens as there.
+        await Trigger("dd-resp-rtl").TapAsync();
+
+        await Expect(Trigger("dd-resp-rtl")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(callout).ToBeVisibleAsync();
+        await Expect(callout).ToHaveCSSAsync("opacity", "1");
+        await Expect(Options(callout)).ToHaveCountAsync(3);
+    }
+
+    [TestMethod]
+    public async Task Responsive_AnOpenPanel_HidesWithThePartOfThePageItWasOpenedFrom()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-rtl");
+
+        // The open panel is moved to the body inside a copy of every element around it, and the copy of a section the
+        // page hides hides the panel with it, as that section would where the panel was rendered.
+        await Trigger("dd-resp-rtl").EvaluateAsync("el => el.closest('section').style.visibility = 'hidden'");
+        await Expect(callout).ToBeHiddenAsync();
+
+        await Trigger("dd-resp-rtl").EvaluateAsync("el => el.closest('section').style.visibility = ''");
+        await Expect(callout).ToBeVisibleAsync();
     }
 
     [TestMethod]
@@ -213,6 +294,100 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         await Expect(input).ToBeFocusedAsync();
         await input.FillAsync("gr");
         await Expect(Options(callout)).ToHaveTextAsync(["Grape"]);
+    }
+
+    [TestMethod]
+    public async Task Responsive_ALongList_EndsJustShortOfTheBottomOfTheScreen()
+    {
+        await OpenAsync(Url);
+
+        var callout = await TapOpenAsync("dd-resp-long");
+
+        // The list is capped once the panel has slid in, which writes the cap onto it.
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        var box = await BoxAsync(list);
+        Assert.AreEqual(844 - 10, box.Y + box.Height, 1.5, "The list keeps its gap from the bottom of a screen with no safe area.");
+
+        // The cap is only half of it: the user still reaches the last item by scrolling the list itself. Wheeled over
+        // the list rather than scrolled into view from script, which would move a list that clips its overflow too.
+        var last = callout.GetByRole(AriaRole.Option, new() { Name = "Item 60", Exact = true });
+
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.WheelAsync(0, 10000);
+        await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
+
+        var item = await BoxAsync(last);
+        Assert.IsTrue(item.Y >= box.Y - 0.5 && item.Y + item.Height <= box.Y + box.Height + 0.5,
+            $"The last item ({item.Y}..{item.Y + item.Height}px) is not within the visible part of the list ({box.Y}..{box.Y + box.Height}px).");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_KeepsTheHeaderAndTheListClearOfTheSafeAreas()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long");
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        // The surface still runs from the top edge of the screen to the bottom one, behind the bars of the phone.
+        var box = await BoxAsync(callout);
+        Assert.AreEqual(0, box.Y, 1.5);
+        Assert.AreEqual(844, box.Height, 1.5);
+
+        // What is in it starts below the notch and ends above the home indicator, which an app shell's bars paint over.
+        var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
+        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+
+        var listBox = await BoxAsync(list);
+        Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_APaddingOfTheConsumersOwnStillLeavesTheSafeAreasClear()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-padded");
+        var list = callout.Locator(".bit-drp-scn");
+        await Expect(list).ToHaveAttributeAsync("style", new Regex("max-height"));
+
+        // The padding the consumer gave the panel replaced the one of the stylesheet, and neither safe area was part of it.
+        await Expect(callout).ToHaveCSSAsync("padding-top", "0px");
+
+        var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
+        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+
+        var listBox = await BoxAsync(list);
+        Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_TheKeyboardTakesOverTheSafeAreaAtTheBottom()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await TapOpenAsync("dd-resp-long-search");
+        await Expect(callout.Locator("input.bit-drp-sin")).ToBeFocusedAsync();
+
+        // The keyboard the focused search box raises leaves the room above it, which the viewport is shortened to. The
+        // bottom of what is left is the top of the keyboard, with nothing of the home indicator showing above it, so the
+        // list keeps the gap it has always kept from there rather than a safe area the keyboard already covers.
+        await Page.SetViewportSizeAsync(390, 544);
+
+        var list = await callout.Locator(".bit-drp-scn").ElementHandleAsync();
+        await Page.WaitForFunctionAsync("el => Math.abs(el.getBoundingClientRect().bottom - (544 - 10)) <= 1.5", list);
     }
 
     [TestMethod]

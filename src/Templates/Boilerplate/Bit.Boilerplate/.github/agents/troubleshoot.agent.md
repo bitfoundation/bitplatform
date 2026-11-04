@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - `develop` for Test, `main` for Production - and reads that environment's own state through its dev-mcp server, its errors through Sentry or Application Insights, and its data, background jobs and logs. It reproduces the problem before changing anything, and fixes it through ai-dlc with a test that fails without the fix.
+description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - `develop` for Test, `main` for Production - and reads that environment's own state through its dev-mcp server, its errors through Sentry or Application Insights, and its data, background jobs and logs. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
 ---
 
 # Troubleshoot: find and fix a problem reported in Test or Production
@@ -84,8 +84,10 @@ without one of them, knowing what it hides.
 - A problem seen in the Windows app is reproduced in the Windows app, an installed copy included. It opens no
   debugging port unless started with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` set to `--remote-debugging-port=9222`;
   start it that way, then read and drive its page as the run-app skill's section 6 says.
-- Write a test that fails the way the environment does - an integration test under `src/Tests` for what the server
-  does, a UI test for what the user saw - then fix the cause rather than the symptom.
+- As far as an automated test can reach the problem, the reproduction ends in one: an integration test under
+  `src/Tests` for what the server does, a UI test for what the user saw. Write it before the fix and see it fail the way
+  the environment does. Only then fix the cause rather than the symptom, and see the test pass; it's what keeps the
+  problem from coming back. When no test can reach it, say why in your report.
 - The fix goes through ai-dlc's short track, or its full track when it turns out bigger, on a branch of its own off
   `develop`, and reaches Test with ai-dlc's phase 7. Check it there against the same evidence that showed the problem.
 - A Production problem that can't wait for the next release gets its branch off `main` instead: a PR into `main`,

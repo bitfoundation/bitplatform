@@ -1,0 +1,42 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-accounting">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="AccountingSite.Info" Links="links" ShowSignIn>
+        <Brand><AccountingLogo /><span>Sumwise</span></Brand>
+        <Actions>
+            <BitButton Href="@AccountingSite.SignUpUrl" Size="BitSize.Small" Class="accounting-nav-cta">@A[nameof(AccountingStrings.NavStart)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="AccountingSite.Info" Tagline="@A[nameof(AccountingStrings.FooterTagline)]">
+        <Brand><AccountingLogo /><span>Sumwise</span></Brand>
+        <Intro>
+            <StoreBadges Site="AccountingSite.Info" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@L[nameof(LandingStrings.FooterProduct)]</h2>
+                <a href="@Page("/pricing")">@A[nameof(AccountingStrings.NavPricing)]</a>
+                <a href="@($"{Page(string.Empty)}#savings")">@A[nameof(AccountingStrings.FooterSavings)]</a>
+                <a href="@($"{Page(string.Empty)}#security")">@A[nameof(AccountingStrings.NavSecurity)]</a>
+                <a href="@($"{Page("/pricing")}#guarantee")">@A[nameof(AccountingStrings.FooterGuarantee)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <LandingChat Site="AccountingSite.Info"
+                 Variant="LandingChatVariant.Concierge"
+                 Suggestions="suggestions"
+                 Label="@A[nameof(AccountingStrings.ChatLabel)]"
+                 HandoffUrl="@($"mailto:{AccountingSite.Info.Company.Email}")"
+                 Class="accounting-chat" />
+
+    <ConsentBanner SitePath="@AccountingSite.Path" />
+    <LanguageSuggestion />
+</div>

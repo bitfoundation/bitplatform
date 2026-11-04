@@ -38,6 +38,13 @@ public sealed class BitBhCommandContext
 
     internal BitBhCommandList? List { get; set; }
 
+    /// <summary>
+    /// Where the pointer was at the last pointermove an item handled. A list scrolled by the keyboard under a
+    /// resting pointer gets pointermoves at the same coordinates (WebKit sends them): those must not take the
+    /// highlight back from the keyboard.
+    /// </summary>
+    internal (double X, double Y)? LastPointer { get; set; }
+
     /// <summary>Whether the command renders its own label (its <c>Label</c> parameter is set).</summary>
     internal bool HasLabel => string.IsNullOrEmpty(_command.Label) is false;
 

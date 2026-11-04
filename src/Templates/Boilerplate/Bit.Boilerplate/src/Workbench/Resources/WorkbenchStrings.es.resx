@@ -583,7 +583,7 @@
         <value>Concurrido</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Buenas tardes, Yas</value>
+        <value>Buenas tardes, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Sucursal</value>

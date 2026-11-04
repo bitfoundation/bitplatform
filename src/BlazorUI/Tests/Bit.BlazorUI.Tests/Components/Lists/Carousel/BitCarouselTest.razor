@@ -26,8 +26,10 @@
               DotAriaLabel="@DotAriaLabel"
               DragThreshold="DragThreshold"
               DotsAriaLabel="@DotsAriaLabel"
-              GoLeftAriaLabel="@GoLeftAriaLabel"
-              GoRightAriaLabel="@GoRightAriaLabel"
+              NextAriaLabel="@NextAriaLabel"
+              PrevAriaLabel="@PrevAriaLabel"
+              NextIcon="NextIcon"
+              PrevIconName="@PrevIconName"
               StopOnLastSlide="StopOnLastSlide"
               AutoPlayReverse="AutoPlayReverse"
               ScrollItemsCount="ScrollItemsCount"
@@ -83,8 +85,10 @@
     [Parameter] public string? AriaLabel { get; set; }
     [Parameter] public string DotAriaLabel { get; set; } = "Slide";
     [Parameter] public string DotsAriaLabel { get; set; } = "Choose slide to display";
-    [Parameter] public string? GoLeftAriaLabel { get; set; }
-    [Parameter] public string? GoRightAriaLabel { get; set; }
+    [Parameter] public string? NextAriaLabel { get; set; }
+    [Parameter] public string? PrevAriaLabel { get; set; }
+    [Parameter] public BitIconInfo? NextIcon { get; set; }
+    [Parameter] public string? PrevIconName { get; set; }
     [Parameter] public string? ItemAriaLabelFormat { get; set; }
     [Parameter] public RenderFragment<int>? DotTemplate { get; set; }
     [Parameter] public BitPlacement? DotsPlacement { get; set; }

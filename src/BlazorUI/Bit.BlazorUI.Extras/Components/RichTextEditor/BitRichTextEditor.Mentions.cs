@@ -30,7 +30,7 @@ public partial class BitRichTextEditor
     {
         // Match the slash menu: never open while the controls are disabled (ReadOnly, disabled, or
         // source view), where the insert would be refused anyway.
-        if (ControlsDisabled || OnMentionSearch is null) return;
+        if (IsDisposing || ControlsDisabled || OnMentionSearch is null) return;
 
         // The two menus answer different triggers and share the same spot, so only one is ever up.
         CloseSlash();

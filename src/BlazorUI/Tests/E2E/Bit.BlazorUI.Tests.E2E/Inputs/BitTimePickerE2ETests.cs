@@ -1940,8 +1940,10 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Expect(Page.Locator("#templates-text #custom-prefix")).ToHaveTextAsync("PRE");
         await Expect(Page.Locator("#templates-text #custom-suffix")).ToHaveTextAsync("SUF");
         await Expect(Page.Locator("#templates-text .bit-tpc-pre")).ToHaveCountAsync(0);
-        // An error template marks the picker invalid as the plain message does.
+        // An error template marks the picker invalid as the plain message does, and it is announced as a
+        // rejection rather than leaving the region to read out the time as if it had been accepted.
         await Expect(Root("templates-text")).ToHaveClassAsync(HasClass("bit-inv"));
+        await Expect(Page.Locator("#templates-text [role=status]")).ToHaveTextAsync("Invalid input");
     }
 
     // ------------------------------------------------------------------ css variables

@@ -583,7 +583,7 @@
         <value>Busy</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Yas</value>
+        <value>Good afternoon, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Store</value>
@@ -2356,7 +2356,7 @@
         <value>Messages and status</value>
     </data>
     <data name="ThemeMessage" xml:space="preserve">
-        <value>A {0} message, the way the app shows it.</value>
+        <value>{0} message, the way the app shows it.</value>
     </data>
     <data name="ThemeProgress" xml:space="preserve">
         <value>Uploading</value>

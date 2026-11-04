@@ -193,6 +193,8 @@ tr.bc-sev-warning td:first-child { box-shadow: inset 3px 0 var(--bc-warn); }
 
 a { color: var(--bc-accent); }
 
+.bc-batch-axis { position: relative; margin: 6px 0; background: var(--bc-bg2); border-radius: 4px; overflow: hidden; }
+.bc-batch-bar { position: absolute; height: 16px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 10px; line-height: 16px; padding: 0 2px; box-sizing: border-box; background: var(--bc-accent-bg, #ddf4ff); border: 1px solid var(--bc-accent, #0969da); border-radius: 2px; }
 .bc-pre { font-family: var(--bc-mono); white-space: pre-wrap; background: var(--bc-bg2); padding: 6px; border-radius: 4px; }
 
 .bc-finding { border: 1px solid var(--bc-border); border-left-width: 3px; border-radius: 4px; padding: 6px 8px; margin: 6px 0; }

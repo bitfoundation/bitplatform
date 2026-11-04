@@ -1,0 +1,201 @@
+.order-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    height: 100%;
+    padding: 44px 14px 14px;
+    overflow: hidden;
+    background: var(--lp-surface);
+    font-size: .8125rem;
+
+    --bit-ChoiceGroup-label-font-weight: 600;
+    --bit-Toggle-checked-background: var(--lp-accent);
+    --bit-Toggle-checked-border-color: var(--lp-accent);
+}
+
+.order-demo-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.order-demo-title {
+    flex: 1;
+    font-family: var(--lp-stack-display);
+    font-size: 1.125rem;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.order-demo-count {
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--copper-soft);
+    color: var(--copper-text);
+    font-size: .6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+::deep .order-demo-drinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+::deep .order-demo-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.order-demo-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    background: var(--lp-surface);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color .15s, color .15s, border-color .15s;
+
+    &.is-selected {
+        border-color: var(--lp-accent);
+        background: var(--lp-accent);
+        color: var(--lp-accent-fg);
+
+    }
+
+    &.is-off {
+        color: var(--lp-fg-muted);
+        text-decoration: line-through;
+    }
+}
+
+.order-demo-pair {
+    display: grid;
+    gap: 10px;
+}
+
+::deep .order-demo-shot {
+    --bit-Toggle-content-font-size: .8125rem;
+}
+
+.order-demo-summary {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px dashed var(--lp-line);
+
+    p:first-child {
+        display: grid;
+        color: var(--lp-fg-muted);
+        font-size: .75rem;
+    }
+}
+
+.order-demo-when {
+    color: var(--lp-fg);
+    font-family: var(--lp-stack-display);
+    font-size: 1.125rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+}
+
+.order-demo-total {
+    font-family: var(--lp-stack-display);
+    font-size: 1.375rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.order-demo-ready {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+    animation: order-demo-in .4s var(--lp-ease) both;
+
+    ::deep .order-demo-again {
+        margin-top: auto;
+    }
+}
+
+.order-demo-ready-label {
+    color: var(--lp-fg-muted);
+}
+
+.order-demo-ready-time {
+    font-family: var(--lp-stack-display);
+    font-size: 3.25rem;
+    font-weight: 650;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--lp-accent);
+}
+
+.order-demo-ready-where {
+    font-weight: 600;
+}
+
+.order-demo-ready-what {
+    color: var(--lp-fg-muted);
+}
+
+.order-demo-card {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--copper-soft);
+    color: var(--lp-fg);
+    font-size: .75rem;
+}
+
+.order-demo-stamp-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+
+    span {
+        aspect-ratio: 1;
+        border: 1.5px dashed var(--copper);
+        border-radius: 50%;
+
+        &.is-full {
+            border-style: solid;
+            background: var(--copper);
+            box-shadow: inset 0 0 0 4px var(--copper-soft);
+        }
+
+        &.is-new {
+            animation: order-demo-stamp .5s var(--lp-ease) .2s both;
+        }
+    }
+}
+
+@keyframes order-demo-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@keyframes order-demo-stamp {
+    0% {
+        transform: scale(1.6) rotate(-20deg);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(.9);
+    }
+}

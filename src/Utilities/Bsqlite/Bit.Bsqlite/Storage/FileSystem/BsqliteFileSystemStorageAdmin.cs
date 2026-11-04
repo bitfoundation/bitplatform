@@ -209,8 +209,7 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
 
     /// <summary>
     /// Folds what SQLite left next to the file into it: a write-ahead log - the file of a stock EF Core app,
-    /// Bit.Besql's on a device, or one Bsqlite could not take out of WAL mode yet - or a journal left by a
-    /// crash, rolled back. A file with neither is left untouched, and is exported byte for byte.
+    /// or one Bsqlite could not take out of WAL mode yet - or a journal left by a crash, rolled back. A file with neither is left untouched, and is exported byte for byte.
     /// </summary>
     /// <exception cref="IOException">The log could not be folded in: another process holds the file.</exception>
     private static void Settle(string path)

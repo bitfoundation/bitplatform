@@ -1,0 +1,21 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@EcommerceSite.Path" Title="@E[nameof(EcommerceStrings.NotFoundTitle)]" Body="@E[nameof(EcommerceStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="-150 -200 300 300" role="presentation">
+            <ellipse cx="0" cy="86" rx="120" ry="10" fill="var(--lp-line)" />
+            <g transform="translate(36 40) rotate(78)">
+                <path d="M -44 4 L 44 4 L 36 62 Q 35 68 29 68 L -29 68 Q -35 68 -36 62 Z" fill="var(--lp-clay)" />
+                <rect x="-50" y="-8" width="100" height="16" rx="5" fill="color-mix(in oklab, var(--lp-clay), #000 12%)" />
+            </g>
+            <path d="M -96 80 C -70 62, -40 70, -10 80 Z" fill="color-mix(in oklab, var(--lp-clay), var(--lp-fg) 35%)" opacity=".5" />
+            <g transform="translate(-58 56) rotate(-62) scale(.8)">
+                <path d="M0 0 C -24 -6, -38 -34, -24 -60 C -14 -74, 14 -74, 24 -60 C 38 -34, 24 -6, 0 0 Z" fill="var(--fern-leaf)" />
+                <path d="M0 -3 L 0 -64" stroke="color-mix(in oklab, var(--fern-leaf), #fff 22%)" stroke-width="1.6" fill="none" />
+            </g>
+            <g transform="translate(-6 40) rotate(-20) scale(.65)">
+                <path d="M0 0 C -24 -6, -38 -34, -24 -60 C -14 -74, 14 -74, 24 -60 C 38 -34, 24 -6, 0 0 Z" fill="var(--fern-leaf-deep)" />
+            </g>
+        </svg>
+    </Art>
+</NotFoundPanel>

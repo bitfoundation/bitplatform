@@ -573,21 +573,22 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task TheWorkbench_Should_BuildStartAndOpenBeforeTheWebApp()
+    public async Task TheWorkbenchAndTheLandingPage_Should_BuildStartAndOpenBeforeTheWebApp()
     {
         using var host = new TestHost(HostOs.Windows);
         var project = CreateFakeProject(host, "Contoso");
         WriteWorkbench(project, "http://localhost:6030");
+        WriteLandingPage(project, "http://localhost:7030");
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\n");
         host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
         {
             await Task.Delay(Timeout.Infinite, ct);
             return new ProcessResult { ExitCode = 0 };
         });
-        var openedBeforeTheWebBuild = false;
+        string[] openedBeforeTheWebBuild = [];
         host.Runner.On("dotnet", "build Contoso.Web.slnf", _ =>
         {
-            openedBeforeTheWebBuild = host.Runner.Detached.Any(d => d.Arguments.Contains("http://localhost:6030"));
+            openedBeforeTheWebBuild = [.. host.Runner.Detached.Select(d => d.Arguments.Last())];
             return new ProcessResult { ExitCode = 0 };
         });
         var probes = new List<Uri>();
@@ -600,29 +601,37 @@ public class ProjectStepTests
         {
             "build src/Workbench/Contoso.Workbench.csproj",
             $"run --project {project.WorkbenchDirectory} --no-build",
+            "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj",
+            $"run --project {project.LandingPageDirectory} --no-build",
             "workload list",
             "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf"
         }, DotnetCommands(host).ToArray());
-        Assert.IsTrue(openedBeforeTheWebBuild, "The Workbench opens in the browser as soon as it answers.");
-        Assert.AreEqual(new Uri("http://localhost:6030"), probes.Single());
+        CollectionAssert.AreEqual(new[] { "http://localhost:6030", "http://localhost:7030" }, openedBeforeTheWebBuild, "Each one opens in the browser as soon as it answers, the Workbench first.");
+        CollectionAssert.AreEqual(new[] { new Uri("http://localhost:6030"), new Uri("http://localhost:7030") }, probes);
         Assert.AreEqual("Installed WebAssembly build support", steps.Reports.Single(r => r.Id == "workloads").Result.Title);
         Assert.AreEqual("http://localhost:6030", steps.Reports.Single(r => r.Id == "workbench-run").Result.Detail);
+        Assert.AreEqual("http://localhost:7030", steps.Reports.Single(r => r.Id == "landingpage-run").Result.Detail);
         Assert.AreEqual("http://localhost:6030", projectSteps.Workbench?.AppUrl);
+        Assert.AreEqual("http://localhost:7030", projectSteps.LandingPage?.AppUrl);
 
         await projectSteps.Workbench!.StopAsync(false);
+        await projectSteps.LandingPage!.StopAsync(false);
         Assert.IsTrue(projectSteps.Workbench.Exited!.IsCompleted, "Stopping it ends dotnet run.");
+        Assert.IsTrue(projectSteps.LandingPage.Exited!.IsCompleted, "Stopping it ends dotnet run.");
     }
 
     [TestMethod]
-    public async Task AWorkbenchThatDoesntBuild_Should_LeaveTheRestOfTheSetupGoing()
+    public async Task AWorkbenchAndALandingPageThatDontBuild_Should_LeaveTheRestOfTheSetupGoing()
     {
         using var host = new TestHost(HostOs.Windows);
         var project = CreateFakeProject(host, "Contoso");
         WriteWorkbench(project, "http://localhost:6030");
+        WriteLandingPage(project, "http://localhost:7030");
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
         host.Runner.On("dotnet", "build src/Workbench", 1, "Components/Pages/HomePage.razor.cs(12,5): error CS0103: The name 'Foo' does not exist in the current context");
+        host.Runner.On("dotnet", "build src/LandingPage", 1, "Components/Pages/Gallery/GalleryPage.razor.cs(9,5): error CS0246: The type or namespace name 'Bar' could not be found");
         var projectSteps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
         var steps = new StepRunner(host.Services);
 
@@ -635,19 +644,27 @@ public class ProjectStepTests
         StringAssert.EndsWith(byId["workbench-build"].FollowUp, "dotnet build src/Workbench/Contoso.Workbench.csproj");
         Assert.AreEqual(StepStatus.Skipped, byId["workbench-run"].Status);
         Assert.AreEqual("its build failed", byId["workbench-run"].Detail);
+        Assert.AreEqual(StepStatus.Failed, byId["landingpage-build"].Status);
+        Assert.AreEqual("Couldn't build the landing page", byId["landingpage-build"].Title);
+        Assert.AreEqual("CS0246", byId["landingpage-build"].Detail);
+        StringAssert.EndsWith(byId["landingpage-build"].FollowUp, "dotnet build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj");
+        Assert.AreEqual(StepStatus.Skipped, byId["landingpage-run"].Status);
+        Assert.AreEqual("its build failed", byId["landingpage-run"].Detail);
         Assert.AreEqual(StepStatus.Succeeded, byId["restore"].Status);
         Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"));
         Assert.IsNull(projectSteps.Workbench);
+        Assert.IsNull(projectSteps.LandingPage);
         Assert.IsEmpty(host.Runner.Detached);
     }
 
     [TestMethod]
-    public async Task AWorkbenchThatDoesntStart_Should_LeaveTheRestOfTheSetupGoing()
+    public async Task AWorkbenchAndALandingPageThatDontStart_Should_LeaveTheRestOfTheSetupGoing()
     {
         using var host = new TestHost(HostOs.Windows);
         var project = CreateFakeProject(host, "Contoso");
         WriteWorkbench(project, "http://localhost:6030");
+        WriteLandingPage(project, "http://localhost:7030");
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
         host.Runner.On("dotnet", "run", 1, "Unhandled exception. System.IO.IOException: Failed to bind to address http://127.0.0.1:6030: address already in use.");
         var projectSteps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(false) };
@@ -659,27 +676,33 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, started.Status);
         Assert.AreEqual("Couldn't start the Workbench", started.Title);
         StringAssert.EndsWith(started.FollowUp, $"dotnet run --project {Path.Combine("src", "Workbench")}");
+        var landingPage = steps.Reports.Single(r => r.Id == "landingpage-run").Result;
+        Assert.AreEqual(StepStatus.Warning, landingPage.Status);
+        Assert.AreEqual("Couldn't start the landing page", landingPage.Title);
+        StringAssert.EndsWith(landingPage.FollowUp, $"dotnet run --project {Path.Combine("src", "LandingPage", "Contoso.LandingPage.Server")}");
         Assert.IsFalse(steps.AnyFailed);
         Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "build").Result.Status);
         Assert.IsNull(projectSteps.Workbench);
+        Assert.IsNull(projectSteps.LandingPage);
         Assert.IsEmpty(host.Runner.Detached);
     }
 
     [TestMethod]
-    public async Task TheWorkbench_Should_OnlyBeBuiltWhenTheProjectIsntRunUntilTheTerminalCloses()
+    public async Task TheWorkbenchAndTheLandingPage_Should_OnlyBeBuiltWhenTheProjectIsntRunUntilTheTerminalCloses()
     {
         foreach (var mode in new[] { ProjectRunMode.None, ProjectRunMode.Once })
         {
             using var host = new TestHost(HostOs.Windows);
             var project = CreateFakeProject(host, "Contoso");
             WriteWorkbench(project, "http://localhost:6030");
+            WriteLandingPage(project, "http://localhost:7030");
             host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
             var steps = new StepRunner(host.Services);
 
             await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, true, mode, CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
-            Assert.IsFalse(steps.Reports.Any(r => r.Id is "workbench-run"), mode.ToString());
+            CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
+            Assert.IsFalse(steps.Reports.Any(r => r.Id is "workbench-run" or "landingpage-run"), mode.ToString());
             Assert.IsEmpty(host.Runner.Detached, mode.ToString());
         }
     }
@@ -705,21 +728,22 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task KeepRunning_Should_ListAndStopTheWorkbenchWithTheProject()
+    public async Task KeepRunning_Should_ListAndStopTheWorkbenchAndTheLandingPageWithTheProject()
     {
         using var host = new TestHost(HostOs.Windows);
         var stopped = new List<(string What, bool Detached)>();
         var project = new RunningProject { DashboardUrl = "https://localhost:17030/login?t=abc", AppUrl = "http://localhost:5030", StopAsync = detached => { stopped.Add(("project", detached)); return Task.CompletedTask; } };
         var workbench = new RunningProject { AppUrl = "http://localhost:6030", Exited = new TaskCompletionSource().Task, StopAsync = detached => { stopped.Add(("workbench", detached)); return Task.CompletedTask; } };
+        var landingPage = new RunningProject { AppUrl = "http://localhost:7030", Exited = new TaskCompletionSource().Task, StopAsync = detached => { stopped.Add(("landing page", detached)); return Task.CompletedTask; } };
         using var closed = new CancellationTokenSource();
         await closed.CancelAsync();
 
-        await ProjectRun.KeepRunningAsync(host.Services, project, workbench, closed.Token);
+        await ProjectRun.KeepRunningAsync(host.Services, project, workbench, landingPage, closed.Token);
 
-        StringAssert.Contains(host.FlatOutput, "Running http://localhost:6030 The Workbench https://localhost:17030/login?t=abc Aspire dashboard http://localhost:5030 The app");
-        StringAssert.Contains(host.FlatOutput, "They keep running while this terminal is open. Close it, or press Ctrl+C, to stop the project and the Workbench.");
-        StringAssert.Contains(host.FlatOutput, "Stopping the project and the Workbench");
-        CollectionAssert.AreEquivalent(new[] { ("workbench", true), ("project", true) }, stopped);
+        StringAssert.Contains(host.FlatOutput, "Running http://localhost:6030 The Workbench http://localhost:7030 The landing page https://localhost:17030/login?t=abc Aspire dashboard http://localhost:5030 The app");
+        StringAssert.Contains(host.FlatOutput, "They keep running while this terminal is open. Close it, or press Ctrl+C, to stop the project, the Workbench and the landing page.");
+        StringAssert.Contains(host.FlatOutput, "Stopping the project, the Workbench and the landing page");
+        CollectionAssert.AreEquivalent(new[] { ("workbench", true), ("landing page", true), ("project", true) }, stopped);
         Assert.IsEmpty(host.Runner.Detached, "Each one opened in the browser as soon as it started.");
     }
 
@@ -732,7 +756,7 @@ public class ProjectStepTests
         var project = new RunningProject { AppUrl = "http://localhost:5030", StopAsync = detached => { stopped.Add(("project", detached)); return Task.CompletedTask; } };
         var workbench = new RunningProject { AppUrl = "http://localhost:6030", Exited = Task.CompletedTask, StopAsync = async detached => { stopped.Add(("workbench", detached)); await closed.CancelAsync(); } };
 
-        await ProjectRun.KeepRunningAsync(host.Services, project, workbench, closed.Token);
+        await ProjectRun.KeepRunningAsync(host.Services, project, workbench, null, closed.Token);
 
         StringAssert.Contains(host.FlatOutput, "The Workbench stopped. Stopping the project");
         CollectionAssert.AreEqual(new[] { ("workbench", false), ("project", true) }, stopped);
@@ -896,7 +920,7 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, false, ProjectRunMode.None, CancellationToken.None);
 
         var webCommands = DotnetCommands(host);
-        CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench and the web app's packages and build come before the native apps.");
+        CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench, the landing page and the web app's packages and build come before the native apps.");
 
         await NewWorkflow.RunNativeStepsAsync(host.Services, steps, project, projectSteps, false, false, false, CancellationToken.None);
 
@@ -1463,10 +1487,18 @@ public class ProjectStepTests
         File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{project.Name}}.Workbench": { "commandName": "Project", "launchBrowser": true, "applicationUrl": "{{url}}" } } }""");
     }
 
+    private static void WriteLandingPage(ProjectContext project, string url)
+    {
+        var properties = Directory.CreateDirectory(Path.Combine(project.LandingPageDirectory, "Properties")).FullName;
+
+        File.WriteAllText(Path.Combine(project.LandingPageDirectory, $"{project.Name}.LandingPage.Server.csproj"), $"<Project Sdk=\"Microsoft.NET.Sdk.Web\"><ItemGroup><ProjectReference Include=\"..\\{project.Name}.LandingPage.Client\\{project.Name}.LandingPage.Client.csproj\" /></ItemGroup></Project>");
+        File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{project.Name}}.LandingPage.Server": { "commandName": "Project", "launchBrowser": true, "applicationUrl": "{{url}}" } } }""");
+    }
+
     private static void WriteSolution(ProjectContext project)
     {
         var name = project.Name;
-        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj"];
+        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/LandingPage/{name}.LandingPage.Client/{name}.LandingPage.Client.csproj", Platforms.LandingPageProject(name), $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj"];
         string[] native = [Platforms.MauiProject(name), Platforms.WindowsProject(name)];
 
         File.WriteAllText(project.Solution, $"""

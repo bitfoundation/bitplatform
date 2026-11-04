@@ -1,163 +1,164 @@
 ﻿@page "/close-button"
 
-<PageTitle>CloseButton — bit Bheadless</PageTitle>
+<PageTitle>CloseButton · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>CloseButton</h1>
-        <p>A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure — saves boilerplate for dismiss actions.</p>
-        <SectionSwitcher Slug="close-button" />
-    </header>
-
-    <DemoBlock Title="Inside a Dialog"
-               Code="@_dialogCode"
-               Css="@_dialogCss">
-        <Description>
-            Drop <code>&lt;BitBhCloseButton&gt;</code> anywhere inside a Dialog and it will
-            automatically call the dialog's close callback. No need to wire up
-            <code>@@onclick</code> or pass state around.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="() => dialogOpen = true" class="btn btn-primary">
-                Open dialog
-            </BitBhButton>
-
-            <BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
-                <BitBhDialogBackdrop class="dialog-backdrop" />
-                <BitBhDialogPanel class="dialog-panel">
-                    <BitBhDialogTitle class="dialog-title">Deactivate account</BitBhDialogTitle>
-                    <BitBhDialogDescription class="dialog-description">
-                        This will permanently deactivate your account. All of your data
-                        will be permanently removed.
-                    </BitBhDialogDescription>
-
-                    <div class="dialog-actions">
-                        <BitBhCloseButton class="btn">Cancel</BitBhCloseButton>
-                        <BitBhCloseButton class="btn btn-danger">Deactivate</BitBhCloseButton>
-                    </div>
-                </BitBhDialogPanel>
-            </BitBhDialog>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Inside a Popover"
-               Code="@_popoverCode"
-               Css="@_popoverCss">
-        <Description>
-            Use <code>BitBhCloseButton</code> inside a popover panel to close it on click.
-            Combine with the <code>As</code> parameter to render as an anchor or any
-            other element.
-        </Description>
-        <LiveContent>
-            <BitBhPopover class="popover">
-                <BitBhPopoverButton class="popover-button">
-                    Solutions ▾
-                </BitBhPopoverButton>
-                <BitBhPopoverPanel class="popover-panel">
-                    <h3 class="popover-title">Navigation</h3>
-                    <BitBhCloseButton As="a" href="#analytics" class="popover-nav-link">
-                        Analytics
-                    </BitBhCloseButton>
-                    <BitBhCloseButton As="a" href="#engagement" class="popover-nav-link">
-                        Engagement
-                    </BitBhCloseButton>
-                    <BitBhCloseButton As="a" href="#security" class="popover-nav-link">
-                        Security
-                    </BitBhCloseButton>
-                    <hr class="popover-divider" />
-                    <BitBhCloseButton class="popover-dismiss">
-                        Dismiss ✕
-                    </BitBhCloseButton>
-                </BitBhPopoverPanel>
-            </BitBhPopover>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Inside a Disclosure"
-               Code="@_disclosureCode"
-               Css="@_disclosureCss">
-        <Description>
-            Works the same way inside a Disclosure. The button finds the nearest
-            closeable ancestor and calls its close method.
-        </Description>
-        <LiveContent>
-            <BitBhDisclosure DefaultOpen="true" class="disclosure">
-                <BitBhDisclosureButton class="disclosure-button">
-                    Show details
-                </BitBhDisclosureButton>
-                <BitBhDisclosurePanel class="disclosure-panel">
-                    <div class="disclosure-body">
-                        <p>Here are some details you can collapse.</p>
-                        <BitBhCloseButton class="btn btn-sm">Hide details</BitBhCloseButton>
-                    </div>
-                </BitBhDisclosurePanel>
-            </BitBhDisclosure>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Polymorphic rendering (As)"
-               Code="@_polymorphicCode"
-               Css="@_polymorphicCss">
-        <Description>
-            Use the <code>As</code> parameter to render the close button as any HTML element.
-            Non-native button elements automatically receive <code>role="button"</code>,
-            <code>tabindex="0"</code>, and Enter/Space keyboard handling.
-        </Description>
-        <LiveContent>
-            <BitBhPopover class="popover">
-                <BitBhPopoverButton class="popover-button">
-                    Open panel ▾
-                </BitBhPopoverButton>
-                <BitBhPopoverPanel class="popover-panel">
-                    <p class="popover-body">
-                        The close actions below render as different elements:
-                    </p>
-                    <div class="close-variants">
-                        <BitBhCloseButton class="btn btn-sm">
-                            Button (default)
-                        </BitBhCloseButton>
-                        <BitBhCloseButton As="a" href="#" class="popover-nav-link">
-                            Anchor link
-                        </BitBhCloseButton>
-                        <BitBhCloseButton As="div" class="close-div">
-                            Div with role="button"
-                        </BitBhCloseButton>
-                    </div>
-                </BitBhPopoverPanel>
-            </BitBhPopover>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled state"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> to prevent the close action. The button
-            receives the native <code>disabled</code> attribute (or <code>aria-disabled</code>
-            for non-native elements) and a <code>data-disabled</code> styling hook.
-        </Description>
-        <LiveContent>
-            <BitBhPopover class="popover">
-                <BitBhPopoverButton class="popover-button">
-                    Panel is open ▾
-                </BitBhPopoverButton>
-                <BitBhPopoverPanel class="popover-panel">
-                    <p class="popover-body">
-                        The disabled close button below won't close this panel:
-                    </p>
-                    <div class="close-variants">
-                        <BitBhCloseButton Disabled="true" class="btn btn-sm">
-                            Can't close (disabled)
-                        </BitBhCloseButton>
-                        <BitBhCloseButton class="btn btn-sm btn-primary">
-                            Close (enabled)
-                        </BitBhCloseButton>
-                    </div>
-                </BitBhPopoverPanel>
-            </BitBhPopover>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>CloseButton</h1>
+    <p class="bb-subtitle">A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure — saves boilerplate for dismiss actions.</p>
 </div>
+
+<SectionSwitcher Slug="close-button" />
+
+<DemoBlock Title="Inside a Dialog"
+           Code="@_dialogCode"
+           Css="@_dialogCss">
+    <Description>
+        Drop <code>&lt;BitBhCloseButton&gt;</code> anywhere inside a Dialog and it will
+        automatically call the dialog's close callback. No need to wire up
+        <code>@@onclick</code> or pass state around.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="() => dialogOpen = true" class="btn btn-primary">
+            Open dialog
+        </BitBhButton>
+
+        <BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
+            <BitBhDialogBackdrop class="dialog-backdrop" />
+            <BitBhDialogPanel class="dialog-panel">
+                <BitBhDialogTitle class="dialog-title">Deactivate account</BitBhDialogTitle>
+                <BitBhDialogDescription class="dialog-description">
+                    This will permanently deactivate your account. All of your data
+                    will be permanently removed.
+                </BitBhDialogDescription>
+
+                <div class="dialog-actions">
+                    <BitBhCloseButton class="btn">Cancel</BitBhCloseButton>
+                    <BitBhCloseButton class="btn btn-danger">Deactivate</BitBhCloseButton>
+                </div>
+            </BitBhDialogPanel>
+        </BitBhDialog>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Inside a Popover"
+           Code="@_popoverCode"
+           Css="@_popoverCss">
+    <Description>
+        Use <code>BitBhCloseButton</code> inside a popover panel to close it on click.
+        Combine with the <code>As</code> parameter to render as an anchor or any
+        other element.
+    </Description>
+    <LiveContent>
+        <BitBhPopover class="popover">
+            <BitBhPopoverButton class="popover-button">
+                Solutions ▾
+            </BitBhPopoverButton>
+            <BitBhPopoverPanel class="popover-panel">
+                <h3 class="popover-title">Navigation</h3>
+                <BitBhCloseButton As="a" href="#analytics" @onclick:preventDefault class="popover-nav-link">
+                    Analytics
+                </BitBhCloseButton>
+                <BitBhCloseButton As="a" href="#engagement" @onclick:preventDefault class="popover-nav-link">
+                    Engagement
+                </BitBhCloseButton>
+                <BitBhCloseButton As="a" href="#security" @onclick:preventDefault class="popover-nav-link">
+                    Security
+                </BitBhCloseButton>
+                <hr class="popover-divider" />
+                <BitBhCloseButton class="popover-dismiss">
+                    Dismiss ✕
+                </BitBhCloseButton>
+            </BitBhPopoverPanel>
+        </BitBhPopover>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Inside a Disclosure"
+           Code="@_disclosureCode"
+           Css="@_disclosureCss">
+    <Description>
+        Works the same way inside a Disclosure. The button finds the nearest
+        closeable ancestor and calls its close method.
+    </Description>
+    <LiveContent>
+        <BitBhDisclosure DefaultOpen="true" class="disclosure">
+            <BitBhDisclosureButton class="disclosure-button">
+                Show details
+            </BitBhDisclosureButton>
+            <BitBhDisclosurePanel class="disclosure-panel">
+                <div class="disclosure-body">
+                    <p>Here are some details you can collapse.</p>
+                    <BitBhCloseButton class="btn btn-sm">Hide details</BitBhCloseButton>
+                </div>
+            </BitBhDisclosurePanel>
+        </BitBhDisclosure>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Polymorphic rendering (As)"
+           Code="@_polymorphicCode"
+           Css="@_polymorphicCss">
+    <Description>
+        Use the <code>As</code> parameter to render the close button as any HTML element.
+        Non-native button elements automatically receive <code>role="button"</code>,
+        <code>tabindex="0"</code>, and Enter/Space keyboard handling.
+    </Description>
+    <LiveContent>
+        <BitBhPopover class="popover">
+            <BitBhPopoverButton class="popover-button">
+                Open panel ▾
+            </BitBhPopoverButton>
+            <BitBhPopoverPanel class="popover-panel">
+                <p class="popover-body">
+                    The close actions below render as different elements:
+                </p>
+                <div class="close-variants">
+                    <BitBhCloseButton class="btn btn-sm">
+                        Button (default)
+                    </BitBhCloseButton>
+                    <BitBhCloseButton As="a" href="#" @onclick:preventDefault class="popover-nav-link">
+                        Anchor link
+                    </BitBhCloseButton>
+                    <BitBhCloseButton As="div" class="close-div">
+                        Div with role="button"
+                    </BitBhCloseButton>
+                </div>
+            </BitBhPopoverPanel>
+        </BitBhPopover>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled state"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> to prevent the close action. The button receives the native
+        <code>disabled</code> attribute (or <code>aria-disabled</code> for non-native elements) and a
+        <code>data-disabled</code> styling hook: the CSS version styles it with a
+        <code>[data-disabled]</code> selector, the Tailwind version with the <code>data-disabled:</code>
+        variant.
+    </Description>
+    <LiveContent>
+        <BitBhPopover class="popover">
+            <BitBhPopoverButton class="popover-button">
+                Panel is open ▾
+            </BitBhPopoverButton>
+            <BitBhPopoverPanel class="popover-panel">
+                <p class="popover-body">
+                    The disabled close button below won't close this panel:
+                </p>
+                <div class="close-variants">
+                    <BitBhCloseButton Disabled="true" class="btn btn-sm">
+                        Can't close (disabled)
+                    </BitBhCloseButton>
+                    <BitBhCloseButton class="btn btn-sm btn-primary">
+                        Close (enabled)
+                    </BitBhCloseButton>
+                </div>
+            </BitBhPopoverPanel>
+        </BitBhPopover>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool dialogOpen;
@@ -261,9 +262,11 @@
 """;
 
     private const string _dialogCss = """
-.dialog-backdrop { background: rgba(0, 0, 0, 0.5); }
+/* A backdrop and panel with a class keep none of the library's default positioning. */
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); }
 
 .dialog-panel {
+    position: relative;
     margin: 4rem auto;
     max-width: 28rem;
     background: #fff;

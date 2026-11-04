@@ -138,6 +138,51 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_TheToolbarRunsUpUnderTheStatusBar()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Url);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await OpenCalloutAsync("responsive");
+        await Expect(callout).ToHaveCSSAsync("transform", new System.Text.RegularExpressions.Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
+
+        // The safe area is a border of the toolbar, painted in its accent, so the bar reads as one with the status bar
+        // rather than sitting under a band of the surface below it.
+        var toolbar = callout.Locator(".bit-ctp-tlb");
+        Assert.AreEqual(0, (await toolbar.BoundingBoxAsync())!.Y, 1, "The toolbar does not run up to the top of the screen.");
+        await Expect(toolbar).ToHaveCSSAsync("border-top-width", "47px");
+        await Expect(toolbar).ToHaveCSSAsync("border-top-color", "rgba(0, 0, 0, 0)");
+
+        // What can be read and pressed starts below the notch, the close button laid over the corner of the bar included.
+        var readOut = (await callout.Locator(".bit-ctp-hmc").BoundingBoxAsync())!;
+        Assert.IsTrue(readOut.Y >= 47, $"The read-out sits under the notch ({readOut.Y}px).");
+        var close = (await callout.Locator(".bit-ctp-cbn").BoundingBoxAsync())!;
+        Assert.IsTrue(close.Y >= 47, $"The close button sits under the notch ({close.Y}px).");
+    }
+
+    [TestMethod]
+    public async Task Responsive_AClosedSheet_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync(Url);
+
+        // A closed sheet is laid out above the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(Page.Locator("#responsive .bit-ctp-cal")).ToBeHiddenAsync();
+
+        var callout = await OpenCalloutAsync("responsive");
+        var hour = callout.GetByRole(AriaRole.Option, new() { Name = "14", Exact = true });
+        await Expect(hour).ToBeVisibleAsync();
+
+        await callout.Locator(".bit-ctp-cbn").TapAsync();
+
+        await Expect(Field("responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(hour).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
     public async Task NotResponsive_OnAPhone_StillOpensACalloutAgainstItsField()
     {
         await OpenAsync(Url);

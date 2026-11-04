@@ -1,0 +1,34 @@
+﻿@* The router waits for OnNavigateAsync before it renders a page, so Bit.BlazeDb.wasm is there before the todos page
+   opens the database. This file renders before the assembly is downloaded, so it may not use BlazeDb's types itself.
+   The server prerenders it too: it registers LazyAssemblyLoader for that (its Program.cs), and does not set the switch,
+   as it loads BlazeDb with the rest of the app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    // Set only where Bit.BlazeDb.wasm is marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBlazeDb = AppContext.TryGetSwitch("Bit.BlazeDb.Samples.Lazy.LazyLoadsBlazeDb", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that use the database: fetch BlazeDb before they render. A second call loads nothing again.
+        if (LazyLoadsBlazeDb && IsDatabasePage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.BlazeDb.wasm"]);
+    }
+
+    // /todos and the routes beneath it (routes match regardless of case), but not /todos-archive. The path keeps any
+    // query and fragment.
+    private static bool IsDatabasePage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("todos", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("todos/", StringComparison.OrdinalIgnoreCase);
+    }
+}

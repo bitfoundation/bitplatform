@@ -698,7 +698,7 @@ internal class AppControllerBase(global::System.Net.Http.HttpClient httpClient, 
 
     protected static string EscapeRouteValue(string? value)
     {{
-        return global::System.Uri.EscapeDataString(global::System.Uri.UnescapeDataString(value ?? string.Empty));
+        return global::System.Uri.EscapeDataString(value ?? string.Empty);
     }}
 
     protected static string EscapeRouteValue<T>(T value)

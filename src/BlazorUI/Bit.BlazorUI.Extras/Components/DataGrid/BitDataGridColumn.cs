@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
 using System.Diagnostics.CodeAnalysis;
 
@@ -223,6 +225,33 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }
 
+    /// <summary>
+    /// The text a value of the column is shown as, in place of what <see cref="Format"/> or the value itself would
+    /// write - e.g. a translated name for each member of an enum: <c>ValueText="@(v => Localizer[$"Status{v}"])"</c>.
+    /// It is handed a non-null value of the bound field; returning <c>null</c> leaves the value to the default text.
+    /// </summary>
+    /// <remarks>
+    /// It is the text the grid shows the value by: the cells (unless a <see cref="Template"/> draws them) and their
+    /// tooltips, the group headers, a Min or Max aggregate, the options of an enum column's filter and inline editor,
+    /// the true and false options of a boolean column's filter and editor, and the text an in-memory source's quick
+    /// search and the text operators of its filters (Contains, StartsWith, ...) match. It is display only: the CSV,
+    /// the clipboard and an Excel export keep writing the value itself, formatted by <see cref="Format"/> - an
+    /// <see cref="ExportValue"/> gives an export any other text. A queryable (<see cref="IQueryable{T}"/>) or server
+    /// (<c>OnRead</c>) source searches and filters the stored value, since a delegate cannot be translated for it -
+    /// except that the quick search of a queryable source matches the members of an enum column by their text.
+    /// <br />
+    /// Without it, an enum member is shown by the name of its <c>[Display]</c> attribute
+    /// (<see cref="DisplayAttribute.GetName"/>, translated when it names a <c>ResourceType</c>), or by its own name when
+    /// it has none or its <c>ResourceType</c> cannot give one; a combination of flags names each of its members that way.
+    /// A <see cref="Format"/> writes the value itself instead (e.g. "D" for an enum's number).
+    /// <br />
+    /// A change to what it returns for a value - another mapping, or a new UI culture for a translated name - reaches
+    /// the cells, the group headers and the options on the grid's next render. The quick search and the aggregates are
+    /// worked out when the grid refreshes its view: handing over another method refreshes it, the same method returning
+    /// other text does not until the grid's <c>RefreshAsync</c> is called.
+    /// </remarks>
+    [Parameter] public Func<object, string?>? ValueText { get; set; }
+
     /// <summary>The kind of value the column holds, which picks its filter editor, operators and inline editor. Auto
     /// reads it off the bound property's type.</summary>
     [Parameter] public BitDataGridColumnDataType DataType { get; set; } = BitDataGridColumnDataType.Auto;
@@ -315,6 +344,11 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     private BitDataGridAggregateType _lastAggregate;
     private string? _lastFormat;
     private string? _lastAggregateFormat;
+
+    // What ValueText writes reaches the quick search and the aggregates the grid works out once per view, so another
+    // ValueText refreshes the view. Only its method counts: Razor hands a lambda over as a new delegate on every render
+    // (with a new closure when it captures a local), while the method of one lambda stays the same.
+    private MethodInfo? _lastValueTextMethod;
 
     // Tracked separately from the semantic snapshot: a Visible change only affects layout (the grid's
     // cached visible-column list), not the computed view, so it must not trigger a data refresh.
@@ -470,7 +504,7 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         }
         else if (_registeredId is not null && SemanticParametersChanged())
         {
-            // Field/Aggregate/Format/AggregateFormat changed while the Id stayed the same (typically a
+            // Field/Aggregate/Format/AggregateFormat/ValueText changed while the Id stayed the same (typically a
             // fixed ColumnId with a mutated Field). The grid resolves accessors/aggregates by column,
             // so ask it to recompute its view so the active state doesn't go stale.
             Grid?.NotifyColumnChanged();
@@ -482,7 +516,8 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         => _lastField != EffectiveField
         || _lastAggregate != Aggregate
         || _lastFormat != Format
-        || _lastAggregateFormat != AggregateFormat;
+        || _lastAggregateFormat != AggregateFormat
+        || _lastValueTextMethod != ValueText?.Method;
 
     private void SnapshotSemanticParameters()
     {
@@ -490,6 +525,7 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         _lastAggregate = Aggregate;
         _lastFormat = Format;
         _lastAggregateFormat = AggregateFormat;
+        _lastValueTextMethod = ValueText?.Method;
     }
 
     public void Dispose()
@@ -521,10 +557,49 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// <see cref="ExportValue"/> when supplied, otherwise the bound field's value.</summary>
     internal object? GetExportValue(TItem item) => ExportValue is not null ? ExportValue(item) : GetValue(item);
 
-    /// <summary>The display text an export writes for a row (the export value, formatted).</summary>
-    internal string GetFormattedExportValue(TItem item) => FormatValue(GetExportValue(item));
+    /// <summary>The text an export (and a clipboard copy) writes for a row: the export value formatted by
+    /// <see cref="Format"/>. It is the value itself rather than the text the cell shows it by - <see cref="ValueText"/>
+    /// and an enum member's <c>[Display]</c> name stay out of it - so a file keeps the values an app reads back.</summary>
+    internal string GetFormattedExportValue(TItem item) => FormatData(GetExportValue(item), Format);
 
-    internal string FormatValue(object? value)
+    /// <summary>The text the quick search matches for a row: the <see cref="ExportValue"/> when one is supplied (which
+    /// is what makes a template-only column searchable), otherwise the text the cell shows the field's value by.</summary>
+    internal string GetSearchText(TItem item)
+        => ExportValue is not null ? FormatData(ExportValue(item), Format) : FormatValue(GetValue(item));
+
+    /// <summary>The text the column shows a value of its own by: the cells, their tooltips, the group headers.</summary>
+    internal string FormatValue(object? value) => FormatValue(value, Format);
+
+    /// <summary>The text the column shows a value of its own by, written with <paramref name="format"/>:
+    /// <see cref="ValueText"/>, then the format, then an enum member's <c>[Display]</c> name, then the value itself.</summary>
+    internal string FormatValue(object? value, string? format)
+    {
+        if (value is null) return string.Empty;
+
+        if (ValueText?.Invoke(value) is { } text) return text;
+
+        if (string.IsNullOrEmpty(format) && value is Enum member && member.FindDisplayName() is { } name) return name;
+
+        return FormatData(value, format);
+    }
+
+    /// <summary>The text of a Min or Max aggregate, a value of the column's own, is written the way its cells are
+    /// (with <see cref="AggregateFormat"/> in place of <see cref="Format"/> when set). A sum, an average, a count or an
+    /// <see cref="AggregateBy"/> value is a number of its own, which only the format applies to.</summary>
+    internal string FormatAggregateValue(BitDataGridAggregateType type, object? value)
+    {
+        var format = AggregateFormat ?? Format;
+
+        if (type is BitDataGridAggregateType.Min or BitDataGridAggregateType.Max) return FormatValue(value, format);
+
+        return value is IFormattable f && !string.IsNullOrEmpty(format)
+            ? f.ToString(format, System.Globalization.CultureInfo.CurrentCulture)
+            : value?.ToString() ?? string.Empty;
+    }
+
+    /// <summary>A value written as data, in the culture the app runs under: by <paramref name="format"/> when it takes
+    /// one, otherwise by its own text.</summary>
+    private static string FormatData(object? value, string? format)
     {
         if (value is null) return string.Empty;
 
@@ -532,7 +607,7 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
         try
         {
-            return FormatValue(value, culture);
+            return Write(value, format, culture);
         }
         catch (ArgumentOutOfRangeException) when (value is DateTime or DateTimeOffset or DateOnly)
         {
@@ -540,19 +615,66 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
             // outside it rather than write anything, which would fail the cell and every export of the grid. Such a
             // date is written in the Gregorian calendar of the same culture instead, or the invariant one's.
             var gregorian = culture.OptionalCalendars.OfType<System.Globalization.GregorianCalendar>().FirstOrDefault();
-            if (gregorian is null) return FormatValue(value, System.Globalization.CultureInfo.InvariantCulture);
+            if (gregorian is null) return Write(value, format, System.Globalization.CultureInfo.InvariantCulture);
 
             var fallback = (System.Globalization.CultureInfo)culture.Clone();
             fallback.DateTimeFormat.Calendar = gregorian;
-            return FormatValue(value, fallback);
+            return Write(value, format, fallback);
         }
+
+        static string Write(object value, string? format, IFormatProvider culture)
+            => !string.IsNullOrEmpty(format) && value is IFormattable f
+                ? f.ToString(format, culture)
+                : Convert.ToString(value, culture) ?? string.Empty;
     }
 
-    private string FormatValue(object value, IFormatProvider culture)
+    /// <summary>The members of the column's enum, each with the text the column shows it by: the options of its filter
+    /// and of its inline editor. Each option's value stays the member's name, which is what the two parse back, and a
+    /// member that shares its value with another (an alias) keeps its own <c>[Display]</c> name or own name, so the two
+    /// options stay apart.</summary>
+    internal IEnumerable<(string Name, string Text)> EnumOptions()
     {
-        if (!string.IsNullOrEmpty(Format) && value is IFormattable f)
-            return f.ToString(Format, culture);
-        return Convert.ToString(value, culture) ?? string.Empty;
+        var type = Accessor?.UnderlyingType;
+        if (type is not { IsEnum: true }) yield break;
+
+        foreach (var member in EnumExtensions.GetEnumMembers(type))
+            yield return (member.Name, EnumMemberText(member));
+    }
+
+    private string EnumMemberText(EnumExtensions.EnumMember member)
+        => ValueText?.Invoke(member.Value)
+        ?? (string.IsNullOrEmpty(Format) ? member.DisplayName ?? member.Name : FormatData(member.Value, Format));
+
+    /// <summary>The text the column shows the true or the false value by, when <see cref="ValueText"/> gives one: the
+    /// options of a boolean column's filter and of its tri-state editor.</summary>
+    internal string? BooleanText(bool value) => ValueText?.Invoke(value);
+
+    /// <summary>The text the text operators of an in-memory filter (Contains, StartsWith, ...) match a value of the
+    /// column by: the text the cells show when <see cref="ValueText"/> writes it, otherwise <c>null</c> for the value's
+    /// own text.</summary>
+    internal Func<object?, string>? FilterText => ValueText is null ? null : _formatValue ??= FormatValue;
+
+    private Func<object?, string>? _formatValue;
+
+    /// <summary>The values of the column's enum whose text, as the cells show it, contains <paramref name="term"/>
+    /// (ignoring case): what the quick search of a queryable source matches an enum column by. <c>null</c> for a
+    /// column that is not bound to an enum, or to a flags enum, whose combinations cannot be listed.</summary>
+    internal List<Enum>? EnumValuesMatching(string term)
+    {
+        var type = Accessor?.UnderlyingType;
+        if (type is not { IsEnum: true } || type.IsDefined(typeof(FlagsAttribute), inherit: false)) return null;
+
+        var matches = new List<Enum>();
+        foreach (var member in EnumExtensions.GetEnumMembers(type))
+        {
+            if (matches.Contains(member.Value)) continue; // an alias of a value already in
+
+            if (FormatValue(member.Value).Contains(term, StringComparison.OrdinalIgnoreCase))
+            {
+                matches.Add(member.Value);
+            }
+        }
+        return matches;
     }
 
     private static string? Humanize(string? field)

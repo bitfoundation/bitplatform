@@ -6,6 +6,7 @@
         <div class="bev-toolbar">
             <input type="text" aria-label="Filter timeline events" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <button type="button" @onclick="() => Session.Timeline.Clear()" title="Clear timeline">Clear</button>
+            <button type="button" title="@(Session.IsCapturing ? "Put a marker here, to find this moment again in the timeline, exports and traces (named markers: palette >mark …)" : "Capture is paused: a marker is put down only while capturing")" aria-disabled="@(Session.IsCapturing ? "false" : "true")" @onclick="AddMarker">⚑ Mark@(Session.IsCapturing ? "" : " (paused)")</button>
             <label><input type="checkbox" checked="@_showLanes" @onchange='e => { _showLanes = e.Value is true; OnParametersSet(); }' /> lanes</label>
             <span class="bev-muted bev-nowrap">@_events.Count / @_all.Length</span>
         </div>
@@ -154,7 +155,7 @@
         ("state", [BevToolsEventKind.StateChange], "var(--bev-state)"),
         ("http", [BevToolsEventKind.Http], "var(--bev-http)"),
         ("js", [BevToolsEventKind.JsInterop], "var(--bev-js)"),
-        ("error", [BevToolsEventKind.Error, BevToolsEventKind.Diagnostic, BevToolsEventKind.Circuit, BevToolsEventKind.Browser, BevToolsEventKind.Lifecycle, BevToolsEventKind.Custom], "var(--bev-error)"),
+        ("error", [BevToolsEventKind.Error, BevToolsEventKind.Diagnostic, BevToolsEventKind.Circuit, BevToolsEventKind.Browser, BevToolsEventKind.Lifecycle, BevToolsEventKind.Custom, BevToolsEventKind.Log], "var(--bev-error)"),
     ];
 
     private const double WindowSeconds = 10;
@@ -251,6 +252,9 @@
         var freq = (double)System.Diagnostics.Stopwatch.Frequency;
         var windowTicks = WindowSeconds * freq;
         var bars = new List<Bar>();
+        // Log entries can be far more than everything else: they have a limit of their own, so a chatty logger does not
+        // push the renders and requests off the lanes.
+        var logBars = 0;
         for (var i = _all.Length - 1; i >= 0; i--)
         {
             var e = _all[i];
@@ -271,16 +275,52 @@
                 continue;
             }
 
+            if (e.Kind == BevToolsEventKind.Log)
+            {
+                if (logBars >= MaxBars)
+                {
+                    continue;
+                }
+
+                logBars++;
+            }
+
             var x = 1000 * (1 - age / windowTicks);
             var w = Math.Max(2, 1000 * ((e.DurationMs ?? 0) / 1000 * freq) / windowTicks);
-            bars.Add(new Bar(e.Id, lane, Math.Round(x, 1), Math.Round(Math.Min(w, 1000 - x), 1), e.Severity == BevToolsSeverity.Error ? "var(--bev-err)" : Lanes[lane].Color, e.Title, e.Id == Ui.SelectedEventId));
-            if (bars.Count > 600)
+            bars.Add(new Bar(e.Id, lane, Math.Round(x, 1), Math.Round(Math.Min(w, 1000 - x), 1), BarColor(e, lane), e.Title, e.Id == Ui.SelectedEventId));
+            if (bars.Count - logBars > MaxBars)
             {
                 break;
             }
         }
 
         _bars = bars;
+    }
+
+    private const int MaxBars = 600;
+
+    // The last lane holds errors and everything else that is not one of the lanes above it (logs, browser and circuit
+    // events): an error is red, the others by their severity, so an information log does not read as a failure.
+    private static string BarColor(BevToolsEvent e, int lane) =>
+        e.Severity == BevToolsSeverity.Error ? "var(--bev-err)"
+        : lane != Lanes.Length - 1 || e.Kind == BevToolsEventKind.Error ? Lanes[lane].Color
+        : e.Severity == BevToolsSeverity.Warning ? "var(--bev-warn)"
+        : "var(--bev-fg2)";
+
+    private void AddMarker()
+    {
+        // Numbered by the session, so a tab opened again goes on from the last one; a number is used only by a marker
+        // that was put down, which a paused capture does not.
+        if (Session.AddMarker("Marker " + (Session.MarkerCount + 1)) > 0)
+        {
+            Session.MarkerCount++;
+        }
+        else
+        {
+            Host.Notify("Capture is paused: markers are put down only while capturing");
+        }
+
+        OnParametersSet();
     }
 
     private void OnQuery(string? value)

@@ -1,0 +1,59 @@
+@include site(lp-fitness) {
+    --fit-track: #E04A77;
+    --fit-track-lane: rgb(255 255 255 / .6);
+    --fit-track-finish: #FFFFFF;
+    --fit-infield: #F6E35A;
+    --fit-lap: #17131F;
+    --fit-lemon: #F6E35A;
+    --fit-lemon-deep: #B39600;
+    --fit-lemon-soft: #FBF3B8;
+    --fit-on-lemon: #17131F;
+    --fit-screen: #FFFFFF;
+    --fit-screen-alt: #F5F2F7;
+    --fit-ring-base: #EEE8F1;
+    --fit-accent-text: #B5174F;
+    --fit-water: #3A78C9;
+    --fit-highlight: #F6E35A;
+    --fit-mark: #C81E5B;
+    --fit-mark-dot: #17131F;
+    --fit-flame: #C81E5B;
+    --fit-band: #17131F;
+    --fit-band-fg: #F9F8FB;
+    --fit-band-muted: #C9C3D2;
+    --fit-band-line: #3A3446;
+
+    @include type(("Bricolage Grotesque", system-ui, sans-serif), ("Instrument Sans", system-ui, sans-serif));
+    @include shape(20px, 14px);
+    @include palette(light, #C81E5B, #FFFFFF, #F9F8FB, #F2EEF4, #FFFFFF, #17131F, #5D5868, #E4DFE8);
+}
+
+@include site-dark(lp-fitness) {
+    --fit-track: #7D1E43;
+    --fit-track-lane: rgb(255 255 255 / .28);
+    --fit-track-finish: rgb(255 255 255 / .85);
+    --fit-infield: #241D2D;
+    --fit-lap: #EBD850;
+    --fit-lemon: #EBD850;
+    --fit-lemon-deep: #C7B12D;
+    --fit-lemon-soft: #4A4220;
+    --fit-on-lemon: #17131F;
+    --fit-screen: #1F1A28;
+    --fit-screen-alt: #2A2434;
+    --fit-ring-base: #352E40;
+    --fit-accent-text: #FF9DBF;
+    --fit-water: #7FB2F0;
+    --fit-highlight: #7D1E43;
+    --fit-mark: #FF9DBF;
+    --fit-mark-dot: #EBD850;
+    --fit-flame: #A3164A;
+    --fit-band: #241D2E;
+    --fit-band-fg: #F1EEF5;
+    --fit-band-muted: #BDB6C9;
+    --fit-band-line: #3E3550;
+
+    @include palette(dark, #FF9DBF, #1A0A12, #16121D, #1C1724, #211B2A, #F1EEF5, #A9A3B5, #332C3E);
+}
+
+:root:lang(fa):has(.lp-fitness) {
+    --lp-font-mono: var(--lp-stack-body);
+}

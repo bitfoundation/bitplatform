@@ -42,6 +42,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string _labelId = string.Empty;
     private string _countId = string.Empty;
     private string _errorId = string.Empty;
+    private string _errorLabelId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
     private string _ariaDescriptionId = string.Empty;
@@ -244,9 +245,25 @@ public partial class BitTextField : BitTextInputBase<string?>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the field the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and the input references
+    /// it through its aria-describedby attribute, so the same reason is read out on every later focus too.
+    /// A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
-    /// marks the field invalid in the same way. Only the plain text is announced by the live region, since a
-    /// template is free to render anything at all.
+    /// marks the field invalid in the same way. It replaces the message for a screen reader as well: a template
+    /// is free to render anything at all, so the live region announces <see cref="ErrorMessageAriaLabel"/> for
+    /// it, or a bare "Invalid input" when that is not set.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? ErrorMessageTemplate { get; set; }
@@ -337,7 +354,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Marks the value of the field as invalid, which gives a value rejected by something other than the
     /// cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the
     /// same aria-invalid attribute that a failing data annotation gives it. A field failing its own
-    /// validation stays invalid regardless of this parameter.
+    /// validation stays invalid regardless of this parameter. It says nothing more to a screen reader unless
+    /// <see cref="ErrorMessageAriaLabel"/> gives it a reason to announce.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Invalid { get; set; }
@@ -684,7 +702,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     [JSInvokable("OnGhostTextAccepted")]
     public async Task _NotifyGhostTextAccepted(string? acceptedText)
     {
-        if (Disabled || ReadOnly) return;
+        if (IsDisposing || Disabled || ReadOnly) return;
 
         await OnGhostTextAccepted.InvokeAsync(acceptedText);
     }
@@ -838,6 +856,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         _labelId = $"BitTextField-{UniqueId}-label";
         _countId = $"BitTextField-{UniqueId}-count";
         _errorId = $"BitTextField-{UniqueId}-error";
+        _errorLabelId = $"BitTextField-{UniqueId}-error-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
         _ariaDescriptionId = $"BitTextField-{UniqueId}-aria-description";
 
@@ -1151,6 +1170,21 @@ public partial class BitTextField : BitTextInputBase<string?>
     // the forced state does instead of drawing a red line under a field that still looks accepted.
     protected override bool HasError => Invalid || HasErrorMessage;
 
+    // Whether ErrorMessageAriaLabel speaks for the rejection on screen: a template, which wins over a plain
+    // message (see the markup) and is free to render anything at all, or the forced state without a message.
+    // A whitespace label is no label - announcing it would leave the field sounding accepted.
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    // What the live region says of the rejection, always matching what is on screen: a plain message is its own
+    // text, while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than
+    // left in silence. The forced state is the one rejection only announced with a label of its own, its reason
+    // being explained - and announced - elsewhere.
+    private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                     : ErrorMessage.HasValue() ? ErrorMessage
+                                     : null;
+
     // The textarea is only rendered for the plain text types: every other type has a behavior of its own
     // (a password mask, a number spinner, ...) that a textarea cannot provide.
     private bool IsMultilineElement => Multiline && Type is null or BitInputType.Text;
@@ -1201,7 +1235,9 @@ public partial class BitTextField : BitTextInputBase<string?>
             var ids = string.Join(' ', new[]
             {
                 GetSplattedInputAttribute("aria-describedby"),
-                HasErrorMessage ? _errorId : null,
+                // A label stands in for the template on focus as well, which may well be a bare icon with no
+                // text to describe the field with at all.
+                HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
                 hasCount ? _countId : null
@@ -1228,11 +1264,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     // What the state of the field has to say out loud. The rejection wins over the other two, which say what
     // the field is doing rather than what is wrong with it.
-    private string? StateLiveText => ErrorMessage.HasValue()
-                                        ? ErrorMessage
-                                        : Loading
-                                            ? (LoadingAriaLabel ?? "Loading")
-                                            : (GhostText.HasValue() ? GhostText : null);
+    private string? StateLiveText => ErrorLiveText
+                                     ?? (Loading
+                                            ? (LoadingAriaLabel ?? BitStrings.Current.Loading)
+                                            : (GhostText.HasValue() ? GhostText : null));
 
     // A live region only announces what changes inside it after it is already on the page: one that is added
     // along with its text is regularly missed altogether. So a single empty region is kept in the markup and
@@ -1254,7 +1289,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     // whole value away is announced explicitly. An empty announcement is how a consumer asks for silence.
     private void AnnounceCleared()
     {
-        var text = ClearedAnnouncement ?? "Cleared";
+        var text = ClearedAnnouncement ?? BitStrings.Current.Cleared;
 
         if (text.HasNoValue()) return;
 
@@ -1551,14 +1586,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         await base.DisposeAsync(disposing);
 
-        _dotnetObj?.Dispose();
-
-        if (_jsSetup is false) return;
-
-        try
-        {
-            await _js.BitTextFieldDispose(_Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        // The ghost text still calls back through the reference until the script lets go of the field.
+        await _dotnetObj.DisposeAfterAsync(() => _jsSetup ? _js.BitTextFieldDispose(_Id) : ValueTask.CompletedTask);
     }
 }

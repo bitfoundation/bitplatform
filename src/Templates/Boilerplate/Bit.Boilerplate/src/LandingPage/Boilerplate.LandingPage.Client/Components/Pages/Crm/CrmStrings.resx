@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Brightlane: the CRM for B2B sales teams of 5 to 50</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Pipeline, email, calendar and a forecast that updates the moment a deal moves. Set up from your spreadsheet in an afternoon, and free for 14 days.</value>
+    </data>
+    <data name="NavProduct" xml:space="preserve">
+        <value>Product</value>
+    </data>
+    <data name="NavCustomers" xml:space="preserve">
+        <value>Customers</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>Pricing</value>
+    </data>
+    <data name="NavSpreadsheets" xml:space="preserve">
+        <value>vs spreadsheets</value>
+    </data>
+    <data name="NavTrial" xml:space="preserve">
+        <value>Start free trial</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>The CRM for B2B sales teams of 5 to 50. Made in Dublin and Lisbon since 2019.</value>
+    </data>
+    <data name="FooterHours" xml:space="preserve">
+        <value>Support answers Monday to Friday, 08:00 to 18:00 Irish time.</value>
+    </data>
+    <data name="FooterSpreadsheets" xml:space="preserve">
+        <value>Brightlane vs spreadsheets</value>
+    </data>
+    <data name="FooterSecurity" xml:space="preserve">
+        <value>Security and privacy</value>
+    </data>
+    <data name="FooterApps" xml:space="preserve">
+        <value>Desktop and phone apps</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>What does it cost for 12 people?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Can we import our spreadsheet?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>Where is our data stored?</value>
+    </data>
+    <data name="ChatTrial" xml:space="preserve">
+        <value>Start a free trial</value>
+    </data>
+    <data name="ChatPerson" xml:space="preserve">
+        <value>Rather talk to a person? Email</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>CRM for B2B teams of 5 to 50</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>Move a deal. The forecast follows.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Brightlane keeps your team's deals, emails and meetings on one board, and does the arithmetic for a forecast you can defend on Monday morning. Import your spreadsheet after lunch and sell from it the same afternoon.</value>
+    </data>
+    <data name="HeroTrial" xml:space="preserve">
+        <value>Start a 14-day free trial</value>
+    </data>
+    <data name="HeroPricing" xml:space="preserve">
+        <value>See pricing</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>No card needed. Export everything as CSV, any time.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>A pipeline from the app. Move a deal with its arrows, or focus a card and use the arrow keys.</value>
+    </data>
+    <data name="DemoBoardTitle" xml:space="preserve">
+        <value>Pipeline, this quarter</value>
+    </data>
+    <data name="DemoOpenDeals" xml:space="preserve">
+        <value>{0} open deals · Benelux sales team</value>
+    </data>
+    <data name="DemoForecast" xml:space="preserve">
+        <value>Weighted forecast</value>
+    </data>
+    <data name="DemoTarget" xml:space="preserve">
+        <value>{0} of the {1} quarterly target</value>
+    </data>
+    <data name="DemoMoney" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="DemoStageQualified" xml:space="preserve">
+        <value>Qualified</value>
+    </data>
+    <data name="DemoStageDemo" xml:space="preserve">
+        <value>Demo</value>
+    </data>
+    <data name="DemoStageProposal" xml:space="preserve">
+        <value>Proposal</value>
+    </data>
+    <data name="DemoStageNegotiation" xml:space="preserve">
+        <value>Negotiation</value>
+    </data>
+    <data name="DemoStageWon" xml:space="preserve">
+        <value>Won</value>
+    </data>
+    <data name="DemoProbability" xml:space="preserve">
+        <value>Counts {0}% towards the forecast</value>
+    </data>
+    <data name="DemoNext1" xml:space="preserve">
+        <value>Discovery call, Thursday</value>
+    </data>
+    <data name="DemoNext2" xml:space="preserve">
+        <value>Demo booked, Monday 14:00</value>
+    </data>
+    <data name="DemoNext3" xml:space="preserve">
+        <value>Send the restaurant case study</value>
+    </data>
+    <data name="DemoNext4" xml:space="preserve">
+        <value>Proposal opened twice yesterday</value>
+    </data>
+    <data name="DemoNext5" xml:space="preserve">
+        <value>Follow up on Friday</value>
+    </data>
+    <data name="DemoNext6" xml:space="preserve">
+        <value>Contract with their lawyer</value>
+    </data>
+    <data name="DemoNext7" xml:space="preserve">
+        <value>Signed on 28 October</value>
+    </data>
+    <data name="DemoMoveBack" xml:space="preserve">
+        <value>Move {0} back to {1}</value>
+    </data>
+    <data name="DemoMoveForward" xml:space="preserve">
+        <value>Move {0} to {1}</value>
+    </data>
+    <data name="DemoEmptyStage" xml:space="preserve">
+        <value>No deals here yet</value>
+    </data>
+    <data name="DemoKeyboardHint" xml:space="preserve">
+        <value>Tip: focus a card and press ← or → to move it.</value>
+    </data>
+    <data name="DemoWonSoFar" xml:space="preserve">
+        <value>{0} won this quarter so far</value>
+    </data>
+    <data name="DemoStatusMoved" xml:space="preserve">
+        <value>{0} moved to {1}. Forecast {2}.</value>
+    </data>
+    <data name="DemoStatusWon" xml:space="preserve">
+        <value>{0} is won: {1} added to the quarter.</value>
+    </data>
+    <data name="LogosTitle" xml:space="preserve">
+        <value>1,400 sales teams run their pipeline on Brightlane</value>
+    </data>
+    <data name="StatsTitle" xml:space="preserve">
+        <value>Brightlane in numbers</value>
+    </data>
+    <data name="Stat1Value" xml:space="preserve">
+        <value>11</value>
+    </data>
+    <data name="Stat1Unit" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="Stat1Label" xml:space="preserve">
+        <value>median time to import a team's spreadsheet</value>
+    </data>
+    <data name="Stat2Value" xml:space="preserve">
+        <value>4.6</value>
+    </data>
+    <data name="Stat2Unit" xml:space="preserve">
+        <value>h</value>
+    </data>
+    <data name="Stat2Label" xml:space="preserve">
+        <value>a week back for each seller, in our customer survey</value>
+    </data>
+    <data name="Stat3Value" xml:space="preserve">
+        <value>38</value>
+    </data>
+    <data name="Stat3Label" xml:space="preserve">
+        <value>countries where Brightlane teams sell</value>
+    </data>
+    <data name="Stat4Value" xml:space="preserve">
+        <value>99.95%</value>
+    </data>
+    <data name="Stat4Label" xml:space="preserve">
+        <value>uptime over the last 12 months</value>
+    </data>
+    <data name="StatsNote" xml:space="preserve">
+        <value>Time saved comes from a survey of 312 customer teams in September 2026. Uptime is measured by an outside monitor every minute.</value>
+    </data>
+    <data name="ProductEyebrow" xml:space="preserve">
+        <value>What's in it</value>
+    </data>
+    <data name="ProductTitle" xml:space="preserve">
+        <value>Six things your sellers do all day, each one a few clicks shorter</value>
+    </data>
+    <data name="ProductLede" xml:space="preserve">
+        <value>No modules to buy and no consultant to set them up. Everything below is on every plan unless the pricing page says otherwise.</value>
+    </data>
+    <data name="Cap1Tag" xml:space="preserve">
+        <value>Pipeline</value>
+    </data>
+    <data name="Cap1Title" xml:space="preserve">
+        <value>Boards that match how you sell</value>
+    </data>
+    <data name="Cap1Body" xml:space="preserve">
+        <value>Your stages, your probabilities, a board for each product line. Drag a deal, or move it with the keyboard.</value>
+    </data>
+    <data name="Cap1Detail" xml:space="preserve">
+        <value>Up to 20 pipelines on Business</value>
+    </data>
+    <data name="Cap2Tag" xml:space="preserve">
+        <value>Inbox</value>
+    </data>
+    <data name="Cap2Title" xml:space="preserve">
+        <value>Email and meetings, filed on the deal</value>
+    </data>
+    <data name="Cap2Body" xml:space="preserve">
+        <value>Connect your work mailbox and calendar. Every thread and meeting with a contact lands on the right deal, without BCC tricks.</value>
+    </data>
+    <data name="Cap2Detail" xml:space="preserve">
+        <value>Google Workspace, Microsoft 365 or any IMAP server</value>
+    </data>
+    <data name="Cap3Tag" xml:space="preserve">
+        <value>Forecast</value>
+    </data>
+    <data name="Cap3Title" xml:space="preserve">
+        <value>A forecast nobody has to rebuild</value>
+    </data>
+    <data name="Cap3Body" xml:space="preserve">
+        <value>Weighted by stage, adjusted by the seller who owns the deal, and compared with last quarter every Monday at 08:00.</value>
+    </data>
+    <data name="Cap3Detail" xml:space="preserve">
+        <value>Updates as deals move, never from a formula</value>
+    </data>
+    <data name="Cap4Tag" xml:space="preserve">
+        <value>Follow-ups</value>
+    </data>
+    <data name="Cap4Title" xml:space="preserve">
+        <value>Nothing waits in someone's head</value>
+    </data>
+    <data name="Cap4Body" xml:space="preserve">
+        <value>Every deal carries a next step with a date. Deals without one top Monday's list, so they get one before the stand-up.</value>
+    </data>
+    <data name="Cap4Detail" xml:space="preserve">
+        <value>Reminders by email, phone and desktop</value>
+    </data>
+    <data name="Cap5Tag" xml:space="preserve">
+        <value>Reports</value>
+    </data>
+    <data name="Cap5Title" xml:space="preserve">
+        <value>Reports your board will actually read</value>
+    </data>
+    <data name="Cap5Body" xml:space="preserve">
+        <value>Win rate, sales cycle length and revenue by seller, filtered by quarter or team, and sent as a PDF or CSV.</value>
+    </data>
+    <data name="Cap5Detail" xml:space="preserve">
+        <value>Scheduled report emails on Business</value>
+    </data>
+    <data name="Cap6Tag" xml:space="preserve">
+        <value>Mobile</value>
+    </data>
+    <data name="Cap6Title" xml:space="preserve">
+        <value>Log the meeting before you reach the car</value>
+    </data>
+    <data name="Cap6Body" xml:space="preserve">
+        <value>The phone apps save a call note in two taps and keep working in a basement car park, then sync when the signal is back.</value>
+    </data>
+    <data name="Cap6Detail" xml:space="preserve">
+        <value>iPhone, iPad and Android, offline included</value>
+    </data>
+    <data name="CaseEyebrow" xml:space="preserve">
+        <value>Customer story</value>
+    </data>
+    <data name="CaseTitle" xml:space="preserve">
+        <value>Nordvik's forecast used to be a guess. Last quarter it was off by 6%.</value>
+    </data>
+    <data name="CaseBody1" xml:space="preserve">
+        <value>Nordvik Industrial sells pumps and valves to shipyards from Gothenburg and Oslo. Its 22 sellers kept their pipeline in a shared spreadsheet with 14 tabs, and Friday afternoons went to bringing it up to date.</value>
+    </data>
+    <data name="CaseBody2" xml:space="preserve">
+        <value>They moved to Brightlane in one week in March 2026, starting with that spreadsheet. Six months later, the sales leads spend Fridays with customers instead.</value>
+    </data>
+    <data name="CaseQuote" xml:space="preserve">
+        <value>The Monday meeting went from arguing about the numbers to talking about the deals.</value>
+    </data>
+    <data name="CaseQuoteName" xml:space="preserve">
+        <value>Ingrid Saether</value>
+    </data>
+    <data name="CaseQuoteRole" xml:space="preserve">
+        <value>Head of Sales, Nordvik Industrial</value>
+    </data>
+    <data name="CaseCompany" xml:space="preserve">
+        <value>Industrial pumps and valves · 22 sellers</value>
+    </data>
+    <data name="CaseNumber1Value" xml:space="preserve">
+        <value>±6%</value>
+    </data>
+    <data name="CaseNumber1Label" xml:space="preserve">
+        <value>forecast error in Q3 2026; it was ±27% before</value>
+    </data>
+    <data name="CaseNumber2Value" xml:space="preserve">
+        <value>5</value>
+    </data>
+    <data name="CaseNumber2Unit" xml:space="preserve">
+        <value>h</value>
+    </data>
+    <data name="CaseNumber2Label" xml:space="preserve">
+        <value>a week back for each sales lead</value>
+    </data>
+    <data name="CaseNumber3Value" xml:space="preserve">
+        <value>21% → 30%</value>
+    </data>
+    <data name="CaseNumber3Label" xml:space="preserve">
+        <value>win rate, the quarter before and the quarter after</value>
+    </data>
+    <data name="CasePeriod" xml:space="preserve">
+        <value>Figures from Nordvik's own reports, Q1 and Q3 2026.</value>
+    </data>
+    <data name="CompareEyebrow" xml:space="preserve">
+        <value>Choosing a CRM</value>
+    </data>
+    <data name="CompareTitle" xml:space="preserve">
+        <value>A spreadsheet, Brightlane, or an enterprise suite?</value>
+    </data>
+    <data name="CompareSpreadsheet" xml:space="preserve">
+        <value>Spreadsheet</value>
+    </data>
+    <data name="CompareSuite" xml:space="preserve">
+        <value>Enterprise suite</value>
+    </data>
+    <data name="CompareRow1" xml:space="preserve">
+        <value>Ready to use</value>
+    </data>
+    <data name="CompareRow1Sheet" xml:space="preserve">
+        <value>Today, but you build every part yourself</value>
+    </data>
+    <data name="CompareRow1Us" xml:space="preserve">
+        <value>This afternoon, with your own data</value>
+    </data>
+    <data name="CompareRow1Suite" xml:space="preserve">
+        <value>After a project of two to six months</value>
+    </data>
+    <data name="CompareRow2" xml:space="preserve">
+        <value>Who keeps it current</value>
+    </data>
+    <data name="CompareRow2Sheet" xml:space="preserve">
+        <value>Whoever remembers</value>
+    </data>
+    <data name="CompareRow2Us" xml:space="preserve">
+        <value>Sellers, in two clicks from email or phone</value>
+    </data>
+    <data name="CompareRow2Suite" xml:space="preserve">
+        <value>Sellers, through long forms</value>
+    </data>
+    <data name="CompareRow3" xml:space="preserve">
+        <value>Forecast</value>
+    </data>
+    <data name="CompareRow3Sheet" xml:space="preserve">
+        <value>A formula someone has to maintain</value>
+    </data>
+    <data name="CompareRow3Us" xml:space="preserve">
+        <value>Weighted, and updated as deals move</value>
+    </data>
+    <data name="CompareRow3Suite" xml:space="preserve">
+        <value>Configurable, once someone configures it</value>
+    </data>
+    <data name="CompareRow4" xml:space="preserve">
+        <value>Email history</value>
+    </data>
+    <data name="CompareRow4Sheet" xml:space="preserve">
+        <value>Pasted in by hand, if at all</value>
+    </data>
+    <data name="CompareRow4Us" xml:space="preserve">
+        <value>Filed on the deal automatically</value>
+    </data>
+    <data name="CompareRow4Suite" xml:space="preserve">
+        <value>Through an add-on</value>
+    </data>
+    <data name="CompareRow5" xml:space="preserve">
+        <value>Admin needed</value>
+    </data>
+    <data name="CompareRow5Sheet" xml:space="preserve">
+        <value>None, until it breaks</value>
+    </data>
+    <data name="CompareRow5Us" xml:space="preserve">
+        <value>None for teams under 50</value>
+    </data>
+    <data name="CompareRow5Suite" xml:space="preserve">
+        <value>Often a full-time one</value>
+    </data>
+    <data name="CompareMore" xml:space="preserve">
+        <value>Read the full comparison with spreadsheets, including where they win</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>From sales leads</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>Teams open it without being asked</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>We had three CRMs in four years. Brightlane is the first one our sellers open before anyone asks them to.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>Priya Raman</value>
+    </data>
+    <data name="Review1Role" xml:space="preserve">
+        <value>Sales Director, Tessera Labs, 14 sellers</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>Importing our 6,000-row sheet took twenty minutes, and it found 340 duplicates we'd been calling twice.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>Mateus Oliveira</value>
+    </data>
+    <data name="Review2Role" xml:space="preserve">
+        <value>Founder, Okapi Freight, Lisbon</value>
+    </data>
+    <data name="Review3Quote" xml:space="preserve">
+        <value>I check the forecast on my phone between site visits, and it's the same number my team sees.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>Hannah Becker</value>
+    </data>
+    <data name="Review3Role" xml:space="preserve">
+        <value>Head of Sales, Vireo Solar, Freiburg</value>
+    </data>
+    <data name="SecurityEyebrow" xml:space="preserve">
+        <value>Security and privacy</value>
+    </data>
+    <data name="SecurityTitle" xml:space="preserve">
+        <value>Where your data lives, and who can see it</value>
+    </data>
+    <data name="SecurityLede" xml:space="preserve">
+        <value>The details your IT lead will ask about, in plain words.</value>
+    </data>
+    <data name="Security1Title" xml:space="preserve">
+        <value>Hosted in the EU</value>
+    </data>
+    <data name="Security1Body" xml:space="preserve">
+        <value>Data is stored in data centres in Frankfurt and Dublin, and stays in the EU unless you connect a tool that takes it elsewhere.</value>
+    </data>
+    <data name="Security2Title" xml:space="preserve">
+        <value>Encrypted and backed up</value>
+    </data>
+    <data name="Security2Body" xml:space="preserve">
+        <value>TLS 1.3 in transit, AES-256 at rest, and a backup every day, kept for 35 days.</value>
+    </data>
+    <data name="Security3Title" xml:space="preserve">
+        <value>Sign-in you control</value>
+    </data>
+    <data name="Security3Body" xml:space="preserve">
+        <value>Two-factor sign-in on every plan. SAML single sign-on and SCIM provisioning on Business and Enterprise.</value>
+    </data>
+    <data name="Security4Title" xml:space="preserve">
+        <value>GDPR, on paper</value>
+    </data>
+    <data name="Security4Body" xml:space="preserve">
+        <value>A data processing agreement you can sign online, and a public list of every subprocessor we use.</value>
+    </data>
+    <data name="SealSample" xml:space="preserve">
+        <value>Sample</value>
+    </data>
+    <data name="Seal1Name" xml:space="preserve">
+        <value>ISO/IEC 27001</value>
+    </data>
+    <data name="Seal1Detail" xml:space="preserve">
+        <value>Information security</value>
+    </data>
+    <data name="Seal2Name" xml:space="preserve">
+        <value>SOC 2 Type II</value>
+    </data>
+    <data name="Seal2Detail" xml:space="preserve">
+        <value>Audit report</value>
+    </data>
+    <data name="Seal3Name" xml:space="preserve">
+        <value>GDPR DPA</value>
+    </data>
+    <data name="Seal3Detail" xml:space="preserve">
+        <value>Signed online</value>
+    </data>
+    <data name="SealsNote" xml:space="preserve">
+        <value>These badges are placeholders. Show only the certifications your company holds, each with a link to its certificate or report.</value>
+    </data>
+    <data name="AppsEyebrow" xml:space="preserve">
+        <value>Apps</value>
+    </data>
+    <data name="AppsTitle" xml:space="preserve">
+        <value>On the desk and in the pocket</value>
+    </data>
+    <data name="AppsLede" xml:space="preserve">
+        <value>One account and the same pipeline in the browser, on Windows and Mac, and on iPhone, iPad and Android.</value>
+    </data>
+    <data name="AppsWebDetail" xml:space="preserve">
+        <value>Any current browser. Nothing to install.</value>
+    </data>
+    <data name="AppsWindowsDetail" xml:space="preserve">
+        <value>Windows 10 and 11, with desktop notifications</value>
+    </data>
+    <data name="AppsMacDetail" xml:space="preserve">
+        <value>macOS 13 or later, from the App Store</value>
+    </data>
+    <data name="AppsIosDetail" xml:space="preserve">
+        <value>iOS 17 or later, works offline</value>
+    </data>
+    <data name="AppsAndroidDetail" xml:space="preserve">
+        <value>Android 10 or later, works offline</value>
+    </data>
+    <data name="CtaTitle" xml:space="preserve">
+        <value>Your pipeline, ready by this afternoon</value>
+    </data>
+    <data name="CtaBody" xml:space="preserve">
+        <value>Start a 14-day trial with every Business feature, import your spreadsheet and invite your team. No card, and nothing to install.</value>
+    </data>
+    <data name="TalkToSales" xml:space="preserve">
+        <value>Talk to sales</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>Pricing | Brightlane</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>Brightlane plans from €12 per seat a month, billed yearly. Prices in euros, dollars or pounds, a 14-day free trial, and every plan compared side by side.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>One price per seat. Pay monthly, or save 20% yearly.</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>Every plan has unlimited contacts and deals, the desktop and phone apps, and email and calendar sync. Try Business free for 14 days before you choose.</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>Plans</value>
+    </data>
+    <data name="BillingLabel" xml:space="preserve">
+        <value>Billing</value>
+    </data>
+    <data name="BillingMonthly" xml:space="preserve">
+        <value>Monthly</value>
+    </data>
+    <data name="BillingYearly" xml:space="preserve">
+        <value>Yearly</value>
+    </data>
+    <data name="BillingSave" xml:space="preserve">
+        <value>save {0}%</value>
+    </data>
+    <data name="CurrencyLabel" xml:space="preserve">
+        <value>Currency</value>
+    </data>
+    <data name="CurrencyEUR" xml:space="preserve">
+        <value>Euro</value>
+    </data>
+    <data name="CurrencyUSD" xml:space="preserve">
+        <value>US dollar</value>
+    </data>
+    <data name="CurrencyGBP" xml:space="preserve">
+        <value>Pound sterling</value>
+    </data>
+    <data name="PriceEUR" xml:space="preserve">
+        <value>€{0}</value>
+    </data>
+    <data name="PriceUSD" xml:space="preserve">
+        <value>${0}</value>
+    </data>
+    <data name="PriceGBP" xml:space="preserve">
+        <value>£{0}</value>
+    </data>
+    <data name="PlanPopular" xml:space="preserve">
+        <value>Most teams pick this</value>
+    </data>
+    <data name="PlanCustom" xml:space="preserve">
+        <value>Custom</value>
+    </data>
+    <data name="PlanEnterpriseBilling" xml:space="preserve">
+        <value>From 50 seats, on a yearly contract with invoicing</value>
+    </data>
+    <data name="PerSeatMonth" xml:space="preserve">
+        <value>per seat a month</value>
+    </data>
+    <data name="BilledYearly" xml:space="preserve">
+        <value>{0} per seat, billed once a year.</value>
+    </data>
+    <data name="YearSaving" xml:space="preserve">
+        <value>You save {0} per seat ({1}%).</value>
+    </data>
+    <data name="BilledMonthly" xml:space="preserve">
+        <value>Billed every month. Cancel any time.</value>
+    </data>
+    <data name="PlanTrial" xml:space="preserve">
+        <value>Start free trial</value>
+    </data>
+    <data name="CurrencyNote" xml:space="preserve">
+        <value>Prices are set in euros. Dollar and pound prices follow at a fixed rate (1 EUR = 1.16 USD = 0.84 GBP, reviewed each January) and are rounded to the nearest 50 cents or pence. The yearly price is the monthly price less 20%, in every currency. Prices exclude VAT and sales tax, which are added where they apply.</value>
+    </data>
+    <data name="PlanStarter" xml:space="preserve">
+        <value>Starter</value>
+    </data>
+    <data name="PlanStarterSummary" xml:space="preserve">
+        <value>For a first sales team of up to 10 people.</value>
+    </data>
+    <data name="PlanStarterFeature1" xml:space="preserve">
+        <value>1 pipeline, unlimited deals</value>
+    </data>
+    <data name="PlanStarterFeature2" xml:space="preserve">
+        <value>Email and calendar sync</value>
+    </data>
+    <data name="PlanStarterFeature3" xml:space="preserve">
+        <value>Weighted forecast</value>
+    </data>
+    <data name="PlanStarterFeature4" xml:space="preserve">
+        <value>Desktop and phone apps</value>
+    </data>
+    <data name="PlanTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PlanTeamSummary" xml:space="preserve">
+        <value>For a sales team of up to 50 that sells more than one thing.</value>
+    </data>
+    <data name="PlanTeamFeature1" xml:space="preserve">
+        <value>5 pipelines, products and price lists</value>
+    </data>
+    <data name="PlanTeamFeature2" xml:space="preserve">
+        <value>Forecast by seller, with adjustments</value>
+    </data>
+    <data name="PlanTeamFeature3" xml:space="preserve">
+        <value>20 workflow automations</value>
+    </data>
+    <data name="PlanTeamFeature4" xml:space="preserve">
+        <value>Email templates and scheduling links</value>
+    </data>
+    <data name="PlanBusiness" xml:space="preserve">
+        <value>Business</value>
+    </data>
+    <data name="PlanBusinessSummary" xml:space="preserve">
+        <value>For several teams under one account, up to 50 seats.</value>
+    </data>
+    <data name="PlanBusinessFeature1" xml:space="preserve">
+        <value>20 pipelines, permissions by team</value>
+    </data>
+    <data name="PlanBusinessFeature2" xml:space="preserve">
+        <value>SAML single sign-on and SCIM</value>
+    </data>
+    <data name="PlanBusinessFeature3" xml:space="preserve">
+        <value>Scheduled reports and a sandbox</value>
+    </data>
+    <data name="PlanBusinessFeature4" xml:space="preserve">
+        <value>Answers within 4 working hours</value>
+    </data>
+    <data name="PlanEnterprise" xml:space="preserve">
+        <value>Enterprise</value>
+    </data>
+    <data name="PlanEnterpriseSummary" xml:space="preserve">
+        <value>For 50 seats or more, or a contract your lawyers wrote.</value>
+    </data>
+    <data name="PlanEnterpriseFeature1" xml:space="preserve">
+        <value>Everything in Business</value>
+    </data>
+    <data name="PlanEnterpriseFeature2" xml:space="preserve">
+        <value>Audit log and a 99.9% uptime SLA</value>
+    </data>
+    <data name="PlanEnterpriseFeature3" xml:space="preserve">
+        <value>A named success manager</value>
+    </data>
+    <data name="PlanEnterpriseFeature4" xml:space="preserve">
+        <value>Answers within an hour, around the clock</value>
+    </data>
+    <data name="TrialEyebrow" xml:space="preserve">
+        <value>The free trial</value>
+    </data>
+    <data name="TrialTitle" xml:space="preserve">
+        <value>14 days of Business, and what happens after</value>
+    </data>
+    <data name="TrialLede" xml:space="preserve">
+        <value>The whole team can try everything, with your real data. No card, no sales call, and no surprise when it ends.</value>
+    </data>
+    <data name="Trial1Day" xml:space="preserve">
+        <value>Day 1</value>
+    </data>
+    <data name="Trial1Title" xml:space="preserve">
+        <value>Everything on Business, for up to 50 people</value>
+    </data>
+    <data name="Trial1Body" xml:space="preserve">
+        <value>Import your spreadsheet, connect mailboxes and invite the team. Nothing asks for a card.</value>
+    </data>
+    <data name="Trial2Day" xml:space="preserve">
+        <value>Day 10</value>
+    </data>
+    <data name="Trial2Title" xml:space="preserve">
+        <value>A reminder, with what you've built</value>
+    </data>
+    <data name="Trial2Body" xml:space="preserve">
+        <value>The account owner gets one email: how many deals, people and pipelines are set up, and which plan fits them.</value>
+    </data>
+    <data name="Trial3Day" xml:space="preserve">
+        <value>Day 14</value>
+    </data>
+    <data name="Trial3Title" xml:space="preserve">
+        <value>Pick a plan, keep everything</value>
+    </data>
+    <data name="Trial3Body" xml:space="preserve">
+        <value>Choose a plan and pay by card or ask for an invoice. Your data, settings and history stay exactly as they are.</value>
+    </data>
+    <data name="Trial4Day" xml:space="preserve">
+        <value>Day 15</value>
+    </data>
+    <data name="Trial4Title" xml:space="preserve">
+        <value>No plan yet? Read-only</value>
+    </data>
+    <data name="Trial4Body" xml:space="preserve">
+        <value>The account pauses: everyone can still look and export, nobody can edit. Choosing a plan unpauses it at once.</value>
+    </data>
+    <data name="Trial5Day" xml:space="preserve">
+        <value>Day 75</value>
+    </data>
+    <data name="Trial5Title" xml:space="preserve">
+        <value>Deleted, after a warning</value>
+    </data>
+    <data name="Trial5Body" xml:space="preserve">
+        <value>Sixty days on, we delete the account and its data. The owner gets an email a week before, with a link to export it all.</value>
+    </data>
+    <data name="MatrixEyebrow" xml:space="preserve">
+        <value>Plan comparison</value>
+    </data>
+    <data name="MatrixTitle" xml:space="preserve">
+        <value>Every plan, every feature</value>
+    </data>
+    <data name="MatrixPick" xml:space="preserve">
+        <value>Show the plan</value>
+    </data>
+    <data name="MatrixIncluded" xml:space="preserve">
+        <value>Included</value>
+    </data>
+    <data name="MatrixExcluded" xml:space="preserve">
+        <value>Not included</value>
+    </data>
+    <data name="MatrixUnlimited" xml:space="preserve">
+        <value>Unlimited</value>
+    </data>
+    <data name="MatrixGroupPipeline" xml:space="preserve">
+        <value>Pipeline and deals</value>
+    </data>
+    <data name="MatrixPipelines" xml:space="preserve">
+        <value>Pipelines</value>
+    </data>
+    <data name="MatrixContacts" xml:space="preserve">
+        <value>Contacts and deals</value>
+    </data>
+    <data name="MatrixCustomFields" xml:space="preserve">
+        <value>Custom fields</value>
+    </data>
+    <data name="MatrixProducts" xml:space="preserve">
+        <value>Products and price lists</value>
+    </data>
+    <data name="MatrixGroupEmail" xml:space="preserve">
+        <value>Email and calendar</value>
+    </data>
+    <data name="MatrixSync" xml:space="preserve">
+        <value>Two-way email and calendar sync</value>
+    </data>
+    <data name="MatrixTemplates" xml:space="preserve">
+        <value>Email templates</value>
+    </data>
+    <data name="MatrixScheduling" xml:space="preserve">
+        <value>Scheduling links</value>
+    </data>
+    <data name="MatrixGroupForecast" xml:space="preserve">
+        <value>Forecast and reports</value>
+    </data>
+    <data name="MatrixWeighted" xml:space="preserve">
+        <value>Weighted forecast</value>
+    </data>
+    <data name="MatrixAdjust" xml:space="preserve">
+        <value>Forecast by seller, with adjustments</value>
+    </data>
+    <data name="MatrixReports" xml:space="preserve">
+        <value>Saved reports</value>
+    </data>
+    <data name="MatrixScheduled" xml:space="preserve">
+        <value>Scheduled report emails</value>
+    </data>
+    <data name="MatrixGroupAutomation" xml:space="preserve">
+        <value>Automation</value>
+    </data>
+    <data name="MatrixReminders" xml:space="preserve">
+        <value>Follow-up reminders</value>
+    </data>
+    <data name="MatrixWorkflows" xml:space="preserve">
+        <value>Workflow automations</value>
+    </data>
+    <data name="MatrixApi" xml:space="preserve">
+        <value>API and webhooks</value>
+    </data>
+    <data name="MatrixGroupAdmin" xml:space="preserve">
+        <value>Admin and security</value>
+    </data>
+    <data name="MatrixTwoFactor" xml:space="preserve">
+        <value>Two-factor sign-in</value>
+    </data>
+    <data name="MatrixTeams" xml:space="preserve">
+        <value>Permissions by team</value>
+    </data>
+    <data name="MatrixSso" xml:space="preserve">
+        <value>SAML single sign-on and SCIM</value>
+    </data>
+    <data name="MatrixSandbox" xml:space="preserve">
+        <value>Sandbox account</value>
+    </data>
+    <data name="MatrixAudit" xml:space="preserve">
+        <value>Audit log</value>
+    </data>
+    <data name="MatrixGroupSupport" xml:space="preserve">
+        <value>Support</value>
+    </data>
+    <data name="MatrixResponse" xml:space="preserve">
+        <value>Answer within</value>
+    </data>
+    <data name="MatrixResponseStarter" xml:space="preserve">
+        <value>2 working days</value>
+    </data>
+    <data name="MatrixResponseTeam" xml:space="preserve">
+        <value>1 working day</value>
+    </data>
+    <data name="MatrixResponseBusiness" xml:space="preserve">
+        <value>4 working hours</value>
+    </data>
+    <data name="MatrixResponseEnterprise" xml:space="preserve">
+        <value>1 hour, around the clock</value>
+    </data>
+    <data name="MatrixOnboarding" xml:space="preserve">
+        <value>Onboarding</value>
+    </data>
+    <data name="MatrixOnboardingSelf" xml:space="preserve">
+        <value>Guides and videos</value>
+    </data>
+    <data name="MatrixOnboardingSessions" xml:space="preserve">
+        <value>Two live sessions</value>
+    </data>
+    <data name="MatrixOnboardingManager" xml:space="preserve">
+        <value>Named success manager</value>
+    </data>
+    <data name="MatrixSla" xml:space="preserve">
+        <value>Uptime commitment (SLA)</value>
+    </data>
+    <data name="EnterpriseTitle" xml:space="preserve">
+        <value>More than 50 seats, or a long list from IT?</value>
+    </data>
+    <data name="EnterpriseBody" xml:space="preserve">
+        <value>Enterprise is Business with the paperwork large companies need: a contract you can negotiate, invoices instead of cards, and someone at Brightlane who knows your account by name.</value>
+    </data>
+    <data name="Enterprise1" xml:space="preserve">
+        <value>SAML single sign-on, SCIM, and permissions down to a single field</value>
+    </data>
+    <data name="Enterprise2" xml:space="preserve">
+        <value>An audit log of every change, kept for seven years</value>
+    </data>
+    <data name="Enterprise3" xml:space="preserve">
+        <value>Your contract terms, a DPA review and yearly invoicing</value>
+    </data>
+    <data name="Enterprise4" xml:space="preserve">
+        <value>A 99.9% uptime SLA with service credits</value>
+    </data>
+    <data name="Enterprise5" xml:space="preserve">
+        <value>A named success manager and answers within an hour, day or night</value>
+    </data>
+    <data name="BillingFaqEyebrow" xml:space="preserve">
+        <value>Billing</value>
+    </data>
+    <data name="BillingFaqTitle" xml:space="preserve">
+        <value>Questions about paying</value>
+    </data>
+    <data name="BillingFaqLede" xml:space="preserve">
+        <value>Anything else, ask the chat or write to sales.</value>
+    </data>
+    <data name="BillingFaq1Question" xml:space="preserve">
+        <value>What counts as a seat?</value>
+    </data>
+    <data name="BillingFaq1Answer" xml:space="preserve">
+        <value>Anyone who signs in to edit: sellers, managers and admins. Read-only viewers are free, up to twice your number of seats.</value>
+    </data>
+    <data name="BillingFaq2Question" xml:space="preserve">
+        <value>Can we add or remove seats later?</value>
+    </data>
+    <data name="BillingFaq2Answer" xml:space="preserve">
+        <value>Add seats any time and pay only for the rest of the current month or year. Remove seats at your next renewal.</value>
+    </data>
+    <data name="BillingFaq3Question" xml:space="preserve">
+        <value>How can we pay?</value>
+    </data>
+    <data name="BillingFaq3Answer" xml:space="preserve">
+        <value>By card on every plan, and by SEPA direct debit in the euro area. Yearly plans of 20 seats or more can pay by bank transfer against an invoice.</value>
+    </data>
+    <data name="BillingFaq4Question" xml:space="preserve">
+        <value>Do your prices include VAT?</value>
+    </data>
+    <data name="BillingFaq4Answer" xml:space="preserve">
+        <value>No. VAT or sales tax is added at checkout where it applies. EU businesses that give us a valid VAT number are billed without VAT under the reverse charge.</value>
+    </data>
+    <data name="BillingFaq5Question" xml:space="preserve">
+        <value>What if we cancel?</value>
+    </data>
+    <data name="BillingFaq5Answer" xml:space="preserve">
+        <value>Monthly plans stop at the end of the month you cancel in. Yearly plans run to the end of the year you paid for. You can export everything at any time, before and after.</value>
+    </data>
+    <data name="BillingFaq6Question" xml:space="preserve">
+        <value>Do you have discounts for non-profits?</value>
+    </data>
+    <data name="BillingFaq6Answer" xml:space="preserve">
+        <value>Yes: 30% off any plan for registered non-profits and schools. Write to sales@brightlane.example with your registration.</value>
+    </data>
+    <data name="SheetsPageTitle" xml:space="preserve">
+        <value>Brightlane or a spreadsheet? An honest comparison | Brightlane</value>
+    </data>
+    <data name="SheetsDescription" xml:space="preserve">
+        <value>Where a spreadsheet is still the better tool for your pipeline, where it starts to cost you deals, and four signs your team has reached the tipping point.</value>
+    </data>
+    <data name="SheetsEyebrow" xml:space="preserve">
+        <value>Brightlane vs spreadsheets</value>
+    </data>
+    <data name="SheetsTitle" xml:space="preserve">
+        <value>Brightlane or a spreadsheet? An honest comparison.</value>
+    </data>
+    <data name="SheetsLede" xml:space="preserve">
+        <value>Most teams start their pipeline in a spreadsheet, and for a while it's the right tool. Here is where it stays the better choice, where it starts to cost you deals, and how to tell which side of that line your team is on.</value>
+    </data>
+    <data name="SheetsArtNote" xml:space="preserve">
+        <value>Two people edited row 3 at the same time. One of them won.</value>
+    </data>
+    <data name="SheetsArtFriday" xml:space="preserve">
+        <value>Fri?</value>
+    </data>
+    <data name="SheetsWinsTitle" xml:space="preserve">
+        <value>Where a spreadsheet wins</value>
+    </data>
+    <data name="Win1Title" xml:space="preserve">
+        <value>It's already paid for</value>
+    </data>
+    <data name="Win1Body" xml:space="preserve">
+        <value>It comes with your office software, and nobody needs a new login.</value>
+    </data>
+    <data name="Win2Title" xml:space="preserve">
+        <value>Any shape you like</value>
+    </data>
+    <data name="Win2Body" xml:space="preserve">
+        <value>A new column takes five seconds. In Brightlane a custom field takes a minute, and an admin.</value>
+    </data>
+    <data name="Win3Title" xml:space="preserve">
+        <value>Everyone knows it</value>
+    </data>
+    <data name="Win3Body" xml:space="preserve">
+        <value>No training at all. Most sellers need about an hour to find their way around Brightlane.</value>
+    </data>
+    <data name="Win4Title" xml:space="preserve">
+        <value>Formulas for anything</value>
+    </data>
+    <data name="Win4Body" xml:space="preserve">
+        <value>If your commission plan is a formula, a spreadsheet will run it. Brightlane's reports don't do arbitrary maths.</value>
+    </data>
+    <data name="SheetsCostsTitle" xml:space="preserve">
+        <value>Where it starts to cost you</value>
+    </data>
+    <data name="Cost1Title" xml:space="preserve">
+        <value>Two people, one row</value>
+    </data>
+    <data name="Cost1Body" xml:space="preserve">
+        <value>When two sellers edit the same deal, the last one to save wins. Brightlane keeps every change, with a name and a time.</value>
+    </data>
+    <data name="Cost2Title" xml:space="preserve">
+        <value>Follow-ups live in heads</value>
+    </data>
+    <data name="Cost2Body" xml:space="preserve">
+        <value>A spreadsheet reminds nobody. Brightlane gives every deal a next step, and lists the deals that don't have one.</value>
+    </data>
+    <data name="Cost3Title" xml:space="preserve">
+        <value>The forecast is a formula</value>
+    </data>
+    <data name="Cost3Body" xml:space="preserve">
+        <value>It works until someone sorts one column and not the others, and nobody notices until the quarter ends.</value>
+    </data>
+    <data name="Cost4Title" xml:space="preserve">
+        <value>Email stays in inboxes</value>
+    </data>
+    <data name="Cost4Body" xml:space="preserve">
+        <value>The history of a deal sits in one seller's mailbox. When they leave, it leaves with them.</value>
+    </data>
+    <data name="Cost5Title" xml:space="preserve">
+        <value>On a phone, it's a struggle</value>
+    </data>
+    <data name="Cost5Body" xml:space="preserve">
+        <value>Updating a sheet with 30 columns on a phone after a meeting is the update that rarely happens.</value>
+    </data>
+    <data name="SheetsTableEyebrow" xml:space="preserve">
+        <value>Side by side</value>
+    </data>
+    <data name="SheetsTableTitle" xml:space="preserve">
+        <value>Ten questions, answered for both</value>
+    </data>
+    <data name="SheetsBetter" xml:space="preserve">
+        <value>Better here</value>
+    </data>
+    <data name="Side1" xml:space="preserve">
+        <value>Cost</value>
+    </data>
+    <data name="Side1Sheet" xml:space="preserve">
+        <value>Nothing extra</value>
+    </data>
+    <data name="Side1Us" xml:space="preserve">
+        <value>From €12 per seat a month, billed yearly</value>
+    </data>
+    <data name="Side2" xml:space="preserve">
+        <value>Setting it up</value>
+    </data>
+    <data name="Side2Sheet" xml:space="preserve">
+        <value>Open a file</value>
+    </data>
+    <data name="Side2Us" xml:space="preserve">
+        <value>An afternoon: import, invite, connect email</value>
+    </data>
+    <data name="Side3" xml:space="preserve">
+        <value>Learning it</value>
+    </data>
+    <data name="Side3Sheet" xml:space="preserve">
+        <value>Everyone knows it already</value>
+    </data>
+    <data name="Side3Us" xml:space="preserve">
+        <value>About an hour per seller</value>
+    </data>
+    <data name="Side4" xml:space="preserve">
+        <value>Several people editing</value>
+    </data>
+    <data name="Side4Sheet" xml:space="preserve">
+        <value>The last save wins</value>
+    </data>
+    <data name="Side4Us" xml:space="preserve">
+        <value>Each change kept, with who and when</value>
+    </data>
+    <data name="Side5" xml:space="preserve">
+        <value>Reminders</value>
+    </data>
+    <data name="Side5Sheet" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="Side5Us" xml:space="preserve">
+        <value>A next step on every deal, by email and phone</value>
+    </data>
+    <data name="Side6" xml:space="preserve">
+        <value>Email and meetings</value>
+    </data>
+    <data name="Side6Sheet" xml:space="preserve">
+        <value>Copied in by hand</value>
+    </data>
+    <data name="Side6Us" xml:space="preserve">
+        <value>Filed on the deal automatically</value>
+    </data>
+    <data name="Side7" xml:space="preserve">
+        <value>Forecast</value>
+    </data>
+    <data name="Side7Sheet" xml:space="preserve">
+        <value>A formula you maintain</value>
+    </data>
+    <data name="Side7Us" xml:space="preserve">
+        <value>Weighted, updated as deals move</value>
+    </data>
+    <data name="Side8" xml:space="preserve">
+        <value>Who sees what</value>
+    </data>
+    <data name="Side8Sheet" xml:space="preserve">
+        <value>Everything or nothing</value>
+    </data>
+    <data name="Side8Us" xml:space="preserve">
+        <value>Permissions by team on Business</value>
+    </data>
+    <data name="Side9" xml:space="preserve">
+        <value>Without a connection</value>
+    </data>
+    <data name="Side9Sheet" xml:space="preserve">
+        <value>Works offline in a desktop app</value>
+    </data>
+    <data name="Side9Us" xml:space="preserve">
+        <value>Phone apps work offline and sync later</value>
+    </data>
+    <data name="Side10" xml:space="preserve">
+        <value>Custom columns</value>
+    </data>
+    <data name="Side10Sheet" xml:space="preserve">
+        <value>Any column, in seconds</value>
+    </data>
+    <data name="Side10Us" xml:space="preserve">
+        <value>Custom fields, set up by an admin</value>
+    </data>
+    <data name="TippingEyebrow" xml:space="preserve">
+        <value>The tipping point</value>
+    </data>
+    <data name="TippingTitle" xml:space="preserve">
+        <value>Four signs it's time to move</value>
+    </data>
+    <data name="TippingLede" xml:space="preserve">
+        <value>Tick the ones that are true for your team. One on its own is normal. Two or more, and the spreadsheet is costing you more than it saves.</value>
+    </data>
+    <data name="TippingLegend" xml:space="preserve">
+        <value>In our team</value>
+    </data>
+    <data name="Sign1" xml:space="preserve">
+        <value>More than three people update the pipeline</value>
+    </data>
+    <data name="Sign2" xml:space="preserve">
+        <value>We have more than 50 open deals at a time</value>
+    </data>
+    <data name="Sign3" xml:space="preserve">
+        <value>A deal went cold because nobody followed up</value>
+    </data>
+    <data name="Sign4" xml:space="preserve">
+        <value>Someone spends an afternoon a week fixing the sheet</value>
+    </data>
+    <data name="TippingCount" xml:space="preserve">
+        <value>{0} of {1}</value>
+    </data>
+    <data name="TippingStay" xml:space="preserve">
+        <value>Your spreadsheet is fine for now. Come back when it isn't.</value>
+    </data>
+    <data name="TippingTime" xml:space="preserve">
+        <value>It's probably time. The trial is free, and your spreadsheet comes with you.</value>
+    </data>
+    <data name="MoveEyebrow" xml:space="preserve">
+        <value>Moving over</value>
+    </data>
+    <data name="MoveTitle" xml:space="preserve">
+        <value>Your spreadsheet becomes your pipeline in about ten minutes</value>
+    </data>
+    <data name="MoveLede" xml:space="preserve">
+        <value>That's for a sheet of 5,000 rows. The file itself stays exactly as it was, so nothing is lost if you change your mind.</value>
+    </data>
+    <data name="Move1Title" xml:space="preserve">
+        <value>Upload the file</value>
+    </data>
+    <data name="Move1Body" xml:space="preserve">
+        <value>CSV or XLSX, straight from your drive or exported from your sheet.</value>
+    </data>
+    <data name="Move2Title" xml:space="preserve">
+        <value>Check the columns</value>
+    </data>
+    <data name="Move2Body" xml:space="preserve">
+        <value>Brightlane guesses which column is which. You fix the few it gets wrong.</value>
+    </data>
+    <data name="Move3Title" xml:space="preserve">
+        <value>Review the duplicates, then import</value>
+    </data>
+    <data name="Move3Body" xml:space="preserve">
+        <value>Companies and people that appear twice are shown side by side, so you choose what to keep.</value>
+    </data>
+    <data name="MappingLabel" xml:space="preserve">
+        <value>Column matching during an import: five spreadsheet columns matched to Brightlane fields, four of them guessed automatically.</value>
+    </data>
+    <data name="MappingFrom" xml:space="preserve">
+        <value>Your column</value>
+    </data>
+    <data name="MappingTo" xml:space="preserve">
+        <value>Brightlane field</value>
+    </data>
+    <data name="MapFrom1" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="MapTo1" xml:space="preserve">
+        <value>Organisation</value>
+    </data>
+    <data name="MapFrom2" xml:space="preserve">
+        <value>Amount (€)</value>
+    </data>
+    <data name="MapTo2" xml:space="preserve">
+        <value>Deal value</value>
+    </data>
+    <data name="MapFrom3" xml:space="preserve">
+        <value>Stage</value>
+    </data>
+    <data name="MapTo3" xml:space="preserve">
+        <value>Pipeline stage</value>
+    </data>
+    <data name="MapFrom4" xml:space="preserve">
+        <value>Call back?</value>
+    </data>
+    <data name="MapTo4" xml:space="preserve">
+        <value>Next step date</value>
+    </data>
+    <data name="MapFrom5" xml:space="preserve">
+        <value>Owner</value>
+    </data>
+    <data name="MapTo5" xml:space="preserve">
+        <value>Deal owner</value>
+    </data>
+    <data name="MappingGuessed" xml:space="preserve">
+        <value>guessed</value>
+    </data>
+    <data name="MappingDuplicates" xml:space="preserve">
+        <value>12 possible duplicates found. Review them before importing.</value>
+    </data>
+    <data name="SheetsCtaTitle" xml:space="preserve">
+        <value>Bring the spreadsheet. Keep it, too.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Brightlane</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Brightlane makes a CRM for sales teams that are too big for a spreadsheet and too small for a CRM project. 46 people in Dublin and Lisbon.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>We make a CRM for sales teams that are too big for a spreadsheet and too small for a CRM project. 46 of us, in Dublin and Lisbon, work for 1,400 of those teams.</value>
+    </data>
+    <data name="AboutFactsLabel" xml:space="preserve">
+        <value>Brightlane at a glance</value>
+    </data>
+    <data name="Fact1Value" xml:space="preserve">
+        <value>2019</value>
+    </data>
+    <data name="Fact1Label" xml:space="preserve">
+        <value>founded in Dublin</value>
+    </data>
+    <data name="Fact2Value" xml:space="preserve">
+        <value>46</value>
+    </data>
+    <data name="Fact2Label" xml:space="preserve">
+        <value>people, in Dublin and Lisbon</value>
+    </data>
+    <data name="Fact3Value" xml:space="preserve">
+        <value>1,400</value>
+    </data>
+    <data name="Fact3Label" xml:space="preserve">
+        <value>customer teams in 38 countries</value>
+    </data>
+    <data name="Fact4Value" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Fact4Label" xml:space="preserve">
+        <value>profitable since, funded by customers</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>Why we built it</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>Aoife Brennan ran sales for a logistics software company with 11 sellers. Their CRM had been bought for a 400-person sales floor. It took a full-time admin to keep it running, and the team kept its real pipeline in a spreadsheet anyway.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>In 2019 she and Tomás Ferreira, an engineer from the same company, built the tool they had wanted: one board, a forecast that does its own arithmetic, and nothing that needs an admin. Six teams from Aoife's old customers tried it first.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>We still ask every new team the question we asked those six: what did your spreadsheet do that we don't? The answers are on our roadmap, and on our comparison page.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>Some of the people behind it</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Aoife Brennan</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Co-founder and CEO</value>
+    </data>
+    <data name="Team1Place" xml:space="preserve">
+        <value>Dublin</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Tomás Ferreira</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Co-founder and CTO</value>
+    </data>
+    <data name="Team2Place" xml:space="preserve">
+        <value>Lisbon</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Funmi Adeyemi</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Head of Customer Success</value>
+    </data>
+    <data name="Team3Place" xml:space="preserve">
+        <value>Dublin</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Kenji Watanabe</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Lead Designer</value>
+    </data>
+    <data name="Team4Place" xml:space="preserve">
+        <value>Lisbon</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Talk to us</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>Questions about plans, a trial or a contract go to sales. Everything else goes to the general address, and a person answers within a working day.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>Company details</value>
+    </data>
+    <data name="CompanyLisbon" xml:space="preserve">
+        <value>Lisbon office</value>
+    </data>
+    <data name="CompanyLisbonAddress" xml:space="preserve">
+        <value>Rua da Prata 80, 1100-420 Lisbon, Portugal</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This deal fell out of the pipeline</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The page isn't where the link said it would be. It may have moved, or the address has a typo. Your pipeline is fine.</value>
+    </data>
+    <data name="NotFoundPricing" xml:space="preserve">
+        <value>See pricing</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>B2B software</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A CRM for small sales teams, live on the web, Windows, Mac, iPhone and Android: a pipeline you can move, plans in three currencies and an honest comparison with spreadsheets.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Pipeline in the hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Pricing in 3 currencies</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Comparison page</value>
+    </data>
+    <data name="Milestone1Year" xml:space="preserve">
+        <value>2019</value>
+    </data>
+    <data name="Milestone1" xml:space="preserve">
+        <value>Six teams try the first version</value>
+    </data>
+    <data name="Milestone2Year" xml:space="preserve">
+        <value>2021</value>
+    </data>
+    <data name="Milestone2" xml:space="preserve">
+        <value>The Lisbon office opens</value>
+    </data>
+    <data name="Milestone3Year" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Milestone3" xml:space="preserve">
+        <value>Profitable, without outside investors</value>
+    </data>
+    <data name="Milestone4Year" xml:space="preserve">
+        <value>2026</value>
+    </data>
+    <data name="Milestone4" xml:space="preserve">
+        <value>1,400 teams in 38 countries</value>
+    </data>
+</root>

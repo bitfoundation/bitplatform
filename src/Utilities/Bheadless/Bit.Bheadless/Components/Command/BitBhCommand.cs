@@ -261,10 +261,12 @@ public class BitBhCommand : BitBhComponentBase, IDisposable
             case "ArrowUp":
                 ctx.Move(-1, Loop);
                 break;
-            case "n" or "j" when e.CtrlKey:
+            // Ctrl+N / Ctrl+P only: Ctrl+K is the palette shortcut everywhere but macOS, so cmdk's Ctrl+J / Ctrl+K
+            // aliases would move the highlight and toggle the palette with one press.
+            case "n" when e.CtrlKey:
                 ctx.Move(+1, Loop);
                 break;
-            case "p" or "k" when e.CtrlKey:
+            case "p" when e.CtrlKey:
                 ctx.Move(-1, Loop);
                 break;
             case "PageDown":

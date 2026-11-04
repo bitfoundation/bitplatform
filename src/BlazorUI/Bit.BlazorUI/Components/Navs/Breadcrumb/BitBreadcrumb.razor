@@ -22,7 +22,7 @@
    attribute still wins over the default name of the landmark, while the id, the style, the class and
    the dir stay after it and keep the ones the component renders. *@
 <nav @ref="RootElement"
-     aria-label="@(AriaLabel ?? "Breadcrumb")"
+     aria-label="@(AriaLabel ?? BitStrings.Current.Breadcrumb)"
      @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -42,13 +42,13 @@
                             @onkeydown="HandleOnOverflowButtonKeyDown"
                             id="@_overflowAnchorId"
                             type="button"
-                            title="@(OverflowAriaLabel ?? "More items")"
+                            title="@(OverflowAriaLabel ?? BitStrings.Current.MoreItems)"
                             style="@Styles?.OverflowButton"
                             class="bit-brc-obt @Classes?.OverflowButton"
                             aria-haspopup="@(ExpandOverflow ? null : "menu")"
                             aria-controls="@(ExpandOverflow ? null : _calloutId)"
                             aria-expanded="@(ExpandOverflow ? null : _isCalloutOpen.ToString().ToLower())"
-                            aria-label="@(OverflowAriaLabel ?? "More items")"
+                            aria-label="@(OverflowAriaLabel ?? BitStrings.Current.MoreItems)"
                             disabled="@(Disabled)"
                             aria-disabled="@(Disabled ? "true" : null)">
                         @if (OverflowIconTemplate is not null)

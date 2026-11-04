@@ -15,11 +15,6 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitModal : BitComponentBase
 {
-    /// <summary>
-    /// The default title (and aria-label) used for the close button when none is provided.
-    /// </summary>
-    internal const string DefaultCloseButtonTitle = "Close";
-
     private bool _internalIsOpen;
     private bool _focusTrapped;
     private bool _focusStored;

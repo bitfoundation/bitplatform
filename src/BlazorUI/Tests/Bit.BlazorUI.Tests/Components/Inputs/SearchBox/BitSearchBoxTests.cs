@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -3582,8 +3583,45 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsNotNull(component.Find("#custom-error"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
 
-        // Only the plain text is announced, since a template is free to render anything at all.
-        Assert.AreEqual(string.Empty, component.Find(".bit-srb-elv").TextContent);
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // staying silent and leaving the field sounding accepted.
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "عبارت جستجو کوتاه است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        var label = component.Find($"#{component.Find(".bit-srb-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("عبارت جستجو کوتاه است", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual("عبارت جستجو کوتاه است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-srb-ard"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitSearchBoxBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]
@@ -4153,6 +4191,109 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxWithImmediateShouldNotCommitTheSameTextAgainOnBlur()
+    {
+        var changedValues = new List<string?>();
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, v => changedValues.Add(v));
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Input("bit");
+
+        // The change event the browser raises as the field loses focus carries the text the input event committed.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changedValues);
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changes);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutImmediateShouldReportEveryChangeEvent()
+    {
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Change("bit");
+
+        // Without Immediate the change event is the only word of an edit there is, so it is reported whatever it carries.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        CollectionAssert.AreEqual(new List<string?> { "bit", "bit" }, changes);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotPutTheClearedTextBackFromADebouncedInputOnceTheFieldWasLeft()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "bit" });
+
+        // The change event raised on blur commits the text the keystroke is still waiting to, and drops the keystroke.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        component.Find(".bit-srb-cbt").Click();
+
+        // Only a dropped keystroke ends before its minute is up, and a kept one would put "bit" back once it is.
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        CollectionAssert.AreEqual(new List<string?> { "bit", null }, values);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotPutTheClearedTextBackFromADebouncedInput()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "bit" });
+
+        // The press on the clear button leaves the focus in the field, so no change event comes before the click.
+        component.Find(".bit-srb-cbt").Click();
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Nothing was ever committed, so the clearing moved nothing either.
+        Assert.AreEqual(0, values.Count);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxClearButtonShouldLeaveTheFocusInTheField()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "bit");
+        });
+
+        // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
+        // re-render the app between the press and the click.
+        Assert.IsTrue(component.Find(".bit-srb-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
     public void BitSearchBoxShouldRefuseTheTypedTextOfAOneWayBoundValue()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
@@ -4267,6 +4408,75 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(inputId, unregistrations[0].Arguments[0]);
         Assert.AreEqual(1, clears.Count);
         Assert.AreEqual(calloutId, clears[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxDisposeShouldKeepItsDotNetReferenceUntilTheCalloutIsCleared()
+    {
+        // The script answers later, the way it does in a browser: until the callout is cleared a click outside of it
+        // still calls back through the reference it was opened with.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle")));
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var reference = (DotNetObjectReference<BitSearchBox>)toggle.Arguments[0]!;
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, clear.Invocations);
+        Assert.AreSame(searchBox, reference.Value);
+
+        clear.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldIgnoreACloseItsCalloutSendsWhileItIsBeingDisposed()
+    {
+        // An outer callout cleared as it goes away along with the search box dismisses the suggestions too, through
+        // the reference that is alive until the teardown returns - which is no toggle of them to report.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => CollectionAssert.Contains(toggles, true));
+
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => searchBox._CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        clear.SetVoidResult();
+        await disposal;
+
+        CollectionAssert.DoesNotContain(toggles, false);
     }
 
     [TestMethod]

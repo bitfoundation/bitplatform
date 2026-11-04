@@ -17,7 +17,8 @@ is a stubbed JS runtime. That covers the logic well and leaves out everything th
 This suite boots the demo (`Bit.Balette.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
 drives it with Playwright in Chromium, Firefox or WebKit. It asserts **effects**, not markup: where the focus is, what `:modal` and
 `elementFromPoint` say, what `getComputedStyle` and `getBoundingClientRect` return, what the page around the palette
-shows after a command ran.
+shows after a command ran. One suite drives the published lazy loading sample (`Samples/Lazy`) instead, an app that
+downloads `Bit.Balette.wasm` only when its page with the palette opens.
 
 ## What it proves
 
@@ -36,6 +37,7 @@ shows after a command ran.
 | `AccessibilityTreeTests` | What a screen reader is told, read from Chromium's own accessibility tree through the DevTools protocol: the search box is a named, expanded combobox whose active option is named by its title, subtitle and shortcut in words and sits in a group named by its heading; a toggle's state is in its name; a multi-select page reports checked, not selected; a prompt is a textbox named by its question with no listbox behind it; the dialog is a named modal with polite and assertive live regions. Closer to a screen reader than a rule engine, and still not one. |
 | `InlinePaletteTests` | The inline palette in the settings section of /commands: searched and driven in place, its switches following the page; `Ctrl+K` from its box opens only the modal palette and a global shortcut runs once; axe-core finds nothing. |
 | `DemoPagesTests` | Every demo page loads, turns interactive and logs no error, and every button on it - the site header's included - runs without one; an unknown address gets the not-found page (404), where the palette still works. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Balette.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBaletteServices` in the browser - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Balette.wasm`; navigating to the admin page downloads it once (and not again on the way back), and a deep link to it is prerendered by the server (which registers Balette's services and the router's `LazyAssemblyLoader`) and then downloads it; either way the palette and the trigger of the layout only that page uses create their services themselves, open from the trigger and with `Ctrl+K`, and run the command the page registered through `GetBaletteService()`; the layout's navigation command leaves for the home page. No console error, unhandled exception or failed request, and not the warning that the services are not registered, which the README's log filter silences. Published with AOT (`BALETTE_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Balette with the app and nothing on demand. The sample always runs on WebAssembly, whatever `BALETTE_E2E_RENDER_MODE` says. |
 
 Every page is prerendered, so its markup - the trigger and the mode buttons included - is on screen before anything
 handles a click, and the browser layer that hears `Ctrl+K` starts a moment after the page turns interactive. Each test
@@ -79,8 +81,10 @@ BALETTE_E2E_RENDER_MODE=Server dotnet test
 From `src/Utilities/Balette` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
+# first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Balette.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -99,10 +103,22 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 
 ```bash
 dotnet publish src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet publish src/Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Balette.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx
+```
+
+Its `lazy-loading-aot` job publishes the lazy loading sample with AOT as well, which leaves its lazy mark out as the
+README says an AOT build must, and runs `LazyLoadingTests` against it (needs the wasm-tools workload). The suite's
+session boots the demo before any test runs, so the demo is built there too, though no test of that job drives it:
+
+```bash
+dotnet build src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+dotnet build src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
+cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
 That workflow only runs when started by hand (Actions > "bit platform CI - Balette E2E" > Run workflow). The pull-request pipeline, `bit.ci.Balette.yml`, runs the build, model, search, component and MCP tests only.
@@ -121,6 +137,12 @@ measured right after the dialog opened is its resting box rather than a frame of
 one at a time: many of them race a keystroke against a render or a debounce against a clock, and a second page booting
 WebAssembly next to them is exactly the load that turns those waits into flakes.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BALETTE_E2E_LAZY_BASE_URL` points those tests at a copy that is
+already running. A sample that has not been published makes them inconclusive - or failed, on a build server - and
+leaves the other suites alone.
+
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason. On a
 build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
@@ -132,4 +154,6 @@ build server (`CI=true`) the same tests **fail** instead, so a suite that never 
 | `BALETTE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BALETTE_E2E_BROWSER` | `chromium` (default), `firefox` or `webkit`: the engine to drive. |
 | `BALETTE_E2E_CHANNEL` / `BALETTE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary (`BALETTE_E2E_EXECUTABLE` also takes a Firefox or WebKit one with `BALETTE_E2E_BROWSER`). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
+| `BALETTE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BALETTE_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Balette comes with the app and nothing is downloaded on demand. |
 | `BALETTE_E2E_HEADED=1` | Show the browser. |

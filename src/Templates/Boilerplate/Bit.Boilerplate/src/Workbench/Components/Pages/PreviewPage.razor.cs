@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Workbench.Components.Pages;
 
@@ -20,6 +21,7 @@ public partial class PreviewPage
     private bool isStarted;
     private WorkbenchPageInfo? pageInfo;
     private DotNetObjectReference<PreviewPage>? reference;
+    private IDisposable? navigationGuard;
 
     [AutoInject] private BlexManager blexManager = default!;
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
@@ -69,6 +71,7 @@ public partial class PreviewPage
         _ = WaitUntilReady();
 
         reference = DotNetObjectReference.Create(this);
+        navigationGuard = NavigationManager.RegisterLocationChangingHandler(StayInThePreview);
 
         try
         {
@@ -85,12 +88,29 @@ public partial class PreviewPage
         }
     }
 
+    /// <summary>Keeps the view where it is when a link of the app's chrome names a page that isn't here, as the host page's base address makes it the Workbench's home page.</summary>
+    private ValueTask StayInThePreview(LocationChangingContext context)
+    {
+        if (NavigationManager.ToAbsoluteUri(context.TargetLocation).AbsolutePath.StartsWith("/preview/", StringComparison.OrdinalIgnoreCase) is false)
+        {
+            context.PreventNavigation();
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
     /// <summary>Every Blex store of this preview as JSON, for a screenshot, a comment or a flow screen to restore.</summary>
     [JSInvokable]
     public string CaptureState() => blexManager.CaptureGlobalState().ToJsonString();
 
+    /// <summary>Puts this preview's stores back to their defaults, saved in the browser by the time it returns, as the view reloads next.</summary>
     [JSInvokable]
-    public void ResetState() => blexManager.ResetAll();
+    public async Task ResetState()
+    {
+        blexManager.ResetAll();
+
+        await Persistor.FlushAsync();
+    }
 
     /// <summary>The resource entries this preview rendered as the given text, for Edit text mode.</summary>
     [JSInvokable]
@@ -169,6 +189,7 @@ public partial class PreviewPage
     public override async ValueTask DisposeAsync()
     {
         reference?.Dispose();
+        navigationGuard?.Dispose();
 
         await base.DisposeAsync();
     }

@@ -473,7 +473,9 @@ export function registerElement(elementId: string): boolean {
 
 let _programmaticSeq = 0;
 
-function _ensureElementId(el: Element): string {
+// `fresh` collects the ids of the elements the engine has never addressed: they carry no data-bmid yet, so even one
+// that takes the id of an element animated before (the same page rendered again) is a different element.
+function _ensureElementId(el: Element, fresh?: string[]): string {
     const existing = el.getAttribute('data-bmid');
     if (existing) return existing;
     let id = el.id;
@@ -486,6 +488,7 @@ function _ensureElementId(el: Element): string {
     }
     el.id = id;
     el.setAttribute('data-bmid', id);
+    fresh?.push(id);
     return id;
 }
 
@@ -501,6 +504,22 @@ export function resolveOrRegisterBySelector(selector: string): string[] {
 /** Resolve the element for a Blazor ElementReference and return its element ID. */
 export function resolveOrRegisterByRef(element: Element): string {
     return _ensureElementId(element);
+}
+
+/** As resolveOrRegisterBySelector: the IDs, then the IDs of the elements among them the engine has never addressed. */
+export function resolveBySelector(selector: string): [string[], string[]] {
+    const fresh: string[] = [];
+    try {
+        return [Array.from(document.querySelectorAll(selector)).map(el => _ensureElementId(el, fresh)), fresh];
+    } catch {
+        return [[], []];
+    }
+}
+
+/** As resolveOrRegisterByRef, in the shape of resolveBySelector. */
+export function resolveByRef(element: Element): [string[], string[]] {
+    const fresh: string[] = [];
+    return [[_ensureElementId(element, fresh)], fresh];
 }
 
 export function unregisterElement(elementId: string): void {

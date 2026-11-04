@@ -136,14 +136,14 @@
             // It is watched from the open to the close, in the same calls, so it costs no round trip of its own.
             nestedEscape: boolean = false,
         ) {
-            component ??= document.getElementById(componentId);
-            if (component == null) return false;
-
             callout ??= document.getElementById(calloutId);
             if (callout == null) return false;
 
             const arrow = arrowId ? document.getElementById(arrowId) : null;
 
+            // A close has no use for the component, so it is only looked up for an open: an anchor the page has
+            // removed since the callout opened (a BitCallout's AnchorId) must not keep it on the screen, in its
+            // chain and on the stack.
             if (!isCalloutOpen) {
                 const windowWidth = window.innerWidth;
                 const slidesOut = windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode;
@@ -158,7 +158,7 @@
                 }
                 if (slidesOut) {
                     // The panel slides and fades out from here, so it stays in the chain that hands it what its
-                    // root and ancestors declare until that transition is over.
+                    // root and ancestors declare until that transition is over - and stays visible until then too.
                     Callouts.restoreAfterTransition(calloutId, callout);
                 } else {
                     Callouts.restoreCalloutToOriginalParent(calloutId, callout);
@@ -168,6 +168,9 @@
                 Callouts.remove(calloutId, false);
                 return false;
             }
+
+            component ??= document.getElementById(componentId);
+            if (component == null) return false;
 
             // WebKit brings the element a focus() lands on into view at its next rendering update rather than at once,
             // so a callout that a key opens right after that focus would be laid out against a component still out
@@ -409,13 +412,33 @@
             }
 
             if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
+                // The safe area at the bottom of the screen - the room a phone's home indicator (or an app shell's bottom
+                // bar) takes, which would cover what a panel shows there. Only a panel of a component that lays its
+                // content out itself names it (responsive-panel-safe-area, functions.scss), in a length that is not
+                // inherited, so any other callout reads none, whatever its consumer pads it with. While the on-screen
+                // keyboard is up the bottom of the visible band is the top of the keyboard rather than the bottom edge
+                // of the screen, and nothing of the safe area is left showing above it. The keyboard is told by the
+                // focus, for the reason the placement below is - though not by a field that cannot be typed into, such as
+                // the read-only input a picker is opened from, which still holds the focus while its panel is placed.
+                const bottomSafeArea = () => {
+                    const active = document.activeElement as HTMLInputElement | null;
+                    const keyboardUp = Utils.hasOnScreenKeyboard() && Utils.isEditableElementFocused() && active?.readOnly !== true;
+                    return keyboardUp ? 0 : (parseFloat(getComputedStyle(callout).getPropertyValue('--bit-callout-sa-bottom')) || 0);
+                };
+
                 callout.style.opacity = '1';
                 callout.style.transform = 'translate(0,0)';
-                callout.style.maxHeight = visualHeight + 'px';
+                // A panel with no list of its own for the cap below - one coming down from the top edge, whose container
+                // scrolls whatever does not fit in it - is capped itself, so content that grows it down to the bottom of
+                // the screen ends above the safe area there rather than under it.
+                callout.style.maxHeight = (scrollContainerId ? visualHeight : Math.max(0, visualHeight - bottomSafeArea())) + 'px';
                 // A panel is sized against the screen rather than placed against the component, so it is
                 // never the detached one the placement below can hide - including when the screen only
                 // just became narrow enough for the panel, with the callout already hidden as detached.
-                callout.style.visibility = '';
+                // Inherited rather than left to the stylesheet, which hides a closed panel (see concealPanel): this
+                // is what tells the open one apart from it. Inherited rather than visible, so an open panel still
+                // hides with the part of the page it was opened from, as every other callout does.
+                callout.style.visibility = 'inherit';
 
                 // A callout shown as a panel is sized against the screen rather than placed against the
                 // component, so there is nothing left for an arrow to point at.
@@ -430,10 +453,16 @@
                     // instead: the slide taken back off its box, and for a panel growing upwards from the bottom edge
                     // no lower than its place in a panel as tall as the screen.
                     const box = scrollContainer.getBoundingClientRect().y;
-                    const transform = getComputedStyle(callout).transform;
+                    const calloutStyle = getComputedStyle(callout);
+                    const transform = calloutStyle.transform;
                     const slide = transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m42 : 0;
                     const top = Math.min(box - slide, rawTop + (box - callout.getBoundingClientRect().y));
-                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - 10)) + 'px';
+                    // The list stops short of the bottom of the screen by the gap it has always kept, or by the safe area
+                    // at the bottom of the screen where that is the larger, which would cover its last items. Read here
+                    // rather than with the cap of the panel above: a panel that focuses its search box once it opens
+                    // has only raised the keyboard by now.
+                    const bottomGap = Math.max(10, bottomSafeArea());
+                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - bottomGap)) + 'px';
                 });
 
                 return true;
@@ -1569,20 +1598,34 @@
 
         // A responsive panel fades and slides out once it is closed, so it is left in the chain that hands it
         // what its root and its ancestors declare until that transition has run, and only then put back beside
-        // its root. Reopening it before then keeps it where it is (see moveCalloutToBody), and the component
-        // going away takes it back at once (see clear).
+        // its root and concealed. Reopening it before then keeps it where it is (see moveCalloutToBody), and the
+        // component going away takes it back at once (see clear). A panel that was never relocated is waited
+        // for all the same, since it is still sliding out on the screen until then.
         export function restoreAfterTransition(calloutId: string, callout: HTMLElement) {
             Callouts.cancelPendingRestore(calloutId);
 
-            if (Callouts._calloutOriginalParents.has(calloutId) === false) return;
-
             const duration = Callouts.transitionTime(callout);
             if (duration <= 0) {
+                Callouts.concealPanel(callout);
                 Callouts.restoreCalloutToOriginalParent(calloutId, callout);
                 return;
             }
 
             Callouts._pendingRestores.set(calloutId, window.setTimeout(() => Callouts.flushPendingRestore(calloutId), duration));
+        }
+
+        // A closed panel is never display:none - it is laid out off the screen, for the slide that brings it in -
+        // so the stylesheet of each component declares its closed state, hidden with visibility as well as with
+        // its opacity (the responsive-panel-closed mixin), which takes its content out of the accessibility tree
+        // and its controls out of the tab order. What position wrote inline to show the open one - and the
+        // opacity the close faded it out with - is taken back here once it has slid out of sight, all of it, so
+        // that state is the one the panel is left in at every width: a panel closed on a narrow screen that then
+        // widens goes back to the display:none of its plain popup instead of being held in the page by the
+        // display of the open panel, and opens there as a popup that is not still faded out.
+        export function concealPanel(callout: HTMLElement) {
+            callout.style.display = '';
+            callout.style.opacity = '';
+            callout.style.visibility = '';
         }
 
         export function cancelPendingRestore(calloutId: string) {
@@ -1600,7 +1643,12 @@
         export function flushPendingRestore(calloutId: string) {
             if (Callouts.cancelPendingRestore(calloutId) === false) return;
 
-            Callouts.restoreCalloutToOriginalParent(calloutId, document.getElementById(calloutId));
+            const callout = document.getElementById(calloutId);
+            if (callout) {
+                Callouts.concealPanel(callout);
+            }
+
+            Callouts.restoreCalloutToOriginalParent(calloutId, callout);
         }
 
         // How long the transitions of an element run, delays included: the longest of the durations it lists,

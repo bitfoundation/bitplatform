@@ -1,0 +1,322 @@
+﻿@namespace Bit.BevTools
+@using Microsoft.Extensions.Logging
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:55%">
+        <div class="bev-toolbar">
+            <input type="text" aria-label="Filter log entries" placeholder="Filter: text, level:warning, category:Orders, event:20101, trace:…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <span class="bev-segmented" role="group" aria-label="Show">
+                <button type="button" aria-pressed="@(View.ByCategory || View.ByCommand ? "false" : "true")" @onclick="() => Show(byCategory: false, byCommand: false)">Entries</button>
+                <button type="button" aria-pressed="@(View.ByCategory ? "true" : "false")" title="One row per logger category, with how many entries of each level it wrote" @onclick="() => Show(byCategory: true, byCommand: false)">Categories</button>
+                <button type="button" aria-pressed="@(View.ByCommand ? "true" : "false")" title="Entity Framework Core's commands, one row per SQL: executions, times, senders (read from its logs)" @onclick="() => Show(byCategory: false, byCommand: true)">Database</button>
+            </span>
+            <button type="button" @onclick="Clear">Clear</button>
+            <span class="bev-muted bev-nowrap" title="Entries in the buffer of the @Session.Options.MaxLogs kept; the counts per level are for the whole session">@_rows.Count shown · @Session.Logs.Total logged · @Session.Logs.CountOf(LogLevel.Warning) warn · @(Session.Logs.CountOf(LogLevel.Error) + Session.Logs.CountOf(LogLevel.Critical)) fail</span>
+        </div>
+        @if (!View.ByCommand && !View.ByCategory && View.Command is not null)
+        {
+            <div class="bev-toolbar">
+                <span class="bev-muted">Command</span> <span class="bev-chip bev-on bev-mono bev-truncate" style="max-width:420px" title="@View.Command">@View.Command</span>
+                <button type="button" aria-label="Show every entry" @onclick="ClearCommand">✕</button>
+            </div>
+        }
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
+            @if (!Session.Options.TrackLogs)
+            {
+                <div class="bev-empty">Log capture is off (<code>BitBevToolsOptions.TrackLogs</code>): only the warnings and errors Blazor itself logs are collected, in Errors.</div>
+            }
+            else if (View.ByCommand)
+            {
+                @if (_commands.Count == 0)
+                {
+                    <div class="bev-empty">No database commands. Entity Framework Core's commands appear here when its category <code>@BevDbCommands.Category</code> is logged at Information (event ids @BevDbCommands.ExecutedEventId and @BevDbCommands.FailedEventId) while this session's code runs.</div>
+                }
+                else
+                {
+                    <table>
+                        <thead><tr><th>SQL</th><th class="bev-num">Executions</th><th class="bev-num">Total</th><th class="bev-num">p95</th><th class="bev-num">Max</th><th class="bev-num">Failed</th><th>Sent from</th></tr></thead>
+                        <tbody>
+                            @foreach (var c in _commands)
+                            {
+                                <tr class="bev-row @(c.Failed > 0 ? "bev-sev-error" : "")" @onclick="() => OpenCommand(c.CommandText)">
+                                    <td class="bev-mono bev-truncate" style="max-width:380px" title="@c.CommandText"><button type="button" class="bev-link" title="Show its executions" @onclick:stopPropagation="true" @onclick="() => OpenCommand(c.CommandText)">@(c.CommandText.Length == 0 ? "(SQL not read: value access None)" : c.CommandText)</button></td>
+                                    <td class="bev-num @(c.Executions >= Session.Options.Diagnostics.DbPerItemCount ? "bev-warn" : "")">@c.Executions</td>
+                                    <td class="bev-num">@BevFmt.Ms(c.TotalMs)</td>
+                                    <td class="bev-num">@BevFmt.Ms(c.P95Ms)</td>
+                                    <td class="bev-num @(c.MaxMs >= Session.Options.Diagnostics.SlowDbCommandMs ? "bev-err" : "")">@BevFmt.Ms(c.MaxMs)</td>
+                                    <td class="bev-num @(c.Failed > 0 ? "bev-err" : "")">@c.Failed</td>
+                                    <td class="bev-truncate bev-muted" style="max-width:200px">@(c.Senders.Count == 0 ? "–" : string.Join(", ", c.Senders.Select(s => s.Component + " ×" + s.Executions)))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+            else if (View.ByCategory ? _categories.Count == 0 : _rows.Count == 0)
+            {
+                <div class="bev-empty">No log entries@(string.IsNullOrWhiteSpace(Query) ? "" : " match the filter"). What an <code>ILogger</code> writes at @Session.Options.MinimumLogLevel or above (<code>BitBevToolsOptions.MinimumLogLevel</code>) while this session's code runs lands here, after the host's logging configuration filtered it (<code>Logging:LogLevel</code>, or <code>Logging:BevTools:LogLevel</code> for BevTools alone).</div>
+            }
+            else if (View.ByCategory)
+            {
+                <table>
+                    <thead><tr><th>Category</th><th class="bev-num">Entries</th><th class="bev-num" title="Warnings">warn</th><th class="bev-num" title="Errors and critical">fail</th><th>Last</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in _categories)
+                        {
+                            <tr class="bev-row" @onclick="() => OpenCategory(c.Category)">
+                                <td class="bev-mono bev-truncate" style="max-width:360px" title="@c.Category"><button type="button" class="bev-link" title="Show the entries of @c.Category" @onclick:stopPropagation="true" @onclick="() => OpenCategory(c.Category)">@c.Category</button></td>
+                                <td class="bev-num">@c.Count</td>
+                                <td class="bev-num @(c.Warnings > 0 ? "bev-warn" : "")">@c.Warnings</td>
+                                <td class="bev-num @(c.Errors > 0 ? "bev-err" : "")">@c.Errors</td>
+                                <td class="bev-mono">@BevFmt.Time(c.Last)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Time</th><th>Level</th><th>Category</th><th>Message</th><th>Sent from</th></tr></thead>
+                    <tbody>
+                        <Virtualize Items="_rows" ItemSize="23" Context="l" SpacerElement="tr">
+                            <tr class="bev-row @RowClass(l) @(Ui.SelectedLogId == l.Id ? "bev-selected" : "")" @onclick="() => Select(l.Id)">
+                                <td class="bev-mono">@BevFmt.Time(l.At)</td>
+                                <td><span class="bev-chip @LevelClass(l.Level)" title="@l.Level">@l.LevelLabel</span></td>
+                                <td class="bev-mono bev-truncate" style="max-width:160px" title="@l.Category">@l.ShortCategory</td>
+                                <td class="bev-truncate" style="max-width:380px" title="@l.Text">@l.Text</td>
+                                <td class="bev-truncate bev-muted" style="max-width:200px" title="@(l.Caller ?? "")">@(l.CallerComponent ?? "–")</td>
+                            </tr>
+                        </Virtualize>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } s)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title"><span class="bev-chip @LevelClass(s.Level)">@s.Level</span> <span class="bev-mono">@s.Category</span></div>
+                <div class="bev-section-body">
+                    <div style="margin-bottom:6px; white-space:pre-wrap">@(s.Message ?? "«hidden»: value access is None, so the values the message was formatted from are not read" + (s.MessageTemplate is null ? ". It has no template with holes either: logged as one string, it may be interpolated, values and all." : "; its template is below."))</div>
+                    <dl class="bev-kv">
+                        <dt>Time</dt><dd>@BevFmt.Time(s.At)</dd>
+                        @if (s.MessageTemplate is not null)
+                        {
+                            <dt>Template</dt><dd class="bev-mono">@s.MessageTemplate</dd>
+                        }
+                        <dt>Event id</dt><dd class="bev-mono">@s.EventId@(s.EventName is null ? "" : " (" + s.EventName + ")")</dd>
+                        @if (s.DbCommand is { } command)
+                        {
+                            <dt>Database</dt><dd>@(command.Failed ? "failed after " : "executed in ")@BevFmt.Ms(command.ElapsedMs) <button type="button" class="bev-link" @onclick="() => OpenCommand(command.CommandText is { } sql ? BevDbCommands.Normalize(sql) : string.Empty)">every execution ↗</button></dd>
+                        }
+                        <dt>Sent from</dt><dd>@(s.Caller ?? (Session.Options.CaptureLogCallers ? "no component on the stack (a service, a timer, or code that went asynchronous first)" : "not read (CaptureLogCallers is off)"))</dd>
+                        <dt>During</dt>
+                        <dd>@if (_trigger is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t.Id)"><span class="@BevFmt.KindClass(t.Kind)">@BevFmt.KindLabel(t.Kind)</span> @t.Title ↗</button> } else { <span class="bev-muted">no UI event or navigation was running</span> }</dd>
+                        @if (s.TraceId is not null)
+                        {
+                            <dt>Trace</dt><dd><span class="bev-mono" title="W3C trace and span id of the activity current when it was logged: what a tracing backend (OpenTelemetry) files it under">@s.TraceId · @s.SpanId</span> <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("network", "trace:" + s.TraceId)'>requests in it ↗</button></dd>
+                        }
+                        <dt>Timeline</dt><dd>@if (s.TimelineEventId > 0) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open ↗</button> } else { <span class="bev-muted">not in the timeline</span> }</dd>
+                        @if (s.ErrorId is { } errorId)
+                        {
+                            <dt>Error</dt><dd><button type="button" class="bev-link" @onclick="() => OpenError(errorId)">open in Errors ↗</button></dd>
+                        }
+                    </dl>
+                    @if (s.Properties.Count > 0)
+                    {
+                        <div style="margin-top:6px"><strong>Values</strong></div>
+                        <table>
+                            <tbody>
+                                @foreach (var (name, value) in s.Properties)
+                                {
+                                    <tr><td class="bev-mono">@name</td><td class="bev-mono bev-truncate" style="max-width:320px" title="@value">@value</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @if (s.Scopes.Count > 0)
+                    {
+                        <div style="margin-top:6px"><strong>Scopes</strong> <span class="bev-muted">outermost first</span></div>
+                        @foreach (var scope in s.Scopes)
+                        {
+                            <div class="bev-mono bev-truncate" title="@scope">@scope</div>
+                        }
+                    }
+                    @if (s.ExceptionType is not null)
+                    {
+                        <div style="margin-top:6px"><strong>Exception</strong> <span class="bev-mono">@s.ExceptionType</span></div>
+                        <pre class="bev-pre">@s.ExceptionMessage</pre>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bev-empty">Select an entry to see its template and values, its scopes, the component and UI event it came from and its trace id.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private sealed record CategoryRow(string Category, int Count, int Warnings, int Errors, DateTimeOffset Last);
+
+    private string? Query => Ui.GetQuery("logs");
+
+    private BevLogsView View => Ui.Logs;
+
+    private List<BevLogRecord> _rows = [];
+    private List<CategoryRow> _categories = [];
+    private List<BevDbCommandSummary> _commands = [];
+    private BevLogRecord? _selected;
+    private BevToolsEvent? _trigger;
+
+    protected override void OnParametersSet()
+    {
+        var filter = BevQueryFilter.Parse(Query);
+        var logs = Session.Logs.Snapshot();
+        if (View.Command is { } shown && !logs.Any(l => l.DbCommand is not null && CommandKey(l) == shown))
+        {
+            // Cleared, or every execution of it left the buffer: nothing is left to filter by.
+            View.Command = null;
+        }
+
+        var matching = logs.Where(l => Matches(l, filter) && (View.Command is null || (l.DbCommand is not null && CommandKey(l) == View.Command)));
+        _commands = View.ByCommand ? BevDbCommands.Summarize(matching) : [];
+        if (View.ByCategory)
+        {
+            _categories = matching.GroupBy(l => l.Category, StringComparer.Ordinal)
+                .Select(g => new CategoryRow(g.Key, g.Count(), g.Count(l => l.Level == LogLevel.Warning), g.Count(l => l.Level >= LogLevel.Error), g.Max(l => l.At)))
+                .OrderByDescending(c => c.Count).ThenBy(c => c.Category, StringComparer.Ordinal)
+                .ToList();
+            _rows = [];
+        }
+        else
+        {
+            _categories = [];
+            _rows = matching.Reverse().ToList();
+        }
+
+        _selected = Ui.SelectedLogId is { } id ? Session.Logs.Find(id) : null;
+        _trigger = _selected?.TriggerEventId is { } trigger ? Session.Timeline.Find(trigger) : null;
+    }
+
+    /// <summary>
+    /// <c>level:</c> is a minimum ("level:warning" shows warnings and worse), <c>category:</c> a part of the category,
+    /// <c>event:</c> the event id, <c>trace:</c> the start of a trace id; text matches the message, its template, values,
+    /// category, exception and sender.
+    /// </summary>
+    internal static bool Matches(BevLogRecord log, BevQueryFilter filter)
+    {
+        if (filter.Token("level") is { } levelText && (BevLogLevels.Parse(levelText) is not { } level || log.Level < level))
+        {
+            return false;
+        }
+
+        if (filter.Token("category") is { } category && !log.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (filter.IntToken("event") is { } eventId && log.EventId != eventId)
+        {
+            return false;
+        }
+
+        if (filter.Token("trace") is { } trace && (log.TraceId is null || !log.TraceId.StartsWith(trace, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        if (filter.Terms.Count == 0)
+        {
+            return true;
+        }
+
+        var values = log.Properties.Count == 0 ? null : string.Join(" ", log.Properties.Select(p => p.Key + "=" + p.Value));
+        return filter.MatchesText(log.Message, log.MessageTemplate, log.Category, values, log.ExceptionType, log.ExceptionMessage, log.Caller, log.EventName);
+    }
+
+    private static string LevelClass(LogLevel level) => level switch
+    {
+        >= LogLevel.Error => "bev-err",
+        LogLevel.Warning => "bev-warn",
+        LogLevel.Information => "bev-on",
+        _ => "",
+    };
+
+    private static string RowClass(BevLogRecord log) => log.Level switch
+    {
+        >= LogLevel.Error => "bev-sev-error",
+        LogLevel.Warning => "bev-sev-warning",
+        _ => "",
+    };
+
+    private void OnQuery(string? value)
+    {
+        Ui.SetQuery("logs", value);
+        OnParametersSet();
+    }
+
+    private void Select(long id)
+    {
+        Ui.SelectedLogId = id;
+        Ui.Touch();
+        OnParametersSet();
+    }
+
+    private static string CommandKey(BevLogRecord log) => log.DbCommand!.CommandText is { } sql ? BevDbCommands.Normalize(sql) : string.Empty;
+
+    private void Show(bool byCategory, bool byCommand)
+    {
+        View.ByCategory = byCategory;
+        View.ByCommand = byCommand;
+        // Only the entries view shows the command it is filtered by; the others would be filtered by one they hide.
+        if (byCategory || byCommand)
+        {
+            View.Command = null;
+        }
+
+        OnParametersSet();
+    }
+
+    private void OpenCommand(string command)
+    {
+        View.Command = command;
+        View.ByCommand = false;
+        View.ByCategory = false;
+        OnParametersSet();
+    }
+
+    private void ClearCommand()
+    {
+        View.Command = null;
+        OnParametersSet();
+    }
+
+    private void OpenCategory(string category)
+    {
+        View.ByCategory = false;
+        // A category has no spaces; the filter keeps whatever else was typed.
+        var filter = BevQueryFilter.Parse(Query);
+        filter.Tokens["category"] = category;
+        Ui.SetQuery("logs", string.Join(" ", filter.Tokens.Select(t => t.Key + ":" + t.Value).Concat(filter.Terms)));
+        OnParametersSet();
+    }
+
+    private void OpenError(long errorId)
+    {
+        Ui.SelectedErrorId = errorId;
+        Host.ShowPanel("errors");
+    }
+
+    private void Clear()
+    {
+        Session.Logs.Clear();
+        Ui.SelectedLogId = null;
+        OnParametersSet();
+    }
+}

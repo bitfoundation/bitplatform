@@ -11,7 +11,7 @@ public sealed class BsqliteFileSystemStorageOptions
     /// Defaults to <see cref="BsqliteFileSystemStorageProvider.DefaultRootDirectory"/>: a folder of the
     /// application's own under local application data, which on Android, iOS and Mac Catalyst is inside the
     /// app's sandbox and on Windows and macOS is per user. Set it to keep using the files an app already
-    /// has - a database Bit.Besql kept on the device, say.
+    /// has - a database a stock EF Core app kept on the device, say.
     /// </remarks>
     public string? RootDirectory { get; set; }
 }

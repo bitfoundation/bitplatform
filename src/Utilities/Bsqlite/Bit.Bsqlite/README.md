@@ -26,7 +26,7 @@ needs.
 |---|---|---|---|
 | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | `opfs` | Synchronous — the smallest download | Persistent, real files in the origin private file system, several connections, worker-only, no COOP/COEP headers. Pick it when you can. |
 | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | `indexeddb` | JSPI where available, Asyncify otherwise | Persistent, the widest browser reach and the fallback behind OPFS. Fixed page size; readers serialize. |
-| `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | `cache-storage` | JSPI where available, Asyncify otherwise | Persistent. Imports a database left behind by Bit.Besql losslessly on first open - the [migration path off Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-from-besql.md). |
+| `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | `cache-storage` | JSPI where available, Asyncify otherwise | Persistent: 4096-byte pages in the Cache API, committed through a journal. |
 | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | `in-memory` | Synchronous | Volatile: gone on reload. Tests, demos, and a declared last resort. |
 | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | `file-system` | None - the native SQLite the app brings (`SQLitePCLRaw.bundle_e_sqlite3`, or the bundle it already uses) | Blazor Hybrid only, registered and selected for it automatically: plain SQLite files in the app's own folder. |
 

@@ -1,0 +1,15 @@
+@import '../../../Styles/tokens';
+
+.fit-wordmark {
+    font-family: var(--lp-stack-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1;
+}
+
+::deep .fit-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}

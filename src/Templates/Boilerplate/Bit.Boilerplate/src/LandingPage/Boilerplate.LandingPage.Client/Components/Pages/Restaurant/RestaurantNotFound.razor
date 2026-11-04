@@ -1,0 +1,22 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@RestaurantSite.Path" Title="@C[nameof(RestaurantStrings.NotFoundTitle)]" Body="@C[nameof(RestaurantStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="0 0 300 300" role="presentation" class="restaurant-404">
+            <circle cx="150" cy="150" r="132" fill="var(--porcelain)" stroke="var(--porcelain-line)" stroke-width="2" />
+            <circle cx="150" cy="150" r="120" fill="none" stroke="var(--porcelain-blue)" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" />
+            <rect x="236" y="138" width="58" height="24" rx="12" fill="var(--porcelain)" stroke="var(--porcelain-line)" stroke-width="2" />
+            <circle cx="150" cy="150" r="96" fill="var(--porcelain)" stroke="var(--porcelain-blue)" stroke-width="5" />
+            <circle cx="150" cy="150" r="84" fill="var(--coffee)" />
+            <circle cx="150" cy="150" r="80" fill="none" stroke="var(--crema)" stroke-width="8" opacity=".7" />
+            <g class="restaurant-404-art">
+                <text x="150" y="168" text-anchor="middle" font-size="58" font-weight="700" fill="var(--foam)" style="font-family: var(--lp-stack-display)">404</text>
+                <path d="M108 190q42 18 84 0" stroke="var(--foam)" stroke-width="6" fill="none" stroke-linecap="round" opacity=".85" />
+            </g>
+            <path d="M26 252l18 -14M44 262l10 -18" stroke="var(--copper)" stroke-width="5" stroke-linecap="round" />
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"{LocalUrl($"{RestaurantSite.Path}/about")}#cafes")">@C[nameof(RestaurantStrings.NotFoundCafes)]</BitButton>
+    </Actions>
+</NotFoundPanel>

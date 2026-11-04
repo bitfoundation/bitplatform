@@ -1,0 +1,41 @@
+﻿@page "/scan"
+@using Bit.BbScanner
+
+<PageTitle>Scan - BbScanner lazy loading sample</PageTitle>
+
+<h1>Scan</h1>
+
+<p>
+    <code>Bit.BbScanner.wasm</code> was downloaded as this page opened. The scanner imports its JavaScript module as it
+    first renders, and its stylesheet was on the page before either: the app registers nothing of BbScanner.
+</p>
+
+<div class="surface">
+    <BbScanner Formats="BbBarcodeFormat.QrCode"
+               Region="BbScanRegion.CenteredSquare(0.7)"
+               OnScan="HandleScan"
+               OnError="e => _error = e"
+               OnCameraChanged="c => _camera = c" />
+</div>
+
+@if (_error is not null)
+{
+    <p class="error" role="alert"><strong>@_error.Kind</strong>: @_error.Message</p>
+}
+
+<p>Read: <span id="result">@(_last is null ? "Nothing read yet" : $"{_last.Format}: {_last.Text}")</span></p>
+<p>Camera: <span id="camera">@(_camera is null ? "not open" : $"{_camera.Width} x {_camera.Height}")</span></p>
+
+@code {
+    // Fields of BbScanner's types are fine on a page the router loads the assembly for: they are resolved when the page
+    // is created, after OnNavigateAsync.
+    private BbBarcodeResult? _last;
+    private BbCameraInfo? _camera;
+    private BbScannerException? _error;
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _error = null;
+        _last = result;
+    }
+}

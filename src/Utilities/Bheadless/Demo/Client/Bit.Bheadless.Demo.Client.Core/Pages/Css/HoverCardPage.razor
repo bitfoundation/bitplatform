@@ -1,137 +1,138 @@
 ﻿@page "/hover-card"
 
-<PageTitle>Hover Card — bit Bheadless</PageTitle>
+<PageTitle>Hover Card · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Hover Card</h1>
-        <p>For sighted users to preview content available behind a link.</p>
-        <SectionSwitcher Slug="hover-card" />
-    </header>
+<div class="bb-intro">
+    <h1>Hover Card</h1>
+    <p class="bb-subtitle">For sighted users to preview content available behind a link, on hover or focus.</p>
+</div>
 
-    <DemoBlock Title="Basic"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            Hover or focus the link to open the card after a short delay. Moving the pointer
-            into the card keeps it open; leaving both the trigger and the card closes it.
-        </Description>
-        <LiveContent>
-            <BitBhHoverCard class="hover-card">
-                <BitBhHoverCardTrigger class="hover-card-trigger" href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
-                    @@radix-ui
-                </BitBhHoverCardTrigger>
-                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
-                                    class="hover-card-content">
-                    <div class="hc-profile">
-                        <div class="hc-avatar">R</div>
-                        <div class="hc-body">
-                            <div class="hc-name">Radix</div>
-                            <div class="hc-handle">@@radix-ui</div>
-                            <p class="hc-bio">Components, icons, colors, and templates for building high-quality, accessible UI.</p>
-                            <div class="hc-meta">
-                                <span><strong>0</strong> Following</span>
-                                <span><strong>2,900</strong> Followers</span>
-                            </div>
+<SectionSwitcher Slug="hover-card" />
+
+<DemoBlock Title="Basic"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Hover or focus the link to open the card after a short delay. Moving the pointer
+        into the card keeps it open; leaving both the trigger and the card closes it.
+    </Description>
+    <LiveContent>
+        <BitBhHoverCard class="hover-card">
+            <BitBhHoverCardTrigger class="hover-card-trigger" href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
+                @@radix-ui
+            </BitBhHoverCardTrigger>
+            <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                class="hover-card-content">
+                <div class="hc-profile">
+                    <div class="hc-avatar">R</div>
+                    <div class="hc-body">
+                        <div class="hc-name">Radix</div>
+                        <div class="hc-handle">@@radix-ui</div>
+                        <p class="hc-bio">Components, icons, colors, and templates for building high-quality, accessible UI.</p>
+                        <div class="hc-meta">
+                            <span><strong>0</strong> Following</span>
+                            <span><strong>2,900</strong> Followers</span>
                         </div>
                     </div>
+                </div>
+                <BitBhHoverCardArrow class="hover-card-arrow" />
+            </BitBhHoverCardContent>
+        </BitBhHoverCard>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Custom delays"
+           Code="@_delayCode"
+           Css="@_delayCss">
+    <Description>
+        Tune <code>OpenDelay</code> and <code>CloseDelay</code> (milliseconds). Here the
+        card opens instantly and lingers for a second after you leave.
+    </Description>
+    <LiveContent>
+        <BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="hover-card">
+            <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>
+                Quick open, slow close
+            </BitBhHoverCardTrigger>
+            <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                class="hover-card-content">
+                <p class="hc-bio">Opens with no delay and stays for a full second after the pointer leaves.</p>
+                <BitBhHoverCardArrow class="hover-card-arrow" />
+            </BitBhHoverCardContent>
+        </BitBhHoverCard>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Placement"
+           Code="@_sidesCode"
+           Css="@_sidesCss">
+    <Description>
+        The <code>Anchor</code> on <code>BitBhHoverCardContent</code> supports
+        <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code> with
+        optional <code>start</code> / <code>end</code> alignment. The engine flips and
+        shifts to keep the card in view.
+    </Description>
+    <LiveContent>
+        <div class="hover-card-row">
+            <BitBhHoverCard class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Top</BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })" class="hover-card-content">
+                    <p class="hc-bio">Anchored to the top.</p>
                     <BitBhHoverCardArrow class="hover-card-arrow" />
                 </BitBhHoverCardContent>
             </BitBhHoverCard>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Custom delays"
-               Code="@_delayCode"
-               Css="@_delayCss">
-        <Description>
-            Tune <code>OpenDelay</code> and <code>CloseDelay</code> (milliseconds). Here the
-            card opens instantly and lingers for a second after you leave.
-        </Description>
-        <LiveContent>
-            <BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="hover-card">
-                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>
-                    Quick open, slow close
-                </BitBhHoverCardTrigger>
-                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
-                                    class="hover-card-content">
-                    <p class="hc-bio">Opens with no delay and stays for a full second after the pointer leaves.</p>
+            <BitBhHoverCard class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Right</BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })" class="hover-card-content">
+                    <p class="hc-bio">Anchored to the right.</p>
                     <BitBhHoverCardArrow class="hover-card-arrow" />
                 </BitBhHoverCardContent>
             </BitBhHoverCard>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Placement"
-               Code="@_sidesCode"
-               Css="@_sidesCss">
-        <Description>
-            The <code>Anchor</code> on <code>BitBhHoverCardContent</code> supports
-            <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code> with
-            optional <code>start</code> / <code>end</code> alignment. The engine flips and
-            shifts to keep the card in view.
-        </Description>
-        <LiveContent>
-            <div class="hover-card-row">
-                <BitBhHoverCard class="hover-card">
-                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Top</BitBhHoverCardTrigger>
-                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })" class="hover-card-content">
-                        <p class="hc-bio">Anchored to the top.</p>
-                        <BitBhHoverCardArrow class="hover-card-arrow" />
-                    </BitBhHoverCardContent>
-                </BitBhHoverCard>
+            <BitBhHoverCard class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Bottom</BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
+                    <p class="hc-bio">Anchored to the bottom.</p>
+                    <BitBhHoverCardArrow class="hover-card-arrow" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
 
-                <BitBhHoverCard class="hover-card">
-                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Right</BitBhHoverCardTrigger>
-                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })" class="hover-card-content">
-                        <p class="hc-bio">Anchored to the right.</p>
-                        <BitBhHoverCardArrow class="hover-card-arrow" />
-                    </BitBhHoverCardContent>
-                </BitBhHoverCard>
+            <BitBhHoverCard class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Left</BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 8 })" class="hover-card-content">
+                    <p class="hc-bio">Anchored to the left.</p>
+                    <BitBhHoverCardArrow class="hover-card-arrow" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-                <BitBhHoverCard class="hover-card">
-                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Bottom</BitBhHoverCardTrigger>
-                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
-                        <p class="hc-bio">Anchored to the bottom.</p>
-                        <BitBhHoverCardArrow class="hover-card-arrow" />
-                    </BitBhHoverCardContent>
-                </BitBhHoverCard>
-
-                <BitBhHoverCard class="hover-card">
-                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Left</BitBhHoverCardTrigger>
-                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 8 })" class="hover-card-content">
-                        <p class="hc-bio">Anchored to the left.</p>
-                        <BitBhHoverCardArrow class="hover-card-arrow" />
-                    </BitBhHoverCardContent>
-                </BitBhHoverCard>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive the open state externally with <code>Open</code> and
-            <code>OnOpenChange</code>. Hovering still works; the button reflects and toggles
-            the same state.
-        </Description>
-        <LiveContent>
-            <div class="hover-card-row">
-                <BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
-                    @(cardOpen ? "Hide card" : "Show card")
-                </BitBhButton>
-                <BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="hover-card">
-                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Target</BitBhHoverCardTrigger>
-                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
-                        <p class="hc-bio">Driven from outside via the Open parameter.</p>
-                        <BitBhHoverCardArrow class="hover-card-arrow" />
-                    </BitBhHoverCardContent>
-                </BitBhHoverCard>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive the open state externally with <code>Open</code> and
+        <code>OnOpenChange</code>. Hovering still works; the button reflects and toggles
+        the same state.
+        The outside button carries <code>data-bit-bh-dismiss-ignore</code>: without it, pressing it would
+        first dismiss the open surface as an outside press, and its click would then open it again.
+    </Description>
+    <LiveContent>
+        <div class="hover-card-row">
+            <BitBhButton OnClick="() => cardOpen = !cardOpen" data-bit-bh-dismiss-ignore class="btn">
+                @(cardOpen ? "Hide card" : "Show card")
+            </BitBhButton>
+            <BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Target</BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
+                    <p class="hc-bio">Driven from outside via the Open parameter.</p>
+                    <BitBhHoverCardArrow class="hover-card-arrow" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool cardOpen;
@@ -183,7 +184,7 @@
 """;
 
     private const string _controlledCode = """
-<BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
+<BitBhButton OnClick="() => cardOpen = !cardOpen" data-bit-bh-dismiss-ignore class="btn">
     @(cardOpen ? "Hide card" : "Show card")
 </BitBhButton>
 
@@ -235,12 +236,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 /* Profile card content */
 .hc-profile { display: flex; gap: 0.85rem; }
@@ -296,12 +293,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 """;
@@ -341,12 +334,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 
@@ -389,12 +378,8 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Arrow — positioned from the resolved data-anchor side */
+/* Arrow - the Anchor positioning places and rotates it (data-side); only its look is yours */
 .hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
-.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
-.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
 .hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
 

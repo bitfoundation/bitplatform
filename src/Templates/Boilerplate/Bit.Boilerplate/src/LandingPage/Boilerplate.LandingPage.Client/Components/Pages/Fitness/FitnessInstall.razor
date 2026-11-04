@@ -1,0 +1,64 @@
+@inherits LandingComponentBase
+@implements IAsyncDisposable
+
+@if (Compact)
+{
+    @if (isStandalone)
+    {
+        <p class="fit-install-badge @Class"><BitIcon IconName="@BitIconName.CheckMark" /> @F[nameof(FitnessStrings.InstallStandalone)]</p>
+    }
+    else if (canPrompt)
+    {
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Download" OnClick="Install" Class="@Class">@Localizer[nameof(LandingStrings.InstallWebApp)]</BitButton>
+    }
+    else
+    {
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Download" Href="@($"{LocalUrl(FitnessSite.Path)}#install")" Class="@Class">@Localizer[nameof(LandingStrings.InstallWebApp)]</BitButton>
+    }
+}
+else
+{
+    <div class="fit-install @Class">
+        @if (isStandalone)
+        {
+            <p class="fit-install-state"><BitIcon IconName="@BitIconName.CheckMark" /> @F[nameof(FitnessStrings.InstallStandalone)]</p>
+        }
+        else if (installed)
+        {
+            <p class="fit-install-state" role="status"><BitIcon IconName="@BitIconName.CheckMark" /> @F[nameof(FitnessStrings.InstallDone)]</p>
+        }
+        else
+        {
+            @if (canPrompt)
+            {
+                <div class="fit-install-now">
+                    <BitButton IconName="@BitIconName.Download" OnClick="Install">@Localizer[nameof(LandingStrings.InstallWebApp)]</BitButton>
+                    <p>@F[nameof(FitnessStrings.InstallPromptHint)]</p>
+                </div>
+            }
+            else if (dismissed)
+            {
+                <p class="fit-install-state" role="status">@F[nameof(FitnessStrings.InstallDismissed)]</p>
+            }
+
+            <p class="fit-install-how">@F[nameof(FitnessStrings.InstallHowTitle)]</p>
+            <dl class="fit-install-steps">
+                @foreach (var (kind, device, steps) in guides.OrderBy(g => g.Kind == guide ? 0 : 1))
+                {
+                    <div class="@(kind == guide ? "is-yours" : null)">
+                        <dt>
+                            @F[device]
+                            @if (kind == guide)
+                            {
+                                <span class="fit-install-yours">@Localizer[nameof(LandingStrings.YourDevice)]</span>
+                            }
+                        </dt>
+                        <dd>@F[steps]</dd>
+                    </div>
+                }
+            </dl>
+            <p class="fit-install-fallback">@F[nameof(FitnessStrings.InstallFallback)]</p>
+        }
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Globe" Href="@FitnessSite.WebAppUrl" Target="_blank" Class="fit-install-open">@Localizer[nameof(LandingStrings.OpenWebApp)]</BitButton>
+    </div>
+}

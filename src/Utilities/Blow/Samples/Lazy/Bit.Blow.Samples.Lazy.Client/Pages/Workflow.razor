@@ -1,0 +1,46 @@
+﻿@page "/workflow"
+@using System.Globalization
+@using Bit.Blow
+
+<PageTitle>Workflow - Blow lazy loading sample</PageTitle>
+
+<h1>Workflow</h1>
+
+<p>
+    <code>Bit.Blow.wasm</code> was downloaded as this page opened. The canvas takes only <code>IJSRuntime</code> from the
+    app and imports its script module itself: the app registers nothing of Blow's. Drag a step, or drag from the dot
+    under Review to the one above Approve to connect them.
+</p>
+
+@* Bound, so the page renders again once an edit is complete - a drag released, a connection made - and the readouts
+   below show it. The canvas edits the lists in place. *@
+<div class="flow">
+    <BlowCanvas @bind-Nodes="_nodes" @bind-Edges="_edges" FitViewOnInit="true" AriaLabel="Workflow"
+                OnInit="() => _measured = true" />
+</div>
+
+<p>
+    <span id="measured">@(_measured ? "measured" : "not measured yet")</span>,
+    <span id="connections">@_edges.Count</span> connections, Review at
+    <span id="review-position">@string.Create(CultureInfo.InvariantCulture, $"{Review.Position.X:0}, {Review.Position.Y:0}")</span>
+</p>
+
+@code {
+    private List<BlowNode> _nodes =
+    [
+        new BlowNode { Id = "1", Type = "input",  Label = "Request", Position = new(250, 0) },
+        new BlowNode { Id = "2",                  Label = "Review",  Position = new(100, 120) },
+        new BlowNode { Id = "3", Type = "output", Label = "Approve", Position = new(250, 240) },
+    ];
+
+    private List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+    ];
+
+    // Set by OnInit, which the canvas raises once it has measured its nodes in the browser, through its script module.
+    // The server prerenders the canvas without measuring anything.
+    private bool _measured;
+
+    private BlowNode Review => _nodes[1];
+}

@@ -1,0 +1,48 @@
+.lp-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.lp-badge {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+
+    a {
+        display: block;
+        border-radius: 8px;
+        transition: transform .15s var(--lp-ease);
+
+        &:hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    img {
+        height: 40px;
+        width: auto;
+    }
+}
+
+.lp-badge-note {
+    font-size: .75rem;
+    color: var(--lp-fg-muted);
+}
+
+.lp-badge-yours .lp-badge-note {
+    color: var(--lp-accent);
+    font-weight: 600;
+}
+
+.lp-badge-soon {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding-inline: 14px;
+    border: 1px dashed var(--lp-line);
+    border-radius: 8px;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+}

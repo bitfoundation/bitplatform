@@ -1,0 +1,30 @@
+﻿/* Just enough to keep the sample readable: the palette and its trigger are styled by bit-balette.css, which App.razor
+   links whether Bit.Balette.wasm has been downloaded or not. */
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+.topbar {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #e3e3e8;
+}
+
+.topbar a.active {
+    font-weight: 600;
+}
+
+main {
+    padding: 1rem 1.5rem;
+}
+
+.admin-bar {
+    margin-bottom: 1rem;
+}

@@ -1,320 +1,320 @@
 ﻿@page "/command"
+@inject BitBhInterop Interop
 
-<PageTitle>Command Palette — bit Bheadless</PageTitle>
+<PageTitle>Command Palette · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Command Palette</h1>
-        <p>A cmdk-style command menu — fuzzy search, groups, nested pages and a ⌘K palette — with zero visual opinion.</p>
-        <SectionSwitcher Slug="command" />
-    </header>
+<div class="bb-intro">
+    <h1>Command Palette</h1>
+    <p class="bb-subtitle">A cmdk-style command menu — fuzzy search, groups, nested pages and a ⌘K palette — with zero visual opinion.</p>
+</div>
 
-    <DemoBlock Title="Inline command menu"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            A search field over a filterable list of actions. The input is a <code>combobox</code> that drives a
-            <code>listbox</code> through <code>aria-activedescendant</code>, so focus never leaves it. Type to
-            fuzzy-filter — "smiley" finds Search emoji through its <code>Keywords</code> — then use ↑ / ↓
-            (or Ctrl+N / Ctrl+P), Alt+↑ / Alt+↓ to jump between groups, and Enter to run. Empty groups hide,
-            separators disappear while searching, the disabled item is skipped, and the result count is announced.
-        </Description>
-        <LiveContent>
-            <BitBhCommand Label="Command menu" class="cmd">
-                <div class="cmd-input-row">
-                    <span class="cmd-input-icon" aria-hidden="true">⌕</span>
-                    <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Type a command or search…" />
-                </div>
-                <BitBhCommandList class="cmd-list">
-                    <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
-                    <BitBhCommandGroup Heading="Suggestions" class="cmd-group">
-                        <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">📅</span> Calendar
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Search emoji" Keywords='@(["emoji", "smiley", "reaction"])'
-                                       OnSelect='@(() => Run("Search emoji"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">😀</span> Search emoji
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Calculator" Disabled="true" class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">🧮</span> Calculator
-                        </BitBhCommandItem>
-                    </BitBhCommandGroup>
-                    <BitBhCommandSeparator class="cmd-separator" />
-                    <BitBhCommandGroup Heading="Settings" class="cmd-group">
-                        <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">👤</span> Profile
-                            <span class="cmd-item-shortcut">⌘P</span>
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Billing" Keywords='@(["invoice", "payment", "plan"])'
-                                       OnSelect='@(() => Run("Billing"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">💳</span> Billing
-                            <span class="cmd-item-shortcut">⌘B</span>
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Settings" Keywords='@(["preferences", "options"])'
-                                       OnSelect='@(() => Run("Settings"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">⚙️</span> Settings
-                            <span class="cmd-item-shortcut">⌘S</span>
-                        </BitBhCommandItem>
-                    </BitBhCommandGroup>
-                </BitBhCommandList>
-            </BitBhCommand>
+<SectionSwitcher Slug="command" />
 
-            <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Inline command menu"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        A search field over a filterable list of actions. The input is a <code>combobox</code> that drives a
+        <code>listbox</code> through <code>aria-activedescendant</code>, so focus never leaves it. Type to
+        fuzzy-filter — "smiley" finds Search emoji through its <code>Keywords</code> — then use ↑ / ↓
+        (or Ctrl+N / Ctrl+P), Alt+↑ / Alt+↓ to jump between groups, and Enter to run. Empty groups hide,
+        separators disappear while searching, the disabled item is skipped, and the result count is announced.
+    </Description>
+    <LiveContent>
+        <BitBhCommand Label="Command menu" class="cmd">
+            <div class="cmd-input-row">
+                <span class="cmd-input-icon" aria-hidden="true">⌕</span>
+                <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Type a command or search…" />
+            </div>
+            <BitBhCommandList class="cmd-list">
+                <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
+                <BitBhCommandGroup Heading="Suggestions" class="cmd-group">
+                    <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">📅</span> Calendar
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Search emoji" Keywords='@(["emoji", "smiley", "reaction"])'
+                                   OnSelect='@(() => Run("Search emoji"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">😀</span> Search emoji
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Calculator" Disabled="true" class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">🧮</span> Calculator
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+                <BitBhCommandSeparator class="cmd-separator" />
+                <BitBhCommandGroup Heading="Settings" class="cmd-group">
+                    <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">👤</span> Profile
+                        <span class="cmd-item-shortcut">⌘P</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Billing" Keywords='@(["invoice", "payment", "plan"])'
+                                   OnSelect='@(() => Run("Billing"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">💳</span> Billing
+                        <span class="cmd-item-shortcut">⌘B</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Settings" Keywords='@(["preferences", "options"])'
+                                   OnSelect='@(() => Run("Settings"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">⚙️</span> Settings
+                        <span class="cmd-item-shortcut">⌘S</span>
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+            </BitBhCommandList>
+        </BitBhCommand>
 
-    <DemoBlock Title="Nested pages"
-               Code="@_pagesCode"
-               Css="@_pagesCss">
-        <Description>
-            Turn one menu into a drill-down. Wrap each level in a <code>BitBhCommandPage</code> (no
-            <code>Name</code> = the root) and navigate with <code>PushPageAsync</code> on the context its
-            <code>Template</code> receives — the search clears on every push. Backspace in an empty input goes
-            back one level, and <code>PageChanged</code> keeps the breadcrumb in sync. Try Settings → Change theme.
-        </Description>
-        <LiveContent>
-            <BitBhCommand Label="Workspace commands" PageChanged="OnPageChanged" class="cmd">
-                <div class="cmd-breadcrumbs">
-                    <span class="cmd-crumb">Home</span>
-                    @foreach (var crumb in crumbs)
-                    {
-                        <span class="cmd-crumb-sep" aria-hidden="true">›</span>
-                        <span class="cmd-crumb">@crumb</span>
-                    }
-                    @if (crumbs.Count > 0)
-                    {
-                        <span class="cmd-crumb-hint">Backspace to go back</span>
-                    }
-                </div>
-                <div class="cmd-input-row">
-                    <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="@PagePlaceholder" />
-                </div>
-                <BitBhCommandList class="cmd-list">
-                    <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
+        <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
 
-                    <BitBhCommandPage>
-                        <Template Context="cmd">
-                            <BitBhCommandGroup Heading="Workspace" class="cmd-group">
-                                <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="cmd-item">
-                                    <span class="cmd-item-icon" aria-hidden="true">📁</span> Search projects…
-                                    <span class="cmd-item-arrow" aria-hidden="true">›</span>
-                                </BitBhCommandItem>
-                                <BitBhCommandItem Value="Settings" OnSelect='@(() => cmd.PushPageAsync("Settings"))' class="cmd-item">
-                                    <span class="cmd-item-icon" aria-hidden="true">⚙️</span> Settings…
-                                    <span class="cmd-item-arrow" aria-hidden="true">›</span>
-                                </BitBhCommandItem>
-                                <BitBhCommandItem Value="Invite teammates" OnSelect='@(() => CompleteAsync(cmd, "Invite teammates"))' class="cmd-item">
-                                    <span class="cmd-item-icon" aria-hidden="true">✉️</span> Invite teammates
-                                </BitBhCommandItem>
-                            </BitBhCommandGroup>
-                        </Template>
-                    </BitBhCommandPage>
+<DemoBlock Title="Nested pages"
+           Code="@_pagesCode"
+           Css="@_pagesCss">
+    <Description>
+        Turn one menu into a drill-down. Wrap each level in a <code>BitBhCommandPage</code> (no
+        <code>Name</code> = the root) and navigate with <code>PushPageAsync</code> on the context its
+        <code>Template</code> receives — the search clears on every push. Backspace in an empty input goes
+        back one level, and <code>PageChanged</code> keeps the breadcrumb in sync. Try Settings → Change theme.
+    </Description>
+    <LiveContent>
+        <BitBhCommand Label="Workspace commands" PageChanged="OnPageChanged" class="cmd">
+            <div class="cmd-breadcrumbs">
+                <span class="cmd-crumb">Home</span>
+                @foreach (var crumb in crumbs)
+                {
+                    <span class="cmd-crumb-sep" aria-hidden="true">›</span>
+                    <span class="cmd-crumb">@crumb</span>
+                }
+                @if (crumbs.Count > 0)
+                {
+                    <span class="cmd-crumb-hint">Backspace to go back</span>
+                }
+            </div>
+            <div class="cmd-input-row">
+                <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="@PagePlaceholder" />
+            </div>
+            <BitBhCommandList class="cmd-list">
+                <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
 
-                    <BitBhCommandPage Name="Projects">
-                        <Template Context="cmd">
-                            @foreach (var project in projects)
-                            {
-                                <BitBhCommandItem Value="@project" OnSelect='@(() => CompleteAsync(cmd, $"Open {project}"))' class="cmd-item">
-                                    <span class="cmd-item-icon" aria-hidden="true">📁</span> @project
-                                </BitBhCommandItem>
-                            }
-                        </Template>
-                    </BitBhCommandPage>
-
-                    <BitBhCommandPage Name="Settings">
-                        <Template Context="cmd">
-                            <BitBhCommandItem Value="Change theme" OnSelect='@(() => cmd.PushPageAsync("Theme"))' class="cmd-item">
-                                <span class="cmd-item-icon" aria-hidden="true">🎨</span> Change theme…
+                <BitBhCommandPage>
+                    <Template Context="cmd">
+                        <BitBhCommandGroup Heading="Workspace" class="cmd-group">
+                            <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="cmd-item">
+                                <span class="cmd-item-icon" aria-hidden="true">📁</span> Search projects…
                                 <span class="cmd-item-arrow" aria-hidden="true">›</span>
                             </BitBhCommandItem>
-                            <BitBhCommandItem Value="Notifications" OnSelect='@(() => CompleteAsync(cmd, "Notification settings"))' class="cmd-item">
-                                <span class="cmd-item-icon" aria-hidden="true">🔔</span> Notifications
+                            <BitBhCommandItem Value="Settings" OnSelect='@(() => cmd.PushPageAsync("Settings"))' class="cmd-item">
+                                <span class="cmd-item-icon" aria-hidden="true">⚙️</span> Settings…
+                                <span class="cmd-item-arrow" aria-hidden="true">›</span>
                             </BitBhCommandItem>
-                        </Template>
-                    </BitBhCommandPage>
+                            <BitBhCommandItem Value="Invite teammates" OnSelect='@(() => CompleteAsync(cmd, "Invite teammates"))' class="cmd-item">
+                                <span class="cmd-item-icon" aria-hidden="true">✉️</span> Invite teammates
+                            </BitBhCommandItem>
+                        </BitBhCommandGroup>
+                    </Template>
+                </BitBhCommandPage>
 
-                    <BitBhCommandPage Name="Theme">
-                        <Template Context="cmd">
-                            @foreach (var option in themes)
+                <BitBhCommandPage Name="Projects">
+                    <Template Context="cmd">
+                        @foreach (var project in projects)
+                        {
+                            <BitBhCommandItem Value="@project" OnSelect='@(() => CompleteAsync(cmd, $"Open {project}"))' class="cmd-item">
+                                <span class="cmd-item-icon" aria-hidden="true">📁</span> @project
+                            </BitBhCommandItem>
+                        }
+                    </Template>
+                </BitBhCommandPage>
+
+                <BitBhCommandPage Name="Settings">
+                    <Template Context="cmd">
+                        <BitBhCommandItem Value="Change theme" OnSelect='@(() => cmd.PushPageAsync("Theme"))' class="cmd-item">
+                            <span class="cmd-item-icon" aria-hidden="true">🎨</span> Change theme…
+                            <span class="cmd-item-arrow" aria-hidden="true">›</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Notifications" OnSelect='@(() => CompleteAsync(cmd, "Notification settings"))' class="cmd-item">
+                            <span class="cmd-item-icon" aria-hidden="true">🔔</span> Notifications
+                        </BitBhCommandItem>
+                    </Template>
+                </BitBhCommandPage>
+
+                <BitBhCommandPage Name="Theme">
+                    <Template Context="cmd">
+                        @foreach (var option in themes)
+                        {
+                            <BitBhCommandItem Value="@option" OnSelect='@(() => SetThemeAsync(cmd, option))' class="cmd-item">
+                                @option
+                                @if (option == theme)
+                                {
+                                    <span class="cmd-item-check" aria-hidden="true">✓</span>
+                                }
+                            </BitBhCommandItem>
+                        }
+                    </Template>
+                </BitBhCommandPage>
+            </BitBhCommandList>
+        </BitBhCommand>
+
+        <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong> · Theme: <strong>@theme</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="⌘K command palette"
+           Code="@_dialogCode"
+           Css="@_dialogCss">
+    <Description>
+        <code>BitBhCommandDialog</code> puts a command menu in a modal dialog and registers a global
+        <code>Shortcut</code> (<code>"mod+k"</code> = ⌘K on macOS, Ctrl+K elsewhere — press it anywhere on this page).
+        Running a command closes the palette, Escape or an outside click dismisses it, and focus returns where it was.
+        Drive it with <code>Open</code>; <code>OpenChanged</code> reports the changes the palette makes itself
+        (shortcut, Escape, outside click, running a command).
+    </Description>
+    <LiveContent>
+        <button type="button" class="cmd-trigger" @onclick="() => paletteOpen = true">
+            <span class="cmd-input-icon" aria-hidden="true">⌕</span>
+            Search or jump to…
+            <span class="cmd-trigger-keys" aria-hidden="true">
+                <kbd class="cmd-kbd">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="cmd-kbd">K</kbd>
+            </span>
+        </button>
+
+        <BitBhCommandDialog Open="paletteOpen" OpenChanged="OnPaletteOpenChanged" Shortcut="mod+k"
+                         Label="Command palette" Loop="true"
+                         OverlayClass="cmd-overlay" ContentClass="cmd-dialog" CommandClass="cmd-palette">
+            <div class="cmd-input-row">
+                <span class="cmd-input-icon" aria-hidden="true">⌕</span>
+                <BitBhCommandInput class="cmd-input" placeholder="Type a command or search…" />
+                <kbd class="cmd-kbd" aria-hidden="true">Esc</kbd>
+            </div>
+            <BitBhCommandList class="cmd-list">
+                <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
+                <BitBhCommandGroup Heading="Actions" class="cmd-group">
+                    <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">📝</span> New document
+                        <span class="cmd-item-shortcut">⌘N</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Share" Keywords='@(["invite", "link", "collaborate"])'
+                                   OnSelect='@(() => Run("Share"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">🔗</span> Share…
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Duplicate" OnSelect='@(() => Run("Duplicate"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">📄</span> Duplicate
+                        <span class="cmd-item-shortcut">⌘D</span>
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+                <BitBhCommandSeparator class="cmd-separator" />
+                <BitBhCommandGroup Heading="Appearance" class="cmd-group">
+                    <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
+                                   OnSelect='@(() => Run("Toggle dark mode"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">🌙</span> Toggle dark mode
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Zoom in" Keywords='@(["bigger", "font size"])'
+                                   OnSelect='@(() => Run("Zoom in"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">🔍</span> Zoom in
+                        <span class="cmd-item-shortcut">⌘+</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Zoom out" Keywords='@(["smaller", "font size"])'
+                                   OnSelect='@(() => Run("Zoom out"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">🔎</span> Zoom out
+                        <span class="cmd-item-shortcut">⌘−</span>
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+                <BitBhCommandSeparator class="cmd-separator" />
+                <BitBhCommandGroup Heading="Help" class="cmd-group">
+                    <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">⌨️</span> Keyboard shortcuts
+                        <span class="cmd-item-shortcut">?</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Contact support" Keywords='@(["help", "email", "feedback"])'
+                                   OnSelect='@(() => Run("Contact support"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">💬</span> Contact support
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+            </BitBhCommandList>
+            <div class="cmd-footer" aria-hidden="true">
+                <span><kbd class="cmd-kbd">↑</kbd><kbd class="cmd-kbd">↓</kbd> navigate</span>
+                <span><kbd class="cmd-kbd">↵</kbd> run</span>
+                <span><kbd class="cmd-kbd">Esc</kbd> close</span>
+            </div>
+        </BitBhCommandDialog>
+
+        <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong> · Opened by the palette itself: <strong>@selfOpens</strong>×</span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Server-side search"
+           Code="@_serverCode"
+           Css="@_serverCss">
+    <Description>
+        Set <code>ShouldFilter="false"</code> when results come from somewhere else (an API, a database):
+        the menu then renders exactly the items you give it. Handle <code>SearchChanged</code>, fetch, and
+        re-render the list — highlight, keyboard navigation, the empty state and the results announcement keep
+        working. This demo fakes a 350 ms round-trip and drops stale responses.
+    </Description>
+    <LiveContent>
+        <BitBhCommand Label="Search the docs" ShouldFilter="false" SearchChanged="SearchDocsAsync" class="cmd">
+            <div class="cmd-input-row">
+                <span class="cmd-input-icon" aria-hidden="true">⌕</span>
+                <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Search components…" />
+                @if (searching)
+                {
+                    <span class="cmd-spinner" aria-hidden="true"></span>
+                }
+            </div>
+            <BitBhCommandList class="cmd-list">
+                @if (!searching)
+                {
+                    <BitBhCommandEmpty class="cmd-empty">No components match “@docsQuery”.</BitBhCommandEmpty>
+                }
+                @foreach (var doc in docResults)
+                {
+                    <BitBhCommandItem @key="doc.Name" Value="@doc.Name" OnSelect='@(() => Run($"Open {doc.Name} docs"))' class="cmd-item">
+                        <span class="cmd-item-icon" aria-hidden="true">📄</span>
+                        <span class="cmd-item-body">
+                            <span class="cmd-item-title">@doc.Name</span>
+                            <span class="cmd-item-description">@doc.Summary</span>
+                        </span>
+                    </BitBhCommandItem>
+                }
+            </BitBhCommandList>
+        </BitBhCommand>
+
+        <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Relevance sorting and highlight binding"
+           Code="@_sortedCode"
+           Css="@_sortedCss">
+    <Description>
+        <code>Sort="true"</code> ranks matches by relevance through the CSS <code>order</code> property (so the
+        list is a flex column) and <code>Loop="true"</code> wraps the arrow keys. <code>@@bind-Value</code>
+        follows the highlighted item, and an item's <code>Template</code> receives whether it is highlighted —
+        here it reveals an ↵ hint. Type "bar" and watch the best matches move to the top.
+    </Description>
+    <LiveContent>
+        <BitBhCommand Label="Go to file" Sort="true" Loop="true" @bind-Value="highlightedFile" class="cmd">
+            <div class="cmd-input-row">
+                <span class="cmd-input-icon" aria-hidden="true">⌕</span>
+                <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Go to file…" />
+            </div>
+            <BitBhCommandList class="cmd-list cmd-list-sorted">
+                <BitBhCommandEmpty class="cmd-empty">No matching files.</BitBhCommandEmpty>
+                @foreach (var file in files)
+                {
+                    <BitBhCommandItem Value="@file" OnSelect='@(() => Run($"Open {file}"))' class="cmd-item">
+                        <Template Context="highlighted">
+                            <span class="cmd-item-icon" aria-hidden="true">@(file.EndsWith(".razor") ? "🧩" : "📄")</span>
+                            @file
+                            @if (highlighted)
                             {
-                                <BitBhCommandItem Value="@option" OnSelect='@(() => SetThemeAsync(cmd, option))' class="cmd-item">
-                                    @option
-                                    @if (option == theme)
-                                    {
-                                        <span class="cmd-item-check" aria-hidden="true">✓</span>
-                                    }
-                                </BitBhCommandItem>
+                                <kbd class="cmd-kbd cmd-item-enter" aria-hidden="true">↵</kbd>
                             }
                         </Template>
-                    </BitBhCommandPage>
-                </BitBhCommandList>
-            </BitBhCommand>
+                    </BitBhCommandItem>
+                }
+            </BitBhCommandList>
+        </BitBhCommand>
 
-            <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong> · Theme: <strong>@theme</strong></span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="⌘K command palette"
-               Code="@_dialogCode"
-               Css="@_dialogCss">
-        <Description>
-            <code>BitBhCommandDialog</code> puts a command menu in a modal dialog and registers a global
-            <code>Shortcut</code> (<code>"mod+k"</code> = ⌘K on macOS, Ctrl+K elsewhere — press it anywhere on this page).
-            Running a command closes the palette, Escape or an outside click dismisses it, and focus returns where it was.
-            Drive it with <code>Open</code>; <code>OpenChanged</code> reports the changes the palette makes itself
-            (shortcut, Escape, outside click, running a command).
-        </Description>
-        <LiveContent>
-            <button type="button" class="cmd-trigger" @onclick="() => paletteOpen = true">
-                <span class="cmd-input-icon" aria-hidden="true">⌕</span>
-                Search or jump to…
-                <span class="cmd-trigger-keys" aria-hidden="true">
-                    <kbd class="cmd-kbd">Ctrl</kbd><kbd class="cmd-kbd">K</kbd>
-                </span>
-            </button>
-
-            <BitBhCommandDialog Open="paletteOpen" OpenChanged="OnPaletteOpenChanged" Shortcut="mod+k"
-                             Label="Command palette" Loop="true"
-                             OverlayClass="cmd-overlay" ContentClass="cmd-dialog" CommandClass="cmd-palette">
-                <div class="cmd-input-row">
-                    <span class="cmd-input-icon" aria-hidden="true">⌕</span>
-                    <BitBhCommandInput class="cmd-input" placeholder="Type a command or search…" />
-                    <kbd class="cmd-kbd" aria-hidden="true">Esc</kbd>
-                </div>
-                <BitBhCommandList class="cmd-list">
-                    <BitBhCommandEmpty class="cmd-empty">No results found.</BitBhCommandEmpty>
-                    <BitBhCommandGroup Heading="Actions" class="cmd-group">
-                        <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">📝</span> New document
-                            <span class="cmd-item-shortcut">⌘N</span>
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Share" Keywords='@(["invite", "link", "collaborate"])'
-                                       OnSelect='@(() => Run("Share"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">🔗</span> Share…
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Duplicate" OnSelect='@(() => Run("Duplicate"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">📄</span> Duplicate
-                            <span class="cmd-item-shortcut">⌘D</span>
-                        </BitBhCommandItem>
-                    </BitBhCommandGroup>
-                    <BitBhCommandSeparator class="cmd-separator" />
-                    <BitBhCommandGroup Heading="Appearance" class="cmd-group">
-                        <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
-                                       OnSelect='@(() => Run("Toggle dark mode"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">🌙</span> Toggle dark mode
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Zoom in" Keywords='@(["bigger", "font size"])'
-                                       OnSelect='@(() => Run("Zoom in"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">🔍</span> Zoom in
-                            <span class="cmd-item-shortcut">⌘+</span>
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Zoom out" Keywords='@(["smaller", "font size"])'
-                                       OnSelect='@(() => Run("Zoom out"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">🔎</span> Zoom out
-                            <span class="cmd-item-shortcut">⌘−</span>
-                        </BitBhCommandItem>
-                    </BitBhCommandGroup>
-                    <BitBhCommandSeparator class="cmd-separator" />
-                    <BitBhCommandGroup Heading="Help" class="cmd-group">
-                        <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">⌨️</span> Keyboard shortcuts
-                            <span class="cmd-item-shortcut">?</span>
-                        </BitBhCommandItem>
-                        <BitBhCommandItem Value="Contact support" Keywords='@(["help", "email", "feedback"])'
-                                       OnSelect='@(() => Run("Contact support"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">💬</span> Contact support
-                        </BitBhCommandItem>
-                    </BitBhCommandGroup>
-                </BitBhCommandList>
-                <div class="cmd-footer" aria-hidden="true">
-                    <span><kbd class="cmd-kbd">↑</kbd><kbd class="cmd-kbd">↓</kbd> navigate</span>
-                    <span><kbd class="cmd-kbd">↵</kbd> run</span>
-                    <span><kbd class="cmd-kbd">Esc</kbd> close</span>
-                </div>
-            </BitBhCommandDialog>
-
-            <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong> · Opened by the palette itself: <strong>@selfOpens</strong>×</span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Server-side search"
-               Code="@_serverCode"
-               Css="@_serverCss">
-        <Description>
-            Set <code>ShouldFilter="false"</code> when results come from somewhere else (an API, a database):
-            the menu then renders exactly the items you give it. Handle <code>SearchChanged</code>, fetch, and
-            re-render the list — highlight, keyboard navigation, the empty state and the results announcement keep
-            working. This demo fakes a 350 ms round-trip and drops stale responses.
-        </Description>
-        <LiveContent>
-            <BitBhCommand Label="Search the docs" ShouldFilter="false" SearchChanged="SearchDocsAsync" class="cmd">
-                <div class="cmd-input-row">
-                    <span class="cmd-input-icon" aria-hidden="true">⌕</span>
-                    <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Search components…" />
-                    @if (searching)
-                    {
-                        <span class="cmd-spinner" aria-hidden="true"></span>
-                    }
-                </div>
-                <BitBhCommandList class="cmd-list">
-                    @if (!searching)
-                    {
-                        <BitBhCommandEmpty class="cmd-empty">No components match “@docsQuery”.</BitBhCommandEmpty>
-                    }
-                    @foreach (var doc in docResults)
-                    {
-                        <BitBhCommandItem @key="doc.Name" Value="@doc.Name" OnSelect='@(() => Run($"Open {doc.Name} docs"))' class="cmd-item">
-                            <span class="cmd-item-icon" aria-hidden="true">📄</span>
-                            <span class="cmd-item-body">
-                                <span class="cmd-item-title">@doc.Name</span>
-                                <span class="cmd-item-description">@doc.Summary</span>
-                            </span>
-                        </BitBhCommandItem>
-                    }
-                </BitBhCommandList>
-            </BitBhCommand>
-
-            <span class="demo-output">Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Relevance sorting and highlight binding"
-               Code="@_sortedCode"
-               Css="@_sortedCss">
-        <Description>
-            <code>Sort="true"</code> ranks matches by relevance through the CSS <code>order</code> property (so the
-            list is a flex column) and <code>Loop="true"</code> wraps the arrow keys. <code>@@bind-Value</code>
-            follows the highlighted item, and an item's <code>Template</code> receives whether it is highlighted —
-            here it reveals an ↵ hint. Type "bar" and watch the best matches move to the top.
-        </Description>
-        <LiveContent>
-            <BitBhCommand Label="Go to file" Sort="true" Loop="true" @bind-Value="highlightedFile" class="cmd">
-                <div class="cmd-input-row">
-                    <span class="cmd-input-icon" aria-hidden="true">⌕</span>
-                    <BitBhCommandInput AutoFocus="false" class="cmd-input" placeholder="Go to file…" />
-                </div>
-                <BitBhCommandList class="cmd-list cmd-list-sorted">
-                    <BitBhCommandEmpty class="cmd-empty">No matching files.</BitBhCommandEmpty>
-                    @foreach (var file in files)
-                    {
-                        <BitBhCommandItem Value="@file" OnSelect='@(() => Run($"Open {file}"))' class="cmd-item">
-                            <Template Context="highlighted">
-                                <span class="cmd-item-icon" aria-hidden="true">@(file.EndsWith(".razor") ? "🧩" : "📄")</span>
-                                @file
-                                @if (highlighted)
-                                {
-                                    <kbd class="cmd-kbd cmd-item-enter" aria-hidden="true">↵</kbd>
-                                }
-                            </Template>
-                        </BitBhCommandItem>
-                    }
-                </BitBhCommandList>
-            </BitBhCommand>
-
-            <span class="demo-output">Highlighted: <strong>@(highlightedFile ?? "(none)")</strong> · Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
-</div>
+        <span class="demo-output">Highlighted: <strong>@(highlightedFile ?? "(none)")</strong> · Last command: <strong>@(lastCommand ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private string? lastCommand;
@@ -359,6 +359,16 @@
     // ── ⌘K palette ─────────────────────────────────────────────────────────────
 
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
 
     // Fires when the palette changes its own state: the ⌘K / Ctrl+K shortcut,
@@ -594,11 +604,13 @@
 """;
 
     private const string _dialogCode = """
+@inject BitBhInterop Interop
+
 <button type="button" class="cmd-trigger" @onclick="() => paletteOpen = true">
     <span class="cmd-input-icon" aria-hidden="true">⌕</span>
     Search or jump to…
     <span class="cmd-trigger-keys" aria-hidden="true">
-        <kbd class="cmd-kbd">Ctrl</kbd><kbd class="cmd-kbd">K</kbd>
+        <kbd class="cmd-kbd">@(isApple ? "⌘" : "Ctrl")</kbd><kbd class="cmd-kbd">K</kbd>
     </span>
 </button>
 
@@ -666,6 +678,16 @@
 
 @code {
     private bool paletteOpen;
+    private bool isApple;
+
+    // "mod+k" is Cmd+K on Apple platforms: the trigger says so once the page is interactive (a prerender has no
+    // browser to ask).
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        isApple = await Interop.IsApplePlatformAsync();
+        if (isApple) StateHasChanged();
+    }
     private int selfOpens;
     private string? lastCommand;
 
@@ -891,7 +913,7 @@
     color: #71717a;
 }
 
-.cmd-item[data-selected] .cmd-item-shortcut { color: #60a5fa; }
+.cmd-item[data-selected] .cmd-item-shortcut { color: #2563eb; }
 
 /* BitBhCommandSeparator is removed while searching */
 .cmd-separator { height: 1px; margin: 0.375rem -0.375rem; background: #e4e4e7; }

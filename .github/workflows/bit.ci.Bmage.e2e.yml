@@ -1,6 +1,7 @@
 name: bit platform CI - Bmage E2E
 
-# The demo website and the hosting samples driven in Chromium, and the MAUI sample driven in its WebView2. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
+# The demo website, the hosting samples and the published lazy loading sample - trimmed, and in a job of its own
+# AOT-compiled - driven in Chromium, and the MAUI sample driven in its WebView2. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
 # it runs only when started by hand. See src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the suite covers and
 # how to run it locally.
 
@@ -30,7 +31,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 
@@ -52,6 +53,12 @@ jobs:
     # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
     - name: Publish the demo
       run: dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:WasmAotProfilePath="${{ github.workspace }}/bmage.aotprofile"
+
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads Bmage ships,
+    # trimmed, with the lazy marks a publish writes into its boot configuration. Not AOT-compiled here; lazy-loading-aot
+    # below does that.
+    - name: Publish the lazy loading sample
+      run: dotnet publish src/Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy/Bit.Bmage.Samples.Lazy.csproj -c Release
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
@@ -100,6 +107,62 @@ jobs:
           demo.log
         if-no-files-found: ignore
 
+  # The lazy loading sample published with AOT, as an app using Bmage may be: its project file leaves the lazy marks out
+  # then, as docs/getting-started.md says an AOT build must, and LazyLoadingTests checks that it loads Bmage with the app
+  # and works all the same. It needs no demo: the tests start the published sample themselves.
+  lazy-loading-aot:
+    name: Bmage lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Publish the lazy loading sample with AOT
+      run: dotnet publish src/Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy/Bit.Bmage.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run lazy loading E2E tests
+      env:
+        BMAGE_E2E_CONFIGURATION: Release
+        BMAGE_E2E_SKIP_BUILD: 1
+        BMAGE_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename bmage-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bmage-e2e-lazy-aot
+        path: '**/bmage-e2e-lazy-aot.trx'
+        if-no-files-found: ignore
+
   # The MAUI sample as a Windows app (Blazor Hybrid), its WebView2 driven over the DevTools Protocol.
   e2e-maui:
     name: Bmage E2E - MAUI sample (Windows, WebView2)
@@ -114,7 +177,7 @@ jobs:
           persist-credentials: false
 
     - name: Setup .NET 11.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
 

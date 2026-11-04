@@ -17,7 +17,7 @@
     var describedByValue = describedBy.HasValue() ? describedBy : null;
     // The chevron of a split button carries no text of its own, so without a name it reaches a screen reader
     // as an unlabelled button (WCAG 4.1.2). The fallback is what keeps that from being the default.
-    var chevronLabel = ChevronDownAriaLabel ?? "More options";
+    var chevronLabel = ChevronDownAriaLabel ?? BitStrings.Current.MoreOptions;
     var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
     // The main half of a split button is a command of its own, so it can be the submit button of the form it
     // sits in - but only where the page asked for that. The type is left at "button" unless ButtonType was set,
@@ -97,10 +97,12 @@
                 {
                     <i aria-hidden="true" style="@Styles?.OperatorButtonIcon" class="bit-mnb-ico @icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
+                @* The text sits in a span of its own inside the label, so the label can give up all of its width
+                   (see .bit-mnb-btl) and the button never shrinks past its icon and chevron. *@
                 @if (IconOnly is false)
                 {
                     <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                        @(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
+                        <span class="bit-mnb-btl">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))</span>
                     </span>
                 }
             }
@@ -129,7 +131,7 @@
 
                 @if (IconOnly is false && (Text.HasValue() || (_showLoading && LoadingLabel.HasValue())))
                 {
-                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text"><span class="bit-mnb-btl">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span></span>
                 }
             }
         }

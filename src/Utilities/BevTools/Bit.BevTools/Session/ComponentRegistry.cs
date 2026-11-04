@@ -388,8 +388,10 @@ internal sealed class ComponentRegistry
             totals.Renders += record.RenderCount;
             totals.RenderMs += record.TotalRenderMs;
             totals.MaxRenderMs = Math.Max(totals.MaxRenderMs, record.MaxRenderMs);
+            totals.AllocatedBytes += record.TotalAllocatedBytes;
             if (record.RendersSinceBaseline > 0)
             {
+                totals.AllocatedBytesSinceBaseline += record.AllocatedBytesSinceBaseline;
                 totals.InstancesSinceBaseline++;
                 totals.RendersSinceBaseline += record.RendersSinceBaseline;
                 totals.RenderMsSinceBaseline += record.RenderMsSinceBaseline;
@@ -423,6 +425,7 @@ internal sealed class ComponentRegistry
                 totals.RendersSinceBaseline = 0;
                 totals.RenderMsSinceBaseline = 0;
                 totals.MaxRenderMsSinceBaseline = 0;
+                totals.AllocatedBytesSinceBaseline = 0;
             }
         }
 

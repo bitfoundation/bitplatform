@@ -151,7 +151,16 @@
     outline: none;
 }
 
+/* On a phone both toasters span the screen: this one moves to the top, clear of the main one. */
+@media (max-width: 48rem) {
+    .toast-stack {
+        top: 1rem;
+        bottom: auto;
+    }
+}
+
 .toast-stack > .toast {
+    position: relative;
     grid-area: 1 / 1;
     align-self: end;
     transform-origin: bottom center;
@@ -170,6 +179,7 @@
 
 .toast-stack:hover > .toast,
 .toast-stack:focus-within > .toast {
+    align-self: stretch;
     transform: none;
     opacity: 1;
 }

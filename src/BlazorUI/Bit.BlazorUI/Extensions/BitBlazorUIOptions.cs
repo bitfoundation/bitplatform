@@ -29,6 +29,13 @@ public sealed class BitBlazorUIOptions
     public string? ContentPath { get; set; }
 
     /// <summary>
+    /// The words the components fall back on when the parameter that would say them is left unset - a subclass of
+    /// <see cref="BitStrings"/> translating them. Process-wide like the scripts toggles: it sets <see cref="BitStrings.Current"/>,
+    /// and left <see langword="null"/> keeps whatever that is already set to.
+    /// </summary>
+    public BitStrings? Strings { get; set; }
+
+    /// <summary>
     /// Registers the eligible services as singletons instead of scoped - the <c>trySingleton</c> argument of
     /// <see cref="IBitBlazorUIServiceCollectionExtensions.AddBitBlazorUIServices(Microsoft.Extensions.DependencyInjection.IServiceCollection, bool)"/>,
     /// and as safe as it is there: only for a single-user hosting model (Blazor WebAssembly and Hybrid), never Blazor Server.

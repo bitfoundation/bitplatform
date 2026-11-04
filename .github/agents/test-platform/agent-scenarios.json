@@ -414,6 +414,64 @@
       ]
     },
     {
+      "id": "landing-page",
+      "heavy": true,
+      "prompt": "Little Copper's app launch moved to 1 March 2027 at 8:00 Copenhagen time, and the free first coffee for the waitlist now runs until 30 April 2027. Update the landing page.",
+      "checks": [
+        {
+          "skill": "landing-page"
+        },
+        {
+          "changed": "*RestaurantSite.cs"
+        },
+        {
+          "changed": "*RestaurantHomePage.razor.cs"
+        },
+        {
+          "changed": "*RestaurantStrings.resx"
+        },
+        {
+          "changed": "*RestaurantStrings.fa.resx"
+        },
+        {
+          "changed": "*LandingChatPrompts.cs"
+        },
+        {
+          "fileLacks": {
+            "path": "src/LandingPage/AgentsApp.LandingPage.Server/Features/Chat/LandingChatPrompts.cs",
+            "patterns": [
+              "15 January 2027",
+              "28 February 2027"
+            ]
+          }
+        },
+        {
+          "fileLacks": {
+            "path": "src/LandingPage/AgentsApp.LandingPage.Client/Components/Pages/Restaurant/RestaurantStrings.resx",
+            "patterns": [
+              "15 January 2027",
+              "before January"
+            ]
+          }
+        },
+        {
+          "fileLacks": {
+            "path": "src/LandingPage/AgentsApp.LandingPage.Client/Components/Pages/Restaurant/RestaurantStrings.fa.resx",
+            "patterns": [
+              "25 دی 1405",
+              "پیش از ژانویه"
+            ]
+          }
+        },
+        {
+          "onlyChanged": "src/LandingPage/*"
+        },
+        {
+          "called": "dotnet build"
+        }
+      ]
+    },
+    {
       "id": "crud-feature-baseline",
       "baseline": true,
       "budget": 3,

@@ -41,6 +41,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
+    private string _errorLabelId = string.Empty;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _descriptionId = string.Empty;
@@ -227,9 +228,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// The text a screen reader is given for an <see cref="ErrorMessageTemplate"/>, which is free to render
+    /// anything at all and so has no text of its own. It is announced through the live region of the component
+    /// the moment the template shows up, in place of the default "Invalid input", and the input references it
+    /// through its aria-describedby attribute, so the same reason is read out on every later focus too.
+    /// A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
-    /// marks the field invalid in the same way. Only the plain text is announced by the live region, since a
-    /// template is free to render anything at all.
+    /// marks the field invalid in the same way. It replaces the message for a screen reader as well: a template
+    /// is free to render anything at all, so the live region announces <see cref="ErrorMessageAriaLabel"/> for
+    /// it, or a bare "Invalid input" when that is not set.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? ErrorMessageTemplate { get; set; }
@@ -690,7 +705,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (_isOpen is false) return;
+        // An outer callout cleared as it goes away along with the search box dismisses this one too, which is no
+        // toggle of the suggestions to report.
+        if (IsDisposing || _isOpen is false) return;
 
         _isOpen = false;
         _calloutChanges++;
@@ -780,6 +797,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputId = $"BitSearchBox-{UniqueId}-input";
         _labelId = $"BitSearchBox-{UniqueId}-label";
         _errorId = $"BitSearchBox-{UniqueId}-error";
+        _errorLabelId = $"BitSearchBox-{UniqueId}-error-label";
         _descriptionId = $"BitSearchBox-{UniqueId}-description";
         _ariaDescriptionId = $"BitSearchBox-{UniqueId}-aria-description";
 
@@ -910,6 +928,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     // An ErrorMessage the app sets itself is the same rejection a failing validation is, told a different way.
     protected override bool HasError => HasErrorMessage;
 
+    // Whether ErrorMessageAriaLabel speaks for the rejection on screen: a template, which wins over a plain
+    // message (see the markup) and is free to render anything at all. A whitespace label is no label -
+    // announcing it would leave the field sounding accepted.
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue() && ErrorMessageTemplate is not null;
+
+    // What the live region says of the rejection, always matching what is on screen: a plain message is its own
+    // text, while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than
+    // left in silence.
+    private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                     : ErrorMessage.HasValue() ? ErrorMessage
+                                     : null;
+
     private bool HasSuggestFailedContent => SuggestFailedText.HasValue() || SuggestFailedTemplate is not null;
 
     // aria-labelledby wins over aria-label, so pointing the input at the visible label while a name of its
@@ -936,7 +967,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             var ids = string.Join(' ', new[]
             {
                 GetSplattedInputAttribute("aria-describedby"),
-                HasErrorMessage ? _errorId : null,
+                // A label stands in for the template on focus as well, which may well be a bare icon with no
+                // text to describe the field with at all.
+                HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null
             }.Where(id => id.HasValue()));
@@ -949,9 +982,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     // with its text already in it is regularly missed altogether. So a single empty region is kept in the
     // markup and only its text comes and goes. It is deliberately not the region the suggest items use:
     // that one is rewritten on every keystroke, and a rejection folded into it would never be heard again.
-    private string? LiveText => ErrorMessage.HasValue()
-                                    ? ErrorMessage
-                                    : Loading ? LoadingAriaLabel : null;
+    private string? LiveText => ErrorLiveText ?? (Loading ? LoadingAriaLabel : null);
 
     private string? GetAutoCorrect() => AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null;
 
@@ -1363,6 +1394,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task SetValueSuppressingSearch(string? value)
     {
+        // The value replaces whatever was typed, so an input event still waiting out its debounce or throttle carries
+        // text that is thrown away here, and landing after it would put that text straight back: a cleared term would
+        // reappear, and a picked suggestion would turn back into the few letters typed for it.
+        ResetInputRateLimiter();
+
         _suppressSearch = true;
         try
         {
@@ -1759,21 +1795,21 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             return AnnouncementProvider(new(term, _viewSuggestedItems, _isLoading, isTermTooShort, MinSuggestTriggerChars, _suggestFailed));
         }
 
-        if (_isLoading) return LoadingText.HasValue() ? LoadingText : "Loading suggestions.";
+        if (_isLoading) return LoadingText.HasValue() ? LoadingText : BitStrings.Current.LoadingSuggestions;
 
-        if (_suggestFailed) return SuggestFailedText.HasValue() ? SuggestFailedText : "Suggestions could not be loaded.";
+        if (_suggestFailed) return SuggestFailedText.HasValue() ? SuggestFailedText : BitStrings.Current.SuggestionsFailed;
 
         if (isTermTooShort)
         {
             // An empty field is the starting state rather than a failed search, so it says nothing.
             if (term.HasNoValue()) return null;
 
-            return GetMinSuggestTriggerCharsText() ?? $"Type {MinSuggestTriggerChars} or more characters for suggestions.";
+            return GetMinSuggestTriggerCharsText() ?? string.Format(BitStrings.Current.MinSuggestTriggerCharsFormat, MinSuggestTriggerChars);
         }
 
         var count = _viewSuggestedItems.Count;
 
-        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : "No suggestion found.";
+        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : BitStrings.Current.NoSuggestionFound;
 
         return $"{count} suggestion{(count == 1 ? string.Empty : "s")} available. " +
                "Use the up and down arrow keys to review them and enter to select one.";
@@ -2115,13 +2151,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.BitCalloutClearCallout(_calloutId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            // The callout still calls back through the reference until it is cleared.
+            await _dotnetObj.DisposeAfterAsync(() => _js.BitCalloutClearCallout(_calloutId));
         }
     }
 }

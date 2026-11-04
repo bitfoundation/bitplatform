@@ -20,7 +20,9 @@ exists in a real browser:
 This suite boots the demo (`Bit.Bdnd.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
 drives it in Chromium with Playwright, whose mouse Chromium turns into real HTML5 drags. It asserts **effects**, not
 markup: what a page shows and the colours the browser computed while a drag hovers and after it drops, where a dropped
-box landed on screen, and the drag events as the browser raised them and the module answered them.
+box landed on screen, and the drag events as the browser raised them and the module answered them. One suite drives
+the published lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.Bdnd.wasm` only when a page that
+drags opens.
 
 ## What it proves
 
@@ -47,6 +49,7 @@ box landed on screen, and the drag events as the browser raised them and the mod
 | `ScreenReaderTests` | A keyboard source keeps its role and is described by the instructions; a handle is a focusable button described by them; the live region is an assertive, atomic status the moves are written to; the pointer copy adds nothing to the accessibility tree - on every engine, and in Chromium in the browser's own accessibility tree (`Accessibility.getPartialAXTree`). |
 | `HybridHostingTests` | In a WinForms BlazorWebView (`Tests/Bit.Bdnd.Tests.Harness.Hybrid`), driven through WebView2's DevTools port: the page runs on the WebView renderer, and native mouse, keyboard, mouse pointer and touch drags drop; a drag layer follows the pointer; insertion edges reorder; a dropped file's contents reach .NET. Windows only, with the Chromium pass. |
 | `ServerHostingTests` | On the page served over a Blazor Server circuit: native mouse, keyboard, pointer and touch drags drop, a pointer drag right after a native one too; a drag sends a handful of circuit messages however long it moves (fewer than 30 for 120 moves); a drag layer follows the pointer; insertion edges reorder; a dropped file's contents stream to the server; moving between that page and the WebAssembly ones loads the page in the other render mode. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Bdnd.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBdndServices` in the browser - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Bdnd.wasm`; navigating to the board downloads it once (and not again on the way back), and a deep link to the board is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way a card drags into the other column through the interop the components created themselves, and the page's own `GetBdndInterop()` measures the column, which reads back only when the trimmer kept `BdndDomRect`'s members. Published with AOT (`BDND_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Bdnd with the app and nothing on demand. |
 | `PerfTests` | Measurements only (category `Perf`): frames, the longest frame gap, long tasks and DOM mutations of a scripted drag across three stress pages, written to the test output. |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bdnd.js` and registers every draggable with it when it has draggables, shows its own source under "View code", and runs every button on it without a console error, an unhandled exception, a failed request or the error banner; "View code" opens and closes; navigating through every page in the app leaves a page that still drags. |
 
@@ -78,8 +81,10 @@ event the browser raised at the very point the pointer was moved to (`BdndTest.D
 From `src/Utilities/Bdnd` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
+# first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Bdnd.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -100,6 +105,7 @@ suite takes far longer than the build-and-unit pipeline in `bit.ci.Bdnd.yml`:
 
 ```bash
 dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bdnd-e2e.trx
@@ -122,6 +128,12 @@ request that leaves the demo's origin (its web font) is answered with an empty r
 internet access runs the suite just the same. The tests run one at a time: a drag is a sequence of native events
 whose handlers call into .NET between them, and a second page booting WebAssembly next to it is exactly the load
 that turns those waits into flakes.
+
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BDND_E2E_LAZY_BASE_URL` points those tests at a copy that is already
+running. A sample that has not been published makes them inconclusive - or failed, on a build server - and leaves the
+other suites alone.
 
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason.
 On a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
@@ -188,6 +200,8 @@ page and the [single target](https://bdnd.bitplatform.dev/dustbin/single) dustbi
 | `BDND_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. Not together with `BDND_E2E_PUBLISHED_HOST`. |
 | `BDND_E2E_CHANNEL` / `BDND_E2E_EXECUTABLE` | Use a specific browser: an installed Chrome/Edge (`chrome`, `msedge`), Playwright's headless shell (`chromium-headless-shell`), or a Chromium binary. Without either, the full Chromium Playwright installed is used, then its headless shell, falling back to an installed Chrome, then Edge. |
 | `BDND_E2E_BROWSER` | `chromium` (default), `firefox` or `webkit`: the engine to drive, from the browsers Playwright installed (`playwright.ps1 install firefox webkit`). The tests that synthesize touches or a pen through Chromium's DevTools protocol, read its accessibility tree or rely on its drag controller are inconclusive elsewhere; touch through pointer events runs on every engine. |
+| `BDND_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BDND_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bdnd comes with the app and nothing is downloaded on demand. |
 | `BDND_E2E_HEADED=1` | Show the browser. |
 
 ### Publish gate (trimming / AOT)
@@ -216,4 +230,11 @@ dotnet build Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj
 BDND_E2E_PUBLISHED_HOST=$PWD/../../artifacts/bdnd-demo-trimmed dotnet test --project Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj --no-build
 ```
 
-The `publish-gate` job of `bit.ci.Bdnd.e2e.yml` runs both legs.
+The `publish-gate` job of `bit.ci.Bdnd.e2e.yml` runs both legs, and publishes the lazy loading sample with the same
+properties next to the demo, so `LazyLoadingTests` runs against a trimmed and an AOT-compiled sample too:
+
+```bash
+# AOT leg of the lazy loading sample (needs the wasm-tools workload):
+dotnet publish Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+BDND_E2E_LAZY_AOT=1 dotnet test --project Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release --filter "FullyQualifiedName~LazyLoadingTests"
+```

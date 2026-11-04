@@ -138,8 +138,9 @@
 
     @* The rejection the app asserted is announced the moment it shows up. The region is always rendered,
        since a live region has to be in the accessibility tree before its text changes to be heard; text
-       only, never ErrorMessageTemplate, which is arbitrary markup meant to be seen. *@
-    <div role="status" aria-live="polite" aria-atomic="true" class="bit-dtp-sdt">@ErrorMessage</div>
+       only, never ErrorMessageTemplate itself, which is arbitrary markup meant to be seen - a template is
+       announced through ErrorMessageAriaLabel, or as a bare "Invalid input". *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-dtp-sdt">@ErrorLiveText</div>
 
 </div>
 
@@ -944,6 +945,13 @@
                     <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
                 }
             </div>
+        }
+
+        @if (HasErrorAriaLabel)
+        {
+            @* The text a template (or the forced state) is described by on focus, which the template itself may
+               not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+            <span id="@_errorLabelId" class="bit-dtp-sdt">@ErrorMessageAriaLabel</span>
         }
 
         @if (HasDescription)

@@ -46,7 +46,7 @@ public partial class BitRichTextEditor
         // Source view (and ReadOnly) disable command execution: ExecAsync no-ops when
         // ControlsDisabled, so report the shortcut as unhandled instead of suppressing the
         // browser default for a command that will not run.
-        if (ControlsDisabled) return false;
+        if (IsDisposing || ControlsDisabled) return false;
 
         // Custom shortcut keys are advertised to the JS bridge lowercased (see
         // BuildOwnedShortcutCombos), so the user-supplied map is probed case-insensitively to keep

@@ -1,0 +1,27 @@
+﻿@* The layout only the showcase uses, so Bit.Bmotion.wasm is there before it renders and it may use Bmotion's types -
+   though not derive from one: the router reads this assembly's types before anything is downloaded. Its
+   OnInitialized runs before the page's animated elements are created, and creates the services Program.cs would
+   otherwise have registered. *@
+@using Bit.Bmotion
+@inherits LayoutComponentBase
+@layout MainLayout
+@inject IServiceProvider Services
+
+@Body
+
+@code {
+    /// <summary>
+    /// The options of every call here and of <c>AddBitBmotionServices</c> on the server (its Program.cs), from this one
+    /// method: they are set once per runtime, every later call must set the same ones, and the server checks that this
+    /// layout's call agrees with its registration while it prerenders the showcase.
+    /// </summary>
+    public static void ConfigureBmotion(BitBmotionOptions options)
+    {
+        options.ReducedMotion = BmReducedMotionMode.User;
+        options.Prerender = BmPrerenderMode.Animate;
+    }
+
+    // In the browser the first call creates the services, and every later one - the showcase opened again - finds them
+    // with the same options. On the server, which registers them, it only checks the options.
+    protected override void OnInitialized() => Services.ConfigureBmotionServices(ConfigureBmotion);
+}

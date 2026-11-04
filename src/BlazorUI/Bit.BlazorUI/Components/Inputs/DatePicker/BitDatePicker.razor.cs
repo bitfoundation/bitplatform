@@ -74,6 +74,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string _footerId = string.Empty;
     private string _datePickerId = string.Empty;
     private string _errorId = string.Empty;
+    private string _errorLabelId = string.Empty;
     private string _descriptionId = string.Empty;
     private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DatePicker-");
     private string _ariaDescriptionId = string.Empty;
@@ -450,8 +451,25 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the DatePicker the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and the input
+    /// references it through its aria-describedby attribute, so the same reason is read out on every later
+    /// focus too. A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
-    /// marks the DatePicker invalid in the same way. Only the plain text is announced by the live region.
+    /// marks the DatePicker invalid in the same way. It replaces the message for a screen reader as well: a template
+    /// is free to render anything at all, so the live region announces <see cref="ErrorMessageAriaLabel"/> for
+    /// it, or a bare "Invalid input" when that is not set.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? ErrorMessageTemplate { get; set; }
@@ -633,7 +651,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Marks the DatePicker as invalid without an <c>EditContext</c> having said so, giving it the same look
     /// and the same aria-invalid attribute an invalid bound value does. Setting <see cref="ErrorMessage"/>
-    /// implies it.
+    /// implies it. It says nothing more to a screen reader unless
+    /// <see cref="ErrorMessageAriaLabel"/> gives it a reason to announce.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Invalid { get; set; }
@@ -1313,6 +1332,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _headerId = $"{_datePickerId}-header";
         _footerId = $"{_datePickerId}-footer";
         _errorId = $"{_datePickerId}-error";
+        _errorLabelId = $"{_datePickerId}-error-label";
         _descriptionId = $"{_datePickerId}-description";
         _ariaDescriptionId = $"{_datePickerId}-aria-description";
         _inputId = $"{_datePickerId}-input";
@@ -1577,6 +1597,21 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // a field that says what is wrong with its value is a field saying the value is wrong.
     protected override bool HasError => Invalid || HasErrorMessage;
 
+    // Whether ErrorMessageAriaLabel speaks for the rejection on screen: a template, which wins over a plain
+    // message (see the markup) and is free to render anything at all, or the forced state without a message.
+    // A whitespace label is no label - announcing it would leave the field sounding accepted.
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    // What the live region says of the rejection, always matching what is on screen: a plain message is its own
+    // text, while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than
+    // left in silence. The forced state is the one rejection only announced with a label of its own, its reason
+    // being explained - and announced - elsewhere.
+    private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                     : ErrorMessage.HasValue() ? ErrorMessage
+                                     : null;
+
     // Every piece of text that describes the field rather than names it, in reading order: what is wrong with
     // the value first, then the visible helper text, the text written for a screen reader alone, and last the
     // pattern a typed date is read with - or, in its place, whatever description the app splatted itself.
@@ -1584,7 +1619,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         var ids = string.Join(' ', new[]
         {
-            HasErrorMessage ? _errorId : null,
+            // A label stands in for the template on focus as well, which may well be a bare icon with no
+            // text to describe the field with at all.
+            HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
             HasDescription ? _descriptionId : null,
             AriaDescription.HasValue() ? _ariaDescriptionId : null,
             formatDescription.HasValue() ? _formatHintId : GetSplattedInputAttribute("aria-describedby")
@@ -4183,7 +4220,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             classes.Add("bit-dtp-sta");
         }
 
-        if (Responsive)
+        // The responsive class hides the callout off the top of a small screen until the JS that opens it slides
+        // it in. A standalone picker never goes through that - it has no callout to open - so carrying the class
+        // would leave the calendar out of sight, out of the accessibility tree and out of the tab order on a
+        // narrow viewport.
+        if (Responsive && Standalone is false)
         {
             classes.Add("bit-dtp-res");
         }

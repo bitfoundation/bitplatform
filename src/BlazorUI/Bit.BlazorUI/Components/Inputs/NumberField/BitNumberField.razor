@@ -8,9 +8,12 @@
     var decrementIcon = BitIconInfo.From(DecrementIcon, DecrementIconName ?? "ChevronDownSmall");
     var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
 
-    // The spin buttons are icon-only, so they always need an accessible name.
-    var incrementLabel = IncrementAriaLabel ?? "Increase value";
-    var decrementLabel = DecrementAriaLabel ?? "Decrease value";
+    // The spin buttons (and, unless templated, the clear button) show only an icon, so they always need an
+    // accessible name - and a blank label, say one a localization lookup came back empty for, is no name at all.
+    // HasValue is what BitNumberFieldParams goes by too, so a blank label falls back the same way either side.
+    var incrementLabel = IncrementAriaLabel.HasValue() ? IncrementAriaLabel : BitStrings.Current.IncreaseValue;
+    var decrementLabel = DecrementAriaLabel.HasValue() ? DecrementAriaLabel : BitStrings.Current.DecreaseValue;
+    var clearButtonLabel = ClearButtonAriaLabel.HasValue() ? ClearButtonAriaLabel : BitStrings.Current.ClearValue;
 
     // The buttons normally stay out of the tab order (the focused input is the spinbutton and already
     // handles the whole keyboard set). In HideInput mode there is no focusable input left, so they
@@ -202,7 +205,7 @@
                         class="bit-nfl-cbt @Classes?.ClearButton"
                         type="button"
                         tabindex="-1"
-                        aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
+                        aria-label="@clearButtonLabel"
                         disabled="@(Disabled)"
                         aria-disabled="@(Disabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
@@ -405,6 +408,13 @@
         </div>
     }
 
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-nfl-dsc">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription)
     {
         <div id="@_descriptionId"
@@ -431,6 +441,9 @@
     @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
        typed, only be announced once the reader is done with the current sentence. It is rendered whether or
        not it has anything to say, because a live region that arrives with its text already in it is the one
-       thing screen readers are known to miss. *@
-    <span role="status" class="bit-nfl-dsc">@LiveText</span>
+       thing screen readers are known to miss.
+       The text sits in a keyed element so that a rejection can be announced again while its text stays the
+       same (see OnParametersSet): replacing the element is a change of the region, rewriting a text with the
+       same text is not. *@
+    <span role="status" class="bit-nfl-dsc"><span @key="_liveTextKey">@LiveText</span></span>
 </div>

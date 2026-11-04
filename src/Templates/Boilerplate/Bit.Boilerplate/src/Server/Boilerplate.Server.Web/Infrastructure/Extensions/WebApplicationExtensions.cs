@@ -82,9 +82,11 @@ public static partial class WebApplicationExtensions
             return app;
         }
 
+        // [mirror] precompressed static files - keep in sync with:
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationExtensions.cs (UsePrecompressedStaticFiles)
         /// <summary>
-        /// Serves the .br file the publish wrote next to a static file to a browser that accepts Brotli, the way
-        /// UseBlazorFrameworkFiles does for _framework, instead of leaving UseResponseCompression to compress it again.
+        /// Serves the .br file the publish wrote next to a static file to a browser that accepts Brotli, _framework's
+        /// included, instead of leaving UseResponseCompression to compress it again.
         /// </summary>
         public WebApplication UsePrecompressedStaticFiles()
         {
@@ -92,7 +94,6 @@ public static partial class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
-                && context.Request.Path.StartsWithSegments("/_framework") is false
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {

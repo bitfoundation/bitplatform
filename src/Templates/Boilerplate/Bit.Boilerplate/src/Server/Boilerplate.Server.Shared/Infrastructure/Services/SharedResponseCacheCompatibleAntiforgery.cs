@@ -1,3 +1,5 @@
+// [mirror] cache-friendly antiforgery - keep in sync with:
+// - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Services/LandingAntiforgery.cs
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Antiforgery;
 

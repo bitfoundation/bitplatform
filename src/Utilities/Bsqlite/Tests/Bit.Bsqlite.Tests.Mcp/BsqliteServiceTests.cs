@@ -71,7 +71,7 @@ public partial class BsqliteServiceTests
         Assert.AreEqual("server", BsqliteSetupGuide.Resolve("Blazor Server"));
         Assert.AreEqual("wasm", BsqliteSetupGuide.Resolve("InteractiveWebAssembly"));
         Assert.AreEqual("standalone-wasm", BsqliteSetupGuide.Resolve("standalone"));
-        Assert.AreEqual("move-from-besql", BsqliteSetupGuide.Resolve("Bit.Besql"));
+        Assert.AreEqual("storage", BsqliteSetupGuide.Resolve("cache-storage"));
         Assert.AreEqual("testing", BsqliteSetupGuide.Resolve("MSTest"));
         Assert.AreEqual("custom-provider", BsqliteSetupGuide.Resolve("custom_storage_provider"));
         Assert.IsNull(BsqliteSetupGuide.Resolve("electron"));

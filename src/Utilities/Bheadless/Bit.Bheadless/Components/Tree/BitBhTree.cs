@@ -127,6 +127,9 @@ public class BitBhTree<TValue> : BitBhComponentBase
         Context.Items.Changed += () => _refresher?.Request();
     }
 
+    // A render from the parent may have re-sorted the items (@key keeps their components): read the order again.
+    protected override void OnParametersSet() => Context.Items.Invalidate();
+
     protected override Task OnAfterRenderAsync(bool firstRender) => Context.Items.EnsureOrderAsync(Interop);
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

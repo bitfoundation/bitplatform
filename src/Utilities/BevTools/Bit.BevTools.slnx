@@ -21,6 +21,10 @@
     <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
     <Project Path="Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
   </Folder>
+  <Folder Name="/Samples/Lazy/">
+    <Project Path="Samples/Lazy/Bit.BevTools.Samples.Lazy.Client/Bit.BevTools.Samples.Lazy.Client.csproj" />
+    <Project Path="Samples/Lazy/Bit.BevTools.Samples.Lazy/Bit.BevTools.Samples.Lazy.csproj" />
+  </Folder>
   <Folder Name="/Samples/Server/">
     <Project Path="Samples/Server/Bit.BevTools.Samples.Server.csproj" />
   </Folder>
@@ -36,6 +40,7 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
     <Project Path="Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
+    <Project Path="Tests/Bit.BevTools.Tests.E2E/Bit.BevTools.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Bit.BevTools.Extension/">
     <File Path="Bit.BevTools.Extension/README.md" />
@@ -48,6 +53,7 @@
     <File Path="Bit.BevTools.Extension/panel.js" />
   </Folder>
   <Project Path="Bit.BevTools/Bit.BevTools.csproj" />
+  <Project Path="Bit.BevTools.Blex/Bit.BevTools.Blex.csproj" />
   <Project Path="Bit.BevTools.Cli/Bit.BevTools.Cli.csproj" />
   <Project Path="Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
   <Project Path="Bit.BevTools.Server/Bit.BevTools.Server.csproj" />

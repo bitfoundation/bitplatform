@@ -10,6 +10,56 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later
 before it updates, or stays on 10.x of the packages.
 
+### `BitCarousel`'s go-left and go-right buttons are its next and previous buttons ([#14560](https://github.com/bitfoundation/bitplatform/issues/14560))
+
+The buttons were named after the way the slides move, not the edge they sit at or what they do: the go-left button sat
+at the right edge and went to the next slide of a left-to-right carousel, but to the previous one of a right-to-left
+carousel. They are now the next and the previous button, each keeping its label, its icon and its parts in either
+direction, while the direction moves it to the other edge (the next button sits at the left edge of a right-to-left
+carousel). Each row applies to the `[Parameter]` and to its `BitCarouselParams` counterpart:
+
+| Before | After |
+|---|---|
+| `GoLeftAriaLabel`, `GoLeftIcon`, `GoLeftIconName` | `NextAriaLabel`, `NextIcon`, `NextIconName` |
+| `GoRightAriaLabel`, `GoRightIcon`, `GoRightIconName` | `PrevAriaLabel`, `PrevIcon`, `PrevIconName` |
+| `BitCarouselClassStyles.GoLeftButton`, `GoLeftButtonIcon` | `NextButton`, `NextButtonIcon` |
+| `BitCarouselClassStyles.GoRightButton`, `GoRightButtonIcon` | `PrevButton`, `PrevButtonIcon` |
+| the `bit-csl-lbt` class (the right edge) | `bit-csl-nbt` (the next button, at either edge) |
+| the `bit-csl-rbt` class (the left edge) | `bit-csl-pbt` (the previous button, at either edge) |
+
+**Go-left is next, not previous**: rename by what the button does, never by the word. **An app with a right-to-left
+carousel** that set `GoLeft*` was setting the previous button there, so those values go to `Prev*` (and `GoRight*` to
+`Next*`). **Search the markup for `GoLeft` and `GoRight`**: an old name written on the component still compiles, and
+is rendered as an attribute of its root rather than applied, so the button silently falls back to its default label
+and icon. A custom next/prev icon is now given for a left-to-right carousel and mirrored with its button in a
+right-to-left one, as the default chevrons are; **an app that picked the glyph for a right-to-left carousel itself**
+gives it the left-to-right glyph. **A stylesheet or a test locator** that read the edge off `bit-csl-lbt` /
+`bit-csl-rbt` reads the button off the new classes, and the direction off the `bit-csl-rtl` class of the root, which a
+carousel laid out right to left carries whether its `Dir` says so or it inherits the direction.
+
+### An error message template is announced in place of the message it hides ([#14563](https://github.com/bitfoundation/bitplatform/issues/14563))
+
+`BitTextField`, `BitSearchBox`, `BitNumberField`, `BitDatePicker`, `BitTimePicker`, `BitDropdown` and `BitToggle`
+announce their error message through a live region. Given both an `ErrorMessage` and an `ErrorMessageTemplate`, they
+announced the plain `ErrorMessage`, which the template replaces on screen, and given a template alone all but
+`BitNumberField` announced nothing, leaving a rejected value sounding accepted. The live region now announces what is
+on screen: a template as a bare "Invalid input", or as the text of the new `ErrorMessageAriaLabel` parameter (also in
+their `Bit*Params`), which the field is described by on every later focus too. `ErrorMessageAriaLabel` also makes the
+forced `Invalid` state announce it. **An app that set the plain message next to a template to have it announced**,
+as the docs of `BitToggle` advised, moves that text to `ErrorMessageAriaLabel`:
+
+```razor
+@* before: the hidden message was announced *@
+<BitToggle Label="Public profile" ErrorMessage="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+
+@* after *@
+<BitToggle Label="Public profile" ErrorMessageAriaLabel="This conflicts with your privacy settings.">
+    <ErrorMessageTemplate>This conflicts with your <a href="/privacy">privacy settings</a>.</ErrorMessageTemplate>
+</BitToggle>
+```
+
 ### A `BitDropdown` or `BitChoiceGroup` of options of another `TValue` throws ([#14383](https://github.com/bitfoundation/bitplatform/issues/14383))
 
 An option finds its `BitDropdown` or `BitChoiceGroup` through a cascade typed by its own `TValue`, so the options of

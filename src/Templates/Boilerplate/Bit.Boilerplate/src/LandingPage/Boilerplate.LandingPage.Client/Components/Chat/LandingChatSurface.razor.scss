@@ -1,0 +1,18 @@
+.lp-chat-surface {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+
+    --bit-AiChatMessage-user-background: var(--lp-accent);
+    --bit-AiChatMessage-user-color: var(--lp-accent-fg);
+    --bit-AiChat-background: transparent;
+}
+
+.lp-chat-notice {
+    padding: 6px 4px 2px;
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+    line-height: 1.4;
+    text-align: center;
+}

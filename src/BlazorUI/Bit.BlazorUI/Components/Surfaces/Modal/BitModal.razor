@@ -100,8 +100,8 @@
                                             type="button"
                                             disabled="@(_params.Disabled is true)"
                                             aria-disabled="@((_params.Disabled is true) ? "true" : null)"
-                                            title="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
-                                            aria-label="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                                            title="@(_params.CloseButtonTitle ?? BitStrings.Current.Close)"
+                                            aria-label="@(_params.CloseButtonTitle ?? BitStrings.Current.Close)"
                                             style="@JoinStyles(Styles?.CloseButton, _params.Styles?.CloseButton)"
                                             class="@JoinClasses("bit-mdl-cls", Classes?.CloseButton, _params.Classes?.CloseButton)">
                                         <i aria-hidden="true"

@@ -129,7 +129,7 @@
             <div role="list"
                  id="@_tagsId"
                  data-bit-esc="@(_pickedUpTagIndex >= 0 && Disabled is false ? "claim" : null)"
-                 aria-label="@(TagsAriaLabel ?? "Tags")"
+                 aria-label="@(TagsAriaLabel ?? BitStrings.Current.Tags)"
                  style="@Styles?.TagsContainer"
                  class="bit-tgi-tgs @Classes?.TagsContainer">
                 @for (var i = 0; i < displayedTagCount; i++)
@@ -192,7 +192,7 @@
                                     @ondblclick:stopPropagation="true"
                                     type="button"
                                     tabindex="-1"
-                                    title="@(ReorderTitle ?? "Move")"
+                                    title="@(ReorderTitle ?? BitStrings.Current.Move)"
                                     aria-pressed="@GetReorderPressed(index)"
                                     aria-label="@GetReorderAriaLabel(tag, index, carriedTag)"
                                     style="@Styles?.ReorderButton"
@@ -264,7 +264,7 @@
                                     @onclick:stopPropagation="true"
                                     type="button"
                                     tabindex="-1"
-                                    title="@(DismissTitle ?? "Remove")"
+                                    title="@(DismissTitle ?? BitStrings.Current.Remove)"
                                     aria-label="@GetDismissAriaLabel(tag)"
                                     style="@Styles?.DismissButton"
                                     class="bit-tgi-dbt @Classes?.DismissButton">
@@ -291,7 +291,7 @@
                     aria-label="@(_tagsExpanded ? null : GetMoreTagsAriaLabel(hiddenTagCount))"
                     style="@Styles?.ToggleButton"
                     class="bit-tgi-tgl @Classes?.ToggleButton">
-                @(_tagsExpanded ? (LessTagsText ?? "Show less") : GetMoreTagsText(hiddenTagCount))
+                @(_tagsExpanded ? (LessTagsText ?? BitStrings.Current.ShowLess) : GetMoreTagsText(hiddenTagCount))
             </button>
         }
 
@@ -352,7 +352,7 @@
         @if (IsLoading)
         {
             <div role="progressbar"
-                 aria-label="@(LoadingAriaLabel ?? "Loading")"
+                 aria-label="@(LoadingAriaLabel ?? BitStrings.Current.Loading)"
                  style="@Styles?.Spinner"
                  class="bit-tgi-spn @Classes?.Spinner"></div>
         }
@@ -364,8 +364,8 @@
                     @onclick:stopPropagation="true"
                     type="button"
                     tabindex="-1"
-                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? "Clear all tags")"
-                    aria-label="@(ClearButtonAriaLabel ?? "Clear all tags")"
+                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? BitStrings.Current.ClearAllTags)"
+                    aria-label="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearAllTags)"
                     style="@Styles?.ClearButton"
                     class="bit-tgi-cbt @Classes?.ClearButton">
                 <i style="@Styles?.ClearIcon" class="bit-tgi-cli @clearIcon?.GetCssClasses() @Classes?.ClearIcon" aria-hidden="true" />

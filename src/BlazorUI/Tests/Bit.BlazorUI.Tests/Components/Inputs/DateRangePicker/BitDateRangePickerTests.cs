@@ -238,6 +238,27 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.HasCount(0, component.FindAll("button[aria-label='Close date range picker']"));
     }
 
+    [TestMethod]
+    public void BitDateRangePickerShouldNotTurnTheStandaloneCalloutIntoAPanel()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // The responsive class hides a closed panel, and a standalone calendar is never opened to be shown.
+        Assert.IsFalse(component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-res"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.Standalone, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-res"));
+    }
+
     [TestMethod,
         DataRow(false),
         DataRow(true)
@@ -5426,6 +5447,64 @@ public class BitDateRangePickerTests : BunitTestContext
 
             Assert.AreEqual(calloutId, call.Arguments[0]);
         }
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerDisposeShouldKeepItsDotNetReferenceUntilTheSwipeIsRemoved()
+    {
+        // The script answers later, the way it does in a browser: until the swipe listeners are gone a pointer event
+        // on the callout still calls back through the reference the swipe was set up with.
+        var swipesDispose = Context.JSInterop.SetupVoid("BitBlazorUI.Swipes.dispose", _ => true);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Swipes.setup");
+        var reference = (DotNetObjectReference<BitDateRangePicker>)setup.Arguments[5]!;
+        var picker = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, swipesDispose.Invocations);
+        Assert.AreSame(picker, reference.Value);
+
+        swipesDispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerShouldIgnoreTheClosesItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // An outer callout cleared as it goes away along with the picker dismisses the picker's own too, and a swipe
+        // that ends in the meantime still asks for a close. Both arrive through the reference that is alive until the
+        // teardown returns, and neither is a close to report: the picker is going away.
+        var swipesDispose = Context.JSInterop.SetupVoid("BitBlazorUI.Swipes.dispose", _ => true);
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var picker = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => picker._CloseCalloutBeforeAnotherCalloutIsOpened());
+        await component.InvokeAsync(() => picker._OnClose());
+
+        swipesDispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, closed);
     }
 
     [TestMethod]

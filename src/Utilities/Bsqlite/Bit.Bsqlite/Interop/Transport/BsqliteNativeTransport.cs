@@ -460,8 +460,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     /// is out of WAL mode afterwards.
     /// </summary>
     /// <remarks>
-    /// A file arrives in WAL mode when a stock EF Core application created it: Bit.Besql's database on a
-    /// device, typically. The switch checkpoints the log into the file; it needs the file to itself, so while
+    /// A file arrives in WAL mode when a stock EF Core application created it. The switch checkpoints the log into the file; it needs the file to itself, so while
     /// another connection holds it open the file is left as it is and the next open tries again. That is
     /// known at once - waiting does not change it - so the switch goes straight to the engine rather than
     /// through a command, which would retry a busy database for its whole timeout.

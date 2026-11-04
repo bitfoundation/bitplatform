@@ -98,6 +98,32 @@ internal sealed class Timeline : IBevToolsTimeline
         return true;
     }
 
+    /// <summary>
+    /// Puts <paramref name="replacement"/> in the place of event <paramref name="eventId"/>, under its id: for an event
+    /// whose title or time - init-only - changed, as an interaction reported in two parts does.
+    /// </summary>
+    internal bool Replace(long eventId, BevToolsEvent replacement)
+    {
+        if (eventId <= 0)
+        {
+            return false;
+        }
+
+        bool replaced;
+        lock (_idLock)
+        {
+            replacement.Id = eventId;
+            replaced = _events.TryReplaceByContiguousKey(static e => e.Id, _nextId, eventId, _ => replacement);
+        }
+
+        if (replaced)
+        {
+            _session.Touch();
+        }
+
+        return replaced;
+    }
+
     private static BevToolsEvent Clone(BevToolsEvent source, bool cloneData) => new()
     {
         Id = source.Id,

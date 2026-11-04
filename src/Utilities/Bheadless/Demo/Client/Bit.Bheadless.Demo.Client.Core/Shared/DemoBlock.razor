@@ -1,53 +1,65 @@
 ﻿@*
-    Reusable wrapper that renders a section heading, an optional description, and
-    a tabbed view with Preview / Razor / CSS panels. Uses the library's own BitBhTabGroup
-    so the demo app dogfoods the headless tab component.
+    One example of a demo page: its heading, the paragraph explaining it, and the example itself on the
+    site kit's sample surface (.bb-demo) - live, with the Razor and the CSS that produced it one tab away.
+    The tabs are the library's own BitBhTabGroup, so the demo dogfoods the headless tab component; they
+    take the kit's tab-list look (.bb-tabs, which keys off the aria-selected the tabs render). The code is
+    shown by CodeBlock - the kit's pre.bb-code, which site.js gives a copy button - coloured by
+    SyntaxHighlighter. The code panels unmount while another tab is selected: a page holds a dozen
+    examples, and keeping every one's code mounted would lex every snippet on the prerender and again on
+    the interactive render, and ship the highlighted markup of tabs nobody opened. The Preview panel
+    stays mounted, so a sample keeps its state while its code is being read.
+
+    The heading is an h2, so the docs layout's "on this page" rail lists every example. The MCP server
+    (BheadlessDemoSource) reads each block's Title, Description, Code and Css out of the page's markup.
+
+    Tailwind is set by TwDemoBlock: the live sample then sits in .bh-tw-sample, where demo.css gives the
+    elements back the look Tailwind's own layers give them (see the note there).
 *@
 
-<section class="demo-section">
+<section class="bh-example">
     @if (!string.IsNullOrWhiteSpace(Title))
     {
         <h2>@Title</h2>
     }
     @if (Description is not null)
     {
-        <p>@Description</p>
+        <p class="bh-example-desc">@Description</p>
     }
 
-    <BitBhTabGroup class="demo-tabs">
-        <BitBhTabList class="demo-tab-list">
+    <BitBhTabGroup class="bb-demo bh-example-frame">
+        <BitBhTabList class="bb-tabs bh-example-tabs">
             @if (LiveContent is not null)
             {
-                <BitBhTab class="demo-tab">Preview</BitBhTab>
+                <BitBhTab>Preview</BitBhTab>
             }
             @if (!string.IsNullOrWhiteSpace(Code))
             {
-                <BitBhTab class="demo-tab">Razor</BitBhTab>
+                <BitBhTab>Razor</BitBhTab>
             }
             @if (!string.IsNullOrWhiteSpace(Css))
             {
-                <BitBhTab class="demo-tab">CSS</BitBhTab>
+                <BitBhTab>CSS</BitBhTab>
             }
         </BitBhTabList>
-        <BitBhTabPanels class="demo-tab-panels">
+        <BitBhTabPanels>
             @if (LiveContent is not null)
             {
-                <BitBhTabPanel class="demo-tab-panel">
-                    <div class="demo-row">
+                <BitBhTabPanel class="bh-example-panel">
+                    <div class="@(Tailwind ? "demo-row bh-tw-sample" : "demo-row")">
                         @LiveContent
                     </div>
                 </BitBhTabPanel>
             }
             @if (!string.IsNullOrWhiteSpace(Code))
             {
-                <BitBhTabPanel class="demo-tab-panel">
-                    <pre class="demo-code"><code>@Code.Trim('\r', '\n')</code></pre>
+                <BitBhTabPanel class="bh-example-panel" Unmount="true">
+                    <CodeBlock Code="@Code" Language="razor" />
                 </BitBhTabPanel>
             }
             @if (!string.IsNullOrWhiteSpace(Css))
             {
-                <BitBhTabPanel class="demo-tab-panel">
-                    <pre class="demo-code"><code>@Css.Trim('\r', '\n')</code></pre>
+                <BitBhTabPanel class="bh-example-panel" Unmount="true">
+                    <CodeBlock Code="@Css" Language="css" />
                 </BitBhTabPanel>
             }
         </BitBhTabPanels>
@@ -64,4 +76,7 @@
 
     /// <summary>The CSS that styles the demo. Optional.</summary>
     [Parameter] public string? Css { get; set; }
+
+    /// <summary>Whether the live sample is styled with Tailwind utilities rather than demo.css.</summary>
+    [Parameter] public bool Tailwind { get; set; }
 }

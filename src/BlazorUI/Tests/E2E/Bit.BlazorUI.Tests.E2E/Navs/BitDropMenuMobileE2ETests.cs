@@ -64,6 +64,36 @@ public class BitDropMenuMobileE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync(Url);
+
+        var button = Page.Locator("#dm-responsive > .bit-drm-btn");
+        await button.EvaluateAsync("el => el.scrollIntoView({ block: 'center' })");
+        await NextFramesAsync();
+
+        var callout = Page.Locator($"[id='{await button.GetAttributeAsync("aria-controls")}']");
+        var row = callout.GetByText("Row 1", new() { Exact = true });
+
+        // A closed panel is laid out beside the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(callout).ToBeHiddenAsync();
+
+        await button.TapAsync();
+        await Expect(callout).ToHaveCSSAsync("opacity", "1");
+        await Expect(row).ToBeVisibleAsync();
+
+        // The overlay, on the side of the screen the panel leaves to the page.
+        await Page.Touchscreen.TapAsync(10, 400);
+
+        // The dismissal hides it at once; the closed state it is handed back to once it has slid out hides it too.
+        await Expect(button).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToHaveCSSAsync("visibility", "hidden");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(row).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
     public async Task OpenOnHover_OnATouchScreen_TheButtonTogglesTheCalloutOnATap()
     {
         await OpenAsync(Url);

@@ -68,7 +68,7 @@
             </BitAiChat>
 
             @* The history on narrow screens, opened by the header's history button. *@
-            <BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Placement="BitPlacement.Start" Classes="@(new() { Container = "history-panel" })">
+            <BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Placement="BitPlacement.Start">
                 <div class="history-sheet">
                     <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
                 </div>

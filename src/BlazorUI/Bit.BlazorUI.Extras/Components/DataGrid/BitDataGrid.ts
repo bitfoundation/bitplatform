@@ -1,54 +1,58 @@
 ﻿namespace BitBlazorUI {
     export class DataGrid {
-        // Infinite scrolling is the one feature that genuinely needs to read scroll
-        // position (which Blazor's scroll EventArgs do not expose), so this watches
-        // the viewport and notifies .NET when the user nears the end.
-        public static initInfiniteScroll(viewport: HTMLElement, dotNetRef: DotNetObject, threshold: number) {
+        // Infinite scrolling asks .NET for the next batch whenever the end of the rows comes within threshold px of the
+        // bottom of the viewport. An IntersectionObserver watches a sentinel rendered after the body for that, rather
+        // than the viewport's scroll position being read on scroll: it sees every way the end can come into reach - a
+        // scroll, a viewport that grows, rows that shrink (a column widened, a detail row collapsed) - and it never takes
+        // a sentinel hidden by an ancestor (display:none, a list swapped out for a map) for one in reach, where a hidden
+        // viewport measures 0 all round and so reads as at the end after every batch until the whole data set is loaded.
+        // Once the data has ended the sentinel says so (data-bit-dtg-end), and nothing more is asked for.
+        public static initInfiniteScroll(viewport: HTMLElement, sentinel: HTMLElement, dotNetRef: DotNetObject, threshold: number) {
             const distance = threshold ?? 200;
-            let ticking = false;
             let disposed = false;
             // Guards against firing OnInfiniteScrollNearEndAsync again while a prior invocation is still
             // in flight, which would otherwise overlap loads and duplicate interop on rapid scrolling.
             let pending = false;
 
+            const load = () => {
+                if (disposed || pending || sentinel.hasAttribute('data-bit-dtg-end')) return;
+                pending = true;
+                // The circuit may disconnect (navigation, refresh) between the disposed check and
+                // this async call, so swallow the resulting rejection to avoid unhandled console errors.
+                // Only re-check once the load settles if the .NET callback reports more data was
+                // appended and remains; otherwise stop, so end-of-data (a no-op load) doesn't spin
+                // a load()->invoke->check() loop forever.
+                Utils.invokeDotNet<boolean>(dotNetRef, 'OnInfiniteScrollNearEndAsync')
+                    .then(
+                        (more) => { pending = false; if (more) check(); },
+                        () => { pending = false; }
+                    );
+            };
+
+            const observer = new IntersectionObserver(entries => {
+                // Only the latest state counts: a batch may carry both the leave and the re-enter of the sentinel.
+                if (entries[entries.length - 1].isIntersecting) load();
+            }, { root: viewport, rootMargin: `0px 0px ${distance}px 0px` });
+
+            // An observer reports only a change, so a sentinel still in reach after a batch landed (one too short to
+            // fill the viewport) would go unreported. Observing it afresh delivers where it is now, measured once the
+            // appended rows are laid out: the next batch loads only while it is still in reach - not once a batch has
+            // pushed it out, nor while the grid is hidden. Entries still queued from before are stale and dropped.
             const check = () => {
-                ticking = false;
-                if (disposed || !viewport || pending) return;
-                const remaining = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-                if (remaining <= distance) {
-                    pending = true;
-                    // The circuit may disconnect (navigation, refresh) between the disposed check and
-                    // this async call, so swallow the resulting rejection to avoid unhandled console errors.
-                    // Only re-check once the load settles if the .NET callback reports more data was
-                    // appended and remains; otherwise stop, so end-of-data (a no-op load) doesn't spin
-                    // this check()->invoke->check() loop forever.
-                    // Defer the follow-up near-end check with requestAnimationFrame so it runs only
-                    // after Blazor has rendered the freshly appended rows; reading scrollHeight in the
-                    // synchronous continuation would otherwise observe stale layout. The disposed guard
-                    // is preserved so a circuit teardown between callback and frame stops the loop.
-                    Utils.invokeDotNet<boolean>(dotNetRef, 'OnInfiniteScrollNearEndAsync')
-                        .then(
-                            (more) => { pending = false; if (!disposed && more) requestAnimationFrame(check); },
-                            () => { pending = false; }
-                        );
-                }
+                if (disposed) return;
+                observer.takeRecords();
+                observer.unobserve(sentinel);
+                observer.observe(sentinel);
             };
 
-            const onScroll = () => {
-                if (!ticking) {
-                    ticking = true;
-                    requestAnimationFrame(check);
-                }
-            };
-
-            viewport.addEventListener('scroll', onScroll, { passive: true });
-            // Initial check so a first batch that doesn't fill the viewport keeps loading.
-            setTimeout(check, 0);
+            // Observing delivers where the sentinel is from the start, so a first batch that doesn't fill the viewport
+            // keeps loading.
+            observer.observe(sentinel);
 
             return {
                 check: () => check(),
                 scrollToTop: () => { if (viewport) viewport.scrollTop = 0; },
-                dispose: () => { disposed = true; viewport.removeEventListener('scroll', onScroll); }
+                dispose: () => { disposed = true; observer.disconnect(); }
             };
         }
 
@@ -68,6 +72,10 @@
                 if (disposed) return;
                 const left = viewport.scrollLeft;
                 const width = viewport.clientWidth;
+                // A viewport hidden by an ancestor (display:none) measures 0 wide, which would turn column
+                // virtualization off and render every column into a grid nobody can see. It keeps the window
+                // it last had instead, and the resize observer re-reports once it is shown again.
+                if (width === 0) return;
                 if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
                 lastLeft = left;
                 lastWidth = width;

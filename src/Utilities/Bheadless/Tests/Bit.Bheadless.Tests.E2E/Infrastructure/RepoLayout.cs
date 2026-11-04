@@ -8,7 +8,7 @@ public static class RepoLayout
 {
     public const string DemoServerName = "Bit.Bheadless.Demo.Server";
 
-    public static string DemoServerProject() => FindUpward(Path.Combine("Demo", DemoServerName, $"{DemoServerName}.csproj"));
+    public static string DemoServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{DemoServerName}.csproj"));
 
     /// <summary>Where the suite publishes the demo for <paramref name="renderMode"/>: next to the test binaries, one folder per mode.</summary>
     public static string PublishDirectory(string renderMode) => Path.Combine(AppContext.BaseDirectory, "demo", renderMode);

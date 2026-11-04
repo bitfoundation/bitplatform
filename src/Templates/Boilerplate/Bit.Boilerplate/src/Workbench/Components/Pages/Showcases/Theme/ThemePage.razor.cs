@@ -159,10 +159,11 @@ public partial class ThemePage
 
             var overlay = Scenario.GetSwitch("overlay");
 
-            // These open in place, so their section is brought into view first.
+            // These open in place and a page that moves closes them, so their section jumps into view, with the token values above it already drawn.
             if (overlay is "dropdown" or "date" or "menu")
             {
-                await overlaysSection.ScrollIntoView(true);
+                StateHasChanged();
+                await overlaysSection.ScrollIntoView(new ScrollIntoViewOptions { Behavior = ScrollBehavior.Instant });
             }
 
             switch (overlay)

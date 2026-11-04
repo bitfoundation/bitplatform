@@ -142,7 +142,9 @@ native file, text and link drops), hosted unchanged under [Server](Samples/Serve
 [Auto](Samples/Auto/) so the same drags run, prerendered first, in each render mode - and under [MAUI](Samples/Maui/)
 (Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app. Each host is also a
 minimal example of the wiring its platform needs: `AddBitBdndServices()` in every container that renders the pages -
-called in each host's `Program.cs` (`MauiProgram.cs` in the MAUI app) - and nothing else.
+called in each host's `Program.cs` (`MauiProgram.cs` in the MAUI app) - and nothing else. [Lazy](Samples/Lazy/) stands
+apart: a Blazor Web App of its own whose browser half downloads `Bit.Bdnd.wasm` only when its board opens (see
+[lazy loading](#lazy-loading-on-webassembly)).
 
 ## How it fits together
 
@@ -1338,6 +1340,12 @@ the card of a [sortable list](#sortable-lists) - takes the interop from `GetBdnd
   `builder.Services.AddScoped<LazyAssemblyLoader>()`.
 - Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
   download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, and sets a switch next to it that tells its router whether there is an assembly to load - and the
+[end-to-end suite](Tests/Bit.Bdnd.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home
+page never downloads `Bit.Bdnd.wasm`, and the board - opened from the home page or by a deep link the server
+prerenders - downloads it once, drags a card and measures a column through `GetBdndInterop()`.
 
 ## Troubleshooting
 

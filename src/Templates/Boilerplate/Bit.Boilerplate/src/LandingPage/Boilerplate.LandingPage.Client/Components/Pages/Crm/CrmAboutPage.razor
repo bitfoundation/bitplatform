@@ -1,0 +1,87 @@
+@attribute [Route(CrmSite.Path + "/about")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/about")]
+@layout CrmLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{R[nameof(CrmStrings.AboutTitle)]} | Brightlane")"
+             Description="@R[nameof(CrmStrings.AboutDescription)]"
+             Path="@($"{CrmSite.Path}/about")"
+             Site="CrmSite.Info" />
+
+<section class="lp-container crm-about-hero" aria-labelledby="crm-about-title">
+    <p class="crm-kicker">@L[nameof(LandingStrings.About)]</p>
+    <h1 id="crm-about-title">@R[nameof(CrmStrings.AboutTitle)]</h1>
+    <p class="lp-lede">@R[nameof(CrmStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container crm-about-facts" aria-label="@R[nameof(CrmStrings.AboutFactsLabel)]">
+    <dl>
+        @foreach (var (value, label) in facts)
+        {
+            <div>
+                <dt>@R[label]</dt>
+                <dd class="crm-figure">@R[value]</dd>
+            </div>
+        }
+    </dl>
+</section>
+
+<section class="lp-section crm-story" aria-labelledby="crm-story-title">
+    <div class="lp-container crm-story-grid">
+        <div class="crm-story-side">
+            <h2 id="crm-story-title">@R[nameof(CrmStrings.StoryTitle)]</h2>
+            <ol class="crm-milestones">
+                @foreach (var (year, text) in milestones)
+                {
+                    <li><span class="crm-figure">@R[year]</span> @R[text]</li>
+                }
+            </ol>
+        </div>
+        <div class="crm-story-text">
+            <p>@R[nameof(CrmStrings.StoryBody1)]</p>
+            <p>@R[nameof(CrmStrings.StoryBody2)]</p>
+            <p>@R[nameof(CrmStrings.StoryBody3)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section crm-team" aria-labelledby="crm-team-title">
+    <div class="lp-container">
+        <h2 id="crm-team-title">@R[nameof(CrmStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role, place) in team)
+            {
+                <li>
+                    <span class="crm-team-avatar" aria-hidden="true">@Initials(R[name])</span>
+                    <strong>@R[name]</strong>
+                    <span>@R[role]</span>
+                    <span class="crm-team-place">@R[place]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container crm-contact" aria-labelledby="crm-contact-title">
+    <div class="crm-contact-text">
+        <h2 id="crm-contact-title">@R[nameof(CrmStrings.ContactTitle)]</h2>
+        <p>@R[nameof(CrmStrings.ContactBody)]</p>
+        <div class="crm-contact-links">
+            <BitButton Href="@($"mailto:{CrmSite.SalesEmail}")" IconName="@BitIconName.Mail"><span dir="ltr">@CrmSite.SalesEmail</span></BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"mailto:{CrmSite.Info.Company.Email}")" IconName="@BitIconName.Mail"><span dir="ltr">@CrmSite.Info.Company.Email</span></BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@($"tel:{CrmSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@CrmSite.Info.Company.Phone</span></BitButton>
+        </div>
+        <p class="crm-contact-hours">@R[nameof(CrmStrings.FooterHours)]</p>
+    </div>
+    <div class="crm-company">
+        <h3>@R[nameof(CrmStrings.CompanyTitle)]</h3>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@CrmSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd>@CrmSite.Info.Company.Address</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@CrmSite.Info.Company.Representative</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@CrmSite.Info.Company.RegistrationNumber</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintVat)]</dt><dd dir="ltr">@CrmSite.Info.Company.VatId</dd></div>
+            <div><dt>@R[nameof(CrmStrings.CompanyLisbon)]</dt><dd>@R[nameof(CrmStrings.CompanyLisbonAddress)]</dd></div>
+        </dl>
+    </div>
+</section>

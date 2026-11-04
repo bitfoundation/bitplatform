@@ -27,6 +27,29 @@ public class ProtocolTests : BunitContext
         JsonDocument.Parse(BevToolsProtocol.Handle(Session, method, args is null ? null : JsonSerializer.Serialize(args))).RootElement;
 
     [TestMethod]
+    public void Batch_answers_what_one_render_batch_rendered_as_a_tree_and_on_a_time_axis()
+    {
+        var cut = Render<ParentComponent>();
+        cut.InvokeAsync(cut.Instance.Increment);
+        Session.RenderTracker.CloseBatch();
+        var parent = Session.Components.All.Single(c => c.Type == typeof(ParentComponent));
+        var batchId = parent.LastRender!.BatchId;
+
+        var batch = Ask("batch", new { batchId });
+        Assert.AreEqual(batchId, batch.GetProperty("batchId").GetInt64());
+        var rows = batch.GetProperty("rows").EnumerateArray().ToList();
+        Assert.AreEqual("ParentComponent", rows[0].GetProperty("name").GetString());
+        Assert.AreEqual(0, rows[0].GetProperty("depth").GetInt32());
+        var child = rows.Single(r => r.GetProperty("name").GetString() == "ChildComponent");
+        Assert.AreEqual(1, child.GetProperty("depth").GetInt32());
+        Assert.IsTrue(rows[0].GetProperty("totalMs").GetDouble() >= child.GetProperty("totalMs").GetDouble());
+        Assert.AreEqual(2, batch.GetProperty("timeline").GetProperty("bars").GetArrayLength());
+
+        Assert.AreEqual(0, Ask("batch", new { batchId = 999_999 }).GetProperty("rows").GetArrayLength(), "a batch no sample remembers rendered nothing BevTools still holds");
+        Assert.IsTrue(Ask("batch", new { }).TryGetProperty("error", out _));
+    }
+
+    [TestMethod]
     public void Hello_names_the_runtime_and_the_versions_spoken()
     {
         var hello = Ask("hello");

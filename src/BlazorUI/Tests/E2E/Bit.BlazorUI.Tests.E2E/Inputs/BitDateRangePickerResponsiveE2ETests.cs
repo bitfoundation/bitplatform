@@ -59,6 +59,43 @@ public class BitDateRangePickerResponsiveE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTree()
+    {
+        await OpenAsync(Route);
+
+        var pid = await PickerIdAsync("drp-resp");
+
+        // A closed panel is laid out above the screen for the slide that brings it in, and it is out of reach of a
+        // screen reader and of the keyboard there, not only out of sight.
+        await Expect(Callout(pid)).ToBeHiddenAsync();
+        await Expect(Day(pid, 2024, 6, 10)).ToBeHiddenAsync();
+
+        await TapOpenAsync("drp-resp");
+        await Expect(Day(pid, 2024, 6, 10)).ToBeVisibleAsync();
+
+        await Day(pid, 2024, 6, 10).TapAsync();
+        await Day(pid, 2024, 6, 13).TapAsync();
+
+        await Expect(Input("drp-resp")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(Callout(pid)).ToBeHiddenAsync();
+        await Expect(Day(pid, 2024, 6, 10)).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
+    public async Task Responsive_AStandaloneCalendar_StaysInThePageRatherThanBecomingAPanel()
+    {
+        await OpenAsync(Route);
+
+        var pid = await PickerIdAsync("drp-resp-sa");
+
+        // Nothing ever opens a standalone calendar, so a panel's closed state would hide it for good.
+        await Expect(Callout(pid)).Not.ToHaveClassAsync(HasClass("bit-dtrp-res"));
+        await Expect(Callout(pid)).ToBeVisibleAsync();
+        await Expect(Callout(pid)).ToHaveCSSAsync("opacity", "1");
+        await Expect(Day(pid, 2024, 6, 10)).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
     public async Task Responsive_ASwipeUpDismissesThePanel()
     {
         if (IsFirefox || IsWebKit) Assert.Inconclusive("Firefox and WebKit have no Touch constructor to build the swipe's touch events with.");

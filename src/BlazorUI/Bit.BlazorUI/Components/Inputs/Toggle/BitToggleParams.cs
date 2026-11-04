@@ -91,6 +91,17 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every toggle the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// toggles announce it too. A reason that fits one toggle alone belongs on that toggle.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -262,6 +273,11 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
         if (ErrorMessage.HasValue())
         {
             bitToggle.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static t => t.ErrorMessage, static (t, v) => t.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitToggle.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static t => t.ErrorMessageAriaLabel, static (t, v) => t.ErrorMessageAriaLabel = v);
         }
 
         if (FullWidth.HasValue)

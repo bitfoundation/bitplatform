@@ -1,0 +1,180 @@
+@attribute [Route(CrmSite.Path + "/vs-spreadsheets")]
+@attribute [Route("/{culture}" + CrmSite.Path + "/vs-spreadsheets")]
+@layout CrmLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@R[nameof(CrmStrings.SheetsPageTitle)]"
+             Description="@R[nameof(CrmStrings.SheetsDescription)]"
+             Path="@($"{CrmSite.Path}/vs-spreadsheets")"
+             Site="CrmSite.Info" />
+
+<section class="lp-container crm-sheets-hero" aria-labelledby="crm-sheets-title">
+    <div class="crm-sheets-hero-text">
+        <p class="crm-kicker">@R[nameof(CrmStrings.SheetsEyebrow)]</p>
+        <h1 id="crm-sheets-title">@R[nameof(CrmStrings.SheetsTitle)]</h1>
+        <p class="lp-lede">@R[nameof(CrmStrings.SheetsLede)]</p>
+    </div>
+    <div class="crm-sheet-art" aria-hidden="true">
+        <div class="crm-sheet-grid">
+            <span class="is-head"></span><span class="is-head">A</span><span class="is-head">B</span><span class="is-head">C</span><span class="is-head">D</span>
+            @for (var row = 0; row < sheetRows.Length; row++)
+            {
+                var (company, amount, stage, next, flag) = sheetRows[row];
+                <span class="is-row">@((row + 1).ToString(CurrentCulture))</span>
+                <span dir="ltr">@company</span>
+                <span class="crm-sheet-num @(flag == "ref" ? "is-error" : null)">@(amount is null ? "#REF!" : amount.Value.ToString("N0", CurrentCulture))</span>
+                <span class="@(flag == "conflict" ? "is-conflict" : null)">@R[stage]</span>
+                <span class="@(next is null ? "is-empty" : null)">@(next is null ? null : R[next].Value)</span>
+            }
+        </div>
+        <p class="crm-sheet-note">@R[nameof(CrmStrings.SheetsArtNote)]</p>
+    </div>
+</section>
+
+<section class="lp-section crm-sheets-sides" aria-labelledby="crm-sheets-wins-title">
+    <div class="lp-container crm-sheets-columns">
+        <div>
+            <h2 id="crm-sheets-wins-title">@R[nameof(CrmStrings.SheetsWinsTitle)]</h2>
+            <ul class="crm-sheets-points">
+                @foreach (var (title, body) in sheetWins)
+                {
+                    <li>
+                        <h3>@R[title]</h3>
+                        <p>@R[body]</p>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div>
+            <h2>@R[nameof(CrmStrings.SheetsCostsTitle)]</h2>
+            <ul class="crm-sheets-points is-costs">
+                @foreach (var (title, body) in sheetCosts)
+                {
+                    <li>
+                        <h3>@R[title]</h3>
+                        <p>@R[body]</p>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section crm-sheets-table" aria-labelledby="crm-sheets-table-title">
+    <div class="lp-container">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.SheetsTableEyebrow)]</p>
+            <h2 id="crm-sheets-table-title" class="lp-title">@R[nameof(CrmStrings.SheetsTableTitle)]</h2>
+        </header>
+        <div class="crm-side-table">
+            <table>
+                <thead>
+                    <tr>
+                        <td></td>
+                        <th scope="col">@R[nameof(CrmStrings.CompareSpreadsheet)]</th>
+                        <th scope="col" class="is-us">Brightlane</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (row, sheet, us, winner) in sideBySide)
+                    {
+                        <tr>
+                            <th scope="row">@R[row]</th>
+                            <td data-label="@R[nameof(CrmStrings.CompareSpreadsheet)]" class="@(winner == Sheet ? "is-winner" : null)">
+                                @R[sheet]
+                                @if (winner == Sheet)
+                                {
+                                    <span class="crm-winner">@R[nameof(CrmStrings.SheetsBetter)]</span>
+                                }
+                            </td>
+                            <td data-label="Brightlane" class="is-us @(winner == Us ? "is-winner" : null)">
+                                @R[us]
+                                @if (winner == Us)
+                                {
+                                    <span class="crm-winner">@R[nameof(CrmStrings.SheetsBetter)]</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section crm-tipping" aria-labelledby="crm-tipping-title">
+    <div class="lp-container crm-tipping-grid">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.TippingEyebrow)]</p>
+            <h2 id="crm-tipping-title" class="lp-title">@R[nameof(CrmStrings.TippingTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.TippingLede)]</p>
+        </header>
+        <div class="crm-tipping-card">
+            <fieldset>
+                <legend>@R[nameof(CrmStrings.TippingLegend)]</legend>
+                @for (var index = 0; index < signs.Length; index++)
+                {
+                    var current = index;
+                    <BitCheckbox Value="checkedSigns[current]" ValueChanged="(bool value) => Toggle(current, value)" Label="@R[signs[current]]" Class="crm-tipping-check" />
+                }
+            </fieldset>
+            <div class="crm-tipping-verdict @(IsTime ? "is-time" : null)" role="status">
+                <p class="crm-tipping-count crm-figure">@R[nameof(CrmStrings.TippingCount), CheckedCount.ToString(CurrentCulture), signs.Length.ToString(CurrentCulture)]</p>
+                <p class="crm-tipping-answer">@(IsTime ? R[nameof(CrmStrings.TippingTime)] : R[nameof(CrmStrings.TippingStay)])</p>
+                @if (IsTime)
+                {
+                    <BitButton Href="@CrmSite.TrialUrl" Size="BitSize.Small" IconName="@BitIconName.Rocket">@R[nameof(CrmStrings.HeroTrial)]</BitButton>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section crm-move" aria-labelledby="crm-move-title">
+    <div class="lp-container crm-move-grid">
+        <div>
+            <header class="crm-head">
+                <p class="crm-kicker">@R[nameof(CrmStrings.MoveEyebrow)]</p>
+                <h2 id="crm-move-title" class="lp-title">@R[nameof(CrmStrings.MoveTitle)]</h2>
+                <p class="lp-lede">@R[nameof(CrmStrings.MoveLede)]</p>
+            </header>
+            <ol class="crm-move-steps">
+                @foreach (var (title, body) in moveSteps)
+                {
+                    <li>
+                        <h3>@R[title]</h3>
+                        <p>@R[body]</p>
+                    </li>
+                }
+            </ol>
+        </div>
+        <div class="crm-mapping" role="img" aria-label="@R[nameof(CrmStrings.MappingLabel)]">
+            <p class="crm-mapping-head"><span>@R[nameof(CrmStrings.MappingFrom)]</span><span>@R[nameof(CrmStrings.MappingTo)]</span></p>
+            @foreach (var (from, to, isGuess) in mapping)
+            {
+                <div class="crm-mapping-row">
+                    <span class="crm-mapping-from">@R[from]</span>
+                    <span class="crm-mapping-arrow" aria-hidden="true"></span>
+                    <span class="crm-mapping-to">
+                        @R[to]
+                        @if (isGuess)
+                        {
+                            <em>@R[nameof(CrmStrings.MappingGuessed)]</em>
+                        }
+                    </span>
+                </div>
+            }
+            <p class="crm-mapping-foot"><BitIcon IconName="@BitIconName.People" /> @R[nameof(CrmStrings.MappingDuplicates)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="crm-ink crm-sheets-cta" aria-labelledby="crm-sheets-cta-title">
+    <div class="lp-container crm-sheets-cta-grid">
+        <h2 id="crm-sheets-cta-title">@R[nameof(CrmStrings.SheetsCtaTitle)]</h2>
+        <div class="crm-sheets-cta-actions">
+            <BitButton Href="@CrmSite.TrialUrl" IconName="@BitIconName.Rocket" Class="crm-sheets-trial">@R[nameof(CrmStrings.HeroTrial)]</BitButton>
+            <p>@R[nameof(CrmStrings.HeroFine)]</p>
+        </div>
+    </div>
+</section>

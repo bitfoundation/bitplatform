@@ -1,3 +1,5 @@
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings;
+
 namespace Boilerplate.Workbench.Components.Chrome;
 
 /// <summary>
@@ -14,6 +16,7 @@ public partial class ChromeAppMenu
     private BitChoiceGroupItem<string>[] tenants = [];
 
     [AutoInject] private ChromeStore chromeStore = default!;
+    [AutoInject] private SettingsStore settingsStore = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
 
     /// <summary>The shell around the menu, which owns the sign-in state and the account actions.</summary>
@@ -61,6 +64,15 @@ public partial class ChromeAppMenu
         chromeStore.OpenMenu(false);
 
         return ShowSignInNote();
+    }
+
+    /// <summary>Opens the Settings page on its Profile section, as the app's link to its profile does.</summary>
+    private void GoToProfile()
+    {
+        chromeStore.OpenMenu(false);
+        settingsStore.Expand(PageUrls.SettingsSections.Profile);
+
+        NavigationManager.NavigateTo(Shell.PageUrl("settings", "#settings"));
     }
 
     private void AskToSignOut()

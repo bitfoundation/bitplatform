@@ -1,0 +1,7 @@
+@inherits LandingComponentBase
+
+@* Rendered only once Start has loaded Bonboarding, and a new key per run gives each tour a fresh host *@
+@if (run > 0)
+{
+    <LandingTourHost @key="run" />
+}

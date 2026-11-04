@@ -24,7 +24,7 @@
 @if (_IsHidden is false)
 {
     <nav @ref="RootElement"
-         aria-label="@(AriaLabel ?? "Pagination")"
+         aria-label="@(AriaLabel ?? BitStrings.Current.Pagination)"
          @attributes="DisabledAwareHtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"

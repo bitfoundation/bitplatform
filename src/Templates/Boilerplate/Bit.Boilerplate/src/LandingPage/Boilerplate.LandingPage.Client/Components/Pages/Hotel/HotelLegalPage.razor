@@ -1,0 +1,14 @@
+@attribute [Route(HotelSite.Path + "/privacy")]
+@attribute [Route(HotelSite.Path + "/terms")]
+@attribute [Route(HotelSite.Path + "/cookies")]
+@attribute [Route(HotelSite.Path + "/imprint")]
+@attribute [Route(HotelSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/terms")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/accessibility")]
+@layout HotelLayout
+@inherits LandingPageBase
+
+<LegalPage Site="HotelSite.Info" />

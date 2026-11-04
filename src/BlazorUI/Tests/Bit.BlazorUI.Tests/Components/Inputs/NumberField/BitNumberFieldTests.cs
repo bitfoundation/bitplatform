@@ -2821,6 +2821,207 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldErrorMessageAriaLabelShouldBeAnnouncedForTheTemplate()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "سن باید حداقل ۱۸ باشد");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "سن باید حداقل ۱۸ باشد");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("سن باید حداقل ۱۸ باشد", component.Find("[role=\"status\"]").TextContent);
+
+        // The template wins over a plain message on screen, so it is still the template the label speaks for:
+        // the message is not rendered at all, and announcing it would not match what the page shows.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Too young."));
+
+        Assert.AreEqual("سن باید حداقل ۱۸ باشد", component.Find("[role=\"status\"]").TextContent);
+
+        // Once the template goes, the plain message is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("Too young.", component.Find("[role=\"status\"]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageTemplateShouldNotAnnounceTheMessageItHides()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Too young.");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm span").Count);
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitNumberFieldBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        // A label a localization lookup came back blank for must not turn the rejection into silence.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
+        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+        Assert.AreEqual(component.Find(".bit-nfl-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageAriaLabelShouldDescribeTheInputInPlaceOfTheTemplate()
+    {
+        // An icon alone describes nothing, so the input is pointed at the label rather than at the template.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "Age must be at least 18");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "warning-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        var describedBy = component.Find("input").GetAttribute("aria-describedby");
+        var label = component.Find($"#{describedBy}");
+
+        Assert.AreEqual("Age must be at least 18", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-nfl-dsc"));
+
+        // The template is still what is seen.
+        Assert.AreEqual(1, component.FindAll(".bit-nfl-erm .warning-icon").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageAriaLabelShouldBeIgnoredByAPlainMessage()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "Age must be at least 18");
+            parameters.Add(p => p.ErrorMessage, "Too young.");
+        });
+
+        Assert.AreEqual("Too young.", component.Find("[role=\"status\"]").TextContent);
+        Assert.AreEqual(component.Find(".bit-nfl-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputShouldAnnounceTheValueAlongWithTheRejection()
+    {
+        // The region is the only thing announcing the value of a stepper-only field, so a rejection that took
+        // it over would leave every step taken in silence.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("3, Invalid input", component.Find("span[role=status]").TextContent.Trim());
+
+        component.Find("button.bit-nfl-sbn:last-of-type").PointerDown();
+
+        Assert.AreEqual("4, Invalid input", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldUnfocusedStepShouldAnnounceTheValueAlongWithTheRejection()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.ErrorMessage, "Too few.");
+        });
+
+        Assert.AreEqual("Too few.", component.Find("span[role=status]").TextContent.Trim());
+
+        component.Find(".bit-nfl-aup").PointerDown(new PointerEventArgs { PointerType = "touch" });
+        component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "touch" });
+
+        Assert.AreEqual("2, Too few.", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldStillRejectedNewValueShouldBeAnnouncedAgain()
+    {
+        // The rejection of a new value reads exactly as the last one did, so the region is keyed afresh to
+        // announce it again - once the parent has had its say on the new value, never before.
+        var liveTextKey = typeof(BitNumberField<int>).GetField("_liveTextKey", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "Too low")));
+        });
+
+        var key = (int)liveTextKey.GetValue(component.Instance)!;
+
+        // A render that leaves the value as it was is not a new rejection.
+        component.Render(parameters => parameters.Add(p => p.Value, 3));
+
+        Assert.AreEqual(key, (int)liveTextKey.GetValue(component.Instance)!);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, 200);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "Too high")));
+        });
+
+        Assert.AreEqual(key + 1, (int)liveTextKey.GetValue(component.Instance)!);
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
+
+        // A rejection that follows an accepted value changes the text of the region anyway.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, 50);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, 0);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "Too low")));
+        });
+
+        Assert.AreEqual(key + 1, (int)liveTextKey.GetValue(component.Instance)!);
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldInvalidShouldBeAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+            parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر");
+        });
+
+        var label = component.Find($"#{component.Find("input").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("مقدار نامعتبر", component.Find("[role=\"status\"]").TextContent);
+        Assert.AreEqual("مقدار نامعتبر", label.TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+
+        // A plain message speaks for itself, the forced state or not.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Too young."));
+
+        Assert.AreEqual("Too young.", component.Find("[role=\"status\"]").TextContent);
+        Assert.AreEqual(component.Find(".bit-nfl-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
     public void BitNumberFieldInvalidShouldMarkTheFieldWithoutAMessage()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
@@ -2831,6 +3032,9 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
         Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        // Its reason is explained (and announced) elsewhere, so it says nothing without a label of its own.
+        Assert.AreEqual(string.Empty, component.Find("[role=\"status\"]").TextContent);
+        Assert.IsNull(component.Find("input").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]
@@ -3007,7 +3211,58 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         Assert.AreEqual(1, component.FindAll(".bit-nfl-lod").Count);
+        // The value is said along with the busy state, the region being the only thing announcing it.
+        Assert.AreEqual("0, Loading", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLoadingShouldBeAnnouncedAlongWithAnErrorMessage()
+    {
+        // A rejected value is often exactly the one being checked again, so the rejection must not hide the check.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Out of stock");
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Checking stock");
+        });
+
+        Assert.AreEqual("Out of stock, Checking stock", component.Find("span[role=status]").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
+
+        Assert.AreEqual("Out of stock", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitNumberFieldBlankLoadingAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        // A label a localization lookup came back blank for must not turn the busy state into silence.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, label);
+        });
+
         Assert.AreEqual("Loading", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitNumberFieldBlankButtonAriaLabelsShouldFallBackToTheDefaults(string label)
+    {
+        // The buttons show only an icon, so a blank label would leave them with no accessible name at all.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.IncrementAriaLabel, label);
+            parameters.Add(p => p.DecrementAriaLabel, label);
+            parameters.Add(p => p.ClearButtonAriaLabel, label);
+        });
+
+        Assert.AreEqual("Increase value", component.Find(".bit-nfl-aup").GetAttribute("aria-label"));
+        Assert.AreEqual("Decrease value", component.Find(".bit-nfl-adn").GetAttribute("aria-label"));
+        Assert.AreEqual("Clear value", component.Find(".bit-nfl-cbt").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -3464,6 +3719,26 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.AreEqual("12", component.Find("input").GetAttribute("value"));
         Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldImmediateShouldReportEveryKeystrokeEvenOneThatParsesToAnEqualValue()
+    {
+        var values = new List<decimal?>();
+
+        var component = RenderComponent<BitNumberField<decimal?>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, (decimal? v) => values.Add(v));
+        });
+
+        component.Find("input").Input(new ChangeEventArgs { Value = "1.5" });
+        component.Find("input").Input(new ChangeEventArgs { Value = "1.50" });
+
+        // Every keystroke is reported, as only the change event raised on blur leaves out a value already reported. And
+        // 1.5m and 1.50m are equal, yet the binding keeps the scale it is handed: the one typed last.
+        Assert.AreEqual(2, values.Count);
+        Assert.AreEqual("1.50", values[1]?.ToString(CultureInfo.InvariantCulture));
     }
 
     [TestMethod]

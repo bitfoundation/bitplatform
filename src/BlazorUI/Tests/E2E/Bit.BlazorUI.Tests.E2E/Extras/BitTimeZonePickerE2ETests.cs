@@ -685,6 +685,60 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_KeepsTheCloseButtonAndTheListClearOfTheSafeAreas()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await Page.SetViewportSizeAsync(375, 700);
+        await OpenAsync(Route);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var callout = await OpenCalloutAsync("tzp-responsive");
+        await Expect(callout).ToHaveCSSAsync("transform", new Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
+
+        // The surface still runs from the top edge of the screen to the bottom one, behind the bars of the phone.
+        var box = (await callout.BoundingBoxAsync())!;
+        Assert.AreEqual(0, box.Y, 2);
+        Assert.AreEqual(700, box.Height, 2);
+
+        // The close button is placed against the top edge of the panel, so it is moved down out from under the notch
+        // (and an app shell's top bar), with the label beside it.
+        var close = callout.Locator(".bit-tzp-cls");
+        var closeBox = (await close.BoundingBoxAsync())!;
+        Assert.IsTrue(closeBox.Y >= 47, $"The close button sits under the notch ({closeBox.Y}px).");
+        var label = (await callout.Locator(".bit-tzp-rlb").BoundingBoxAsync())!;
+        Assert.IsTrue(label.Y >= 47, $"The label sits under the notch ({label.Y}px).");
+
+        var list = (await callout.Locator(".bit-tzp-scn").BoundingBoxAsync())!;
+        Assert.IsTrue(list.Y + list.Height <= 700 - 34 + 1, $"The list runs under the home indicator (it ends at {list.Y + list.Height}px).");
+
+        await close.ClickAsync();
+        await Expect(Field("tzp-responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [TestMethod]
+    public async Task Responsive_AClosedPanel_IsOutOfTheAccessibilityTree()
+    {
+        await Page.SetViewportSizeAsync(375, 700);
+        await OpenAsync(Route);
+
+        // A closed panel is laid out beside the screen for the slide that brings it in, and none of the closed panels of
+        // the page leaves its close button there for a screen reader - or a test - to find.
+        var close = Page.GetByRole(AriaRole.Button, new() { Name = "Close the list", Exact = true });
+        await Expect(close).ToHaveCountAsync(0);
+
+        var callout = await OpenCalloutAsync("tzp-responsive");
+        await Expect(close).ToHaveCountAsync(1);
+
+        await close.ClickAsync();
+
+        await Expect(Field("tzp-responsive")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(callout).ToHaveCSSAsync("visibility", "hidden");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(close).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
     public async Task ExternalIcons_ResponsiveCloseIconAndIconName()
     {
         await Page.SetViewportSizeAsync(375, 700);

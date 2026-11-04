@@ -197,15 +197,15 @@ public sealed partial class NewWorkflow(CliServices cli)
 
             WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);
         }
-        catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null)
+        catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null || projectSteps.LandingPage is not null)
         {
-            await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench);
+            await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage);
             throw;
         }
 
         var exitCode = steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
 
-        await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, cancellationToken);
+        await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage, cancellationToken);
 
         return exitCode;
     }
@@ -238,6 +238,22 @@ public sealed partial class NewWorkflow(CliServices cli)
                 await RunProjectStepAsync(steps, context, "workbench-run", "Starting the Workbench", projectSteps.WorkbenchRunAsync, cancellationToken);
 
                 if (projectSteps.Workbench?.AppUrl is { } url)
+                {
+                    ProjectRun.OpenInBrowser(cli, url);
+                }
+            }
+
+            await RunProjectStepAsync(steps, context, "landingpage-build", "Building the landing page", projectSteps.LandingPageBuildAsync, cancellationToken);
+
+            if (runMode is ProjectRunMode.UntilClosed && steps.Reports.LastOrDefault() is { Id: "landingpage-build", Result.Status: StepStatus.Failed })
+            {
+                steps.Add("landingpage-run", StepResult.Skipped("Didn't start the landing page", "its build failed"));
+            }
+            else if (runMode is ProjectRunMode.UntilClosed)
+            {
+                await RunProjectStepAsync(steps, context, "landingpage-run", "Starting the landing page", projectSteps.LandingPageRunAsync, cancellationToken);
+
+                if (projectSteps.LandingPage?.AppUrl is { } url)
                 {
                     ProjectRun.OpenInBrowser(cli, url);
                 }
@@ -549,6 +565,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
         if (request.NoBuild is false) stepsList.Add(runMode is ProjectRunMode.UntilClosed ? "build and open the Workbench" : "build the Workbench");
+        if (request.NoBuild is false) stepsList.Add(runMode is ProjectRunMode.UntilClosed ? "build and open the landing page" : "build the landing page");
         if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport([Platform.Web]));
         if (request.NoRestore is false || request.NoBuild is false) stepsList.Add(RestoreAndBuild("the web app"));
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");

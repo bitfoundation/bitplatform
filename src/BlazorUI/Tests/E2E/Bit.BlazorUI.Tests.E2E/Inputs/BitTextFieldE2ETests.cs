@@ -1679,6 +1679,8 @@ public class BitTextFieldE2ETests : E2ETestBase
         await Expect(Root("tf-tpl-error")).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Input("tf-tpl-error")).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(Input("tf-tpl-error")).ToHaveAttributeAsync("aria-describedby", (await Page.Locator("#tf-tpl-error .bit-tfl-erm").GetAttributeAsync("id"))!);
+        // A template has no text the live region can read out, so the region says the value was rejected.
+        await Expect(Page.Locator("#tf-tpl-error [role=status]")).ToHaveTextAsync("Invalid input");
     }
 
     [TestMethod]

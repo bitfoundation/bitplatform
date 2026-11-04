@@ -300,6 +300,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             {
                 isNotifiedUserKnown = true;
                 notifiedUserId = GetUserId(user);
+                //#if (multitenant == true)
+                notifiedTenantId = user.GetTenantId();
+                //#endif
             }
 
             return new AuthenticationState(user);
@@ -358,8 +361,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (nextAccount is null)
         {
-            await storageService.RemoveItem("access_token");
             await storageService.RemoveItem("refresh_token");
+            await storageService.RemoveItem("access_token");
         }
         else
         {

@@ -1,0 +1,53 @@
+@inherits LandingComponentBase
+
+<div class="shop-demo">
+    <div class="shop-demo-top">
+        <EcommerceLogo />
+        <span class="shop-demo-bag" aria-live="polite">
+            <BitIcon IconName="@BitIconName.ShoppingCart" />
+            @if (bagCount > 0)
+            {
+                <span class="shop-demo-bag-count">@bagCount.ToString(CurrentCulture)</span>
+                <span class="lp-visually-hidden">@E[nameof(EcommerceStrings.DemoBag), bagCount.ToString(CurrentCulture)]</span>
+            }
+        </span>
+    </div>
+
+    <div class="shop-demo-stage">
+        <span class="shop-demo-light"><BitIcon IconName="@BitIconName.Sunny" /> @E[nameof(EcommerceStrings.DemoLight)]</span>
+        <EcommercePlant PotColor="@SelectedPot.Color" Scale="@SelectedSize.Scale" Label="@($"{E[nameof(EcommerceStrings.DemoProduct)]}, {E[SelectedPot.Key]}")" Class="shop-demo-plant" />
+    </div>
+
+    <div class="shop-demo-info">
+        <div>
+            <p class="shop-demo-name">@E[nameof(EcommerceStrings.DemoProduct)]</p>
+            <p>@E[nameof(EcommerceStrings.DemoProductNote)]</p>
+        </div>
+        <p class="shop-demo-price">@E[nameof(EcommerceStrings.DemoPrice), SelectedSize.Price.ToString(CurrentCulture)]</p>
+    </div>
+
+    <BitChoiceGroup Label="@E[nameof(EcommerceStrings.DemoPot)]" Items="potItems" @bind-Value="pot" Horizontal NoCircle Class="shop-demo-pots">
+        <ItemTemplate Context="item">
+            <span class="shop-demo-swatch @(item.Value == pot ? "is-selected" : null)" style="--swatch: @Pots.First(p => p.Key == item.Value).Color" title="@item.Text"></span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+
+    <BitChoiceGroup Label="@E[nameof(EcommerceStrings.DemoSize)]" Items="sizeItems" @bind-Value="size" Horizontal NoCircle Class="shop-demo-sizes">
+        <ItemTemplate Context="item">
+            <span class="shop-demo-size @(item.Value == size ? "is-selected" : null)">@item.Text</span>
+        </ItemTemplate>
+    </BitChoiceGroup>
+
+    <BitButton FullWidth IconName="@BitIconName.ShoppingCart" OnClick="Add">@E[nameof(EcommerceStrings.DemoAdd)]</BitButton>
+
+    <p class="shop-demo-note" role="status">
+        @if (bagCount > 0)
+        {
+            <BitIcon IconName="@BitIconName.CheckMark" /> @E[nameof(EcommerceStrings.DemoAdded)]
+        }
+        else
+        {
+            <BitIcon IconName="@BitIconName.Shield" /> @E[nameof(EcommerceStrings.DemoGuarantee)]
+        }
+    </p>
+</div>

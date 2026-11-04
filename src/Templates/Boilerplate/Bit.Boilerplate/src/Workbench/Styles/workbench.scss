@@ -11,6 +11,21 @@ body {
     overflow-x: hidden;
 }
 
+// Panels and snack bars read the browser's own insets, which a view's device doesn't change, so they get the device's here.
+.wb-preview-body .bit-pnl {
+    --bit-pnl-sa-top: var(--bit-env-inset-top);
+    --bit-pnl-sa-bottom: var(--bit-env-inset-bottom);
+    --bit-pnl-sa-left: var(--bit-env-inset-left);
+    --bit-pnl-sa-right: var(--bit-env-inset-right);
+}
+
+.wb-preview-body .bit-snb {
+    --bit-snb-off-top: calc(var(--bit-snb-off-block) + var(--bit-env-inset-top));
+    --bit-snb-off-bottom: calc(var(--bit-snb-off-block) + var(--bit-env-inset-bottom));
+    --bit-snb-off-left: calc(var(--bit-snb-off-inline) + var(--bit-env-inset-left));
+    --bit-snb-off-right: calc(var(--bit-snb-off-inline) + var(--bit-env-inset-right));
+}
+
 // The app's styles stop the document scrolling at phone widths for its app shell; the Workbench's own pages keep it.
 html:has(> .wb-body),
 .wb-body {

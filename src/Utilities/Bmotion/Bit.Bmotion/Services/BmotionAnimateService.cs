@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Bmotion;
@@ -97,8 +97,17 @@ public sealed class BmotionAnimateService
         // Checked before any element is registered, so a rejection leaves none behind.
         var values = CheckedValues(keyframes, selector);
         var config = (keyframes.Transition ?? transition)?.ToConfig();
-        var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
+        var ids = await ResolveAsync(selector);
         return WithCancellation(await StartAnimationsAsync(ids, values, config, stagger), cancellationToken);
+    }
+
+    // The elements a selector names. One the engine has never addressed starts from what it shows, not from the values
+    // kept for the element that had its id before it - the same page, left and opened again, renders a new element.
+    private async ValueTask<string[]> ResolveAsync(string selector)
+    {
+        var (ids, newIds) = await _interop.ResolveBySelectorAsync(selector);
+        foreach (var id in newIds) _engine.ForgetRetained(id);
+        return ids;
     }
 
     // CSS safe mode, as on a Bmotion element, and the values the engine is handed, in one synchronous step: what is
@@ -146,7 +155,8 @@ public sealed class BmotionAnimateService
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var values = CheckedValues(keyframes, elementReference.Id);
         var config = (keyframes.Transition ?? transition)?.ToConfig();
-        var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
+        var (id, isNew) = await _interop.ResolveByRefAsync(elementReference);
+        if (isNew) _engine.ForgetRetained(id);
         return WithCancellation(await StartAnimationsAsync([id], values, config, stagger: null), cancellationToken);
     }
 
@@ -258,7 +268,7 @@ public sealed class BmotionAnimateService
         var starts = new List<(string[] ids, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)>();
         foreach (var segment in segments)
         {
-            var ids = await _interop.ResolveOrRegisterBySelectorAsync(segment.Selector);
+            var ids = await ResolveAsync(segment.Selector);
             if (ids.Length == 0) continue;
             var config = (segment.Transition ?? new BmTween()).ToConfig();
             starts.Add((ids, segment.Values, config, segment.Start));

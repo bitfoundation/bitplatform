@@ -1,0 +1,105 @@
+@import '../../Styles/tokens';
+
+.lp-footer {
+    padding-block: 64px calc(32px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--lp-line);
+    background: var(--lp-bg-alt);
+    color: var(--lp-fg);
+    font-size: .9375rem;
+}
+
+.lp-footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(auto-fit, minmax(150px, 1fr));
+    gap: 40px 32px;
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        .lp-footer-intro {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.lp-footer-intro {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+}
+
+.lp-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lp-fg);
+    text-decoration: none;
+    font-family: var(--lp-stack-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.lp-footer-tagline {
+    max-width: 36ch;
+    color: var(--lp-fg-muted);
+}
+
+.lp-footer-col,
+::deep .lp-footer-col {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+
+    h2 {
+        margin-bottom: 4px;
+        font-family: var(--lp-stack-body);
+        font-size: .8125rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--lp-fg-muted);
+
+        &:lang(fa) {
+            letter-spacing: 0;
+        }
+    }
+
+    a {
+        color: var(--lp-fg);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+    }
+}
+
+.lp-footer-link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--lp-fg);
+    text-align: start;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.lp-footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--lp-line);
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.lp-footer-sample {
+    flex-basis: 100%;
+}

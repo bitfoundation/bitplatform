@@ -583,7 +583,7 @@
         <value>Hektiskt</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>God eftermiddag, Yas</value>
+        <value>God eftermiddag, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Butik</value>

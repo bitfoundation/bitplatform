@@ -103,7 +103,7 @@ public partial class BitNumberFieldDemo
             Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
+            Description = "Accessible label text for the decrement button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.DecreaseValue (\"Decrease value\" by default).",
         },
         new()
         {
@@ -119,7 +119,7 @@ public partial class BitNumberFieldDemo
             Name = "DecrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons. For external icon libraries, use DecrementIcon instead.",
+            Description = "Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons. For external icon libraries, use DecrementIcon instead. Unset, the button shows ChevronDownSmall.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -167,10 +167,17 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every number field under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A custom template rendered in place of the ErrorMessage, marking the field invalid and referenced by the input through its aria-describedby attribute just the same.",
+            Description = "A custom template rendered in place of the ErrorMessage, marking the field invalid and referenced by the input through its aria-describedby attribute just the same. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {
@@ -216,7 +223,7 @@ public partial class BitNumberFieldDemo
             Name = "IncrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Accessible label text for the increment button (for screen reader users).",
+            Description = "Accessible label text for the increment button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.IncreaseValue (\"Increase value\" by default).",
         },
         new()
         {
@@ -232,7 +239,7 @@ public partial class BitNumberFieldDemo
             Name = "IncrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons. For external icon libraries, use IncrementIcon instead.",
+            Description = "Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons. For external icon libraries, use IncrementIcon instead. Unset, the button shows ChevronDownSmall turned upside down.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -257,7 +264,7 @@ public partial class BitNumberFieldDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the field as invalid without a message of its own, for a rejection that is already explained elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field and renders aria-invalid exactly as a failing validation does.",
+            Description = "Marks the field as invalid without a message of its own, for a rejection that is already explained elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field and renders aria-invalid exactly as a failing validation does, and says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {
@@ -315,7 +322,7 @@ public partial class BitNumberFieldDemo
             Name = "LoadingAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "What a screen reader announces while Loading is on, in place of the default \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
+            Description = "What a screen reader announces while Loading is on, useful for localization. Unset or blank, it is BitStrings.Current.Loading (\"Loading\" by default). It is announced whichever indicator is drawn, and along with any error message shown at the time, so a LoadingTemplate drawing a bare spinner of its own, or a rejected value being checked again, still tells an assistive technology that something is running.",
         },
         new()
         {
@@ -477,7 +484,7 @@ public partial class BitNumberFieldDemo
         {
             Name = "ParsingErrorMessage",
             Type = "string",
-            DefaultValue="The {0} field is not valid.",
+            DefaultValue = "\"The {0} field is not valid.\"",
             Description = "The message format used for invalid values entered in the input.",
         },
         new()
@@ -522,7 +529,7 @@ public partial class BitNumberFieldDemo
             Name = "ClearButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead.",
+            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead. Unset, the button shows Cancel.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -531,14 +538,14 @@ public partial class BitNumberFieldDemo
             Name = "ClearButtonAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Accessible label text for the clear button (for screen reader users), useful for localization.",
+            Description = "Accessible label text for the clear button (for screen reader users), useful for localization. Unset or blank, the button is named BitStrings.Current.ClearValue (\"Clear value\" by default), whatever a ClearButtonTemplate shows in it.",
         },
         new()
         {
             Name = "ClearButtonTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same.",
+            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same. That name is ClearButtonAriaLabel, not the template: a template showing words (a visible \"Reset\") needs ClearButtonAriaLabel to contain them, or a voice-control user saying what they see finds no button.",
         },
         new()
         {

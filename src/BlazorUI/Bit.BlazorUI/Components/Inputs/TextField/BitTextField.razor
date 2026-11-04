@@ -173,12 +173,15 @@
             @if (ShowClear)
             {
                 var clearDisabled = Disabled || ReadOnly;
+                @* The press leaves the focus in the input, where the click puts it back anyway: taking it away first
+                   would blur the field and commit its text with a re-render that can swallow the very click. *@
                 <button @onclick="HandleOnClearButtonClick"
+                        @onmousedown:preventDefault="true"
                         type="button"
                         tabindex="@TabIndex"
                         style="@Styles?.ClearButton"
                         class="bit-tfl-cbt @Classes?.ClearButton"
-                        aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
+                        aria-label="@(ClearButtonAriaLabel ?? BitStrings.Current.ClearText)"
                         disabled="@clearDisabled"
                         aria-disabled="@(clearDisabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
@@ -204,7 +207,7 @@
                         disabled="@(Disabled)"
                         aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
-                        aria-label="@(RevealPasswordAriaLabel ?? "Reveal password")"
+                        aria-label="@(RevealPasswordAriaLabel ?? BitStrings.Current.RevealPassword)"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">
@@ -269,6 +272,13 @@
                 </span>
             }
         </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-tfl-dsc">@ErrorMessageAriaLabel</span>
     }
 
     @if (HasDescription || ShowCount)

@@ -48,6 +48,9 @@ public sealed class BevBrowserSnapshot
 
     /// <summary>The id the page hub gave the runtime that attached.</summary>
     public string? TargetId { get; set; }
+
+    /// <summary>Which timing entries the browser has; null from a hub that does not say.</summary>
+    public BevResponsivenessSupport? Responsiveness { get; set; }
 }
 
 /// <summary>
@@ -147,6 +150,18 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         Severity = severity,
         Data = new Dictionary<string, object?> { ["socketId"] = socket.Id, ["socketKind"] = socket.Kind },
     });
+
+    /// <summary>The page's long frames and interactions since the last report, each dated by its age.</summary>
+    [JSInvokable]
+    public void ReportResponsiveness(BevLongFramePayload[]? frames, BevInteractionPayload[]? interactions)
+    {
+        if (!session.IsEnabled || !session.Options.TrackResponsiveness)
+        {
+            return;
+        }
+
+        BevResponsiveness.Record(session, frames, interactions);
+    }
 
     [JSInvokable]
     public void OnTargetsChanged(BevTargetInfo[] targets)
