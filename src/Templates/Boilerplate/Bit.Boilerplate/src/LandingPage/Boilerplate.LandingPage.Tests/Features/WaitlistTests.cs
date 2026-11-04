@@ -24,7 +24,13 @@ public class WaitlistTests
             return;
 
         server = await new LandingTestServer().Start(
-            before: builder => builder.Services.AddSingleton<TimeProvider>(clock),
+            before: builder =>
+            {
+                builder.Services.AddSingleton<TimeProvider>(clock);
+                builder.Configuration["TrustedOrigins:0"] = "http://trusted.example";
+                // Where the CD adds the deployment's own address, next to the entries of appsettings.json
+                builder.Configuration["TrustedOrigins:100"] = "http://deployment.example";
+            },
             after: services =>
             {
                 services.AddFluentEmail("noreply@example.com");
@@ -112,6 +118,28 @@ public class WaitlistTests
     }
 
     [TestMethod]
+    public async Task AForgedHost_Should_NeverReachTheEmail()
+    {
+        using var response = await Join("cleo@example.com", host: "evil.example");
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.IsEmpty(emails.To("cleo@example.com"));
+    }
+
+    [TestMethod]
+    [DataRow("trusted.example")]
+    [DataRow("deployment.example")]
+    public async Task ATrustedHost_Should_BeWhereTheEmailLinks(string host)
+    {
+        var address = $"dan@{host}";
+
+        using var response = await Join(address, host: host);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains($"href=\"http://{host}/", emails.To(address).Single().Body);
+    }
+
+    [TestMethod]
     public async Task AnUnknownToken_Should_GetA404()
     {
         using var response = await Post("api/waitlist/confirm", new WaitlistTokenRequest("00ff00ff"));
@@ -134,11 +162,14 @@ public class WaitlistTests
         Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
     }
 
-    private static Task<HttpResponseMessage> Join(string address, string? visitor = null, string? website = null, long elapsedMilliseconds = 4000)
+    private static Task<HttpResponseMessage> Join(string address, string? visitor = null, string? website = null, long elapsedMilliseconds = 4000, string? host = null)
     {
         var request = new WaitlistJoinRequest { Site = site!.Key, Email = address, Culture = "en-US", Website = website, ElapsedMilliseconds = elapsedMilliseconds };
 
-        return client.SendAsync(LandingTestServer.From(visitor ?? NextVisitor(), HttpMethod.Post, "api/waitlist", JsonContent.Create(request, LandingJsonContext.Default.WaitlistJoinRequest)));
+        var message = LandingTestServer.From(visitor ?? NextVisitor(), HttpMethod.Post, "api/waitlist", JsonContent.Create(request, LandingJsonContext.Default.WaitlistJoinRequest));
+        message.Headers.Host = host;
+
+        return client.SendAsync(message);
     }
 
     private static Task<HttpResponseMessage> Post(string url, WaitlistTokenRequest request)

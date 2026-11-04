@@ -18,9 +18,9 @@ public partial class ServerApiSettings : ServerSharedSettings
 
     /// <summary>
     /// Where the web app is served from when the request does not say. <c>GetWebAppUrl()</c> reads the <c>origin</c>
-    /// query parameter or the <c>X-Origin</c> header, then this, and otherwise assumes this server's own address - only
-    /// right when the api is hosted alongside the web app. An OAuth client always arrives with neither, so a standalone
-    /// deployment has to be told once. Null when they share a host.
+    /// query parameter or the <c>X-Origin</c> header, then this, and otherwise assumes this server's own address when
+    /// <c>TrustedOrigins</c> lists it - only right when the api is hosted alongside the web app. An OAuth client always
+    /// arrives with neither, so a standalone deployment has to be told once. Null when they share a host.
     /// </summary>
     public string? WebAppUrl { get; set; }
 

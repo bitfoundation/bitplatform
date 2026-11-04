@@ -459,8 +459,8 @@ services.AddScoped(sp =>
 ### Security note
 
 The RP ID and the accepted origin come from `Request.GetWebAppUrl()` on every request. Outside Development a caller
-can only make that this server's own URL, a `TrustedOrigins` entry, or `localhost` / `127.0.0.1` on any port, so a
-remote site can't pick the RP ID.
+can only make that `WebAppUrl` or a subdomain of it, a `TrustedOrigins` entry, or `localhost` / `127.0.0.1` on any
+port, so a remote site can't pick the RP ID.
 
 Blazor Hybrid is the case to know about: its passkeys are created on `http://localhost:<port>` (see the local HTTP
 server above), so their RP ID is the shared name `localhost`. Any local process or app that serves a page on

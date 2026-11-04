@@ -27,8 +27,14 @@ public static partial class HttpRequestExtensions
             if (candidate is null)
             {
                 // Nothing said where the web app is. Configuration knows when the api stands alone; otherwise the two
-                // share a host, and this server is it.
-                return Uri.TryCreate(settings.WebAppUrl, UriKind.Absolute, out var configuredWebAppUrl) ? configuredWebAppUrl : serverUrl;
+                // share a host, and this server is it, as long as TrustedOrigins vouches for the Host the client wrote.
+                if (Uri.TryCreate(settings.WebAppUrl, UriKind.Absolute, out var configuredWebAppUrl))
+                    return configuredWebAppUrl;
+
+                if (settings.IsTrustedOrigin(serverUrl))
+                    return serverUrl;
+
+                throw new BadRequestException($"Untrusted host {serverUrl}");
             }
 
             if (Uri.TryCreate(candidate, UriKind.Absolute, out var origin) is false)
@@ -48,11 +54,11 @@ public static partial class HttpRequestExtensions
 
     // With WebAppUrl https://app.example.com: https://app.example.com and https://t1.app.example.com are true, while
     // http://app.example.com, https://app.example.com:8443, https://myapp.example.com and https://app.example.com.evil.com are false.
-    // With no WebAppUrl every url is true.
+    // With no WebAppUrl every url is false, leaving it to TrustedOrigins.
     private static bool IsUnderWebAppUrl(Uri url, string? webAppUrl)
     {
         if (Uri.TryCreate(webAppUrl, UriKind.Absolute, out var configuredWebAppUrl) is false)
-            return true;
+            return false;
 
         return string.Equals(url.Scheme, configuredWebAppUrl.Scheme, StringComparison.OrdinalIgnoreCase)
             && url.Port == configuredWebAppUrl.Port
