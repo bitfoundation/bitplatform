@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings;
