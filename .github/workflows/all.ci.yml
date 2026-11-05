@@ -95,6 +95,12 @@ jobs:
     - name: Create project with bit new
       run: bit new TestPostgreSQL --framework net10.0 --database PostgreSQL --module Sales --signalR --aspire --redis --advancedTests --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
 
+    - name: Verify the new project passes its own CI's code checks
+      working-directory: TestPostgreSQL
+      run: |
+        dotnet format whitespace --folder . --verify-no-changes
+        dotnet build src/Server/TestPostgreSQL.Server.Api --no-restore --no-incremental -p:EnforceCodeStyleInBuild=true
+
     - name: Create appsettings.json for Client.Web
       run: |
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
