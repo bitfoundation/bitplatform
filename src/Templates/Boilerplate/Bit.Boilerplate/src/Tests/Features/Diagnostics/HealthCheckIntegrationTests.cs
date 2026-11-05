@@ -245,6 +245,31 @@ public partial class HealthCheckIntegrationTests
         Assert.Contains("live", registrations.Single(r => r.Name == "binStorage").Tags);
     }
 
+    //#if (redis == true)
+    [TestMethod]
+    public async Task RedisPersistentCheck_Should_ExistOnlyWhereServerApiRuns()
+    {
+        const string checkName = "StackExchange.Redis_redis-persistent";
+
+        var sharedBuilder = WebApplication.CreateBuilder();
+        sharedBuilder.AddServerSharedServices();
+
+        await using var sharedServices = sharedBuilder.Services.BuildServiceProvider();
+        var sharedRegistrations = sharedServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+
+        Assert.DoesNotContain(r => r.Name == checkName, sharedRegistrations,
+            "A standalone Server.Web calls AddServerSharedServices without having this connection, so the check would keep its /health at 503.");
+        Assert.Contains(r => r.Name == "StackExchange.Redis_redis-cache", sharedRegistrations);
+
+        await using var server = new AppTestServer();
+        server.Build();
+
+        var apiRegistrations = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+
+        Assert.Contains(r => r.Name == checkName, apiRegistrations, "Hangfire and the distributed lock of Server.Api depend on this connection.");
+    }
+
+    //#endif
     /// <summary>
     /// Outside development, an unconfigured dependency reports Degraded and names its settings. Only the services are
     /// built, which leaves <c>AppEnvironment</c>, shared by the parallel tests, untouched.

@@ -58,9 +58,6 @@ public static class WebApplicationBuilderExtensions
             }
 
             //#if(redis == true)
-            // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
-            builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
-
             // Add optional Redis connection for caching (ephemeral Redis without persistence)
             builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
 
