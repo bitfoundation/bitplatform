@@ -72,7 +72,6 @@ public partial class WorkbenchViewPage
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
     [AutoInject] private IBonboardingService bonboardingService = default!;
     [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
     [AutoInject] private WorkbenchComponentEdits componentEdits = default!;
     [AutoInject] private ILogger<WorkbenchViewPage> logger = default!;
@@ -245,6 +244,8 @@ public partial class WorkbenchViewPage
     /// </summary>
     private void SetMode(string mode)
     {
+        isTourComposerClosed = false;
+
         if (mode is WorkbenchModes.Comment)
         {
             store.ShowColumn(WorkbenchModes.ReviewColumn);
@@ -412,18 +413,36 @@ public partial class WorkbenchViewPage
         if (pageInfo is null)
             return;
 
-        var pending = pendingComment ?? (store.SelectedPane.Id, TourCommentAnchor, await CaptureSelectedState());
+        var pageKey = pageInfo.Key;
+        var (paneId, anchor, state) = pendingComment ?? (store.SelectedPane.Id, TourCommentAnchor, null);
 
-        if (store.Panes.FirstOrDefault(p => p.Id == pending.PaneId) is not { } pane)
+        if (store.Panes.FirstOrDefault(p => p.Id == paneId) is not { } pane)
             return;
 
-        pendingComment = null;
-        selectedThreadId = await reviewSession.AddThread(pageInfo.Key, pane.Scenario.ToQueryString(), pending.Anchor, ReviewerName, text, pending.State);
+        // Read before anything is awaited, as the comment belongs to the page and the view it was written on.
+        var query = pane.Scenario.ToQueryString();
+
+        if (pendingComment is null)
+        {
+            state = await CaptureSelectedState();
+        }
+        else
+        {
+            pendingComment = null;
+        }
+
+        var threadId = await reviewSession.AddThread(pageKey, query, anchor, ReviewerName, text, state);
+
+        if (pageInfo?.Key == pageKey)
+        {
+            selectedThreadId = threadId;
+        }
     }
 
     private void CancelComment()
     {
         pendingComment = null;
+        isTourComposerClosed = IsTouring;
     }
 
     private void SelectThread(WorkbenchReviewThread thread)
@@ -440,7 +459,7 @@ public partial class WorkbenchViewPage
         selectedThreadId = thread.Id;
 
         var pane = store.SelectedPane;
-        var snapshotId = thread.HasState ? snapshots.Add(await attachments.ReadState(thread.Id)) : null;
+        var snapshotId = thread.HasState ? snapshots.Add(await reviewSession.ReadState(thread.Id)) : null;
 
         store.ChangeScenario(thread.Scenario);
 

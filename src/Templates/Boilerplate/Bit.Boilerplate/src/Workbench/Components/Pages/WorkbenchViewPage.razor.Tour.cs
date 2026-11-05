@@ -22,7 +22,10 @@ public partial class WorkbenchViewPage
     private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
 
     // Only that step puts a tour in Comment mode; once its comment is sent, the thread shows in place of the composer.
-    private bool IsTourAskingForAComment => IsTouring && store.Mode == WorkbenchModes.Comment && selectedThreadId is null;
+    private bool IsTourAskingForAComment => IsTouring && store.Mode == WorkbenchModes.Comment && selectedThreadId is null && isTourComposerClosed is false;
+
+    // Cancel closes that composer until the mode changes, and pressing a spot on the page opens one all the same.
+    private bool isTourComposerClosed;
 
     private Task StartTour()
     {
@@ -181,7 +184,11 @@ public partial class WorkbenchViewPage
                     Description = nameof(WorkbenchStrings.TourLiveText),
                     Placement = BonboardingPlacement.InlineStart,
                     Interaction = BonboardingInteractionMode.TargetOnly,
-                    OnBeforeShow = _ => ShowInTour(() => SetMode(WorkbenchModes.Comment)),
+                    OnBeforeShow = _ => ShowInTour(() =>
+                    {
+                        selectedThreadId = null;
+                        SetMode(WorkbenchModes.Comment);
+                    }),
                     OnBeforeLeave = _ => ShowInTour(() =>
                     {
                         SetMode(WorkbenchModes.Browse);

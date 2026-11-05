@@ -19,7 +19,11 @@ public class TourCommentUITests : ReviewPageTest
         await ClearComments(pageKey);
         await SetAgentLastSeen("Claude Code", null, DateTimeOffset.UtcNow.AddHours(-1));
         await OpenWorkbench(pageKey);
+        await AdvanceToTheLiveReviewStep();
+    }
 
+    private async Task AdvanceToTheLiveReviewStep()
+    {
         if (IsPhone)
         {
             await OpenTools();
@@ -119,6 +123,45 @@ public class TourCommentUITests : ReviewPageTest
 
         await Expect(View().Locator(".shifts")).ToHaveCountAsync(0);
         await Expect(View().GetByText(WorkbenchStrings.PosCustomize, new() { Exact = true })).ToBeAttachedAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task Cancel_Should_CloseTheComposerWithoutLeavingTheStep(WorkbenchSurface surface)
+    {
+        await ReachTheLiveReviewStep();
+
+        await Expect(TourComposer).ToBeVisibleAsync();
+
+        await Press(Inspector.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Cancel, Exact = true }));
+
+        await Expect(TourComposer).ToHaveCountAsync(0);
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        if (IsPhone is false)
+        {
+            await View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ShiftsHeading }).ClickAsync();
+
+            await Expect(TourComposer).ToBeVisibleAsync();
+        }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AThreadOpenBeforeTheTour_Should_NotHideTheComposer(WorkbenchSurface surface)
+    {
+        await ClearComments("shifts");
+
+        var text = Unique("Open when the tour starts");
+
+        await SeedComment("shifts", text);
+
+        await OpenWorkbench("shifts");
+        await OpenReview();
+        await OpenThread(text);
+        await CloseTools();
+
+        await AdvanceToTheLiveReviewStep();
+
+        await Expect(TourComposer).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]

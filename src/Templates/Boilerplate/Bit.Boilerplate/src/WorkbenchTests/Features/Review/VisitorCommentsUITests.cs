@@ -116,6 +116,58 @@ public class VisitorCommentsUITests : ReviewPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheMachinesUnansweredComment_Should_NotBeToldItStaysInTheTab(WorkbenchSurface surface)
+    {
+        await ClearComments("shifts");
+
+        var text = Unique("Left by the owner, not answered yet");
+
+        await SeedComment("shifts", text);
+
+        await OpenWorkbench("shifts");
+        await OpenReview();
+
+        await Expect(ThreadWith(text)).ToBeVisibleAsync();
+        await Expect(ThreadWith(text).Locator(".message.auto-reply")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task ShowTheView_Should_BringBackThePageStateOfAVisitorsComment(WorkbenchSurface surface)
+    {
+        await ClearComments("buildings");
+        await OpenWorkbench("buildings");
+
+        var editor = View().GetByText(WorkbenchStrings.BuildingsAddTitle, new() { Exact = true });
+
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }));
+        await Expect(editor).ToBeVisibleAsync();
+
+        var text = Unique("About the editor");
+
+        await PickSpot(editor);
+        await Composer.FillAsync(text);
+        await Press(ToolsButton(WorkbenchStrings.Send));
+        await Expect(ThreadWith(text)).ToBeVisibleAsync();
+
+        await CloseTools();
+
+        if (IsPhone is false)
+        {
+            await Button(WorkbenchStrings.ModeBrowse).ClickAsync();
+        }
+
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Cancel, Exact = true }));
+        await Expect(editor).ToHaveCountAsync(0);
+
+        await OpenReview();
+        await OpenThread(text);
+        await Press(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowView }));
+
+        await WaitForViews();
+        await Expect(editor).ToBeVisibleAsync();
+    }
+
+    [TestMethod, EverySurface]
     public async Task ADoneComment_Should_HaveNoReopen(WorkbenchSurface surface)
     {
         await ClearComments("shifts");

@@ -194,6 +194,18 @@ public class ReviewPanelTests
     }
 
     [TestMethod]
+    public async Task AVisitorsComment_Should_ShowEvenWithTheSharedReviewNotOpen()
+    {
+        await using var ctx = WorkbenchBunit.Create(isLocal: false);
+
+        var session = ctx.Services.GetRequiredService<WorkbenchReviewSession>();
+        var id = await session.AddThread(page.Key, "", anchor, "Sarah", "Only in my tab", null);
+
+        Assert.IsFalse(session.IsOpen);
+        Assert.Contains(thread => thread.Id == id, session.Threads);
+    }
+
+    [TestMethod]
     public async Task ARemoteViewer_Should_GetTheComposerOnAPickedSpot()
     {
         await using var ctx = WorkbenchBunit.Create(isLocal: false);

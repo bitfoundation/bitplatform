@@ -45,6 +45,31 @@ public class HomePageUITests : WorkbenchPageTest
         }
     }
 
+    [TestMethod, OnDesktops]
+    public async Task ACardInSightWhenThePageBecomesInteractive_Should_NotBlink(WorkbenchSurface surface)
+    {
+        await Page.SetViewportSizeAsync(1600, 2400);
+        await Page.AddInitScriptAsync("""
+            window.__lowestOpacity = 1;
+            window.__wasShown = false;
+            const watch = () => {
+                const card = document.querySelector('article.reason');
+                if (card) {
+                    const opacity = Number(getComputedStyle(card).opacity);
+                    window.__wasShown ||= opacity > 0.99;
+                    if (window.__wasShown) window.__lowestOpacity = Math.min(window.__lowestOpacity, opacity);
+                }
+                requestAnimationFrame(watch);
+            };
+            requestAnimationFrame(watch);
+            """);
+
+        await OpenHome();
+        await Page.WaitForTimeoutAsync(4000);
+
+        Assert.IsGreaterThanOrEqualTo(0.99, await Page.EvaluateAsync<double>("() => window.__lowestOpacity"));
+    }
+
     [TestMethod, EverySurface]
     public async Task TheHomePage_Should_ListEveryPage(WorkbenchSurface surface)
     {

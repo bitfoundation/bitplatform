@@ -37,6 +37,8 @@ public partial class HomePage
     ];
 
     private bool isPromptCopied;
+    // Hands the cards over to their reveal, which by then has played for those in sight, so they don't blink.
+    private bool areRevealsLive;
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
@@ -70,6 +72,11 @@ public partial class HomePage
                 logger.LogError(exception, "The review document could not be opened for the home page.");
             }
 
+            StateHasChanged();
+
+            await Task.Delay(2000);
+
+            areRevealsLive = true;
             StateHasChanged();
         }
     }

@@ -23,6 +23,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     // A visitor's comments, which live and die with the circuit and never reach the document.
     private readonly BcrdtDocument visitorComments = new();
+    private readonly Dictionary<string, string> visitorStates = [];
 
     /// <summary>Raised after the document changes, whoever changed it.</summary>
     public event Action? Changed;
@@ -158,7 +159,6 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
         document = await collaboration.OpenAsync(WorkbenchReviewDocument.Id, new() { User = new(id, reviewerName, BcrdtPresenceService.SuggestColor(id), null) }, CancellationToken.None);
         document.Changed += OnDocumentChanged;
-        visitorComments.Updated += OnDocumentChanged;
 
         Refresh();
     }
@@ -180,7 +180,13 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
         if (SavesComments is false)
         {
-            visitorComments.Transact(_ => WorkbenchReviewDocument.AddThread(visitorComments.GetMap("threads"), id, pageKey, query, anchor, author, text, hasState: false));
+            if (state is not null)
+            {
+                visitorStates[id] = state;
+            }
+
+            visitorComments.Transact(_ => WorkbenchReviewDocument.AddThread(visitorComments.GetMap("threads"), id, pageKey, query, anchor, author, text, state is not null));
+            OnCommentsChanged();
 
             return id;
         }
@@ -208,10 +214,14 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         EditComments(threadId, threads => WorkbenchReviewDocument.SetStatus(threads, threadId, status, fromAgent: false));
     }
 
+    /// <summary>The page state kept with a comment.</summary>
+    public async Task<string?> ReadState(string threadId) => visitorStates.TryGetValue(threadId, out var state) ? state : await attachments.ReadState(threadId);
+
     /// <summary>Deletes a comment and the page state saved with it.</summary>
     public void Delete(string threadId)
     {
         EditComments(threadId, threads => threads.Delete(threadId));
+        visitorStates.Remove(threadId);
 
         if (SavesComments)
         {
@@ -229,6 +239,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         else if (CanChange(threadId))
         {
             visitorComments.Transact(_ => edit(visitorComments.GetMap("threads")));
+            OnCommentsChanged();
         }
     }
 
@@ -240,7 +251,10 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         document?.Transact(_ => WorkbenchReviewDocument.SetPageStatus(document.GetMap("pages"), pageKey, status, by), null);
     }
 
-    private void OnDocumentChanged(BcrdtUpdateEventArgs args)
+    private void OnDocumentChanged(BcrdtUpdateEventArgs args) => OnCommentsChanged();
+
+    // Also when the document never opened, as a visitor's comments don't need it.
+    private void OnCommentsChanged()
     {
         Refresh();
         Changed?.Invoke();
@@ -249,13 +263,14 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// <summary>Reads the document into the properties above.</summary>
     private void Refresh()
     {
-        if (document is null)
-            return;
-
-        var saved = WorkbenchReviewDocument.ReadThreads(document.GetMap("threads"));
+        List<WorkbenchReviewThread> saved = document is null ? [] : WorkbenchReviewDocument.ReadThreads(document.GetMap("threads"));
 
         // A visitor's comments are numbered on from the page's saved ones.
         Threads = [.. saved, .. WorkbenchReviewDocument.ReadThreads(visitorComments.GetMap("threads")).Select(t => t with { Number = t.Number + saved.Count(s => s.PageKey == t.PageKey) })];
+
+        if (document is null)
+            return;
+
         Pages = WorkbenchReviewDocument.ReadPages(document.GetMap("pages"));
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
         Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));

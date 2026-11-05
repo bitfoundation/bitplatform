@@ -80,6 +80,7 @@ public partial class ReviewPanel
     {
         return thread.Status is not WorkbenchReviewStatus.Done
             && thread.Messages.LastOrDefault() is { FromAgent: false }
+            && session.CanChange(thread.Id)
             && (session.CanWrite is false || session.Agent is not { IsActive: true });
     }
 

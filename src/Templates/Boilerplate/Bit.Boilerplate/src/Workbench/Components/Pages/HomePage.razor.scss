@@ -9,8 +9,8 @@
         $bit-color-background-primary;
 }
 
-// What reveals on scrolling starts hidden and waits for the circuit, so it shows until then for someone already scrolling.
-.home:not(.interactive) :is(.reason, .step, .page-card, .cta) {
+// What reveals on scrolling starts hidden and waits for the circuit, so it shows until those in sight have been revealed.
+.home:not(.reveals-live) :is(.reason, .step, .page-card, .cta) {
     opacity: 1 !important;
     transform: none !important;
 }
