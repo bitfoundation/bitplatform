@@ -4,7 +4,7 @@ namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
 /// The Review tab: the page's status, whether an agent is listening, the composer for a pinned comment and the page's
-/// threads. Everything that writes shows only when the review session can write, which is in dev mode on this machine only.
+/// threads. Comments can always be written; the page's status and the notifications need dev mode on this machine.
 /// </summary>
 public partial class ReviewPanel
 {
@@ -73,6 +73,14 @@ public partial class ReviewPanel
 
             return Localizer[nameof(WorkbenchStrings.AgentListening), agent.Name];
         }
+    }
+
+    /// <summary>Whether a comment waits for an answer that no connected agent is there to give.</summary>
+    private bool IsWaitingForAgent(WorkbenchReviewThread thread)
+    {
+        return thread.Status is not WorkbenchReviewStatus.Done
+            && thread.Messages.LastOrDefault() is { FromAgent: false }
+            && (session.CanWrite is false || session.Agent is not { IsActive: true });
     }
 
     protected override void OnInitialized()
@@ -166,7 +174,7 @@ public partial class ReviewPanel
     /// <summary>Offers reply notifications once, after the reviewer's first comment or reply, unless the browser denied them.</summary>
     private async Task AskToNotify()
     {
-        if (store.WasAskedToNotify || store.ReplyNotifications)
+        if (session.CanWrite is false || store.WasAskedToNotify || store.ReplyNotifications)
             return;
 
         store.MarkAskedToNotify();

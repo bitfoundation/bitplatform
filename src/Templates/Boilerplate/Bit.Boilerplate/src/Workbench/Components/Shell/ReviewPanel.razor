@@ -38,7 +38,7 @@
     </section>
 
     @* The composer for a comment pinned on the page, or the button that starts pinning one *@
-    @if (PendingAnchor is { } pendingAnchor && session.CanWrite)
+    @if (PendingAnchor is { } pendingAnchor)
     {
         <section class="composer">
             <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.NewComment)]</BitText>
@@ -62,7 +62,7 @@
             </div>
         </section>
     }
-    else if (session.CanWrite && OnPin.HasDelegate)
+    else if (OnPin.HasDelegate)
     {
         <section>
             <BitButton IconName="@BitIconName.Comment" OnClick="() => OnPin.InvokeAsync()">@Localizer[nameof(WorkbenchStrings.PinComment)]</BitButton>
@@ -77,7 +77,7 @@
 
         @if (VisibleThreads.Any() is false)
         {
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[showDone ? nameof(WorkbenchStrings.NoDoneComments) : session.CanWrite && OnPin.HasDelegate is false ? nameof(WorkbenchStrings.NoComments) : nameof(WorkbenchStrings.NoCommentsYet)]</BitText>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[showDone ? nameof(WorkbenchStrings.NoDoneComments) : OnPin.HasDelegate is false ? nameof(WorkbenchStrings.NoComments) : nameof(WorkbenchStrings.NoCommentsYet)]</BitText>
         }
 
         @foreach (var thread in VisibleThreads)
@@ -101,6 +101,14 @@
                             <span class="message-text" dir="auto">@message.Text</span>
                         </div>
                     }
+                    @* Tells a comment no agent can answer yet what happens to it; it follows the agent and is never saved *@
+                    @if (IsWaitingForAgent(thread))
+                    {
+                        <div class="message auto-reply">
+                            <span class="message-author">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+                            <span class="message-text">@Localizer[session.SavesComments ? nameof(WorkbenchStrings.CommentWaitsForAgent) : nameof(WorkbenchStrings.CommentStaysInTab)]</span>
+                        </div>
+                    }
                 </div>
 
                 @if (thread.Tasks.Length > 0)
@@ -116,8 +124,8 @@
                     </ul>
                 }
 
-                @* An open thread: read-only viewers can only show its view; dev mode can also reply, resolve and delete *@
-                @if (isSelected && session.CanWrite is false)
+                @* An open thread: a visitor can only show the view of a comment that isn't theirs; otherwise it can also be replied to, resolved and deleted *@
+                @if (isSelected && session.CanChange(thread.Id) is false)
                 {
                     <div class="thread-actions">
                         <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => OnShow.InvokeAsync(thread)">@Localizer[nameof(WorkbenchStrings.ShowView)]</BitButton>

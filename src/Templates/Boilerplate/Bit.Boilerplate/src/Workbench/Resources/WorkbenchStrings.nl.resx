@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Er luistert geen agent. Vraag je agent om de beoordelingsopmerkingen op de werkbank door te nemen, dan beantwoordt hij ze hier een voor een.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Begrepen. Zodra een AI-agent verbinding maakt, regelt hij dit voor je. Vraag daarvoor gewoon de AI die je gebruikt om het project Workbench te starten.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Deze kopie is gedeeld, dus je opmerking blijft in dit tabblad. Vraag in je eigen project gewoon de AI die je gebruikt om het project Workbench te starten, dan regelt die opmerkingen zoals deze.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} luistert naar opmerkingen</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor. Probeer het nu: schrijf je opmerking en verstuur hem.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live beoordelen met AI</value>

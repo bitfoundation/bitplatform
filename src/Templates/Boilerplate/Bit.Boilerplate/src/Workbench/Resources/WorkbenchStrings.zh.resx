@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>没有智能体在监听。请让您的智能体处理工作台里的评论，它会在这里逐条回复。</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>已收到。一旦有 AI 智能体连接，它就会为您处理。要连接智能体，只需让您使用的 AI 运行 Workbench 项目。</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>此副本是共享的，因此您的评论只保留在此标签页中。在您自己的项目中，只需让您使用的 AI 运行 Workbench 项目，它就会处理此类评论。</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} 正在监听评论</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>在页面的任意位置钉上一条评论。在您自己的电脑上，您的编程智能体会在您输入时就收到它，修改页面、在评论下回复，并将其勾选为已完成。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>在页面的任意位置钉上一条评论。在您自己的电脑上，您的编程智能体会在您输入时就收到它，修改页面、在评论下回复，并将其勾选为已完成。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。现在就试试：写下您的评论并发送。</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI 实时评审</value>

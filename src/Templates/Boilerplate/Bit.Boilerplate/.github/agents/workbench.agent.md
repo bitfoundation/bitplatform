@@ -22,9 +22,10 @@ what the user approves is how the real page will look.
 <!--#endif-->
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
   describes. A `.resx` edit or startup code needs a restart.
-- Running under `dotnet watch` is its dev mode, the only one where the review, Inspect and Edit text can change anything
-  and where `/mcp` and `/api/review` answer. Any other copy, like a published one or a plain `dotnet run`, which is how
-  bit CLI starts it, answers those with a 404: stop that copy and run `dotnet watch` in `src/Workbench`.
+- Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
+  anything and where `/mcp` and `/api/review` answer. Any other copy, like a published one or a plain `dotnet run`, which
+  is how bit CLI starts it, answers those with a 404: stop that copy and run `dotnet watch` in `src/Workbench`. Comments
+  the user left on a copy on this computer wait in the review for you, and are told so.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
 - It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
@@ -165,8 +166,8 @@ what the user approves is how the real page will look.
   `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, which answers within a minute, `POST /api/review/<id>/reply`
   and `POST /api/review/<id>/status` with a JSON body (`text` or `status`, and `agent`), `PUT /api/review/<id>/tasks`
   (`tasks`, each with `text` and `done`), `GET /api/review/<id>/screenshot`, `POST /api/review/pages/<key>/status` and
-  `POST /api/review/flows`. They answer only in dev mode on this machine, and anywhere else the review is read-only, so
-  only someone at this computer can reach you.
+  `POST /api/review/flows`. They answer only in dev mode on this machine, and a visitor from anywhere else only sees
+  the review and keeps their own comments in their tab, so only someone at this computer can reach you.
 - Keep each page's review status current (`set_page_status`): in review when you hand it to the user, approved when
   they approve it, built once it is in the app.
 - Text the user changes in Edit text mode is saved into `WorkbenchStrings` or `AppStrings` in every language; read the

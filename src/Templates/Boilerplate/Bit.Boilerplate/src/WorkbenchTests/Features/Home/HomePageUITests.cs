@@ -28,6 +28,24 @@ public class HomePageUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheHomePage_Should_ShowItsContentBeforeItBecomesInteractive(WorkbenchSurface surface)
+    {
+        await Context.RouteAsync(url => url.Contains("blazor.web", StringComparison.Ordinal), route => route.AbortAsync());
+
+        await Page.GotoAsync(Server.Address.ToString());
+
+        await Page.WaitForFunctionAsync("() => window.Blazor === undefined && document.readyState === 'complete'");
+        await Expect(Headline).ToHaveCSSAsync("opacity", "1");
+        await Expect(Page.Locator(".hero-actions")).ToHaveCSSAsync("opacity", "1");
+        await Expect(Page.Locator("article.reason").First).ToHaveCSSAsync("opacity", "1");
+
+        if (IsPhone is false)
+        {
+            await Expect(Page.Locator(".laptop-holder")).ToHaveCSSAsync("opacity", "1");
+        }
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheHomePage_Should_ListEveryPage(WorkbenchSurface surface)
     {
         await OpenHome();

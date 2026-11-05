@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Aucun agent n’est à l’écoute. Demandez à votre agent de parcourir les commentaires de révision sur l’établi : il répondra ici à chacun d’eux.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Bien reçu. Dès qu’un agent IA se connecte, il s’en occupe pour vous. Pour en connecter un, demandez simplement à l’IA que vous utilisez d’exécuter le projet Workbench.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Cette copie est partagée : votre commentaire reste donc dans cet onglet. Dans votre propre projet, demandez simplement à l’IA que vous utilisez d’exécuter le projet Workbench, et elle s’occupera des commentaires comme celui-ci.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} est à l’écoute des commentaires</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Épinglez un commentaire n’importe où sur une page. Sur votre propre machine, votre agent de codage le reçoit pendant que vous écrivez, modifie la page, répond dans le commentaire et le coche. Fonctionne avec Claude Code, Codex, Copilot, Gemini, Junie et Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Épinglez un commentaire n’importe où sur une page. Sur votre propre machine, votre agent de codage le reçoit pendant que vous écrivez, modifie la page, répond dans le commentaire et le coche. Fonctionne avec Claude Code, Codex, Copilot, Gemini, Junie et Cursor. Essayez maintenant : écrivez votre commentaire et envoyez-le.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Révision en direct avec l’IA</value>

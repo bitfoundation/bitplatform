@@ -16,7 +16,13 @@ public partial class WorkbenchViewPage
     private const string TourComponentsPage = "shifts";
     private const string TourLandingPage = "landing-minimal";
 
+    // A comment written on the tour's live review step without pressing a spot first is about the page as a whole.
+    private static readonly WorkbenchReviewAnchor TourCommentAnchor = new("body", null, null, 0.5, 0.5);
+
     private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
+
+    // Only that step puts a tour in Comment mode; once its comment is sent, the thread shows in place of the composer.
+    private bool IsTourAskingForAComment => IsTouring && store.Mode == WorkbenchModes.Comment && selectedThreadId is null;
 
     private Task StartTour()
     {
@@ -169,10 +175,12 @@ public partial class WorkbenchViewPage
                 new BonboardingStepDefinition
                 {
                     Id = "live-review",
-                    Target = BonboardingStepTarget.Css("#wb-inspector"),
+                    Target = BonboardingStepTarget.Css(".modes"),
+                    AdditionalTargets = [BonboardingStepTarget.Css(".canvas"), BonboardingStepTarget.Css("#wb-inspector")],
                     Title = nameof(WorkbenchStrings.HomeWhyLiveTitle),
-                    Description = nameof(WorkbenchStrings.HomeWhyLiveText),
+                    Description = nameof(WorkbenchStrings.TourLiveText),
                     Placement = BonboardingPlacement.InlineStart,
+                    Interaction = BonboardingInteractionMode.TargetOnly,
                     OnBeforeShow = _ => ShowInTour(() => SetMode(WorkbenchModes.Comment)),
                     OnBeforeLeave = _ => ShowInTour(() =>
                     {

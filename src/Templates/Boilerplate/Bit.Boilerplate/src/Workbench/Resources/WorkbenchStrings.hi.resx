@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>कोई एजेंट नहीं सुन रहा। अपने एजेंट से वर्कबेंच की रिव्यू टिप्पणियाँ देखने को कहें, वह हर एक का जवाब यहीं देगा।</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>मिल गया। जैसे ही कोई AI एजेंट जुड़ेगा, वह यह काम आपके लिए कर देगा। उसे जोड़ने के लिए बस अपनी AI से Workbench प्रोजेक्ट चलाने को कहें।</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>यह कॉपी साझा है, इसलिए आपकी टिप्पणी इसी टैब में रहेगी। अपने प्रोजेक्ट में बस अपनी AI से Workbench प्रोजेक्ट चलाने को कहें, वह ऐसी टिप्पणियों को सँभाल लेगी।</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} टिप्पणियों का इंतज़ार कर रहा है</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>पेज की किसी भी जगह पर टिप्पणी पिन करें। आपकी अपनी मशीन पर, आपका कोडिंग एजेंट आपके लिखते ही उसे पा लेता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उस पर सही का निशान लगा देता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है।</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>पेज की किसी भी जगह पर टिप्पणी पिन करें। आपकी अपनी मशीन पर, आपका कोडिंग एजेंट आपके लिखते ही उसे पा लेता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उस पर सही का निशान लगा देता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है। अभी आज़माएँ: अपनी टिप्पणी लिखें और भेजें।</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI के साथ लाइव रिव्यू</value>

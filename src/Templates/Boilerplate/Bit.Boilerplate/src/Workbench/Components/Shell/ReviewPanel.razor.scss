@@ -176,7 +176,8 @@ section {
     flex-direction: column;
     background-color: $bit-color-background-secondary;
 
-    &.from-agent {
+    &.from-agent,
+    &.auto-reply {
         background-color: color-mix(in srgb, #{$bit-color-primary} 9%, transparent);
     }
 }

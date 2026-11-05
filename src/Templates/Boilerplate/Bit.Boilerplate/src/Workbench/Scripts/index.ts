@@ -548,8 +548,11 @@ host.workbench = {
 
         if (!frame) return;
 
+        // A frame on its way elsewhere still reports the address it is leaving, and would land elsewhere if it were left alone.
+        const isLeaving = staleDocuments.get(frame) === frame.contentDocument;
+
         shownUrls.set(frame, target);
-        if (addressOf(frame) === target) return;
+        if (addressOf(frame) === target && isLeaving === false) return;
 
         expectNewDocument(frame);
         frame.contentWindow?.location.replace(target);

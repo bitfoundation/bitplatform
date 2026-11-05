@@ -241,19 +241,13 @@ public partial class WorkbenchViewPage
     }
 
     /// <summary>
-    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode, with the page back to use. Inspect
-    /// mode opens the first tab, where the picked component's panel shows.
+    /// Comment mode opens the Review tab. Inspect mode opens the first tab, where the picked component's panel shows.
     /// </summary>
     private void SetMode(string mode)
     {
         if (mode is WorkbenchModes.Comment)
         {
             store.ShowColumn(WorkbenchModes.ReviewColumn);
-
-            if (reviewSession.CanWrite is false)
-            {
-                mode = WorkbenchModes.Browse;
-            }
         }
 
         if (mode is WorkbenchModes.Inspect)
@@ -272,9 +266,6 @@ public partial class WorkbenchViewPage
     [JSInvokable]
     public async Task BeginComment(string paneId, WorkbenchReviewAnchor anchor)
     {
-        if (reviewSession.CanWrite is false)
-            return;
-
         var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", paneId);
 
         if (IsDisposed)
@@ -340,7 +331,7 @@ public partial class WorkbenchViewPage
 
         store.ShowColumn(column);
 
-        if (column is not WorkbenchModes.ReviewColumn || store.Mode != WorkbenchModes.Inspect || reviewSession.CanWrite is false
+        if (column is not WorkbenchModes.ReviewColumn || store.Mode != WorkbenchModes.Inspect
             || pickedComponent is not { } picked || picked.Anchor == draftedAnchor)
             return;
 
@@ -413,9 +404,17 @@ public partial class WorkbenchViewPage
         StateHasChanged();
     }
 
+    /// <summary>The spot of the comment being written: where it was pinned, or the page itself on the tour's live review step.</summary>
+    private WorkbenchReviewAnchor? ComposerAnchor => pendingComment?.Anchor ?? (IsTourAskingForAComment ? TourCommentAnchor : null);
+
     private async Task SendComment(string text)
     {
-        if (pageInfo is null || pendingComment is not { } pending || store.Panes.FirstOrDefault(p => p.Id == pending.PaneId) is not { } pane)
+        if (pageInfo is null)
+            return;
+
+        var pending = pendingComment ?? (store.SelectedPane.Id, TourCommentAnchor, await CaptureSelectedState());
+
+        if (store.Panes.FirstOrDefault(p => p.Id == pending.PaneId) is not { } pane)
             return;
 
         pendingComment = null;

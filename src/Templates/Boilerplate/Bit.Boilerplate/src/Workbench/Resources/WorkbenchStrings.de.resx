@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Kein Agent hört zu. Bitten Sie Ihren Agenten, die Review-Kommentare auf der Werkbank durchzugehen, dann beantwortet er hier jeden einzelnen.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Verstanden. Sobald sich ein KI-Agent verbindet, erledigt er das für Sie. Dazu bitten Sie einfach die KI, die Sie verwenden, das Projekt Workbench auszuführen.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Diese Kopie ist geteilt, daher bleibt Ihr Kommentar nur in diesem Tab. Bitten Sie in Ihrem eigenen Projekt einfach die KI, die Sie verwenden, das Projekt Workbench auszuführen, dann kümmert sie sich um Kommentare wie diesen.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} wartet auf Kommentare</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Heften Sie einen Kommentar an eine beliebige Stelle einer Seite. Auf Ihrem eigenen Rechner bekommt Ihr Coding-Agent ihn schon beim Schreiben, ändert die Seite, antwortet im Kommentar und hakt ihn ab. Funktioniert mit Claude Code, Codex, Copilot, Gemini, Junie und Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Heften Sie einen Kommentar an eine beliebige Stelle einer Seite. Auf Ihrem eigenen Rechner bekommt Ihr Coding-Agent ihn schon beim Schreiben, ändert die Seite, antwortet im Kommentar und hakt ihn ab. Funktioniert mit Claude Code, Codex, Copilot, Gemini, Junie und Cursor. Probieren Sie es gleich aus: Schreiben Sie Ihren Kommentar und senden Sie ihn.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live-Review mit KI</value>
