@@ -1,8 +1,6 @@
-using ModelContextProtocol.Client;
-
 namespace Boilerplate.WorkbenchTests.Features.Review;
 
-/// <summary>The agent in an open browser: its replies, plan and statuses arriving live, whichever way it sends them, the line saying what it does, and a comment reaching it as it waits.</summary>
+/// <summary>The agent in an open browser: its replies, plan and statuses arriving live, the line saying what it does, and a comment reaching it as it waits.</summary>
 [TestClass, TestCategory("UITest")]
 public class ReviewAgentUITests : ReviewPageTest
 {
@@ -235,37 +233,6 @@ public class ReviewAgentUITests : ReviewPageTest
         (await client.PostAsJsonAsync("api/review/pages/shifts/status", new { status = "inreview", agent = "Http Agent" })).EnsureSuccessStatusCode();
 
         await Expect(ToolsButton(WorkbenchStrings.PageStatusInReview)).ToHaveAttributeAsync("aria-pressed", "true");
-        await ExpectNoReload();
-    }
-
-    [TestMethod, WithAnAgent]
-    public async Task AnAgentOverMcp_Should_ShowLiveInTheBrowser(WorkbenchSurface surface)
-    {
-        var (id, text) = await OpenACommentForTheAgent();
-
-        var transport = new HttpClientTransport(new() { Endpoint = new(Server.Address, "mcp"), TransportMode = HttpTransportMode.StreamableHttp });
-
-        await using var client = await McpClient.CreateAsync(transport, new() { ClientInfo = new() { Name = "mcp-agent", Title = "Mcp Agent", Version = "1.0.0" } });
-
-        var answer = Unique("Answered over MCP");
-
-        await client.CallToolAsync("set_comment_status", new Dictionary<string, object?> { ["commentId"] = id, ["status"] = "working" });
-
-        await Expect(ThreadWith(text).Locator(".thread-status")).ToHaveTextAsync(WorkbenchStrings.ReviewStatusWorking);
-        await Expect(AgentLine).ToContainTextAsync("Mcp Agent");
-
-        await client.CallToolAsync("set_comment_tasks", new Dictionary<string, object?> { ["commentId"] = id, ["tasks"] = new[] { "Read it", "Answer it" }, ["doneCount"] = 1 });
-
-        await Expect(PlanOf(text).Locator("li.done")).ToHaveTextAsync(["Read it"]);
-
-        await client.CallToolAsync("reply_to_comment", new Dictionary<string, object?> { ["commentId"] = id, ["text"] = answer });
-
-        await Expect(ThreadWith(text).Locator(".message.from-agent")).ToContainTextAsync(answer);
-        await Expect(ThreadWith(text).Locator(".message.from-agent .message-author")).ToContainTextAsync("Mcp Agent");
-
-        await client.CallToolAsync("set_page_status", new Dictionary<string, object?> { ["page"] = "shifts", ["status"] = "approved" });
-
-        await Expect(ToolsButton(WorkbenchStrings.PageStatusApproved)).ToHaveAttributeAsync("aria-pressed", "true");
         await ExpectNoReload();
     }
 }

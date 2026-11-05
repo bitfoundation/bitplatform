@@ -13,7 +13,6 @@ public class ReadOnlyModeTests
     [DataRow("GET", "api/review")]
     [DataRow("GET", "api/review/wait?cursor=0")]
     [DataRow("POST", "api/review/flows")]
-    [DataRow("POST", "mcp")]
     public async Task TheAgentsEndpoints_Should_NotExistEvenOnThisMachine(string method, string url)
     {
         var server = await WorkbenchTestsInitializer.ReadOnlyServer;

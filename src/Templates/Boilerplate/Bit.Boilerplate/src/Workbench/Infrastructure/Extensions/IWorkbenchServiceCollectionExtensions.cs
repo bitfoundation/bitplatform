@@ -71,7 +71,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<IComponentActivator, WorkbenchComponentActivator>();
             services.AddSingleton<WorkbenchComponentEdits>();
 
-            // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over MCP.
+            // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over HTTP.
             services.AddSingleton<WorkbenchReviewAgent>();
             services.AddSingleton<WorkbenchReviewAttachments>();
             services.AddSingleton<WorkbenchReviewRelay>();
@@ -87,10 +87,6 @@ public static class IWorkbenchServiceCollectionExtensions
                     return ValueTask.FromResult(context.DocumentId == WorkbenchReviewDocument.Id);
                 }
             });
-            services.AddScoped<WorkbenchReviewTools>();
-            services.AddMcpServer(options => options.ServerInfo = new() { Name = "workbench", Title = "bit Workbench", Version = "1.0.0" })
-                .WithHttpTransport()
-                .WithTools<WorkbenchReviewTools>();
         }
     }
 }
