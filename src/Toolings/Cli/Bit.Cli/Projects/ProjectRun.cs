@@ -41,15 +41,12 @@ public static class ProjectRun
         if (steps.Reports.Any(r => r.Id is "build" && r.Result.Status is StepStatus.Failed))
         {
             steps.Add("run", StepResult.Skipped("Didn't start the project", "the build failed"));
-            await projectSteps.CommitMigrationAfterStartAsync(cancellationToken);
             return;
         }
 
         await NewWorkflow.RunProjectStepAsync(steps, context, "run", title, aspire
             ? (progress, ct) => projectSteps.AspireStartAsync(mode is ProjectRunMode.UntilClosed, progress, ct)
             : projectSteps.DotnetRunAsync, cancellationToken);
-
-        await projectSteps.CommitMigrationAfterStartAsync(cancellationToken);
 
         if (mode is ProjectRunMode.UntilClosed && projectSteps.Running is { } running)
         {

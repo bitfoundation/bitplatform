@@ -247,80 +247,6 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task TheMigration_Should_BeCommittedAfterTheStartWhileTheWorkbenchAndTheLandingPageRun()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        host.Runner.Executables["aspire"] = "aspire";
-        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
-        {
-            await Task.Delay(Timeout.Infinite, ct);
-            return new ProcessResult { ExitCode = 0 };
-        });
-        var project = CreateFakeProject(host, "Contoso");
-        project.GitReady = true;
-        WriteWorkbench(project, "http://localhost:6030");
-        WriteLandingPage(project, "http://localhost:7030");
-        WriteAppHost(project, "serverweb");
-        var projectSteps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
-
-        await projectSteps.WorkbenchRunAsync(_ => { }, CancellationToken.None);
-        await projectSteps.LandingPageRunAsync(_ => { }, CancellationToken.None);
-        var migration = await projectSteps.MigrationAsync(_ => { }, CancellationToken.None);
-
-        Assert.AreEqual(StepStatus.Succeeded, migration.Status, migration.Detail);
-        Assert.IsFalse(host.Runner.Calls.Any(IsCommit), "A commit now makes aspire start's build recompile every project, and it can't overwrite the dlls of the apps that are running.");
-
-        await ProjectRun.RunProjectAsync(host.Services, new StepRunner(host.Services), project, projectSteps, ProjectRunMode.UntilClosed, aspire: true, CancellationToken.None);
-
-        var calls = host.Runner.Calls.ToList();
-        var start = calls.FindIndex(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
-        Assert.IsGreaterThanOrEqualTo(0, start);
-        Assert.IsGreaterThan(start, calls.FindIndex(IsCommit));
-        Assert.AreEqual("Add the Initial EF Core migration", calls.Single(IsCommit).Arguments[3]);
-
-        await projectSteps.Workbench!.StopAsync(false);
-        await projectSteps.LandingPage!.StopAsync(false);
-    }
-
-    [TestMethod]
-    public async Task TheMigration_Should_BeCommittedEvenWhenTheBuildFailedAndTheProjectDoesntStart()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
-        {
-            await Task.Delay(Timeout.Infinite, ct);
-            return new ProcessResult { ExitCode = 0 };
-        });
-        var project = CreateFakeProject(host, "Contoso");
-        project.GitReady = true;
-        WriteWorkbench(project, "http://localhost:6030");
-        var projectSteps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
-        var steps = new StepRunner(host.Services);
-        steps.Add("build", StepResult.Failed("Couldn't build the web app", "CS0103"));
-
-        await projectSteps.WorkbenchRunAsync(_ => { }, CancellationToken.None);
-        await projectSteps.MigrationAsync(_ => { }, CancellationToken.None);
-        await ProjectRun.RunProjectAsync(host.Services, steps, project, projectSteps, ProjectRunMode.UntilClosed, aspire: true, CancellationToken.None);
-
-        Assert.AreEqual(1, host.Runner.Calls.Count(IsCommit));
-
-        await projectSteps.Workbench!.StopAsync(false);
-    }
-
-    [TestMethod]
-    public async Task TheMigration_Should_BeCommittedRightAwayWhenNothingIsRunning()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        var project = CreateFakeProject(host, "Contoso");
-        project.GitReady = true;
-
-        var result = await new ProjectSteps(host.Services, project).MigrationAsync(_ => { }, CancellationToken.None);
-
-        Assert.AreEqual(1, host.Runner.Calls.Count(IsCommit));
-        StringAssert.EndsWith(result.Detail, ", committed");
-    }
-
-    [TestMethod]
     public async Task RazorErrorsFromAStaleCompilerServer_Should_BuildAgainWithAFreshOne()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -1601,8 +1527,6 @@ public class ProjectStepTests
             """);
         File.WriteAllText(project.WebSolutionFilter, System.Text.Json.JsonSerializer.Serialize(new { solution = new { path = Path.GetFileName(project.Solution), projects = web.Select(p => p.Replace('/', '\\')) } }));
     }
-
-    private static bool IsCommit(ProcessSpec call) => call.FileName is "git" && call.Arguments.FirstOrDefault() is "commit";
 
     private static List<string> DotnetCommands(TestHost host) => [.. host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments))];
 

@@ -36,6 +36,10 @@
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
 
+        <!-- By default a commit changes every assembly, through its version and its SourceLink data, so a running app's dlls are locked against the next build on Windows. -->
+        <IncludeSourceRevisionInInformationalVersion Condition="$(Configuration.Contains('Debug'))">false</IncludeSourceRevisionInInformationalVersion>
+        <EnableSourceLink Condition="$(Configuration.Contains('Debug'))">false</EnableSourceLink>
+
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
