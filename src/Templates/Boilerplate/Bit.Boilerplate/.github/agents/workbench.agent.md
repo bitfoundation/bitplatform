@@ -26,8 +26,9 @@ what the user approves is how the real page will look.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
   anything and where `/mcp` and `/api/review` answer. A home page that answers doesn't show it, so ask `/api/review`. Any
   other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers those with a 404: stop
-  that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy on this computer
-  wait in the review for you, and are told so.
+  that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy run from its
+  project folder wait in the review for you, and are told so. A published copy keeps them only in memory, so before you stop
+  one, tell the user that any left on it will be lost.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
 - It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
@@ -38,6 +39,8 @@ what the user approves is how the real page will look.
   for gets no answer. Read what is already waiting, then keep waiting for more the way section 7 says, in the background
   where your client can, so you can go on working and talking to the user. Tell the user you are listening, and go on until
   they say the review is over or the Workbench stops: a wait that ends empty or at its time limit is the cue to wait again.
+  So is one that fails, as it does while the Workbench restarts: cursors survive a restart, so retry it a few seconds apart,
+  and if it still fails after a few tries, tell the user that listening has stopped.
 
 ## 2. Build the page
 
