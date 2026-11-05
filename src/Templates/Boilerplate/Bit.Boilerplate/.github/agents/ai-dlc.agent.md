@@ -86,6 +86,7 @@ Merging into `develop` updates the Test environment and merging into `main` upda
     - The specs, the plan and the diff agree. Every task is ticked, and every open question this work depended on is answered.
     - Every defect in a library it had to work around has its upstream report offered and its workaround written into `specs/workarounds.md` (`AGENTS.md` section 6).
     - The diff holds only this change: no debugging leftovers, and no files of other work.
+    - The code passes the formatting check CI runs (`AGENTS.md` section 4).
 - Commit, push the branch and open a PR into `develop` (`gh pr create` on GitHub). Write its title and description from every commit on the branch, not only the last one: what changes for the user, then a test plan that lists each acceptance criterion with the test and the check that cover it, and links to the spec and the change plan. In the same message, tell the user that you will merge it yourself once CI passes, unless they want to review it first
 - Wait for CI (`gh pr checks`) the way `AGENTS.md` section 6 caps every wait. When it fails, fix the cause on the branch as phase 6 does, and push again
 - Once CI passes and the user hasn't asked to review, merge the PR and delete its branch. If `.github/workflows/cd-test.yml` has its `push` trigger on and this merge changes one of its `paths`, tell the user it is on its way to the Test environment, and what to try there. Otherwise, tell them this merge deploys nothing
