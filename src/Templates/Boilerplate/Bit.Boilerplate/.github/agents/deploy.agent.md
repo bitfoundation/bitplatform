@@ -89,6 +89,8 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
 - Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
   openssl.
+- Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
+  than the rest of the setup takes.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
   `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
   environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
@@ -194,7 +196,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 <!--#endif-->
 <!--#if (signalR == true)-->
 - **Speech**: dictation needs a speech-to-text model, read-aloud a text-to-speech model, and the voice call a Realtime
-  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat.
+  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat. Each model still has a key
+  setting of its own under `AI:OpenAI`, and one fills none of the others: an empty `EmbeddingApiKey` sends embeddings to
+  `AI:HuggingFace:EmbeddingEndpoint`, a local server a deployment doesn't have.
 <!--#endif-->
 <!--#if (sentry == true)-->
 - **Sentry**: a project per environment, and its DSN.
@@ -217,8 +221,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **App certificate**: a new `AppCertificate` for each environment, never the development one (see `AppCertificate.md`
   in the server project). Generate it yourself.
 - **Client apps**: the Android, iOS, macOS and Windows signing keys, only for the apps the user ships
-  (`.docs/16- CI-CD Pipeline and Environments.md`). Take the jobs of the others out of the CD: every run draws on the
-  Actions minutes of the user's GitHub plan, and macOS minutes cost the most.
+  (`.docs/16- CI-CD Pipeline and Environments.md`). Their CD jobs are off (`if: false`); turn on only those of the
+  apps the user ships, since every run draws on the Actions minutes of the user's GitHub plan, and macOS minutes cost
+  the most.
 
 ## 6. GitHub environments and secrets
 
@@ -264,6 +269,13 @@ project up, and fails unless every container is healthy and the public address a
 ## 8. The domain and the tunnel
 
 - Add the user's domain to Cloudflare on the free plan, and create a named tunnel for each environment.
+- When you need a Cloudflare API token, ask for everything this setup takes in one go: the tunnel, DNS, Access, and the
+  cache purge where the project purges.
+- Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
+  the free plan's certificate covers one level of subdomain only.
+- The Workbench isn't deployed. If the user wants it on Test, never Production, put its hostname behind Cloudflare
+  Access, Cloudflare's own sign-in, and let `/alive` through for the deploy job's check. Its screenshots need a base
+  image with a browser, such as Playwright's.
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
@@ -296,6 +308,10 @@ project up, and fails unless every container is healthy and the public address a
   (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
+- The migrations seed `test@bitplatform.dev`, a global admin whose password is in this repository, in every
+  environment. Right after the environment's first deployment, change its password in the app and give the new one to
+  the user to keep. Then open `<the web app's address>/settings/tfa` for them to turn two-factor sign-in on, since
+  dev-mcp takes an account with it, and connect that environment's dev-mcp with this account.
 - Then ask that environment's dev-mcp for its health (`GetHealth`), after the sign-in the troubleshoot skill
   describes. It runs every health check the server has and returns each one that isn't Healthy with its reason, which
   the deploy job's own check doesn't see, since a Degraded check still answers 200. Outside Development, every service

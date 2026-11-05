@@ -94,7 +94,8 @@ and the `deploy` skill (`.github/agents/deploy.agent.md`) sets up the rest.
 ## The apps
 
 The same CD builds the native apps next to the server and leaves them as artifacts of the run for a day, which keeps
-the runs inside the storage GitHub Free includes; publishing them to the stores is up to you.
+the runs inside the storage GitHub Free includes; publishing them to the stores is up to you. Each app's job is off
+(`if: false`) until you turn it on for the environments that build it.
 
 - **Windows**: an installer with automatic updates (Velopack). Once the `CODE_SIGNING_*` settings are there, it is
   signed with Azure Artifact Signing, so Windows shows your organization as the publisher.
