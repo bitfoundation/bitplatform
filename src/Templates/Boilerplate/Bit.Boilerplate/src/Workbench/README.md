@@ -15,11 +15,12 @@ are designed.
 - With Aspire, start the `workbench` resource from the dashboard. It starts only when asked.
 - Edits to `.cs`, `.razor`, `.scss` and `.ts` files show up while it runs. A `.resx` edit needs a restart.
 
-Running under `dotnet watch` is the Workbench's dev mode, which is how its agent skill starts it. Only dev mode can change
-things: Inspect and Edit text write into the code, the review takes comments and flows, and the agent can connect. Any
-other copy, like a published demo or the plain `dotnet run` bit CLI starts, has no hot reload to show a change and no agent
-to answer a comment, so those stay read-only there, and a small notice on every page says no agent is connected. The rest
-works: the pages and their states, what a visitor changes on a page, which stays in their browser, screenshots and checks.
+Running under `dotnet watch` is the Workbench's dev mode, which is how its agent skill starts it. Only in dev mode do
+Inspect and Edit text write into the code, the review take page statuses and flows, and the agent connect. Any other copy,
+like a published demo or the plain `dotnet run` bit CLI starts, has no hot reload to show a change and no agent to answer a
+comment, so those stay read-only there, and a small notice on every page says no agent is connected. The rest works:
+comments, the pages and their states, what a visitor changes on a page, which stays in their browser, screenshots and
+checks.
 
 Screenshots are taken by a headless Chromium-based browser on the machine that runs the Workbench: Playwright's own
 Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To install Playwright's Chromium, run
@@ -87,9 +88,12 @@ the change in your view, and it replies and ticks the comment. Each reply plays 
 turned on in the Review tab it also shows a notification, on a phone too.
 
 Only this machine can talk to the agent, and only in dev mode. The MCP server and the review endpoints answer only those
-requests, and anywhere else, through a shared link or a public address, the review is read-only: comments, replies and
-statuses can be read, the agent shows as offline, and nothing can be added, so nobody reaches your agent without being at
-your computer.
+requests, so nobody reaches your agent without being at your computer.
+
+Comments can be written in every copy, and while no agent is connected each one says what happens next. On this machine
+they go into the review, even outside dev mode, and wait there for the agent. Anywhere else, through a shared link or a
+public address, the review's own comments, replies and statuses can only be read, the agent shows as offline, and a
+visitor's comments stay in their tab until it reloads.
 
 ## How it stays in step with the app
 
@@ -104,8 +108,9 @@ your computer.
 
 The Workbench is not deployed with the app. To show a page to someone else for a while, publish it to a folder, run it
 from there and put it online with a Cloudflare quick tunnel: the link works while your machine, the Workbench and the
-tunnel keep running. Whoever has the link sees the review but can't add to it. To keep it online, publish it like any
-ASP.NET Core app to a server that has a Chromium-based browser for the screenshots. The `Screenshots` section of
+tunnel keep running. Whoever has the link sees the review, and what they comment stays in their own tab. To keep it
+online, publish it like any ASP.NET Core app to a server that has a Chromium-based browser for the screenshots. The
+`Screenshots` section of
 `appsettings.json` caps how many captures run at once and how many each client may ask for per minute.
 <!--#if (advancedTests == true)-->
 

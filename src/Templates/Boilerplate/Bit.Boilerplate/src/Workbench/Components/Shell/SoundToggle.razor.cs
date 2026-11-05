@@ -15,4 +15,12 @@ public partial class SoundToggle
         // The button first renders before the saved state is back, so it shows it once it is.
         await WhenStateRestored();
     }
+
+    /// <summary>Waits for the saved state, as a change made before it is back is not saved.</summary>
+    private async Task Toggle()
+    {
+        await WhenStateRestored();
+
+        store.ToggleReplySound();
+    }
 }

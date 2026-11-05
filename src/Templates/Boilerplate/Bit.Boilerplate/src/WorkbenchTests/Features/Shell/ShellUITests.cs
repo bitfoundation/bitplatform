@@ -1121,14 +1121,7 @@ public class ShellUITests : ShellPageTest
         await Expect(Tools.GetByText(WorkbenchStrings.DataStateHint)).ToBeVisibleAsync();
         await Expect(Tools.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Device })).ToHaveCountAsync(0);
 
-        if (HasAgent)
-        {
-            await Expect(Button(WorkbenchStrings.PinComment)).ToBeVisibleAsync();
-        }
-        else
-        {
-            await Expect(Button(WorkbenchStrings.PinComment)).ToHaveCountAsync(0);
-        }
+        await Expect(Button(WorkbenchStrings.PinComment)).ToBeVisibleAsync();
 
         await CloseTools();
     }

@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>لا يوجد وكيل يستمع. اطلب من وكيلك أن يمرّ على تعليقات المراجعة في منضدة العمل، وسيردّ على كل تعليق هنا.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>تم الاستلام. بمجرد اتصال وكيل ذكاء اصطناعي، سينجز هذا نيابةً عنك. لتوصيله، اطلب فقط من الذكاء الاصطناعي الذي تستخدمه تشغيل مشروع Workbench.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>هذه النسخة مشتركة، لذا يبقى تعليقك في علامة التبويب هذه فقط. في مشروعك، اطلب فقط من الذكاء الاصطناعي الذي تستخدمه تشغيل مشروع Workbench، وسيتولى تعليقات كهذا.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} يستمع إلى التعليقات</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>ثبّت تعليقًا على أي موضع في الصفحة. على حاسوبك، يتلقاه وكيل البرمجة الخاص بك أثناء كتابتك، فيغيّر الصفحة ويردّ على التعليق ويضع عليه علامة الإنجاز. يعمل مع Claude Code و Codex و Copilot و Gemini و Junie و Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>ثبّت تعليقًا على أي موضع في الصفحة. على حاسوبك، يتلقاه وكيل البرمجة الخاص بك أثناء كتابتك، فيغيّر الصفحة ويردّ على التعليق ويضع عليه علامة الإنجاز. يعمل مع Claude Code و Codex و Copilot و Gemini و Junie و Cursor. جرّب الآن: اكتب تعليقك وأرسله.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>مراجعة مباشرة مع الذكاء الاصطناعي</value>
@@ -2833,7 +2842,7 @@
         <value>تجربة محدودة</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة. أما التغيير فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
+        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة وكتابة التعليقات. أما أي تغيير آخر فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>صفحات تسجيل الدخول ليست في Workbench بعد</value>

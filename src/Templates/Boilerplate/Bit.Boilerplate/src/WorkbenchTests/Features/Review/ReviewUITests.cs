@@ -631,8 +631,8 @@ public class ReviewUITests : ReviewPageTest
         await OpenWorkbench("settings");
         await OpenReview();
 
-        // Only a desktop in dev mode has a Comment mode to point at.
-        var empty = surface is WorkbenchSurface.DesktopWithAgent ? WorkbenchStrings.NoComments : WorkbenchStrings.NoCommentsYet;
+        // Only a desktop has a Comment mode to point at.
+        var empty = IsPhone ? WorkbenchStrings.NoCommentsYet : WorkbenchStrings.NoComments;
 
         await Expect(Tools.GetByText(empty, new() { Exact = true })).ToBeVisibleAsync();
 
@@ -1029,7 +1029,7 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
-    public async Task TheReviewTab_Should_StartNoCommentOnTheInspectedComponentWithoutAnAgent(WorkbenchSurface surface)
+    public async Task TheReviewTab_Should_StartACommentOnTheInspectedComponentWithoutAnAgent(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts");
 
@@ -1041,7 +1041,7 @@ public class ReviewUITests : ReviewPageTest
         await OpenReview();
 
         await Expect(AgentLine).ToBeVisibleAsync();
-        await Expect(Composer).ToHaveCountAsync(0);
+        await Expect(Composer).ToBeVisibleAsync();
     }
 
     private async Task StartPickingInEveryView()

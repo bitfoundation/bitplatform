@@ -28,6 +28,99 @@ public class HomePageUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheHomePage_Should_ShowItsContentBeforeItBecomesInteractive(WorkbenchSurface surface)
+    {
+        await Context.RouteAsync(url => url.Contains("blazor.web", StringComparison.Ordinal), route => route.AbortAsync());
+
+        await Page.GotoAsync(Server.Address.ToString());
+
+        await Page.WaitForFunctionAsync("() => window.Blazor === undefined && document.readyState === 'complete'");
+        await Expect(Headline).ToHaveCSSAsync("opacity", "1");
+        await Expect(Page.Locator(".hero-actions")).ToHaveCSSAsync("opacity", "1");
+        await Expect(Page.Locator("article.reason").First).ToHaveCSSAsync("opacity", "1");
+
+        if (IsPhone is false)
+        {
+            await Expect(Page.Locator(".laptop-holder")).ToHaveCSSAsync("opacity", "1");
+        }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheThumbnails_Should_LeaveThePageAndTheBrowsersConnectionsAlone(WorkbenchSurface surface)
+    {
+        var inFlight = 0;
+        var mostInFlight = 0;
+        var isNegotiating = false;
+        var askedBeforeInteractive = false;
+        var askedForTheHiddenTheme = false;
+
+        static bool IsThumbnail(IRequest request) => request.Url.Contains("/api/thumbnails/", StringComparison.Ordinal);
+
+        Page.Request += (_, request) =>
+        {
+            isNegotiating |= request.Url.Contains("/_blazor/negotiate", StringComparison.Ordinal);
+
+            if (IsThumbnail(request))
+            {
+                askedBeforeInteractive |= isNegotiating is false;
+                askedForTheHiddenTheme |= request.Url.Contains("theme=Dark", StringComparison.Ordinal);
+                mostInFlight = Math.Max(mostInFlight, Interlocked.Increment(ref inFlight));
+            }
+        };
+        Page.RequestFinished += (_, request) =>
+        {
+            if (IsThumbnail(request)) Interlocked.Decrement(ref inFlight);
+        };
+        Page.RequestFailed += (_, request) =>
+        {
+            if (IsThumbnail(request)) Interlocked.Decrement(ref inFlight);
+        };
+
+        await Context.RouteAsync(url => url.Contains("/api/thumbnails/", StringComparison.Ordinal), async route =>
+        {
+            await Task.Delay(300);
+            await route.ContinueAsync();
+        });
+
+        await OpenHome();
+
+        var thumbnail = Page.Locator("a.page-card img.light-only").Last;
+
+        await thumbnail.ScrollIntoViewIfNeededAsync();
+        await WorkbenchTestReviewer.WaitFor(() => thumbnail.EvaluateAsync<int>("image => image.naturalWidth"), width => width > 0, TimeSpan.FromSeconds(120));
+
+        Assert.IsFalse(askedBeforeInteractive, "A thumbnail was asked for before the page started to become interactive.");
+        Assert.IsFalse(askedForTheHiddenTheme, "A thumbnail of the theme that isn't showing was asked for.");
+        Assert.IsLessThanOrEqualTo(2, mostInFlight);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task ACardInSightWhenThePageBecomesInteractive_Should_NotBlink(WorkbenchSurface surface)
+    {
+        await Page.SetViewportSizeAsync(1600, 2400);
+        await Page.AddInitScriptAsync("""
+            window.__lowestOpacity = 1;
+            window.__wasShown = false;
+            const watch = () => {
+                const card = document.querySelector('article.reason');
+                if (card) {
+                    const opacity = Number(getComputedStyle(card).opacity);
+                    window.__wasShown ||= opacity > 0.99;
+                    if (window.__wasShown) window.__lowestOpacity = Math.min(window.__lowestOpacity, opacity);
+                }
+                requestAnimationFrame(watch);
+            };
+            requestAnimationFrame(watch);
+            """);
+
+        await OpenHome();
+        await Expect(Page.Locator(".home.reveals-live")).ToBeAttachedAsync();
+        await Page.WaitForTimeoutAsync(500);
+
+        Assert.IsGreaterThanOrEqualTo(0.99, await Page.EvaluateAsync<double>("() => window.__lowestOpacity"));
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheHomePage_Should_ListEveryPage(WorkbenchSurface surface)
     {
         await OpenHome();

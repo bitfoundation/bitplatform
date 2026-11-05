@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Ingen agent lyssnar. Be din agent att gå igenom granskningskommentarerna på arbetsbänken, så svarar den på var och en här.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Uppfattat. Så snart en AI-agent ansluter tar den hand om det här åt dig. För att ansluta en ber du bara den AI du använder att köra projektet Workbench.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Den här kopian är delad, så din kommentar stannar i den här fliken. I ditt eget projekt ber du bara den AI du använder att köra projektet Workbench, så tar den hand om kommentarer som den här.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} lyssnar efter kommentarer</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor. Prova nu: skriv din kommentar och skicka den.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Livegranskning med AI</value>
@@ -2833,7 +2842,7 @@
         <value>Begränsad upplevelse</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Du kan titta runt, byta vy och ta skärmbilder. För att ändra något måste en AI-agent köra Workbench.</value>
+        <value>Du kan titta runt, byta vy, ta skärmbilder och skriva kommentarer. För att ändra något annat måste en AI-agent köra Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Inloggningssidorna finns inte i Workbench än</value>

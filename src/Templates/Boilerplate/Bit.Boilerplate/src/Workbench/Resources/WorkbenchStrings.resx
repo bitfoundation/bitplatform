@@ -2055,6 +2055,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>No agent is listening. Ask your agent to go through the review comments in the Workbench, and it answers each one here.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Got it. As soon as an AI agent connects, it takes care of this for you. To connect one, just ask the AI you use to run the Workbench project.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>This copy is shared, so your comment stays in this tab. In your own project, just ask the AI you use to run the Workbench project, and it takes care of comments like this one.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} is listening for comments</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Pin a comment on any spot of a page. On your own computer, your coding agent gets it as you write, changes the page, answers on the comment and ticks it off. Works with Claude Code, Codex, Copilot, Gemini, Junie and Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Pin a comment on any spot of a page. On your own computer, your coding agent gets it as you write, changes the page, answers on the comment and ticks it off. Works with Claude Code, Codex, Copilot, Gemini, Junie and Cursor. Try it now: write your comment and send it.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live review with AI</value>
@@ -2833,7 +2842,7 @@
         <value>Limited experience</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
+        <value>You can look around, switch views, take screenshots and write comments. Changing anything else needs an AI agent running the Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Sign-in pages aren't in the Workbench yet</value>

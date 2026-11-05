@@ -67,7 +67,12 @@ public class ReviewAccessTests
 
         Assert.AreEqual("Seen from afar", seen!.Messages[0].Text);
 
-        Assert.IsNull(await remote.Session.AddThread("assistant", "", new("body", null, null, 0, 0), "Visitor", "Let me in", null));
+        var own = await remote.AddComment("assistant", "Only in my tab");
+
+        Assert.IsNotNull(own);
+        Assert.Contains(t => t.Id == own, remote.Session.Threads);
+        Assert.IsTrue(remote.Session.CanChange(own));
+        Assert.IsFalse(remote.Session.CanChange(id));
         Assert.IsNull(remote.Session.CreateFlow("Visitor's flow"));
 
         remote.Session.Reply(id, "Visitor", "Me too");
@@ -82,6 +87,7 @@ public class ReviewAccessTests
 
         Assert.AreEqual(WorkbenchReviewStatus.Open, result.Status);
         Assert.DoesNotContain(m => m.Author == "Visitor", result.Messages);
+        Assert.DoesNotContain(t => t.Id == own, thread);
 
         var pages = await server.Agent.GetPages(TestContext.CancellationToken);
 

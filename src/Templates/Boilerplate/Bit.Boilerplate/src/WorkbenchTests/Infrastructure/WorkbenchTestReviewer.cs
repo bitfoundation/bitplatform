@@ -69,6 +69,9 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
         return id;
     }
 
+    /// <summary>Adds a comment on a page without waiting for the server's copy, which a visitor's never reaches.</summary>
+    public Task<string?> AddComment(string pageKey, string text) => dispatcher.InvokeAsync(() => Session.AddThread(pageKey, "", new("body", null, null, 0, 0), Name, text, null));
+
     /// <summary>Changes the review on the session's dispatcher.</summary>
     public Task Change(Action<WorkbenchReviewSession> change) => dispatcher.InvokeAsync(() => change(Session));
 

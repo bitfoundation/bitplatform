@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Ningún agente está escuchando. Pide a tu agente que repase los comentarios de la revisión en el banco de trabajo y los irá respondiendo aquí uno por uno.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Recibido. En cuanto se conecte un agente de IA, se encargará de esto por ti. Para conectarlo, solo pide a la IA que usas que ejecute el proyecto Workbench.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Esta copia es compartida, así que tu comentario se queda en esta pestaña. En tu propio proyecto, solo pide a la IA que usas que ejecute el proyecto Workbench y se encargará de comentarios como este.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} está atento a los comentarios</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Fija un comentario en cualquier punto de una página. En tu propio equipo, tu agente de programación lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Fija un comentario en cualquier punto de una página. En tu propio equipo, tu agente de programación lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor. Pruébalo ahora: escribe tu comentario y envíalo.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Revisión en vivo con IA</value>
@@ -2833,7 +2842,7 @@
         <value>Experiencia limitada</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Puedes explorar, cambiar de vista y hacer capturas. Para cambiar algo hace falta un agente de IA que ejecute el Workbench.</value>
+        <value>Puedes explorar, cambiar de vista, hacer capturas y escribir comentarios. Para cambiar cualquier otra cosa hace falta un agente de IA que ejecute el Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Las páginas de inicio de sesión aún no están en el Workbench</value>

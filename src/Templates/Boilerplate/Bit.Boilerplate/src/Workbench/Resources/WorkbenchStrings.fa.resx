@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>هیچ عاملی گوش‌به‌زنگ نیست. از عاملتان بخواهید نظرهای بازبینی را در میز کار مرور کند تا به تک‌تکشان همین‌جا جواب بدهد.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>دریافت شد. به محض این‌که یک عامل هوش مصنوعی وصل شود، این کار برایتان انجام می‌شود. برای وصل شدنش کافی است به هوش مصنوعی‌ای که استفاده می‌کنید بگویید پروژه Workbench را اجرا کند.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>این نسخه اشتراکی است، پس نظرتان فقط در همین تب می‌ماند. در پروژه خودتان کافی است به هوش مصنوعی‌ای که استفاده می‌کنید بگویید پروژه Workbench را اجرا کند تا به نظرهایی مثل این رسیدگی کند.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} گوش‌به‌زنگ نظرهاست</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند. همین حالا امتحان کنید: نظرتان را بنویسید و بفرستید.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>بازبینی زنده با هوش مصنوعی</value>
@@ -2833,7 +2842,7 @@
         <value>تجربه محدود</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>می‌توانید بگردید، نماها را عوض کنید و اسکرین‌شات بگیرید. برای تغییر دادن، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
+        <value>می‌توانید بگردید، نماها را عوض کنید، اسکرین‌شات بگیرید و نظر بنویسید. برای هر تغییر دیگری، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>صفحه‌های ورود هنوز در Workbench نیستند</value>
