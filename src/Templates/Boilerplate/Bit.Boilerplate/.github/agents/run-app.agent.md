@@ -23,6 +23,9 @@ commands themselves are in `AGENTS.md` section 4.
 - Ready means a page answers, not that a process started: load the home page once before the first step.
 - The landing page (`src/LandingPage`) is a site of its own that the app's run doesn't start; `AGENTS.md` section 4
   says how to run it.
+- So is the Workbench (`src/Workbench`). To run or open it, follow section 1 of the **workbench** skill
+  (`.github/agents/workbench.agent.md`) even when nothing else in that skill applies: it has to run in dev mode, with you
+  connected to its review and listening to the comments the user leaves on it.
 
 ## 2. Edit while it runs
 
