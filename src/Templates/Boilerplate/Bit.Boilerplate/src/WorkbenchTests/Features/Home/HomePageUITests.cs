@@ -65,7 +65,8 @@ public class HomePageUITests : WorkbenchPageTest
             """);
 
         await OpenHome();
-        await Page.WaitForTimeoutAsync(4000);
+        await Expect(Page.Locator(".home.reveals-live")).ToBeAttachedAsync();
+        await Page.WaitForTimeoutAsync(500);
 
         Assert.IsGreaterThanOrEqualTo(0.99, await Page.EvaluateAsync<double>("() => window.__lowestOpacity"));
     }
