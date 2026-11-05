@@ -1,6 +1,6 @@
 ---
 name: workbench
-description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption. The user reviews it with comments pinned on the page that reach the agent as they are written.
+description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption. The user reviews it with comments pinned on the page that reach the agent as they are written, and whenever it runs the agent is connected to that review and listening.
 ---
 
 # Workbench: design the page before the app builds it
@@ -14,23 +14,33 @@ what the user approves is how the real page will look.
 ## 1. Run it
 
 <!--#if (aspire == true)-->
-- If it is already running, use it. With the app host running, start its `workbench` resource, which starts only when
-  asked. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a capped retry loop.
+- If it is already running in dev mode, use it. With the app host running, start its `workbench` resource, which starts
+  only when asked. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a capped retry
+  loop.
 <!--#else-->
-- If it is already running, use it. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL
-  with a capped retry loop.
+- If it is already running in dev mode, use it. Otherwise run `dotnet watch` in `src/Workbench` in the background and
+  poll its URL with a capped retry loop.
 <!--#endif-->
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
   describes. A `.resx` edit or startup code needs a restart.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
-  anything and where `/mcp` and `/api/review` answer. Any other copy, like a published one or a plain `dotnet run`, which
-  is how bit CLI starts it, answers those with a 404: stop that copy and run `dotnet watch` in `src/Workbench`. Comments
-  the user left on a copy on this computer wait in the review for you, and are told so.
+  anything and where `/mcp` and `/api/review` answer. A home page that answers doesn't show it, so ask `/api/review`. Any
+  other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers those with a 404: stop
+  that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy run from its
+  project folder wait in the review for you, and are told so. A published copy keeps them only in memory, so before you stop
+  one, tell the user that any left on it will be lost.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
 - It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
-  endpoints under `/api/review`. An MCP client connects when its session starts: if the Workbench wasn't running then,
-  reconnect the server if your client can, or use the HTTP endpoints.
+  endpoints under `/api/review`. An MCP client connects when its session starts: if the Workbench wasn't running in dev
+  mode then, reconnect the server if your client can, or use the HTTP endpoints.
+- Whatever it was started for and whoever started it, start listening the moment it runs in dev mode, before you hand
+  anything over and without being asked: the user can pin a comment as soon as a page is open, and one nobody is listening
+  for gets no answer. Read what is already waiting, then keep waiting for more the way section 7 says, in the background
+  where your client can, so you can go on working and talking to the user. Tell the user you are listening, and go on until
+  they say the review is over or the Workbench stops: a wait that ends empty or at its time limit is the cue to wait again.
+  So is one that fails, as it does while the Workbench restarts: cursors survive a restart, so retry it a few seconds apart,
+  and if it still fails after a few tries, tell the user that listening has stopped.
 
 ## 2. Build the page
 
@@ -156,8 +166,9 @@ what the user approves is how the real page will look.
   the way section 6 says.
 - Show the rest per device and state, as links or images, and change it until the user approves it. Approval is the user
   telling you to go ahead: an answer or a review comment is not, and nothing of the page goes into the app before it.
-- The user pins comments on the page in Comment mode. The comments reach you as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
-  user says the review is over. Tell the user you are listening.
+- The user pins comments on the page in Comment mode. The comments reach you as they are written, since you have been
+  listening from the moment it ran (section 1): call `get_review`, then `wait_for_review` with the cursor it returns, again
+  and again, until the user says the review is over.
 - For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick
   it as you go, change the page, which hot reload brings to the reviewer's view, then reply in the reviewer's language
   (`reply_to_comment`) and mark it done. A comment names its element (component, text, CSS path) and its view;
