@@ -130,19 +130,14 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
             await AddPairingHeader(context);
 
             var page = await context.NewPageAsync();
+            var waitForQuietNetwork = WatchNetwork(page);
 
             await page.GotoAsync(new Uri(WorkbenchUrls.LocalBaseAddress(server), relativeUrl).ToString(), new() { WaitUntil = WaitUntilState.Load, Timeout = 30_000 });
 
             await page.WaitForFunctionAsync("() => window.__workbenchReady === true", null, new() { Timeout = 30_000 });
 
-            try
-            {
-                // A page that keeps the network busy is captured anyway after a few seconds.
-                await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 8_000 });
-            }
-            catch (TimeoutException)
-            {
-            }
+            // A page that keeps the network busy is captured anyway after a few seconds.
+            await waitForQuietNetwork(TimeSpan.FromSeconds(8), cancellationToken);
 
             return await use(page);
         }
@@ -155,6 +150,42 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         {
             slots.Release();
         }
+    }
+
+    /// <summary>
+    /// Starts counting the page's open requests and returns a wait until none has been open for half a second. The circuit's
+    /// requests don't count: behind IIS it long-polls, as a WebSocket can't carry the pairing token, so one of them is always open.
+    /// </summary>
+    private static Func<TimeSpan, CancellationToken, Task> WatchNetwork(IPage page)
+    {
+        var openRequests = 0;
+        var lastChange = Environment.TickCount64;
+
+        void Change(IRequest request, int by)
+        {
+            if (new Uri(request.Url).AbsolutePath.StartsWith("/_blazor", StringComparison.Ordinal))
+                return;
+
+            Interlocked.Add(ref openRequests, by);
+            Interlocked.Exchange(ref lastChange, Environment.TickCount64);
+        }
+
+        page.Request += (_, request) => Change(request, 1);
+        page.RequestFinished += (_, request) => Change(request, -1);
+        page.RequestFailed += (_, request) => Change(request, -1);
+
+        return async (timeout, cancellationToken) =>
+        {
+            var giveUpAt = Environment.TickCount64 + (long)timeout.TotalMilliseconds;
+
+            while (Environment.TickCount64 < giveUpAt)
+            {
+                if (Volatile.Read(ref openRequests) <= 0 && Environment.TickCount64 - Interlocked.Read(ref lastChange) >= 500)
+                    return;
+
+                await Task.Delay(50, cancellationToken);
+            }
+        };
     }
 
     /// <summary>Captures a view and names the file after its page, device, pixel size, culture, theme and data state.</summary>

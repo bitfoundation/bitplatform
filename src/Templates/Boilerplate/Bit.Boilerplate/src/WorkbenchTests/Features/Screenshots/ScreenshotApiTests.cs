@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Boilerplate.WorkbenchTests.Features.Screenshots;
 
@@ -105,6 +106,47 @@ public class ScreenshotApiTests
 
         Assert.AreEqual((width, height), (info.Width, info.Height));
         Assert.AreSequenceEqual(png, await client.GetByteArrayAsync($"api/thumbnails/settings?phone={phone}", TestContext.CancellationToken), "The second request gets the same capture.");
+    }
+
+    /// <summary>
+    /// Behind IIS the headless browser can't send the pairing token with a WebSocket, so it gets a 400 and the circuit
+    /// long-polls, which keeps one request open all the time. The wait for an idle network was 8 seconds on every capture.
+    /// </summary>
+    [TestMethod]
+    public async Task ACaptureWhereWebSocketsAreRefused_Should_NotWaitOutTheCircuitsLongPolling()
+    {
+        await using var refusingServer = await new WorkbenchTestServer().Start(services => services.AddSingleton<IStartupFilter, RefuseWebSockets>());
+        using var refusingClient = refusingServer.CreateClient();
+        refusingClient.Timeout = TimeSpan.FromMinutes(2);
+
+        // The first one also starts the headless browser.
+        Assert.AreEqual(HttpStatusCode.OK, (await refusingClient.GetAsync("api/screenshots/settings?device=iphone-se", TestContext.CancellationToken)).StatusCode);
+
+        var watch = Stopwatch.StartNew();
+        var response = await refusingClient.GetAsync("api/screenshots/theme?device=iphone-se", TestContext.CancellationToken);
+        watch.Stop();
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.IsLessThan(TimeSpan.FromSeconds(8), watch.Elapsed);
+    }
+
+    private sealed class RefuseWebSockets : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        {
+            app.Use(async (context, nextMiddleware) =>
+            {
+                if (context.Request.Headers.Upgrade.Count > 0)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+
+                await nextMiddleware(context);
+            });
+
+            next(app);
+        };
     }
 
     [TestMethod]
