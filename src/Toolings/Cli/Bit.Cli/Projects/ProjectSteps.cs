@@ -49,6 +49,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private bool migrationAdded;
 
+    private bool commitMigrationAfterStart;
+
     public Task<StepResult> AppCertificateAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
@@ -360,8 +362,6 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
             return StepResult.Skipped("Skipped the initial migration", "the project has no Server.Api folder");
 
-        var migrations = MigrationsDirectory;
-
         if (HasMigrations)
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
@@ -375,13 +375,28 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         migrationAdded = true;
         var formatted = await efTool.FormatAsync(offline: false, before, progress, cancellationToken);
-        var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
+
+        // A commit changes the version every assembly carries, so the next build recompiles every project. On Windows
+        // the build in aspire start then can't overwrite the dlls of a running Workbench or landing page.
+        commitMigrationAfterStart = Workbench is not null || LandingPage is not null;
+        var committed = commitMigrationAfterStart ? null : await CommitMigrationAsync(cancellationToken);
         var detail = $"{project.Database}{(committed is null ? "" : ", committed")}";
 
         return formatted.Status is StepStatus.Warning
             ? formatted with { Title = "Added the Initial migration, but couldn't format it", Detail = detail }
             : StepResult.Succeeded("Added the Initial migration", detail);
     }
+
+    public async Task CommitMigrationAfterStartAsync(CancellationToken cancellationToken)
+    {
+        if (commitMigrationAfterStart)
+        {
+            commitMigrationAfterStart = false;
+            await CommitMigrationAsync(cancellationToken);
+        }
+    }
+
+    private Task<string?> CommitMigrationAsync(CancellationToken cancellationToken) => CommitPathAsync(MigrationsDirectory, "Add the Initial EF Core migration", cancellationToken);
 
     public RunningProject? Running { get; private set; }
 
