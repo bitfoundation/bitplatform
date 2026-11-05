@@ -34,7 +34,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
     private static readonly string[] apple = [AppleIssuerId, AppleKeyId, ApplePrivateKey, AppleCertificateFile, AppleCertificatePassword];
 
-    private static readonly string[] optional = [RetiredAppCertificate, "SERVERWEB_SETTINGS", "SERVERAPI_SETTINGS", "LANDINGPAGE_SETTINGS"];
+    /// <summary>
+    /// The retired certificate, and the settings of a service: the CD reads <c>&lt;SERVICE&gt;_SETTINGS</c> for each service the Compose
+    /// project has, whatever it is called, and an empty one is fine.
+    /// </summary>
+    private static bool IsOptional(string name) => name is RetiredAppCertificate || name.EndsWith("_SETTINGS", StringComparison.OrdinalIgnoreCase);
 
     private static readonly Dictionary<string, string> hints = new(StringComparer.Ordinal)
     {
@@ -141,11 +145,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         Show(wanted, IsSet);
 
         if (options.Check)
-            return missing.Any(s => optional.Contains(s.Name) is false) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
+            return missing.Any(s => IsOptional(s.Name) is false) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
 
         var rotating = options.RotateCertificate ? wanted.Where(s => s.Name is AppCertificate && IsSet(s)).ToList() : [];
 
-        if (missing.All(s => optional.Contains(s.Name)) && rotating.Count == 0)
+        if (missing.All(s => IsOptional(s.Name)) && rotating.Count == 0)
         {
             cli.Console.Out.MarkupLine($"Every secret the workflows use is set in {Markup.Escape(repository)}.");
             return CliApp.ExitOk;
@@ -257,7 +261,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         foreach (var name in absent.Order(StringComparer.Ordinal))
         {
-            if ((createdByBit.Contains(name) && name is not AndroidKeystorePassword and not AndroidSigningPassword) || optional.Contains(name))
+            if ((createdByBit.Contains(name) && name is not AndroidKeystorePassword and not AndroidSigningPassword) || IsOptional(name))
                 continue;
 
             if (await AskAsync(environment, name, cancellationToken) is { Length: > 0 } value)
@@ -502,7 +506,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             foreach (var secret in scope)
             {
                 var state = isSet(secret) ? "[green]set[/]"
-                    : optional.Contains(secret.Name) ? "[grey]not set, optional[/]"
+                    : IsOptional(secret.Name) ? "[grey]not set, optional[/]"
                     : createdByBit.Contains(secret.Name) ? "[yellow]missing[/] [grey]bit creates it[/]"
                     : "[yellow]missing[/]";
 
