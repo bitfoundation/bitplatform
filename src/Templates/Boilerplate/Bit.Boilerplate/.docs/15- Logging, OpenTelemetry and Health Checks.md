@@ -406,7 +406,8 @@ probes from turning into paid calls or repeated sign-ins.
 
 With Redis enabled, Aspire registers `StackExchange.Redis_redis-persistent` (Unhealthy) and
 `StackExchange.Redis_redis-cache`. The template changes `redis-cache` to Degraded, because FusionCache keeps serving from
-memory without it. With a standalone API, `Server.Web` also checks the API's `/alive` endpoint (`serverApi`, Degraded).
+memory without it. `redis-persistent` is registered only where `Server.Api` runs, since nothing else uses it. With a
+standalone API, `Server.Web` has only `redis-cache` and also checks the API's `/alive` endpoint (`serverApi`, Degraded).
 
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
 
