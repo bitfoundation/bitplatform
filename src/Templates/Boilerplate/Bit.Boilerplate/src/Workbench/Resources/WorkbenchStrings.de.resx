@@ -2842,7 +2842,7 @@
         <value>Eingeschränkte Nutzung</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Sie können sich umsehen, Ansichten wechseln und Screenshots machen. Für Änderungen muss ein KI-Agent die Workbench ausführen.</value>
+        <value>Sie können sich umsehen, Ansichten wechseln, Screenshots machen und Kommentare schreiben. Für alle anderen Änderungen muss ein KI-Agent die Workbench ausführen.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Die Anmeldeseiten sind noch nicht in der Workbench</value>

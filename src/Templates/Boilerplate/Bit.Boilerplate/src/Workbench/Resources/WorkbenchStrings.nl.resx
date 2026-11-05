@@ -2842,7 +2842,7 @@
         <value>Beperkte ervaring</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Je kunt rondkijken, van weergave wisselen en schermafbeeldingen maken. Om iets te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
+        <value>Je kunt rondkijken, van weergave wisselen, schermafbeeldingen maken en opmerkingen schrijven. Om iets anders te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>De aanmeldpagina's staan nog niet in de Workbench</value>

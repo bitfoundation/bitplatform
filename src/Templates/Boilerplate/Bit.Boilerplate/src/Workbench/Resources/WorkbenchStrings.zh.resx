@@ -2842,7 +2842,7 @@
         <value>功能受限</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>你可以浏览、切换视图和截图。要进行修改，需要由 AI 智能体运行 Workbench。</value>
+        <value>你可以浏览、切换视图、截图和写评论。要进行其他修改，需要由 AI 智能体运行 Workbench。</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>登录页面尚未加入 Workbench</value>

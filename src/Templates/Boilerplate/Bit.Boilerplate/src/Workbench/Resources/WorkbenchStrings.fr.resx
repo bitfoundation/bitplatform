@@ -2842,7 +2842,7 @@
         <value>Expérience limitée</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Vous pouvez explorer, changer de vue et faire des captures. Pour modifier quoi que ce soit, un agent IA doit exécuter le Workbench.</value>
+        <value>Vous pouvez explorer, changer de vue, faire des captures et écrire des commentaires. Pour modifier quoi que ce soit d’autre, un agent IA doit exécuter le Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Les pages de connexion ne sont pas encore dans le Workbench</value>

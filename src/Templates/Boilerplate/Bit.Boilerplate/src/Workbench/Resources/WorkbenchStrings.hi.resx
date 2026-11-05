@@ -2842,7 +2842,7 @@
         <value>सीमित अनुभव</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>आप देख सकते हैं, व्यू बदल सकते हैं और स्क्रीनशॉट ले सकते हैं। कुछ बदलने के लिए किसी AI एजेंट का Workbench चलाना ज़रूरी है।</value>
+        <value>आप देख सकते हैं, व्यू बदल सकते हैं, स्क्रीनशॉट ले सकते हैं और टिप्पणियाँ लिख सकते हैं। कुछ और बदलने के लिए किसी AI एजेंट का Workbench चलाना ज़रूरी है।</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>साइन-इन पेज अभी Workbench में नहीं हैं</value>

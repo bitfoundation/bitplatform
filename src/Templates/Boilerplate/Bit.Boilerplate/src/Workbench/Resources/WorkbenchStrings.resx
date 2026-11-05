@@ -2842,7 +2842,7 @@
         <value>Limited experience</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
+        <value>You can look around, switch views, take screenshots and write comments. Changing anything else needs an AI agent running the Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Sign-in pages aren't in the Workbench yet</value>

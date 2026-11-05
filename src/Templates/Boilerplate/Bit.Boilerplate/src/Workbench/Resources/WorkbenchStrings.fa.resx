@@ -2842,7 +2842,7 @@
         <value>تجربه محدود</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>می‌توانید بگردید، نماها را عوض کنید و اسکرین‌شات بگیرید. برای تغییر دادن، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
+        <value>می‌توانید بگردید، نماها را عوض کنید، اسکرین‌شات بگیرید و نظر بنویسید. برای هر تغییر دیگری، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>صفحه‌های ورود هنوز در Workbench نیستند</value>

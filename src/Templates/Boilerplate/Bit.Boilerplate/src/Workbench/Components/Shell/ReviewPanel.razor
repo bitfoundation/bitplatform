@@ -1,7 +1,7 @@
 @inherits WorkbenchComponentBase
 
 <div class="review">
-    @* Outside dev mode, the review is read-only and the agent shows as offline *@
+    @* Outside dev mode, the page's status is read-only and the agent shows as offline *@
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.PageStatus)]</BitText>
         @if (session.CanWrite)

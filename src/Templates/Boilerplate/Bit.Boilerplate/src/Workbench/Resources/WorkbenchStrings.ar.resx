@@ -2842,7 +2842,7 @@
         <value>تجربة محدودة</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة. أما التغيير فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
+        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة وكتابة التعليقات. أما أي تغيير آخر فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>صفحات تسجيل الدخول ليست في Workbench بعد</value>
