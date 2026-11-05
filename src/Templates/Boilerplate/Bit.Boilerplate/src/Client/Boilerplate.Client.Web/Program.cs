@@ -69,8 +69,6 @@ public static partial class Program
         {
             var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 
-            CultureService.IcuCultureName = CultureInfo.CurrentUICulture.Name;
-
             var culture = new Uri(navigationManager.Uri).GetCulture() ?? // 1- Culture query string OR Route data request culture
                           CultureService.ExtractUiCulture(await host.Services.GetRequiredService<Cookie>().GetValue(CultureService.CultureCookieName)) ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings

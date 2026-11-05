@@ -19,16 +19,6 @@ namespace Boilerplate.Tests.Features.Culture;
 public partial class SupportedCultureContractTests
 {
     [TestMethod]
-    public void TheStandaloneAppsBootScript_Should_ListEverySupportedCulture()
-    {
-        var indexHtml = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "src", "Client", "Boilerplate.Client.Web", "wwwroot", "index.html"));
-
-        var cultureNames = string.Join(',', CultureInfoManager.SupportedCultures.Select(sc => sc.Culture.Name));
-
-        Assert.Contains($"'{cultureNames}'", indexHtml, "With one ICU data file per group of cultures, Blazor refuses to start when Program.cs ends up in another culture than the one the boot script picked.");
-    }
-
-    [TestMethod]
     public void EverySupportedCulture_Should_AppearInMainActivityAndTranslatorConfig()
     {
         if (CultureInfoManager.InvariantGlobalization)

@@ -10,8 +10,6 @@ public partial class CultureService
     /// </summary>
     public const string CultureCookieName = ".AspNetCore.Culture";
 
-    public static string? IcuCultureName { get; set; }
-
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -34,7 +32,7 @@ public partial class CultureService
 
         var currentUri = new Uri(navigationManager.Uri);
 
-        if (AppPlatform.IsBlazorHybridOrBrowser && IsIcuDataLoaded(cultureName) && await EnsureCultureResourcesLoaded(cultureName))
+        if (AppPlatform.IsBlazorHybridOrBrowser && await EnsureCultureResourcesLoaded(cultureName))
         {
             CultureInfoManager.SetCurrentCulture(cultureName);
 
@@ -50,8 +48,8 @@ public partial class CultureService
             return;
         }
 
-        // Blazor Server (no in-place switch there), a culture outside the wasm's ICU data file and the wasm
-        // satellite-failure fall-back: a full reload of the current url, re-addressed to the new culture when the url carries one.
+        // Blazor Server (no in-place switch there) and the wasm satellite-failure fall-back: a full reload of the
+        // current url, re-addressed to the new culture when the url carries one.
         navigationManager.NavigateTo(currentUri.GetUrlWithCulture(cultureName), forceLoad: true, replace: true);
     }
 
@@ -110,22 +108,6 @@ public partial class CultureService
         var uiCulture = cultureCookie[(uiCultureIndex + uiCultureMarker.Length)..];
 
         return string.IsNullOrWhiteSpace(uiCulture) ? null : uiCulture;
-    }
-
-    private static bool IsIcuDataLoaded(string cultureName)
-    {
-        return IcuCultureName is null || GetIcuDataFile(cultureName) == GetIcuDataFile(IcuCultureName);
-    }
-
-    // [mirror] the rule dotnet.js picks the ICU data file by, when BlazorWebAssemblyLoadAllGlobalizationData is false
-    private static string GetIcuDataFile(string cultureName)
-    {
-        var language = cultureName.Split('-')[0];
-
-        if (language is "en" || cultureName is "fr" or "fr-FR" or "it" or "it-IT" or "de" or "de-DE" or "es" or "es-ES")
-            return "EFIGS";
-
-        return language is "zh" or "ko" or "ja" ? "CJK" : "no_CJK";
     }
 
     private static readonly HashSet<string> loadedSatelliteLanguages = new(StringComparer.OrdinalIgnoreCase);

@@ -31,8 +31,6 @@ public partial class CultureInfoManager
         ("العربية", CreateCultureInfo("ar-SA")),
         ("Deutsch", CreateCultureInfo("de-DE"))
         // Adding new cultures requires changing MainActivity's DataPathPrefixes.
-        // [mirror] the supported cultures - keep in sync with:
-        // - src/Client/Boilerplate.Client.Web/wwwroot/index.html
     ];
 
     public static CultureInfo CreateCultureInfo(string name)
