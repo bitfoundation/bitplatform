@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using Boilerplate.LandingPage.Client.Infrastructure.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.LandingPage.Tests.Features;
 
@@ -403,6 +404,26 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task AFailureWhilePrerendering_Should_BeLoggedOnce()
+    {
+        if (LandingSites.Find("ecommerce") is not { } sample)
+        {
+            Assert.Inconclusive("The sample that shows the rating is gone.");
+            return;
+        }
+
+        var log = new RecordingErrorLog();
+        await using var failing = await new LandingTestServer().Start(builder => builder.Logging.AddProvider(log), services => services.AddScoped<IStoreListingClient, FailingStoreListingClient>(), "Production");
+        using var failingClient = failing.CreateClient();
+
+        using var response = await failingClient.GetAsync(sample.Path);
+
+        Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.ContainsSingle(log.Errors.Where(error => error == FailingStoreListingClient.Failure));
+        Assert.IsEmpty(log.Warnings.Where(warning => warning == FailingStoreListingClient.Failure), $"{log.Warnings.Count} warnings for one failed request.");
+    }
+
+    [TestMethod]
     public async Task TheHome_Should_ShowItsScoresWithTheirSource()
     {
         var html = await client.GetStringAsync(LandingRoutes.Home);
@@ -420,7 +441,9 @@ public class PageTests
 
     private sealed class FailingStoreListingClient : IStoreListingClient
     {
-        public Task<Client.Infrastructure.Models.StoreListing?> GetAppStoreListingAsync(string appleAppId, CancellationToken cancellationToken) => throw new InvalidOperationException("The App Store lookup failed.");
+        public const string Failure = "The App Store lookup failed.";
+
+        public Task<Client.Infrastructure.Models.StoreListing?> GetAppStoreListingAsync(string appleAppId, CancellationToken cancellationToken) => throw new InvalidOperationException(Failure);
     }
 
     private static string SamplePath() => LandingSites.All[0].Path.Length is 0 ? LandingRoutes.Home : LandingSites.All[0].Path;
