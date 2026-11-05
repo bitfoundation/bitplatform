@@ -62,6 +62,8 @@ public partial class HomePage
     {
         if (firstRender)
         {
+            await JSRuntime.InvokeVoidAsync("workbench.loadThumbnails");
+
             // The review document joins once interactive, for the statuses, comment counts and flows on the cards.
             try
             {

@@ -517,8 +517,45 @@ if (isPreview) {
     });
 }
 
+/** How many thumbnails load at once, as each can take seconds and holds one of the few connections a browser opens to a server. */
+const maxThumbnailsAtOnce = 2;
+
+/** Loads the home page's thumbnails as they come into sight; one of a hidden theme has no box, so it waits until its theme shows. */
+function loadThumbnails() {
+    const waiting: HTMLImageElement[] = [];
+    let loading = 0;
+
+    const loadNext = () => {
+        while (loading < maxThumbnailsAtOnce && waiting.length > 0) {
+            const image = waiting.shift()!;
+            const onDone = () => {
+                loading--;
+                loadNext();
+            };
+
+            loading++;
+            image.addEventListener('load', onDone, { once: true });
+            image.addEventListener('error', onDone, { once: true });
+            image.src = image.dataset.thumbnail!;
+        }
+    };
+
+    const observer = new IntersectionObserver(entries => {
+        for (const entry of entries.filter(e => e.isIntersecting)) {
+            observer.unobserve(entry.target);
+            waiting.push(entry.target as HTMLImageElement);
+        }
+
+        loadNext();
+    }, { rootMargin: '600px' });
+
+    document.querySelectorAll<HTMLImageElement>('img[data-thumbnail]').forEach(image => observer.observe(image));
+}
+
 /** The functions .NET calls through JS interop as workbench.<name>, on the shell and in previews alike. */
 host.workbench = {
+    loadThumbnails,
+
     /** Marks the preview ready for screenshots and tells the shell, after a composition's inner screen is ready. */
     markReady() {
         if (screenOf() && isScreenReady === false) {
