@@ -91,8 +91,6 @@ self.externalAssets = [
     ] : [])
 ];
 
-// [mirror] the routes that belong to the server - keep in sync with:
-// - src/Server/Boilerplate.Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs (serverRoutes)
 self.serverHandledUrls = [
     /\/api\//,
     /\/odata\//,

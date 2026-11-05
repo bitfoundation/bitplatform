@@ -2,8 +2,8 @@ namespace Boilerplate.Tests.E2E.Features.ErrorPages;
 
 /// <summary>
 /// What a prerendering deployment answers before any WebAssembly runs - a crawler, a link preview, a browser with
-/// scripts off. Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401 to NotAuthorizedPage and keeps the
-/// status code on it, and renders NotFoundPage at the address of a page that doesn't exist.
+/// scripts off. Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401/404 to NotAuthorizedPage /
+/// NotFoundPage and keeps the status code on them.
 /// <para>
 /// AdminPanel is not among the rows: admin-sample.cd.yml does not set <c>WebAppRender.PrerenderEnabled</c>, so it
 /// serves a shell and only the client router knows, once WebAssembly is up, that a route is missing or needs an
@@ -22,13 +22,11 @@ public partial class ErrorPageStatusCodeTests
     {
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
 
-        const string path = "/e2e/route/that-does-not-exist";
-
-        using var response = await httpClient.GetAsync(new Uri(new Uri(DeployedApps.AddressOf(app)), path), TestContext.CancellationToken);
+        using var response = await httpClient.GetAsync(new Uri(new Uri(DeployedApps.AddressOf(app)), "/e2e/route/that-does-not-exist"), TestContext.CancellationToken);
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, $"{app} answered {response.RequestMessage!.RequestUri}.");
-        Assert.AreEqual(path, response.RequestMessage!.RequestUri!.AbsolutePath, "The address the visitor typed stays in the address bar.");
+        Assert.AreEqual(PageUrls.NotFound, PathWithoutCulture(response.RequestMessage!.RequestUri!), "The 404 is served from NotFoundPage's own url.");
         Assert.Contains(AppStrings.NotFoundText, html, $"{app}'s 404 carries no NotFoundPage markup - a status code with nothing to show.");
     }
 

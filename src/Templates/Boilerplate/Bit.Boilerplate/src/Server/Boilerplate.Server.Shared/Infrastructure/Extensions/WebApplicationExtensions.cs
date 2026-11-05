@@ -129,11 +129,6 @@ public static class WebApplicationExtensions
                 options.RequestCultureProviders.Remove(options.RequestCultureProviders.OfType<AcceptLanguageHeaderRequestCultureProvider>().Single());
                 options.RequestCultureProviders.Add(new AppAcceptLanguageRequestCultureProvider { Options = options });
                 options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
-                options.RequestCultureProviders.Insert(2, new CustomRequestCultureProvider(context =>
-                {
-                    var firstSegment = context.Request.Path.Value?.Split('/', 3) is [_, var segment, ..] ? segment : null;
-                    return Task.FromResult(CultureInfoManager.GetCultureInfo(firstSegment)?.Name is string culture ? new ProviderCultureResult(culture) : null);
-                }));
                 app.UseRequestLocalization(options);
             }
 

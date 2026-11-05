@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Runtime.Loader;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -269,11 +268,10 @@ public static partial class Program
         /// <summary>
         /// Prior to the introduction of .NET 8, the Blazor router effectively managed NotFound and NotAuthorized components during pre-rendering.
         /// However, the current behavior has changed, and it now exclusively returns 401, 403, and 404 status codes with an empty body response!
-        /// To address this, we've implemented the UseStatusCodePages middleware to handle responses featuring 401 and 403 status codes that lack a body.
-        /// This middleware facilitates redirection to the not-authorized page. Consequently, the status code for these responses becomes 302 (Found).
-        /// To mitigate the challenges posed by this situation, our only recourse is to repurpose the 401 and 403 status codes for
-        /// not-authorized responses, at the very least.
-        /// A request for a page that doesn't exist renders the not-found page at the requested address instead, and stays a 404.
+        /// To address this, we've implemented the UseStatusCodePages middleware to handle responses featuring 401, 403, and 404 status codes that lack a body.
+        /// This middleware facilitates redirection to the appropriate not-found and not-authorized pages. Consequently, the status code for these responses becomes 302 (Found).
+        /// To mitigate the challenges posed by this situation, our only recourse is to repurpose the 401, 403, and 404 status codes for
+        /// not-found and not-authorized responses, at the very least.
         /// </summary>
         private void Handle40XStatusCodes()
         {
@@ -311,15 +309,6 @@ public static partial class Program
                 await next.Invoke(context);
             });
 
-            app.UseStatusCodePagesWithReExecute(PageUrls.NotFound, createScopeForStatusCodePages: true);
-
-            app.Use((context, next) =>
-            {
-                context.Features.Get<IStatusCodePagesFeature>()!.Enabled = context.IsMissingPageRequest();
-
-                return next(context);
-            });
-
             app.UseStatusCodePages(options: new()
             {
                 HandleAsync = async (statusCodeContext) =>
@@ -343,6 +332,13 @@ public static partial class Program
                             new("isForbidden", is403 ? "true" : "false")
                         });
                         httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
+                    }
+                    else if (httpContext.Response.StatusCode is 404 &&
+                        httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */ &&
+                        httpContext.Request.Path.StartsWithSegments("/_framework") is false &&
+                        httpContext.Request.Path.StartsWithSegments("/_content") is false)
+                    {
+                        httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
                     }
                 }
             });

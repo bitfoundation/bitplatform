@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
@@ -38,7 +37,6 @@ public static partial class WebApplicationExtensions
 
                 if ((HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) is false
                     || context.IsBlazorPageContext() is false
-                    || context.Features.Get<IStatusCodeReExecuteFeature>() is not null
                     // The service worker's app-shell request must be served as requested: a service worker may not
                     // answer a navigation with a `redirected` response - and with `no-prerender` nothing is rendered.
                     || request.Query.ContainsKey("no-prerender"))
@@ -280,27 +278,6 @@ public static partial class WebApplicationExtensions
             //#endif
 
             return app;
-        }
-    }
-
-    // [mirror] the routes that belong to the server - keep in sync with:
-    // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js (serverHandledUrls)
-    private static readonly string[] serverRoutes =
-    [
-        "/api", "/odata", "/core", "/hangfire", "/healthchecks-ui", "/healthz", "/health", "/alive", "/swagger", "/scalar", "/openapi",
-        "/oauth", "/.well-known", "/app-hub", "/mcp", "/dev-mcp", "/_framework", "/_content", "/_blazor"
-    ];
-
-    extension(HttpContext context)
-    {
-        public bool IsMissingPageRequest()
-        {
-            var request = context.Request;
-
-            return context.GetEndpoint() is null
-                && (HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method))
-                && Path.HasExtension(request.Path.Value) is false
-                && serverRoutes.Any(route => request.Path.StartsWithSegments(route)) is false;
         }
     }
 
