@@ -698,6 +698,13 @@ hybrid), switches in place where possible, and keeps the URL truthful: if the cu
 replaced with the new one (`UriExtensions.GetUrlWithCulture`) - otherwise the URL is left culture-less and the next
 document load localizes it (via the redirect on Server.Web, or the cookie/OS fallbacks on the other platforms).
 
+Blazor WebAssembly downloads only the ICU data file of the culture it boots in, which holds some of the other cultures
+too: `EFIGS` (English, French, Italian, German, Spanish), `CJK` (Chinese, Japanese, Korean) or `no_CJK` (the rest). The
+culture comes from the inline script next to the Blazor script in `App.razor` and `index.html`, which must end up with
+the same culture as `Client.Web/Program.cs`: Blazor refuses to start otherwise. So `index.html` lists the supported cultures
+too. A switch to a culture in another file reloads the page to fetch it, so dates and numbers are never formatted without
+their data.
+
 Blazor WebAssembly standalone, MAUI and Windows have no server to redirect them; they resolve their culture at startup
 from the URL first, then the stored preference, then the OS/browser settings (see `Client.Web/Program.cs` and
 `AppClientCoordinator.ConfigureUISetup`).

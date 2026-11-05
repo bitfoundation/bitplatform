@@ -4,7 +4,11 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.NotFoundPageTitle)]</PageTitle>
 
-<AppPageData Title="@Localizer[nameof(AppStrings.NotFoundPageTitle)]" />
+<AppPageData Title="@Localizer[nameof(AppStrings.NotFoundPageTitle)]">
+    <Head>
+        <meta name="robots" content="noindex" />
+    </Head>
+</AppPageData>
 
 <section>
     <NotFoundContent />

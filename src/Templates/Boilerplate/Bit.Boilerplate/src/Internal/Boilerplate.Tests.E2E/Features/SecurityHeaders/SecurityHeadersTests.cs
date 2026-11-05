@@ -14,12 +14,11 @@ public partial class SecurityHeadersTests
     private static readonly Dictionary<string, string> baseline = new(StringComparer.OrdinalIgnoreCase)
     {
         ["X-Content-Type-Options"] = "nosniff",
-        ["X-XSS-Protection"] = "1; mode=block",
         ["X-Frame-Options"] = "SAMEORIGIN",
         ["Referrer-Policy"] = "strict-origin-when-cross-origin",
         ["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()",
         ["Cross-Origin-Resource-Policy"] = "cross-origin",
-        ["Content-Security-Policy"] = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; upgrade-insecure-requests;",
+        ["Content-Security-Policy"] = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; base-uri 'self'; upgrade-insecure-requests;",
     };
 
     /// <summary>30 days: what the three sources write. Cloudflare may only make it longer.</summary>
@@ -81,9 +80,8 @@ public partial class SecurityHeadersTests
     }
 
     /// <summary>
-    /// The app-wide policy: ContentSecurityPolicy.razor's, which App.razor sends as a second header. It is stricter than the baseline's
-    /// (default-src, script-src, connect-src ...) and a browser enforces both. It must name the app's own API, or the
-    /// app could not call it.
+    /// The app-wide policy: ContentSecurityPolicy.razor's, which App.razor sends instead of the baseline's. It is stricter
+    /// (default-src, script-src, connect-src ...). It must name the app's own API, or the app could not call it.
     /// </summary>
     [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo (standalone API)")]
@@ -96,8 +94,8 @@ public partial class SecurityHeadersTests
 
         Assert.IsFalse(CspMetaTag().IsMatch(html), $"{app}'s prerendered page has a Content-Security-Policy meta tag, which turns off the browser's preload scanner.");
 
-        var policy = CspPolicies(response).SingleOrDefault(p => p.Contains("default-src"));
-        Assert.IsNotNull(policy, $"{app}'s prerendered page has no app-wide Content-Security-Policy header.");
+        var policy = CspPolicies(response).Single();
+        Assert.Contains("default-src", policy, $"{app}'s prerendered page has no app-wide Content-Security-Policy header.");
 
         var directives = policy
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -106,12 +104,12 @@ public partial class SecurityHeadersTests
 
         Assert.AreEqual("'none'", directives["object-src"]);
         Assert.AreEqual("'self'", directives["worker-src"]);
+        Assert.AreEqual("'self'", directives["frame-ancestors"]);
         Assert.IsTrue(directives.ContainsKey("upgrade-insecure-requests"), "Production pages should upgrade insecure requests.");
         Assert.Contains("'self'", directives["default-src"]);
         Assert.Contains(DeployedApps.ApiOf(app), directives["connect-src"], $"{app} could not reach its own API.");
         Assert.Contains(DeployedApps.ApiOf(app), directives["form-action"]);
-        // Meta policies ignore frame-ancestors, which is why the header carries it.
-        Assert.IsFalse(directives.ContainsKey("frame-ancestors"), "frame-ancestors is ignored in a meta tag; it belongs in the header.");
+        Assert.AreEqual("same-origin-allow-popups", HeaderOf(response, "Cross-Origin-Opener-Policy"), "Social sign-in comes back through window.opener, so same-origin is out.");
     }
 
     /// <summary>
@@ -139,7 +137,11 @@ public partial class SecurityHeadersTests
         {
             if (name is "Content-Security-Policy")
             {
-                Assert.Contains(expected, CspPolicies(response), $"{name} on {uri} ({(int)response.StatusCode}): {HeaderOf(response, name)}");
+                var policy = CspPolicies(response).Single();
+                if (policy.Contains("default-src") is false)
+                {
+                    Assert.AreEqual(expected, policy, $"{name} on {uri} ({(int)response.StatusCode}).");
+                }
                 continue;
             }
 
@@ -151,8 +153,8 @@ public partial class SecurityHeadersTests
         var maxAge = int.Parse(HstsMaxAge().Match(hsts).Groups["seconds"].Value);
         Assert.IsGreaterThanOrEqualTo(minHstsMaxAge, maxAge, $"Strict-Transport-Security on {uri}: {hsts}");
 
-        // Nothing that names the stack behind the proxy.
-        foreach (var name in (string[])["X-Powered-By", "X-AspNet-Version", "X-AspNetMvc-Version"])
+        // Nothing that names the stack behind the proxy, and nothing obsolete.
+        foreach (var name in (string[])["X-Powered-By", "X-AspNet-Version", "X-AspNetMvc-Version", "X-XSS-Protection"])
         {
             Assert.IsNull(HeaderOf(response, name), $"{name} on {uri}: {HeaderOf(response, name)}");
         }

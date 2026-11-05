@@ -33,6 +33,35 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
 
     [TestMethod]
     [DataRow(App.Sales, DisplayName = "Sales")]
+    [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone")]
+    public async Task Culture_Should_LoadTheIcuDataItNeeds_AndNothingMore(App app)
+    {
+        const string cultureInAnotherIcuFile = "zh-CN";
+
+        List<string> icuFiles = [];
+        Page.Request += (_, request) =>
+        {
+            if (IcuFile().Match(request.Url) is { Success: true } match)
+            {
+                icuFiles.Add(match.Groups["name"].Value);
+            }
+        };
+
+        var page = await OpenApp(app);
+        await WaitUntilInteractive(page);
+
+        Assert.AreEqual("icudt_no_CJK", string.Join(", ", icuFiles.Distinct()));
+
+        icuFiles.Clear();
+        await ChangeCulture(page, cultureInAnotherIcuFile, currentCultureName: browserCulture);
+        await ExpectCulture(page, cultureInAnotherIcuFile);
+        await WaitUntilInteractive(page);
+
+        Assert.AreEqual("icudt_CJK", string.Join(", ", icuFiles.Distinct()));
+    }
+
+    [TestMethod]
+    [DataRow(App.Sales, DisplayName = "Sales")]
     [DataRow(App.Todo, DisplayName = "Todo")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task Culture_Should_FollowTheBrowser_ThenStayWhatTheUserPicked(App app)
@@ -114,4 +143,7 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
     }
 
     private static string Localized(string key) => AppStrings.ResourceManager.GetString(key, CultureInfoManager.GetCultureInfo(browserCulture))!;
+
+    [GeneratedRegex(@"/_framework/(?<name>icudt[^./]*)[^/]*\.dat")]
+    private static partial Regex IcuFile();
 }

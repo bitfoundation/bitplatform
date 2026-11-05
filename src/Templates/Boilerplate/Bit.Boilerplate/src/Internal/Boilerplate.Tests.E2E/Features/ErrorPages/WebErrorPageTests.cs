@@ -5,7 +5,7 @@ namespace Boilerplate.Tests.E2E.Features.ErrorPages;
 
 /// <summary>
 /// NotFoundPage and NotAuthorizedPage as a visitor meets them, across the ways a deployment can reach them: prerendered
-/// (Todo, AdminPanel, Sales - the server's UseStatusCodePages redirects), not prerendered (the WebAssembly standalone
+/// (Todo, AdminPanel, Sales - the server renders them in place or redirects), not prerendered (the WebAssembly standalone
 /// apps - the client router alone).
 /// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]

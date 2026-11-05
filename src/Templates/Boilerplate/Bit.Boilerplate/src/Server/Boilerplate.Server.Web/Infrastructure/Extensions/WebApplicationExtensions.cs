@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
@@ -37,6 +38,7 @@ public static partial class WebApplicationExtensions
 
                 if ((HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) is false
                     || context.IsBlazorPageContext() is false
+                    || context.Features.Get<IStatusCodeReExecuteFeature>() is not null
                     // The service worker's app-shell request must be served as requested: a service worker may not
                     // answer a navigation with a `redirected` response - and with `no-prerender` nothing is rendered.
                     || request.Query.ContainsKey("no-prerender"))
@@ -94,6 +96,7 @@ public static partial class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                && context.GetEndpoint()?.RequestDelegate is null
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {
@@ -184,6 +187,20 @@ public static partial class WebApplicationExtensions
                 await context.Response.WriteAsync(siteMap, context.RequestAborted);
             }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
+            app.MapGet("/robots.txt", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
+            {
+                var robots = "User-agent: *\nDisallow:\n";
+
+                if (app.Environment.IsProduction())
+                {
+                    robots += $"\nSitemap: {new Uri(context.Request.GetBaseUrl(), "sitemap_index.xml")}\n";
+                }
+
+                context.Response.Headers.ContentType = "text/plain; charset=utf-8";
+
+                await context.Response.WriteAsync(robots, context.RequestAborted);
+            }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
+
             // https://llmstxt.org - a markdown file that helps LLMs discover the app's pages.
             // Unlike sitemap.xml (which has no description element), llms.txt is where the page
             // descriptions declared in PageUrls actually belong.
@@ -263,6 +280,27 @@ public static partial class WebApplicationExtensions
             //#endif
 
             return app;
+        }
+    }
+
+    // [mirror] the routes that belong to the server - keep in sync with:
+    // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js (serverHandledUrls)
+    private static readonly string[] serverRoutes =
+    [
+        "/api", "/odata", "/core", "/hangfire", "/healthchecks-ui", "/healthz", "/health", "/alive", "/swagger", "/scalar", "/openapi",
+        "/oauth", "/.well-known", "/app-hub", "/mcp", "/dev-mcp", "/_framework", "/_content", "/_blazor"
+    ];
+
+    extension(HttpContext context)
+    {
+        public bool IsMissingPageRequest()
+        {
+            var request = context.Request;
+
+            return context.GetEndpoint() is null
+                && (HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method))
+                && Path.HasExtension(request.Path.Value) is false
+                && serverRoutes.Any(route => request.Path.StartsWithSegments(route)) is false;
         }
     }
 

@@ -54,14 +54,57 @@ public class SecurityHeadersTests
         }
     }
 
+    [TestMethod]
+    [DataRow("Test", true)]
+    [DataRow("Staging", true)]
+    [DataRow("Production", false)]
+    public async Task XRobotsTag_Should_KeepEverythingButProductionOutOfSearchResults(string environment, bool isSent)
+    {
+        using var response = await Send(environment);
+
+        Assert.AreEqual(isSent, response.Headers.TryGetValues("X-Robots-Tag", out var values), environment);
+        if (isSent)
+        {
+            Assert.AreEqual("noindex, nofollow", string.Join(", ", values!));
+        }
+    }
+
+    [TestMethod]
+    public async Task XXssProtection_Should_NotBeSent()
+    {
+        using var response = await Send(Environments.Production);
+
+        Assert.IsFalse(response.Headers.Contains("X-XSS-Protection"));
+    }
+
+    [TestMethod]
+    public async Task ContentSecurityPolicy_Should_BeTheEndpointsOwn_WhenItWroteOne()
+    {
+        using var ownPolicy = await Send(Environments.Production, "/own-policy");
+        using var baseline = await Send(Environments.Production);
+
+        Assert.AreEqual("default-src 'self';", string.Join(", ", ownPolicy.Headers.GetValues("Content-Security-Policy")));
+        Assert.Contains("base-uri 'self';", string.Join(", ", baseline.Headers.GetValues("Content-Security-Policy")));
+    }
+
     /// <summary>
     /// Hosts <c>UseSecurityHeaders</c> on its own, in Production, and returns the <c>Permissions-Policy</c> it wrote.
     /// </summary>
     private async Task<string> ReadPermissionsPolicy()
     {
+        using var response = await Send(Environments.Production);
+
+        Assert.IsTrue(response.Headers.TryGetValues("Permissions-Policy", out var values),
+            "UseSecurityHeaders should write a Permissions-Policy header; without one these tests assert nothing.");
+
+        return string.Join(", ", values!);
+    }
+
+    private async Task<HttpResponseMessage> Send(string environment, string path = "/")
+    {
         var address = $"http://127.0.0.1:{Random.Shared.Next(20000, 30000)}";
 
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Production });
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment });
         builder.WebHost.UseUrls(address);
         builder.Logging.ClearProviders();
 
@@ -69,18 +112,19 @@ public class SecurityHeadersTests
 
         app.UseSecurityHeaders();
         app.MapGet("/", () => "ok");
+        app.MapGet("/own-policy", (HttpContext context) =>
+        {
+            context.Response.Headers.ContentSecurityPolicy = "default-src 'self';";
+            return "ok";
+        });
 
         await app.StartAsync(TestContext.CancellationToken);
 
         try
         {
             using var httpClient = new HttpClient { BaseAddress = new Uri(address) };
-            using var response = await httpClient.GetAsync("/", TestContext.CancellationToken);
 
-            Assert.IsTrue(response.Headers.TryGetValues("Permissions-Policy", out var values),
-                "UseSecurityHeaders should write a Permissions-Policy header; without one these tests assert nothing.");
-
-            return string.Join(", ", values!);
+            return await httpClient.GetAsync(path, TestContext.CancellationToken);
         }
         finally
         {

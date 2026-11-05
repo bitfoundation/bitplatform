@@ -224,6 +224,22 @@
     </div>
 
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <!-- [mirror] the culture the runtime picks its ICU data file by - keep in sync with:
+         src/Server/Boilerplate.Server.Web/Components/App.razor -->
+    <script>
+        (() => {
+            const start = Blazor.start;
+            const supported = 'en-US,en-GB,nl-NL,fa-IR,sv-SE,hi-IN,zh-CN,es-ES,fr-FR,ar-SA,de-DE'.split(',');
+            const find = name => supported.find(culture => culture.toLowerCase() === (name || '').toLowerCase());
+            const cookie = (document.cookie.match(/\.AspNetCore\.Culture=[^;]*uic(?:=|%3D)([\w-]+)/i) || [])[1];
+            const culture = find(new URLSearchParams(location.search).get('culture'))
+                || find(location.pathname.split('/')[1])
+                || find(cookie || navigator.language)
+                || 'en-US';
+
+            Blazor.start = options => start(Object.assign({}, options, { applicationCulture: culture }));
+        })();
+    </script>
     <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js" updateInterval="60" updateOnVisibility="true"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
     <script>

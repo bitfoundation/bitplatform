@@ -289,6 +289,24 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task TheContentSecurityPolicy_Should_AllowOnlyWhatThePagesLoad()
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production");
+        using var productionClient = production.CreateClient();
+
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
+
+        var directives = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"))
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(directive => directive.Split(' ', 2))
+            .ToDictionary(directive => directive[0], directive => directive.Length > 1 ? directive[1] : string.Empty);
+
+        Assert.AreEqual("'self'", directives["base-uri"]);
+        Assert.AreEqual("'self' data: blob:", directives["img-src"]);
+        Assert.AreEqual("'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com", directives["connect-src"]);
+    }
+
+    [TestMethod]
     public async Task ThePublicAddress_Should_ComeFromTheRequest()
     {
         await using var indexed = await new LandingTestServer().Start(before: builder =>
