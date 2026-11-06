@@ -279,7 +279,8 @@ project up, and fails unless every container is healthy and the public address a
   or rolls it if more environments are coming.
 - Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
   domain is already in use, for mail or another site, first bring its existing DNS records into the zone and check
-  them against the current provider, and have DNSSEC turned off at the registrar, so nothing breaks on the switch.
+  them against the current provider, and have DNSSEC turned off at the registrar and wait out its old DS record's TTL,
+  so nothing breaks on the switch.
 - Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
   below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
 <!--#if (filesStorage == "S3")-->
