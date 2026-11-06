@@ -1631,7 +1631,7 @@ function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
     switch ($check.PSObject.Properties.Name | Where-Object { $_ -notin 'afterTurn', 'handoff', 'long' } | Select-Object -First 1) {
         'skill' { return & $usedSkill $check.skill }
         'noSkill' { return -not (& $usedSkill $check.noSkill) }
-        'called' { return [bool]($calls | Where-Object { $_.Name -like "*__$($check.called)" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$($check.called)*") }) }
+        'called' { return [bool](@($check.called) | Where-Object { $called = $_; $calls | Where-Object { $_.Name -like "*__$called" -or ($_.Name -in 'Bash', 'PowerShell', 'powershell', 'bash' -and $_.Input -like "*$called*") } }) }
         'mentions' { return [bool]($calls | Where-Object Input -like "*$($check.mentions)*") -or [bool]($finals -like "*$($check.mentions)*") }
         'read' {
             return [bool]($calls | Where-Object {
