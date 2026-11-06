@@ -50,6 +50,13 @@ jobs:
       with:
           persist-credentials: false
 
+    # The servers' binStorage check wants 2 GB free, or /alive and /health answer 503 in the tests. The runner's
+    # preinstalled toolchains leave a thin margin once the tests are built, so drop the ones no project here uses.
+    - name: Free disk space
+      run: |
+        sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/ndk
+        df -h /
+
     - name: Setup .NET
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
