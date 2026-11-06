@@ -19,32 +19,8 @@ concurrency:
 
 jobs:
 
-  build:
-    name: build
-    runs-on: ubuntu-26.04
-
-    steps:
-
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-      with:
-        global-json-file: global.json
-
-    - name: Verify formatting
-      run: dotnet format whitespace --folder . --verify-no-changes
-
-    - name: Set up and build with bit setup
-      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
-      with:
-        arguments: --platforms android --no-browsers -p:EnforceCodeStyleInBuild=true
-
-  test:
-    name: test
+  build_and_test:
+    name: build and test
     runs-on: ubuntu-26.04
 
     steps:
@@ -57,7 +33,7 @@ jobs:
     # The runner's preinstalled toolchains leave a thin margin once the tests are built, so drop the ones no project here uses.
     - name: Free disk space
       run: |
-        sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/miniconda /opt/az /usr/local/lib/android/sdk/ndk
         df -h /
 
     - name: Setup .NET
@@ -65,8 +41,13 @@ jobs:
       with:
         global-json-file: global.json
 
-    - name: Prepare this machine and build with bit setup
+    - name: Verify formatting
+      run: dotnet format whitespace --folder . --verify-no-changes
+
+    - name: Set up and build with bit setup
       uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
+      with:
+        arguments: --platforms android -p:EnforceCodeStyleInBuild=true
 
     - name: Test
       id: test
