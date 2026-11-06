@@ -181,7 +181,7 @@ public static class WebApplicationExtensions
             // 'object-src none': Blocks legacy plugins like Flash.
             // 'frame-ancestors self': Modern replacement for X-Frame-Options.
             // 'form-action self': Restricts forms to only submit to your own domain (prevents form hijacking).
-            var csp = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self';";
+            var csp = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; base-uri 'self';";
             if (app.Environment.IsDevelopment() is false)
             {
                 // In production, add 'upgrade-insecure-requests' to automatically upgrade any HTTP requests to HTTPS.
@@ -208,24 +208,20 @@ public static class WebApplicationExtensions
                     // Prevents browsers from sniffing MIME types (stops executing text/plain as scripts).
                     headers.XContentTypeOptions = "nosniff";
 
-                    // 3. X-XSS-Protection
-                    // Legacy header. Enables the browser's built-in XSS filter in block mode.
-                    headers.XXSSProtection = "1; mode=block";
-
-                    // 4. X-Frame-Options (XFO)
+                    // 3. X-Frame-Options (XFO)
                     // Prevents Clickjacking by ensuring the site can only be framed by itself (SameOrigin).
                     headers.XFrameOptions = "SAMEORIGIN";
 
-                    // 5. Referrer-Policy
+                    // 4. Referrer-Policy
                     // Protects user privacy by only sending the origin (domain) when navigating to external sites.
                     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
-                    // 6. Permissions-Policy
+                    // 5. Permissions-Policy
                     // "Disables" sensitive hardware/API access to reduce the attack surface.
                     // Example: If building an E-Commerce or Delivery app, remove 'payment' or 'geolocation' from this list.
                     headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()";
 
-                    // 7. Cross-Origin-Resource-Policy (CORP)
+                    // 6. Cross-Origin-Resource-Policy (CORP)
                     // Set to 'cross-origin' to explicitly allow resources (images, fonts, etc.) to be loaded by
                     // clients on different origins/domains and Blazor Hybrid (WebView).
                     // NOTE: Using 'same-site' or 'same-origin' would block rendering in these multi-origin scenarios,
@@ -236,10 +232,18 @@ public static class WebApplicationExtensions
                     // and/or caching policies to mitigate potential abuse while still supporting hybrid/multi-origin clients.
                     headers["Cross-Origin-Resource-Policy"] = "cross-origin";
 
-                    // 8. Content-Security-Policy (CSP)
-                    headers.Append("Content-Security-Policy", csp);
+                    // 7. Content-Security-Policy (CSP)
+                    if (headers.ContainsKey(HeaderNames.ContentSecurityPolicy) is false)
+                    {
+                        headers.ContentSecurityPolicy = csp;
+                    }
                     // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
                     // check out the ContentSecurityPolicy.razor component in Client.Core
+
+                    if (app.Environment.IsProduction() is false)
+                    {
+                        headers["X-Robots-Tag"] = "noindex, nofollow";
+                    }
 
                     return Task.CompletedTask;
                 });

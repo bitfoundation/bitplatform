@@ -21,7 +21,8 @@ public partial class App
 
         if (AppEnvironment.IsDevelopment() is false)
         {
-            HttpContext.Response.Headers.Append("Content-Security-Policy", ContentSecurityPolicy.BuildCspString(clientCoreSettings, absoluteServerAddress));
+            HttpContext.Response.Headers.ContentSecurityPolicy = $"{ContentSecurityPolicy.BuildCspString(clientCoreSettings, absoluteServerAddress)} frame-ancestors 'self';";
+            HttpContext.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
         }
 
         // Not written when the response is headed for a shared cache: a Set-Cookie of ANY name makes a CDN refuse to

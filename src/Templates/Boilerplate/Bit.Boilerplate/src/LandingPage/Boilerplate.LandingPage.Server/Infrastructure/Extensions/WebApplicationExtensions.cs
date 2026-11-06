@@ -52,14 +52,15 @@ public static class WebApplicationExtensions
                 "default-src 'self';",
                 "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';",
                 "style-src 'self' 'unsafe-inline';",
-                "img-src 'self' data: blob: https:;",
+                "img-src 'self' data: blob:;",
                 "font-src 'self';",
-                "connect-src 'self' wss: https:;",
+                "connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com;",
                 "frame-src https://www.openstreetmap.org;",
                 "object-src 'none';",
                 "frame-ancestors 'self';",
                 "form-action 'self';",
                 "worker-src 'self';",
+                "base-uri 'self';",
                 "upgrade-insecure-requests;");
 
             app.Use(async (context, next) =>
@@ -215,6 +216,7 @@ public static class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                && context.GetEndpoint()?.RequestDelegate is null
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {

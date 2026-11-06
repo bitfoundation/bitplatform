@@ -4,8 +4,8 @@ using System.Xml.Linq;
 namespace Boilerplate.Tests.E2E.Features.Seo;
 
 /// <summary>
-/// What Sales publishes for crawlers - Client.Web's wwwroot/robots.txt and Server.Web's UseSiteMap (sitemap_index.xml,
-/// sitemap.xml, products.xml, llms.txt) - and what a product page, the one the catalogue sitemap advertises, says about
+/// What Sales publishes for crawlers - Server.Web's UseSiteMap (robots.txt, sitemap_index.xml, sitemap.xml, products.xml,
+/// llms.txt) - and what a product page, the one the catalogue sitemap advertises, says about
 /// itself in its head.
 /// </summary>
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
