@@ -194,6 +194,50 @@ public class BitButtonFloatE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Draggable_PointerCancelledMidDrag_EndsTheDrag()
+    {
+        await OpenAsync("/e2e/button/float");
+
+        var before = await FloatBtn.BoxAsync();
+        var x = before.X + before.Width / 2;
+        var y = before.Y + before.Height / 2;
+
+        // A drag the browser takes away: pointerdown and the moves, then a pointercancel and no pointerup.
+        await Page.EvaluateAsync(@"async ([x, y]) => {
+            const button = document.querySelector('#float-btn');
+            const fire = (target, type, px, py) => target.dispatchEvent(new PointerEvent(type,
+                { pointerId: 3, pointerType: 'touch', isPrimary: true, clientX: px, clientY: py, buttons: type === 'pointercancel' ? 0 : 1, bubbles: true, cancelable: type !== 'pointercancel', composed: true }));
+            const frame = () => new Promise(resolve => setTimeout(resolve, 16));
+
+            fire(button, 'pointerdown', x, y);
+            await frame();
+            for (let i = 1; i <= 12; i++) {
+                fire(document, 'pointermove', x - 10 * i, y - 7.5 * i);
+                await frame();
+            }
+            fire(document, 'pointercancel', x - 120, y - 90);
+        }", new object[] { (double)x, (double)y }); // the box is in floats, which the argument serializer does not carry
+
+        var dragged = await FloatBtn.BoxAsync();
+        ButtonsE2EHelpers.AreClose(before.X - 120, dragged.X, Tolerance, "dragged left before the cancel");
+        ButtonsE2EHelpers.AreClose(before.Y - 90, dragged.Y, Tolerance, "dragged up before the cancel");
+
+        // The drag is over: a pointer merely moving over the page afterwards no longer carries the button along.
+        await Page.Mouse.MoveAsync(x - 200, y - 150, new() { Steps = 8 });
+        await NextFramesAsync();
+        var after = await FloatBtn.BoxAsync();
+        ButtonsE2EHelpers.AreClose(dragged.X, after.X, Tolerance, "left where the cancelled drag put it");
+        ButtonsE2EHelpers.AreClose(dragged.Y, after.Y, Tolerance, "left where the cancelled drag put it");
+        await Expect(FloatBtn).ToHaveCSSAsync("cursor", "grab");
+
+        // ...and the button heard it end, so the next click is a click and not the end of a drag.
+        await PingAsync();
+        await Page.WaitForTimeoutAsync(200);
+        await FloatBtn.ClickAsync();
+        await Expect(Page.Locator("#float-clicks")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
     public async Task Draggable_WithTheArrowKeys_MovesByAStepAndShiftMovesByACoarserOne()
     {
         await OpenAsync("/e2e/button/float");

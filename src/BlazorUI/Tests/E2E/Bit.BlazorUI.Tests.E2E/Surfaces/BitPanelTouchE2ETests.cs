@@ -3,6 +3,7 @@
 /// <summary>
 /// End-to-end tests of BitPanel on a touch phone (/e2e/panel at a 390x844 viewport with touch): the swipe gesture the
 /// panel registers on touch devices dismisses it towards its own edge past the SwipeTrigger and snaps it back short of it,
+/// gives up a gesture the browser cancels (touch or pen) without dismissing or leaving the panel offset,
 /// reports OnSwipeStart/Move/End, honours NoSwipe and leaves a drag that starts on a field alone; a tap on the overlay
 /// dismisses it; the 85% cap leaves a strip of the page beside a panel larger than the phone; and a touch drag over the
 /// overlay of a panel that leaves the page scrolling is handed to the named scroller.
@@ -97,6 +98,92 @@ public class BitPanelTouchE2ETests : E2ETestBase
         }");
 
         await Expect(Container("swipe-panel")).ToHaveCSSAsync("transform", "matrix(1, 0, 0, 1, 60, 0)");
+    }
+
+    // A one-finger drag that the browser takes away before the finger lifts: touchstart and the moves, then a
+    // touchcancel in place of the touchend.
+    private Task CancelledTouchDragAsync(string selector, double dx, double dy)
+    {
+        return Page.EvaluateAsync(@"async ([selector, dx, dy]) => {
+            const target = document.querySelector(selector);
+            const rect = target.getBoundingClientRect();
+            const x0 = rect.left + rect.width / 2;
+            const y0 = rect.top + rect.height / 2;
+            const touch = (x, y) => new Touch({ identifier: 1, target, clientX: x, clientY: y, screenX: x, screenY: y, pageX: x, pageY: y });
+            const fire = (type, current, list) => target.dispatchEvent(new TouchEvent(type,
+                { touches: list, targetTouches: list, changedTouches: [current], bubbles: true, cancelable: type !== 'touchcancel', composed: true }));
+            const frame = () => new Promise(resolve => setTimeout(resolve, 16));
+
+            let current = touch(x0, y0);
+            fire('touchstart', current, [current]);
+            await frame();
+            for (let i = 1; i <= 10; i++) {
+                current = touch(x0 + dx * i / 10, y0 + dy * i / 10);
+                fire('touchmove', current, [current]);
+                await frame();
+            }
+            fire('touchcancel', current, []);
+        }", new object[] { selector, dx, dy });
+    }
+
+    [TestMethod]
+    public async Task Swipe_TouchCancelledPastTheTrigger_SnapsBackInsteadOfDismissing()
+    {
+        await OpenSwipeAsync();
+
+        await CancelledTouchDragAsync("#swipe-text", 200, 0);
+
+        // The gesture is given up where it began: the panel stays, the drag's offset comes off and the consumer
+        // hears the swipe end at zero.
+        await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnSwipeEnd");
+        await Expect(Page.Locator("#swipe-end")).ToHaveTextAsync("0");
+        await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
+        await Expect(Container("swipe-panel")).ToHaveCSSAsync("transform", "none");
+    }
+
+    [TestMethod]
+    public async Task Swipe_AfterACancelledTouch_TheNextSwipeStartsFromWhereThePanelSits()
+    {
+        await OpenSwipeAsync();
+
+        await CancelledTouchDragAsync("#swipe-text", 60, 0);
+        await TouchDragAsync("#swipe-text", 40, 0);
+
+        // Had the cancelled drag's offset been left on the panel, the next swipe would have taken it for the
+        // panel's resting place and put it back there when it ended.
+        await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
+        await Expect(Container("swipe-panel")).ToHaveCSSAsync("transform", "none");
+    }
+
+    [TestMethod]
+    public async Task Swipe_PenCancelledPastTheTrigger_SnapsBackInsteadOfDismissing()
+    {
+        await OpenSwipeAsync();
+
+        // A pen followed through its pointer events (as on Windows, where it raises no touch events), whose contact
+        // the browser cancels: a pointercancel, then the pointerleave the browser fires after it.
+        await Page.EvaluateAsync(@"async () => {
+            const target = document.querySelector('#swipe-text');
+            const rect = target.getBoundingClientRect();
+            const x0 = rect.left + rect.width / 2;
+            const y0 = rect.top + rect.height / 2;
+            const fire = (type, x, y) => target.dispatchEvent(new PointerEvent(type,
+                { pointerId: 7, pointerType: 'pen', isPrimary: true, clientX: x, clientY: y, buttons: type === 'pointerdown' || type === 'pointermove' ? 1 : 0, bubbles: true, cancelable: true, composed: true }));
+            const frame = () => new Promise(resolve => setTimeout(resolve, 16));
+
+            fire('pointerdown', x0, y0);
+            await frame();
+            for (let i = 1; i <= 10; i++) {
+                fire('pointermove', x0 + 20 * i, y0);
+                await frame();
+            }
+            fire('pointercancel', x0 + 200, y0);
+            fire('pointerleave', x0 + 200, y0);
+        }");
+
+        await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnSwipeEnd");
+        await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
+        await Expect(Container("swipe-panel")).ToHaveCSSAsync("transform", "none");
     }
 
     [TestMethod]
