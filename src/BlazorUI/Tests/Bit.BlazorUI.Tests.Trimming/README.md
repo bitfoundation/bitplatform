@@ -42,11 +42,12 @@ app, a standalone PWA whose own manifest must be left to the SDK.
 
 ```
 dotnet build
-dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.Trimming.dll
+dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Trimming.dll
 ```
 
-(`dotnet test` reports zero tests under the Microsoft.Testing.Platform runner this repository mandates; run the built
-assembly, or `dotnet run`.) The publishes take a few minutes in all.
+`dotnet test` runs it too, under the Microsoft.Testing.Platform runner `src/global.json` selects, and so does
+`dotnet run`; filter as usual (`dotnet test --filter "FullyQualifiedName~ServerAppTrimmingTests"`). The publishes take
+about ten minutes in all, without the opt-in tests below.
 
 CI runs it with both variables below set, in the `trimming` job of `.github/workflows/bit.ci.BlazorUI.e2e.yml`.
 
