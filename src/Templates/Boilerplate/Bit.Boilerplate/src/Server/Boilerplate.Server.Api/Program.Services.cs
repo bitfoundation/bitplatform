@@ -540,7 +540,6 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(5);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
-            c.DefaultRequestVersion = HttpVersion.Version11;
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
@@ -556,7 +555,6 @@ public static partial class Program
             c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"]
                 ?? configuration["Authentication:Keycloak:KeycloakUrl"]
                 ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
-            c.DefaultRequestVersion = HttpVersion.Version11;
         });
 
         services.AddFido2(options =>

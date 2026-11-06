@@ -98,9 +98,7 @@ public static class RemoteAuthenticationOptionsExtensions
 
             services.AddHttpClient("Apple", httpClient =>
             {
-                // appleid.apple.com doesn't always negotiate HTTP/2.
-                httpClient.DefaultRequestVersion = HttpVersion.Version11;
-                httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
             });
 
             services.AddHttpClient("Google", httpClient =>

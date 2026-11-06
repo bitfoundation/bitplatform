@@ -113,18 +113,13 @@ public class ExternalSignInHealthChecksTests
 
         try
         {
-            Version? requestVersion = null;
-            var handler = new RoutingHandler((request, _) =>
-            {
-                requestVersion = request.Version;
-                return Task.FromResult(Json(HttpStatusCode.OK, "{}"));
-            });
+            // The handler sits on sign in's own client, so a request reaching it shows the check went through that client.
+            var handler = new RoutingHandler((_, _) => Task.FromResult(Json(HttpStatusCode.OK, "{}")));
 
             var result = await RunAppleCheck(handler, keyPath);
 
             Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Exception?.ToString());
             Assert.AreEqual("https://appleid.apple.com/.well-known/openid-configuration", handler.Requests.Single().AbsoluteUri);
-            Assert.AreEqual(HttpVersion.Version11, requestVersion, "The check must go through sign in's own client, which stays on HTTP/1.1 for Apple.");
         }
         finally
         {

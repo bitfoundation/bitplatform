@@ -158,10 +158,13 @@ public static class WebApplicationBuilderExtensions
 
             builder.Services.ConfigureHttpClientDefaults(http =>
             {
+                // HTTP/2 wherever the server offers it, and HTTP/1.1 elsewhere. OrHigher would mean HTTP/2 or nothing, which
+                // fails on plain http, where Kestrel speaks HTTP/1.1 only (Server.Web's calls to a standalone api inside
+                // Compose), and on https servers without HTTP/2, such as appleid.apple.com.
                 http.ConfigureHttpClient(httpClient =>
                 {
                     httpClient.DefaultRequestVersion = HttpVersion.Version20;
-                    httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                    httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
                 });
 
                 // Turn on resilience by default, but never replay an unsafe method. A retried POST is a second
