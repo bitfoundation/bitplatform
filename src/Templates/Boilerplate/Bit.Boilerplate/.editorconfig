@@ -176,3 +176,5 @@ visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public
 generated_code = true
 [HttpClientProxy.cs]
 generated_code = true
+[**/obj/**/generated/src/*.cs]
+generated_code = true
