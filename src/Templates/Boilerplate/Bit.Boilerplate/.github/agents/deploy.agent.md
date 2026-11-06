@@ -269,15 +269,17 @@ project up, and fails unless every container is healthy and the public address a
 
 ## 8. The domain and the tunnel
 
-- **One setup token, asked for once.** Have the user create a custom API token with, on the account, Cloudflare Tunnel,
-  Access: Apps and Policies, Access: Organizations, Identity Providers, and Groups, Workers R2 Storage and Account API
-  Tokens, each with Edit, and on all zones of the account, Zone and DNS with Edit and Cache Purge with Purge. With it,
-  do everything below yourself through Cloudflare's API, for each environment. Beyond the token, the user only changes
-  the domain's nameservers at the registrar.
+- **One setup token, asked for once.** With Cloudflare, have the user create a custom API token with, on the account,
+  Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and Groups, Workers R2
+  Storage and Account API Tokens, each with Edit, and on all zones of the account, Zone and DNS with Edit and Cache
+  Purge with Purge, expiring within days. With it, do everything below yourself through Cloudflare's API, for each
+  environment. Beyond the token, the user only changes the domain's nameservers at the registrar.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log. Every token that runs is a
-  narrower one you mint with it. Once the environments are up, the user deletes it, or rolls it if more environments
-  are coming.
-- Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set.
+  narrower one you mint with it. Once the environments are up, or if the setup stops before that, the user deletes it,
+  or rolls it if more environments are coming.
+- Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
+  domain is already in use, for mail or another site, first bring its existing DNS records into the zone and check
+  them against the current provider, and have DNSSEC turned off at the registrar, so nothing breaks on the switch.
 - Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
   below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
 <!--#if (filesStorage == "S3")-->
