@@ -27,8 +27,9 @@ public partial class HealthCheckIntegrationTests
     /// Verifies the application exposes a working liveness health-check endpoint. <c>MapAppHealthChecks</c>
     /// (See <c>WebApplicationExtensions.MapAppHealthChecks</c>) maps <c>GET /alive</c> with a predicate that runs
     /// only the checks tagged <c>"live"</c> - which, per <c>AddDefaultHealthChecks</c>, is exactly the single
-    /// <c>binStorage</c> disk-storage check. That check only needs 2 GB free on the drive the tests run from, which
-    /// <c>ci.yml</c> makes sure of with its <c>Free disk space</c> step, so the endpoint returns HTTP 200 with the
+    /// <c>binStorage</c> disk-storage check. That check only needs 2 GB free at the root of the current directory's
+    /// path, which on Linux is <c>/</c> even when the workspace sits on another mount. <c>ci.yml</c> makes sure of it
+    /// with its <c>Free disk space</c> step, so the endpoint returns HTTP 200 with the
     /// default plain-text body <c>"Healthy"</c>. <c>/alive</c> is deliberately preferred over <c>/health</c> here:
     /// <c>/health</c> also runs
     /// the Hangfire check (which is racy right after the host starts, before the Hangfire server has written its
