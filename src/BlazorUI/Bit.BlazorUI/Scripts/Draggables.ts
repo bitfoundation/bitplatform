@@ -44,6 +44,12 @@
 
                 document.addEventListener('pointerup', handlePointerUp, { signal: ac.signal });
                 document.addEventListener('pointermove', handlePointerMove, { signal: ac.signal });
+                // A drag the browser takes away (a system gesture, an alert, a contact it turns into a pan) ends in a
+                // pointercancel and never in a pointerup, so it is ended the same way. Left running, the document would
+                // go on moving the element under every later pointer, a mouse merely hovering included, and the
+                // component would never hear that the drag is over (BitButton would swallow its next click as the
+                // one that ends a drag).
+                document.addEventListener('pointercancel', handlePointerUp, { signal: ac.signal });
 
                 dragElement.style.cursor = 'grabbing';
 
@@ -149,6 +155,7 @@
 
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointermove', handlePointerMove);
+                document.removeEventListener('pointercancel', handlePointerUp);
 
                 dragElement.style.cursor = origCursor;
                 //dragElement.classList.remove('bit-nta');

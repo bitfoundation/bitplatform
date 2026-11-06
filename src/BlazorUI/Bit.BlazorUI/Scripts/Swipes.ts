@@ -332,15 +332,29 @@
             };
             const onPointerMove = (e: PointerEvent) => { if (ownsPointer(e)) void onMove(e); };
             const onPointerEnd = (e: PointerEvent) => { if (ownsPointer(e)) void onEnd(e); };
+            // A gesture the browser takes away - a system gesture, an alert, the contact of a pen it starts panning
+            // under - ends in a cancel rather than an end, and is given up rather than weighed: nothing the gesture
+            // did by then was a decision to dismiss the surface. Left unfinished, it would keep the drag's transform
+            // on the element, which the next gesture would then record as where the surface sits, and it would keep
+            // the pointer events of a mouse turned away as if a finger were still down. The pointerleave that follows
+            // a pointercancel then finds no gesture left to end.
+            const onTouchCancel = () => {
+                touchOnScrollContainer = false;
+
+                if (ownsTouches() && startX !== -1) abort();
+            };
+            const onPointerCancel = (e: PointerEvent) => { if (ownsPointer(e) && startX !== -1) abort(); };
 
             scrollContainer?.addEventListener('touchstart', onScrollContainerTouchStart);
             element.addEventListener('touchstart', onTouchStart);
             element.addEventListener('touchmove', onTouchMove);
             element.addEventListener('touchend', onTouchEnd);
+            element.addEventListener('touchcancel', onTouchCancel);
             element.addEventListener('pointerdown', onPointerStart);
             element.addEventListener('pointermove', onPointerMove);
             element.addEventListener('pointerup', onPointerEnd);
             element.addEventListener('pointerleave', onPointerEnd, false);
+            element.addEventListener('pointercancel', onPointerCancel);
 
             const swipe = new BitSwipe(id, element, trigger, dotnetObj);
             swipe.setDisposer(() => {
@@ -349,10 +363,12 @@
                 element.removeEventListener('touchstart', onTouchStart);
                 element.removeEventListener('touchmove', onTouchMove);
                 element.removeEventListener('touchend', onTouchEnd);
+                element.removeEventListener('touchcancel', onTouchCancel);
                 element.removeEventListener('pointerdown', onPointerStart);
                 element.removeEventListener('pointermove', onPointerMove);
                 element.removeEventListener('pointerup', onPointerEnd);
                 element.removeEventListener('pointerleave', onPointerEnd, false);
+                element.removeEventListener('pointercancel', onPointerCancel);
             });
             Swipes._swipes.push(swipe);
 
