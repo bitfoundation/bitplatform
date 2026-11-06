@@ -192,14 +192,13 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **SMS**: a Twilio account, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
-  compatible provider; `appsettings.json` lists samples.
+  compatible provider; `appsettings.json` lists samples. Each model has a key setting of its own under `AI:OpenAI`, and
+  one fills none of the others: an empty `EmbeddingApiKey` sends embeddings to `AI:HuggingFace:EmbeddingEndpoint`,
+  whose default, `http://localhost:7000`, is a local server a deployment doesn't have.
 <!--#endif-->
 <!--#if (signalR == true)-->
 - **Speech**: dictation needs a speech-to-text model, read-aloud a text-to-speech model, and the voice call a Realtime
-  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat. Each model still has a key
-  setting of its own under `AI:OpenAI`, and one fills none of the others: an empty `EmbeddingApiKey` sends embeddings to
-  `AI:HuggingFace:EmbeddingEndpoint`, whose default, `http://localhost:7000`, is a local server a deployment doesn't
-  have.
+  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat, each with its own key.
 <!--#endif-->
 <!--#if (sentry == true)-->
 - **Sentry**: a project per environment, and its DSN.
