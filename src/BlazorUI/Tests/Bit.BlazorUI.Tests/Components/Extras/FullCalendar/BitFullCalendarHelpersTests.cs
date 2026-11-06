@@ -651,6 +651,74 @@ public class BitFullCalendarHelpersTests
     }
 
     [TestMethod]
+    public void ExpandRecurrencesShouldShowACountedDailySeriesPastMaxOccurrencesPerSeries()
+    {
+        // Count is a position, not a share of the expansion budget: occurrences 2,401 to 2,500 of a series counted
+        // past MaxOccurrencesPerSeries are there to see, and the series still ends at its 2,500th.
+        var start = new DateTime(2020, 1, 1, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 2500 });
+
+        var middle = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2400), start.Date.AddDays(2402));
+        CollectionAssert.AreEqual(
+            new[] { start.AddDays(2400), start.AddDays(2401), start.AddDays(2402) },
+            middle.Select(o => o.StartDate).ToArray());
+
+        var end = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2498), start.Date.AddDays(2505));
+        CollectionAssert.AreEqual(new[] { start.AddDays(2498), start.AddDays(2499) }, end.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldShowACountedWeeklySeriesPastMaxOccurrencesPerSeries()
+    {
+        // Monday, Wednesday and Friday from Monday 2020-01-06: three a week, so the 2,500th occurrence is the Monday
+        // of week 833 (833 * 3 + 1) and the week before holds the 2,497th to the 2,499th.
+        var start = new DateTime(2020, 1, 6, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+            DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+            Count = 2500,
+        });
+
+        var lastWeek = start.Date.AddDays(833 * 7);
+        Assert.AreEqual(3, BitFullCalendarHelpers.ExpandRecurrences([series], lastWeek.AddDays(-7), lastWeek.AddDays(-1)).Count);
+
+        var final = BitFullCalendarHelpers.ExpandRecurrences([series], lastWeek, lastWeek.AddDays(6));
+        Assert.AreEqual(1, final.Count);
+        Assert.AreEqual(lastWeek + start.TimeOfDay, final[0].StartDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldEndACountedMonthlySeriesAtItsCountWhenSkippingAhead()
+    {
+        // The 15th is in every month, so the walk skips straight to the window and still ends on the 100th: 99 months
+        // after January 2020, in April 2028.
+        var start = new DateTime(2020, 1, 15, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 100 });
+
+        var april = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 4, 1), new DateTime(2028, 4, 30));
+        Assert.AreEqual(1, april.Count);
+        Assert.AreEqual(new DateTime(2028, 4, 15, 9, 0, 0), april[0].StartDate);
+
+        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 5, 1), new DateTime(2028, 5, 31)).Count);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldCountACountedSeriesOnALateDayFromItsStart()
+    {
+        // The 31st is only in seven months a year and the others are skipped, so the position is walked from the start:
+        // 28 occurrences in 2020-2023, then January 31st (29th) and March 31st (30th) of 2024.
+        var start = new DateTime(2020, 1, 31, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 30 });
+
+        var march = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 3, 1), new DateTime(2024, 3, 31));
+        Assert.AreEqual(1, march.Count);
+        Assert.AreEqual(new DateTime(2024, 3, 31, 9, 0, 0), march[0].StartDate);
+
+        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31)).Count);
+    }
+
+    [TestMethod]
     public void ExpandRecurrencesShouldSurviveAnAbsurdInterval()
     {
         var start = new DateTime(2024, 5, 15, 9, 0, 0);
