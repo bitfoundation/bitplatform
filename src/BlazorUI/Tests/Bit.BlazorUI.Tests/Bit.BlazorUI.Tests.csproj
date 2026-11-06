@@ -55,6 +55,8 @@
       <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Models\ComponentEnumItem.cs" Link="Demo\Models\ComponentEnumItem.cs" />
       <!-- And the flattening that generated half is written with, less the MSBuild task around it. -->
       <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\MSBuild\DemoSharedEnumDocs.cs" Link="Demo\MSBuild\DemoSharedEnumDocs.cs" />
+      <!-- Compile-linked so ComponentCatalogItemTests can rank terms the way the site's search boxes do. -->
+      <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Models\ComponentCatalogItem.cs" Link="Demo\Models\ComponentCatalogItem.cs" />
     </ItemGroup>
 
     <ItemGroup>

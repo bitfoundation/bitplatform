@@ -44,9 +44,10 @@ public static class BlazorUISuggest
     /// <summary>
     /// A name reduced to what distinguishes it: lower-cased, non-alphanumerics dropped, and the
     /// <c>Bit</c> prefix every name here carries removed, since a prefix they all share cannot tell
-    /// two of them apart and only dilutes the distance between them.
+    /// two of them apart and only dilutes the distance between them. The search index reads a
+    /// component's name the same way, as the one word a query may spell out.
     /// </summary>
-    private static string Normalize(string? name)
+    internal static string Normalize(string? name)
     {
         var text = new string([.. (name ?? string.Empty).Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant)]);
 

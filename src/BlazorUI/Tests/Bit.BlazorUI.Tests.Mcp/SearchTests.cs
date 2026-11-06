@@ -49,9 +49,7 @@ public class SearchTests : McpTestBase
     [DataRow("typeahead", "BitSearchBox")]
     [DataRow("textarea", "BitTextField")]
     [DataRow("month picker", "BitDatePicker")]
-    // As one word: the search scores each word of a query on its own, and "bar" alone is what BitChart's bar charts
-    // and BitNavBar are about, which puts BitHeader third for "app bar".
-    [DataRow("appbar", "BitHeader")]
+    [DataRow("app bar", "BitHeader")]
     [DataRow("bottom navigation", "BitNavBar")]
     [DataRow("hover card", "BitCallout")]
     [DataRow("drawer", "BitPanel")]
@@ -71,6 +69,84 @@ public class SearchTests : McpTestBase
         var name = first[3..].Split(" - ")[0].Split('<')[0];
 
         Assert.AreEqual(expected, name, $"'{query}' should lead with {expected}; it led with '{first[3..]}'. The whole answer:\n{answer}");
+    }
+
+    /// <summary>
+    /// Words that spell one of a component's names - an alias or its own, in one word or in several - name that
+    /// component, and rank it above the components that only match the words one at a time: "app bar" is BitHeader's
+    /// AppBar, while BitNavBar has "bar" in its name and in its TabBar, and BitChart has bars in its example titles;
+    /// "search box" and "searchbox" are BitSearchBox, while BitDropdown has examples titled "SearchBox" and "ComboBox".
+    /// A query that is nothing but a component's name leads with it whatever outscores it - BitChartLegacy's example
+    /// titles say "chart" more often than BitChart's, and BitAccordionList lists "Accordion" as an alias - and a name is
+    /// spelled with the short words the scored terms leave out ("ai chat" is BitAiChat, "md viewer" BitMarkdownViewer's
+    /// MdViewer). The other component is asserted to be among the hits as well, so the case keeps testing a ranking
+    /// rather than passing because the rival dropped out.
+    /// </summary>
+    [TestMethod]
+    [DataRow("app bar", "BitHeader", "BitNavBar")]
+    [DataRow("app bar", "BitHeader", "BitChart")]
+    [DataRow("top bar", "BitHeader", "BitChart")]
+    [DataRow("tab bar", "BitNavBar", "BitPivot")]
+    [DataRow("search box", "BitSearchBox", "BitDropdown")]
+    [DataRow("searchbox", "BitSearchBox", "BitDropdown")]
+    [DataRow("calendar", "BitCalendar", "BitFullCalendar")]
+    [DataRow("grid", "BitGrid", "BitDataGrid")]
+    [DataRow("toggle", "BitToggle", "BitToggleButton")]
+    [DataRow("chart", "BitChart", "BitChartLegacy")]
+    [DataRow("BitChart", "BitChart", "BitChartLegacy")]
+    [DataRow("tag", "BitTag", "BitTagsInput")]
+    [DataRow("accordion", "BitAccordion", "BitAccordionList")]
+    [DataRow("ai chat", "BitAiChat", "BitAiPromptInput")]
+    [DataRow("ai chat with streaming", "BitAiChat", "BitAiStreamingMarkdown")]
+    [DataRow("md viewer", "BitMarkdownViewer", "BitMarkdownViewerLegacy")]
+    public async Task Words_spelling_a_whole_name_rank_above_partial_word_matches(string query, string expected, string partial)
+    {
+        var (answer, names) = await HitsAsync(query);
+
+        var whole = names.IndexOf(expected);
+        var part = names.IndexOf(partial);
+
+        using var scope = Assert.Scope();
+
+        Assert.AreEqual(0, whole, $"'{query}' spells a name of {expected}, which should lead. The whole answer:\n{answer}");
+        Assert.IsGreaterThan(whole, part, $"'{query}' should still find {partial}, below {expected}. The whole answer:\n{answer}");
+    }
+
+    /// <summary>
+    /// The last word of a component's name says what the component is - BitAiChat is a chat, BitScrollablePane a pane -
+    /// and outweighs the same word inside an alias of another component, as the site's search box ranks a name above an
+    /// alias: for "chat", BitAiPromptInput, which lists "ChatInput", ranked above BitAiChat; for "pane", BitSplitter, which
+    /// lists "SplitPane", above BitScrollablePane. The other component is asserted to be among the hits as well.
+    /// </summary>
+    [TestMethod]
+    [DataRow("chat", "BitAiChat", "BitAiPromptInput")]
+    [DataRow("pane", "BitScrollablePane", "BitSplitter")]
+    [DataRow("selector", "BitAiModelSelector", "BitCountryPicker")]
+    public async Task The_word_a_name_ends_in_ranks_it_above_an_alias_holding_the_word(string query, string expected, string aliased)
+    {
+        var (answer, names) = await HitsAsync(query);
+
+        var named = names.IndexOf(expected);
+        var alias = names.IndexOf(aliased);
+
+        using var scope = Assert.Scope();
+
+        Assert.AreEqual(0, named, $"'{query}' is the word {expected}'s name ends in, which should lead. The whole answer:\n{answer}");
+        Assert.IsGreaterThan(named, alias, $"'{query}' should still find {aliased}, below {expected}. The whole answer:\n{answer}");
+    }
+
+    /// <summary>The answer to a search, with the names of its hits in their order.</summary>
+    private async Task<(string Answer, List<string> Names)> HitsAsync(string query)
+    {
+        var answer = await CallAsync("SearchBitBlazorUI", new { query, limit = 12 });
+
+        // "## BitDropdown<TItem, TValue> - Inputs": the name, then its type parameters and its category.
+        var names = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n')
+            .Where(line => line.StartsWith("## ", StringComparison.Ordinal))
+            .Select(line => line[3..].Split(" - ")[0].Split('<')[0])
+            .ToList();
+
+        return (answer, names);
     }
 
     [TestMethod]
