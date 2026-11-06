@@ -120,7 +120,9 @@ version in each of the two framework groups at the end of the file: the 11.x one
 10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
 `Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
 the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
-on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
+on import order, and the build fails with CS0757. So do the `CommunityToolkit.Datasync.*` packages: from 10.2.0 the
+client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and the restore fails with NU1107, so the
+.NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace. A template line written with the .NET 10 value
 of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
