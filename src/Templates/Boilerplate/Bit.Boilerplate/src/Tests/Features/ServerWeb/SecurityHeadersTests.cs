@@ -102,7 +102,7 @@ public class SecurityHeadersTests
 
     private async Task<HttpResponseMessage> Send(string environment, string path = "/")
     {
-        var address = $"http://127.0.0.1:{Random.Shared.Next(20000, 30000)}";
+        var address = AppTestServer.GenerateServerUrl("127.0.0.1");
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment });
         builder.WebHost.UseUrls(address);

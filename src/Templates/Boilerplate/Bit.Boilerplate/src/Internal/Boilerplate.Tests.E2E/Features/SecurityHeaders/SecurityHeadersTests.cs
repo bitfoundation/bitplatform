@@ -27,22 +27,22 @@ public partial class SecurityHeadersTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    [DataRow(DeployedApps.AdminPanel, "en-US/", DisplayName = "AdminPanel page (Server.Web, App.razor)")]
-    [DataRow(DeployedApps.Todo, "en-US/", DisplayName = "Todo page (Server.Web, App.razor)")]
-    [DataRow(DeployedApps.Sales, "", DisplayName = "Sales culture redirect (302)")]
-    [DataRow(DeployedApps.Sales, "sitemap.xml", DisplayName = "Sales sitemap.xml")]
-    [DataRow(DeployedApps.Sales, "openapi/v1.json", DisplayName = "Sales OpenAPI document (integrated API)")]
-    [DataRow(DeployedApps.AdminPanelApi, "openapi/v1.json", DisplayName = "AdminPanelApi OpenAPI document")]
-    [DataRow(DeployedApps.AdminPanelApi, "scalar/v1", DisplayName = "AdminPanelApi Scalar page")]
-    [DataRow(DeployedApps.TodoApi, "e2e/route/that-does-not-exist", DisplayName = "TodoApi 404")]
-    [DataRow(DeployedApps.AdminPanelWasmStandalone, "", DisplayName = "AdminPanelWasmStandalone index.html (Static Web App)")]
-    [DataRow(DeployedApps.TodoAot, "_framework/blazor.webassembly.js", DisplayName = "TodoAot framework script (Static Web App)")]
-    [DataRow(DeployedApps.TodoOffline, "offline-todo", DisplayName = "TodoOffline navigation fallback (Static Web App)")]
-    public async Task Response_Should_CarryTheSecurityBaseline(string host, string path)
+    [DataRow(DeployedApps.AdminPanel, "en-US/", true, DisplayName = "AdminPanel page (Server.Web, App.razor)")]
+    [DataRow(DeployedApps.Todo, "en-US/", true, DisplayName = "Todo page (Server.Web, App.razor)")]
+    [DataRow(DeployedApps.Sales, "", false, DisplayName = "Sales culture redirect (302)")]
+    [DataRow(DeployedApps.Sales, "sitemap.xml", false, DisplayName = "Sales sitemap.xml")]
+    [DataRow(DeployedApps.Sales, "openapi/v1.json", false, DisplayName = "Sales OpenAPI document (integrated API)")]
+    [DataRow(DeployedApps.AdminPanelApi, "openapi/v1.json", false, DisplayName = "AdminPanelApi OpenAPI document")]
+    [DataRow(DeployedApps.AdminPanelApi, "scalar/v1", false, DisplayName = "AdminPanelApi Scalar page")]
+    [DataRow(DeployedApps.TodoApi, "e2e/route/that-does-not-exist", false, DisplayName = "TodoApi 404")]
+    [DataRow(DeployedApps.AdminPanelWasmStandalone, "", false, DisplayName = "AdminPanelWasmStandalone index.html (Static Web App)")]
+    [DataRow(DeployedApps.TodoAot, "_framework/blazor.webassembly.js", false, DisplayName = "TodoAot framework script (Static Web App)")]
+    [DataRow(DeployedApps.TodoOffline, "offline-todo", false, DisplayName = "TodoOffline navigation fallback (Static Web App)")]
+    public async Task Response_Should_CarryTheSecurityBaseline(string host, string path, bool appWidePolicy)
     {
         using var response = await Send(HttpMethod.Get, new Uri(new Uri(host), path));
 
-        AssertBaseline(response);
+        AssertBaseline(response, appWidePolicy);
     }
 
     /// <summary>
@@ -129,7 +129,12 @@ public partial class SecurityHeadersTests
             $"{host} serves apple-app-site-association as {response.Content.Headers.ContentType}.");
     }
 
-    private void AssertBaseline(HttpResponseMessage response)
+    /// <param name="appWidePolicy">
+    /// A page App.razor renders carries the app-wide policy instead of the small one, which
+    /// <see cref="PrerenderedPage_Should_CarryTheAppWideCspHeader"/> checks directive by directive. Every other row keeps
+    /// the exact comparison, so a policy such as <c>default-src *</c> showing up there still fails.
+    /// </param>
+    private void AssertBaseline(HttpResponseMessage response, bool appWidePolicy = false)
     {
         var uri = response.RequestMessage!.RequestUri;
 
@@ -138,7 +143,11 @@ public partial class SecurityHeadersTests
             if (name is "Content-Security-Policy")
             {
                 var policy = CspPolicies(response).Single();
-                if (policy.Contains("default-src") is false)
+                if (appWidePolicy)
+                {
+                    Assert.Contains("default-src", policy, $"{name} on {uri} ({(int)response.StatusCode}) is not the app-wide policy.");
+                }
+                else
                 {
                     Assert.AreEqual(expected, policy, $"{name} on {uri} ({(int)response.StatusCode}).");
                 }
