@@ -19,6 +19,8 @@ public partial class WebThemeAndAccentTests : ThemeAndAccentTestsBase
         await Page.EmulateMediaAsync(new() { ColorScheme = systemIsDark ? ColorScheme.Dark : ColorScheme.Light });
 
         var page = await OpenApp(app);
+        await page.EmulateMediaAsync(new() { ColorScheme = systemIsDark ? ColorScheme.Dark : ColorScheme.Light });
+        await page.ReloadAsync();
         await WaitUntilInteractive(page);
         await ExpectTheme(page, dark: systemIsDark);
 

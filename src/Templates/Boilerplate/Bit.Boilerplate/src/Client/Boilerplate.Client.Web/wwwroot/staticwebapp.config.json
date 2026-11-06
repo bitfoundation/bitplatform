@@ -12,6 +12,7 @@
   "globalHeaders": {
     "Strict-Transport-Security": "max-age=2592000",
     "X-Content-Type-Options": "nosniff",
+    "X-XSS-Protection": "0",
     "X-Frame-Options": "SAMEORIGIN",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()",

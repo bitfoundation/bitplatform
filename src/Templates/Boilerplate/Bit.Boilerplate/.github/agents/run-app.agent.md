@@ -52,7 +52,8 @@ commands themselves are in `AGENTS.md` section 4.
 
 - Drive the web app with the Playwright MCP tools. Read the page with `browser_snapshot`, check what it holds with
   `browser_evaluate`, and act through what a user sees: a button's name, a field's label. Take a screenshot when the
-  question is how it looks, and look at it.
+  question is how it looks, and look at it. Leave its file name out, so it lands in the git-ignored `.playwright-mcp`
+  folder, not in the project.
 - Reach a state the way a user does. A click leaves the pointer where it clicked, so what you see next is that element
   hovered until the pointer moves away. A state you expected and don't see is a finding, not a pass.
 - Switch light and dark, the culture and the width the way the app does, and before the page loads for whatever the

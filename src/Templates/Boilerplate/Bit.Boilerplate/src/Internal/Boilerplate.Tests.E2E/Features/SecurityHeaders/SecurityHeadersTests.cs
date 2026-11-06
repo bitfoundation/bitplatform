@@ -163,10 +163,11 @@ public partial class SecurityHeadersTests
         Assert.IsGreaterThanOrEqualTo(minHstsMaxAge, maxAge, $"Strict-Transport-Security on {uri}: {hsts}");
 
         // Nothing that names the stack behind the proxy, and nothing obsolete.
-        foreach (var name in (string[])["X-Powered-By", "X-AspNet-Version", "X-AspNetMvc-Version", "X-XSS-Protection"])
+        foreach (var name in (string[])["X-Powered-By", "X-AspNet-Version", "X-AspNetMvc-Version"])
         {
             Assert.IsNull(HeaderOf(response, name), $"{name} on {uri}: {HeaderOf(response, name)}");
         }
+        Assert.IsTrue(HeaderOf(response, "X-XSS-Protection") is null or "0", $"X-XSS-Protection on {uri}: {HeaderOf(response, "X-XSS-Protection")}");
         Assert.IsFalse(HeaderOf(response, "Server") is string server && (server.Contains("Kestrel", StringComparison.OrdinalIgnoreCase) || server.Contains("IIS", StringComparison.OrdinalIgnoreCase)),
             $"Server on {uri}: {HeaderOf(response, "Server")}");
     }
