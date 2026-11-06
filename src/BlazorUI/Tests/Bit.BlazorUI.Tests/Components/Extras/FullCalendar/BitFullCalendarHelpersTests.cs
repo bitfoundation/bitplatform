@@ -651,6 +651,124 @@ public class BitFullCalendarHelpersTests
     }
 
     [TestMethod]
+    public void ExpandRecurrencesShouldShowACountedDailySeriesPastMaxOccurrencesPerSeries()
+    {
+        // Count is a position, not a share of the expansion budget: occurrences 2,401 to 2,500 of a series counted
+        // past MaxOccurrencesPerSeries are there to see, and the series still ends at its 2,500th.
+        var start = new DateTime(2020, 1, 1, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 2500 });
+
+        var middle = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2400), start.Date.AddDays(2402));
+        CollectionAssert.AreEqual(
+            new[] { start.AddDays(2400), start.AddDays(2401), start.AddDays(2402) },
+            middle.Select(o => o.StartDate).ToArray());
+
+        var end = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2498), start.Date.AddDays(2505));
+        CollectionAssert.AreEqual(new[] { start.AddDays(2498), start.AddDays(2499) }, end.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(2)]
+    public void ExpandRecurrencesShouldShowACountedWeeklySeriesPastMaxOccurrencesPerSeries(int interval)
+    {
+        // Monday, Wednesday and Friday, Count 2,500, in every week or every other one: the weeks Interval skips hold
+        // nothing and change nothing. The weeks below are numbered from 0 and count only those the series meets.
+        BitFullCalendarEvent Weekly(DateTime start) => Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+            Interval = interval,
+            DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+            Count = 2500,
+        });
+        DateTime[] Starts(BitFullCalendarEvent series, DateTime from, DateTime to)
+            => [.. BitFullCalendarHelpers.ExpandRecurrences([series], from, to).Select(o => o.StartDate)];
+
+        var firstMonday = new DateTime(2020, 1, 6);
+        var lastMonday = firstMonday.AddDays(833 * 7 * interval);
+        var mondayBefore = lastMonday.AddDays(-7 * interval);
+        // Up to the end of the next week the series would meet, which nothing is left for.
+        var pastTheEnd = lastMonday.AddDays(7 * interval + 6);
+        var time = TimeSpan.FromHours(9);
+
+        // From Monday 2020-01-06 every week holds all three: weeks 0 to 832 hold the first 2,499, week 832 the 2,497th
+        // to the 2,499th, and the 2,500th is the Monday of week 833.
+        var fromMonday = Weekly(firstMonday + time);
+        Assert.AreEqual(3, Starts(fromMonday, mondayBefore, mondayBefore.AddDays(6)).Length);
+        CollectionAssert.AreEqual(new[] { lastMonday + time }, Starts(fromMonday, lastMonday, pastTheEnd));
+
+        // From Wednesday 2020-01-08 week 0 holds only its Wednesday and Friday: weeks 0 to 832 hold 2 + 832 * 3 = 2,498,
+        // and the 2,500th is the Wednesday of week 833.
+        var fromWednesday = Weekly(firstMonday.AddDays(2) + time);
+        CollectionAssert.AreEqual(
+            new[] { firstMonday.AddDays(2) + time, firstMonday.AddDays(4) + time },
+            Starts(fromWednesday, firstMonday, firstMonday.AddDays(6)));
+        Assert.AreEqual(3, Starts(fromWednesday, mondayBefore, mondayBefore.AddDays(6)).Length);
+        CollectionAssert.AreEqual(new[] { lastMonday + time, lastMonday.AddDays(2) + time }, Starts(fromWednesday, lastMonday, pastTheEnd));
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldCountOnlyTheOccurrencesTheRangeShowsAgainstMaxOccurrencesPerSeries()
+    {
+        // The walk reaches back before the range for an occurrence that could still run into it. A one-hour standup
+        // on one of those days ended before the range, so it takes none of the places of a range showing exactly
+        // MaxOccurrencesPerSeries days - and nor does a skipped day inside it.
+        var start = new DateTime(2020, 1, 1, 9, 0, 0);
+        var rangeStart = start.Date.AddDays(100);
+        var rangeEnd = rangeStart.AddDays(BitFullCalendarHelpers.MaxOccurrencesPerSeries - 1);
+
+        var daily = BitFullCalendarHelpers.ExpandRecurrences(
+            [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily })], rangeStart, rangeEnd);
+        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, daily.Count);
+        Assert.AreEqual(rangeStart + start.TimeOfDay, daily[0].StartDate);
+        Assert.AreEqual(rangeEnd + start.TimeOfDay, daily[^1].StartDate);
+
+        var skipped = rangeStart.AddDays(10);
+        var withASkip = BitFullCalendarHelpers.ExpandRecurrences(
+            [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, ExceptionDates = [skipped] })], rangeStart, rangeEnd.AddDays(1));
+        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, withASkip.Count);
+        Assert.IsFalse(withASkip.Any(o => o.OccurrenceDate == skipped));
+        Assert.AreEqual(rangeEnd.AddDays(1) + start.TimeOfDay, withASkip[^1].StartDate);
+
+        // A three-day occurrence that started three days before the range still runs into it, so it is shown and counts.
+        var threeDays = BitFullCalendarHelpers.ExpandRecurrences(
+            [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily }, TimeSpan.FromDays(3))], rangeStart, rangeEnd);
+        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, threeDays.Count);
+        Assert.AreEqual(rangeStart.AddDays(-3) + start.TimeOfDay, threeDays[0].StartDate);
+        Assert.AreEqual(rangeEnd.AddDays(-3) + start.TimeOfDay, threeDays[^1].StartDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldEndACountedMonthlySeriesAtItsCountWhenSkippingAhead()
+    {
+        // The 15th is in every month, so the walk skips straight to the window and still ends on the 100th: 99 months
+        // after January 2020, in April 2028.
+        var start = new DateTime(2020, 1, 15, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 100 });
+
+        var april = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 4, 1), new DateTime(2028, 4, 30));
+        Assert.AreEqual(1, april.Count);
+        Assert.AreEqual(new DateTime(2028, 4, 15, 9, 0, 0), april[0].StartDate);
+
+        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 5, 1), new DateTime(2028, 5, 31)).Count);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldCountACountedSeriesOnALateDayFromItsStart()
+    {
+        // The 31st is only in seven months a year and the others are skipped, so the position is walked from the start:
+        // 28 occurrences in 2020-2023, then January 31st (29th) and March 31st (30th) of 2024.
+        var start = new DateTime(2020, 1, 31, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 30 });
+
+        var march = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 3, 1), new DateTime(2024, 3, 31));
+        Assert.AreEqual(1, march.Count);
+        Assert.AreEqual(new DateTime(2024, 3, 31, 9, 0, 0), march[0].StartDate);
+
+        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31)).Count);
+    }
+
+    [TestMethod]
     public void ExpandRecurrencesShouldSurviveAnAbsurdInterval()
     {
         var start = new DateTime(2024, 5, 15, 9, 0, 0);
@@ -795,6 +913,36 @@ public class BitFullCalendarHelpersTests
                 new DateTime(2024, 5, 13, 9, 0, 0),
             },
             result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldEndACountedWeekOfMonthSeriesAtItsCountWhenSkippingAhead()
+    {
+        // The first Monday and Wednesday of every month from Friday 2024-05-03: May's Wednesday (the 1st) comes before
+        // the start, so May holds one occurrence and every later month two - 1 + 49 * 2 = 99 by June 2028. The walk skips
+        // straight to the window and still ends on the 101st: Monday July 3rd and Wednesday July 5th, 2028.
+        var start = new DateTime(2024, 5, 3, 9, 0, 0);
+        BitFullCalendarEvent FirstMondayAndWednesday(DateTime? until) => Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.First,
+            DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday],
+            Count = 101,
+            Until = until,
+        });
+        DateTime[] Starts(BitFullCalendarEvent series, DateTime from, DateTime to)
+            => [.. BitFullCalendarHelpers.ExpandRecurrences([series], from, to).Select(o => o.StartDate)];
+
+        var counted = FirstMondayAndWednesday(until: null);
+        CollectionAssert.AreEqual(
+            new[] { new DateTime(2028, 7, 3, 9, 0, 0), new DateTime(2028, 7, 5, 9, 0, 0) },
+            Starts(counted, new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
+        Assert.AreEqual(0, Starts(counted, new DateTime(2028, 8, 1), new DateTime(2028, 8, 31)).Length);
+
+        // An Until reached before the count runs out still ends the series first.
+        CollectionAssert.AreEqual(
+            new[] { new DateTime(2028, 7, 3, 9, 0, 0) },
+            Starts(FirstMondayAndWednesday(new DateTime(2028, 7, 4)), new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
     }
 
     [TestMethod]
