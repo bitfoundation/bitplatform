@@ -3,7 +3,8 @@
 /// <summary>
 /// End-to-end tests of BitPanel on a touch phone (/e2e/panel at a 390x844 viewport with touch): the swipe gesture the
 /// panel registers on touch devices dismisses it towards its own edge past the SwipeTrigger and snaps it back short of it,
-/// gives up a gesture the browser cancels (touch or pen) without dismissing or leaving the panel offset,
+/// gives up a gesture the browser cancels (touch or pen) without dismissing or leaving the panel offset - but not one
+/// whose cancel took away another finger -,
 /// reports OnSwipeStart/Move/End, honours NoSwipe and leaves a drag that starts on a field alone; a tap on the overlay
 /// dismisses it; the 85% cap leaves a strip of the page beside a panel larger than the phone; and a touch drag over the
 /// overlay of a panel that leaves the page scrolling is handed to the named scroller.
@@ -153,6 +154,48 @@ public class BitPanelTouchE2ETests : E2ETestBase
         // panel's resting place and put it back there when it ended.
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
         await Expect(Container("swipe-panel")).ToHaveCSSAsync("transform", "none");
+    }
+
+    [TestMethod]
+    public async Task Swipe_TouchCancelOfAnotherFinger_LeavesTheGestureGoing()
+    {
+        await OpenSwipeAsync();
+
+        // A second finger lands on the panel while the first drags it, and the browser cancels that one alone: the
+        // touchcancel names it in changedTouches, and the first finger goes on to drag the panel past the trigger.
+        await Page.EvaluateAsync(@"async () => {
+            const target = document.querySelector('#swipe-text');
+            const rect = target.getBoundingClientRect();
+            const x0 = rect.left + rect.width / 2;
+            const y0 = rect.top + rect.height / 2;
+            const touch = (id, x, y) => new Touch({ identifier: id, target, clientX: x, clientY: y, screenX: x, screenY: y, pageX: x, pageY: y });
+            const fire = (type, current, list) => target.dispatchEvent(new TouchEvent(type,
+                { touches: list, targetTouches: list, changedTouches: [current], bubbles: true, cancelable: type !== 'touchcancel', composed: true }));
+            const frame = () => new Promise(resolve => setTimeout(resolve, 16));
+
+            let first = touch(1, x0, y0);
+            fire('touchstart', first, [first]);
+            await frame();
+            first = touch(1, x0 + 30, y0);
+            fire('touchmove', first, [first]);
+            await frame();
+
+            const second = touch(2, x0, y0 + 40);
+            fire('touchstart', second, [first, second]);
+            await frame();
+            fire('touchcancel', second, [first]);
+            await frame();
+
+            for (let i = 1; i <= 10; i++) {
+                first = touch(1, x0 + 30 + 20 * i, y0);
+                fire('touchmove', first, [first]);
+                await frame();
+            }
+            fire('touchend', first, []);
+        }");
+
+        await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
+        await Expect(Container("swipe-panel")).Not.ToHaveClassAsync(HasClass("bit-pnl-opn"));
     }
 
     [TestMethod]

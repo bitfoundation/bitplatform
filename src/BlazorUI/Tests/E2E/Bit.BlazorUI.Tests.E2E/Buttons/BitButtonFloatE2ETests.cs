@@ -4,7 +4,7 @@
 /// The end-to-end tests of the floating BitButton against /e2e/button/float, a page of its own since a floating
 /// button sits over whatever is under it: Float pinned to the viewport at every FloatPosition, FloatOffset as a
 /// length and as a bare number, FloatAbsolute pinned inside its container, the elevation, and Draggable - the pointer
-/// drag and the click it swallows, the arrow keys and their coarser Shift step, the clamping to the box the button is
+/// drag and the click it swallows, a drag the browser cancels, a second pointer left out of the drag, the arrow keys and their coarser Shift step, the clamping to the box the button is
 /// positioned in, the reset when the anchor changes, turning dragging and floating off at runtime, and unmounting.
 /// </summary>
 [TestClass]
@@ -202,8 +202,10 @@ public class BitButtonFloatE2ETests : E2ETestBase
         var x = before.X + before.Width / 2;
         var y = before.Y + before.Height / 2;
 
-        // A drag the browser takes away: pointerdown and the moves, then a pointercancel and no pointerup.
-        await Page.EvaluateAsync(@"async ([x, y]) => {
+        // A drag the browser takes away: pointerdown and the moves, then a pointercancel and no pointerup. The script
+        // tells the button through an OnDragEnd call of its .NET reference, which is followed here (every reference is a
+        // DotNet.DotNetObject) and waited for: it settles once BitButton's handler has run to its end.
+        var dragEnds = await Page.EvaluateAsync<int>(@"async ([x, y]) => {
             const button = document.querySelector('#float-btn');
             const fire = (target, type, px, py) => target.dispatchEvent(new PointerEvent(type,
                 { pointerId: 3, pointerType: 'touch', isPrimary: true, clientX: px, clientY: py, buttons: type === 'pointercancel' ? 0 : 1, bubbles: true, cancelable: type !== 'pointercancel', composed: true }));
@@ -215,8 +217,26 @@ public class BitButtonFloatE2ETests : E2ETestBase
                 fire(document, 'pointermove', x - 10 * i, y - 7.5 * i);
                 await frame();
             }
-            fire(document, 'pointercancel', x - 120, y - 90);
+
+            const proto = DotNet.DotNetObject.prototype;
+            const invoke = proto.invokeMethodAsync;
+            const dragEnds = [];
+            proto.invokeMethodAsync = function (method, ...args) {
+                const call = invoke.call(this, method, ...args);
+                if (method === 'OnDragEnd') dragEnds.push(call);
+                return call;
+            };
+            try {
+                fire(document, 'pointercancel', x - 120, y - 90);
+            } finally {
+                proto.invokeMethodAsync = invoke;
+            }
+
+            await Promise.allSettled(dragEnds);
+            return dragEnds.length;
         }", new object[] { (double)x, (double)y }); // the box is in floats, which the argument serializer does not carry
+
+        Assert.AreEqual(1, dragEnds, "the cancel ends the drag, and the button hears it");
 
         var dragged = await FloatBtn.BoxAsync();
         ButtonsE2EHelpers.AreClose(before.X - 120, dragged.X, Tolerance, "dragged left before the cancel");
@@ -230,11 +250,54 @@ public class BitButtonFloatE2ETests : E2ETestBase
         ButtonsE2EHelpers.AreClose(dragged.Y, after.Y, Tolerance, "left where the cancelled drag put it");
         await Expect(FloatBtn).ToHaveCSSAsync("cursor", "grab");
 
-        // ...and the button heard it end, so the next click is a click and not the end of a drag.
-        await PingAsync();
-        await Page.WaitForTimeoutAsync(200);
+        // ...and the button heard it end (the OnDragEnd awaited above), so the next click is a click and not the end of a drag.
         await FloatBtn.ClickAsync();
         await Expect(Page.Locator("#float-clicks")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task Draggable_ASecondPointer_NeitherMovesTheButtonNorEndsTheDrag()
+    {
+        await OpenAsync("/e2e/button/float");
+
+        var before = await FloatBtn.BoxAsync();
+        var x = before.X + before.Width / 2;
+        var y = before.Y + before.Height / 2;
+
+        // Two fingers on the button: the first drags it to the left, the second lands on it, moves up and lifts while
+        // the first is still down, and the first then drags it on to the left before it lifts.
+        await Page.EvaluateAsync(@"async ([x, y]) => {
+            const button = document.querySelector('#float-btn');
+            const fire = (target, type, id, px, py) => target.dispatchEvent(new PointerEvent(type,
+                { pointerId: id, pointerType: 'touch', isPrimary: id === 3, clientX: px, clientY: py, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
+            const frame = () => new Promise(resolve => setTimeout(resolve, 16));
+
+            fire(button, 'pointerdown', 3, x, y);
+            await frame();
+            for (let i = 1; i <= 6; i++) {
+                fire(document, 'pointermove', 3, x - 10 * i, y);
+                await frame();
+            }
+
+            fire(button, 'pointerdown', 4, x - 60, y);
+            await frame();
+            for (let i = 1; i <= 6; i++) {
+                fire(document, 'pointermove', 4, x - 60, y - 15 * i);
+                await frame();
+            }
+            fire(document, 'pointerup', 4, x - 60, y - 90);
+            await frame();
+
+            for (let i = 7; i <= 12; i++) {
+                fire(document, 'pointermove', 3, x - 10 * i, y);
+                await frame();
+            }
+            fire(document, 'pointerup', 3, x - 120, y);
+        }", new object[] { (double)x, (double)y }); // the box is in floats, which the argument serializer does not carry
+
+        var after = await FloatBtn.BoxAsync();
+        ButtonsE2EHelpers.AreClose(before.X - 120, after.X, Tolerance, "carried by the first finger all the way");
+        ButtonsE2EHelpers.AreClose(before.Y, after.Y, Tolerance, "not carried by the second finger");
     }
 
     [TestMethod]

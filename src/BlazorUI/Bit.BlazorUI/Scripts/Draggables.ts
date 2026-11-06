@@ -22,6 +22,9 @@
             let sx = 0;
             let sy = 0;
             let thresholdDragged = false;
+            // The pointer the drag under way follows, or null between drags. Another contact (a second finger on the
+            // button) neither moves the button nor ends the drag, and a press of its own does not restart it.
+            let pointerId: number | null = null;
 
             dragElement.classList.add('bit-nta');
             const origCursor = dragElement.style.cursor;
@@ -38,6 +41,12 @@
                 //e.preventDefault();
                 //e.stopPropagation();
 
+                // Only a pointer that is not primary is turned away while a drag is under way: a primary one is the
+                // first contact of its kind, so the drag it would be refused for has lost its end - it restarts the
+                // drag rather than leave the button undraggable for good.
+                if (pointerId !== null && e.pointerId !== pointerId && e.isPrimary === false) return;
+
+                pointerId = e.pointerId;
                 x = sx = e.clientX;
                 y = sy = e.clientY;
                 thresholdDragged = false;
@@ -59,6 +68,8 @@
             async function handlePointerMove(e: PointerEvent) {
                 //e.preventDefault();
                 //e.stopPropagation();
+
+                if (e.pointerId !== pointerId) return;
 
                 if (!thresholdDragged) {
                     const diffX = e.clientX - sx;
@@ -152,6 +163,10 @@
             async function handlePointerUp(e: PointerEvent) {
                 //e.preventDefault();
                 //e.stopPropagation();
+
+                if (e.pointerId !== pointerId) return;
+
+                pointerId = null;
 
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointermove', handlePointerMove);
