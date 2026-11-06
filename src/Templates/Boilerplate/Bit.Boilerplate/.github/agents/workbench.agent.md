@@ -24,19 +24,18 @@ what the user approves is how the real page will look.
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
   describes. A `.resx` edit or startup code needs a restart.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
-  anything and where `/mcp` and `/api/review` answer. A home page that answers doesn't show it, so ask `/api/review`. Any
-  other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers those with a 404: stop
+  anything and where `/api/review` answers. A home page that answers doesn't show it, so ask `/api/review`. Any
+  other copy, like a published one or a plain `dotnet run`, which is how bit CLI starts it, answers it with a 404: stop
   that copy, tell the user, and run `dotnet watch` in `src/Workbench`. Comments the user left on a copy run from its
   project folder wait in the review for you, and are told so. A published copy keeps them only in memory, so before you stop
   one, tell the user that any left on it will be lost.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
-- It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
-  endpoints under `/api/review`. An MCP client connects when its session starts: if the Workbench wasn't running in dev
-  mode then, reconnect the server if your client can, or use the HTTP endpoints.
+- You reach the review over HTTP on the Workbench's own address, under `/api/review` (section 7).
 - Whatever it was started for and whoever started it, start listening the moment it runs in dev mode, before you hand
   anything over and without being asked: the user can pin a comment as soon as a page is open, and one nobody is listening
-  for gets no answer. Read what is already waiting, then keep waiting for more the way section 7 says, in the background
+  for gets no answer. Read what is already waiting (`GET /api/review`), then keep waiting for more with
+  `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, passing the cursor the last answer returned, in the background
   where your client can, so you can go on working and talking to the user. Tell the user you are listening, and go on until
   they say the review is over or the Workbench stops: a wait that ends empty or at its time limit is the cue to wait again.
   So is one that fails, as it does while the Workbench restarts: cursors survive a restart, so retry it a few seconds apart,
@@ -167,27 +166,29 @@ what the user approves is how the real page will look.
 - Show the rest per device and state, as links or images, and change it until the user approves it. Approval is the user
   telling you to go ahead: an answer or a review comment is not, and nothing of the page goes into the app before it.
 - The user pins comments on the page in Comment mode. The comments reach you as they are written, since you have been
-  listening from the moment it ran (section 1): call `get_review`, then `wait_for_review` with the cursor it returns, again
-  and again, until the user says the review is over.
-- For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick
-  it as you go, change the page, which hot reload brings to the reviewer's view, then reply in the reviewer's language
-  (`reply_to_comment`) and mark it done. A comment names its element (component, text, CSS path) and its view;
-  `get_comment_screenshot` shows the view as it was when the comment was left.
-- Without the MCP server, the same calls are HTTP on the Workbench's own address: `GET /api/review`,
-  `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, which answers within a minute, `POST /api/review/<id>/reply`
-  and `POST /api/review/<id>/status` with a JSON body (`text` or `status`, and `agent`), `PUT /api/review/<id>/tasks`
-  (`tasks`, each with `text` and `done`), `GET /api/review/<id>/screenshot`, `POST /api/review/pages/<key>/status` and
-  `POST /api/review/flows`. They answer only in dev mode on this machine, and a visitor from anywhere else only sees
-  the review and keeps their own comments in their tab, so only someone at this computer can reach you.
-- Keep each page's review status current (`set_page_status`): in review when you hand it to the user, approved when
+  listening from the moment it ran (section 1): `GET /api/review`, then `GET /api/review/wait?cursor=<cursor>&agent=<your
+  name>` with the cursor each answer returns, again and again, until the user says the review is over. A wait answers
+  within a minute.
+- For each comment, mark it working (`POST /api/review/<id>/status`), show your plan as a checklist
+  (`PUT /api/review/<id>/tasks`) and tick it as you go, change the page, which hot reload brings to the reviewer's view,
+  then reply in the reviewer's language (`POST /api/review/<id>/reply`) and mark it done. A comment names its element
+  (component, text, CSS path) and its view; `GET /api/review/<id>/screenshot` returns a PNG of the view as it was when the
+  comment was left.
+- The bodies are JSON: `status` (`open`, `working` or `done`), `tasks` (each with `text` and `done`) or `text`, each with
+  `agent`, the name the reviewer sees on what you do. These endpoints answer only in dev mode on this machine, and a
+  visitor from anywhere else only sees the review and keeps their own comments in their tab, so only someone at this
+  computer can reach you.
+- Keep each page's review status current (`POST /api/review/pages/<key>/status` with `draft`, `inreview`, `approved` or
+  `built`): in review when you hand it to the user, approved when
   they approve it, built once it is in the app.
 - Text the user changes in Edit text mode is saved into `WorkbenchStrings` or `AppStrings` in every language; read the
   diff. A text written in the page itself reaches you as a comment asking to move it into the resources.
-- To explain a task that crosses screens, draw a flow (`save_flow`): each screen is a page in a state, reached by the
-  taps you list (like the dialog that "Add building" opens), and each link is an arrow that starts at the element its
-  tap names. The user opens it at `/flows/<id>` to understand the app or to present it in a meeting. Draw it again with
-  the same id when the pages change. The read-only samples on that page aren't in the review; they live in
-  `WorkbenchSampleFlows.cs`, and one leaves on its own when its page is removed.
+- To explain a task that crosses screens, draw a flow (`POST /api/review/flows` with `name`, `screens`, `links`, `agent`
+  and, to draw a saved one again, its `id`): each screen (`key`, `page`, `query`, `note`, `taps`) is a page in a state,
+  reached by the taps you list (like the dialog that "Add building" opens), and each link (`from`, `to`, `label`, `tap`)
+  is an arrow that starts at the element its tap names. The user opens it at `/flows/<id>` to understand the app or to
+  present it in a meeting. Draw it again with the same id when the pages change. The read-only samples on that page
+  aren't in the review; they live in `WorkbenchSampleFlows.cs`, and one leaves on its own when its page is removed.
 - The review sheet (Screenshot, then Review sheet) puts every open view, its settings and the comments into one HTML or
   PDF file. Offer it when the user wants something to send around or to attach to the pull request.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.

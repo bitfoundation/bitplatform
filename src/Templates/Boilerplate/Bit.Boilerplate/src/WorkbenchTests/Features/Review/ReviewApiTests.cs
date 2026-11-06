@@ -1,7 +1,7 @@
 namespace Boilerplate.WorkbenchTests.Features.Review;
 
 /// <summary>
-/// The review's HTTP endpoints, the way an agent without MCP uses them: comments come from a reviewer's session through
+/// The review's HTTP endpoints, the way an agent uses them: comments come from a reviewer's session through
 /// the relay, as they do from a browser, and the agent answers over HTTP. Not in parallel: the agent last seen on the
 /// review is one for the whole document.
 /// </summary>

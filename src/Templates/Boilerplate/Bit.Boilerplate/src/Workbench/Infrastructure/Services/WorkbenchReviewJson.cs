@@ -1,6 +1,6 @@
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
-/// <summary>Shapes the review into the JSON the agent reads, over MCP and HTTP alike.</summary>
+/// <summary>Shapes the review into the JSON the agent reads.</summary>
 public static class WorkbenchReviewJson
 {
     public static object Describe(IEnumerable<WorkbenchReviewThread> threads, Dictionary<string, WorkbenchPageReview>? pages, long cursor, IEnumerable<WorkbenchFlow>? flows = null)

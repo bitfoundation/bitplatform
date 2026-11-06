@@ -11,7 +11,7 @@ public sealed record WorkbenchReviewStatusRequest(string Status, string? Agent);
 /// <summary>The body that replaces a comment's task list over HTTP.</summary>
 public sealed record WorkbenchReviewTasksRequest(WorkbenchReviewTask[] Tasks, string? Agent);
 
-/// <summary>A flow the agent draws over HTTP or MCP; the id of a saved flow draws that one again.</summary>
+/// <summary>A flow the agent draws over HTTP; the id of a saved flow draws that one again.</summary>
 public sealed record WorkbenchFlowRequest(string Name, WorkbenchFlowScreenRequest[] Screens, WorkbenchFlowLinkRequest[]? Links, string? Id, string? Agent);
 
 /// <summary>A screen of a flow the agent draws.</summary>

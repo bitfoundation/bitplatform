@@ -133,8 +133,8 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
         }
 
         /// <summary>
-        /// Maps the review document's relay, the MCP server and the HTTP review API. The relay takes only the Workbench's own
-        /// connections; the other two answer only local requests (see Program.Middlewares).
+        /// Maps the review document's relay and the HTTP review API. The relay takes only the Workbench's own
+        /// connections; the API answers only local requests (see Program.Middlewares).
         /// </summary>
         private void MapReviewEndpoints()
         {
@@ -142,8 +142,6 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             endpoints.MapBitBcrdtWebSocket(WorkbenchReviewRelay.Route,
                                            (context, documentId) => ValueTask.FromResult(WorkbenchReviewRelay.IsTrusted(context, documentId)),
                                            new() { DocumentHost = endpoints.ServiceProvider.GetRequiredService<BcrdtDocumentHost>() });
-
-            endpoints.MapMcp("mcp");
 
             var review = endpoints.MapGroup("api/review");
 
