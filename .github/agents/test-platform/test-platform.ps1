@@ -934,8 +934,15 @@ function Write-BitSteps([string] $log, [string] $after) {
 }
 
 function Assert-DockerLinux {
+    $script:containerCli = 'docker'
+
+    if (-not (Get-Command docker -CommandType Application -ErrorAction SilentlyContinue) -and (Get-Command podman -CommandType Application -ErrorAction SilentlyContinue)) {
+        $script:containerCli = 'podman'
+        Set-Alias docker podman -Scope Script
+    }
+
     if ((docker version --format '{{.Server.Os}}' 2>$null) -ne 'linux') {
-        throw 'Docker must be running with Linux containers.'
+        throw "$script:containerCli must be running with Linux containers."
     }
 }
 
@@ -1115,7 +1122,7 @@ function Invoke-DevContainerTest {
         $upLog = Join-Path $lab 'up.log'
         Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
         $started = [DateTimeOffset]::Now
-        npx -y '@devcontainers/cli' up --workspace-folder $project @mount *> $upLog
+        npx -y '@devcontainers/cli' up --docker-path $script:containerCli --workspace-folder $project @mount *> $upLog
         $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Write-BitSteps $upLog 'Running the onCreateCommand'
@@ -1131,7 +1138,7 @@ function Invoke-DevContainerTest {
 
         if ($result.outcome -eq 'success') {
             $doctorLog = Join-Path $lab 'doctor.log'
-            npx -y '@devcontainers/cli' exec --workspace-folder $project bit doctor *> $doctorLog
+            npx -y '@devcontainers/cli' exec --docker-path $script:containerCli --workspace-folder $project bit doctor *> $doctorLog
             $doctorExitCode = $LASTEXITCODE
 
             Get-Content $doctorLog -Encoding utf8 | Where-Object { $_ -match '^\s+[✓✗!-]\s' } | ForEach-Object { Write-Host $_.TrimEnd() }
