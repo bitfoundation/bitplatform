@@ -531,6 +531,10 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   restore, then about half an hour for the Aspire check below. Run it on its own, never next to the E2E suite or
   `aspire`, and only with several GB free: its image build next to the CD's deploy jobs once left this machine under
   3 GB of free memory.
+- On Podman, the devcontainers CLI can miss the container's start and wait for it forever, with nothing in its log
+  after the container's first lines: it listens for the start event only from when it starts the container, and
+  Podman's event stream takes about half a second to connect. Once `podman ps` shows the container running, stop
+  the CLI and run its `up` again with the same arguments, which skips that wait on a running container.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
   and the Aspire check below passes. `bit doctor`'s memory warning describes the container engine's VM, not this machine,
   and is expected. So is a `bit setup` warning that the web app didn't get healthy, when the machine was busy: Aspire
