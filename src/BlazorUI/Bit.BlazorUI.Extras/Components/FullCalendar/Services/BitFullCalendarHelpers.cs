@@ -96,8 +96,8 @@ public static class BitFullCalendarHelpers
     // -- Recurrence ------------------------------
 
     /// <summary>
-    /// Upper bound on the occurrences one series may produce in a single expansion, counted from the start of the
-    /// range being expanded. A daily series over a year is 365, so this only stops a pathological range or interval
+    /// Upper bound on the occurrences one series may produce in a single expansion, counting only those the range
+    /// being expanded shows. A daily series over a year is 365, so this only stops a pathological range or interval
     /// from spinning. It never shortens a series: <see cref="BitFullCalendarRecurrence.Count"/> is a position in the
     /// series, however many of its occurrences came before the range.
     /// </summary>
@@ -153,10 +153,16 @@ public static class BitFullCalendarHelpers
             ? rule.ExceptionDates.Select(d => d.Date).ToHashSet()
             : null;
 
+        // The first date whose occurrence still reaches the range. Never earlier than reachBack, so it is representable.
+        var visibleFrom = rangeStart - timeOfDay - duration;
+        // Whether the range shows the occurrence on a date: a skipped one shows nothing, and one that ends before the
+        // range was only reached back for. These alone count against MaxOccurrencesPerSeries, here and in the walk.
+        bool Shown(DateTime date) => date >= visibleFrom && exceptions?.Contains(date) is not true;
+
         // The pattern's dates and the extra ones merge into one ascending run, so a date both produce
         // is emitted once. The walk is already bounded by the range, so the set stays small.
         var dates = new SortedSet<DateTime>();
-        foreach (var date in EnumerateOccurrenceDates(master.StartDate.Date, rule, reachBack, rangeEnd))
+        foreach (var date in EnumerateOccurrenceDates(master.StartDate.Date, rule, reachBack, rangeEnd, Shown))
         {
             if (date >= reachBack)
                 dates.Add(date);
@@ -176,14 +182,12 @@ public static class BitFullCalendarHelpers
         {
             // A skipped date still consumes its place in the series, which is how a cancelled
             // occurrence behaves in every calendar client - Count is a position, not a total shown.
-            if (exceptions?.Contains(date) is true)
+            if (!Shown(date))
                 continue;
 
             var start = date + timeOfDay;
             if (start > rangeEnd.AddDays(1).AddTicks(-1))
                 break;
-            if (start + duration < rangeStart)
-                continue;
 
             yield return new BitFullCalendarEvent
             {
@@ -215,23 +219,25 @@ public static class BitFullCalendarHelpers
     /// <summary>
     /// The dates a series occurs on, ascending, until <see cref="BitFullCalendarRecurrence.Count"/> is exhausted,
     /// <see cref="BitFullCalendarRecurrence.Until"/> is passed, the walk runs past <paramref name="hardEnd"/>, or
-    /// <see cref="MaxOccurrencesPerSeries"/> dates from <paramref name="windowStart"/> on have been produced.
+    /// <see cref="MaxOccurrencesPerSeries"/> dates that <paramref name="shown"/> accepts have been produced.
     /// <para>
-    /// <c>Count</c> is a position in the series and the cap a bound on what one expansion produces, so the two are
-    /// counted apart: a counted series reaches its last occurrence however many came before the window. The walk skips
-    /// straight to <paramref name="windowStart"/> wherever the position there can be computed - every open-ended
-    /// series, whose position decides nothing, and every counted one whose steps each hold a known number of
-    /// occurrences (daily, weekly, and monthly or yearly on a day every month has) - since a series started years ago
-    /// would otherwise spend its time, and once spent its budget, on occurrences nobody can see. The remaining counted
-    /// series (a day only some months have, a weekday of the month) are walked from their start a month at a time,
-    /// which <paramref name="hardEnd"/> bounds.
+    /// <c>Count</c> is a position in the series and the cap a bound on what one expansion shows, so the two are
+    /// counted apart: a counted series reaches its last occurrence however many came before the window, and neither
+    /// a date the walk reaches back for nor a skipped one takes the place of an occurrence the range shows. The walk
+    /// skips straight to <paramref name="windowStart"/> wherever the position there can be computed - every
+    /// open-ended series, whose position decides nothing, and every counted one whose steps each hold a known number
+    /// of occurrences (daily, weekly, a weekday of the month, and monthly or yearly on a day every month has) - since
+    /// a series started years ago would otherwise spend its time, and once spent its budget, on occurrences nobody can
+    /// see. The remaining counted series (a day only some months have) are walked from their start, which
+    /// <paramref name="hardEnd"/> bounds.
     /// </para>
     /// </summary>
     private static IEnumerable<DateTime> EnumerateOccurrenceDates(
         DateTime seriesStart,
         BitFullCalendarRecurrence rule,
         DateTime windowStart,
-        DateTime hardEnd)
+        DateTime hardEnd,
+        Func<DateTime, bool> shown)
     {
         var until = rule.Until?.Date;
         var count = rule.Count;
@@ -241,7 +247,7 @@ public static class BitFullCalendarHelpers
         var interval = Math.Max(1, rule.Interval);
         // How many occurrences of the series come before the date the walk is at: what Count is measured against.
         long position = 0;
-        // How many dates from the window on the walk has handed out: what MaxOccurrencesPerSeries bounds.
+        // How many of the dates the walk has handed out the range shows: what MaxOccurrencesPerSeries bounds.
         var produced = 0;
 
         bool Accept(DateTime date) => (until is null || date <= until) && date <= hardEnd;
@@ -250,7 +256,7 @@ public static class BitFullCalendarHelpers
         bool Taken(DateTime date)
         {
             position++;
-            if (date >= windowStart)
+            if (shown(date))
                 produced++;
 
             return CountedOut() || produced >= MaxOccurrencesPerSeries;
@@ -300,7 +306,16 @@ public static class BitFullCalendarHelpers
             // months from the one the series starts in and pick the weekdays out of each.
             var monthStep = rule.Frequency is BitFullCalendarRecurrenceFrequency.Yearly ? 12L * interval : interval;
             var monthAnchor = new DateTime(seriesStart.Year, seriesStart.Month, 1);
-            var firstMonth = count is null ? MonthStepsToReach(monthAnchor, windowStart, monthStep) : 0;
+            var firstMonth = MonthStepsToReach(monthAnchor, windowStart, monthStep);
+
+            // Every month after the first holds one date of each of the series' days - the fourth of a weekday is never
+            // past the 28th, and every month has a last one - and the first holds only those from its start on.
+            if (firstMonth > 0)
+            {
+                position = weekDays.Count(day => GetWeekdayOfMonth(monthAnchor, day, weekOfMonth) >= seriesStart) + (long)(firstMonth - 1) * weekDays.Count;
+                if (CountedOut())
+                    yield break;
+            }
 
             for (var step = firstMonth; ; step++)
             {
