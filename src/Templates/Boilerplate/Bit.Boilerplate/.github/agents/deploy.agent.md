@@ -56,9 +56,6 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   work to someone who can't do it.
 - Explain every step before you take it, in the person's terms, and do it yourself wherever you have the access: the
   repository, `gh`, the VM. Where only the user can act, give them the exact clicks and wait.
-- Work the details out when you get to them, from the project, the VM and each tool's current documentation: Docker,
-  the GitHub Actions runner, Aspire's Docker Compose publishing (the aspire MCP server's `search_docs`), cloudflared.
-  They change between versions.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
   passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
   accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
@@ -181,8 +178,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
   same Cloudflare account as the tunnel. The others work the same way, and `appsettings.json` has a sample connection
   string for R2 and for Hetzner Object Storage, DigitalOcean Spaces and Contabo. RustFS, the S3 server the app runs
-  in development, can be self-hosted too; on the app's own VM it needs the same backups as the database. With R2, you
-  create the bucket with the setup token of section 8, and its keys too if the user goes with one token.
+  in development, can be self-hosted too; on the app's own VM it needs the same backups as the database. With R2, the
+  setup token of section 8 lets you create the bucket and its keys yourself.
 <!--#elif (filesStorage == "AzureBlobStorage")-->
 - **File storage**: an Azure Storage account, and its connection string.
 <!--#elif (filesStorage == "Local")-->
@@ -215,7 +212,7 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **reCAPTCHA**: a key pair registered for the environment's domain.
 <!--#endif-->
 <!--#if (cloudflare == true)-->
-- **Cloudflare cache purge**: the zone id, and an API token that may purge its cache only, which section 8 gets.
+- **Cloudflare cache purge**: the zone id, and an API token that may purge its cache only, which you mint in section 8.
 <!--#endif-->
 - **External sign-in**: only the providers under `Authentication` the user wants to offer, each one registered with the
   environment's address.
@@ -269,18 +266,12 @@ project up, and fails unless every container is healthy and the public address a
 
 ## 8. The domain and the tunnel
 
-- **The Cloudflare tokens.** With Cloudflare, offer the user two ways and let them choose. Either way, they create one
-  custom setup token, expiring within days, with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access:
-  Organizations, Identity Providers, and Groups and Workers R2 Storage, each with Edit, and on all zones of the account,
-  DNS with Edit, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below yourself
-  through Cloudflare's API, for each environment.
-  - **One token, the simple way.** The setup token also gets Account API Tokens with Edit, and Cache Purge with Purge
-    on the zones, and you mint every token that runs with it. Tell the user Account API Tokens lets it mint any token
-    on the account, so it is as strong as the account until they delete it.
-  - **Tokens made by hand.** The setup token stays as it is, and the user creates the tokens that run, from your exact
-    list for each environment: an R2 API token with Object Read & Write on that environment's bucket only, once you
-    have created the bucket, and an API token with Cache Purge on its zone only, for `CLOUDFLARE_TOKEN`. Leave out
-    whichever this project doesn't use.
+- **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
+  with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
+  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
+  Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below
+  yourself through Cloudflare's API, for each environment, and mint every token that runs with it. Tell the user
+  Account API Tokens lets it mint any token on the account, so it is as strong as the account until they delete it.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
@@ -291,14 +282,13 @@ project up, and fails unless every container is healthy and the public address a
 - Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
   below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
 <!--#if (filesStorage == "S3")-->
-- For R2, create the environment's bucket. With the one token, mint an account API token with Object Read & Write on
-  that bucket only: its id is the S3 Access Key ID and the SHA-256 of its value is the Secret Access Key, so
-  `S3_CONNECTION_STRING` needs nothing from the user. With tokens made by hand, the user gives you the two keys R2
-  shows. Either way, check the keys with a write, a read and a delete before you store them.
+- For R2, create the environment's bucket, then mint an account API token with Object Read & Write on that bucket only.
+  Its id is the S3 Access Key ID and the SHA-256 of its value is the Secret Access Key, so `S3_CONNECTION_STRING` needs
+  nothing from the user. Check the keys with a write, a read and a delete before you store them.
 <!--#endif-->
 <!--#if (cloudflare == true)-->
-- With the one token, mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only. Either
-  way, check that it purges before you store it.
+- Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
+  before you store it.
 <!--#endif-->
 - Create the Access applications and policies for SSH through the tunnel (section 2), and for the Workbench if the user
   wants it.
