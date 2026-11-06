@@ -37,6 +37,42 @@ public class SearchTests : McpTestBase
             $"'{query}' should lead with {expected}; it led with '{first[3..]}'. The whole answer:\n{answer}");
     }
 
+    /// <summary>
+    /// The names other libraries give to what a component here already does, typed the way a task phrases them.
+    /// A search that led anywhere else would have an agent write a component the library already ships. The
+    /// first hit is compared by its whole name, since BitButton is a prefix of BitButtonGroup.
+    /// </summary>
+    [TestMethod]
+    [DataRow("segmented control", "BitButtonGroup")]
+    [DataRow("loading button", "BitButton")]
+    [DataRow("autocomplete", "BitSearchBox")]
+    [DataRow("typeahead", "BitSearchBox")]
+    [DataRow("textarea", "BitTextField")]
+    [DataRow("month picker", "BitDatePicker")]
+    // As one word: the search scores each word of a query on its own, and "bar" alone is what BitChart's bar charts
+    // and BitNavBar are about, which puts BitHeader third for "app bar".
+    [DataRow("appbar", "BitHeader")]
+    [DataRow("bottom navigation", "BitNavBar")]
+    [DataRow("hover card", "BitCallout")]
+    [DataRow("drawer", "BitPanel")]
+    [DataRow("bottom sheet", "BitPanel")]
+    [DataRow("scroll area", "BitScrollablePane")]
+    [DataRow("safe area", "BitAppShell")]
+    [DataRow("tree grid", "BitDataGrid")]
+    [DataRow("sidebar", "BitNavPanel")]
+    public async Task A_name_from_another_library_finds_the_component_that_provides_it(string query, string expected)
+    {
+        var answer = await CallAsync("SearchBitBlazorUI", new { query, limit = 5 });
+
+        var first = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n')
+            .First(line => line.StartsWith("## ", StringComparison.Ordinal));
+
+        // "## BitDropdown<TItem, TValue> - Inputs": the name, then its type parameters and its category.
+        var name = first[3..].Split(" - ")[0].Split('<')[0];
+
+        Assert.AreEqual(expected, name, $"'{query}' should lead with {expected}; it led with '{first[3..]}'. The whole answer:\n{answer}");
+    }
+
     [TestMethod]
     public async Task Every_hit_names_the_call_that_returns_its_full_text()
     {
