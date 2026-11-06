@@ -2,10 +2,9 @@ namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 {
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsOnline"/>
-    /// </summary>
-    [CascadingParameter(Name = Parameters.IsOnline)] protected bool? IsOnline { get; set; }
+    // IsOnline isn't cascaded to every component from here: a component receiving a cascading value re-renders whenever
+    // it changes, so each connection change (and the first one, at start) re-rendered every component of the app, while
+    // only a few show it. A component that does declares its own [CascadingParameter(Name = Parameters.IsOnline)].
     [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [AutoInject] private IServiceProvider serviceProvider = default!;
