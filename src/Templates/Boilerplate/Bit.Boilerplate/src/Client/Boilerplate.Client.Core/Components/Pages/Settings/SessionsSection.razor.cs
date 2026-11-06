@@ -3,6 +3,11 @@ namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class SessionsSection
 {
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    [CascadingParameter(Name = Parameters.IsOnline)] public bool? IsOnline { get; set; }
+
     private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
