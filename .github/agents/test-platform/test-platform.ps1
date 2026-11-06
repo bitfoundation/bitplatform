@@ -915,7 +915,7 @@ function Remove-DevContainer([string] $folder) {
             docker volume rm $volume 2>&1 | Out-Null
         }
 
-        if ($image -like 'vsc-*') {
+        if ($image -like 'vsc-*' -or $image -like 'localhost/vsc-*') {
             docker rmi $image 2>&1 | Out-Null
         }
 
@@ -1156,7 +1156,7 @@ function Invoke-DevContainerTest {
         $env:NUGET_PACKAGES = $nugetPackages
 
         if ($Keep) {
-            Write-Host "Kept the dev container of $project. Run npx @devcontainers/cli exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
+            Write-Host "Kept the dev container of $project. Run npx @devcontainers/cli exec --docker-path $containerCli --workspace-folder $project <command> in it, and run this again without -Keep to start over."
         }
         else {
             Remove-DevContainer $project
