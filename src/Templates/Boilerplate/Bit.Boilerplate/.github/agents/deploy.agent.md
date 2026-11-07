@@ -94,12 +94,35 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   touch Production.
 - The deploy job keeps the environment's Compose files in `~/deployments/<project>-<environment>` of the runner's
   user. Leave that folder in place: every later deployment, and every `docker compose` command by hand, works from it.
+<!--#if (database == "PostgreSQL" || database == "SqlServer" || database == "MySql" || redis == true)-->
 - The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, and DbGate, for the database and
-  Redis, run on the VM too and listen on its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on
-  ports `18888` and `3000`. Show the user how to open them through SSH, for Production
-  `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
+  Redis containers of the Compose project, run on the VM too and listen on its loopback only: `127.0.0.1` for
+  Production and `127.0.0.2` for Test, on ports `18888` and `3000`. Show the user how to open them through SSH, for
+  Production `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
   `http://localhost:3000`; the dashboard's sign-in link is in `docker compose logs compose-dashboard`. DbGate has no
   sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in front of it.
+<!--#if (database == "Sqlite")-->
+- Published, DbGate reaches Redis only: the Sqlite file sits in the app's volume, outside it.
+<!--#endif-->
+- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them both
+  on the web instead: DbGate to manage those containers, and the Aspire dashboard to read the logs, traces and
+  metrics, each on a hostname of its own for each environment, behind an Access policy that lets in only the people
+  they name (section 8). The tunnel reaches them inside the Compose network, at `http://dbgate:3000` and
+  `http://compose-dashboard:18888`, so their loopback ports and SSH stay as they are.
+<!--#else-->
+- The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, runs on the VM too and listens on
+  its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on port `18888`. Show the user how to open it
+  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`; its sign-in link is
+  in `docker compose logs compose-dashboard`. It gets no route on the tunnel unless a Cloudflare Access policy stands
+  in front of it.
+- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them the
+  dashboard on the web instead, to read the logs, traces and metrics, on a hostname of its own for each environment,
+  behind an Access policy that lets in only the people they name (section 8). The tunnel reaches it inside the Compose
+  network, at `http://compose-dashboard:18888`, so its loopback port and SSH stay as they are.
+<!--#endif-->
+- The link in the dashboard's logs names the container's own address, so on its hostname give the user
+  `https://<its hostname>/login?t=<the token from that link>`. Or, since Access already guards it, set
+  `DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS` to `true` on the dashboard, and it opens without a token.
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:
@@ -146,11 +169,14 @@ business, and only what the project doesn't answer by itself.
 <!--#if (multitenant == true)-->
 - Pages that differ per tenant stay out of the edge cache (`UserAgnostic` in `.docs/14- Response Caching System.md`).
 <!--#endif-->
-- The landing page (`src/LandingPage`) is prerendered whatever this decides, since being found is what it is for. Its
-  pages set no cookies and a short shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them
-  from the edge.
-- Blazor Server is for development only in this template, and so is Auto, which runs on Blazor Server until
-  WebAssembly has loaded: offer neither for a deployment.
+- The landing page (`src/LandingPage`), when the user deploys it, runs as Blazor WebAssembly (`WebAppRender:BlazorMode`
+  in its settings) whatever this decides for the app, so a visitor holds no connection to the server. It is always
+  prerendered, since being found is what it is for. Its pages set no cookies and a short
+  shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them from the edge.
+- The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
+  Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
+- Apart from the Workbench, Blazor Server is for development only in this template, and so is Auto, which runs on
+  Blazor Server until WebAssembly has loaded: offer neither for the app or the landing page.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
   `InvariantGlobalization` is on in `src/Directory.Build.props`.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
@@ -290,12 +316,13 @@ project up, and fails unless every container is healthy and the public address a
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
 <!--#endif-->
-- Create the Access applications and policies for SSH through the tunnel (section 2), and for the Workbench if the user
-  wants it.
+- Create the Access applications and policies for SSH through the tunnel (section 2), for the Workbench if the user
+  wants it, and for the web routes of section 3 if the user took them.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
-- The Workbench isn't deployed. If the user wants it on Test, never Production, put its hostname behind Cloudflare
-  Access, Cloudflare's own sign-in, and let `/alive` through for the deploy job's check. Its screenshots need a base
+- The Workbench isn't deployed by default. If the user wants it on Test, never Production, deploy it as Blazor Server
+  (section 4), put its hostname behind Cloudflare Access, Cloudflare's own sign-in, and let `/alive` through for the
+  deploy job's check. Its screenshots need a base
   image with a browser, such as Playwright's.
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
