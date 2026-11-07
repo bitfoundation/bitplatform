@@ -29,7 +29,7 @@ public class DevMcpTelemetryTests
 
         var logs = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "ListLogs", new()
         {
-            ["resource"] = "serverweb",
+            ["resource"] = "Boilerplate.Server.Web",
             ["severity"] = "warning",
             ["search"] = "failed",
             ["take"] = 500
@@ -38,7 +38,7 @@ public class DevMcpTelemetryTests
         var logsRequest = dashboard.Requests.Last(request => request.Path is "/api/telemetry/logs");
         Assert.AreEqual(FakeAspireDashboard.InitialApiKey, logsRequest.ApiKey);
         Assert.AreEqual("Warning", logsRequest.Query["severity"]);
-        Assert.AreEqual("resource:serverweb failed", logsRequest.Query["search"], "A service name reaches the dashboard as a qualifier, which matches every instance of it.");
+        Assert.AreEqual("resource:Boilerplate.Server.Web failed", logsRequest.Query["search"], "A service name reaches the dashboard as a qualifier, which matches every instance of it.");
         Assert.AreEqual("100", logsRequest.Query["limit"]);
 
         var entries = logs["logs"]!.AsArray();
@@ -46,7 +46,7 @@ public class DevMcpTelemetryTests
         Assert.AreEqual("Hello info", entries[0]!["message"]!.GetValue<string>(), "The newest log comes first.");
         var error = entries[1]!;
         Assert.AreEqual("Error", error["severity"]!.GetValue<string>());
-        Assert.AreEqual("serverweb", error["resource"]!.GetValue<string>());
+        Assert.AreEqual("Boilerplate.Server.Web", error["resource"]!.GetValue<string>());
         Assert.AreEqual("Boilerplate.Server.Api.Features.Orders", error["category"]!.GetValue<string>());
         Assert.AreEqual("Order 42 failed", error["message"]!.GetValue<string>());
         Assert.AreEqual(TraceId, error["traceId"]!.GetValue<string>());
@@ -66,7 +66,7 @@ public class DevMcpTelemetryTests
         Assert.AreEqual(250d, trace["durationMs"]!.GetValue<double>());
         Assert.AreEqual(2, trace["spanCount"]!.GetValue<int>());
         Assert.IsTrue(trace["hasError"]!.GetValue<bool>());
-        Assert.AreEqual("serverweb: POST /api/Order/Create (failed)", trace["failedSpans"]!.AsArray().Single()!.GetValue<string>());
+        Assert.AreEqual("Boilerplate.Server.Web: POST /api/Order/Create (failed)", trace["failedSpans"]!.AsArray().Single()!.GetValue<string>());
 
         var details = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "GetTrace", new() { ["traceId"] = "0AF7651" }, TestContext.CancellationToken))!;
 
@@ -87,12 +87,12 @@ public class DevMcpTelemetryTests
 
         var unknown = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "ListLogs", new() { ["resource"] = "nope" }, TestContext.CancellationToken))!;
         Assert.IsEmpty(unknown["logs"]!.AsArray());
-        Assert.AreEqual("serverweb", unknown["knownServices"]!.AsArray().Single()!.GetValue<string>(), "A service name that matches nothing gets the names that would.");
+        Assert.AreEqual("Boilerplate.Server.Web", unknown["knownServices"]!.AsArray().Single()!.GetValue<string>(), "A service name that matches nothing gets the names that would.");
 
         var requestCount = dashboard.Requests.Count;
         Assert.Contains("Information", await DevMcpTestUtils.CallText(mcp, "ListLogs", new() { ["severity"] = "loud" }, TestContext.CancellationToken));
         Assert.Contains("hexadecimal", await DevMcpTestUtils.CallText(mcp, "GetTrace", new() { ["traceId"] = "not-a-trace" }, TestContext.CancellationToken));
-        Assert.Contains("one service name", await DevMcpTestUtils.CallText(mcp, "ListTraces", new() { ["resource"] = "serverweb severity:error" }, TestContext.CancellationToken));
+        Assert.Contains("one service name", await DevMcpTestUtils.CallText(mcp, "ListTraces", new() { ["resource"] = "Boilerplate.Server.Web severity:error" }, TestContext.CancellationToken));
         Assert.HasCount(requestCount, dashboard.Requests, "An argument the tool refuses never reaches the dashboard.");
 
         dashboard.ApiKey = "rotated";
@@ -120,7 +120,7 @@ public class DevMcpTelemetryTests
     {
         public const string InitialApiKey = "dashboard-key";
 
-        private const string Resources = """[{"name":"serverweb","instanceId":"i1","displayName":"serverweb-i1","hasLogs":true,"hasTraces":true,"hasMetrics":false}]""";
+        private const string Resources = """[{"name":"Boilerplate.Server.Web","instanceId":"i1","displayName":"Boilerplate.Server.Web-i1","hasLogs":true,"hasTraces":true,"hasMetrics":false}]""";
 
         private const string NoLogs = """{"data":{"resourceLogs":[]},"totalCount":0,"returnedCount":0}""";
 
@@ -128,7 +128,7 @@ public class DevMcpTelemetryTests
 
         private const string InfoLog = """{"timeUnixNano":"1794066769478510700","severityNumber":9,"severityText":"Information","body":{"stringValue":"Hello info"},"attributes":[{"key":"aspire.log_id","value":{"stringValue":"2"}}]}""";
 
-        private const string Spans = """{"data":{"resourceSpans":[{"scopeSpans":[{"scope":{"name":"Microsoft.AspNetCore"},"spans":[{"traceId":"0af7651916cd43dd8448eb211c80319c","spanId":"b7ad6b7169203331","name":"POST /api/Order/Create","kind":2,"startTimeUnixNano":"1794066769478509700","endTimeUnixNano":"1794066769728509700","attributes":[{"key":"http.request.method","value":{"stringValue":"POST"}},{"key":"http.response.status_code","value":{"stringValue":"500"}}],"events":[{"timeUnixNano":"1794066769478510700","name":"exception","attributes":[{"key":"exception.type","value":{"stringValue":"System.InvalidOperationException"}}]}],"status":{"message":"failed","code":2}},{"traceId":"0af7651916cd43dd8448eb211c80319c","spanId":"c7ad6b7169203332","parentSpanId":"b7ad6b7169203331","name":"SELECT orders","kind":3,"startTimeUnixNano":"1794066769479509700","endTimeUnixNano":"1794066769483509700","attributes":[{"key":"db.system","value":{"stringValue":"postgresql"}}]}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"serverweb"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":1,"returnedCount":1}""";
+        private const string Spans = """{"data":{"resourceSpans":[{"scopeSpans":[{"scope":{"name":"Microsoft.AspNetCore"},"spans":[{"traceId":"0af7651916cd43dd8448eb211c80319c","spanId":"b7ad6b7169203331","name":"POST /api/Order/Create","kind":2,"startTimeUnixNano":"1794066769478509700","endTimeUnixNano":"1794066769728509700","attributes":[{"key":"http.request.method","value":{"stringValue":"POST"}},{"key":"http.response.status_code","value":{"stringValue":"500"}}],"events":[{"timeUnixNano":"1794066769478510700","name":"exception","attributes":[{"key":"exception.type","value":{"stringValue":"System.InvalidOperationException"}}]}],"status":{"message":"failed","code":2}},{"traceId":"0af7651916cd43dd8448eb211c80319c","spanId":"c7ad6b7169203332","parentSpanId":"b7ad6b7169203331","name":"SELECT orders","kind":3,"startTimeUnixNano":"1794066769479509700","endTimeUnixNano":"1794066769483509700","attributes":[{"key":"db.system","value":{"stringValue":"postgresql"}}]}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"Boilerplate.Server.Web"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":1,"returnedCount":1}""";
 
         private readonly WebApplication app;
 
@@ -173,7 +173,7 @@ public class DevMcpTelemetryTests
             return dashboard;
         }
 
-        private static string Logs(string[] records) => $$$"""{"data":{"resourceLogs":[{"scopeLogs":[{"scope":{"name":"Boilerplate.Server.Api.Features.Orders"},"logRecords":[{{{string.Join(',', records)}}}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"serverweb"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":{{{records.Length}}},"returnedCount":{{{records.Length}}}}""";
+        private static string Logs(string[] records) => $$$"""{"data":{"resourceLogs":[{"scopeLogs":[{"scope":{"name":"Boilerplate.Server.Api.Features.Orders"},"logRecords":[{{{string.Join(',', records)}}}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"Boilerplate.Server.Web"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":{{{records.Length}}},"returnedCount":{{{records.Length}}}}""";
 
         private static IResult Json(string json) => Results.Content(json, "application/json");
 

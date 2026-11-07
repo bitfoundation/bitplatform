@@ -22,7 +22,7 @@ public partial class DevMcpTelemetryTools
     [McpServerTool(Name = nameof(ListLogs))]
     [Description("Lists the newest structured logs that the Aspire dashboard running next to this deployment keeps, newest first. The apps of the Docker Compose project send it their logs, traces and metrics over OTLP, and it keeps them across restarts and deployments. Each entry has its time, level, service, category, message, trace and span ids, attributes and exception. Filters combine: resource (one service name), traceId, severity (that level and above) and search. " + SamplingNote + " Values are returned verbatim and are not redacted: a log line carries whatever the code logged, which is why the whole endpoint is global-admin only and every call is logged. Answers that no dashboard is configured when AspireDashboard:Url is empty, as it is outside a Docker Compose deployment. Read-only.")]
     public async Task<string> ListLogs(
-        [Description("One service name, such as serverweb or serverapi; every instance of it, across restarts, is read")] string? resource = null,
+        [Description("One service name, such as Boilerplate.Server.Web or Boilerplate.Server.Api; every instance of it, across restarts, is read")] string? resource = null,
         [Description("Only the logs of this trace: its id, or the start of it")] string? traceId = null,
         [Description("The lowest level to return: Trace, Debug, Information, Warning, Error or Critical")] string? severity = null,
         [Description("Text matched against the message, category and attribute values. Qualifiers such as category:Orders or message:failed narrow it to one field")] string? search = null,
@@ -64,7 +64,7 @@ public partial class DevMcpTelemetryTools
     [McpServerTool(Name = nameof(ListTraces))]
     [Description("Lists the newest traces that the Aspire dashboard running next to this deployment keeps, newest first, one entry each: the root span's name, the services the trace crossed, its start, duration and span count, and whether a span failed, with the failed spans' names. hasError=true keeps the failed traces only. Pass a trace id from here, from an error or from the diagnostic modal to GetTrace for its spans and logs. " + SamplingNote + " Answers that no dashboard is configured when AspireDashboard:Url is empty, as it is outside a Docker Compose deployment. Read-only.")]
     public async Task<string> ListTraces(
-        [Description("One service name, such as serverweb or serverapi; every instance of it, across restarts, is read")] string? resource = null,
+        [Description("One service name, such as Boilerplate.Server.Web or Boilerplate.Server.Api; every instance of it, across restarts, is read")] string? resource = null,
         [Description("true for the traces with a failed span only, false for those without one")] bool? hasError = null,
         [Description("Text matched against span names and attribute values. Qualifiers such as name:Order or status:Error narrow it to one field")] string? search = null,
         [Description("How many of the newest matching traces, capped at 100")] int take = DevMcpLimits.DefaultTake,
@@ -175,7 +175,7 @@ public partial class DevMcpTelemetryTools
     private static string? Invalid(string? resource, string? traceId, string? search)
     {
         if (resource is not null && ServiceName().IsMatch(resource.Trim()) is false)
-            return "resource is one service name, such as serverweb, with no spaces or colons.";
+            return "resource is one service name, such as Boilerplate.Server.Web, with no spaces or colons.";
         if (traceId is not null && TraceId().IsMatch(traceId.Trim()) is false)
             return "traceId is up to 32 hexadecimal characters.";
         if (search?.Length > DevMcpLimits.MaxFilterLength)
