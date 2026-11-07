@@ -240,6 +240,10 @@ jobs:
             if [[ "$file" == "serverapi.env" ]]; then
               printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
             fi
+            # The landing page's browser posts its telemetry to its own address, where the tunnel sends /v1/ to the dashboard.
+            if [[ "$file" == "landingpage.env" ]]; then
+              printf "Belemetry__OtlpEndpoint='%s'\n" "$origin" >> "$deploy_dir/$file"
+            fi
 
             while IFS= read -r line; do
               line="${line%$'\r'}"

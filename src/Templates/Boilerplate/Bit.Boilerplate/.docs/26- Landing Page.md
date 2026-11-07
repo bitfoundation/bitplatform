@@ -149,6 +149,7 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 | `WebAppRender:BlazorMode` | WebAssembly, always prerendered, since being found is what the site is for. Blazor Server and Auto are for development only. |
 | `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. The server sends its logs, traces and metrics there too. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the server also sends them over OTLP, such as the Aspire dashboard. |
+| `Belemetry:OtlpEndpoint` | Where the browser sends them over OTLP/HTTP, when the server's own endpoint is one a browser can't reach. A deployment sets it to the landing page's own address, whose `/v1/` paths the tunnel sends to the dashboard. |
 
 The server's settings are in
 [`appsettings.json`](/src/LandingPage/Boilerplate.LandingPage.Server/appsettings.json), and a deployment reads them

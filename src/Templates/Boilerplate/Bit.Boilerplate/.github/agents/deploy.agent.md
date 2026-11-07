@@ -342,6 +342,11 @@ project up, and fails unless every container is healthy and the public address a
 - The web app and the api each get a hostname of their own.
 <!--#endif-->
 <!--#endif-->
+- On the landing page's hostname, ahead of its own rule, send the path `^/v1/(traces|logs|metrics)$` to
+  `http://compose-dashboard:18890`, the dashboard's OTLP endpoint. The landing page's browser posts its errors there,
+  and its logs and traces once the visitor consents: the deploy job gives it its own address as `Belemetry:OtlpEndpoint`.
+  Only these paths: the same port also answers the dashboard's sign-in page and its API, which stay behind their token
+  and key.
 - Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
   takes from Cloudflare, and the address each provider of section 5 was registered with.
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and

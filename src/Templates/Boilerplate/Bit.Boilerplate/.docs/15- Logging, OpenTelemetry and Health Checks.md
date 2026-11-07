@@ -299,6 +299,12 @@ holds 100,000 logs and 100,000 traces at most. Outside Development the server se
 fast successful traces, and every unexpected error and every trace slower than a second (`AppLoggingSampler` and
 `AppOpenTelemetryProcessor`).
 
+The landing page's browser sends the dashboard its errors, and its logs and traces once the visitor consents. It can't
+reach the gRPC endpoint the apps use inside the Compose network, so the deploy job gives it the landing page's own
+address as `Belemetry:OtlpEndpoint`, and the tunnel sends `/v1/traces`, `/v1/logs` and `/v1/metrics` there to the
+dashboard's OTLP/HTTP port. Anyone can post telemetry to it, as with an Application Insights connection string or a
+Sentry DSN in a page; the dashboard's pages and its API keep their token and key.
+
 dev-mcp's `ListLogs`, `ListTraces` and `GetTrace` read it through the dashboard's telemetry API, at `AspireDashboard:Url`
 with the key in `AspireDashboard:ApiKey`. The app host's publish sets both, and the deploy job makes the key on the first
 deployment.
