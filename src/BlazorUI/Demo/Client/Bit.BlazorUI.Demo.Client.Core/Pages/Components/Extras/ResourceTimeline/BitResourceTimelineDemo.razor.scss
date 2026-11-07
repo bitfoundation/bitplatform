@@ -1,0 +1,89 @@
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// The timeline fills its container, so each example gives it one with a height.
+.timeline {
+    height: 22rem;
+}
+
+.small-timeline {
+    height: 13rem;
+}
+
+.toolbar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.readout {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: $bit-color-foreground-secondary;
+}
+
+.log {
+    margin-top: 0.5rem;
+    min-height: 6.5rem;
+    font-size: 0.875rem;
+    color: $bit-color-foreground-secondary;
+}
+
+.corner {
+    height: 100%;
+    display: flex;
+    padding: 0 0.5rem;
+    font-size: 0.75rem;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.gate {
+    gap: 0.5rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gate-badge {
+    padding: 0 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 1rem;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+}
+
+.flight-tip {
+    display: flex;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    flex-direction: column;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+}
+
+// The HTML renderer fills a bar with a background-color, so a hatch painted through ClassName draws over it.
+.timeline ::deep .departed {
+    background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0 3px, transparent 3px 7px);
+}
+
+::deep .custom-class {
+    border-radius: 0.5rem;
+    box-shadow: 0 0 1rem rgba(232, 89, 12, 0.35);
+}
+
+::deep .custom-root {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 2px solid #2f9e44;
+}
+
+::deep .custom-row {
+    font-style: italic;
+    box-shadow: inset 3px 0 0 #2f9e44;
+    background-color: rgba(47, 158, 68, 0.1);
+}
