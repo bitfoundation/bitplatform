@@ -105,7 +105,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
     {
         var component = RenderGrid(parameters => parameters.Add(p => p.AriaLabel, "Products"));
 
-        Assert.AreEqual("Products", component.Find("[role=grid]").GetAttribute("aria-label"));
+        Assert.AreEqual("Products", component.Find(".bit-dtg-table").GetAttribute("aria-label"));
         Assert.IsFalse(component.Find(".bit-dtg").HasAttribute("aria-label"));
     }
 
@@ -139,7 +139,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-dis"));
-        Assert.AreEqual("true", component.Find("[role=grid]").GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", component.Find(".bit-dtg-table").GetAttribute("aria-disabled"));
 
         // The header keeps its title but offers no sort, resize or drag.
         Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
@@ -232,7 +232,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var first = roots[0];
         Assert.IsFalse(first.ClassList.Contains("bit-dtg-striped"));
         Assert.IsTrue(first.ClassList.Contains("shared-root"));
-        Assert.AreEqual("Shared label", first.QuerySelector("[role=grid]")!.GetAttribute("aria-label"));
+        Assert.AreEqual("Shared label", first.QuerySelector(".bit-dtg-table")!.GetAttribute("aria-label"));
         Assert.IsNotNull(first.QuerySelector(".bit-dtg-header-row.shared-header"));
         Assert.IsNotNull(first.QuerySelector(".bit-dtg-hcell-rownumber"));
         Assert.AreEqual(2, first.QuerySelectorAll(".bit-dtg-body > .bit-dtg-row").Length);
@@ -678,7 +678,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         var component = RenderGrid(columns: columns);
 
-        var style = component.Find("[role=grid]").GetAttribute("style")!;
+        var style = component.Find(".bit-dtg-table").GetAttribute("style")!;
 
         // A minmax() let the declared width fall to MinWidth, and fr is not allowed inside min().
         StringAssert.Contains(style, "clamp(120px, 220px, 400px)");

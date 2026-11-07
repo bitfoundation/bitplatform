@@ -124,7 +124,7 @@ public class BitDataGridApiE2ETests : BitDataGridE2ETestBase
         await Page.Locator("#btn-move-price").ClickAsync();
 
         await ExpectHeaderTitlesAsync(Id, "Price", "Id", "Name", "Category");
-        await Expect(DataRow(Id, 0).Locator("> [role=gridcell]")).ToHaveTextAsync(["50", "1", "Product 01", "Electronics"]);
+        await Expect(DataRow(Id, 0).Locator("> [role=cell]")).ToHaveTextAsync(["50", "1", "Product 01", "Electronics"]);
         await Expect(Text("api-state-changes")).Not.ToHaveTextAsync("0");
     }
 

@@ -2450,8 +2450,20 @@ public class BitDataGridTests : BunitTestContext
         var single = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Single));
         Assert.IsNull(single.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
 
-        var multiple = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
+        var multiple = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.CellNavigation, true);
+        });
         Assert.AreEqual("true", multiple.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+
+        // A table may not carry it: without cell navigation the grid is one, and its rows tell the selection through
+        // aria-selected and their checkboxes.
+        var table = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
+        Assert.AreEqual("table", table.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.IsNull(table.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+        Assert.AreEqual("false", table.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-selected"));
+        Assert.IsNotNull(table.Find(".bit-dtg-body .bit-dtg-cell-select input[type=checkbox]"));
     }
 
     // ------------------------------------------------------------ Clipboard
@@ -3405,12 +3417,116 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void FlatGridStaysAGridWithNoRowLevels()
+    public void FlatGridIsNoTreegridAndHasNoRowLevels()
     {
-        var component = RenderGrid();
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
 
         Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-level"));
+
+        var table = RenderGrid();
+
+        Assert.AreEqual("table", table.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.IsNull(table.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-level"));
+    }
+
+    // ------------------------------------------------------- Table or grid
+
+    // The grid role promises the keyboard of the ARIA grid pattern, a cell that takes the focus and arrow keys that move
+    // it; a grid none of whose cells can be focused is a table, whose rows, headers and cells a screen reader walks with
+    // its own table commands.
+    [TestMethod]
+    public void AGridNoCellOfWhichTakesTheFocusIsATable()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.ShowRowNumbers, true);
+            parameters.Add(p => p.Filterable, true);
+        });
+        component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[1].Click();
+
+        var table = component.Find(".bit-dtg-table");
+        Assert.AreEqual("table", table.GetAttribute("role"));
+        Assert.AreEqual("7", table.GetAttribute("aria-rowcount"), "a header row, a filter row and five data rows");
+        Assert.IsNotNull(table.GetAttribute("aria-colcount"));
+        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count, "no cell of a table is a grid cell");
+        Assert.AreEqual(0, component.FindAll("[tabindex='0'][role=cell], [tabindex='-1'][role=cell]").Count, "and none takes the focus");
+
+        var headers = component.FindAll(".bit-dtg-header-row > [role=columnheader]");
+        Assert.IsTrue(headers.Count > 0);
+        Assert.AreEqual(1, headers.Count(h => h.GetAttribute("aria-sort") == "ascending"), "a table's column header carries its sort as well");
+
+        var firstRow = component.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(firstRow.QuerySelectorAll(":scope > [aria-colindex]").All(c => c.GetAttribute("role") == "cell"),
+            "the row number, the checkbox and every data cell of a row");
+        var filterCells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
+        Assert.IsTrue(filterCells.Count > 0 && filterCells.All(c => c.GetAttribute("role") == "cell"));
+    }
+
+    [TestMethod]
+    [DataRow("CellNavigation")]
+    [DataRow("Single selection")]
+    [DataRow("Cell editing")]
+    public void AGridWhoseCellsTakeTheFocusStaysAGrid(string by)
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            switch (by)
+            {
+                case "CellNavigation":
+                    parameters.Add(p => p.CellNavigation, true);
+                    break;
+                case "Single selection":
+                    parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+                    break;
+                case "Cell editing":
+                    parameters.Add(p => p.Editable, true);
+                    parameters.Add(p => p.EditMode, BitDataGridEditMode.Cell);
+                    break;
+            }
+        });
+
+        Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
+        Assert.AreEqual(1, component.FindAll("[role=gridcell][tabindex='0']").Count, "one cell is the grid's tab stop");
+    }
+
+    // A detail row is no reason for the grid role: the toggle column's button says whether the detail is open, and a row
+    // that opens it on a click is no cell taking the focus either.
+    [TestMethod]
+    public void AGridWithDetailRowsIsATableToo()
+    {
+        var toggled = RenderGrid(configure: parameters =>
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}"))));
+
+        Assert.AreEqual("table", toggled.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual("cell", toggled.Find(".bit-dtg-body .bit-dtg-cell-detail").GetAttribute("role"));
+        Assert.AreEqual("false", toggled.Find(".bit-dtg-body .bit-dtg-cell-detail button").GetAttribute("aria-expanded"));
+
+        var rowClick = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+
+        Assert.AreEqual("table", rowClick.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, rowClick.FindAll("[role=gridcell]").Count);
+    }
+
+    [TestMethod]
+    public void TheRoleFollowsCellNavigationAsItChanges()
+    {
+        var component = RenderGrid();
+        Assert.AreEqual("table", component.Find(".bit-dtg-table").GetAttribute("role"));
+
+        component.Render(parameters => parameters.Add(p => p.CellNavigation, true));
+        Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
+
+        component.Render(parameters => parameters.Add(p => p.CellNavigation, false));
+        Assert.AreEqual("table", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count);
     }
 
     // -------------------------------------------------------- Multi-sorting
@@ -4664,7 +4780,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
     private static IElement DataCell(IRenderedComponent<BitDataGrid<TestRow>> component, int rowIndex, int colIndex)
-        => component.FindAll(".bit-dtg-body > .bit-dtg-row")[rowIndex].QuerySelectorAll("[role=gridcell][aria-colindex]")
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row")[rowIndex].QuerySelectorAll("[role=gridcell][aria-colindex], [role=cell][aria-colindex]")
             .Where(c => !c.ClassList.Contains("bit-dtg-cell-command")).ElementAt(colIndex);
 
     [TestMethod]

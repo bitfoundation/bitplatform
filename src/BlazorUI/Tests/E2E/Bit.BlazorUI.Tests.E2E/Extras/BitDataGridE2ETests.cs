@@ -28,7 +28,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         Assert.IsTrue(response.Ok);
         StringAssert.Contains(html, "id=\"grid-basic\"");
-        StringAssert.Contains(html, "role=\"grid\"");
+        StringAssert.Contains(html, "role=\"table\"");
         StringAssert.Contains(html, "Laptop");
         StringAssert.Contains(html, ">Loading<", "The prerendered page carries the status of a page not yet interactive.");
 
@@ -44,8 +44,8 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(HeaderCells("grid-basic")).ToHaveTextAsync(["ID", "Name", "Category", "Supplier", "Stock", "Release Date", "Rating", "Price", "Value", "Discontinued"]);
 
         // Property and Field bind alike, Format applies to the value, and a Template renders its own markup.
-        await Expect(DataRow("grid-basic", 0).Locator("> [role=gridcell]")).ToHaveCountAsync(10);
-        var first = (await DataRow("grid-basic", 0).Locator("> [role=gridcell]").AllInnerTextsAsync()).Select(t => t.Trim()).ToArray();
+        await Expect(DataRow("grid-basic", 0).Locator("> [role=cell]")).ToHaveCountAsync(10);
+        var first = (await DataRow("grid-basic", 0).Locator("> [role=cell]").AllInnerTextsAsync()).Select(t => t.Trim()).ToArray();
         CollectionAssert.AreEqual(new[] { "1", "Laptop", "Electronics", "Acme", "005", "2023-05-01" }, first[..6]);
         StringAssert.Matches(first[6], new Regex(@"^4[.,]5$"));
         CollectionAssert.AreEqual(new[] { "1200", "6000", "False" }, first[7..]);
@@ -282,9 +282,14 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await OpenAsync(Url);
 
         var table = Table("grid-basic");
-        await Expect(table).ToHaveAttributeAsync("role", "grid");
+        // No cell of it takes the focus (no CellNavigation), so it is a table: what the browser hands assistive
+        // technologies is a table named Products, of cells rather than grid cells.
+        await Expect(table).ToHaveAttributeAsync("role", "table");
         await Expect(table).ToHaveAttributeAsync("aria-label", "Products");
         await Expect(table).ToHaveAccessibleNameAsync("Products");
+        await Expect(Page.GetByRole(AriaRole.Table, new() { Name = "Products", Exact = true })).ToHaveCountAsync(1);
+        await Expect(table.GetByRole(AriaRole.Gridcell)).ToHaveCountAsync(0);
+        await Expect(table.GetByRole(AriaRole.Cell).First).ToBeVisibleAsync();
         await Expect(table).ToHaveAttributeAsync("aria-rowcount", "11");
         await Expect(table).ToHaveAttributeAsync("aria-colcount", "10");
         await Expect(table).Not.ToHaveAttributeAsync("aria-multiselectable", new Regex(".*"));
@@ -301,7 +306,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var rowIndexes = await DataRows("grid-basic").EvaluateAllAsync<string[]>("rows => rows.map(r => r.getAttribute('aria-rowindex'))");
         CollectionAssert.AreEqual(Enumerable.Range(2, 10).Select(i => i.ToString()).ToArray(), rowIndexes);
 
-        await Expect(Cell("grid-basic", 0, 2)).ToHaveAttributeAsync("role", "gridcell");
+        await Expect(Cell("grid-basic", 0, 2)).ToHaveAttributeAsync("role", "cell");
         // Without a SelectionMode the rows say nothing about a selection, and a click selects nothing.
         await Expect(DataRow("grid-basic", 0)).Not.ToHaveAttributeAsync("aria-selected", new Regex(".*"));
         await Cell("grid-basic", 0, 2).ClickAsync();
@@ -334,7 +339,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var footer = FooterRow("grid-aggregates");
         await Expect(footer).ToHaveAttributeAsync("role", "row");
         await Expect(footer).ToHaveAttributeAsync("aria-rowindex", "12");
-        await Expect(footer.Locator("> [role=gridcell]")).ToHaveTextAsync(["count 10", "", "Σ 550", "avg 246", "max 1200", "min 2020-06-30", "Suppliers: 4 (Custom)"]);
+        await Expect(footer.Locator("> [role=cell]")).ToHaveTextAsync(["count 10", "", "Σ 550", "avg 246", "max 1200", "min 2020-06-30", "Suppliers: 4 (Custom)"]);
         await Expect(footer.Locator(".ftr-tpl")).ToBeVisibleAsync();
 
         // A HeaderTemplate replaces the title, and the native tooltip that would repeat it.
@@ -1164,7 +1169,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         // Where the probe sits in each cell: left, right or center.
         var sides = await DataRow(id, 0).EvaluateAsync<string[]>("""
-            row => [...row.querySelectorAll(':scope > [role=gridcell]')].map(cell => {
+            row => [...row.querySelectorAll(':scope > [role=cell]')].map(cell => {
                 const c = cell.getBoundingClientRect(), p = cell.querySelector('.align-probe').getBoundingClientRect();
                 const left = p.left - c.left, right = c.right - p.right;
                 return Math.abs(left - right) < 4 ? 'center' : left < right ? 'left' : 'right';
