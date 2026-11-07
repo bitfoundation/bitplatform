@@ -12,11 +12,12 @@ from the project and the tools in front of you, not from memory.
 
 ## 1. The shape
 
-Explain this first, in a few lines, together with what the user needs to bring: a Linux VM (one for both environments,
 <!--#if (cloudflare == true)-->
+Explain this first, in a few lines, together with what the user needs to bring: a Linux VM (one for both environments,
 or one each), a domain, a Cloudflare account and the services of section 5. Then go through the steps with them.
 <!--#else-->
-or one each), a domain and the services of section 5. Then go through the steps with them.
+Explain this first, in a few lines, together with what the user needs to bring: a Linux VM for each environment, a
+domain and the services of section 5. Then go through the steps with them.
 <!--#endif-->
 
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
@@ -102,11 +103,12 @@ or one each), a domain and the services of section 5. Then go through the steps 
 - Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
   than the rest of the setup takes.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
-  `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
-  environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
-  touch Production.
-<!--#if (cloudflare != true)-->
-- Without a tunnel, each environment's Caddy takes 80 and 443, so Test and Production need a VM each.
+  `Test` or `Production`, the label the deploy job runs on, and install it as a service.
+<!--#if (cloudflare == true)-->
+  One VM can host both environments, each with its own runner and its own Compose project. Separate VMs mean a Test
+  deployment can never touch Production.
+<!--#else-->
+  Each environment needs a VM of its own: its Caddy takes 80 and 443.
 <!--#endif-->
 - The deploy job keeps the environment's Compose files in `~/deployments/<project>-<environment>` of the runner's
   user. Leave that folder in place: every later deployment, and every `docker compose` command by hand, works from it.
