@@ -4,7 +4,7 @@
 import type { AzureMonitorExporterConfig } from '../config';
 import { debug } from '../log';
 import { newSpanId } from '../ids';
-import { SpanKind, StatusCode, type AttributeValue, type Attributes, type LogRecord, type RecordBatch, type SpanRecord } from '../model';
+import { Severity, SpanKind, StatusCode, type AttributeValue, type Attributes, type LogRecord, type RecordBatch, type SpanRecord } from '../model';
 import { gzip, type OutgoingRequest, type Transport } from '../transport';
 import { Signals, signalsOf, type Exporter } from './exporter';
 import { encodeUtf8 } from './protobuf';
@@ -150,16 +150,51 @@ function dependencyTarget(a: Attributes, url: string | undefined): string | unde
     }
 }
 
+function isRequest(span: SpanRecord): boolean {
+    return span.kind === SpanKind.Server || span.kind === SpanKind.Consumer;
+}
+
+// A request names the operation (ai.operation.name), as in C#: "{method} {route}" when both are known.
+function requestName(span: SpanRecord): string {
+    const method = str(span.attributes, 'http.request.method');
+    const route = str(span.attributes, 'http.route');
+    return method && route ? method + ' ' + route : span.name;
+}
+
+function hasException(attributes: Attributes): boolean {
+    return attributes['exception.type'] != null || attributes['exception.message'] != null;
+}
+
+function exceptionEnvelope(a: Attributes, time: number, ctx: AzureContext, tags: Record<string, string>, severityNumber: number, body: string | null): Json {
+    const stack = str(a, 'exception.stacktrace');
+    const detail: Json = { id: 1, outerId: 0, typeName: str(a, 'exception.type') || 'Error', message: str(a, 'exception.message') || body || '', hasFullStack: !!stack };
+    if (stack) detail.stack = stack;
+    return envelope('Exception', time, ctx, tags, { ver: 2, exceptions: [detail], severityLevel: severityLevel(severityNumber) },
+        properties(a, Object.keys(a).filter(key => key.indexOf('exception.') === 0)));
+}
+
+/**
+ * The exceptions recorded on a span (`exception` events), each an item of the exceptions table under the span, as in
+ * C# and the Azure Monitor OpenTelemetry exporter.
+ */
+export function spanExceptionEnvelopes(span: SpanRecord, resource: Attributes, ctx: AzureContext): Json[] {
+    const envelopes: Json[] = [];
+    for (const event of span.events || []) {
+        if (event.name !== 'exception' || !hasException(event.attributes)) continue;
+        // The ids are the span's attributes (records carry them, their events do not).
+        const tags = recordTags(baseTags(resource, ctx), span.attributes, span.traceId, span.spanId, isRequest(span) ? requestName(span) : undefined);
+        envelopes.push(exceptionEnvelope(event.attributes, event.time, ctx, tags, Severity.Error, null));
+    }
+    return envelopes;
+}
+
 export function spanToEnvelope(span: SpanRecord, resource: Attributes, ctx: AzureContext): Json {
     const a = span.attributes;
     const success = !span.status || span.status.code !== StatusCode.Error;
     const duration = formatDuration(span.endTime - span.startTime);
     const statusCode = str(a, 'http.response.status_code');
-    if (span.kind === SpanKind.Server || span.kind === SpanKind.Consumer) {
-        // A request names the operation (ai.operation.name), as in C#: "{method} {route}" when both are known.
-        const method = str(a, 'http.request.method');
-        const route = str(a, 'http.route');
-        const name = method && route ? method + ' ' + route : span.name;
+    if (isRequest(span)) {
+        const name = requestName(span);
         const tags = recordTags(baseTags(resource, ctx), a, span.traceId, span.parentSpanId, name);
         const consumed = ['http.response.status_code', 'url.full'];
         const data: Json = { ver: 2, id: span.spanId, name, duration, responseCode: statusCode || (success ? '200' : '500'), success };
@@ -191,13 +226,8 @@ export function spanToEnvelope(span: SpanRecord, resource: Attributes, ctx: Azur
 export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureContext): Json {
     const a = log.attributes;
     const base = baseTags(resource, ctx);
-    if (a['exception.type'] != null || a['exception.message'] != null) {
-        const stack = str(a, 'exception.stacktrace');
-        const detail: Json = { id: 1, outerId: 0, typeName: str(a, 'exception.type') || 'Error', message: str(a, 'exception.message') || log.body || '', hasFullStack: !!stack };
-        if (stack) detail.stack = stack;
-        const tags = recordTags(base, a, log.traceId, log.spanId);
-        return envelope('Exception', log.time, ctx, tags, { ver: 2, exceptions: [detail], severityLevel: severityLevel(log.severityNumber) },
-            properties(a, Object.keys(a).filter(key => key.indexOf('exception.') === 0)));
+    if (hasException(a)) {
+        return exceptionEnvelope(a, log.time, ctx, recordTags(base, a, log.traceId, log.spanId), log.severityNumber, log.body);
     }
     if (log.eventName === 'browser.page_view') {
         const url = str(a, 'url.full');
@@ -230,7 +260,7 @@ export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureCo
 
 export function toEnvelopes(batch: RecordBatch, ctx: AzureContext): Json[] {
     const envelopes: Json[] = [];
-    for (const span of batch.spans) envelopes.push(spanToEnvelope(span, batch.resource, ctx));
+    for (const span of batch.spans) envelopes.push(spanToEnvelope(span, batch.resource, ctx), ...spanExceptionEnvelopes(span, batch.resource, ctx));
     for (const log of batch.logs) envelopes.push(logToEnvelope(log, batch.resource, ctx));
     return envelopes;
 }

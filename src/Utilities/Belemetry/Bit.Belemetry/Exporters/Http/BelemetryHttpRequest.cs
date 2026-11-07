@@ -33,7 +33,10 @@ internal sealed class BelemetryHttpRequest
     /// <summary>When the request was created, in Unix milliseconds (persisted requests expire by it).</summary>
     public long Time { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-    /// <summary>The number of records (spans, log records or metric data points) it carries, for the self-telemetry; 0 when unknown.</summary>
+    /// <summary>
+    /// The number of records (spans, log records or metric data points) it carries, for the self-telemetry; 0 when unknown.
+    /// For Azure Monitor it is the number of envelopes, the items a 206 response counts: an exception recorded on a span is one of its own.
+    /// </summary>
     public int Count { get; set; }
 
     /// <summary>

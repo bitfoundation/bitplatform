@@ -164,6 +164,33 @@ describe('envelopes', () => {
     it('converts a whole batch', () => {
         expect(toEnvelopes({ resource, spans: [span()], logs: [log(), log()] }, ctx)).toHaveLength(3);
     });
+
+    it('maps the exception events of a span to Exception items after it, as in C#', () => {
+        const s = span({
+            kind: 2,
+            attributes: { 'http.request.method': 'GET', 'http.route': '/a/{id}', ...ids },
+            events: [
+                { name: 'domInteractive', time: 1700000000100, attributes: {} },
+                { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'TypeError', 'exception.message': 'bad', 'exception.stacktrace': 'at x', 'exception.escaped': true, extra: 'y' } },
+                { name: 'exception', time: 1700000000200, attributes: { other: 1 } },
+            ],
+        });
+        const envelopes = toEnvelopes({ resource, spans: [s], logs: [] }, ctx);
+        expect(envelopes.map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.Request', 'Microsoft.ApplicationInsights.Exception']);
+        const e = envelopes[1];
+        expect(e.time).toBe('2023-11-14T22:13:20.200Z');
+        expect(e.tags).toMatchObject({
+            'ai.operation.id': s.traceId, 'ai.operation.parentId': s.spanId, 'ai.operation.name': 'GET /a/{id}', 'ai.session.id': 's'.repeat(32), 'ai.user.authUserId': 'alice',
+        });
+        expect(e.data).toEqual({
+            baseType: 'ExceptionData',
+            baseData: { ver: 2, severityLevel: 3, properties: { extra: 'y' }, exceptions: [{ id: 1, outerId: 0, typeName: 'TypeError', message: 'bad', hasFullStack: true, stack: 'at x' }] },
+        });
+
+        const dependency = toEnvelopes({ resource, spans: [span({ events: [{ name: 'exception', time: 1700000000200, attributes: { 'exception.message': 'gone' } }] })], logs: [] }, ctx);
+        expect(dependency[1].tags['ai.operation.name'], 'Only a request\'s exceptions name the operation.').toBeUndefined();
+        expect(dependency[1].data.baseData.exceptions[0]).toEqual({ id: 1, outerId: 0, typeName: 'Error', message: 'gone', hasFullStack: false });
+    });
 });
 
 describe('exporter', () => {

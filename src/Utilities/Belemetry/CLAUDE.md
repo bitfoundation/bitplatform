@@ -333,8 +333,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | `ai.user.agent` | `user_agent.original` (browser resource) |
   | `ai.device.locale` | `browser.language` (browser resource) |
   | `ai.operation.id` | traceId |
-  | `ai.operation.parentId` | parent span id (span) or span id (log) |
-  | `ai.operation.name` | Requests: the request name (`{http.request.method} {http.route}` when both are set, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
+  | `ai.operation.parentId` | parent span id (span) or span id (log, exception recorded on a span) |
+  | `ai.operation.name` | Requests, and the exceptions recorded on a request span: the request name (`{http.request.method} {http.route}` when both are set, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
   | `ai.session.id` | `session.id` |
   | `ai.user.id` | `enduser.pseudo.id` |
   | `ai.user.authUserId` | `user.id` |
@@ -348,6 +348,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | --- | --- | --- |
   | Span, kind SERVER/CONSUMER | `Request` | `id`, `name` (as `ai.operation.name`), `duration` (`d.hh:mm:ss.fffffff`), `responseCode`, `success`, `url` |
   | Any other span | `RemoteDependency` | `id`, `name`, `resultCode`, `data`, `duration`, `success`, `type` (`Ajax` for browser HTTP, `HTTP` for .NET, `InProc` otherwise), `target` |
+  | Span event `exception` with `exception.*` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape, at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Other span events are not sent |
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |
   | `eventName == "browser.web_vital"` | `Metric` | `metrics:[{name:"<web_vital.name>",kind:0,value,count:1}]` |
