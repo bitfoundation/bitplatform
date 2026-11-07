@@ -199,13 +199,13 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
             await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
             await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
-            await Page.Locator("#btn-render").ClickAsync();
-            await WaitForRenderComplete();
+            var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
             var renderTime = await GetRenderTime();
             renderTimes.Add((count, renderTime));
 
-            Console.WriteLine($"Scalability - {count} components: {renderTime:F2}ms");
+            Console.WriteLine($"Scalability - {count} components: {renderTime:F2}ms (browser {browser.Duration:F2}ms)");
+            RecordInteraction("render", count, renderTime, browser);
 
             // Clear for next iteration
             await Page.Locator("#btn-clear").ClickAsync();
@@ -222,6 +222,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
         Console.WriteLine($"Average time per component: {avgTimePerComponent:F4}ms");
         Console.WriteLine($"Growth ratio at {counts[^1]} components: {growth:F2}x");
+        Record("render.timePerComponentGrowth", growth, "x", counts[^1]);
 
         // Allow up to 5x growth (a pause of the runner during the largest render)
         if (growth > 5)
@@ -249,8 +250,9 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         // Multiple re-renders
         for (int i = 0; i < reRenderCount; i++)
         {
-            await Page.Locator("#btn-rerender").ClickAsync();
-            await WaitForReRenderComplete();
+            // Awaited through the browser's measure rather than a wait for the text: from the second pass on, the status
+            // still reads "Re-rendered" from the one before, which would let the previous time be read as this one's.
+            await MeasureInBrowserAsync(Page.Locator("#btn-rerender"), "Re-rendered");
 
             var reRenderTime = await GetReRenderTime();
             reRenderTimes.Add(reRenderTime);
@@ -264,6 +266,8 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
         Console.WriteLine($"Average re-render time: {avgReRenderTime:F2}ms");
         Console.WriteLine($"Max re-render time: {maxReRenderTime:F2}ms");
+        Record("rerender.server.mean", avgReRenderTime, "ms", componentCount);
+        Record("rerender.server.max", maxReRenderTime, "ms", componentCount);
 
         // Max should not be more than 3x average (no degradation)
         if (maxReRenderTime > avgReRenderTime * 3)
@@ -308,6 +312,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
         var avgCycleTime = cycleTimes.Average();
         Console.WriteLine($"Average cycle time: {avgCycleTime:F2}ms");
+        Record("renderClearCycle.mean", avgCycleTime, "ms", componentCount);
 
         // Should complete within reasonable time
         AssertWithinThreshold(avgCycleTime, 2000, "Average render/clear cycle time");
@@ -327,13 +332,13 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         await Page.Locator("input[type='number']").FillAsync(count.ToString());
 
         // Render
-        await Page.Locator("#btn-render").ClickAsync();
-        await WaitForRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
         var renderTime = await GetRenderTime();
         var componentCount = await GetComponentCount();
 
-        Console.WriteLine($"Large scale render - {count} components: {renderTime:F2}ms");
+        Console.WriteLine($"Large scale render - {count} components: {renderTime:F2}ms (browser {browser.Duration:F2}ms)");
+        RecordInteraction("render", count, renderTime, browser);
 
         Assert.AreEqual(count, componentCount, $"Expected {count} components, but got {componentCount}");
         AssertWithinThreshold(renderTime, threshold, $"Large scale render time for {count} components");

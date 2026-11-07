@@ -13,15 +13,18 @@ using System.Threading.Tasks;
 namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
-/// The measurements the performance tests take, written once the run is over to performance-results_{framework}.json in
-/// the run's results directory (--results-directory, which CI uploads with the TRX; TestResults beside the test app
-/// otherwise), together with what they were measured on: the machine, the
+/// The measurements the performance tests take, written once the run is over to
+/// performance-results_{browser}_{framework}_{time}.json - a file of its own for every run, so runs of two browsers sharing
+/// a results directory keep both - in the run's results directory (--results-directory, which CI uploads with the TRX;
+/// TestResults beside the test app otherwise), together with what they were measured on: the machine, the
 /// browser, the SDK and runtime, the commit, the configuration the host was built in and its render mode. The tests'
 /// thresholds stay generous, to catch what is catastrophic; a trend is read by comparing these files.
 /// </summary>
 internal static class PerformanceResults
 {
-    public static string FileName { get; } = $"performance-results_net{Environment.Version.Major}.{Environment.Version.Minor}.json";
+    /// <summary>The name of the file a run written at <paramref name="generatedAt"/> writes: the browser, the framework and the time, in UTC.</summary>
+    public static string FileName(DateTimeOffset generatedAt) =>
+        FormattableString.Invariant($"performance-results_{PerformanceTestBase.BrowserName}_net{Environment.Version.Major}.{Environment.Version.Minor}_{generatedAt.UtcDateTime:yyyyMMdd-HHmmss}.json");
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -51,21 +54,22 @@ internal static class PerformanceResults
             measurements = [.. Measurements];
         }
 
+        var generatedAt = DateTimeOffset.UtcNow;
         var report = new
         {
-            GeneratedAt = DateTimeOffset.UtcNow,
-            Commit = Environment.GetEnvironmentVariable("GITHUB_SHA") ?? Read("git", "rev-parse HEAD"),
+            GeneratedAt = generatedAt,
+            Commit = Environment.GetEnvironmentVariable("GITHUB_SHA") ?? await Read("git", "rev-parse HEAD"),
             Machine = new
             {
                 Os = RuntimeInformation.OSDescription,
                 Architecture = RuntimeInformation.OSArchitecture.ToString(),
-                Cpu = CpuModel(),
+                Cpu = await CpuModel(),
                 Cores = Environment.ProcessorCount,
                 MemoryGB = Math.Round(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024.0 * 1024 * 1024), 1),
                 Ci = Environment.GetEnvironmentVariable("CI") is { Length: > 0 },
             },
             Browser = _browser,
-            Sdk = Read("dotnet", "--version"),
+            Sdk = await Read("dotnet", "--version"),
             Runner = new
             {
                 Framework = RuntimeInformation.FrameworkDescription,
@@ -77,7 +81,7 @@ internal static class PerformanceResults
 
         var directory = ResultsDirectory();
         Directory.CreateDirectory(directory);
-        await File.WriteAllTextAsync(Path.Combine(directory, FileName), JsonSerializer.Serialize(report, Json));
+        await File.WriteAllTextAsync(Path.Combine(directory, FileName(generatedAt)), JsonSerializer.Serialize(report, Json));
     }
 
     // The folder the run writes its TRX to: TestContext's own folders are the test app's, or with --report-trx a folder of
@@ -105,7 +109,7 @@ internal static class PerformanceResults
         }
     }
 
-    private static string? CpuModel()
+    private static async Task<string?> CpuModel()
     {
         try
         {
@@ -120,7 +124,7 @@ internal static class PerformanceResults
                 return File.ReadLines("/proc/cpuinfo").FirstOrDefault(l => l.StartsWith("model name", StringComparison.Ordinal))?.Split(':', 2)[1].Trim();
             }
 
-            if (OperatingSystem.IsMacOS()) return Read("sysctl", "-n machdep.cpu.brand_string");
+            if (OperatingSystem.IsMacOS()) return await Read("sysctl", "-n machdep.cpu.brand_string");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
@@ -129,8 +133,9 @@ internal static class PerformanceResults
         return null;
     }
 
-    // The first line a command prints, or null where it cannot be run here: the results are still written without it.
-    private static string? Read(string fileName, string arguments)
+    // The first line a command prints, or null where it cannot be run here or has not finished within 30 seconds: the
+    // results are still written without it.
+    private static async Task<string?> Read(string fileName, string arguments)
     {
         try
         {
@@ -143,15 +148,26 @@ internal static class PerformanceResults
             });
             if (process is null) return null;
 
-            // Both pipes are drained, so neither can fill and stall the process.
+            // Both pipes are drained, so neither can fill and stall the process, and the reads and the exit share one
+            // deadline: a command that hangs, or leaves a pipe open, is killed rather than holding up the report and the
+            // shutdown of the host and the browser after it.
+            var output = process.StandardOutput.ReadToEndAsync();
             var error = process.StandardError.ReadToEndAsync();
-            var output = process.StandardOutput.ReadToEnd();
-            _ = error.Result;
-            if (process.WaitForExit(TimeSpan.FromSeconds(30)) is false || process.ExitCode != 0) return null;
+            try
+            {
+                await Task.WhenAll(output, error, process.WaitForExitAsync()).WaitAsync(TimeSpan.FromSeconds(30));
+            }
+            catch (System.TimeoutException)
+            {
+                process.Kill(entireProcessTree: true);
+                return null;
+            }
 
-            return output.Split('\n')[0].Trim() is { Length: > 0 } line ? line : null;
+            if (process.ExitCode != 0) return null;
+
+            return (await output).Split('\n')[0].Trim() is { Length: > 0 } line ? line : null;
         }
-        catch (System.ComponentModel.Win32Exception)
+        catch (Exception exception) when (exception is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             return null;
         }
