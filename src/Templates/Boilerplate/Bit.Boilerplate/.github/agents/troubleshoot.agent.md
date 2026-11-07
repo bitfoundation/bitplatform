@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - `develop` for Test, `main` for Production - and reads that environment's own state through its dev-mcp server, its errors through Sentry or Application Insights, and its data, background jobs and logs. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
+description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - `develop` for Test, `main` for Production - and reads that environment's own state through its dev-mcp server: its errors, logs, traces, data and background jobs, and Sentry or Application Insights when the project reports to one. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
 ---
 
 # Troubleshoot: find and fix a problem reported in Test or Production
@@ -34,8 +34,12 @@ Before you look for the cause, check each of these, and walk the user through ge
   (`ListLogs`, `ListTraces` and `GetTrace`). The first call opens the app's sign-in and consent page: the user signs in
   with an account that has the dev-mcp feature and two-factor sign-in on, and approves the agent.
 <!--#if (sentry == true)-->
-- **The errors**, in Sentry: help the user add Sentry's MCP server to the project's MCP files and sign in to it, so the
-  exceptions, their stack traces and the users they hit can be read here.
+- **The errors and crashes**, in Sentry: help the user add Sentry's MCP server to the project's MCP files and sign in
+  to it, so the exceptions, the crashes, their stack traces and the users they hit can be read here.
+<!--#else-->
+- **Crashes**: dev-mcp has the errors the app logged, but not a crash, which ends the app before it sends anything.
+  Catching those is Sentry's job, and this project was created without it: tell the user, and ask whether to add it. If
+  they agree, the template-diff skill (`.github/agents/template-diff.agent.md`) works out how.
 <!--#endif-->
 <!--#if (appInsights == true)-->
 - **The traces, logs and metrics**, in Application Insights: help the user add the Azure MCP server and sign in with an
