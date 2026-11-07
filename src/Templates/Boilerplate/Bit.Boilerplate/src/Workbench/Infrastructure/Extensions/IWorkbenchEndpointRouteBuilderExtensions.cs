@@ -145,6 +145,9 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
             var review = endpoints.MapGroup("api/review");
 
+            // The query string that turns a link to this Workbench, like a tunnel's, into an invite whose comments reach the agent.
+            review.MapGet("invite", () => Results.Json(new { query = $"{WorkbenchReviewers.QueryName}={WorkbenchReviewers.Key}" }));
+
             review.MapGet("", async (bool? includeDone, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
             {
                 return Results.Json(await agent.DescribeReview(includeDone is true, cancellationToken));

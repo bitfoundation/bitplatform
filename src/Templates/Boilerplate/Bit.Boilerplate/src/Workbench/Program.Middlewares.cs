@@ -42,6 +42,15 @@ public static partial class Program
             app.UseAntiforgery();
             app.UseWebSockets();
 
+            // An invite link the agent made for a reviewer elsewhere: its key becomes a cookie, so their comments reach the agent.
+            app.Use(async (context, next) =>
+            {
+                if (WorkbenchReviewers.TryAccept(context, app.Configuration))
+                    return;
+
+                await next(context);
+            });
+
             // A capture turned away because too many already wait for the headless browser answers 503.
             app.Use(async (context, next) =>
             {

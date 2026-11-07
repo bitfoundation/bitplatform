@@ -2,7 +2,8 @@ namespace Boilerplate.WorkbenchTests.Infrastructure;
 
 /// <summary>
 /// A reviewer's copy of the review, opened through the relay the way a circuit opens it, from this machine or, with
-/// <c>isLocal</c> false, from a request that came through a tunnel.
+/// <c>isLocal</c> false, from a request that came through a tunnel, and with <c>isInvited</c> from a browser an invite
+/// link was opened in.
 /// </summary>
 public sealed class WorkbenchTestReviewer : IAsyncDisposable
 {
@@ -23,11 +24,11 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
 
     public string Name { get; }
 
-    public static async Task<WorkbenchTestReviewer> Open(WorkbenchTestServer server, bool isLocal = true, string name = "Reviewer")
+    public static async Task<WorkbenchTestReviewer> Open(WorkbenchTestServer server, bool isLocal = true, string name = "Reviewer", bool isInvited = false)
     {
         var scope = server.Services.CreateAsyncScope();
 
-        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = CreateHttpContext(server.Address, isLocal);
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = CreateHttpContext(server.Address, isLocal, isInvited);
 
         var session = scope.ServiceProvider.GetRequiredService<WorkbenchReviewSession>();
 
@@ -41,8 +42,8 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
         return new(scope, dispatcher, session, name);
     }
 
-    /// <summary>The request a circuit starts from: on this machine, or through a tunnel that names the visitor.</summary>
-    public static HttpContext CreateHttpContext(Uri address, bool isLocal)
+    /// <summary>The request a circuit starts from: on this machine, or through a tunnel that names the visitor, with or without an invite's cookie.</summary>
+    public static HttpContext CreateHttpContext(Uri address, bool isLocal, bool isInvited = false)
     {
         var context = new DefaultHttpContext();
 
@@ -53,6 +54,11 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
         if (isLocal is false)
         {
             context.Request.Headers["Cf-Connecting-Ip"] = "203.0.113.7";
+        }
+
+        if (isInvited)
+        {
+            context.Request.Headers.Cookie = $"{WorkbenchReviewers.CookieName}={WorkbenchReviewers.Key}";
         }
 
         return context;
