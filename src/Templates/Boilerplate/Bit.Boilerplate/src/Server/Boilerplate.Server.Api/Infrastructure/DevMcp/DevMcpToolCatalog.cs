@@ -10,7 +10,8 @@ internal static class DevMcpToolCatalog
         typeof(DevMcpDiagnosticTools),
         typeof(DevMcpHangfireTools),
         typeof(DevMcpSchemaTools),
-        typeof(DevMcpQueryTools)
+        typeof(DevMcpQueryTools),
+        typeof(DevMcpTelemetryTools)
     ];
 
     public static IReadOnlyList<McpServerTool> Tools { get; } = [.. Create()];

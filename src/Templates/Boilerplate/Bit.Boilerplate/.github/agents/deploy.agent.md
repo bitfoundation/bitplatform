@@ -123,6 +123,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
 - The link in the dashboard's logs names the container's own address, so on its hostname give the user
   `https://<its hostname>/login?t=<the token from that link>`. Or, since Access already guards it, set
   `DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS` to `true` on the dashboard, and it opens without a token.
+- dev-mcp reads the dashboard's logs and traces inside the Compose network, with the key the deploy job makes on the
+  first deployment and keeps in the project's `.env` as `DASHBOARD_API_KEY`. Through the SSH tunnel, the same key lets
+  `aspire agent mcp --dashboard-url http://localhost:18888 --api-key <the key>` read them too.
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:

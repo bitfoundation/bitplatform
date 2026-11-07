@@ -74,6 +74,8 @@ public partial class ServerApiSettings : ServerSharedSettings
 
     public HangfireOptions? Hangfire { get; set; }
 
+    public AspireDashboardOptions? AspireDashboard { get; set; }
+
     public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
 
     /// <summary>
@@ -317,6 +319,13 @@ public class HangfireOptions
     /// the mail and SMS runners delete on exhausted retries.
     /// </summary>
     public TimeSpan JobExpiration { get; set; }
+}
+
+public class AspireDashboardOptions
+{
+    public Uri? Url { get; set; }
+
+    public string? ApiKey { get; set; }
 }
 
 public class SupportedAppVersionsOptions

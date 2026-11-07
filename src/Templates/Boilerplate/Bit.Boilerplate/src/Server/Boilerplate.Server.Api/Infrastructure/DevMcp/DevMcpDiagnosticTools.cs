@@ -231,6 +231,7 @@ public partial class DevMcpDiagnosticTools
             //#endif
             OtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
                            || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false,
+            AspireDashboard = settings.AspireDashboard?.Url is not null,
             Sentry = string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false,
             Smtp = string.IsNullOrWhiteSpace(configuration.GetConnectionString("smtp")) is false,
             Google = string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false,

@@ -291,6 +291,18 @@ https://localhost:2030
 - **Trace Visualization**: See how requests flow through your system
 - **Performance Analysis**: Identify slow operations and bottlenecks
 
+### In a Deployment
+
+A Docker Compose deployment runs the dashboard next to the apps, on the server's loopback (`.github/agents/deploy.agent.md`
+says how to open it). It keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it, and
+holds 100,000 logs and 100,000 traces at most. Outside Development the server sends it about 5% of its ordinary logs and
+fast successful traces, and every unexpected error and every trace slower than a second (`AppLoggingSampler` and
+`AppOpenTelemetryProcessor`).
+
+dev-mcp's `ListLogs`, `ListTraces` and `GetTrace` read it through the dashboard's telemetry API, at `AspireDashboard:Url`
+with the key in `AspireDashboard:ApiKey`. The app host's publish sets both, and the deploy job makes the key on the first
+deployment.
+
 ---
 
 ## 8. Health Checks

@@ -187,6 +187,9 @@ jobs:
           mkdir -p "$deploy_dir"
           cp compose/docker-compose.yaml "$deploy_dir/docker-compose.yaml"
 
+          DASHBOARD_API_KEY="$(sed -n "s/^DASHBOARD_API_KEY='\([0-9a-f]*\)'$/\1/p" "$deploy_dir/.env" 2>/dev/null || true)"
+          DASHBOARD_API_KEY="${DASHBOARD_API_KEY:-$(openssl rand -hex 32)}"
+
           # The .env that aspire publish wrote lists every value the Compose project reads: the images and ports, and the
           # parameters this step's env carries. Single quotes keep Compose from expanding a $ inside a secret.
           repository="ghcr.io/${GITHUB_REPOSITORY,,}"

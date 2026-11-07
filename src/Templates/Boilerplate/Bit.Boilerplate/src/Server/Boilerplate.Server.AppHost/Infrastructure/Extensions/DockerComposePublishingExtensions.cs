@@ -117,15 +117,24 @@ public static class DockerComposePublishingExtensions
             // Production can share a server.
             var loopback = builder.Environment.EnvironmentName switch { "Production" => "127.0.0.1", "Test" => "127.0.0.2", _ => "127.0.0.3" };
 
+            var dashboardApiKey = builder.AddParameter("dashboard-api-key", secret: true);
+
             // The dashboard keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it. Aspire's
             // default image comes from the nightly feed, so the release one is named here.
-            compose.WithDashboard(dashboard => dashboard
-                .WithImage("aspire/dashboard", "13.6")
-                .WithImageRegistry("mcr.microsoft.com")
-                .WithVolume(VolumeNameGenerator.Generate(dashboard, "data"), "/home/app")
-                .WithEnvironment("ASPIRE_DASHBOARD_APPLICATION_NAME", "Boilerplate")
-                .WithEnvironment("ASPIRE_DASHBOARD_PERSISTENCE_MODE", "Resume")
-                .WithEnvironment("ASPIRE_DASHBOARD_DATA_DIRECTORY", "/home/app/dashboard-data"));
+            compose.WithDashboard(dashboard =>
+            {
+                dashboard
+                    .WithImage("aspire/dashboard", "13.6")
+                    .WithImageRegistry("mcr.microsoft.com")
+                    .WithVolume(VolumeNameGenerator.Generate(dashboard, "data"), "/home/app")
+                    .WithEnvironment("ASPIRE_DASHBOARD_APPLICATION_NAME", "Boilerplate")
+                    .WithEnvironment("ASPIRE_DASHBOARD_PERSISTENCE_MODE", "Resume")
+                    .WithEnvironment("ASPIRE_DASHBOARD_DATA_DIRECTORY", "/home/app/dashboard-data")
+                    .WithEnvironment("Dashboard__Api__PrimaryApiKey", dashboardApiKey);
+
+                apiProject.WithEnvironment("AspireDashboard__Url", dashboard.Resource.PrimaryEndpoint)
+                    .WithEnvironment("AspireDashboard__ApiKey", dashboardApiKey);
+            });
             //#if (database != "Other" || redis == true)
 
             // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard. It has no sign-in of
