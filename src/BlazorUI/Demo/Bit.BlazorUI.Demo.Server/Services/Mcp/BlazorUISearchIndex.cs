@@ -17,6 +17,10 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// </summary>
 public static class BlazorUISearchIndex
 {
+    /// <summary>
+    /// One thing a search can find - a component, one of its parameters, members, CSS variables, types or
+    /// examples, a library-wide type, a theming chapter, a setup guide - with the call returning its full text.
+    /// </summary>
     private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted)
     {
         /// <summary>
@@ -60,6 +64,30 @@ public static class BlazorUISearchIndex
         public string? NameHead { get; init; }
 
         /// <summary>
+        /// The words a component's nav entry tags it with, lowered: what it does and what it is used
+        /// for - "Eyedropper", "Hex" for BitColorPicker, "LLM", "GPT" for BitAiChat - which nothing
+        /// else here says, so without them those found nothing at all. The site's search boxes rank by
+        /// them too.
+        /// <para>
+        /// Scored as one occurrence in the boosted text, however many of the keywords hold the term: a
+        /// list of tags names a thing once, and BitChart's "Bar chart" and "Error bars" ranked it
+        /// above BitHeader, which is the AppBar, for "app bar".
+        /// </para>
+        /// </summary>
+        public string LoweredKeywords { get; init; } = string.Empty;
+
+        /// <summary>
+        /// A component's keywords and the titles of its examples as written - "Gauge" and "Waterfall"
+        /// for BitChart - from which a hit names the ones the query matched (see <see cref="Matches"/>).
+        /// <para>
+        /// They find a component by a word that neither its name nor its description says: on "gauge",
+        /// BitChart leads with a snippet of its description, which mentions no gauge, and without them
+        /// the hit would not say why it was found.
+        /// </para>
+        /// </summary>
+        public string[] Tags { get; init; } = [];
+
+        /// <summary>
         /// How much this entry outranks another that matched the query as well.
         /// <para>
         /// A component's answer already contains its parameters, its own enums and the titles of
@@ -93,6 +121,10 @@ public static class BlazorUISearchIndex
     }
 
     private const int MaxTerms = 16;
+
+    // The keywords and example titles one hit names (see Matches): enough to say why it was found,
+    // and a bound on the line a broad term would make of a component with many of them.
+    private const int MaxMatches = 5;
 
     // The words of a query a name is looked for across (see Runs): more than a question is phrased
     // in, and a bound on the runs a pasted file would make of it.
@@ -135,6 +167,12 @@ public static class BlazorUISearchIndex
         _ = _entries.Value;
     }
 
+    /// <summary>
+    /// The entries matching a query, best first and at most <paramref name="limit"/> of them (clamped to 1
+    /// to 50), as markdown: each hit's title, its kind and the call returning its full text, the keywords
+    /// and example titles it matched by, and a snippet of its prose - or, for a query with no searchable
+    /// term or no hit at all, what to search for instead.
+    /// </summary>
     public static string Search(string? query, int limit)
     {
         var words = Words(query);
@@ -177,6 +215,10 @@ public static class BlazorUISearchIndex
             builder.AppendLine($"## {hit.Entry.Title}{(hit.Entry.Context is null ? null : $" - {hit.Entry.Context}")}");
             builder.AppendLine($"{hit.Entry.Kind} · `{hit.Entry.Tool}`");
 
+            var matches = Matches(hit.Entry, terms);
+
+            if (matches.Length > 0) builder.AppendLine($"Matches: {string.Join(", ", matches)}");
+
             var snippet = Snippet(hit.Entry.Body, terms);
 
             if (snippet.Length > 0) builder.AppendLine().AppendLine(snippet);
@@ -187,6 +229,12 @@ public static class BlazorUISearchIndex
         return builder.ToString();
     }
 
+    /// <summary>
+    /// How well an entry matches the terms of a query, 0 for not at all. Per term, a hit in the entry's
+    /// names weighs most and one in its prose least; the sum is multiplied by how many of the terms hit at
+    /// all, so an entry matching every word of a query outranks one matching a single word of it often,
+    /// and then by the entry's <see cref="Entry.Weight"/>.
+    /// </summary>
     private static int Score(Entry entry, string[] terms, (string Text, int Words)[] runs)
     {
         var score = 0;
@@ -203,7 +251,7 @@ public static class BlazorUISearchIndex
             var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
             var isNameHead = entry.NameHead is { } head && Equivalent(head, term);
             var inTitle = isTitleWord ? 0 : Count(entry.LoweredTitle, term);
-            var inBoosted = Count(entry.LoweredBoosted, term);
+            var inBoosted = Count(entry.LoweredBoosted, term) + (Mentions(entry.LoweredKeywords, term) ? 1 : 0);
             var inBody = Count(entry.LoweredBody, term);
 
             if (isAlias is false && isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
@@ -323,6 +371,47 @@ public static class BlazorUISearchIndex
             || (term.Length == word.Length + 1 && term[^1] == 's' && string.Equals(term[..^1], word, StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Whether lowered text holds a term anywhere, the way the boosted text is searched, or holds its
+    /// singular when the term is a plural: a keyword is written in one number and asked for in either, and
+    /// "eyedroppers" has to find BitColorPicker's "Eyedropper" (see <see cref="Equivalent"/>). The
+    /// singular is read off a term of four letters or more only, so it is never shorter than a term.
+    /// </summary>
+    private static bool Mentions(string text, string term)
+    {
+        if (text.Length == 0) return false;
+
+        if (text.Contains(term, StringComparison.Ordinal)) return true;
+
+        return term.Length > 3 && term[^1] == 's' && text.AsSpan().Contains(term.AsSpan(0, term.Length - 1), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The keywords and example titles of an entry holding a term its title does not - "Gauge" for
+    /// BitChart on "gauge" - so a hit found by a word its name and its snippet never say still says what
+    /// it was found by. A term the title holds explains itself, and on "chart" would only list every kind
+    /// of chart BitChart draws.
+    /// </summary>
+    private static string[] Matches(Entry entry, string[] terms)
+    {
+        if (entry.Tags.Length == 0) return [];
+
+        var unnamed = terms.Where(term => entry.TitleWords.Any(word => Equivalent(word, term)) is false).ToArray();
+
+        if (unnamed.Length == 0) return [];
+
+        return [.. entry.Tags
+            .Where(tag =>
+            {
+                var lowered = tag.ToLowerInvariant();
+
+                return unnamed.Any(term => Mentions(lowered, term));
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(MaxMatches)];
+    }
+
+    /// <summary>How many times a term occurs in lowered text, the occurrences not overlapping.</summary>
     private static int Count(string text, string term)
     {
         if (text.Length == 0) return 0;
@@ -361,6 +450,10 @@ public static class BlazorUISearchIndex
         return $"{(start > 0 ? "..." : null)}{snippet}{(start + length < body.Length ? "..." : null)}";
     }
 
+    /// <summary>
+    /// The words of a name or a title, split at every character that is not a letter or a digit and
+    /// where a camel-case hump starts a new one.
+    /// </summary>
     private static string[] SplitWords(string text)
     {
         var words = new List<string>();
@@ -410,10 +503,15 @@ public static class BlazorUISearchIndex
             .Take(MaxTerms)];
     }
 
-    /// <summary>The names a nav entry lists a component under, split apart.</summary>
+    /// <summary>The names a nav entry lists a component under, or the keywords it tags it with, split apart.</summary>
     private static string[] Aliases(string? aliases)
         => (aliases ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+    /// <summary>
+    /// Every entry of the index, read once off the catalogs: each component with its parameters, members,
+    /// CSS variables, own types and examples, then the library-wide types, the extension members, the
+    /// theming chapters, the setup guides and the icon set.
+    /// </summary>
     private static Entry[] Build()
     {
         var entries = new List<Entry>(8192);
@@ -433,6 +531,8 @@ public static class BlazorUISearchIndex
                 $"{component.Package.PackageId} {string.Join(' ', component.Examples.Select(e => e.Title).Distinct())}")
             {
                 Weight = 3,
+                LoweredKeywords = component.Keywords?.ToLowerInvariant() ?? string.Empty,
+                Tags = [.. Aliases(component.Keywords), .. component.Examples.Select(e => e.Title).Distinct(StringComparer.Ordinal)],
                 NamePhrase = BlazorUISuggest.Normalize(component.Name),
                 // Its first word is the Bit prefix every name here carries.
                 NameHead = SplitWords(component.Name) is { Length: > 2 } words ? words[^1].ToLowerInvariant() : null,

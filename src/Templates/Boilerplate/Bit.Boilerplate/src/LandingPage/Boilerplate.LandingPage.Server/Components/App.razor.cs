@@ -6,8 +6,8 @@ public partial class App
 
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    // Crawlers read the prerendered page and benchmarks measure it, so scripts only cost them, unless nothing is prerendered
-    private bool OmitScripts => settings.WebAppRender.PrerenderEnabled && (HttpContext.Request.IsLightHouseRequest() || HttpContext.Request.IsCrawlerClient());
+    // Crawlers read the prerendered page and benchmarks measure it, so scripts only cost them
+    private bool OmitScripts => HttpContext.Request.IsLightHouseRequest() || HttpContext.Request.IsCrawlerClient();
 
     private readonly BitThemeSsrOptions themeOptions = new()
     {
