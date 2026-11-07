@@ -27,6 +27,7 @@ E2E/
 └── Bit.BlazorUI.Tests.E2E/                 # the Playwright + MSTest project
     ├── E2ETestBase.cs                      # host and browser lifecycle, OpenAsync, error capture
     ├── E2ETestRun.cs                       # run-wide cleanup and the parallelization setting
+    ├── E2EAxe.cs                           # the axe-core scan, its suppressions and their policy
     └── <Category>/Bit<Component>E2ETests.cs
 ```
 
@@ -93,6 +94,20 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Te
 - A category whose tests share helpers keeps them in a file of its own (`ButtonsE2EHelpers.cs`,
   `NotificationsE2EHelpers.cs`, `BitDataGridE2ETestBase.cs`, `BitDropdownE2ETestBase.cs`, `BitDatePickersE2ETestBase.cs`).
 - An engine-specific gap is skipped with `Assert.Inconclusive` behind `IsFirefox` / `IsWebKit`, with the reason.
+
+## Accessibility scan
+
+`AssertNoAxeViolationsAsync("#section")` runs axe-core (`Deque.AxeCore.Playwright`) over one element of the page, a
+component's root or one section, against the WCAG 2.0, 2.1 and 2.2 A and AA rules, and fails with every violation it
+finds: the rule, the elements and what is wrong with each. `BitButtonE2ETests` scans each section of `/e2e/button`
+(`Axe_EachSection_HasNoWcagAOrAAViolation`); other suites take it up one component at a time.
+
+Fix a violation of the component's own rather than suppress it. One that cannot be fixed in the same change is let
+through with an `AxeSuppression`: one rule, on the elements one selector finds, with the reason, and either the link of
+the issue that tracks the fix (`AxeSuppression.KnownIssue`) or, for a violation the page renders on purpose for another
+test to check, `AxeSuppression.Fixture`. A suppression that matches nothing fails the scan. `E2EAxe.cs` has the whole
+policy. Passing the scan is necessary, not sufficient: the keyboard, the screen readers and every state a test does
+not reach are still checked by hand.
 
 ## AI pages
 

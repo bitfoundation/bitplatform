@@ -270,6 +270,16 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
+    /// Fails the test with every WCAG 2.0-2.2 A and AA violation axe-core finds under the one element the selector finds
+    /// (a component's root, or a section of the page: <c>#color</c>), once every animation that ends has ended, but for
+    /// those the suppressions let through. <see cref="E2EAxe"/> has the policy a scan and its suppressions follow.
+    /// </summary>
+    protected Task AssertNoAxeViolationsAsync(string scope, params AxeSuppression[] suppressions)
+    {
+        return E2EAxe.AssertNoViolationsAsync(Page, scope, suppressions);
+    }
+
+    /// <summary>
     /// Reads a computed style of the first element the selector finds.
     /// </summary>
     protected Task<string> ComputedStyleAsync(string selector, string property)
