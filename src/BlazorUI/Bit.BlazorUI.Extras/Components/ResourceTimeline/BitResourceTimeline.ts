@@ -243,6 +243,10 @@
         ['nonWorking', '--bit-rtm-thm-non-working'],
     ];
 
+    // The fallbacks a theme color is probed with (see ResourceTimelineInstance.resolveColor), written the way the browser
+    // computes them, so a variable that resolves to none is recognized by its value coming back as one of them.
+    const UNRESOLVED_COLORS = ['rgb(1, 2, 3)', 'rgb(3, 2, 1)'];
+
     // The texts of the component that only its markup uses (BitResourceTimelineTexts), left out of the ones handed to
     // the engine, which warns about a text it does not know.
     const MARKUP_TEXTS = ['ariaLabel', 'roleDescription', 'loading', 'expandGroupFormat', 'collapseGroupFormat'];
@@ -314,6 +318,7 @@
             this._styleObserver?.disconnect();
             this._styleObserver = null;
             document.removeEventListener('load', this._onStyleLoad, true);
+            window.removeEventListener('resize', this._onThemeChange);
 
             if (this._schemeQuery) {
                 try {
@@ -369,11 +374,9 @@
 
             try {
                 for (const [key, variable] of THEME_COLORS) {
-                    probe.style.backgroundColor = `var(${variable})`;
+                    const value = ResourceTimelineInstance.resolveColor(probe, variable);
 
-                    const value = getComputedStyle(probe).backgroundColor;
-
-                    if (value && value !== 'transparent' && !/^rgba\([^)]*,\s*0\)$/.test(value)) {
+                    if (value) {
                         colors[key] = value;
                     }
                 }
@@ -384,6 +387,24 @@
             } catch {
                 return null;
             }
+        }
+
+        // The color a variable resolves to on the probe, or null when it resolves to none (its stylesheet is not loaded,
+        // or the theme token it falls back to is not defined). That is told apart from a color an app set on purpose -
+        // transparent included - by the fallback of the var(), which only an unresolved variable takes: a second one is
+        // tried only when the first comes back, in case the variable is set to the very color of the first.
+        private static resolveColor(probe: HTMLElement, variable: string): string | null {
+            for (const sentinel of UNRESOLVED_COLORS) {
+                probe.style.backgroundColor = `var(${variable}, ${sentinel})`;
+
+                const value = getComputedStyle(probe).backgroundColor;
+
+                if (!value) return null;
+
+                if (value !== sentinel) return value;
+            }
+
+            return null;
         }
 
         private ensureProbe() {
@@ -416,7 +437,8 @@
         // the observer on the new one and reads the colors there. A stylesheet swapped in or out mutates none of those
         // attributes, so the <link> and <style> elements of the head are watched as well (one added, removed or edited),
         // and a stylesheet loading anywhere in the page (a new <link>, or one whose href was replaced, which applies only
-        // once it has loaded) is heard through the load event, captured on the document since it does not bubble. What
+        // once it has loaded) is heard through the load event, captured on the document since it does not bubble. A
+        // breakpoint of a stylesheet is crossed by a resize of the window, which is listened to as well. What
         // none of these sees (a rule inserted through the CSSOM, a root put back in a later task than the one that took
         // it out) is read again with the next options.
         private watchTheme() {
@@ -465,6 +487,10 @@
             } catch { /* no observer: the theme is still read on every change of the options */ }
 
             document.addEventListener('load', this._onStyleLoad, true);
+
+            // A media query of the page's stylesheets (a breakpoint) may switch the variables as the viewport is resized;
+            // the check runs once per frame at most, and changes nothing unless the colors read differently.
+            window.addEventListener('resize', this._onThemeChange);
 
             try {
                 const scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');

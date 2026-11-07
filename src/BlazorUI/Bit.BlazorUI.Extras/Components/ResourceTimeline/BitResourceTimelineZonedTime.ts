@@ -254,10 +254,11 @@
         // divides 24). That makes this exact arithmetic with no Intl involved, which
         // matters because it runs alongside the zoned walk on every frame.
         //
-        // The two rows' boundaries coincide wherever the axis zone's offset is a whole
-        // number of hours, and sit apart by the offset's minutes where it is not
-        // (Asia/Kolkata at +05:30, Australia/Eucla at +08:45) - which is exactly the
-        // horizontal shift the UTC row is meant to show.
+        // These sit apart from the zone row's by the minutes of the axis zone's offset
+        // where it has any (Asia/Kolkata at +05:30, Australia/Eucla at +08:45) - which
+        // is exactly the horizontal shift the UTC row is meant to show. Under a
+        // whole-hour offset the row takes the zone row's instants instead (see
+        // utcRowBoundaries).
         public static utcHourBoundaries(visStart: number, visEnd: number, step: number): ResourceTimelineHourBoundary[] {
             const out: ResourceTimelineHourBoundary[] = [];
             if (!(step > 0)) return out;
@@ -270,6 +271,31 @@
             // correct for pre-epoch (negative) instants too.
             for (let ts = Math.ceil(visStart / stepMs) * stepMs; ts <= visEnd; ts += stepMs) {
                 out.push({ ts, hour: Math.floor((((ts % DAY_MS) + DAY_MS) % DAY_MS) / HOUR_MS) });
+            }
+            return out;
+        }
+
+        // The boundaries of the UTC row beside the given zone row. Where every zone
+        // boundary is a whole UTC hour too (a whole-hour offset, DST changes of whole
+        // hours included), the UTC row ticks on those very instants, labelled with
+        // their UTC hours: on UTC's own multiples of `step` it would sit an hour off
+        // the zone row wherever `step` does not divide the offset (a two-hour step
+        // at +01:00). Otherwise (an offset with minutes in it) it is UTC's own row,
+        // shifted by those minutes (see utcHourBoundaries).
+        public static utcRowBoundaries(zoneHours: ResourceTimelineHourBoundary[], visStart: number, visEnd: number, step: number): ResourceTimelineHourBoundary[] {
+            const HOUR_MS = 3600000;
+            const DAY_MS = 86400000;
+
+            let whole = zoneHours.length > 0;
+            for (let i = 0; whole && i < zoneHours.length; i++) {
+                if ((((zoneHours[i].ts % HOUR_MS) + HOUR_MS) % HOUR_MS) !== 0) whole = false;
+            }
+            if (!whole) return ResourceTimelineZonedTime.utcHourBoundaries(visStart, visEnd, step);
+
+            const out: ResourceTimelineHourBoundary[] = new Array(zoneHours.length);
+            for (let i = 0; i < zoneHours.length; i++) {
+                const ts = zoneHours[i].ts;
+                out[i] = { ts, hour: Math.floor((((ts % DAY_MS) + DAY_MS) % DAY_MS) / HOUR_MS) };
             }
             return out;
         }

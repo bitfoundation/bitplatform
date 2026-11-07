@@ -387,8 +387,13 @@
                     for (const s of bar.sections) {
                         // A bordered section is inset by half the stroke, which
                         // keeps the 1px border inside it and the fill still
-                        // reaching its edges under the stroke.
-                        if (s.borderColor) {
+                        // reaching its edges under the stroke. One at most a pixel
+                        // wide (or high) has no room for the inset - a rect of no
+                        // width paints neither fill nor stroke - and its border
+                        // covers all of it anyway, as on the canvas and in HTML.
+                        if (s.borderColor && (s.width <= 1 || s.height <= 1)) {
+                            clearBarIdentity(this._rect(p.barShapes, s.x, s.y, s.width, s.height, s.borderColor));
+                        } else if (s.borderColor) {
                             clearBarIdentity(this._rect(p.barShapes, s.x + 0.5, s.y + 0.5, s.width - 1, s.height - 1,
                                 s.color, s.borderColor, 1));
                         } else {

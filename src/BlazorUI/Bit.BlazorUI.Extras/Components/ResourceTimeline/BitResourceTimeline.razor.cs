@@ -139,7 +139,8 @@ public partial class BitResourceTimeline : BitComponentBase
     /// <summary>
     /// Enables the on-demand (windowed) loading of the bars. When set, the bars are not taken from the
     /// <see cref="BitResourceTimelineConfig.Allocations"/>: the timeline calls this with the time window it currently
-    /// needs (the visible range plus a buffer) and expects every allocation overlapping it, across all the resources. It
+    /// needs (the visible range plus a buffer) and expects every allocation overlapping it, across all the resources - its
+    /// edge bars included, so one whose StartBar or EndBar alone reaches into the window is returned as well. It
     /// is called again as the user scrolls or zooms near the edge of the loaded window, which keeps the memory and the
     /// interop bounded for effectively unbounded data. A call can start while an earlier one is still running - the view
     /// moved on in the meantime, and the result of the earlier call is then dropped - so the data source behind it has to
@@ -546,6 +547,9 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         if (IsStarted() is false) return 0;
 
+        // A NaN or an infinity cannot be written as JSON, so it never reaches the engine (which ignores it anyway).
+        if (double.IsFinite(days) is false) return await GetPixelsPerHourAsync();
+
         return await _js.BitResourceTimelineZoomToDays(UniqueId, days);
     }
 
@@ -672,7 +676,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
     private string GetResourceRowStyle(BitResourceTimelineResourceRow row)
     {
-        var height = row.Height > 0 ? row.Height : _layout.ResourceHeight;
+        double height = row.Height > 0 ? row.Height : _layout.ResourceHeight;
 
         // The engine lays its rows out left to right whatever the direction of the page, and the overlay sits on them.
         return FormattableString.Invariant($"height:{height}px;padding-left:{8 + row.Depth * _layout.ResourceIndent}px");
@@ -948,33 +952,9 @@ public partial class BitResourceTimeline : BitComponentBase
                 return;
             }
 
-            if (LoadBatchSize > 0 && allocations.Count > LoadBatchSize)
-            {
-                // A large data set is streamed in bounded batches, so a single message of several megabytes neither blocks
-                // the circuit nor stalls the main thread serializing and parsing it all at once.
-                await _js.BitResourceTimelineBeginData(UniqueId, config.Resources, start, end, allocations.Count);
-
-                for (var i = 0; i < allocations.Count; i += LoadBatchSize)
-                {
-                    // Streaming spans many awaits: stop as soon as there is nothing left to stream into.
-                    if (IsDisposing) return;
-
-                    var count = Math.Min(LoadBatchSize, allocations.Count - i);
-
-                    await _js.BitResourceTimelineAppendAllocations(UniqueId, allocations.GetRange(i, count));
-                }
-
-                await _js.BitResourceTimelineEndData(UniqueId);
-            }
-            else
-            {
-                await _js.BitResourceTimelineSetData(UniqueId, config.Resources, start, end, allocations);
-            }
-
-            if (IsDisposing) return;
-
-            // The overlay is hidden once the renderer has painted the bars.
-            await WhenRenderedAsync();
+            // Read once: the parameter (or the cascade it comes from) may change during the awaits of the stream, and a size
+            // changed part way - to 0 above all - would skip bars or never get past the batch it is on.
+            var batchSize = LoadBatchSize;
 
             var byId = new Dictionary<string, BitResourceTimelineAllocation>(allocations.Count);
 
@@ -985,7 +965,42 @@ public partial class BitResourceTimeline : BitComponentBase
                 byId[allocation.Id] = allocation;
             }
 
-            _allocationsById = byId;
+            if (batchSize > 0 && allocations.Count > batchSize)
+            {
+                // A large data set is streamed in bounded batches, so a single message of several megabytes neither blocks
+                // the circuit nor stalls the main thread serializing and parsing it all at once.
+                await _js.BitResourceTimelineBeginData(UniqueId, config.Resources, start, end, allocations.Count);
+
+                // The engine holds this Config's data from here on, so the ids it reports (a selection, an edit made while
+                // the rest streams in or the bars are painted) resolve to this Config's instances, not to the ones of the
+                // Config before it that happen to share an id.
+                _allocationsById = byId;
+
+                for (var i = 0; i < allocations.Count; i += batchSize)
+                {
+                    // Streaming spans many awaits: stop as soon as there is nothing left to stream into.
+                    if (IsDisposing) return;
+
+                    var count = Math.Min(batchSize, allocations.Count - i);
+
+                    await _js.BitResourceTimelineAppendAllocations(UniqueId, allocations.GetRange(i, count));
+                }
+
+                await _js.BitResourceTimelineEndData(UniqueId);
+            }
+            else
+            {
+                await _js.BitResourceTimelineSetData(UniqueId, config.Resources, start, end, allocations);
+
+                // As above: what the engine reports while the bars are painted is about this Config's data.
+                _allocationsById = byId;
+            }
+
+            if (IsDisposing) return;
+
+            // The overlay is hidden once the renderer has painted the bars.
+            await WhenRenderedAsync();
+
             _loadedConfig = config;
             _dataLoaded = true;
         }
@@ -1032,12 +1047,15 @@ public partial class BitResourceTimeline : BitComponentBase
             _loadingConfig = null;
             _loadedConfig = null;
             _dataLoaded = false;
-            _engineHasData = false;
             _allocationsById = [];
             _resourcesById = [];
             _hoverAllocation = null;
 
             await _js.BitResourceTimelineClearData(UniqueId);
+
+            // Only once the engine took the clear: one that failed (a call timed out over a connection that dropped for a
+            // moment) leaves the old bars on screen, and the next parameter pass without a Config sends it again.
+            _engineHasData = false;
         }
         finally
         {
@@ -1415,8 +1433,9 @@ public partial class BitResourceTimeline : BitComponentBase
                                                   string kind)
     {
         // An id the loaded Config does not hold (of a Config swapped in the middle of the edit) is refused whatever is
-        // set, so the engine never commits an edit nothing here can apply.
-        if (IsDisposing || _allocationsById.TryGetValue(id, out var allocation) is false) return false;
+        // set, so the engine never commits an edit nothing here can apply. So is an edit that reached here after the
+        // timeline was disabled but before the engine was told: the engine puts the bar back.
+        if (IsDisposing || Disabled || _allocationsById.TryGetValue(id, out var allocation) is false) return false;
 
         if (OnAllocationChanging is null)
         {
@@ -1464,7 +1483,7 @@ public partial class BitResourceTimeline : BitComponentBase
                                                    string[] previousResourceIds, long[] previousStartTimes, long[] previousEndTimes,
                                                    string kind)
     {
-        if (IsDisposing || ids is null || ids.Length == 0) return false;
+        if (IsDisposing || Disabled || ids is null || ids.Length == 0) return false;
 
         // The whole commit is refused when the loaded Config misses one of its bars, whatever is set, before anything
         // is previewed onto the instances.
@@ -1535,7 +1554,7 @@ public partial class BitResourceTimeline : BitComponentBase
     [JSInvokable("OnAllocationsDeleting")]
     public async Task<bool> _OnAllocationsDeleting(string[] ids)
     {
-        if (IsDisposing) return false;
+        if (IsDisposing || Disabled) return false;
 
         // The load the ids were picked from: one replacing the data while the app decides (a new Config, a ReloadAsync)
         // drops the answer, since the same ids may name its bars now.
@@ -1563,7 +1582,7 @@ public partial class BitResourceTimeline : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarSection))]
     public async Task<IReadOnlyList<BitResourceTimelineAllocation>?> _OnAllocationsCopying(string[] ids, long offsetMs, string? resourceId)
     {
-        if (IsDisposing) return null;
+        if (IsDisposing || Disabled) return null;
 
         if (OnAllocationsCopying is null)
         {
@@ -1616,7 +1635,7 @@ public partial class BitResourceTimeline : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarSection))]
     public async Task<BitResourceTimelineAllocation?> _OnAllocationCreating(string resourceId, long startTime, long endTime)
     {
-        if (IsDisposing) return null;
+        if (IsDisposing || Disabled) return null;
 
         if (OnAllocationCreating is null)
         {
@@ -1659,7 +1678,7 @@ public partial class BitResourceTimeline : BitComponentBase
                                  string? area, double x, double y, double clientX, double clientY,
                                  bool ctrlKey, bool shiftKey, bool metaKey, bool altKey)
     {
-        if (IsDisposing) return Task.CompletedTask;
+        if (IsDisposing || Disabled) return Task.CompletedTask;
 
         return RaisePointerAsync(OnClick, allocationId, overflowIds, resourceId, time,
                                  area, x, y, clientX, clientY, ctrlKey, shiftKey, metaKey, altKey);
@@ -1674,7 +1693,7 @@ public partial class BitResourceTimeline : BitComponentBase
                                        string? area, double x, double y, double clientX, double clientY,
                                        bool ctrlKey, bool shiftKey, bool metaKey, bool altKey)
     {
-        if (IsDisposing) return Task.CompletedTask;
+        if (IsDisposing || Disabled) return Task.CompletedTask;
 
         return RaisePointerAsync(OnDoubleClick, allocationId, overflowIds, resourceId, time,
                                  area, x, y, clientX, clientY, ctrlKey, shiftKey, metaKey, altKey);
@@ -1689,7 +1708,7 @@ public partial class BitResourceTimeline : BitComponentBase
                                              string? area, double x, double y, double clientX, double clientY,
                                              bool ctrlKey, bool shiftKey, bool metaKey, bool altKey)
     {
-        if (IsDisposing || OnContextMenu.HasDelegate is false) return;
+        if (IsDisposing || Disabled || OnContextMenu.HasDelegate is false) return;
 
         await OnContextMenu.InvokeAsync(BuildPointerArgs<BitResourceTimelineContextMenuArgs>(allocationId, overflowIds, resourceId, time,
                                                                                               area, x, y, clientX, clientY,
@@ -1734,7 +1753,7 @@ public partial class BitResourceTimeline : BitComponentBase
                                                                  Depth: ReadInt(row, "depth"),
                                                                  HasChildren: ReadBool(row, "hasChildren"),
                                                                  Collapsed: ReadBool(row, "collapsed"),
-                                                                 Height: ReadInt(row, "height"));
+                                                                 Height: ReadDouble(row, "height"));
         }
 
         return result;
@@ -1744,6 +1763,9 @@ public partial class BitResourceTimeline : BitComponentBase
 
         static int ReadInt(JsonElement row, string name) =>
             row.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? (int)Math.Round(value.GetDouble()) : 0;
+
+        static double ReadDouble(JsonElement row, string name) =>
+            row.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.GetDouble() is var number && double.IsFinite(number) ? number : 0;
 
         static bool ReadBool(JsonElement row, string name) =>
             row.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.True;

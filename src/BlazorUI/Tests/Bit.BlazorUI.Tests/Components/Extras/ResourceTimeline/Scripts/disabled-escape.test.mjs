@@ -217,6 +217,56 @@ test('switching disabled on cancels a marquee in progress', () => {
     assert.deepEqual([...engine.selectedBars], ['a'], 'the selection goes back to where the marquee started');
 });
 
+test('a right-click on the TopStartContent corner gets no browser menu and reports nothing', () => {
+    const root = {};
+    const ownCorner = { parentElement: root };
+    const nestedCorner = { parentElement: {} };
+    const rightClick = (corner) => {
+        const e = {
+            target: { closest: (selector) => selector === '.bit-rtm-cnr' ? corner : null },
+            defaultPrevented: false,
+            preventDefault() { this.defaultPrevented = true; }
+        };
+        return e;
+    };
+
+    const engine = makeInteractiveEngine();
+    engine._cornerRoot = root;
+
+    const own = rightClick(ownCorner);
+    engine._suppressCornerMenu(own);
+    assert.equal(own.defaultPrevented, true, 'the corner of this timeline keeps the browser menu off');
+    assert.deepEqual(engine.reported, [], 'and raises no OnContextMenu');
+
+    const nested = rightClick(nestedCorner);
+    engine._suppressCornerMenu(nested);
+    assert.equal(nested.defaultPrevented, false, 'the corner of a timeline nested in a template is its own');
+
+    const outside = rightClick(null);
+    engine._suppressCornerMenu(outside);
+    assert.equal(outside.defaultPrevented, false, 'anything else under the root is left alone');
+
+    engine.setOptions({ disabled: true });
+    const disabled = rightClick(ownCorner);
+    engine._suppressCornerMenu(disabled);
+    assert.equal(disabled.defaultPrevented, false, 'a disabled timeline leaves the browser its menu');
+});
+
+test('turning the tooltips off takes down the one that is up or pending', () => {
+    const engine = makeInteractiveEngine();
+    let hidden = 0;
+    engine._tooltip = { hide() { hidden++; }, setStyle() { } };
+
+    engine.setOptions({ showTooltips: false });
+    assert.equal(hidden, 1, 'the tooltip (and its pending show) goes away with the option');
+
+    engine.setOptions({ showTooltips: false });
+    assert.equal(hidden, 1, 'options that leave them off hide nothing again');
+
+    engine.setOptions({ showTooltips: true });
+    assert.equal(hidden, 1, 'turning them back on hides nothing');
+});
+
 // ---- the Escape claim ----
 
 test('the wrapper claims Escape exactly while there is a selection to clear', () => {

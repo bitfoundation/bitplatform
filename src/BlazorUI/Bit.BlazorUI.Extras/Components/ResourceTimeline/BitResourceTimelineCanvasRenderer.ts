@@ -211,6 +211,8 @@
         // devicePixelRatio in force, whose change is the next ratio change.
         private _dprQuery: MediaQueryList | null;
         private _onDprChange: () => void;
+        // Whether a color is fully opaque, by the color string (see _isOpaque).
+        private _opaque: Map<string, boolean>;
 
         constructor(wrapper: HTMLElement, host: ResourceTimelineRendererHost) {
             this.wrapper = wrapper;
@@ -229,6 +231,7 @@
             this._deviceH = 0;
             this._scaleX = 1;
             this._scaleY = 1;
+            this._opaque = new Map();
 
             // Observe the canvas backing-store size in device pixels (via
             // device-pixel-content-box where supported) so devicePixelRatio
@@ -368,9 +371,17 @@
             // Draw in CSS pixels: the transform maps CSS-pixel drawing onto the
             // (possibly higher-resolution) device-pixel backing store.
             //
-            // No clearRect: the context is opaque (alpha: false) and _drawBackground
-            // immediately fills the entire viewport, so clearing first was a wasted
-            // full-surface fill - on a 4K display at 2x that is ~33M pixels a frame.
+            // No clearRect while the backgrounds are opaque: the context is opaque
+            // (alpha: false) and _drawBackground immediately fills the entire
+            // viewport, so clearing first is a wasted full-surface fill - on a 4K
+            // display at 2x that is ~33M pixels a frame. A translucent background
+            // blends with what is under it, though, which is the previous frame:
+            // the bars of that one would show through, so the store is cleared.
+            const { colors } = scene.config;
+            if (!this._isOpaque(colors.contentBg) || !this._isOpaque(colors.axisBg)) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, this.surface.width, this.surface.height);
+            }
             ctx.setTransform(this._scaleX, 0, 0, this._scaleY, 0, 0);
 
             // z-order: background -> surface -> non-working -> grid -> bars ->
@@ -391,6 +402,24 @@
             this._drawResourceAxis(scene);
             this._drawMarquee(scene);
             this._drawGhost(scene);
+        }
+
+        // Whether a color paints over whatever is under it. Read back off the
+        // context, which serializes an opaque color as #rrggbb and anything
+        // else (a translucent color, transparent, one outside sRGB) another way,
+        // so every syntax of CSS is covered; kept by the string, since the
+        // background colors only change with the options or the theme.
+        private _isOpaque(color: string): boolean {
+            let opaque = this._opaque.get(color);
+            if (opaque === undefined) {
+                const ctx = this.ctx;
+                ctx.fillStyle = '#000000';
+                ctx.fillStyle = color;
+                opaque = String(ctx.fillStyle).charAt(0) === '#';
+                if (this._opaque.size >= 32) this._opaque.clear();
+                this._opaque.set(color, opaque);
+            }
+            return opaque;
         }
 
         private _drawBackground(scene: ResourceTimelineScene): void {

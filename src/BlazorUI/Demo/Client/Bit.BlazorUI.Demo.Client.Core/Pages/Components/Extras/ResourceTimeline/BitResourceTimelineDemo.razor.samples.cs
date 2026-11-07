@@ -1536,13 +1536,21 @@ public static class BitResourceTimelineDemoData
     /// A whole board: the resources, the days from <paramref name="fromDay"/> to <paramref name="toDay"/> around today,
     /// and the flights of every gate in between.
     /// </summary>
-    public static BitResourceTimelineConfig Airport(List<BitResourceTimelineResource> resources, int fromDay = -7, int toDay = 7, bool labeled = false) => new()
+    public static BitResourceTimelineConfig Airport(List<BitResourceTimelineResource> resources, int fromDay = -7, int toDay = 7, bool labeled = false)
     {
-        Resources = resources,
-        StartDate = Day(fromDay),
-        EndDate = Day(toDay),
-        Allocations = Flights(resources, Day(fromDay), Day(toDay), labeled),
-    };
+        // Today is read once, so a call running across midnight gives the range and the flights the same days.
+        var today = DateTime.Today;
+        var start = new DateTimeOffset(today.AddDays(fromDay));
+        var end = new DateTimeOffset(today.AddDays(toDay));
+
+        return new()
+        {
+            Resources = resources,
+            StartDate = start,
+            EndDate = end,
+            Allocations = Flights(resources, start, end, labeled),
+        };
+    }
 
     /// <summary>
     /// The turnarounds overlapping <paramref name="from"/>..<paramref name="to"/> at every resource that is not a group

@@ -623,11 +623,13 @@
         private _onOverlayTouchEnd: () => void;
         private _onOverlayClick: (e: MouseEvent) => void;
         private _onOverlayContextMenu: (e: MouseEvent) => void;
-        // Clicks on the TopStartContent corner, which sits over the surface as a
-        // sibling of the viewport: delegated from the component's root, since the
-        // corner comes and goes with its template (see _forwardCornerClick).
+        // Clicks and right-clicks on the TopStartContent corner, which sits over
+        // the surface as a sibling of the viewport: delegated from the
+        // component's root, since the corner comes and goes with its template
+        // (see _forwardCornerClick and _suppressCornerMenu).
         private _cornerRoot: HTMLElement | null;
         private _onCornerClick: (e: MouseEvent) => void;
+        private _onCornerContextMenu: (e: MouseEvent) => void;
         private _onKeyDown: (e: KeyboardEvent) => void;
         private _onFocusIn: () => void;
         private _onFocusOut: () => void;
@@ -1133,6 +1135,7 @@
             };
             this._cornerRoot = null;
             this._onCornerClick = (e) => this._forwardCornerClick(e);
+            this._onCornerContextMenu = (e) => this._suppressCornerMenu(e);
             this._onKeyDown = (e) => this.handleKeyDown(e);
             this._onFocusIn = () => { this._hasFocus = true; this.render(); };
             this._onFocusOut = () => { this._hasFocus = false; this.render(); };
@@ -1365,7 +1368,10 @@
             this.wrapper.addEventListener('focus', this._onFocusIn);
             this.wrapper.addEventListener('blur', this._onFocusOut);
             this._cornerRoot = this.wrapper.parentElement;
-            if (this._cornerRoot) this._cornerRoot.addEventListener('click', this._onCornerClick);
+            if (this._cornerRoot) {
+                this._cornerRoot.addEventListener('click', this._onCornerClick);
+                this._cornerRoot.addEventListener('contextmenu', this._onCornerContextMenu);
+            }
             this._setupResizeObserver();
         }
 
@@ -2109,12 +2115,11 @@
             const step = this._hourStep();
             const hours = this._time.hourBoundaries(
                 this.visibleTimeRange!.start, this.visibleTimeRange!.end, step);
-            // The UTC row is a second, independent hour row at the same density.
-            // Its boundaries are UTC whole hours, so they coincide with the zone
-            // row's under a whole-hour offset and sit shifted where the offset has
-            // minutes in it.
+            // The UTC row is a second hour row at the same density. Its boundaries
+            // are UTC whole hours: the zone row's own under a whole-hour offset, and
+            // shifted from them where the offset has minutes in it.
             const utcHours = c.showUtcTime
-                ? ResourceTimelineZonedTime.utcHourBoundaries(this.visibleTimeRange!.start, this.visibleTimeRange!.end, step)
+                ? ResourceTimelineZonedTime.utcRowBoundaries(hours, this.visibleTimeRange!.start, this.visibleTimeRange!.end, step)
                 : null;
             this._buildTimeAxisScene(scene, hours, utcHours);
             this._buildGridScene(scene);
@@ -4366,8 +4371,12 @@
             const list = row.items;
             const tolerance = this.config.hitTolerance;
             const minBarWidth = this.config.minBarWidth;
-            const clickTime = this.getXToTime(canvasX);
-            const firstIndex = this._firstVisibleAllocationIndex(row, clickTime);
+            // The scan starts at the bars that can reach the click: a bar is hit up
+            // to the tolerance past its end, and a short one is drawn (and hit) as
+            // minBarWidth wide, so the lookup goes back by both, or the longest bar
+            // of the row would be skipped right where it still takes the click.
+            const lookupTime = this.getXToTime(canvasX - Math.max(0, tolerance) - Math.max(0, minBarWidth));
+            const firstIndex = this._firstVisibleAllocationIndex(row, lookupTime);
             const rowCenterY = this.getResourceToY(resourceIndex) + this._rowHeight(resourceIndex) / 2;
             let best = null;
             let bestDy = Infinity;
@@ -5485,10 +5494,25 @@
         // overlay's are, with the corner as the hit area. Only this timeline's own
         // corner counts - not one of a timeline nested inside a template.
         private _forwardCornerClick(e: MouseEvent): void {
+            if (!this._isOwnCorner(e)) return;
+            this._forwardOverlayClick(e);
+        }
+
+        // A right-click on the corner gets what one on the corner the surface
+        // draws without a template gets (see handleContextMenu): no browser menu,
+        // and nothing reported. A disabled timeline leaves the browser its menu.
+        private _suppressCornerMenu(e: MouseEvent): void {
+            if (this.config.disabled || !this._isOwnCorner(e)) return;
+            e.preventDefault();
+            this._hideTooltip();
+        }
+
+        // Whether an event happened inside this timeline's own TopStartContent
+        // corner - not one of a timeline nested inside a template.
+        private _isOwnCorner(e: Event): boolean {
             const target = e.target as Element | null;
             const corner = target && typeof target.closest === 'function' ? target.closest('.bit-rtm-cnr') : null;
-            if (!corner || corner.parentElement !== this._cornerRoot) return;
-            this._forwardOverlayClick(e);
+            return !!corner && corner.parentElement === this._cornerRoot;
         }
 
         // A wheel over the overlay: Ctrl/Cmd zooms as it does over the surface,
@@ -6653,6 +6677,7 @@
             const prevIconSize = this.config.barIconSize;
             const prevLabelMinWidth = this.config.minBarWidthForLabels;
             const prevDisabled = !!this.config.disabled;
+            const prevShowTooltips = !!this.config.showTooltips;
             apply();
             this._rebuildDateFormatters();
             // Disabling takes effect at once: the gesture in progress is canceled
@@ -6661,6 +6686,10 @@
                 this._cancelGestures();
                 this._hideTooltip();
                 this._setCursor('');
+            } else if (!this.config.showTooltips && prevShowTooltips) {
+                // So does turning the tooltips off: the one that is up, and the
+                // one still waiting out its delay (and a TooltipTemplate's hover).
+                this._hideTooltip();
             }
             if (this.config.nowLineRefreshMs !== prevNowRefresh) {
                 this._stopNowTimer();
@@ -7192,6 +7221,7 @@
             this.wrapper.removeEventListener('blur', this._onFocusOut);
             if (this._cornerRoot) {
                 this._cornerRoot.removeEventListener('click', this._onCornerClick);
+                this._cornerRoot.removeEventListener('contextmenu', this._onCornerContextMenu);
                 this._cornerRoot = null;
             }
             // Nothing acts on an Escape any more (see _syncEscapeClaim).

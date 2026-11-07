@@ -50,9 +50,10 @@ public class BitResourceTimelineOptions
 
     /// <summary>
     /// Maximum width (in pixels) the resource column can be resized to.
-    /// <c>null</c> / unset means no host cap: the column still cannot grow
-    /// past the viewport minus 100px of content area. Set an explicit value
-    /// to stop earlier.
+    /// Left unset there is no host cap: the column still cannot grow past the
+    /// viewport minus 100px of content area. Set an explicit value to stop
+    /// earlier; once a cap was applied, <c>0</c> removes it again (<c>null</c>
+    /// keeps the cap in force).
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ResourceAxisMaxWidth { get; set; }
@@ -180,12 +181,13 @@ public class BitResourceTimelineOptions
     /// Adds a second hour row to the time axis, in UTC, drawn below the day
     /// labels and above the row that follows <see cref="TimeZone"/> (or the
     /// viewer's local zone). It is rendered exactly like that row - same ticks,
-    /// same density, whole-hour labels - but on UTC's own hour boundaries, so
-    /// its numbers sit shifted horizontally by any minutes in the axis zone's
-    /// offset (half an hour's worth for <c>"Asia/Kolkata"</c> at +05:30). Under
-    /// a whole-hour offset the two rows line up and differ only in their
-    /// numbers, and with <see cref="TimeZone"/> set to <c>"UTC"</c> they read
-    /// the same. The band under the day row is split evenly between them, so
+    /// same density, whole-hour labels - but on UTC's hour boundaries, so its
+    /// numbers sit shifted horizontally by any minutes in the axis zone's offset
+    /// (half an hour's worth for <c>"Asia/Kolkata"</c> at +05:30). Under a
+    /// whole-hour offset the two rows tick on the same instants and differ only
+    /// in their numbers (an axis at +01:00 ticking every two hours reads 00, 02,
+    /// 04 under a UTC row of 23, 01, 03), and with <see cref="TimeZone"/> set to
+    /// <c>"UTC"</c> they read the same. The band under the day row is split evenly between them, so
     /// raise <see cref="TimeAxisHeight"/> to give them more room.
     /// Defaults to <c>false</c>.
     /// </summary>
@@ -232,7 +234,9 @@ public class BitResourceTimelineOptions
     /// Start of working hours, as minutes from local midnight (for example 540 for
     /// 09:00). <c>null</c> keeps the start in force: none, so no off-hour bands are
     /// drawn, until an instance sets one, and the one an earlier instance set
-    /// afterwards. Visual only.
+    /// afterwards. A start that is not before <see cref="WorkingHoursEnd"/> (the
+    /// two set equal, for example) turns the off-hour bands off again. Visual
+    /// only.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? WorkingHoursStart { get; set; }
@@ -241,14 +245,17 @@ public class BitResourceTimelineOptions
     /// End of working hours, as minutes from local midnight (for example 1020 for
     /// 17:00). <c>null</c> keeps the end in force: none, so no off-hour bands are
     /// drawn, until an instance sets one, and the one an earlier instance set
-    /// afterwards. Visual only.
+    /// afterwards. An end that is not after <see cref="WorkingHoursStart"/> (the
+    /// two set equal, for example) turns the off-hour bands off again. Visual
+    /// only.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? WorkingHoursEnd { get; set; }
 
     /// <summary>
-    /// Maximum stacking lanes per overlapping cluster. <c>null</c> or <c>0</c>
-    /// is unlimited (today's behaviour). Extra bars are hidden and a <c>+N</c>
+    /// Maximum stacking lanes per overlapping cluster. Left unset (or <c>0</c>)
+    /// it is unlimited; once a maximum was applied, <c>0</c> lifts it again
+    /// (<c>null</c> keeps the maximum in force). Extra bars are hidden and a <c>+N</c>
     /// label is drawn at the cluster's trailing edge; clicking it selects them,
     /// and hovering it lists what is hidden (requires
     /// <see cref="ShowTooltips"/>). Row height is capped at the max-lane stack.
@@ -265,10 +272,12 @@ public class BitResourceTimelineOptions
     public bool? AllowDelete { get; set; }
 
     /// <summary>
-    /// Horizontal scale in pixels per hour. <c>null</c> auto-fits exactly one day
-    /// to the viewport width. An explicit value is clamped to
-    /// <see cref="MinPixelsPerHour"/>/<see cref="MaxPixelsPerHour"/>. Runtime zoom
-    /// (the component's zoom methods) overrides this until reset.
+    /// Horizontal scale in pixels per hour. Left unset it auto-fits exactly one
+    /// day to the viewport width; once a scale was applied, <c>0</c> returns to
+    /// that auto-fit (<c>null</c> keeps the scale in force). An explicit value is
+    /// clamped to <see cref="MinPixelsPerHour"/>/<see cref="MaxPixelsPerHour"/>.
+    /// Runtime zoom (the component's zoom methods) overrides this until reset,
+    /// or until an instance sets this again.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? PixelsPerHour { get; set; }

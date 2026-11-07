@@ -7,7 +7,11 @@
     // state: the engine decides *what* is hovered, this decides how it is shown.
     //
     // The element lives on <body> rather than inside the timeline so it is never
-    // clipped by the scroll container or the sticky axes. Its cosmetic look (size
+    // clipped by the scroll container or the sticky axes. Where the browser has
+    // the Popover API it is a manual popover, shown into the top layer while it
+    // is up: a timeline inside a modal <dialog> (which is in the top layer itself)
+    // would otherwise have its tooltip painted under the dialog, whatever the
+    // z-index. Its cosmetic look (size
     // cap, padding, corners, line height, shadow, the pre-line wrapping its
     // multi-line text needs) comes from the stylesheet's bit-rtm-ttp class; only
     // what positions it and what the engine's config controls is written inline.
@@ -91,6 +95,7 @@
             this._content = '';
             if (this._visible && this._el) {
                 this._el.style.display = 'none';
+                ResourceTimelineTooltip._setOpen(this._el, false);
             }
             this._visible = false;
         }
@@ -132,9 +137,32 @@
             s.background = this.style.background;
             s.color = this.style.color;
             s.display = 'none';
+            if (ResourceTimelineTooltip._hasPopover(el)) {
+                el.setAttribute('popover', 'manual');
+                // A popover is centered in the viewport by its UA style; this
+                // one is placed from the left and the top instead.
+                s.inset = 'auto';
+                s.margin = '0';
+            }
             document.body.appendChild(el);
             this._el = el;
             return el;
+        }
+
+        private static _hasPopover(el: HTMLElement): boolean {
+            return typeof (el as any).showPopover === 'function';
+        }
+
+        // Puts the element into the top layer (or takes it out) where it is a
+        // popover. Shown again on every show, so it goes above a dialog that was
+        // opened since the last one.
+        private static _setOpen(el: HTMLElement, open: boolean): void {
+            if (!ResourceTimelineTooltip._hasPopover(el)) return;
+            try {
+                const isOpen = el.matches(':popover-open');
+                if (open && !isOpen) (el as any).showPopover();
+                else if (!open && isOpen) (el as any).hidePopover();
+            } catch { /* not connected: shown (or hidden) as an element of <body> */ }
         }
 
         private _schedule(delayMs: number): void {
@@ -149,13 +177,17 @@
         // subject is kept, so the content it gets later shows after the delay).
         private _render(): void {
             if (!this._content) {
-                if (this._visible && this._el) this._el.style.display = 'none';
+                if (this._visible && this._el) {
+                    this._el.style.display = 'none';
+                    ResourceTimelineTooltip._setOpen(this._el, false);
+                }
                 this._visible = false;
                 return;
             }
             const el = this._ensureElement();
             el.textContent = this._content;
             el.style.display = 'block';
+            if (!this._visible) ResourceTimelineTooltip._setOpen(el, true);
             this._visible = true;
             this._position();
         }

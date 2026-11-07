@@ -232,6 +232,35 @@ test('the two axis rows line up only where the zone offset is a whole hour', () 
     assert.ok(utc.every(b => Number.isInteger(b.hour) && b.hour >= 0 && b.hour < 24));
 });
 
+test('the UTC row ticks on the zone row\'s instants under a whole-hour offset', () => {
+    // Berlin in January is +01:00: UTC's own even hours would sit an hour off
+    // the zone row's even hours, so the UTC row takes the zone row's instants
+    // and labels them with their (odd) UTC hours.
+    const start = Date.parse('2026-01-15T00:00:00Z');
+    const end = start + 86400000;
+    const tsOf = (list) => list.map(b => b.ts);
+
+    const berlin = new ZonedTime('Europe/Berlin').hourBoundaries(start, end, 2);
+    const row = ZonedTime.utcRowBoundaries(berlin, start, end, 2);
+    assert.deepEqual(tsOf(row), tsOf(berlin), '+01:00 keeps both rows on the same instants');
+    for (let i = 0; i < row.length; i++) {
+        assert.equal(row[i].hour, (berlin[i].hour + 23) % 24, 'the UTC row reads an hour behind Berlin');
+        assert.equal(row[i].hour, new Date(row[i].ts).getUTCHours());
+    }
+
+    // Across the spring change (+01:00 to +02:00) every boundary is still a whole UTC hour.
+    const springStart = Date.parse('2026-03-28T12:00:00Z');
+    const spring = new ZonedTime('Europe/Berlin').hourBoundaries(springStart, springStart + 86400000, 3);
+    assert.deepEqual(tsOf(ZonedTime.utcRowBoundaries(spring, springStart, springStart + 86400000, 3)), tsOf(spring));
+
+    // An offset with minutes in it keeps UTC's own boundaries.
+    const kolkata = new ZonedTime('Asia/Kolkata').hourBoundaries(start, end, 2);
+    assert.deepEqual(ZonedTime.utcRowBoundaries(kolkata, start, end, 2), utcHourBoundaries(start, end, 2));
+
+    // No zone ticks (a step of 0) means no UTC ticks either.
+    assert.deepEqual(ZonedTime.utcRowBoundaries([], start, end, 0), []);
+});
+
 test('day boundaries are local midnight in the configured zone', () => {
     for (const zone of ZONES) {
         const engine = new ZonedTime(zone);

@@ -814,6 +814,32 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldSendAClearThatFailedAgain()
+    {
+        var component = RenderLoaded();
+
+        var clear = Context.JSInterop.SetupVoid(ClearDataFn, _ => true);
+        clear.SetException(new JSException("clear failed"));
+
+        try
+        {
+            component.Render(p => p.Add(x => x.Config, null));
+        }
+        catch (JSException) { }
+
+        await WaitUntil(() => Calls(ClearDataFn).Count == 1);
+
+        // The engine never took the clear, so the next render without a Config sends it again.
+        clear.SetVoidResult();
+        component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
+
+        await WaitUntil(() => Calls(ClearDataFn).Count == 2);
+
+        component.Render(p => p.Add(x => x.AriaLabel, "Yet another render of the parent"));
+        Assert.AreEqual(2, Calls(ClearDataFn).Count);
+    }
+
+    [TestMethod]
     public async Task BitResourceTimelineShouldEmptyTheEngineAfterAStreamThatFailedPartWay()
     {
         PlanStart();
@@ -2185,6 +2211,55 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.IsNull(args.Resource);
     }
 
+    [TestMethod]
+    public async Task BitResourceTimelineShouldRefuseWhatReachesItAfterItWasDisabled()
+    {
+        // What the engine sent before it was told the timeline is disabled, arriving after: no event is raised, and every
+        // edit is refused, so the engine puts the bars back and nothing is created, pasted or deleted.
+        var raised = new List<string>();
+        var config = SampleConfig();
+
+        var component = RenderLoaded(p =>
+        {
+            p.Add(x => x.OnClick, (BitResourceTimelinePointerArgs _) => raised.Add(nameof(BitResourceTimeline.OnClick)));
+            p.Add(x => x.OnDoubleClick, (BitResourceTimelinePointerArgs _) => raised.Add(nameof(BitResourceTimeline.OnDoubleClick)));
+            p.Add(x => x.OnContextMenu, (BitResourceTimelineContextMenuArgs _) => raised.Add(nameof(BitResourceTimeline.OnContextMenu)));
+            p.Add(x => x.OnAllocationCreating, _ =>
+            {
+                raised.Add(nameof(BitResourceTimeline.OnAllocationCreating));
+                return Task.FromResult<BitResourceTimelineAllocation?>(Allocation("new", "r1", 0, 60_000));
+            });
+            p.Add(x => x.OnAllocationsCopying, _ =>
+            {
+                raised.Add(nameof(BitResourceTimeline.OnAllocationsCopying));
+                return Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>?>([Allocation("copy", "r1", 0, 60_000)]);
+            });
+        }, config);
+
+        component.Render(p => p.Add(x => x.Disabled, true));
+
+        var timeline = component.Instance;
+        var a1 = config.Allocations.Single(a => a.Id == "a1");
+        var before = (a1.ResourceId, a1.StartTime, a1.EndTime);
+
+        await component.InvokeAsync(async () =>
+        {
+            await timeline._OnTimelineClick("a1", null, "r1", 0, "content", 0, 0, 0, 0, false, false, false, false);
+            await timeline._OnTimelineDoubleClick("a1", null, "r1", 0, "content", 0, 0, 0, 0, false, false, false, false);
+            await timeline._OnTimelineContextMenu("a1", null, "r1", 0, "content", 0, 0, 0, 0, false, false, false, false);
+
+            Assert.IsFalse(await timeline._OnAllocationChanging("a1", "r2", 10_000, 70_000, "r1", 0, 60_000, "move"));
+            Assert.IsFalse(await timeline._OnAllocationsChanging(["a1"], ["r2"], [10_000], [70_000], ["r1"], [0], [60_000], "move"));
+            Assert.IsFalse(await timeline._OnAllocationsDeleting(["a1"]));
+            Assert.IsNull(await timeline._OnAllocationsCopying(["a1"], 3_600_000, "r2"));
+            Assert.IsNull(await timeline._OnAllocationCreating("r1", 0, 60_000));
+        });
+
+        Assert.IsEmpty(raised);
+        Assert.AreEqual(before, (a1.ResourceId, a1.StartTime, a1.EndTime));
+        Assert.AreSame(a1, (await ResolveAsync(component, "a1")).Single());
+    }
+
 
 
     // ---------------------------------------------------------------- the resource template
@@ -2387,8 +2462,9 @@ public class BitResourceTimelineTests : BunitTestContext
                 p.Add(x => x.TopStartContent, "Corner");
             }, layout: Layout(150, 60, 36, 20));
 
-            // A height the engine measured in fractions is rounded, a row it does not know the height of takes the minimum
-            // height of the layout, and every nesting level indents by the indent of the layout.
+            // A height the engine measured in fractions is kept (so the rows below stay on the ones they label), a row it
+            // does not know the height of takes the minimum height of the layout, and every nesting level indents by the
+            // indent of the layout.
             await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("""
                 [
                     { "id": "grp", "name": "Group", "depth": 0, "hasChildren": true, "collapsed": false, "height": 47.6 },
@@ -2402,7 +2478,7 @@ public class BitResourceTimelineTests : BunitTestContext
             await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 12.5, -3.75));
 
             var rows = component.FindAll(".bit-rtm-rrw");
-            Assert.AreEqual("height:48px;padding-left:8px", rows[0].GetAttribute("style"));
+            Assert.AreEqual("height:47.6px;padding-left:8px", rows[0].GetAttribute("style"));
             Assert.AreEqual("height:36px;padding-left:28px", rows[1].GetAttribute("style"));
             Assert.AreEqual("height:52px;padding-left:48px", rows[2].GetAttribute("style"));
             Assert.AreEqual(FormattableString.Invariant($"left:{12.5}px;top:{-3.75}px"), component.Find(".bit-rtm-tov").GetAttribute("style"));

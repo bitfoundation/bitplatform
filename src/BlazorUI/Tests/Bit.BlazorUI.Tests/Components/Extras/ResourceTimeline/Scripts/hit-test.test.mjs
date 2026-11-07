@@ -70,6 +70,36 @@ test('_editZone is null for a locked bar', () => {
     assert.equal(engine._editZone(alloc, mid), null);
 });
 
+test('_barAt takes a click within the tolerance around both ends of the longest bar', () => {
+    for (const tolerance of [3, 8]) {
+        // The only bar is the longest of its row, so a lookup that went back by
+        // its span alone would start past it for a click just after its end.
+        const engine = makeHitEngine([bar('a', 1, 4)], { config: { hitTolerance: tolerance } });
+        const alloc = engine.allocations[0];
+        const startX = engine.getTimeToX(alloc.startTime);
+        const endX = engine.getTimeToX(alloc.endTime);
+        const y = engine.getResourceToY(0) + engine._rowHeight(0) / 2;
+        const idAt = (x) => { const hit = engine._barAt(x, y); return hit && hit.alloc.id; };
+
+        assert.equal(idAt(endX + tolerance - 1), 'a', `just after the end, tolerance ${tolerance}`);
+        assert.equal(idAt(endX + tolerance + 1), null, `past the tolerance after the end, tolerance ${tolerance}`);
+        assert.equal(idAt(startX - tolerance + 1), 'a', `just before the start, tolerance ${tolerance}`);
+        assert.equal(idAt(startX - tolerance - 1), null, `past the tolerance before the start, tolerance ${tolerance}`);
+    }
+});
+
+test('_barAt takes a click on the minimum width of a bar shorter than it', () => {
+    // 36 seconds is under a pixel at 40px/hour: the bar is drawn (and hit) 6px wide.
+    const engine = makeHitEngine([bar('a', 1, 1.01)], { config: { minBarWidth: 6, hitTolerance: 3 } });
+    const startX = engine.getTimeToX(engine.allocations[0].startTime);
+    const y = engine.getResourceToY(0) + engine._rowHeight(0) / 2;
+    const idAt = (x) => { const hit = engine._barAt(x, y); return hit && hit.alloc.id; };
+
+    assert.equal(idAt(startX + 5), 'a', 'on the minimum width');
+    assert.equal(idAt(startX + 8), 'a', 'within the tolerance past the minimum width');
+    assert.equal(idAt(startX + 10), null, 'past both');
+});
+
 test('_barAt ignores overflow bars', () => {
     const bars = [];
     for (let i = 0; i < 5; i++) bars.push(bar('a' + i, 1, 3));
