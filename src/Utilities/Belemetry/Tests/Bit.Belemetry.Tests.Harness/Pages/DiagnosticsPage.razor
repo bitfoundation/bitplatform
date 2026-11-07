@@ -1,0 +1,56 @@
+﻿@page "/diagnostics"
+@inject IBelemetryDiagnostics Diagnostics
+@inject ILogger<DiagnosticsPage> Logger
+
+<h1 id="page-diagnostics">diagnostics</h1>
+
+@* Production diagnostics end to end: make things fail (a .NET error in an event handler, a failed request, a JS error),
+   capture, read the capture's facts off #diag-state, and export it through the library's preview. *@
+<section class="harness-actions">
+    <button id="diag-fail-handler" @onclick="FailInHandler">fail in an event handler</button>
+    <button id="diag-fetch-fail" data-harness-action="fetch-fail">fetch /test-api/fail</button>
+    <output id="fetch-fail-result"></output>
+    <button id="diag-js-error" data-harness-action="throw-error" data-message="diagnostics">throw a JS error</button>
+    <button id="diag-capture" @onclick="CaptureAsync">capture</button>
+</section>
+
+<span id="diag-state"
+      data-handled="@_handled"
+      data-succeeded="@(_capture?.Succeeded is true ? "true" : "false")"
+      data-subject="@_capture?.Subject?.Exception?.Type"
+      data-browser-available="@(_capture?.Sections.FirstOrDefault(s => s.Section == BelemetryBundleSections.Browser)?.Status is "included" or "truncated" ? "true" : "false")"
+      data-http-failures="@(_capture?.Events.Count(e => e.Category == BelemetryDiagnosticCategories.Http && e.Outcome == BelemetryDiagnosticOutcome.Failure))"
+      data-js-errors="@(_capture?.Events.Count(e => e.Source == BelemetryDiagnosticSource.Browser && e.Exception is not null))"
+      data-triggering-action="@_capture?.Report.TriggeringAction"
+      data-components="@(_capture is null ? null : string.Join(",", _capture.Components.Select(c => c.Type + ":" + c.Association)))"
+      data-confirmed="@_confirmed"
+      data-browser-section="@(_capture?.Sections.FirstOrDefault(s => s.Section == BelemetryBundleSections.Browser) is { } b ? b.Status + "|" + b.Items + "|" + b.Note : null)"
+      data-missing="@(_capture is null ? null : string.Join(" || ", _capture.MissingEvidence))">
+    handled @_handled
+</span>
+
+@if (_capture is not null)
+{
+    <BelemetryCapturePreview Capture="_capture" OnConfirmed="c => _confirmed = c.Id" />
+}
+
+@code {
+    private BelemetryDiagnosticCapture? _capture;
+    private int _handled;
+    private string? _confirmed;
+
+    private void FailInHandler()
+    {
+        try
+        {
+            throw new InvalidOperationException("Harness diagnostic failure for order 10423");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Harness handler failed for order {OrderId}", 10423);
+        }
+        _handled++;
+    }
+
+    private async Task CaptureAsync() => _capture = await Diagnostics.CaptureAsync(new() { Reason = "harness" });
+}

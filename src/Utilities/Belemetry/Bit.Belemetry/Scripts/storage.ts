@@ -7,6 +7,7 @@ export const StorageKeys = {
     pseudoId: 'bit-belemetry-pseudo-id',
     userId: 'bit-belemetry-user-id',
     queue: 'bit-belemetry-queue',
+    diagnostics: 'bit-belemetry-diagnostics',
 } as const;
 
 export type StorageKind = 'local' | 'session';

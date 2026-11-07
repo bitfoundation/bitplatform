@@ -369,6 +369,27 @@ delivered request (resent, duplicated).
 **Verification.** Core 287/287 (net10.0; net8.0/net9.0 build, their runtimes are not installed here), JS 172/172, `tsc`
 clean, Hosting 29/29, MCP 59/59, EF 9/9, Hangfire 4/4; the new tests were checked to fail against the old behavior.
 
+### Round 8 - production diagnostics and support bundles (2026-11-04)
+
+A new capability rather than a fix: `BelemetryOptions.Diagnostics` (opt-in) keeps a bounded, consent-aware, sanitized
+diagnostic timeline - routes from the router, component UI events, exceptions by origin, failed requests, browser
+errors, circuit transitions - groups exceptions by a versioned fingerprint, and turns it into support bundles the user
+previews, narrows and confirms (`<BelemetryCapturePreview>`, `BelemetryDiagnosticCapture`, `BelemetrySupportBundle`),
+with an issue report whose every statement is observed, inferred or user-provided. Blazor Server gets one timeline per
+circuit, by the renderer's synchronization context. `Bit.BevTools.Belemetry` (new package, BevTools side) adds a Support
+panel and the component tree to captures. The audit, gap analysis, decisions, evidence and limitations are in
+[`docs/engineering/production-diagnostics.md`](docs/engineering/production-diagnostics.md).
+
+**Behavior changes.** `AddBitBelemetryServices` registers the framework's component `ActivitySource` in every host, so
+WebAssembly and Hybrid export `Navigate`/`HandleEvent` spans with traces on (as Server always did). A browser session
+sampled out of the export keeps its local diagnostic timeline when diagnostics are on.
+
+**Verification.** Core 393/393 per framework (net10.0, net11.0), JS 214/214, Hosting 49/49, MCP 62/62, EF Core 18/18,
+Hangfire 8/8, E2E web modes 44/44 (three new: a bundle captured and downloaded in Server, WebAssembly and Auto), E2E hybrid
+3/3, BevTools 649/649 per framework, Release build with the trim/AOT analyzers clean. An independent review found 18
+defects (three high), all fixed with tests; the benchmarks and a Playwright run of the samples found 6 more (see the
+engineering record).
+
 ---
 
 ## 7. Research notes

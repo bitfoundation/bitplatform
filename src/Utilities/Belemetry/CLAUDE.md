@@ -31,7 +31,8 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | `Bit.Belemetry/Pipeline/` | Collectors (ActivityListener, MeterListener, ILoggerProvider), processors, batching, sampling |
 | `Bit.Belemetry/Exporters/` | OTLP (protobuf + JSON serializers), Azure Monitor (envelopes, live metrics), console, in-memory, HTTP sender + retry + persistence |
 | `Bit.Belemetry/Interop/` | The JS bridge (module import, config, relay, unload drain, context sync) |
-| `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag) and `<BelemetryInitializer />` (interactive bridge) |
+| `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag), `<BelemetryInitializer />` (interactive bridge) and `<BelemetryCapturePreview />` (the unstyled support-bundle preview) |
+| `Bit.Belemetry/Diagnostics/` | Production diagnostics: the diagnostic timeline (`BelemetryDiagnosticRecorder`, one per process on client hosts, one per circuit on a server, routed by `BelemetryDiagnosticHub`), the event model, the sanitizer, exception fingerprints, captures, issue reports and the support bundle format. See "Production diagnostics" below |
 | `Bit.Belemetry.EntityFrameworkCore/` | Separate package: a `DbCommandInterceptor` that starts a client span per EF Core command on the `Bit.Belemetry.EntityFrameworkCore` source (`UseBitBelemetry()` on the context options). Depends on the core and `Microsoft.EntityFrameworkCore.Relational` only |
 | `Bit.Belemetry.Hangfire/` | Separate package: a client + server job filter that carries the W3C trace context in the job's parameters and starts a consumer span per execution on the `Bit.Belemetry.Hangfire` source (`UseBitBelemetry()` on the global configuration). Depends on the core and `Hangfire.Core` only |
 | `Demo/` | Documentation site (Client) and its host (Server). The host also runs the MCP server at `/mcp` and an in-process OTLP receiver that the demo exports to |
@@ -138,6 +139,7 @@ How consent works:
 | `bit-belemetry-pseudo-id` | localStorage | `UserTracking` | 32 hex chars |
 | `bit-belemetry-user-id` | sessionStorage | `UserTracking` | authenticated id from `setUser` |
 | `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, oldest first, capped by `persistence.maxBytes` |
+| `bit-belemetry-diagnostics` | sessionStorage | `Persistence` and `diagnostics.persist` | `{"v":1,"events":[<diagnostic event>]}`: the last 100 browser timeline events (at most 256 K characters), written on hide, read back once (and removed) by the next load of the tab |
 
 Persisted requests never carry headers (API keys), in the browser queue or in the .NET file store
 (`{LocalApplicationData}/bit-belemetry/{service.name}/*.blmreq`, `BelemetryHttpRequest` JSON without `headers`). The
@@ -180,7 +182,10 @@ idempotent: a second call only updates the consent defaults and the bridge.
   "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
   "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48, "retryIntervalMs": 60000 },
   "maxValueLength": 32768,                               // BelemetryOptions.MaxValueLength; 0 keeps strings whole
-  "debug": false
+  "debug": false,
+  // Only with BelemetryOptions.Diagnostics.Enabled; absent otherwise (the script then keeps no timeline).
+  "diagnostics": { "enabled": true, "maxEvents": 200, "categories": 1023, "includeSuccessfulActivity": true, "includeLogMessages": false,
+                   "persist": false, "triggerBrowserErrors": false, "allowedQueryParameters": [] }
 }
 ```
 
@@ -273,6 +278,10 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
+| `getDiagnostics()` | The browser diagnostic timeline as the grant allows now (`{v:1,capacity,dropped,resource,events}`), after running the app's processors on the queued records; null when diagnostics are off |
+| `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused). Trimmed under .NET's 4 MiB read limit (`BelemetryJsBridge.MaxDiagnosticsBytes`): oldest activity first, then oldest failures, counted as `size_limit`; a larger stream is missing evidence, never a failed capture |
+| `clearDiagnostics()` | Forgets the browser timeline and its stored copy |
+| `downloadFile(name, content)` | Saves a support bundle: `content` is bytes (WASM, Hybrid) or a .NET stream reference (Server); the name is reduced to `[A-Za-z0-9._-]` |
 
 .NET `[JSInvokable]` callbacks (on the internal `BelemetryJsCallbacks` relay class):
 
@@ -281,6 +290,11 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   the configuration are dropped, and the resource keeps the server's service identity without the server's host and
   process attributes.
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
+- `"Belemetry.DiagnosticTrigger"`. Receives `{type, message}` of a JS error the page recorded, when
+  `diagnostics.triggerBrowserErrors` (at most every 10 s per page), on the next task and only once the app's processors
+  kept the record (`Pipeline.keeps`; an error a processor drops triggers nothing and uses no interval). Untrusted on a
+  server: only cut strings are read, as the key of an automatic capture whose own cooldown and in-progress limit bound
+  what a page can cause.
 - `"Belemetry.DrainForUnload"` (synchronous, WASM only). Called on `pagehide` / `visibilitychange:hidden`. Returns
   the pending .NET records serialized as requests, which JS sends with `fetch(..., { keepalive: true })` because
   async .NET work does not survive unload. Elsewhere it returns nothing: on a server any client of a circuit can call
@@ -349,6 +363,54 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - **Compression:** `compression: "gzip"` sends `Content-Encoding: gzip`, from the browser too (the ingestion
   endpoint's CORS preflight allows that header). Unload batches go uncompressed (compression is async).
 
+### Production diagnostics
+
+- **Category bits** (`BelemetryDiagnosticCategories`, `diagnostics.ts Category`, names as in `BelemetryDiagnosticJson`):
+  navigation 1, component 2, exception 4, http 8, js-interop 16, browser 32, circuit 64, log 128, trace 256, custom 512,
+  all 1023. `BelemetryDiagnosticContractTests` reads the TypeScript and fails on a mismatch.
+- **Browser event** (`diagnostics.ts DiagnosticEvent`, read by `BelemetryBrowserEvidence`): `{seq, time (ms epoch),
+  elapsed (performance.now), cat, name, sev (OTLP number), outcome?, traceId?, spanId?, parentSpanId?, route? (path
+  template), dur?, feature, msg?, exc?: {type, message, stack?}, attrs?, prev?}`. The script keeps metadata only:
+  HTTP method, status, `server.address`, `error.type` and `url.template` (origin + templated path + allowlisted query);
+  click `event.type` and `target.element`; page view path template and navigation type; console messages only with
+  `includeLogMessages`. .NET bounds (2 x `BrowserMaxEvents`, at most 1000), re-sanitizes, re-templates routes, validates
+  ids and fingerprints exceptions itself: the page is untrusted on a server.
+- **The timeline taps the pipeline after privacy and processors** (`BelemetryPipeline.Enqueue`: `export` and `diagnose`
+  are decided apart; the error limits apply to both). Relayed records are skipped - the browser timeline is the source
+  of browser evidence on every host. The framework's `Navigate`/`HandleEvent`/`StartCircuit` activities come through
+  the hub's own `ActivityListener` (sampling `AllData`, never `Recorded`, so it changes no export decision).
+- **Server isolation**: every `BelemetryDiagnosticsService` of a circuit shares one recorder, acquired by the
+  renderer's `SynchronizationContext` (`BelemetryDiagnosticHub.Acquire`, reference counted; the last release closes it).
+  A record goes to a recorder only when produced on that context, or under an activity the hub tagged (weakly) while it
+  started there *and that has not stopped* - a timer or loop started under a click handler outlives it and is nobody's.
+  Never "the only circuit". Unattributed server failures (error logs, failed spans - never a successful request's span)
+  go to the trace index, found only by trace ids from that page's own fetch spans, and renumbered when they join a capture.
+- **A capture holds no scope**: its consent checks hold the hub (singleton) and the bridge's `BelemetryPageConsent`
+  (the page's last grant), never the session, the bridge or the JS runtime - an app may keep a capture past its circuit.
+  The report is cached per consent key (each feature, for the process's events and the page's apart).
+- **Generations**: a revoke and `Clear` both bump the recorder's generation; an automatic capture built across either is
+  discarded (counted `consent_revoked_capture` for a revoke only). A full review queue drops its oldest capture
+  (`pending_capture_limit`); only `MaxPendingCaptures` captures in progress refuse a trigger.
+- **Exception groups in a capture** export the occurrences of the events the capture exports only; a group known only from
+  its history keeps its counts and template (the preview lists those), with no occurrence.
+- **Unhandled**: only the framework's categories (`Microsoft.AspNetCore.Components.*Renderer`, the circuit host, the
+  WebAssembly host) mark an exception unhandled; an app's `PdfRenderer` logs a handled one.
+- **Framework activities** (`BelemetryDiagnosticHub.CreatesActivity`): the hub's listener makes the framework create
+  `Navigate`/`HandleEvent`/`StartCircuit` only when that changes nothing for the app's traces - Belemetry's export covers
+  the source (its decision, `IgnoredActivityNames` respected), or `Diagnostics.CreateFrameworkActivities` (default: not
+  on a server). An unsampled parent makes a parent-based sampler drop the spans under it. `Belemetry.cs` registers the
+  component source (`AddComponentsTracing`) on every host, but on WebAssembly and Hybrid the export listens to it only
+  with diagnostics on (`BelemetrySettings.ExportsTraceSource`): an app without diagnostics traces as before. A framework
+  activity naming a component an `IBelemetryDiagnosticComponentFilter` excludes (BevTools' own UI) is not recorded.
+- **The size limit is the whole bundle's** (`BelemetryDiagnosticCaptureBuilder.EnforceLimit`, run last): release, groups,
+  components and snapshots measured as written (`BelemetrySupportBundle.MeasureParts`), the timeline in the room left;
+  the subject is never cut. A capture given an exception finds the occurrence that logged that object
+  (`BelemetryDiagnosticEvent.OccurrenceId`), by fingerprint only when it was never logged.
+- **Exceptions of a log record** are read from its attributes (after privacy and processors); the exception object
+  only gives the inner exceptions' types, and their messages when the record's stack text still holds them.
+- **The bundle format** (`BelemetrySupportBundle`, schema 1): see the README. A format change bumps `SchemaVersion`; a
+  fingerprint change bumps `BelemetryExceptionFingerprint.Version` (`TheFingerprint_IsStable_AcrossRunsAndVersions`).
+
 ## Tests
 
 | Project | Covers | Run |
@@ -357,7 +419,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `Tests/Bit.Belemetry.Tests.EntityFrameworkCore` | The EF Core interceptor against SQLite in memory: span shape, parenting, failures, the filter, the no-listener path | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hangfire` | The Hangfire filter against a real `BackgroundJobServer` on in-memory storage: the execution span, its parent from the enqueue, failures, the filter | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hosting` | Every render mode prerenders `<BelemetryScript />` with the right config, the script is served, and a real export reaches an in-process OTLP receiver when the server pipeline is enabled | `dotnet test` from that folder |
-| `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver | `dotnet test` from that folder (needs `playwright.ps1 install chromium`) |
+| `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver; a support bundle captured and downloaded in Server, WebAssembly and Auto (`/diagnostics` harness page), validated against the format without the library | `dotnet test` from that folder (needs `playwright.ps1 install chromium`) |
 | `Tests/Bit.Belemetry.Tests.Mcp` | The demo's MCP server | `dotnet test` from that folder |
 | `Tests/bit-belemetry-js` | The TS units (protobuf writer, OTLP JSON, Azure mapping, consent, privacy, session, sampling, queue), run under vitest + happy-dom | `npm test` from that folder |
 | `Tests/Bit.Belemetry.Benchmarks` | BenchmarkDotNet: the privacy rules, the synchronous recording paths (ILogger, Activity, Counter, Histogram) and the encoders. Not run by CI; see its README for the last numbers | `dotnet run -c Release -- --filter "*"` from that folder |

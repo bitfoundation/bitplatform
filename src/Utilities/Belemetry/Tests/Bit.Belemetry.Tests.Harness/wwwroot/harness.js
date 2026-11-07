@@ -28,6 +28,16 @@ async function fetchEcho(output, url) {
     output.setAttribute('data-done', 'true');
 }
 
+async function fetchStatus(output, url) {
+    output.removeAttribute('data-status');
+    try {
+        const response = await fetch(url);
+        output.setAttribute('data-status', String(response.status));
+    } catch (e) {
+        output.setAttribute('data-status', 'error');
+    }
+}
+
 // The same host under its other name: localhost and 127.0.0.1 are different origins to the browser, so this is a
 // cross-origin request to an endpoint whose CORS policy allows the traceparent header.
 function crossOriginEchoUrl() {
@@ -42,6 +52,9 @@ document.addEventListener('click', e => {
     switch (element.getAttribute('data-harness-action')) {
         case 'fetch-echo':
             fetchEcho(document.getElementById('fetch-result'));
+            break;
+        case 'fetch-fail':
+            fetchStatus(document.getElementById('fetch-fail-result'), 'test-api/fail');
             break;
         case 'fetch-echo-cross-origin':
             fetchEcho(document.getElementById('fetch-cross-origin-result'), crossOriginEchoUrl());

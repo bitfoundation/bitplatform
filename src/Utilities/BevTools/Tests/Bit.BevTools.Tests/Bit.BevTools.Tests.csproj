@@ -31,6 +31,7 @@
         <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Cli\Bit.BevTools.Cli.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Blex\Bit.BevTools.Blex.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Belemetry\Bit.BevTools.Belemetry.csproj" />
         <!-- BlexIntegrationTests define a Blex store the way an app does: through Blex's source generator. -->
         <ProjectReference Include="..\..\..\Blex\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>

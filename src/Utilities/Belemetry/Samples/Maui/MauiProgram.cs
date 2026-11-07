@@ -18,7 +18,24 @@ public static class MauiProgram
 #endif
 
         // There is no server to fetch from: the "fetch" button requests a file of this app's wwwroot.
-        builder.Services.AddCoreServices(settings => settings.FetchUrl = "sample-data.json");
+        builder.Services.AddCoreServices(settings =>
+        {
+            settings.FetchUrl = "sample-data.json";
+            settings.FailUrl = "missing-data.json";
+
+            // Android's WebView and WKWebView ignore a download: the support bundle is written to the app's data folder
+            // (share it from there with Share.RequestAsync). WebView2 on Windows saves downloads itself.
+            if (OperatingSystem.IsWindows() is false)
+            {
+                settings.SaveBundle = async capture =>
+                {
+                    var path = Path.Combine(FileSystem.AppDataDirectory, capture.SuggestedFileName);
+                    await using var file = File.Create(path);
+                    await capture.ExportAsync(file);
+                    return path;
+                };
+            }
+        });
 
         builder.Services.AddBitBelemetryServices(o =>
         {

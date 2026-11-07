@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -47,7 +49,26 @@ public static class Belemetry
         services.TryAddScoped<BelemetryJsBridge>();
         services.TryAddScoped<IBelemetryConsent, BelemetryConsentService>();
         services.TryAddScoped<IBelemetry, BelemetryService>();
+        services.TryAddScoped<IBelemetryDiagnostics, BelemetryDiagnosticsService>();
 
+        // The framework registers its component ActivitySource for server-side rendering only. Registered here (public,
+        // idempotent) so the Navigate and HandleEvent activities - the route templates and component names diagnostics
+        // rest on - exist in WebAssembly and Hybrid too. Nothing is created until something listens, and there the export
+        // listens only with diagnostics on (BelemetrySettings.ExportsTraceSource): an app without them traces as before.
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers an <see cref="IBelemetrySnapshotProvider"/> (scoped, so it can read the state of the user's scope - a
+    /// circuit on Blazor Server). Its snapshots are only taken when a capture asks for them.
+    /// </summary>
+    public static IServiceCollection AddBitBelemetrySnapshotProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(this IServiceCollection services)
+        where TProvider : class, IBelemetrySnapshotProvider
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetrySnapshotProvider, TProvider>());
         return services;
     }
 }

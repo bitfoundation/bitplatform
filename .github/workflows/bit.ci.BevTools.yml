@@ -9,6 +9,8 @@ on:
     # Bit.BevTools.Blex and its tests build on Blex and its source generator.
     - 'src/Utilities/Blex/Bit.Blex/**'
     - 'src/Utilities/Blex/Bit.Blex.Generators/**'
+    # Bit.BevTools.Belemetry and its tests build on Belemetry.
+    - 'src/Utilities/Belemetry/Bit.Belemetry/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

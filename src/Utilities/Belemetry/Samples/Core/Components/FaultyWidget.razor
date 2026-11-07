@@ -1,0 +1,16 @@
+﻿@* A component that fails when asked to, inside the support page's ErrorBoundary: the exception is caught there, logged by
+   the framework's ErrorBoundary logger, and lands on the diagnostic timeline with origin "error-boundary". *@
+
+<p>Widget rendered @_renders.ToString(System.Globalization.CultureInfo.InvariantCulture) time(s).</p>
+
+@code {
+    private int _renders;
+
+    [Parameter] public bool Fail { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _renders++;
+        if (Fail) throw new InvalidOperationException($"The widget could not render order {Random.Shared.Next(10000, 99999)}.");
+    }
+}

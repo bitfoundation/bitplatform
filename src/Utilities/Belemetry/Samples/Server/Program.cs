@@ -9,6 +9,9 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddCoreServices();
 
+// The circuit's connection history on its diagnostic timeline (see SampleCircuitDiagnostics).
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, Bit.Belemetry.Samples.Server.SampleCircuitDiagnostics>();
+
 builder.Services.AddBitBelemetryServices(o =>
 {
     o.ServiceName = "belemetry-samples-server";
@@ -56,6 +59,9 @@ app.MapStaticAssets();
 // The target of the "fetch" button. The browser's request carries a traceparent header (same origin), so this
 // request's server span and the browser's client span share one trace.
 app.MapGet("/api/weather", () => new { summary = "Sunny", temperatureC = 23 });
+
+// The target of the support page's "failing request" button: a 500 the diagnostic timeline records as a failed request.
+app.MapGet("/api/fail", () => Results.Problem("The sample endpoint failed on purpose.", statusCode: 500));
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

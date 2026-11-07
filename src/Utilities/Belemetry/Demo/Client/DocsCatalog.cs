@@ -156,6 +156,13 @@ public static class DocsCatalog
                 "console in-memory memory custom exporter ibelemetryexporter belemetrybatch tests viewer",
                 typeof(ExportersPage)),
         ]),
+        new("Production diagnostics",
+        [
+            new("/diagnostics", "Support bundles",
+                "Production diagnostics: a bounded, consent-aware timeline of routes, components, event handlers, failed requests, browser errors and circuit transitions; exception grouping by fingerprint; captures previewed, narrowed and confirmed by the user, exported as versioned support bundles with an issue report - live, with a capture of your own session.",
+                "diagnostics production support bundle report a problem capture preview export download zip issue report timeline exception grouping fingerprint release commit snapshot provider classifier circuit component errorboundary ibelemetrydiagnostics belemetrycapturepreview bevtools",
+                typeof(DiagnosticsPage)),
+        ]),
         new("Shaping the data",
         [
             new("/privacy", "Privacy",

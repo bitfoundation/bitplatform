@@ -55,12 +55,21 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     /// <summary>The last context the script reported (per circuit on Blazor Server).</summary>
     public BelemetryJsContext? Context { get; private set; }
 
+    /// <summary>The page's last grant, apart from the bridge: what a capture keeps instead of the bridge.</summary>
+    public BelemetryPageConsent PageConsent { get; } = new();
+
     public bool IsStarted => _module is not null;
 
     private bool UnloadDrain => _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
 
     /// <summary>Raised when the script reports a new context.</summary>
     public event Action<BelemetryJsContext>? ContextChanged;
+
+    /// <summary>Raised when the page reports a JavaScript error as a diagnostic trigger (type, message).</summary>
+    public event Action<string?, string?>? DiagnosticTriggered;
+
+    // A browser timeline is at most BrowserMaxEvents (1000) events; the script trims a larger one to fit (getDiagnosticsStream).
+    private const long MaxDiagnosticsBytes = 4 * 1024 * 1024;
 
     /// <summary>Starts the script (idempotent). Returns false when it cannot run here or now.</summary>
     public async ValueTask<bool> StartAsync()
@@ -125,6 +134,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     internal void Apply(BelemetryJsContext context)
     {
         Context = context;
+        PageConsent.Update(context.Consent);
 
         if (_settings.IsServer is false)
         {
@@ -162,6 +172,91 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     public ValueTask TrackExceptionAsync(string type, string message, string? stack, IReadOnlyDictionary<string, object?>? attributes) => InvokeAsync("trackException", type, message, stack, ToElement(attributes));
 
     public ValueTask FlushAsync() => InvokeAsync("flush");
+
+    /// <summary>
+    /// The script's diagnostic timeline, or null when it is unreachable or keeps none. A server reads it as a stream: a
+    /// circuit's messages from the page are capped (32 KiB by default), and a timeline can be larger.
+    /// </summary>
+    public async ValueTask<JsonElement?> GetDiagnosticsAsync(CancellationToken cancellationToken)
+    {
+        if (await StartAsync() is false || _module is null) return null;
+
+        try
+        {
+            if (_settings.IsServer)
+            {
+                var reference = await _module.InvokeAsync<IJSStreamReference?>("getDiagnosticsStream", cancellationToken);
+                if (reference is null) return null;
+                await using (reference)
+                {
+                    await using var stream = await reference.OpenReadStreamAsync(MaxDiagnosticsBytes, cancellationToken);
+                    using var document = await JsonDocument.ParseAsync(stream, new JsonDocumentOptions { MaxDepth = 16 }, cancellationToken);
+                    return document.RootElement.Clone();
+                }
+            }
+
+            var element = await _module.InvokeAsync<JsonElement>("getDiagnostics", cancellationToken);
+            return element.ValueKind == JsonValueKind.Object ? element : null;
+        }
+        // ArgumentOutOfRangeException: a stream larger than MaxDiagnosticsBytes (a page that did not trim it, or an
+        // untrusted one) - the browser evidence is missing, the capture still goes on.
+        catch (Exception ex) when (IsUnavailable(ex) || ex is JsonException or IOException or ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Forgets the page's diagnostic timeline and its stored copy.</summary>
+    public ValueTask ClearDiagnosticsAsync() => InvokeAsync("clearDiagnostics");
+
+    /// <summary>
+    /// Saves a file in the browser (a download). False when there is no browser to save it in - nor a web view that
+    /// saves downloads: Android's WebView and WKWebView (MAUI on Android, iOS and Mac Catalyst) ignore one without a
+    /// download handler of the app's, so the script's click would report a save that never happened.
+    /// </summary>
+    public async ValueTask<bool> DownloadAsync(string fileName, byte[] bytes, CancellationToken cancellationToken)
+    {
+        if (SavesDownloads is false || await StartAsync() is false || _module is null) return false;
+
+        try
+        {
+            if (_settings.IsServer)
+            {
+                // Streamed: a bundle can be larger than a circuit's single message.
+                using var reference = new DotNetStreamReference(new MemoryStream(bytes, writable: false));
+                await _module.InvokeVoidAsync("downloadFile", cancellationToken, fileName, reference);
+            }
+            else
+            {
+                await _module.InvokeVoidAsync("downloadFile", cancellationToken, fileName, bytes);
+            }
+            return true;
+        }
+        catch (Exception ex) when (IsUnavailable(ex))
+        {
+            return false;
+        }
+    }
+
+    // WebView2 (Windows: WinForms, WPF, MAUI) saves downloads by default; the mobile and Apple web views do not.
+    private bool SavesDownloads => _settings.Host != BelemetryHostKind.Hybrid || OperatingSystem.IsWindows();
+
+    internal void OnDiagnosticTrigger(JsonElement error)
+    {
+        if (error.ValueKind != JsonValueKind.Object) return;
+
+        string? Read(string name) => error.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+        var type = Read("type");
+        var message = Read("message");
+        try
+        {
+            DiagnosticTriggered?.Invoke(type is { Length: > 256 } ? type[..256] : type, message is { Length: > 1024 } ? message[..1024] : message);
+        }
+        catch
+        {
+            // A trigger never fails the page's call.
+        }
+    }
 
     private async ValueTask SendRequestsAsync(IReadOnlyList<BelemetryHttpRequest> requests)
     {

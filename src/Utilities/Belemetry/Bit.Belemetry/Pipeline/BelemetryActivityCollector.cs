@@ -26,7 +26,7 @@ internal sealed class BelemetryActivityCollector : IDisposable
 
         _listener = new ActivityListener
         {
-            ShouldListenTo = source => BelemetrySettings.Matches(source.Name, _settings.TraceSources),
+            ShouldListenTo = source => _settings.ExportsTraceSource(source.Name),
             Sample = Sample,
             SampleUsingParentId = SampleUsingParentId,
             ActivityStopped = OnStopped,

@@ -62,6 +62,9 @@ public sealed class BelemetryOptions
     /// </summary>
     public int MaxValueLength { get; set; } = 32768;
 
+    /// <summary>Production diagnostics: the diagnostic timeline, exception grouping and support bundles. Off by default.</summary>
+    public BelemetryDiagnosticsOptions Diagnostics { get; } = new();
+
     /// <summary>The browser script.</summary>
     public BelemetryBrowserOptions Browser { get; } = new();
 

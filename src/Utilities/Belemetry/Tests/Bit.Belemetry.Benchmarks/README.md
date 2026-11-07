@@ -59,3 +59,31 @@ building the record), nearly all of it in the card-number and IPv4 regexes, whic
 Net privacy cost per span: 867 ns -> 487 ns with a query (`?page=2&sort=desc`, nothing in it to redact; the benchmark
 has since moved to a URL with a `token` to redact) (-44%), 181 ns and no extra allocation without one; per
 structured log record 973 ns -> 673 ns (-31%); the full `ILogger` entry 1066 ns -> 869 ns (-18%).
+
+## Production diagnostics
+
+`DiagnosticsBenchmarks` runs each case with `BelemetryOptions.Diagnostics` off and on (error limits off, so every
+exception takes the full path, as each failure's first occurrence does). BenchmarkDotNet 0.15.8 does not recognize
+.NET 11 as a runtime yet (`GetRuntimeVersion not implemented for NotRecognized`), so on this project's `net11.0` target
+run it in-process:
+
+```bash
+dotnet run -c Release --project src/Utilities/Belemetry/Tests/Bit.Belemetry.Benchmarks -- --filter "*Diagnostics*" --job short --inProcess
+```
+
+`ShortRun`, in-process, .NET 11.0.0-rc.3, x64, Windows 11 (2026-11-04):
+
+| Case | Off | On | Allocated off / on | Notes |
+| --- | ---: | ---: | ---: | --- |
+| `ILogger`: information (exported, below the timeline's `Warning`) | 257 ns | 254 ns | 681 / 681 B | no cost: the timeline's level is checked first |
+| `ILogger`: warning (exported, and on the timeline) | 241 ns | 474 ns | 689 / 1089 B | the event, its sanitized template and category |
+| `ILogger`: error with an inner exception | 4.1 us | 9.8 us | 5.6 / 14.0 KB | two exceptions sanitized (message, stack without paths), fingerprinted and grouped; capped by the error limits in a loop |
+| Framework `HandleEvent` activity: start + stop | 2 ns | 411 ns | 0 / 992 B | without a listener the framework creates no activity; with diagnostics it does, once per UI event |
+| Capture of a full timeline (350 events), no browser | - | 17 us | - / 19 KB | |
+| Capture + export (the bundle's bytes) | - | 1.0-1.6 ms | - / 1.0 MB | ZIP of ~350 events; an explicit user action |
+| Fingerprint: type, message, stack | 2.9 us | 2.9 us | 5.3 / 5.3 KB | |
+
+The first run measured the information entry at 405 ns and 1081 B with diagnostics on: an entry produced for the
+export was recorded on the timeline below its level. Fixed (`BelemetryDiagnosticFollowUpTests`), together with a
+fingerprint that parsed the stack three times (error entry 10.8 us -> 9.8 us).
+

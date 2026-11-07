@@ -37,6 +37,7 @@ of a page at once (a Server circuit and WebAssembly side by side) and opens expo
 dotnet add package Bit.BevTools          # Blazor WebAssembly / any Blazor host
 dotnet add package Bit.BevTools.Server   # adds circuit instrumentation for Blazor Server
 dotnet add package Bit.BevTools.Blex     # optional: bit Blex stores in the State panel (services.AddBevToolsBlex())
+dotnet add package Bit.BevTools.Belemetry  # optional: bit Belemetry's diagnostics in a Support panel (services.AddBitBevToolsBelemetry())
 dotnet tool install --global Bit.BevTools.Cli   # optional: bevtools check / compare / mcp over exports
 dotnet add package Bit.BevTools.Loader   # opens BevTools on demand, and lets WebAssembly lazy load it
 ```
@@ -405,7 +406,10 @@ services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
 
 Integrations ship as packages of their own: `Bit.BevTools.Blex` shows bit Blex's stores and actions in the State panel
-and restores through Blex's time travel (`services.AddBevToolsBlex()`). A library that wants to expose itself to
+and restores through Blex's time travel (`services.AddBevToolsBlex()`). `Bit.BevTools.Belemetry` adds a Support panel
+for bit Belemetry's production diagnostics - its timeline and exception groups, a jump from a failure to its component
+in the tree, support bundle preview, export and import - and gives Belemetry's captures the component hierarchy and
+render counts BevTools observes (`services.AddBitBevToolsBelemetry()`). A library that wants to expose itself to
 BevTools references `Bit.BevTools`, which carries the extension contracts:
 
 - `IBevToolsExtension` / `IBevToolsExtensionBuilder` - contribute panels, state providers, diagnostic rules, commands
@@ -450,6 +454,8 @@ Bit.BevTools.Extension        the browser extension (Manifest V3, Chromium and F
 Bit.BevTools.Cli              the bevtools .NET tool: an export's findings (check), two recordings (compare), for CI in
                               Markdown, JSON, SARIF or GitHub annotations; a read-only MCP server over exports (mcp)
 Bit.BevTools.Blex             bit Blex in the State panel, restoring through Blex's time travel (an integration package)
+Bit.BevTools.Belemetry        bit Belemetry's production diagnostics in a Support panel, and the component tree in its
+                              support bundles (an integration package)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Samples                       the same pages (Core) in every host, each with its own BevTools setup in Program.cs:
                               Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid); and Lazy (+ Client),
