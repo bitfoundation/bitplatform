@@ -1141,6 +1141,18 @@ survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
         }
     ];
 
+    private string accessibilityDefaultValue =
+@"# Keyboard tour
+
+- Tab indents this item, Shift+Tab outdents it
+- Escape, then Tab, moves the focus out
+
+| Tab | walks |
+| --- | ----- |
+| the | cells |
+
+F9 cycles the panes, F11 goes full-screen and Ctrl+/ lists every shortcut.";
+
     private const string cssVariablesStyle = "--bit-MarkdownEditor-border-radius:1rem;" +
                                              "--bit-MarkdownEditor-border-color:var(--bit-clr-pri);" +
                                              "--bit-MarkdownEditor-toolbar-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);" +

@@ -136,6 +136,16 @@ public partial class _BitBreadcrumbCustomDemo
         }
     ];
 
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithCategories =
+    [
+        new() { Icon = BitIconName.Home, Label = "Home", Address = "/components/breadcrumb" },
+        new() { Name = "Products", Address = "/components/breadcrumb" },
+        new() { Name = "Electronics", Address = "/components/breadcrumb" },
+        new() { Name = "Computers", Address = "/components/breadcrumb" },
+        new() { Name = "Laptops", Address = "/components/breadcrumb" },
+        new() { Name = "Gaming laptops", Address = "/components/breadcrumb", IsCurrent = true }
+    ];
+
     private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     {
         Text = { Selector = c => c.Name },

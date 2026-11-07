@@ -524,6 +524,9 @@ services.AddCascadingValue(""PrerenderedAccentColor"", sp =>
     sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Cookies[BitAccentColorNames.CookieName]);";
 
     private readonly string example7RazorCode = @"
+<BitAccentColorSwitcher />";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-swatch {
         border-radius: 0.25rem;

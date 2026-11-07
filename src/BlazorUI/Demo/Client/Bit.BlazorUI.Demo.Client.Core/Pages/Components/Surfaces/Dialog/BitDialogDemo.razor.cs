@@ -1042,6 +1042,9 @@ public partial class BitDialogDemo
         }
     ];
 
+    private bool isOpenA11yDialog;
+    private bool isOpenA11yAlert;
+
     private bool isOpenColor;
     private BitColor dialogColor = BitColor.Primary;
     private readonly BitColor[] dialogColors = Enum.GetValues<BitColor>();

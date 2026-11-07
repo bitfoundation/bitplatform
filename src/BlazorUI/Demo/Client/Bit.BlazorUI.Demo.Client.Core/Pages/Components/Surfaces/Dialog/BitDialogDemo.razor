@@ -508,7 +508,56 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                The surface carries <b>role="dialog"</b> and <b>aria-modal="true"</b>. <b>Blocking</b> makes the role
+                <b>alertdialog</b>, <b>IsAlert</b> sets it by hand, and <b>Modeless</b> turns aria-modal to false. The Dialog is named
+                by its <b>Title</b>, rendered as an <b>h2</b>, and described by its <b>Subtitle</b> and <b>Message</b>;
+                <b>TitleAriaId</b> and <b>SubtitleAriaId</b> point them at elements of your own instead. A <b>HeaderTemplate</b>
+                replaces the title, so pair it with <b>TitleAriaId</b> or <b>AriaLabel</b>.
+            </div>
+            <br />
+            <div>
+                On open the focus moves into the Dialog: to its first focusable element, or to the surface itself when it holds none
+                (<b>AutoFocus</b>). Tab and Shift+Tab wrap around inside it (<b>TrapFocus</b>); a <b>Modeless</b> Dialog lets them
+                leave, though it still takes the focus when it opens. Escape closes the Dialog from anywhere inside it, unless a
+                field's open list or a nested Dialog answers it first; <b>Blocking</b> and <b>CloseOnEscape</b> refuse it. On close
+                the focus goes back to the element that held it when the Dialog opened, unless it has been moved elsewhere since
+                (<b>RestoreFocus</b>).
+            </div>
+            <br />
+            <div>
+                The close, Ok and Cancel buttons are native buttons, so Enter and Space press them. The close button is named by
+                <b>CloseButtonTitle</b> ("Close" by default). While <b>OnOk</b> runs, the Ok button keeps its text as its name and
+                reports <b>aria-busy</b> and <b>aria-disabled</b> without being disabled, so the focus stays on it. The overlay is
+                hidden from screen readers, and a closed <b>KeepMounted</b> Dialog is hidden and <b>inert</b>. Under reduced motion
+                a refused dismissal rings the surface instead of shaking it. <b>IsDraggable</b> answers the pointer only: no key
+                moves the Dialog.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="@(() => isOpenA11yDialog = true)">dialog</BitButton>
+                <BitButton OnClick="@(() => isOpenA11yAlert = true)">alertdialog</BitButton>
+            </div>
+
+            <BitDialog @bind-IsOpen="isOpenA11yDialog"
+                       Title="Rename the project"
+                       Subtitle="Tab stays inside, Escape closes"
+                       Message="Closing hands the focus back to the button that opened it.">
+                <div class="dialog-body">
+                    <BitTextField Label="Name" DefaultValue="Untitled project" />
+                </div>
+            </BitDialog>
+
+            <BitDialog Blocking
+                       AutoFocusButton="BitDialogButton.Cancel"
+                       @bind-IsOpen="isOpenA11yAlert"
+                       Title="Delete this workspace?"
+                       Message="Escape and the overlay are refused: answer with a button. The focus starts on Cancel."
+                       OkText="Delete workspace" />
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 <b>Color</b> paints the Ok and Cancel buttons, the Ok spinner and their focus ring - not the surface. Pair
                 <b>Error</b> with an <b>AutoFocusButton</b> on Cancel for a destructive confirmation.
@@ -530,7 +579,7 @@
                        OnOk="HandleColorOk" />
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 <b>CloseIconName</b> swaps the close glyph for another built-in one; <b>CloseIcon</b> takes a
                 <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> from FontAwesome, Bootstrap Icons or any CSS icon font.
@@ -569,7 +618,7 @@
                        CloseIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")" />
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
                 A Dialog fits its content, never outgrows its area, and stops widening at the theme's
                 <b>--bit-siz-dialog-max-width</b> (or <b>--bit-Dialog-max-width</b>). <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>,
@@ -633,7 +682,7 @@
                        Message="Stretched across the whole screen." />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The public
                 <b>--bit-Dialog-*</b> CSS variables re-skin the surface, overlay, text and spacing - set them on <code>:root</code>, on an
@@ -680,7 +729,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
                 Set <b>Dir</b> to <b>Rtl</b> to mirror the Dialog: the close button moves to the left, the actions flip, and the
                 Start/End positions follow - <b>TopStart</b> lands top-right, while the physical <b>TopLeft</b> stays left.

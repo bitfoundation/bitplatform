@@ -383,7 +383,60 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                The field is a native button with the <code>combobox</code> role: Tab reaches it, and Enter, Space,
+                ArrowDown and ArrowUp open the list, as Home and End do on its first and last time zone. It carries
+                <code>aria-haspopup="listbox"</code> and <code>aria-expanded</code>, and <code>aria-controls</code> names
+                the list while it is open. The list is a <code>listbox</code> of <code>option</code> rows, the selected one
+                marked with <code>aria-selected="true"</code>. It is moved to the end of the page while open, and the
+                root claims it back through <code>aria-owns</code>.
+            </div>
+            <br />
+            <div>
+                <b>Label</b> names both the field and the list through <code>aria-labelledby</code>. <b>AriaLabel</b>
+                names them instead, for a field with no visible label, and wins over the Label; with neither, the field is
+                named "Time zone" and the list "Time zones". The field and every row put a comma only a screen reader
+                reads between the offset, the place and (in a row) the country, so a row reads "UTC+03:30, Tehran, Iran"
+                rather than running together. The field and each row also carry that line in full as their tooltip.
+            </div>
+            <br />
+            <div>
+                When the list opens, the focus moves into its search box: a <code>combobox</code> too, named by
+                <b>SearchBoxAriaLabel</b>, else the <b>SearchBoxPlaceholder</b>, else "Search time zones". Its
+                <code>aria-activedescendant</code> follows the arrow keys and Page Up and Page Down (ten rows at a time);
+                Home and End stay with its caret. Enter picks the active time zone and Escape closes the list, both giving
+                the focus back to the field, as a click outside the list does; Alt+ArrowUp closes it the way Escape does.
+                Tab moves on to what follows the field and closes the list, Shift+Tab goes back to the field and leaves it
+                open, and the list also closes once the focus moves anywhere else.
+            </div>
+            <br />
+            <div>
+                With <b>NoSearchBox</b> the focus stays on the field, which carries the
+                <code>aria-activedescendant</code> itself: Space picks as Enter does unless it falls inside a name being
+                typed, Alt+ArrowUp picks the active time zone as it closes the list, Tab closes the list and moves on, and
+                the letters and digits typed on the field, open or closed, jump to the time zone whose name they start.
+            </div>
+            <br />
+            <div>
+                A polite status region outside the list says what is otherwise only seen: the result count of a search
+                ("12 time zones found", or <b>NoResultsMessage</b> for none, worded by <b>SearchResultsAnnouncement</b>
+                when it is set), an <b>ErrorMessage</b> as it appears, and with NoSearchBox the time zone just picked.
+                <b>Required</b> writes <code>aria-required</code> and keeps its asterisk from being read out,
+                <b>ReadOnly</b> writes <code>aria-readonly</code>, an invalid value <code>aria-invalid</code>, and
+                <b>Disabled</b> the native <code>disabled</code> with <code>aria-disabled</code>. In forced-colors mode
+                the selected row takes the Highlight colors and the active row an outline.
+            </div>
+            <br />
+            <div>Try both with the keyboard alone: the first has no visible label, the second no search box.</div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" AriaLabel="Meeting time zone" Placeholder="Named by AriaLabel alone" />
+                <BitTimeZonePicker TValue="string" Label="Type-ahead" NoSearchBox Placeholder="Focus me and type a city" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
             <div>
                 <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
                 neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
@@ -403,7 +456,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
             <div>
                 <b>ResponsiveCloseIcon</b> takes the icon of the close button of the responsive panel from any CSS-class
                 based library (FontAwesome, Bootstrap Icons) as raw classes or through the <b>BitIconInfo</b> helpers, and
@@ -421,7 +474,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+        <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
             <div>
                 <b>Size</b> scales the height, padding, text and list rows together.
             </div>
@@ -433,7 +486,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CodeFiles="@example22CodeFiles" Id="example22">
+        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CodeFiles="@example23CodeFiles" Id="example23">
             <div>
                 The public <b>--bit-TimeZonePicker-*</b> custom properties (see the
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a
@@ -464,7 +517,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
                 <b>Dir="BitDir.Rtl"</b> mirrors the field, the callout and the responsive panel.
             </div>

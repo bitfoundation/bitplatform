@@ -197,7 +197,47 @@
             <DemoModalContainer Service="customModalService" />
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                Each modal the service shows is a <BitLink Href="/components/modal">BitModal</BitLink>: a
+                <code>dialog</code> with <code>aria-modal</code>. The service names none of them, so give each one a
+                name: a <b>HeaderText</b> names the modal and is announced as a heading, <b>TitleAriaId</b> (and
+                <b>SubtitleAriaId</b>) points at a title (and a description) of the content's own, and an
+                <b>AriaLabel</b> names a modal that shows no title. <b>IsAlert</b> makes it an <code>alertdialog</code>,
+                the default for a <b>Blocking</b> modal, and <b>CloseButtonTitle</b> names the close button
+                (default "Close").
+            </div>
+            <br />
+            <div>
+                When a modal opens, the focus moves into it - to an element marked <code>autofocus</code> (a
+                BitButton's <b>AutoFocus</b>), else its first focusable element, else the dialog itself - and Tab and
+                Shift+Tab cycle inside it. Escape, pressed while the focus is inside, and a click on the overlay dismiss
+                it, asking a <b>CanClose</b> guard first; <b>Blocking</b> refuses the overlay click and
+                <b>NoDismissOnEscape</b> the Escape. However it closes, the focus goes back to the element that had it
+                when the modal opened, unless something else has taken the focus since. While it is open the page
+                behind it does not scroll. <b>NoAutoFocus</b>, <b>NoFocusTrap</b>, <b>NoRestoreFocus</b> and
+                <b>NoScrollLock</b> turn each of these off.
+            </div>
+            <br />
+            <div>
+                A modal shown over another one takes the focus from it, so Tab stays in the newest one and Escape
+                closes only that one, which hands the focus back to the one below; <b>CloseAll</b> closes them newest
+                first for the same reason, and the page scrolls again once the last one closes. A <b>Modeless</b> modal
+                - several examples above use one to keep the page reachable - has no <code>aria-modal</code>, overlay,
+                focus trap or scroll lock, but it still takes the focus, hands it back and closes on Escape while the
+                focus is inside it. A persistent modal lets go of the focus and the page when its container unmounts,
+                and takes them again in the next container. A modal a navigation closes hands the focus back only to an
+                element still on the page. Open each of these and try Tab, Escape and the overlay:
+            </div>
+            <br />
+            <div class="example-box">
+                <BitButton OnClick="ShowNamedModal">Named by its header</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowBlockingModal">Blocking: an alertdialog</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="ShowModelessModal">Modeless</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>CloseIcon</b> takes the close button's icon from an external library (FontAwesome, Bootstrap Icons,
                 ...) and wins over <b>CloseIconName</b>, a built-in Fluent UI icon.
@@ -207,7 +247,7 @@
             <BitButton OnClick="ShowExternalIconModal">External close icon</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Style &amp; Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Style &amp; Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root of the modal; <b>Styles</b> and <b>Classes</b> reach each
                 part. The public <b>--bit-Modal-*</b> variables (see the <BitLink Href="/components/modal#css-variables-section">BitModal</BitLink>
@@ -221,7 +261,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 <b>Dir = BitDir.Rtl</b> lays the modal out right-to-left, chrome included; <b>Start</b>/<b>End</b>
                 positions follow along.

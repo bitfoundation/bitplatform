@@ -243,6 +243,16 @@ private readonly BitCountryPickerParams[] countryPickerParams =
 ];";
 
     private readonly string example19RazorCode = @"
+<BitCountryPicker Label=""Country of birth""
+                  Required
+                  Description=""Arrow keys open the list, typing searches it, Enter picks.""
+                  Placeholder=""Select a country"" />
+
+<BitCountryPicker AriaLabel=""Country of citizenship""
+                  NoSearchBox
+                  Placeholder=""Named by AriaLabel, no search box"" />";
+
+    private readonly string example20RazorCode = @"
 <BitCountryPicker Color=""BitColor.Primary"" Placeholder=""Primary"" />
 <BitCountryPicker Color=""BitColor.Secondary"" Placeholder=""Secondary"" />
 <BitCountryPicker Color=""BitColor.Tertiary"" Placeholder=""Tertiary"" />
@@ -254,7 +264,7 @@ private readonly BitCountryPickerParams[] countryPickerParams =
 <BitCountryPicker Color=""BitColor.PrimaryForeground"" Placeholder=""PrimaryForeground"" />
 <BitCountryPicker Color=""BitColor.TertiaryBorder"" Placeholder=""TertiaryBorder"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCountryPicker Responsive
@@ -262,12 +272,12 @@ private readonly BitCountryPickerParams[] countryPickerParams =
                   ResponsiveCloseIcon=""@BitIconInfo.Css(""fa-solid fa-xmark"")""
                   Placeholder=""Select a country"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitCountryPicker Size=""BitSize.Small"" DefaultValue=""BitCountries.UnitedStates"" />
 <BitCountryPicker Size=""BitSize.Medium"" DefaultValue=""BitCountries.UnitedStates"" />
 <BitCountryPicker Size=""BitSize.Large"" DefaultValue=""BitCountries.UnitedStates"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitCountryPicker DefaultValue=""BitCountries.Netherlands""
                   Style=""--bit-CountryPicker-radius: 1.5rem;
                          --bit-CountryPicker-focus-color: #7c4dff;
@@ -284,7 +294,7 @@ private readonly BitCountryPickerParams[] countryPickerParams =
                   Class=""custom-class""
                   Styles=""@(new() { Field = ""border-color: blueviolet;"", ItemName = ""color: blueviolet;"" })""
                   Classes=""@(new() { Text = ""custom-text"" })"" />";
-    private const string example22ScssCode = @"
+    private const string example23ScssCode = @"
 // The public custom properties are inherited, so one scope re-skins every picker inside it, and the
 // country list each one opens, without a rule naming a part of the component.
 .cnp-brand-scope {
@@ -309,16 +319,16 @@ private readonly BitCountryPickerParams[] countryPickerParams =
     color: blueviolet;
     font-weight: bold;
 }";
-    private readonly DemoCodeFile[] example22CodeFiles =
+    private readonly DemoCodeFile[] example23CodeFiles =
     [
-        new("BitCountryPickerDemo.razor.scss", example22ScssCode),
+        new("BitCountryPickerDemo.razor.scss", example23ScssCode),
     ];
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <div dir=""rtl"">
     <BitCountryPicker Dir=""BitDir.Rtl"" Countries=""persianCountries"" Label=""کشور"" Placeholder=""یک کشور انتخاب کنید"" />
 </div>";
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private readonly List<BitCountry> persianCountries =
 [
     new(""ایران"", ""98"", ""IR"", ""IRN""),

@@ -775,7 +775,64 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Accessibility" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Without a <b>Role</b> of its own, the callout is a dialog with aria-modal when it has <b>TrapFocus</b> or
+            <b>Modal</b>, a group when it has a name, and a plain container otherwise. The name is <b>AriaLabelledBy</b>,
+            else <b>AriaLabel</b>, else the <b>Header</b>; <b>AriaDescribedBy</b> adds a description. The arrow is hidden
+            from screen readers. The first control inside the <b>Anchor</b> carries aria-controls and aria-expanded, plus
+            aria-haspopup when the role is dialog, menu, listbox, tree or grid.
+        </div>
+        <br />
+        <div>
+            Escape closes the callout from its trigger or from inside it, and from anywhere on the page for one with an
+            external anchor, one opened with <b>OpenAt</b>, or an <b>OpenOnHover</b> one on a device that can hover. A
+            press closes only the innermost callout, never the callout or dialog around it too; <b>NoDismissOnEscape</b>
+            turns the key off. Without a trap, a callout opened from its <b>Anchor</b> or <b>AnchorId</b> (not by hovering)
+            sits right after it in the tab order: Tab goes in, Tab past its last element moves on and closes it, and
+            Shift+Tab from its first element goes back to the trigger. TrapFocus and Modal keep Tab cycling inside instead.
+        </div>
+        <br />
+        <div>
+            When the focus is moved in (<b>AutoFocus</b>, TrapFocus, Modal) and nothing inside can take it, the callout
+            takes it, with a focus ring of its own. Closing a callout that holds the focus hands it back to the trigger in
+            its Anchor or, for one with an external anchor or opened with OpenAt, to whatever held it when the callout
+            opened. In forced colors the callout and its arrow keep a border in the system text color, and its animations
+            follow the reduced-motion setting unless <b>ForceAnimation</b> is set.
+        </div>
+        <br />
+        <div>
+            Open the first callout and Tab through it and out of it; hover the second and press Escape without moving the
+            focus.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout AriaLabel="Sharing options">
+                <Anchor>
+                    <BitButton>Share</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="0.25rem">
+                            <BitButton Variant="BitVariant.Text">Copy link</BitButton>
+                            <BitButton Variant="BitVariant.Text">Email</BitButton>
+                        </BitStack>
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout OpenOnHover AriaLabel="Keyboard hint">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Hover, then press Escape</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Escape closes this one wherever the focus is.</div>
+                </Content>
+            </BitCallout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style &amp; Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Reach for the <b>--bit-Callout-*</b> CSS variables first (listed in the API section). The callout moves to the
             end of the body while open, yet the callout, its arrow and its overlay keep inheriting from its root and the
@@ -865,7 +922,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
             Use BitCallout in right-to-left (RTL); the direction travels with the callout and its placement mirrors.
         </div>

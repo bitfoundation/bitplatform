@@ -601,10 +601,54 @@ private async Task ShowOtherCustomContainerModal()
     ];
 
     private readonly string example12RazorCode = @"
+<BitButton OnClick=""ShowNamedModal"">Named by its header</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowBlockingModal"">Blocking: an alertdialog</BitButton>
+<BitButton Variant=""BitVariant.Text"" OnClick=""ShowModelessModal"">Modeless</BitButton>";
+    private readonly string example12CsharpCode = @"
+[AutoInject] private BitModalService modalService = default!;
+
+// A dialog with aria-modal, named by the title its header shows.
+private async Task ShowNamedModal()
+{
+    await modalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""26rem"",
+        HeaderText = ""Named by its header"",
+        ShowCloseButton = true
+    });
+}
+
+// Blocking and no IsAlert: announced as an alertdialog. Only the overlay click is refused; Escape and the
+// close button still dismiss it.
+private async Task ShowBlockingModal()
+{
+    await modalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""26rem"",
+        HeaderText = ""Blocking"",
+        ShowCloseButton = true,
+        Blocking = true
+    });
+}
+
+// Modeless: no aria-modal, overlay, focus trap or scroll lock, so Tab walks out of it into the page.
+private async Task ShowModelessModal()
+{
+    await modalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""24rem"",
+        HeaderText = ""Modeless"",
+        ShowCloseButton = true,
+        Modeless = true,
+        Position = BitPosition.TopStart
+    });
+}";
+
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitButton OnClick=""ShowExternalIconModal"">External close icon</BitButton>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowExternalIconModal()
@@ -618,13 +662,13 @@ private async Task ShowExternalIconModal()
     });
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 @* in the layout: the house style of every modal
 <BitModalContainer ModalParameters=""houseStyle"" /> *@
 
 <BitButton OnClick=""ShowCssVariablesModal"">CSS variables</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowStyledPartsModal"">Styles</BitButton>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 // in the layout
@@ -659,11 +703,11 @@ private async Task ShowStyledPartsModal()
     });
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitButton Dir=""BitDir.Rtl"" OnClick=""ShowRtlModal"">باز کردن مُدال</BitButton>
 </div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowRtlModal()

@@ -340,7 +340,59 @@
                 </BitParams>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+                <div>
+                    The text is typed into a plain textarea. A <b>Label</b> names it through its <code>for</code> attribute;
+                    with no label the <b>EditorAriaLabel</b> of <b>Texts</b> ("Markdown editor") names it, and an
+                    <b>AriaLabel</b> overrides both. <b>Description</b> and, while <b>MaxLength</b> is set, the status bar's
+                    character counter describe it through <code>aria-describedby</code>. <b>Required</b> adds
+                    <code>aria-required</code>, and <b>Disabled</b> adds <code>disabled</code> and <code>aria-disabled</code>.
+                </div>
+                <br />
+                <div>
+                    The toolbar is a <code>role="toolbar"</code> named by <b>ToolbarAriaLabel</b>, and one tab stop: the arrow
+                    keys move between its enabled buttons (mirrored in RTL), and Home / End jump to the first and the last.
+                    Every button has an <code>aria-label</code>, plus <code>aria-keyshortcuts</code> when its item has a
+                    <b>Shortcut</b>. The format buttons (bold, italic, strikethrough, inline code, quote, the lists) report the
+                    format at the caret through <code>aria-pressed</code>, and the find, full-screen and help buttons report
+                    their panel the same way. A menu button (<code>aria-haspopup="menu"</code>, <code>aria-expanded</code>)
+                    opens on Enter, Space or Arrow Down with the focus on its first item; Arrow Up / Down, Home and End move
+                    through it, and Escape closes it back onto its button. The heading levels are <code>menuitemradio</code>
+                    items with <code>aria-checked</code>. A command run from the toolbar returns the focus to the textarea it
+                    changed. <b>ReadOnly</b> disables, with <code>aria-disabled</code>, the buttons that change the text and
+                    keeps the rest; <b>Disabled</b> disables them all.
+                </div>
+                <br />
+                <div>
+                    In the textarea Tab and Shift+Tab indent and outdent, or walk the cells of a table. Escape followed by Tab
+                    or Shift+Tab always moves the focus out, and with <b>TabIndents</b> off or <b>ReadOnly</b> on Tab moves it
+                    out directly. In full-screen the focus cycles inside the editor, and Escape leaves full-screen.
+                    Ctrl/Cmd+/ (or the <b>?</b> button) opens a modal <code>role="dialog"</code> that lists every shortcut; it
+                    keeps Tab inside, and Escape or Ctrl/Cmd+/ closes it and returns the focus to the editor.
+                </div>
+                <br />
+                <div>
+                    A plain Escape closes, one per press, the shortcuts dialog, then the find panel, then full-screen. The
+                    editor claims only the Escape it acts on: a dialog the editor sits in stays open on that press, and closes
+                    on one the editor leaves alone. The find panel is a named <code>role="region"</code> that opens with the
+                    focus in its find box: its match count is a polite live region, <b>Aa</b> reports <code>aria-pressed</code>,
+                    and Escape returns the focus to the editor.
+                </div>
+                <br />
+                <div>
+                    The preview pane is a focusable <code>role="group"</code> named by <b>PreviewAriaLabel</b>, so the arrow
+                    keys can scroll it, and F9, F11, Ctrl/Cmd+/ and Escape work from it too. It is not a live region, so its
+                    updates while typing are not announced. Cycling the mode with F9 or the eye button is announced
+                    ("Preview mode") through a polite live region; a <b>Mode</b> set from code is not. When a mode change hides
+                    the pane that has the focus, the focus moves to the visible one.
+                </div>
+                <br />
+                <div>Try it with the keyboard:</div>
+                <br />
+                <BitMarkdownEditor Label="Keyboard tour" DefaultValue="@accessibilityDefaultValue" Height="12rem" />
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
                 <div>
                     <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part. The public
                     <b>--bit-MarkdownEditor-*</b> CSS variables restyle the editor here or app-wide from <code>:root</code>.
@@ -361,7 +413,7 @@
                 <BitMarkdownEditor Style="@cssVariablesStyle" DefaultValue="@cssVariablesDefaultValue" />
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
                 <div>With <b>Dir</b> set to <b>Rtl</b> the toolbar, panes, menus and status bar flip.</div>
                 <br />
                 <BitMarkdownEditor Dir="BitDir.Rtl" DefaultValue="@rtlDefaultValue" />
