@@ -223,6 +223,30 @@ public class BitDataGridStructureTests : BunitTestContext
     }
 
     [TestMethod]
+    public void TheMessageRowOfABodyWithNoDataRowIsCounted()
+    {
+        var component = RenderGrid(items: []);
+
+        // The header row and the empty message.
+        Assert.AreEqual(2, component.FindAll(".bit-dtg-table [role=row]").Count);
+        Assert.AreEqual("2", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+
+        component.Render(p => p.Add(x => x.Loading, true));
+        Assert.IsNotNull(component.Find(".bit-dtg-loading"));
+        Assert.AreEqual("2", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"), "the header row and the loading message");
+
+        // The footer follows the message row.
+        var columns = Columns(Column<Row>("Name"), Column<Row>("Id", c => c.Add("Aggregate", BitDataGridAggregateType.Count)));
+        var footed = RenderGrid(columns, p => p.Add(x => x.ShowFooter, true), items: []);
+        Assert.AreEqual("3", footed.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("3", footed.Find(".bit-dtg-footer-row").GetAttribute("aria-rowindex"));
+
+        // Loading over rows that exist keeps their count: they come back once it is done.
+        var loading = RenderGrid(configure: p => p.Add(x => x.Loading, true));
+        Assert.AreEqual("4", loading.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+    }
+
+    [TestMethod]
     public void ColumnGroupBannersTellAssistiveTechWhichColumnsTheyCover()
     {
         var columns = Columns(

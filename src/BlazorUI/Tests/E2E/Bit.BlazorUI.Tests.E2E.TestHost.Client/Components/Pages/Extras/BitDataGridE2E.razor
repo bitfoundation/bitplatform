@@ -40,7 +40,7 @@
 
 <E2ESection Id="aria" Title="Accessible names">
     <h3 id="aria-heading">Inventory heading</h3>
-    <p id="aria-description">Use the arrow keys to move between cells.</p>
+    <p id="aria-description">A read-only table of the first three products.</p>
     <BitDataGrid Id="grid-labelledby" Items="@_basic.Take(3).ToList()" AriaLabelledBy="aria-heading" AriaDescribedBy="aria-description">
         <BitDataGridColumn Property="p => p.Name" />
     </BitDataGrid>
