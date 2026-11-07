@@ -11,7 +11,8 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// floating and draggable button (every FloatPosition, FloatOffset, FloatAbsolute, pointer drag, arrow keys, clamping,
 /// reset on anchor change), the accessibility attributes, FocusAsync and AutoFocus, the disabled contract, the
 /// BitParams cascade, Style/Class/Styles/Classes/HtmlAttributes, the public CSS variables and their variant twins,
-/// RTL, Visibility, reduced motion, forced colors, prerendering, re-rendering and unmounting.
+/// RTL, Visibility, reduced motion, forced colors, prerendering, re-rendering and unmounting, and an axe-core scan of
+/// each section.
 /// </summary>
 [TestClass]
 public class BitButtonE2ETests : E2ETestBase
@@ -1039,6 +1040,64 @@ public class BitButtonE2ETests : E2ETestBase
         await Expect(Btn("autofocus-hidden")).Not.ToHaveAttributeAsync("autofocus", ButtonsE2EHelpers.AnyValue);
         await Expect(Btn("autofocus-disabled")).Not.ToHaveAttributeAsync("autofocus", ButtonsE2EHelpers.AnyValue);
         await Expect(Btn("autofocus-btn")).ToBeFocusedAsync();
+    }
+
+    // ---------- axe-core scan ----------
+
+    // The violations the page renders on purpose, by section. Not scanned: #style-class and #css-vars, whose colors are
+    // the page's own, picked to tell one restyle from another rather than to be read; and #color, until the PrimaryBorder
+    // fill is fixed or has an issue to suppress it under (E2EAxe): it paints the dark fg-pri text the shared pbr role
+    // pairs it with (color-role-maps.scss) on the mid-grey brd-pri, 3.51:1 in the light theme.
+    private static readonly Dictionary<string, AxeSuppression[]> AxeFixtures = new()
+    {
+        ["basic"] = [AxeSuppression.Fixture("button-name", "#basic-empty", "A button with no content and no name, kept to check the class of an empty button.")],
+        ["rtl"] = [AxeSuppression.Fixture("button-name", "#rtl-loading", "A loading button with no content: its LoadingLabel is announced from the status region and never names it, and it is here for the label's place in RTL.")],
+    };
+
+    [TestMethod]
+    [DataRow("basic")]
+    [DataRow("variant")]
+    [DataRow("rounded")]
+    [DataRow("size")]
+    [DataRow("icon")]
+    [DataRow("loading")]
+    [DataRow("auto-loading")]
+    [DataRow("loading-delay")]
+    [DataRow("href")]
+    [DataRow("form")]
+    [DataRow("templates")]
+    [DataRow("events")]
+    [DataRow("full-width")]
+    [DataRow("fixed-color")]
+    [DataRow("a11y")]
+    [DataRow("disabled")]
+    [DataRow("params")]
+    [DataRow("rtl")]
+    [DataRow("visibility")]
+    [DataRow("rerender")]
+    [DataRow("lifecycle")]
+    [DataRow("motion")]
+    public async Task Axe_EachSection_HasNoWcagAOrAAViolation(string section)
+    {
+        await OpenAsync("/e2e/button");
+
+        await AssertNoAxeViolationsAsync($"#{section}", AxeFixtures.GetValueOrDefault(section) ?? []);
+    }
+
+    [TestMethod]
+    public async Task Axe_ANamelessButtonOrAStaleSuppression_FailsTheScan()
+    {
+        await OpenAsync("/e2e/button");
+
+        // The scan sees what the page renders: the empty button of #basic has no name.
+        var unnamed = await Assert.ThrowsAsync<AssertFailedException>(() => AssertNoAxeViolationsAsync("#basic"));
+        StringAssert.Contains(unnamed.Message, "button-name");
+        StringAssert.Contains(unnamed.Message, "#basic-empty");
+
+        // And a suppression outlives the violation it was written for by failing, not by passing quietly.
+        var stale = await Assert.ThrowsAsync<AssertFailedException>(() => AssertNoAxeViolationsAsync("#variant",
+            AxeSuppression.Fixture("button-name", "#variant-default", "A suppression with nothing to suppress.")));
+        StringAssert.Contains(stale.Message, "matched nothing");
     }
 
     // ---------- disabled ----------
