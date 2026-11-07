@@ -65,13 +65,13 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         await Page.GotoAsync($"{BaseUrl}/perf/dropdown/{count}");
         await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
-        await Page.Locator("#btn-render").ClickAsync();
-        await WaitForRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
         var renderTime     = await GetRenderTime();
         var componentCount = await GetComponentCount();
 
-        Console.WriteLine($"InitialRender – {count} components: {renderTime:F2} ms");
+        Console.WriteLine($"InitialRender – {count} components: {renderTime:F2} ms (browser {browser.Duration:F2} ms)");
+        RecordInteraction("render", count, renderTime, browser);
 
         Assert.AreEqual(count, componentCount, $"Expected {count} rendered dropdowns, got {componentCount}");
         AssertWithinThreshold(renderTime, threshold, $"Initial render time for {count} components");
@@ -112,12 +112,12 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();
 
-        await Page.Locator("#btn-rerender").ClickAsync();
-        await WaitForReRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-rerender"), "Re-rendered");
 
         var reRenderTime = await GetReRenderTime();
 
-        Console.WriteLine($"ReRender – {count} components: {reRenderTime:F2} ms");
+        Console.WriteLine($"ReRender – {count} components: {reRenderTime:F2} ms (browser {browser.Duration:F2} ms)");
+        RecordInteraction("rerender", count, reRenderTime, browser);
 
         AssertWithinThreshold(reRenderTime, threshold, $"Re-render time for {count} components");
     }
@@ -289,6 +289,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
         Console.WriteLine($"[responsive={responsive}] heap MB - afterWarmup={afterWarmupMB:F2}, afterEarly={afterEarlyMB:F2}, afterGap={afterGapMB:F2}, afterLate={afterLateMB:F2}");
         Console.WriteLine($"[responsive={responsive}] growth - early {earlyWindowSize} cycles: {earlyGrowth:F2} MB | late {lateWindowSize} cycles: {lateGrowth:F2} MB");
+        Record("serverHeapGrowth.early", earlyGrowth, "MB", earlyWindowSize);
+        Record("serverHeapGrowth.late", lateGrowth, "MB", lateWindowSize);
 
         // Strategy: The GC endpoint reports the ENTIRE server heap, which includes
         // allocations from all concurrent test circuits when running in parallel.

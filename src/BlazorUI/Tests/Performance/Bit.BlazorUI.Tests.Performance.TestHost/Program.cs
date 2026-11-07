@@ -55,6 +55,18 @@ app.MapGet("/api/gc-info", () =>
     return Results.Ok(new { allocatedMB });
 });
 
+// What the performance results were measured on, as the host itself knows it (PerformanceResults in the tests): the
+// configuration it was built in - a host started by hand, or left running from another run, is reused as it is - its
+// runtime and GC mode, and the render mode of the performance pages.
+app.MapGet("/api/environment", () => Results.Ok(new
+{
+    configuration = typeof(Program).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
+                                            .OfType<System.Reflection.AssemblyConfigurationAttribute>().FirstOrDefault()?.Configuration,
+    framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+    serverGC = System.Runtime.GCSettings.IsServerGC,
+    renderMode = "InteractiveServer",
+}));
+
 // A host page with nothing but the theme setup (BitThemePairBrowserTests): the
 // root attributes the server resolves from this request's cookies, the first-paint script, and the library
 // script that self-initializes from them - no Blazor, so a reload is a plain first paint. The query states the
