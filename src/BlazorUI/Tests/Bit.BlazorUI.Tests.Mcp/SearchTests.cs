@@ -15,15 +15,20 @@ namespace Bit.BlazorUI.Tests.Mcp;
 [TestClass]
 public class SearchTests : McpTestBase
 {
+    /// <summary>
+    /// What a component does, phrased the way a task asks for it, leads with that component - the first hit
+    /// being the one an agent writes markup against.
+    /// </summary>
     [TestMethod]
     [DataRow("let the user pick a date range", "BitDateRangePicker")]
     [DataRow("toast notification", "BitSnackBar")]
     [DataRow("searchable multi select with chips", "BitDropdown")]
     [DataRow("loading skeleton placeholder", "BitShimmer")]
     [DataRow("tabs", "BitPivot")]
-    // BitAiCollapsible, which lists "Expander" among its keywords, matches all three words - BitAccordion two of them,
-    // and stays among the hits (see A_keyword_ranks_the_component_it_tags_first).
-    [DataRow("collapsible expander panel", "BitAiCollapsible")]
+    [DataRow("collapsible expander panel", "BitAccordion")]
+    // A keyword asked for in the plural, which BitColorPicker's nav entry writes in the singular - and which
+    // nothing else says, so the case is the keyword's alone.
+    [DataRow("eyedroppers", "BitColorPicker")]
     [DataRow("endless scroll", "BitInfiniteScrolling")]
     [DataRow("upload a file with progress", "BitFileUpload")]
     [DataRow("virtualized data table with sorting and paging", "BitDataGrid")]
@@ -145,12 +150,13 @@ public class SearchTests : McpTestBase
     /// <summary>
     /// The keywords a component's nav entry tags it with - what it does and what it is used for - find it ahead of the
     /// hits that led while the search read no keywords, which are asserted to be among the hits still, so the case keeps
-    /// testing a ranking. BitAiCollapsible lists "Expander", which makes it the one component matching every word of
-    /// "collapsible expander panel" - its name, that keyword and the disclosure panel its description calls it - while
-    /// BitAccordion, whose alias is Expander, matches two of the three.
+    /// testing a ranking. BitAccordion, tagged "Collapsible", matches every word of "collapsible expander panel" - that
+    /// keyword, its alias Expander and the panel its description opens - and so leads BitAiCollapsible, whose name is
+    /// the collapsible and whose keywords list Expander as well, while it stays the general-purpose disclosure the
+    /// query asks for rather than the AI one.
     /// </summary>
     [TestMethod]
-    [DataRow("collapsible expander panel", "BitAiCollapsible", "BitAccordion")]
+    [DataRow("collapsible expander panel", "BitAccordion", "BitAiCollapsible")]
     [DataRow("eyedropper", "BitColorPicker", "BitColorPicker.EyeDropperIcon")]
     [DataRow("gauge", "BitChart", "BitProgress")]
     [DataRow("thumbnails", "BitPdfViewer", "BitCarousel")]
@@ -168,6 +174,33 @@ public class SearchTests : McpTestBase
         Assert.IsGreaterThan(tagged, rival, $"'{query}' should still find {other}, below {expected}. The whole answer:\n{answer}");
     }
 
+    /// <summary>
+    /// A hit found by a keyword or an example title its name does not say names it: BitChart's description, which
+    /// is its snippet, mentions no gauge, so without the line the hit would not say why "gauge" found it. A term the
+    /// name holds names nothing - "chart" is BitChart's own word, not one of its keywords.
+    /// </summary>
+    [TestMethod]
+    public async Task A_hit_names_the_keyword_it_was_found_by()
+    {
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(await HitBlockAsync("gauge", "BitChart"), "\nMatches: Gauge", "A keyword hit does not name the keyword.");
+        Assert.DoesNotContain("\nMatches: ", await HitBlockAsync("chart", "BitChart"), "A hit names keywords for a term its own name holds.");
+    }
+
+    /// <summary>The lines of one hit of a search - its heading up to the next hit's - with its line breaks normalized.</summary>
+    private async Task<string> HitBlockAsync(string query, string name)
+    {
+        var (answer, names) = await HitsAsync(query);
+
+        var blocks = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split("\n## ").Skip(1).ToArray();
+        var index = names.IndexOf(name);
+
+        Assert.IsGreaterThanOrEqualTo(0, index, $"'{query}' does not find {name}. The whole answer:\n{answer}");
+
+        return blocks[index];
+    }
+
     /// <summary>The answer to a search, with the names of its hits in their order.</summary>
     private async Task<(string Answer, List<string> Names)> HitsAsync(string query)
     {
@@ -182,6 +215,7 @@ public class SearchTests : McpTestBase
         return (answer, names);
     }
 
+    /// <summary>Every hit names the call returning its full text, and that call is a tool this server publishes.</summary>
     [TestMethod]
     public async Task Every_hit_names_the_call_that_returns_its_full_text()
     {
@@ -204,6 +238,7 @@ public class SearchTests : McpTestBase
         }
     }
 
+    /// <summary>The component a hit names is one the component tool resolves, rather than a name it has never heard of.</summary>
     [TestMethod]
     public async Task A_follow_up_call_a_hit_names_actually_answers()
     {
@@ -259,6 +294,10 @@ public class SearchTests : McpTestBase
         CollectionAssert.AllItemsAreUnique(titles, "A member is a hit once per overload.");
     }
 
+    /// <summary>
+    /// The search reaches every corpus the server answers from - parameters, theming chapters, the setup guide, CSS
+    /// variables and extension members - not only the components.
+    /// </summary>
     [TestMethod]
     public async Task Search_covers_more_than_the_components()
     {
@@ -286,6 +325,7 @@ public class SearchTests : McpTestBase
         StringAssert.Contains(preset, "BitThemePresets.MaterialDark");
     }
 
+    /// <summary>A search that finds nothing, or that has no word left to search for, says what to try instead.</summary>
     [TestMethod]
     public async Task A_query_that_matches_nothing_says_what_to_try_instead()
     {

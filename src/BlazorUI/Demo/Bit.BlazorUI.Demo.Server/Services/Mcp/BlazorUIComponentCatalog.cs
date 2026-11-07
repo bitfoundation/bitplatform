@@ -238,6 +238,10 @@ public static class BlazorUIComponentCatalog
             .Distinct(StringComparer.Ordinal)];
     }
 
+    /// <summary>
+    /// Every key a component is looked up by - its name, its name less the Bit prefix, its page's address
+    /// and its aliases - and every base class by its name, to what it names.
+    /// </summary>
     private static FrozenDictionary<string, BlazorUIComponent> BuildIndex()
     {
         var index = new Dictionary<string, BlazorUIComponent>(StringComparer.OrdinalIgnoreCase);
@@ -269,6 +273,9 @@ public static class BlazorUIComponentCatalog
         return index.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Every component the nav lists, with what its nav entry, its demo page and its compiled type say of it.
+    /// </summary>
     private static BlazorUIComponent[] Build()
     {
         var demoAssembly = typeof(ComponentCatalog).Assembly;
@@ -356,6 +363,10 @@ public static class BlazorUIComponentCatalog
                   "The base class of the inputs the user types into, on top of `BitInputBase`: the html input attributes and how often typing commits a value.")
     ];
 
+    /// <summary>
+    /// One of the base classes as an entry of the catalog, its tables read off the ones the demo pages
+    /// share under <paramref name="prefix"/>.
+    /// </summary>
     private static BlazorUIComponent BuildBase(Type type, string prefix, string summary)
     {
         var tables = DemoTables.Read(typeof(Bit.BlazorUI.Demo.Client.Core.Components.DemoPage), prefix);
@@ -993,6 +1004,7 @@ public static class BlazorUIComponentCatalog
         return FindType($"{name}Base") is { } family && typeof(BitComponentBase).IsAssignableFrom(family) ? family : type;
     }
 
+    /// <summary>The exported type of the packages called this, arity marker aside, or null.</summary>
     private static Type? FindType(string name) => _typesByName.Value.GetValueOrDefault(name);
 
     /// <summary>
@@ -1015,6 +1027,10 @@ public static class BlazorUIComponentCatalog
         return index.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
+    /// <summary>
+    /// The type parameters of a generic type definition as written after its name - <c>&lt;TItem, TValue&gt;</c> -
+    /// or null for any other type.
+    /// </summary>
     private static string? TypeParametersOf(Type? type)
     {
         if (type is null || type.IsGenericTypeDefinition is false) return null;
