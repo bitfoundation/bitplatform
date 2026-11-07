@@ -103,6 +103,10 @@ test('a fall-back transition keeps boundaries strictly increasing', () => {
     // The repeated wall-clock hour is emitted once, leaving a two-hour real gap.
     const gaps = got.slice(1).map((b, i) => b.ts - got[i].ts);
     assert.equal(gaps.filter(g => g === 2 * 3600000).length, 1);
+    // And the one kept is its first occurrence: 01:00 EDT (05:00Z), not 01:00 EST (06:00Z).
+    const repeated = got.filter(b => b.hour === 1 && b.ts < Date.parse('2026-11-01T12:00:00Z'));
+    assert.equal(repeated.length, 1);
+    assert.equal(repeated[0].ts, Date.parse('2026-11-01T05:00:00Z'));
 });
 
 test('boundaries are bounded by the viewport, not the window length', () => {

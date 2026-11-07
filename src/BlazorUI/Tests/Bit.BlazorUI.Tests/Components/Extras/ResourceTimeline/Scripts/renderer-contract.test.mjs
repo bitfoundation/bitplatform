@@ -1,11 +1,12 @@
 ﻿// Scene contract: bar ids, non-overlap within a row, working-time bands,
-// surface stripes, Hour12 labels. Renderer paint needs a canvas; this locks
-// the display list.
+// surface stripes, Hour12 labels. The canvas renderer's paint needs a real
+// canvas, so this mostly locks the display list; the HTML and SVG renderers
+// paint into a minimal stand-in DOM, enough to check the elements they make.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { makeBareEngine } from './helpers/engine-fixture.mjs';
+import { makeBareEngine, loadDomRenderers } from './helpers/engine-fixture.mjs';
 
 const HOUR = 3600000;
 const START = Date.parse('2026-05-04T00:00:00Z'); // Monday
@@ -61,6 +62,122 @@ test('buildScene bar ids match the fixture and do not overlap in a row', () => {
     assert.equal(rectsOverlap(row0[0], row0[1]), false,
         'stacked bars in one row must not share the same rectangle');
 });
+
+// A stand-in for the few DOM members the HTML and SVG renderers and their node
+// pools use: a tree of elements with attributes, an inline style object, a
+// dataset reflected onto data-* attributes, and text.
+class FakeElement {
+    constructor(tag, namespace = null) {
+        this.tagName = tag;
+        this.namespaceURI = namespace;
+        this.childNodes = [];
+        this.parentNode = null;
+        this.attributes = new Map();
+        this.style = {};
+        this.className = '';
+        this._text = '';
+        const attr = (key) => 'data-' + String(key).replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+        this.dataset = new Proxy({}, {
+            get: (_, key) => this.getAttribute(attr(key)) ?? undefined,
+            set: (_, key, value) => { this.setAttribute(attr(key), value); return true; },
+            deleteProperty: (_, key) => { this.removeAttribute(attr(key)); return true; }
+        });
+    }
+
+    get textContent() { return this._text; }
+    set textContent(value) { this._text = value == null ? '' : String(value); }
+
+    appendChild(child) {
+        if (child.parentNode) child.parentNode.removeChild(child);
+        child.parentNode = this;
+        this.childNodes.push(child);
+        return child;
+    }
+
+    removeChild(child) {
+        const index = this.childNodes.indexOf(child);
+        if (index >= 0) this.childNodes.splice(index, 1);
+        child.parentNode = null;
+        return child;
+    }
+
+    replaceChild(next, prev) {
+        const index = this.childNodes.indexOf(prev);
+        if (next.parentNode) next.parentNode.removeChild(next);
+        next.parentNode = this;
+        prev.parentNode = null;
+        this.childNodes[index] = next;
+        return prev;
+    }
+
+    remove() {
+        if (this.parentNode) this.parentNode.removeChild(this);
+    }
+
+    setAttribute(key, value) { this.attributes.set(key, String(value)); }
+    getAttribute(key) { return this.attributes.has(key) ? this.attributes.get(key) : null; }
+    removeAttribute(key) { this.attributes.delete(key); }
+}
+
+// The ids of the bar elements a frame shows: every element carrying a
+// data-bar-id that is not hidden, itself or through an ancestor.
+function paintedBarIds(root) {
+    const ids = [];
+    const walk = (node) => {
+        if (node.style.display === 'none') return;
+        const id = node.getAttribute('data-bar-id');
+        if (id != null) ids.push(id);
+        for (const child of node.childNodes) walk(child);
+    };
+    walk(root);
+    return ids.sort();
+}
+
+function withFakeDocument(run) {
+    const hadDocument = 'document' in globalThis;
+    const previous = globalThis.document;
+    globalThis.document = {
+        createElement: (tag) => new FakeElement(tag),
+        createElementNS: (namespace, tag) => new FakeElement(tag, namespace)
+    };
+    try {
+        return run();
+    } finally {
+        if (hadDocument) globalThis.document = previous;
+        else delete globalThis.document;
+    }
+}
+
+const renderers = await loadDomRenderers();
+
+for (const [name, Renderer] of Object.entries(renderers)) {
+    test(`the ${name} renderer paints one element per bar, carrying its data-bar-id`, () => {
+        const scene = makeSceneEngine([
+            bar('a', 'r0', 1, 3),
+            bar('b', 'r0', 1.5, 4),
+            bar('c', 'r1', 2, 5)
+        ]).buildScene();
+        assert.deepEqual(scene.bars.map(b => b.id).sort(), ['a', 'b', 'c']);
+
+        withFakeDocument(() => {
+            const wrapper = new FakeElement('div');
+            const host = { requestRender() { }, paintNow() { }, getImage() { return null; } };
+            const renderer = new Renderer(wrapper, host);
+            renderer.resize(1200, 600);
+
+            renderer.render(scene);
+            assert.deepEqual(paintedBarIds(wrapper), ['a', 'b', 'c']);
+
+            // A frame without a bar leaves no element showing its id: the pooled
+            // element it had is hidden, or reused without it.
+            renderer.render({ ...scene, bars: scene.bars.filter(b => b.id !== 'b') });
+            assert.deepEqual(paintedBarIds(wrapper), ['a', 'c']);
+
+            renderer.dispose();
+            assert.equal(wrapper.childNodes.length, 0, 'dispose removes the surface');
+        });
+    });
+}
 
 test('Hour12 tick labels are 12-hour', () => {
     const engine = makeSceneEngine([bar('a', 'r0', 1, 3)], {

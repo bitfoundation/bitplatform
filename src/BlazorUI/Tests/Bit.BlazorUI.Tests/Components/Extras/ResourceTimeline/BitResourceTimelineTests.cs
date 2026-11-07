@@ -646,6 +646,36 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldSendAConfigurationAgainAfterTheEngineFailedToApplyIt()
+    {
+        var component = RenderLoaded();
+
+        var setOptions = Context.JSInterop.PlanLayout(SetOptionsFn);
+        var options = new BitResourceTimelineOptions { BarHeight = 8 };
+
+        var unhandled = Renderer.UnhandledException;
+
+        component.Render(p => p.Add(x => x.Options, options));
+        await component.InvokeAsync(() => setOptions.Fail(new JSException("setOptions failed")));
+
+        Assert.IsInstanceOfType<JSException>(await unhandled);
+        Assert.AreEqual(1, Calls(SetOptionsFn).Count);
+
+        // The failed configuration was not recorded as applied, so a later pass sends the same instance again. bUnit
+        // rethrows the failure of the first pass from the next render.
+        setOptions.Return(Layout());
+        Assert.ThrowsExactly<JSException>(() => component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent")));
+        component.Render(p => p.Add(x => x.AriaLabel, "And another"));
+
+        Assert.AreEqual(2, Calls(SetOptionsFn).Count);
+        Assert.AreSame(options, Calls(SetOptionsFn)[1].Arguments[1]);
+
+        // Once applied, it is not sent again.
+        component.Render(p => p.Add(x => x.AriaLabel, "And one more"));
+        Assert.AreEqual(2, Calls(SetOptionsFn).Count);
+    }
+
+    [TestMethod]
     public void BitResourceTimelineShouldNotSendAnOptionsInstanceChangedInPlace()
     {
         var options = new BitResourceTimelineOptions { BarHeight = 8 };
@@ -872,6 +902,27 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The bar added in place resolves now.
         Assert.AreSame(config.Allocations[1], (await ResolveAsync(component, "a2")).Single());
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldHoldTheCallsAboutBarsWhileANewLoadReplacesTheData()
+    {
+        var component = RenderLoaded(p => p.Add(x => x.LoadingMinDurationMs, 0));
+
+        var setData = Context.JSInterop.SetupVoid(SetDataFn, _ => true);
+        component.Render(p => p.Add(x => x.Config, SampleConfig()));
+        await WaitUntil(() => Calls(SetDataFn).Count == 2);
+
+        // Until the new data and the map of its ids are in place, a call about bars acts on nothing: an upsert would land
+        // in the map of the data on its way out, and in the engine between the two loads.
+        await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a2", "r1", 0, 60_000)]));
+        Assert.AreEqual(0, Calls(UpsertAllocationsFn).Count);
+
+        setData.SetVoidResult();
+        WaitForLoads(component, 2);
+
+        await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a2", "r1", 0, 60_000)]));
+        Assert.AreEqual(1, Calls(UpsertAllocationsFn).Count);
     }
 
     [TestMethod]
@@ -1320,6 +1371,27 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldResolveIdsOnlyToTheAllocationsTheEngineKeeps()
+    {
+        // The engine drops a bar without an id, one that does not end after it starts and one of an unknown resource, and
+        // keeps the last valid copy of an id: the ids resolve to what it keeps, never to a dropped copy.
+        var config = SampleConfig();
+        config.Allocations.Add(Allocation("a1", "r1", 60_000, 60_000));
+        config.Allocations.Add(Allocation("a2", "missing", 0, 60_000));
+        config.Allocations.Add(Allocation("a3", "r1", 120_000, 60_000));
+
+        var component = RenderLoaded(config: config);
+
+        Assert.AreSame(config.Allocations[0], (await ResolveAsync(component, "a1")).Single());
+        Assert.AreEqual(0, (await ResolveAsync(component, "a2", "a3")).Count);
+
+        // An upsert's invalid copy of an id leaves the valid one in place too.
+        await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a1", "r1", 90_000, 30_000)]));
+
+        Assert.AreSame(config.Allocations[0], (await ResolveAsync(component, "a1")).Single());
+    }
+
+    [TestMethod]
     public async Task BitResourceTimelineShouldRemoveAllocationsFromTheEngine()
     {
         var component = RenderLoaded();
@@ -1714,13 +1786,21 @@ public class BitResourceTimelineTests : BunitTestContext
     public async Task BitResourceTimelineShouldAskTheAppForThePastedBars()
     {
         var config = SampleConfig();
+        config.Resources.Add(new() { Id = "r2", Name = "Resource 2" });
         BitResourceTimelineCopyRequest? request = null;
         var pasted = Allocation("c1", "r2", 3_600_000, 3_660_000);
 
         var component = RenderLoaded(p => p.Add(x => x.OnAllocationsCopying, r =>
         {
             request = r;
-            return Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>?>([pasted, Allocation("", "r2", 0, 1)]);
+            return Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>?>(
+            [
+                pasted,
+                Allocation("", "r2", 0, 1),
+                Allocation("c2", "r2", 60_000, 60_000),
+                Allocation("c3", "missing", 0, 60_000),
+                Allocation("c1", "r2", 120_000, 60_000),
+            ]);
         }), config);
 
         IReadOnlyList<BitResourceTimelineAllocation>? created = null;
@@ -1730,9 +1810,11 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(TimeSpan.FromHours(1), request.Offset);
         Assert.AreEqual("r2", request.ResourceId);
 
-        // A bar without an id is left out: the timeline never invents ids.
+        // A bar the engine would drop is left out - one without an id (the timeline never invents ids), one that does not
+        // end after it starts, one of an unknown resource - and an invalid copy of an id does not replace the valid one.
         Assert.AreSame(pasted, created!.Single());
         Assert.AreSame(pasted, (await ResolveAsync(component, "c1")).Single());
+        Assert.AreEqual(0, (await ResolveAsync(component, "c2", "c3")).Count);
     }
 
     [TestMethod]

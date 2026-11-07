@@ -495,6 +495,9 @@ public partial class BitResourceTimeline : BitComponentBase
 
         foreach (var allocation in allocations)
         {
+            // The engine drops an invalid one, keeping the copy it has.
+            if (IsValidAllocation(allocation) is false) continue;
+
             _allocationsById[allocation.Id] = allocation;
         }
 
@@ -700,7 +703,7 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        TrackLoadedConfiguration();
+        TrackLoadedConfiguration(Options, Texts, Disabled);
 
         var layout = await _js.BitResourceTimelineSetup(UniqueId, _viewportRef, _dotnetObj, Options, ActiveTexts, Disabled);
 
@@ -735,9 +738,14 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         if (ConfigurationChanged() is false) return;
 
-        TrackLoadedConfiguration();
+        var options = Options;
+        var texts = Texts;
+        var disabled = Disabled;
 
-        var layout = await _js.BitResourceTimelineSetOptions(UniqueId, Options, ActiveTexts, Disabled);
+        var layout = await _js.BitResourceTimelineSetOptions(UniqueId, options, texts ?? _defaultTexts, disabled);
+
+        // Recorded only once the engine took it: a call that failed leaves the configuration to a later pass to send again.
+        TrackLoadedConfiguration(options, texts, disabled);
 
         if (IsDisposing) return;
 
@@ -750,18 +758,18 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     // Records what the engine is configured with, merging the editing capabilities the way the engine merges the Options.
-    private void TrackLoadedConfiguration()
+    private void TrackLoadedConfiguration(BitResourceTimelineOptions? options, BitResourceTimelineTexts? texts, bool disabled)
     {
-        _loadedOptions = Options;
-        _loadedTexts = Texts;
-        _loadedDisabled = Disabled;
+        _loadedOptions = options;
+        _loadedTexts = texts;
+        _loadedDisabled = disabled;
 
-        if (Options?.Editable is { } editable)
+        if (options?.Editable is { } editable)
         {
             _editable = editable;
         }
 
-        if (Options?.AllowDelete is { } allowDelete)
+        if (options?.AllowDelete is { } allowDelete)
         {
             _allowDelete = allowDelete;
         }
@@ -850,6 +858,9 @@ public partial class BitResourceTimeline : BitComponentBase
 
     private async Task LoadDataCoreAsync(BitResourceTimelineConfig config)
     {
+        // The calls about bars wait for the data replacing the current one: until it and the map of its ids are in place,
+        // they would act on (and the map would take) the data on its way out.
+        _dataLoaded = false;
         _isLoading = true;
         StateHasChanged();
 
@@ -943,6 +954,8 @@ public partial class BitResourceTimeline : BitComponentBase
 
             foreach (var allocation in allocations)
             {
+                if (IsValidAllocation(allocation) is false) continue;
+
                 byId[allocation.Id] = allocation;
             }
 
@@ -1074,11 +1087,22 @@ public partial class BitResourceTimeline : BitComponentBase
 
         foreach (var allocation in incoming)
         {
+            if (IsValidAllocation(allocation) is false) continue;
+
             byId[allocation.Id] = allocation;
         }
 
         _allocationsById = byId;
     }
+
+    // Whether the engine keeps an allocation (its _sanitizeAllocations): one with an id, an end after its start and - once
+    // there are resources - a resource that exists. The map takes only those, so it holds exactly what the engine shows,
+    // and an invalid copy of an id never replaces the valid one the engine keeps (the last valid copy wins on both sides).
+    private bool IsValidAllocation(BitResourceTimelineAllocation? allocation) =>
+        allocation is not null
+        && string.IsNullOrEmpty(allocation.Id) is false
+        && allocation.EndTime.ToUnixTimeMilliseconds() > allocation.StartTime.ToUnixTimeMilliseconds()
+        && (_resourcesById.Count == 0 || (allocation.ResourceId is not null && _resourcesById.ContainsKey(allocation.ResourceId)));
 
     // Collapses or expands a group from the button of its row in the overlay.
     private async Task ToggleGroupAsync(string id)
@@ -1513,7 +1537,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
         foreach (var allocation in created)
         {
-            if (string.IsNullOrEmpty(allocation.Id)) continue;
+            if (IsValidAllocation(allocation) is false) continue;
 
             _allocationsById[allocation.Id] = allocation;
             accepted.Add(allocation);
@@ -1558,7 +1582,11 @@ public partial class BitResourceTimeline : BitComponentBase
 
         if (IsDisposing || session != _windowSession || created is null || string.IsNullOrEmpty(created.Id)) return null;
 
-        _allocationsById[created.Id] = created;
+        // The engine drops an invalid one as it upserts it (and warns about it), so only a valid one is taken in here.
+        if (IsValidAllocation(created))
+        {
+            _allocationsById[created.Id] = created;
+        }
 
         return created;
     }

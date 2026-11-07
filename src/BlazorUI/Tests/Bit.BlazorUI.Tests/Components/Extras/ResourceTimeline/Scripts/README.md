@@ -37,7 +37,9 @@ the core library's logic), imports `BitResourceTimelineEngine.js` (which imports
 the zoned-time and tooltip modules), and exports the classes read off the
 namespace: `ResourceTimelineEngine`, `ResourceTimelineZonedTime` and
 `ResourceTimelineTooltip`, with `ZonedTime`, `Tooltip` and `utcHourBoundaries`
-(the zoned-time class's static method) under the names the tests use.
+(the zoned-time class's static method) under the names the tests use. The HTML
+and SVG renderers are loaded on demand, through `loadDomRenderers()`, by the
+one test that paints with them.
 
 It then builds engines on the prototype with only the state the DOM-independent
 methods read, so these run under plain Node with no browser or DOM shim. The
@@ -57,7 +59,7 @@ claim is a no-op unless a test gives it one.
 | `view-scroll.test.mjs` | Where the viewport lands on the first load and across reloads, the `panByDays` day/week steps (24-hour, `panToDayStart`, and per-call override), `zoomToDays` fitting N days into the viewport, the "now" indicator's refresh timer, `OnViewChanged`, and `scrollToAllocation` |
 | `tooltip.test.mjs` | Show delay, subject switching and viewport-edge flipping, the `bit-rtm-ttp` class that styles the element and `setStyle`, against a minimal DOM stub; what a hover resolves to and the text it asks for, including `+N` overflow markers |
 | `hit-test.test.mjs` | `_barAt` click tolerance, resize handle vs move, locked bars, stacked-lane Y, overflow hits, `_pointerHit` regions, double-click pairing, click-select notify |
-| `renderer-contract.test.mjs` | `buildScene()` bar ids, non-overlap within a row, weekend/off-hour bands, surface stripes (days, shifts, rows, checker, bands), `Hour12` tick labels |
+| `renderer-contract.test.mjs` | `buildScene()` bar ids, non-overlap within a row, weekend/off-hour bands, surface stripes (days, shifts, rows, checker, bands), `Hour12` tick labels; the HTML and SVG renderers' `data-bar-id` elements, against a minimal DOM stub |
 | `edit-commit.test.mjs` | Move/resize commit, overlap refuse, delete, multi-move accept/reject (re-filed and laid out once per move and per revert), whole-millisecond previews of a continuous drag, a held keyboard edit waiting for the host |
 | `texts-theme.test.mjs` | The `texts` option (built-in English fallback, key-by-key override, unknown-key warning, composite formats, announcements), the `BitResourceTimeline` console prefix, and `setTheme` layering: theme colors under explicit option colors, the theme's font family only for fonts no option set |
 | `disabled-escape.test.mjs` | `disabled`: no press, click, edit, marquee, context menu or keyboard selection, paging still works, switching it on cancels a marquee; the `data-bit-esc="claim"` the wrapper carries exactly while a selection exists; keys pressed during an IME composition |
@@ -74,7 +76,8 @@ claim is a no-op unless a test gives it one.
 - **Anything needing real layout belongs in a browser.** Hit-testing is covered
   here against engine geometry (`_barAt`, marquee Y, overflow labels). Renderer
   *paint* (canvas pixels, scrollbar clamping) is not; `renderer-contract.test.mjs`
-  asserts the display list instead. The tooltip's look lives in the stylesheet's
+  asserts the display list instead, and only the elements the HTML and SVG
+  renderers make for it. The tooltip's look lives in the stylesheet's
   `bit-rtm-ttp` rule now, so its tests assert the class rather than inline
   styles.
 - **Keep the fixture in step with the constructor.** When the engine gains a

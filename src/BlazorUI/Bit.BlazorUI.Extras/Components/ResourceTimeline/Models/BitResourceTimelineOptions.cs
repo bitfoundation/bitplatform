@@ -269,11 +269,17 @@ public class BitResourceTimelineOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? PixelsPerHour { get; set; }
 
-    /// <summary>Lower bound for the scale when zooming, in pixels per hour.</summary>
+    /// <summary>
+    /// Lower bound for the scale when zooming, in pixels per hour. Defaults to 0.25; a value that is not positive keeps
+    /// that default, and bounds set the wrong way round are swapped.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? MinPixelsPerHour { get; set; }
 
-    /// <summary>Upper bound for the scale when zooming, in pixels per hour.</summary>
+    /// <summary>
+    /// Upper bound for the scale when zooming, in pixels per hour. Defaults to 1200; a value that is not positive keeps
+    /// that default, and bounds set the wrong way round are swapped.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? MaxPixelsPerHour { get; set; }
 
@@ -449,7 +455,10 @@ public class BitResourceTimelineOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BitResourceTimelineRendererType? Renderer { get; set; }
 
-    /// <summary>Color overrides. Individual colors left <c>null</c> keep their defaults.</summary>
+    /// <summary>
+    /// Color overrides. An individual color left <c>null</c> keeps the color in force: the default (or the bit theme's)
+    /// on the first apply, and whatever an earlier instance set afterwards.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BitResourceTimelineColors? Colors { get; set; }
 

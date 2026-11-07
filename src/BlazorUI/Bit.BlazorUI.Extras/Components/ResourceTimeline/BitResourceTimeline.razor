@@ -25,6 +25,7 @@
          aria-disabled="@(Disabled ? "true" : null)">
     </div>
 
+    @* The corner covers the corner of the surface, so the script reports its clicks as those of the corner (OnClick). *@
     @if (TopStartContent is not null)
     {
         <div class="bit-rtm-cnr @Classes?.Corner" style="@JoinStyles(GetCornerStyle(), Styles?.Corner)">

@@ -106,11 +106,19 @@ internal static class BitResourceTimelineTestInterop
         EndTime = DateTimeOffset.FromUnixTimeMilliseconds(endMs),
     };
 
-    /// <summary>A planned setup or setOptions call, completed with a layout (or with null, as a prerender answers).</summary>
+    /// <summary>
+    /// A planned setup or setOptions call, completed with a layout (or with null, as a prerender answers), or failed with
+    /// an exception.
+    /// </summary>
     public sealed class LayoutCall(object handler)
     {
         private readonly MethodInfo _setResult = handler.GetType().GetMethod("SetResult")!;
+        private readonly MethodInfo _setException = handler.GetType().GetMethod("SetException")!;
 
         public void Return(object? layout) => _setResult.Invoke(handler, [layout]);
+
+        public void Fail(Exception exception) =>
+            (_setException.IsGenericMethodDefinition ? _setException.MakeGenericMethod(exception.GetType()) : _setException)
+                .Invoke(handler, [exception]);
     }
 }

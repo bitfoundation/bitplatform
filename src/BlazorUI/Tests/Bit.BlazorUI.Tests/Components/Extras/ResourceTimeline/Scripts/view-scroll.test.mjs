@@ -407,6 +407,24 @@ test('zoomToDays clamps to the configured min and max scale', () => {
     assert.equal(engine._pixelsPerHour, 10, 'a hundred-day fit is looser than the min');
 });
 
+test('a bound that is not positive keeps its default, and inverted bounds are swapped', () => {
+    const engine = makeZoomableEngine(30);
+
+    engine.config.minPixelsPerHour = 0;
+    engine.config.maxPixelsPerHour = -5;
+    engine.setPixelsPerHour(0.01);
+    assert.equal(engine._pixelsPerHour, 0.25, 'the default min stands in for a zero one');
+    engine.setPixelsPerHour(5000);
+    assert.equal(engine._pixelsPerHour, 1200, 'the default max stands in for a negative one');
+
+    engine.config.minPixelsPerHour = 20;
+    engine.config.maxPixelsPerHour = 10;
+    engine.setPixelsPerHour(1);
+    assert.equal(engine._pixelsPerHour, 10);
+    engine.setPixelsPerHour(100);
+    assert.equal(engine._pixelsPerHour, 20);
+});
+
 test('the first load centers "now" in the content area when autoScrollToNow is set', () => {
     const engine = makeLaidOutEngine({ config: { autoScrollToNow: true } });
 

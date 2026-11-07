@@ -68,6 +68,23 @@ export function utcHourBoundaries(visStart, visEnd, step) {
     return ResourceTimelineZonedTime.utcHourBoundaries(visStart, visEnd, step);
 }
 
+// The HTML and SVG renderers, loaded on demand: only the paint tests need them,
+// and they construct DOM elements (through a document the test stands in).
+// Each module imports the node pool module it builds on.
+export async function loadDomRenderers() {
+    await import(new URL('BitResourceTimelineHtmlRenderer.js', MODULE_DIR).href);
+    await import(new URL('BitResourceTimelineSvgRenderer.js', MODULE_DIR).href);
+    for (const name of ['ResourceTimelineHtmlRenderer', 'ResourceTimelineSvgRenderer']) {
+        if (typeof BitBlazorUI[name] !== 'function') {
+            throw new Error(`BitBlazorUI.${name} was not defined by the modules in ${MODULE_DIR}`);
+        }
+    }
+    return {
+        Html: BitBlazorUI.ResourceTimelineHtmlRenderer,
+        Svg: BitBlazorUI.ResourceTimelineSvgRenderer
+    };
+}
+
 // Mirrors the defaults in the engine's constructor for the fields the
 // DOM-independent methods touch. Kept explicit rather than reaching into a real
 // instance so a test failure points at the behaviour, not at fixture drift.

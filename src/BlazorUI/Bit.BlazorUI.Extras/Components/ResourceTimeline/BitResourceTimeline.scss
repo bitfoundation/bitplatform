@@ -234,10 +234,16 @@ $rtm-private-properties: dir;
     transform: translateX(-25%) rotate(-45deg);
 }
 
+// Both tooltips are capped to the viewport, less the 4px the script keeps them from each of its edges
+// (ResourceTimelineTooltip.place), so one taller than the viewport is cut off rather than placed past its bottom.
 .bit-rtm-tov {
     z-index: 2147483647;
     position: fixed;
+    overflow: hidden;
     pointer-events: none;
+    box-sizing: border-box;
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
     transform: translate(spacing(1.5), spacing(2));
 }
 
@@ -332,7 +338,11 @@ $rtm-private-properties: dir;
 // colors and font are the engine's (the theme, or Options.Colors); the rest is the popup look of the theme.
 .bit-rtm-ttp {
     max-width: 20rem;
+    overflow: hidden;
     line-height: 1.35;
+    // The cap of .bit-rtm-tov, less the vertical padding (the box is sized by its content, as its max-width is).
+    max-height: calc(100vh - 8px - #{spacing(1.5)});
+    max-height: calc(100dvh - 8px - #{spacing(1.5)});
     white-space: pre-line;
     padding: spacing(0.75) spacing(1);
     border-radius: $shp-radius-popup;

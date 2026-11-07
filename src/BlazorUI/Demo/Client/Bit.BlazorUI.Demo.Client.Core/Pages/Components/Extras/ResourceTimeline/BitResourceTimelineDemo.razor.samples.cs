@@ -1553,9 +1553,11 @@ public static class BitResourceTimelineDemoData
         var groups = resources.Where(r => r.ParentId is not null).Select(r => r.ParentId).ToHashSet();
         // Counted in local calendar days rather than elapsed 24 hours, which a daylight saving change in between would
         // throw off by one: the day the window starts on, through the day it ends on unless it ends at its midnight.
+        // Today is read once, so a call running across midnight counts the days and lays them out from the same one.
+        var today = DateTime.Today;
         var localTo = to.LocalDateTime;
-        var firstDay = (int)(from.LocalDateTime.Date - DateTime.Today).TotalDays;
-        var lastDay = (int)(localTo.Date - DateTime.Today).TotalDays + (localTo.TimeOfDay > TimeSpan.Zero ? 1 : 0);
+        var firstDay = (int)(from.LocalDateTime.Date - today).TotalDays;
+        var lastDay = (int)(localTo.Date - today).TotalDays + (localTo.TimeOfDay > TimeSpan.Zero ? 1 : 0);
         var flights = new List<BitResourceTimelineAllocation>();
 
         for (var r = 0; r < resources.Count; r++)
@@ -1565,8 +1567,8 @@ public static class BitResourceTimelineDemoData
 
             for (var day = firstDay; day < lastDay; day++)
             {
-                var dayStart = Day(day);
-                var dayEnd = Day(day + 1);
+                var dayStart = new DateTimeOffset(today.AddDays(day));
+                var dayEnd = new DateTimeOffset(today.AddDays(day + 1));
 
                 // Seeded by the gate and the calendar date, so a day reads the same whichever window asks for it, and
                 // whenever it is asked for (a fetch after midnight still finds the flights the earlier ones loaded).

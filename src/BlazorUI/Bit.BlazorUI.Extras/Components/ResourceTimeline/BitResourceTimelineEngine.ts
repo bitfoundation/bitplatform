@@ -38,6 +38,11 @@
     // the typical OS default; distance uses config.dragThreshold.
     const DBLCLICK_MS = 500;
 
+    // The default zoom bounds, in pixels per hour, which also stand in for a
+    // configured bound that is not a positive number (see _updateScale).
+    const DEFAULT_MIN_PIXELS_PER_HOUR = 0.25;
+    const DEFAULT_MAX_PIXELS_PER_HOUR = 1200;
+
     // Shared empty row index, returned for resources with no allocations so hot
     // scan paths never have to null-check. Never mutated.
     const EMPTY_ROW_INDEX = Object.freeze({
@@ -618,6 +623,11 @@
         private _onOverlayTouchEnd: () => void;
         private _onOverlayClick: (e: MouseEvent) => void;
         private _onOverlayContextMenu: (e: MouseEvent) => void;
+        // Clicks on the TopStartContent corner, which sits over the surface as a
+        // sibling of the viewport: delegated from the component's root, since the
+        // corner comes and goes with its template (see _forwardCornerClick).
+        private _cornerRoot: HTMLElement | null;
+        private _onCornerClick: (e: MouseEvent) => void;
         private _onKeyDown: (e: KeyboardEvent) => void;
         private _onFocusIn: () => void;
         private _onFocusOut: () => void;
@@ -749,8 +759,8 @@
                 // one day into the viewport width (the original behavior). An
                 // explicit value (or runtime zoom) is clamped to the min/max below.
                 pixelsPerHour: null,
-                minPixelsPerHour: 0.25,
-                maxPixelsPerHour: 1200,
+                minPixelsPerHour: DEFAULT_MIN_PIXELS_PER_HOUR,
+                maxPixelsPerHour: DEFAULT_MAX_PIXELS_PER_HOUR,
                 // Centers the current time in the view on the first data load, so
                 // a timeline meant to open "at now" needs no goToNow() call from
                 // the host. Only the first load: every later one leaves the
@@ -1121,6 +1131,8 @@
                 this._surfaceRect = null;
                 this.handleContextMenu(e);
             };
+            this._cornerRoot = null;
+            this._onCornerClick = (e) => this._forwardCornerClick(e);
             this._onKeyDown = (e) => this.handleKeyDown(e);
             this._onFocusIn = () => { this._hasFocus = true; this.render(); };
             this._onFocusOut = () => { this._hasFocus = false; this.render(); };
@@ -1352,6 +1364,8 @@
             this.wrapper.addEventListener('keydown', this._onKeyDown);
             this.wrapper.addEventListener('focus', this._onFocusIn);
             this.wrapper.addEventListener('blur', this._onFocusOut);
+            this._cornerRoot = this.wrapper.parentElement;
+            if (this._cornerRoot) this._cornerRoot.addEventListener('click', this._onCornerClick);
             this._setupResizeObserver();
         }
 
@@ -1525,7 +1539,17 @@
             if (pph == null || !(pph > 0)) {
                 pph = (this._visibleWidth / 24);
             } else {
-                pph = Math.min(Math.max(pph, c.minPixelsPerHour), c.maxPixelsPerHour);
+                // A bound that is not a positive number keeps its default, and
+                // inverted bounds are swapped, so the clamp never yields a scale
+                // of zero or less (which the axis and the day pans divide by).
+                let min = c.minPixelsPerHour > 0 ? c.minPixelsPerHour : DEFAULT_MIN_PIXELS_PER_HOUR;
+                let max = c.maxPixelsPerHour > 0 ? c.maxPixelsPerHour : DEFAULT_MAX_PIXELS_PER_HOUR;
+                if (min > max) {
+                    const swap = min;
+                    min = max;
+                    max = swap;
+                }
+                pph = Math.min(Math.max(pph, min), max);
             }
 
             this._pixelsPerHour = pph;
@@ -5454,6 +5478,17 @@
             }
         }
 
+        // The TopStartContent corner covers the corner of the surface, so its
+        // clicks never reach the surface: they are reported from here, as the
+        // overlay's are, with the corner as the hit area. Only this timeline's own
+        // corner counts - not one of a timeline nested inside a template.
+        private _forwardCornerClick(e: MouseEvent): void {
+            const target = e.target as Element | null;
+            const corner = target && typeof target.closest === 'function' ? target.closest('.bit-rtm-cnr') : null;
+            if (!corner || corner.parentElement !== this._cornerRoot) return;
+            this._forwardOverlayClick(e);
+        }
+
         // A wheel over the overlay: Ctrl/Cmd zooms as it does over the surface,
         // anything else scrolls the viewport (Shift turning a vertical wheel
         // horizontal, as the browser does).
@@ -7153,6 +7188,10 @@
             this.wrapper.removeEventListener('keydown', this._onKeyDown);
             this.wrapper.removeEventListener('focus', this._onFocusIn);
             this.wrapper.removeEventListener('blur', this._onFocusOut);
+            if (this._cornerRoot) {
+                this._cornerRoot.removeEventListener('click', this._onCornerClick);
+                this._cornerRoot = null;
+            }
             // Nothing acts on an Escape any more (see _syncEscapeClaim).
             this.wrapper.removeAttribute('data-bit-esc');
             this._escClaimed = false;

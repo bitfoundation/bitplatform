@@ -580,6 +580,8 @@
             ctx.font = scene.config.barLabelFont;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
+            // A 1px border whatever line width the bars left behind (an outline or a focus ring strokes at 2).
+            ctx.lineWidth = 1;
             for (const n of labels) {
                 ctx.fillStyle = scene.config.colors.axisBg;
                 ctx.fillRect(n.x, n.y, n.width, n.height);
