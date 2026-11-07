@@ -12,9 +12,9 @@ internal static class BitPdfLzwDecode
     private const int ClearCode = 256;
     private const int EodCode = 257;
 
-    public static byte[] Decode(byte[] data, int earlyChange)
+    public static byte[] Decode(byte[] data, int earlyChange, int maxDecodedLength = BitPdfStreamDecoder.MaxDecodedLength)
     {
-        var output = new List<byte>(data.Length * 3);
+        var output = new List<byte>((int)Math.Min((long)data.Length * 3, maxDecodedLength));
 
         // Dictionary of byte sequences; first 256 entries are the literals.
         var table = new List<byte[]>(4096);
@@ -85,7 +85,7 @@ internal static class BitPdfLzwDecode
                 break; // corrupt code: bail with the output decoded so far
             }
 
-            if (entry.Length > BitPdfStreamDecoder.MaxDecodedLength - output.Count)
+            if (entry.Length > maxDecodedLength - output.Count)
             {
                 throw new BitPdfFormatException("Decoded stream too large.");
             }

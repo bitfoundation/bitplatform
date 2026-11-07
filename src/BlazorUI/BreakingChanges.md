@@ -5,6 +5,13 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### Seekable PDF sources defer forms and tagged structure ([#13702](https://github.com/bitfoundation/bitplatform/issues/13702))
+
+For a `BitPdfViewer` loaded with `BitPdfSource.FromStreamFactory`, `FormFields` and `StructureTree` now return empty
+collections until `LoadDocumentDetailsAsync()` completes. **An app that reads them from `OnDocumentLoaded`** awaits
+that method before using them. This avoids reading the whole document when opening a seekable stream. Buffered
+sources, including the snapshot produced by `FromStreamAsync`, keep their eager behavior.
+
 ### The packages target .NET 10 and .NET 11 only
 
 The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later

@@ -192,6 +192,13 @@ public sealed class BitPdfParser
         object? lengthObj = dict.Get("Length");
         int declaredLength = lengthObj is double dl && IsInteger(dl) ? (int)dl : -1;
 
+        // Ask for a complete raw stream before probing its end marker. Otherwise
+        // an uncached body costs one retry for the end and another for the middle.
+        if (source is IBitPdfPartialByteSource partial && declaredLength >= 0
+            && dataStart >= 0 && dataStart <= reader.Length && declaredLength <= reader.Length - dataStart
+            && !partial.IsDataAvailable(dataStart, declaredLength))
+            throw new BitPdfMissingDataException(dataStart, declaredLength);
+
         if (declaredLength >= 0
             && dataStart >= 0 && dataStart <= reader.Length
             && declaredLength <= reader.Length - dataStart

@@ -280,8 +280,8 @@ public sealed class BitPdfHtmlRenderer
         _viewH = viewH;
         _ops = EmitCanvasOps ? new List<object?[]>() : null;
         _tilesEmitted = 0;
-        _work = new(MaxRenderWork);
-        _imagePixels = new(MaxRenderImagePixels);
+        _work = BitPdfBudget.ForRetry(MaxRenderWork, _page, "render-work");
+        _imagePixels = BitPdfBudget.ForRetry(MaxRenderImagePixels, _page, "render-image-pixels");
 
         List<BitPdfOperation> ops;
         try
