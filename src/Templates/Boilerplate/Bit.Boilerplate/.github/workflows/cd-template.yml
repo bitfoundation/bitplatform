@@ -262,23 +262,23 @@ jobs:
               printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
             done <<< "${!settings:-}"
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
-#if (cloudflare != true)
+          #if (cloudflare != true)
 
           origin() { printf '%s' "$1" | grep -oE '^https?://[^/]+' || true; }
-#if (api == "Standalone")
+          #if (api == "Standalone")
           if [[ -z "$(origin "$SERVER_API_ADDRESS")" ]]; then
             echo "::error::Set SERVER_API_ADDRESS, the api's public address, for the reverse proxy."
             exit 1
           fi
-#endif
+          #endif
           {
             printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
-#if (api == "Standalone")
+          #if (api == "Standalone")
             printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
-#endif
+          #endif
             printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
           } > "$deploy_dir/Caddyfile"
-#endif
+          #endif
 
           # The environment's own AppCertificate, and the retired one it replaced while that one still validates tokens
           # (See AppCertificate.md), in the folder the api mounts. Each secret is a .crt and its .key in one PEM, which openssl

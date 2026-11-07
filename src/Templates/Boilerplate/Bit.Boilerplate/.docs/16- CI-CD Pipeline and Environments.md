@@ -67,9 +67,15 @@ The server is a Docker Compose project that .NET Aspire publishes from the app h
 3. **Purge** Cloudflare's cache, so users get the new version at once.
 <!--#endif-->
 
+<!--#if (cloudflare == true)-->
 The server holds only Docker and the runner, no SDK and no source code, and it keeps every inbound port closed: the
 runner pulls its jobs from GitHub and the Cloudflare Tunnel dials out. The `deploy` skill
 (`.github/agents/deploy.agent.md`) sets it all up: the server, the runner, the tunnel and the secrets.
+<!--#else-->
+The server holds only Docker and the runner, no SDK and no source code, and only 80 and 443 reach it: Caddy takes them
+and gets each public address its certificate, and the runner pulls its jobs from GitHub. The `deploy` skill
+(`.github/agents/deploy.agent.md`) sets it all up: the server, the runner, the DNS and the secrets.
+<!--#endif-->
 
 Worth knowing:
 
