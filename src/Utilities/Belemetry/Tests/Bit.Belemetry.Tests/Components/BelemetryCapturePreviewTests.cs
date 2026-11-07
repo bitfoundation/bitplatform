@@ -15,6 +15,9 @@ public class BelemetryCapturePreviewTests
         context.Services.AddBitBelemetryServices(o =>
         {
             TestHost.ApplyTestDefaults(o);
+            // A browser saves downloads; without a web host the detection says Hybrid, whose web views save none
+            // outside Windows - the download would be refused before the JS runtime is called.
+            o.Host = BelemetryHostKind.WebAssembly;
             o.Consent.Default = BelemetryFeatures.All;
             o.Diagnostics.Enabled = true;
             o.AddExporter(new BelemetryInMemoryExporter());
