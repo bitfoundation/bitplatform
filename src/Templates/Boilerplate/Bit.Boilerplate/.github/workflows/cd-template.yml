@@ -308,6 +308,9 @@ jobs:
           compose run --rm migrations
 
           compose up --detach --wait --wait-timeout 600 --remove-orphans || { compose logs --tail 200; exit 1; }
+          #if (cloudflare != true)
+          compose exec -T reverse-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+          #endif
 
           # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
           # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
