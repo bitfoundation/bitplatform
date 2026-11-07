@@ -620,6 +620,30 @@ test('scrollToAllocation puts the bar start in the viewport', () => {
     assert.ok(startC <= engine.scrollX + engine._visibleWidth + 1, 'start is not right of the view');
 });
 
+test('scrollToAllocation scrolls a row below the view into it', () => {
+    const engine = makeLaidOutEngine();
+    const index = engine._rows.length - 2;
+    const viewH = engine._viewportH - engine.config.timeAxisHeight;
+    assert.ok(engine._rowContentTop(index) > viewH, 'the fixture row must start below the visible area');
+
+    const start = engine.timeRange.start + 2 * HOUR;
+    const alloc = {
+        id: 'low',
+        resourceId: engine._rows[index].resource.id,
+        startTime: start,
+        endTime: start + HOUR
+    };
+    engine.allocations = [alloc];
+    engine.render = () => {};
+
+    assert.equal(engine.scrollToAllocation('low'), true);
+
+    const rowTop = engine._rowContentTop(index);
+    const rowBottom = rowTop + engine._rowHeight(index);
+    assert.ok(rowTop >= engine.scrollY, 'the row top is not above the view');
+    assert.ok(rowBottom <= engine.scrollY + viewH, 'the row bottom is not below the view');
+});
+
 test('scrollToAllocation returns false for an unknown id', () => {
     const engine = makeLaidOutEngine();
     engine.render = () => {};

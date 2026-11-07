@@ -4975,6 +4975,8 @@
             }
 
             if (!this.config.showTooltips) {
+                // A tooltip shown before they were turned off goes away too.
+                if (this._tooltip) this._tooltip.hide();
                 this._notifyHover(null, clientX, clientY);
                 return;
             }

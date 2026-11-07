@@ -64,7 +64,8 @@ public partial class BitResourceTimeline : BitComponentBase
     private bool _tooltipOverlayUnplaced;
 
     // Serializes the data loads, so a rapid swap of the Config cannot interleave two of them and race _isLoading and
-    // _loadedConfig.
+    // _loadedConfig. A windowed load lets go of it while the app fetches its initial window, and a load or a clear that
+    // takes it meanwhile advances _windowSession, which is how the windowed one knows to drop what it fetched.
     private readonly SemaphoreSlim _loadGate = new(1, 1);
 
     // The Config last pushed to the engine, compared by reference so a render of the parent that changes no data does not
@@ -838,13 +839,20 @@ public partial class BitResourceTimeline : BitComponentBase
 
             _loadingConfig = config;
 
+            // Every load starts a new session, so a window fetch of an earlier windowed load still running is dropped
+            // whatever this one loads, and so a windowed load, whose initial fetch is awaited outside the gate, can tell
+            // a newer load (or a clear) that took over meanwhile.
+            var session = ++_windowSession;
+
             try
             {
-                await LoadDataCoreAsync(config);
+                await LoadDataCoreAsync(config, session);
             }
             finally
             {
-                if (ReferenceEquals(_loadingConfig, config))
+                // A load or a clear that took over while the initial window was fetched owns the marker now (a forced
+                // reload may have set it to this very Config again).
+                if (session == _windowSession)
                 {
                     _loadingConfig = null;
                 }
@@ -856,7 +864,7 @@ public partial class BitResourceTimeline : BitComponentBase
         }
     }
 
-    private async Task LoadDataCoreAsync(BitResourceTimelineConfig config)
+    private async Task LoadDataCoreAsync(BitResourceTimelineConfig config, long session)
     {
         // The calls about bars wait for the data replacing the current one: until it and the map of its ids are in place,
         // they would act on (and the map would take) the data on its way out.
@@ -871,10 +879,6 @@ public partial class BitResourceTimeline : BitComponentBase
         if (IsDisposing) return;
 
         var startedAt = DateTime.UtcNow;
-
-        // Every load starts a new session, so a window fetch of an earlier windowed load still running is dropped
-        // whatever this one loads.
-        var session = ++_windowSession;
 
         var windowed = IsWindowed;
         _loadedWindowed = windowed;
@@ -910,7 +914,29 @@ public partial class BitResourceTimeline : BitComponentBase
 
                 if (window is { Length: 2 })
                 {
-                    await FetchAndApplyWindowAsync(session, 0, window[0], window[1]);
+                    // The app's fetch is awaited outside the gate of the loads, as a later window's is (see
+                    // FetchAndApplyWindowAsync): a newer Config, or a clear, does not wait out a slow fetch of the one it
+                    // replaces. The gate is taken back to apply what the fetch returned, which is dropped once either has
+                    // started meanwhile.
+                    IReadOnlyList<BitResourceTimelineAllocation>? fetched;
+
+                    _loadGate.Release();
+
+                    try
+                    {
+                        fetched = await FetchWindowAsync(session, 0, window[0], window[1]);
+                    }
+                    finally
+                    {
+                        await _loadGate.WaitAsync();
+                    }
+
+                    if (IsDisposing || session != _windowSession || ReferenceEquals(Config, config) is false) return;
+
+                    if (fetched is not null)
+                    {
+                        await ApplyWindowAsync(session, 0, fetched, window[0], window[1]);
+                    }
                 }
 
                 if (IsDisposing) return;
@@ -965,19 +991,24 @@ public partial class BitResourceTimeline : BitComponentBase
         }
         finally
         {
-            // The overlay stays for the minimum duration, so it does not flash by imperceptibly on a fast render.
-            var remaining = LoadingMinDurationMs - (int)(DateTime.UtcNow - startedAt).TotalMilliseconds;
-
-            if (remaining > 0 && IsDisposing is false)
+            // A load that took over while the initial window was fetched owns the overlay now, and a clear has taken it
+            // down already.
+            if (session == _windowSession)
             {
-                await Task.Delay(remaining);
-            }
+                // The overlay stays for the minimum duration, so it does not flash by imperceptibly on a fast render.
+                var remaining = LoadingMinDurationMs - (int)(DateTime.UtcNow - startedAt).TotalMilliseconds;
 
-            _isLoading = false;
+                if (remaining > 0 && IsDisposing is false)
+                {
+                    await Task.Delay(remaining);
+                }
 
-            if (IsDisposing is false)
-            {
-                StateHasChanged();
+                _isLoading = false;
+
+                if (IsDisposing is false)
+                {
+                    StateHasChanged();
+                }
             }
         }
     }
@@ -994,8 +1025,11 @@ public partial class BitResourceTimeline : BitComponentBase
         {
             if (IsDisposing || Config is not null || _engineHasData is false) return;
 
-            // A window fetch of the cleared load still running is dropped.
+            // A window fetch of the cleared load still running is dropped, and so is a windowed load whose initial window
+            // is still being fetched: its overlay and its marker go with it.
             _windowSession++;
+            _isLoading = false;
+            _loadingConfig = null;
             _loadedConfig = null;
             _dataLoaded = false;
             _engineHasData = false;
@@ -1038,16 +1072,38 @@ public partial class BitResourceTimeline : BitComponentBase
         catch (TaskCanceledException) { }
     }
 
-    // Fetches the allocations of a window from the app and pushes them to the engine, unless a newer request (or a newer
-    // load) superseded this one in the meantime. The gate is not held across the app's call: a newer request starts its
-    // own fetch at once rather than waiting out a slow one it has superseded (LoadAllocationsAsync documents that its
-    // calls can overlap), and only the applies are serialized.
+    // Fetches the allocations of a window the engine asked for after the initial one, and pushes them to the engine, unless
+    // a newer request (or a newer load) superseded this one in the meantime. The gate is not held across the app's call: a
+    // newer request starts its own fetch at once rather than waiting out a slow one it has superseded
+    // (LoadAllocationsAsync documents that its calls can overlap), and only the applies are serialized. When the engine
+    // fails to apply the window, the map has taken it all the same, so the timeline is reloaded as after a failed batch -
+    // once the gate of the applies is released, since the reload applies an initial window of its own - and the failure
+    // is rethrown.
     private async Task FetchAndApplyWindowAsync(long session, long requestId, long startMs, long endMs)
+    {
+        var allocations = await FetchWindowAsync(session, requestId, startMs, endMs);
+
+        if (allocations is null) return;
+
+        try
+        {
+            await ApplyWindowAsync(session, requestId, allocations, startMs, endMs);
+        }
+        catch (Exception exception) when (exception is not JSDisconnectedException)
+        {
+            await ResyncAfterFailedBatchAsync();
+
+            throw;
+        }
+    }
+
+    // The allocations the app returns for a window, or null when the request was superseded before its fetch started (or
+    // there is nothing left to render into).
+    private async Task<IReadOnlyList<BitResourceTimelineAllocation>?> FetchWindowAsync(long session, long requestId, long startMs, long endMs)
     {
         var loader = LoadAllocationsAsync;
 
-        // Superseded already (or nothing left to render into): no fetch is started.
-        if (loader is null || IsDisposing || IsCurrentWindow(session, requestId) is false) return;
+        if (loader is null || IsDisposing || IsCurrentWindow(session, requestId) is false) return null;
 
         var window = new BitResourceTimelineWindow
         {
@@ -1055,14 +1111,17 @@ public partial class BitResourceTimeline : BitComponentBase
             End = DateTimeOffset.FromUnixTimeMilliseconds(endMs),
         };
 
-        var allocations = await loader(window) ?? [];
+        return await loader(window) ?? [];
+    }
 
+    // Pushes the allocations fetched for a window to the engine, unless a newer request or load arrived while the app was
+    // working, or the component was removed, in which case they are dropped.
+    private async Task ApplyWindowAsync(long session, long requestId, IReadOnlyList<BitResourceTimelineAllocation> allocations, long startMs, long endMs)
+    {
         await _windowGate.WaitAsync();
 
         try
         {
-            // A newer request or load arrived while the app was working, or the component was removed: the result is
-            // dropped.
             if (IsDisposing || IsCurrentWindow(session, requestId) is false) return;
 
             MergeWindowAllocations(allocations);

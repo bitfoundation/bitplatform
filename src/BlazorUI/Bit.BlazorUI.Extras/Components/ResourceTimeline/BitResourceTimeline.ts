@@ -261,6 +261,7 @@
         private _themeFingerprint = '';
         private _themeFrame: number | null = null;
         private _themeObserver: MutationObserver | null = null;
+        private _themeChain: Element[] = [];
         private _styleObserver: MutationObserver | null = null;
         private _schemeQuery: MediaQueryList | null = null;
         private _onThemeChange: () => void;
@@ -291,6 +292,10 @@
         public setOptions(options: any, texts: any, disabled: boolean) {
             this.engine.setOptions(ResourceTimelineInstance.engineOptions(options, texts, disabled));
 
+            // A root taken out of the page and put back in a later task was not seen arriving (see watchTheme): the
+            // ancestors it has now are watched from here on.
+            if (this.themeChainChanged()) this.observeThemeChain();
+
             // The colors are read again with the options, which covers what no observer sees (a rule inserted through the
             // CSSOM, an adopted stylesheet).
             this.applyTheme(false);
@@ -304,6 +309,7 @@
 
             this._themeObserver?.disconnect();
             this._themeObserver = null;
+            this._themeChain = [];
 
             this._styleObserver?.disconnect();
             this._styleObserver = null;
@@ -403,25 +409,38 @@
         // class of an ancestor), on the root itself (its Class or Style), or by the color scheme of the system. Nothing
         // reports a change of a variable, so the theme attributes (THEME_ATTRIBUTE) of the root and of every ancestor up
         // to the html element are watched, and the colors read again after the frame every mutation of one switch has
-        // landed in: the fingerprint of what was read decides whether anything actually changed. A stylesheet swapped in
-        // or out mutates none of those attributes, so the <link> and <style> elements of the head are watched as well
-        // (one added, removed or edited), and a stylesheet loading anywhere in the page (a new <link>, or one whose href
-        // was replaced, which applies only once it has loaded) is heard through the load event, captured on the
-        // document since it does not bubble. What none of these sees (a rule inserted through the CSSOM) is read again
-        // with the next options.
+        // landed in: the fingerprint of what was read decides whether anything actually changed. The root moved to
+        // another place in the page (a portal, a drag and drop) has other ancestors, and the move takes a node of the
+        // watched chain out of its parent, which is watched too: the children of the ancestors are observed (not the
+        // root's, whose own parts come and go), and a change of them that leaves the root with another chain re-enrolls
+        // the observer on the new one and reads the colors there. A stylesheet swapped in or out mutates none of those
+        // attributes, so the <link> and <style> elements of the head are watched as well (one added, removed or edited),
+        // and a stylesheet loading anywhere in the page (a new <link>, or one whose href was replaced, which applies only
+        // once it has loaded) is heard through the load event, captured on the document since it does not bubble. What
+        // none of these sees (a rule inserted through the CSSOM, a root put back in a later task than the one that took
+        // it out) is read again with the next options.
         private watchTheme() {
             try {
                 this._themeObserver = new MutationObserver(records => {
+                    let check = false;
+                    let children = false;
+
                     for (const record of records) {
-                        if (record.attributeName && THEME_ATTRIBUTE.test(record.attributeName)) {
-                            this.scheduleThemeCheck();
-                            return;
+                        if (record.type === 'childList') {
+                            children = true;
+                        } else if (record.attributeName && THEME_ATTRIBUTE.test(record.attributeName)) {
+                            check = true;
                         }
                     }
+
+                    if (children && this.themeChainChanged()) {
+                        this.observeThemeChain();
+                        check = true;
+                    }
+
+                    if (check) this.scheduleThemeCheck();
                 });
-                for (let el: Element | null = this._root; el; el = el.parentElement) {
-                    this._themeObserver.observe(el, { attributes: true });
-                }
+                this.observeThemeChain();
             } catch { /* no observer: the theme is still read on every change of the options */ }
 
             try {
@@ -454,6 +473,37 @@
                     this._schemeQuery = scheme;
                 }
             } catch { /* an engine without the EventTarget form of MediaQueryList */ }
+        }
+
+        // Enrolls the theme observer on the root and the ancestors it has now, in place of the ones it had: the theme
+        // attributes of each, and the children of every ancestor, whose removal of a node of the chain is a move of the
+        // root.
+        private observeThemeChain() {
+            const observer = this._themeObserver;
+            if (!observer) return;
+
+            observer.disconnect();
+
+            const chain: Element[] = [];
+            for (let el: Element | null = this._root; el; el = el.parentElement) {
+                observer.observe(el, { attributes: true, childList: el !== this._root });
+                chain.push(el);
+            }
+
+            this._themeChain = chain;
+        }
+
+        // Whether the root has other ancestors than the ones the theme observer was enrolled on.
+        private themeChainChanged() {
+            if (!this._themeObserver) return false;
+
+            const chain = this._themeChain;
+            let i = 0;
+            for (let el: Element | null = this._root; el; el = el.parentElement, i++) {
+                if (chain[i] !== el) return true;
+            }
+
+            return i !== chain.length;
         }
 
         // A <link> or a <style> element: what a stylesheet of the page comes from.

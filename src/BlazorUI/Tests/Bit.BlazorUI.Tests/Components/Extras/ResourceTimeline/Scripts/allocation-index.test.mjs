@@ -483,11 +483,14 @@ test('windowed apply keeps overlapping ids and object identity', () => {
     engine.selectedBars.add('2');
     engine._focusAlloc = a2;
 
+    // The window re-delivers 2 as a fresh object with new times, as a refetch after an edit on the server does.
     const a3 = alloc('3', 'r0', 140, 200);
-    engine.applyAllocationWindow(1, [{ ...a2 }, a3], 80, 200, 7);
+    engine.applyAllocationWindow(1, [{ ...a2, startTime: 90, endTime: 170 }, a3], 80, 200, 7);
 
     assert.equal(engine.allocations.some(a => a.id === '1'), false);
     assert.equal(engine.allocations.find(a => a.id === '2'), a2);
+    assert.equal(a2.startTime, 90, 'the kept object takes the new start');
+    assert.equal(a2.endTime, 170, 'the kept object takes the new end');
     assert.ok(engine.allocations.some(a => a.id === '3'));
     assert.ok(engine.selectedBars.has('2'));
     assert.equal(engine._focusAlloc, a2);

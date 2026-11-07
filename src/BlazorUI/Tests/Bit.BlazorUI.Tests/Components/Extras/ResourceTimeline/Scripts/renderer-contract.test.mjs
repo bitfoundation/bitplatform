@@ -177,6 +177,52 @@ for (const [name, Renderer] of Object.entries(renderers)) {
             assert.equal(wrapper.childNodes.length, 0, 'dispose removes the surface');
         });
     });
+
+    test(`the ${name} renderer paints a +N marker above every bar label`, () => {
+        const scene = makeSceneEngine([
+            bar('a', 'r0', 1, 3, { textAbove: 'Label A', textBelow: 'Below A' }),
+            bar('b', 'r1', 2, 5, { textAbove: 'Label B' })
+        ]).buildScene();
+        assert.ok(scene.bars.some(b => b.labels && b.labels.length), 'the fixture must carry bar labels');
+
+        // A marker sitting where the bar labels are, as one at the trailing edge of a cluster does. Its width is one no
+        // other element of the frame has, which is how its box is told apart below.
+        const marker = { x: scene.bars[0].x, y: scene.bars[0].y, text: '+3', width: 23, height: 14 };
+
+        withFakeDocument(() => {
+            const wrapper = new FakeElement('div');
+            const host = { requestRender() { }, paintNow() { }, getImage() { return null; } };
+            const renderer = new Renderer(wrapper, host);
+            renderer.resize(1200, 600);
+
+            // Two frames: the second grows the label pool after the marker pools first held an element, which must
+            // not move a label above the marker either.
+            renderer.render({ ...scene, overflow: [marker] });
+            const more = scene.bars.map(b => ({ ...b, labels: [...(b.labels || []), ...(b.labels || [])] }));
+            renderer.render({ ...scene, bars: more, overflow: [marker] });
+
+            // Elements without a z-index paint in document order, so the marker's box and its text come after every
+            // label's text.
+            const painted = [];
+            const walk = (node) => {
+                if (node.style.display === 'none') return;
+                if (node.style.width === '23px' || node.getAttribute('width') === '23') painted.push('[marker box]');
+                if (node.textContent) painted.push(node.textContent);
+                for (const child of node.childNodes) walk(child);
+            };
+            walk(wrapper);
+
+            const boxIndex = painted.indexOf('[marker box]');
+            const textIndex = painted.indexOf('+3');
+            assert.ok(boxIndex >= 0 && textIndex > boxIndex, `the marker is painted, its text over its box: ${painted}`);
+            for (const label of ['Label A', 'Below A', 'Label B']) {
+                assert.ok(painted.lastIndexOf(label) >= 0, `${label} is painted`);
+                assert.ok(painted.lastIndexOf(label) < boxIndex, `${label} paints under the +N marker`);
+            }
+
+            renderer.dispose();
+        });
+    });
 }
 
 test('Hour12 tick labels are 12-hour', () => {

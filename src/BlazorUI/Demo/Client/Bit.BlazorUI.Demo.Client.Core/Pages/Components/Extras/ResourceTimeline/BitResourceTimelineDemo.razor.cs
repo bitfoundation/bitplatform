@@ -1559,7 +1559,9 @@ public partial class BitResourceTimelineDemo
 
 
     private BitResourceTimelineConfig templatesConfig = CreateTemplatesConfig();
-    private readonly BitResourceTimelineOptions templatesOptions = new() { AutoScrollToNow = true, PreserveScrollOnReload = true };
+    // The axis in UTC, the zone the TooltipTemplate formats its times in: the template is rendered by .NET, whose local
+    // zone (a server's) need not be the viewer's the axis would otherwise be drawn in.
+    private readonly BitResourceTimelineOptions templatesOptions = new() { TimeZone = "UTC", AutoScrollToNow = true, PreserveScrollOnReload = true };
 
     private static BitResourceTimelineConfig CreateTemplatesConfig() => BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Terminals(2, 4), labeled: true);
 

@@ -230,14 +230,18 @@ public class BitResourceTimelineOptions
 
     /// <summary>
     /// Start of working hours, as minutes from local midnight (for example 540 for
-    /// 09:00). <c>null</c> draws no off-hour bands. Visual only.
+    /// 09:00). <c>null</c> keeps the start in force: none, so no off-hour bands are
+    /// drawn, until an instance sets one, and the one an earlier instance set
+    /// afterwards. Visual only.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? WorkingHoursStart { get; set; }
 
     /// <summary>
     /// End of working hours, as minutes from local midnight (for example 1020 for
-    /// 17:00). <c>null</c> draws no off-hour bands. Visual only.
+    /// 17:00). <c>null</c> keeps the end in force: none, so no off-hour bands are
+    /// drawn, until an instance sets one, and the one an earlier instance set
+    /// afterwards. Visual only.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? WorkingHoursEnd { get; set; }

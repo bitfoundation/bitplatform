@@ -432,5 +432,18 @@ test('a +N marker is described even when a TooltipTemplate is set', () => {
 test('showTooltips off leaves the +N marker silent', () => {
     const engine = makeHoverEngine([hidden('h1', 9, 10)], { showTooltips: false });
     engine._hoverAt(405, 205, 500, 300);
-    assert.deepEqual(engine.shown, []);
+    assert.ok(engine.shown.every(s => s === null), 'nothing is shown');
+});
+
+test('turning showTooltips off takes a visible +N tooltip down on the next hover', () => {
+    const engine = makeHoverEngine([hidden('h1', 9, 10)]);
+    engine._hoverAt(405, 205, 500, 300);
+    assert.equal(engine.shown.length, 1);
+    assert.ok(engine.shown[0].content.startsWith('1 hidden allocation'));
+
+    engine.config.showTooltips = false;
+    engine._hoverAt(405, 205, 500, 300);
+
+    assert.equal(engine.shown.length, 2);
+    assert.equal(engine.shown[1], null, 'the visible tooltip is hidden, and nothing is shown in its place');
 });

@@ -1192,6 +1192,109 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitResourceTimelineShouldNotHoldANewConfigBehindASlowInitialWindow()
+    {
+        Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);
+        PlanStart();
+
+        var slow = new TaskCompletionSource<IReadOnlyList<BitResourceTimelineAllocation>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var asked = 0;
+
+        var component = RenderTimeline(p =>
+        {
+            p.Add(x => x.LoadingMinDurationMs, 0);
+            p.Add(x => x.LoadAllocationsAsync, _ => ++asked == 1
+                ? slow.Task
+                : Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>>([Allocation("current" + asked, "r1", 0, 60_000)]));
+        });
+        await WaitUntil(() => asked == 1);
+
+        var firstSession = WindowSession();
+
+        // The app assigns a new Config while the initial window of the first one is still being fetched: it loads at once
+        // rather than waiting the slow fetch out.
+        component.Render(p => p.Add(x => x.Config, SampleConfig()));
+        WaitForLoads(component, 1);
+
+        Assert.AreEqual(2, Calls(BeginWindowedFn).Count);
+        Assert.AreNotEqual(firstSession, WindowSession());
+        Assert.AreEqual(WindowSession(), Calls(ApplyAllocationWindowFn).Single().Arguments[5]);
+
+        // The slow fetch answers only now: what it returned is dropped, and the gate it took back is free for a reload.
+        slow.SetResult([Allocation("stale", "r1", 0, 60_000)]);
+        await component.InvokeAsync(() => component.Instance.ReloadAsync());
+
+        Assert.AreEqual(2, Calls(ApplyAllocationWindowFn).Count);
+        Assert.IsFalse(Calls(ApplyAllocationWindowFn).Any(c => (long)c.Arguments[5]! == firstSession));
+        Assert.AreEqual("current3", (await ResolveAsync(component, "stale", "current2", "current3")).Single().Id);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldNotHoldAClearBehindASlowInitialWindow()
+    {
+        Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);
+        PlanStart();
+
+        var slow = new TaskCompletionSource<IReadOnlyList<BitResourceTimelineAllocation>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var asked = 0;
+
+        var component = RenderTimeline(p =>
+        {
+            p.Add(x => x.LoadingMinDurationMs, 0);
+            p.Add(x => x.LoadAllocationsAsync, _ => ++asked == 1
+                ? slow.Task
+                : Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>>([Allocation("current", "r1", 0, 60_000)]));
+        });
+        await WaitUntil(() => asked == 1);
+
+        var firstSession = WindowSession();
+
+        // The Config is taken away while its initial window is being fetched: the timeline is emptied at once, and the
+        // loading overlay goes with it.
+        component.Render(p => p.Add(x => x.Config, null));
+        await WaitUntil(() => Calls(ClearDataFn).Count == 1);
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-rtm-ldg").Count));
+
+        // The fetch answers only now, and a Config is assigned again: what the fetch returned reaches neither the engine
+        // nor the bars the component resolves, and the cleared load never finishes.
+        slow.SetResult([Allocation("stale", "r1", 0, 60_000)]);
+        component.Render(p => p.Add(x => x.Config, SampleConfig()));
+        WaitForLoads(component, 1);
+
+        Assert.AreNotEqual(firstSession, Calls(ApplyAllocationWindowFn).Single().Arguments[5]);
+        Assert.AreEqual("current", (await ResolveAsync(component, "stale", "current")).Single().Id);
+    }
+
+    [TestMethod]
+    public async Task BitResourceTimelineShouldReloadWhenTheEngineFailsToApplyAWindow()
+    {
+        Context.JSInterop.Setup<long[]>(GetVisibleWindowFn, _ => true).SetResult([0L, 3_600_000L]);
+
+        var asked = 0;
+
+        var component = RenderLoaded(p =>
+        {
+            p.Add(x => x.LoadingMinDurationMs, 0);
+            p.Add(x => x.LoadAllocationsAsync, _ =>
+            {
+                asked++;
+                return Task.FromResult<IReadOnlyList<BitResourceTimelineAllocation>>([Allocation("w" + asked, "r1", 0, 60_000)]);
+            });
+        });
+
+        Context.JSInterop.SetupVoid(ApplyAllocationWindowFn, i => (long)i.Arguments[1]! == 1).SetException(new JSException("apply failed"));
+
+        // The engine may have taken a part of the window while the component took all of it: the caller is told it
+        // failed, and the data is loaded again from a new initial window, which drops what the component took.
+        await Assert.ThrowsExactlyAsync<JSException>(() =>
+            component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 3_600_000, WindowSession())));
+
+        WaitForLoads(component, 2);
+        Assert.AreEqual(2, Calls(BeginWindowedFn).Count);
+        Assert.AreEqual("w3", (await ResolveAsync(component, "w1", "w2", "w3")).Single().Id);
+    }
+
+    [TestMethod]
     public async Task BitResourceTimelineShouldIgnoreAWindowRequestWhenNotWindowed()
     {
         var component = RenderLoaded();

@@ -476,14 +476,27 @@ test('whenRendered resolves without an animation frame', async () => {
         engine._renderPending = true;
         await engine.whenRendered();
         assert.equal(engine._renderedResolvers.length, 0, 'a hidden document waits for no paint at all');
+
+        // A visible one waits for the paint: the promise stays pending until the paint flushes its resolvers.
+        globalThis.document = { visibilityState: 'visible' };
+        engine._renderPending = true;
+        let settled = false;
+        const painted = engine.whenRendered().then(() => { settled = true; });
+        await new Promise(r => setTimeout(r, 20));
+        assert.equal(settled, false, 'a visible document waits for the paint');
+        assert.equal(engine._renderedResolvers.length, 1);
+
+        engine._flushRenderedResolvers();
+        await painted;
+        assert.equal(settled, true, 'the paint resolves it');
+
+        // And it resolves anyway once the paint is overdue.
+        engine._renderPending = true;
+        const started = Date.now();
+        await engine.whenRendered();
+        assert.ok(Date.now() - started < 5000);
     } finally {
         if (hadDocument) globalThis.document = previous;
         else delete globalThis.document;
     }
-
-    // A visible one waits for the paint, and resolves anyway once the paint is overdue.
-    engine._renderPending = true;
-    const started = Date.now();
-    await engine.whenRendered();
-    assert.ok(Date.now() - started < 5000);
 });

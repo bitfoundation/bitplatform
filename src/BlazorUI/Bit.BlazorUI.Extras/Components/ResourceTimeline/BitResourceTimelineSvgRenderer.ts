@@ -58,6 +58,8 @@
         barShapes: SvgNodePool;
         barIcons: SvgNodePool;
         barLabels: SvgNodePool;
+        overflowShapes: SvgNodePool;
+        overflowLabels: SvgNodePool;
         now: SvgNodePool;
         axisBg: SvgNodePool;
         axisTints: SvgNodePool;
@@ -202,6 +204,9 @@
                 barShapes: pool(this._barsGroup, clearBarIdentity),
                 barIcons: pool(this._barsGroup),
                 barLabels: pool(this._barsGroup),
+                // The +N markers, above every bar label, as the canvas draws them after the bars.
+                overflowShapes: pool(this._barsGroup),
+                overflowLabels: pool(this._barsGroup),
                 now: pool(this._nowGroup),
                 axisBg: pool(this._timeAxisFillGroup),
                 axisTints: pool(this._timeAxisTintGroup),
@@ -430,9 +435,9 @@
             }
 
             for (const n of scene.overflow || []) {
-                clearBarIdentity(this._rect(p.barShapes, n.x, n.y, n.width, n.height,
-                    c.colors.axisBg, c.colors.axisBorder, 1));
-                this._text(p.barLabels, n.text, n.x + 3, n.y + n.height / 2,
+                this._rect(p.overflowShapes, n.x, n.y, n.width, n.height,
+                    c.colors.axisBg, c.colors.axisBorder, 1);
+                this._text(p.overflowLabels, n.text, n.x + 3, n.y + n.height / 2,
                     c.barLabelFont, c.colors.dateLabel, 'left', 'middle');
             }
         }

@@ -1067,7 +1067,7 @@ private static BitResourceTimelineOptions CreateZoneOptions(string? timeZone, st
             <div class="flight-tip">
                 <b>@flight.TextAbove</b>
                 <span>Gate @flight.ResourceId</span>
-                <span>@flight.StartTime.ToLocalTime().ToString("ddd HH:mm") - @flight.EndTime.ToLocalTime().ToString("HH:mm")</span>
+                <span>@flight.StartTime.UtcDateTime.ToString("ddd HH:mm") - @flight.EndTime.UtcDateTime.ToString("HH:mm") UTC</span>
             </div>
         </TooltipTemplate>
         <LoadingContent>
@@ -1078,7 +1078,8 @@ private static BitResourceTimelineOptions CreateZoneOptions(string? timeZone, st
 """;
     private readonly string example12CsharpCode = """
 private BitResourceTimelineConfig templatesConfig = CreateTemplatesConfig();
-private readonly BitResourceTimelineOptions templatesOptions = new() { AutoScrollToNow = true, PreserveScrollOnReload = true };
+// The axis in UTC, the zone the TooltipTemplate formats its times in.
+private readonly BitResourceTimelineOptions templatesOptions = new() { TimeZone = "UTC", AutoScrollToNow = true, PreserveScrollOnReload = true };
 
 private static BitResourceTimelineConfig CreateTemplatesConfig() => BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Terminals(2, 4), labeled: true);
 

@@ -346,7 +346,9 @@
                     <b>ResourceTemplate</b> replaces the labels of the resource column with your own markup for each visible
                     row, receiving its <b>Resource</b>, its <b>Depth</b> and whether it <b>HasChildren</b> or is
                     <b>Collapsed</b>; a group row keeps its expand / collapse button before it. <b>TooltipTemplate</b>
-                    renders the hovered bar in a positioned overlay, on every renderer, instead of the built-in tooltip.
+                    renders the hovered bar in a positioned overlay, on every renderer, instead of the built-in tooltip -
+                    here with its times in UTC, the <b>TimeZone</b> the axis is drawn in, since the template is rendered
+                    by .NET, which may run on a server in another zone than the viewer's.
                     <b>TopStartContent</b> fills the corner where the axes meet. <b>LoadingContent</b> replaces the spinner
                     shown while the bars load, and <b>LoadingMinDurationMs</b> keeps it up long enough to be seen - press
                     Reload, which assigns a new Config; <b>PreserveScrollOnReload</b> keeps the view where it was.
@@ -381,7 +383,7 @@
                             <div class="flight-tip">
                                 <b>@flight.TextAbove</b>
                                 <span>Gate @flight.ResourceId</span>
-                                <span>@flight.StartTime.ToLocalTime().ToString("ddd HH:mm") - @flight.EndTime.ToLocalTime().ToString("HH:mm")</span>
+                                <span>@flight.StartTime.UtcDateTime.ToString("ddd HH:mm") - @flight.EndTime.UtcDateTime.ToString("HH:mm") UTC</span>
                             </div>
                         </TooltipTemplate>
                         <LoadingContent>
@@ -430,10 +432,20 @@
                     <BitButton Variant="BitVariant.Outline" OnClick="ShiftAllFlights">Move every flight an hour later</BitButton>
                 </div>
                 <br />
-                <div class="timeline">
-                    <BitResourceTimeline @ref="largeRef" Config="LargeConfig" Options="largeOptions" LoadBatchSize="5000" />
-                </div>
-                <div class="readout">@LargeConfig.Allocations.Count.ToString("N0") flights on @LargeConfig.Resources.Count resources@(largeStatus is null ? null : $" · {largeStatus}")</div>
+                @* The 40,000 flights are built once the page runs interactively, never in a prerender: there the
+                   engine cannot start, so the server would build them for markup with nothing drawn in it. The
+                   empty box keeps the room the timeline takes. *@
+                @if (AppRenderMode.IsBlazorHybrid || RendererInfo.IsInteractive)
+                {
+                    <div class="timeline">
+                        <BitResourceTimeline @ref="largeRef" Config="LargeConfig" Options="largeOptions" LoadBatchSize="5000" />
+                    </div>
+                    <div class="readout">@LargeConfig.Allocations.Count.ToString("N0") flights on @LargeConfig.Resources.Count resources@(largeStatus is null ? null : $" · {largeStatus}")</div>
+                }
+                else
+                {
+                    <div class="timeline"></div>
+                }
             </DemoExample>
 
             <DemoExample Title="On-demand loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" CodeFiles="@example15CodeFiles" Id="example15">

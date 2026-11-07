@@ -32,6 +32,8 @@
         barShapes: HtmlNodePool;
         barIcons: HtmlNodePool;
         barLabels: HtmlNodePool;
+        overflowShapes: HtmlNodePool;
+        overflowLabels: HtmlNodePool;
         now: HtmlNodePool;
         axisTints: HtmlNodePool;
         resourceTints: HtmlNodePool;
@@ -164,7 +166,8 @@
             // next bar, which covers it where they overlap, as on the canvas. Only
             // the element acquired as a bar rect carries a data-bar-id (see
             // clearBarIdentity). Icons and labels have pools of their own above
-            // every bar shape - the intended stacking anyway.
+            // every bar shape - the intended stacking anyway - and the +N markers
+            // pools above every label, as the canvas draws them after the bars.
             this._pools = {
                 bg: new ResourceTimelineNodePool(this._bgLayer),
                 surface: new ResourceTimelineNodePool(this._surfaceLayer),
@@ -174,6 +177,8 @@
                 barShapes: new ResourceTimelineNodePool(this._barsLayer, null, clearBarIdentity),
                 barIcons: new ResourceTimelineNodePool(this._barsLayer),
                 barLabels: new ResourceTimelineNodePool(this._barsLayer),
+                overflowShapes: new ResourceTimelineNodePool(this._barsLayer),
+                overflowLabels: new ResourceTimelineNodePool(this._barsLayer),
                 now: new ResourceTimelineNodePool(this._nowLayer),
                 axisTints: new ResourceTimelineNodePool(this._timeAxisTint),
                 resourceTints: new ResourceTimelineNodePool(this._resourceAxisTint),
@@ -374,10 +379,12 @@
                 }
             }
 
+            // The +N markers, in pools of their own above every bar label, so a
+            // label of a neighbouring bar never covers one.
             for (const n of scene.overflow || []) {
-                clearBarIdentity(this._rect(p.barShapes, n.x, n.y, n.width, n.height,
-                    c.colors.axisBg, `1px solid ${c.colors.axisBorder}`));
-                this._text(p.barLabels, n.text, n.x + 3, n.y + n.height / 2,
+                this._rect(p.overflowShapes, n.x, n.y, n.width, n.height,
+                    c.colors.axisBg, `1px solid ${c.colors.axisBorder}`);
+                this._text(p.overflowLabels, n.text, n.x + 3, n.y + n.height / 2,
                     c.barLabelFont, c.colors.dateLabel, 'left', 'middle');
             }
         }
