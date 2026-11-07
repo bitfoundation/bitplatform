@@ -41,7 +41,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-16
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
         with:
           arguments: --no-build
 
@@ -140,6 +140,8 @@ jobs:
       - name: Deploy
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+          LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
           SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
@@ -211,6 +213,30 @@ jobs:
           while IFS= read -r file; do
             settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
             : > "$deploy_dir/$file"
+
+            # Each app first trusts its own public address. The Host header is the client's to write, so the apps link
+            # emails, the sitemap and the like only to a host in TrustedOrigins, and answer any other host with a 400.
+            # The web app (and the api, whose links point to the web app) trusts SERVER_ADDRESS; the landing page its own.
+            address="$SERVER_ADDRESS"
+            if [[ "$file" == "landingpage.env" ]]; then
+              address="$LANDING_PAGE_ADDRESS"
+            fi
+            # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries are matched.
+            origin="$(printf '%s' "$address" | grep -oE '^https?://[^/]+' || true)"
+            # Without it the app would refuse its own address, so stop here rather than deploy one that answers 400.
+            if [[ -z "$origin" ]]; then
+              echo "::error::$file has no public address to trust: set SERVER_ADDRESS, and LANDING_PAGE_ADDRESS for the landing page."
+              exit 1
+            fi
+            # Index 100 adds the address after the TrustedOrigins of appsettings.json (the binder keeps the order and skips
+            # the missing indexes) instead of replacing its first entry. The lines below can still add more.
+            printf "TrustedOrigins__100='%s'\n" "$origin" >> "$deploy_dir/$file"
+            # An OAuth client, such as an MCP client signing in to /dev-mcp, reaches a standalone api with no origin, so the api
+            # takes the consent page's address from WebAppUrl. Without it, the client lands on the api's own host.
+            if [[ "$file" == "serverapi.env" ]]; then
+              printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
+            fi
+
             while IFS= read -r line; do
               line="${line%$'\r'}"
               if [[ -z "$line" || "$line" == "#"* ]]; then
@@ -253,6 +279,10 @@ jobs:
 
           compose up --detach --wait --wait-timeout 600 --remove-orphans || { compose logs --tail 200; exit 1; }
 
+          # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
+          # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
+          docker image prune --all --force --filter "until=72h" > /dev/null || echo "::warning::The old images were not pruned."
+
       - name: Check the public address
         env:
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
@@ -267,7 +297,6 @@ jobs:
           exit 1
 
       - name: Check the landing page's public address
-        if: vars.LANDING_PAGE_ADDRESS != ''
         env:
           LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
         run: |
@@ -279,6 +308,21 @@ jobs:
           done
           echo "::error::${LANDING_PAGE_ADDRESS%/}/alive did not answer for five minutes."
           exit 1
+
+      # /alive only says the process runs. /health runs every check, and a 503 there is a dependency failing, for which a
+      # load balancer or a monitor takes the instance for dead. Degraded, such as a service with no settings yet, still
+      # answers 200. A warning rather than a failure: the new version is already up.
+      - name: Check health
+        env:
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+          LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
+        run: |
+          for address in "$SERVER_ADDRESS" "$LANDING_PAGE_ADDRESS"; do
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "${address%/}/health" || true)"
+            if [[ "$status" != 200 ]]; then
+              echo "::warning::${address%/}/health answered $status. The health checks page, or GetHealth on dev-mcp for the api, says which check fails."
+            fi
+          done
 #if (cloudflare == true)
 
       - name: Purge Cloudflare cache
@@ -298,6 +342,9 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
+    # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
+    if: false
     runs-on: windows-2025
     permissions:
       contents: read
@@ -317,7 +364,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-16
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
         with:
           arguments: --platforms windows --no-build
 
@@ -339,7 +386,7 @@ jobs:
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-16
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-17
         with:
           endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
           account: ${{ vars.CODE_SIGNING_ACCOUNT }}
@@ -371,6 +418,9 @@ jobs:
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
+    # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
+    # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
+    if: false
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -390,7 +440,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-16
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
         with:
           arguments: --platforms android --no-build
 
@@ -435,6 +485,9 @@ jobs:
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
+    # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
+    # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
+    if: false
     runs-on: xcode-27
     permissions:
       contents: read
@@ -459,7 +512,7 @@ jobs:
           xcode-version: '27.0'
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-16
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-17
         with:
           arguments: --platforms ios --no-build
 

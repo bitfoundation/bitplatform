@@ -663,20 +663,13 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, OnDesktops]
-    public async Task TheReviewTab_Should_StartACommentOnThePickedComponentWhenThereIsAnAgent(WorkbenchSurface surface)
+    public async Task TheReviewTab_Should_StartACommentOnThePickedComponent(WorkbenchSurface surface)
     {
         await PickTheIconButton();
 
         await OpenTab(WorkbenchModes.ReviewColumn);
 
         var composer = Page.Locator(".composer");
-
-        if (HasAgent is false)
-        {
-            await Expect(Tools.GetByText(WorkbenchStrings.PageStatus, new() { Exact = true })).ToBeVisibleAsync();
-            await Expect(composer).ToHaveCountAsync(0);
-            return;
-        }
 
         await Expect(composer).ToContainTextAsync(nameof(BitButton));
 

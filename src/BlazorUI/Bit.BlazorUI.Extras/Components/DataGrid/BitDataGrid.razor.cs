@@ -637,6 +637,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // lazy tree mode (ChildrenProvider): children fetched on first expand, cached by node key
     private readonly Dictionary<object, IReadOnlyList<TItem>> _loadedChildren = new();
     private readonly HashSet<object> _loadingNodes = new();
+    // Which tree hierarchy the two sets above belong to: moved on whenever a new Items reference clears them, so a
+    // lazy fetch started for the previous hierarchy can tell, once it returns, that its rows are gone.
+    private int _treeGeneration;
 
     // cell navigation
     private TItem? _focusedRow;
@@ -1232,6 +1235,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 // A new hierarchy invalidates lazily-fetched children of the previous one.
                 _loadedChildren.Clear();
                 _loadingNodes.Clear();
+                _treeGeneration++;
             }
 
             // A replaced client-side data source drops rows for good; prune per-row state keyed on the
@@ -1920,9 +1924,15 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                     return;
                 }
                 StateHasChanged();
+                // A new Items reference arriving while the fetch is out clears the caches for the new hierarchy
+                // (OnParametersSetAsync), whose rows may reuse this key (KeyField). Nothing the fetch brings back
+                // may then be cached, collapsed or unflagged under that key: it would show the old hierarchy's
+                // children on the next expand without a fetch, or clear a newer fetch's loading flag.
+                var generation = _treeGeneration;
                 try
                 {
                     var children = await ChildrenProvider(item);
+                    if (generation != _treeGeneration) return;
                     _loadedChildren[key] = children as IReadOnlyList<TItem> ?? children?.ToList() ?? (IReadOnlyList<TItem>)Array.Empty<TItem>();
                     childrenLoaded = true;
                 }
@@ -1930,12 +1940,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 {
                     // A failed fetch collapses the node again so a later expand retries, instead of
                     // caching an empty result that would permanently swallow the branch.
-                    _expandedTree.Remove(key);
+                    if (generation == _treeGeneration) _expandedTree.Remove(key);
                     throw;
                 }
                 finally
                 {
-                    _loadingNodes.Remove(key);
+                    if (generation == _treeGeneration) _loadingNodes.Remove(key);
                 }
             }
         }

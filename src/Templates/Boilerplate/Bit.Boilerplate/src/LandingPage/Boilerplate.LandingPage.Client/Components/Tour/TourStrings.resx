@@ -181,13 +181,13 @@
         <value>One link for every device</value>
     </data>
     <data name="StoresBody" xml:space="preserve">
-        <value>The badges show only the stores the app is in, and mark the visitor's own device. On a computer, the QR code opens the right store on the phone.</value>
+        <value>The badges show only the stores the app is in, and mark the visitor's own device. The QR code opens the right store on the phone that scans it.</value>
     </data>
     <data name="RatingTitle" xml:space="preserve">
         <value>Ratings from the App Store</value>
     </data>
     <data name="RatingBody" xml:space="preserve">
-        <value>Its App Store listing is read live from Apple and kept on the server for a while: the rating once there are enough of them, the latest version until then.</value>
+        <value>Its App Store rating is read live from Apple and kept on the server for a while.</value>
     </data>
     <data name="FaqTitle" xml:space="preserve">
         <value>Answers search engines can read</value>

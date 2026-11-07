@@ -1,9 +1,17 @@
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)" OnNavigateAsync="OnNavigateAsync">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(SiteLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+@* While prerendering the failure goes on to the server's exception handler as a 500, since a page answering 200 with this panel would stay on a CDN *@
+<ErrorBoundary MaximumErrorCount="@(RendererInfo.IsInteractive ? 100 : 0)">
+    <ChildContent>
+        <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)" OnNavigateAsync="OnNavigateAsync">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="typeof(SiteLayout)" />
+                <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            </Found>
+        </Router>
 
-@* Outside the router, so a running tour survives the move from one sample's layout to another's *@
-<LandingTour />
+        @* Outside the router, so a running tour survives the move from one sample's layout to another's *@
+        <LandingTour />
+    </ChildContent>
+    <ErrorContent>
+        <LandingErrorPanel />
+    </ErrorContent>
+</ErrorBoundary>

@@ -1,6 +1,7 @@
 ﻿# Bit.BlazorUI Performance Tests
 
-This folder contains browser-based performance tests for Bit.BlazorUI components using Playwright.
+This folder contains browser tests for Bit.BlazorUI components using Playwright: performance tests, and the browser
+regression tests that need a real browser's layout, focus or timing.
 
 ## Structure
 
@@ -10,16 +11,18 @@ Performance/
 │   ├── Components/
 │   │   ├── App.razor
 │   │   ├── Routes.razor
-│   │   └── Pages/
-│   │       ├── Home.razor
-│   │       └── BitActionButtonPerf.razor
+│   │   └── Pages/                                          # The pages the tests drive, and Home.razor
 │   ├── Program.cs
 │   └── Bit.BlazorUI.Tests.Performance.TestHost.csproj
 │
-├── Bit.BlazorUI.Tests.Performance/                         # Playwright test projects
-│   ├── PerformanceTestBase.cs                              # Base class with test infrastructure
-│   ├── BitActionButtonBrowserTests.cs
+├── Bit.BlazorUI.Tests.Performance/                         # The Playwright test project
+│   ├── PerformanceTestBase.cs                              # Base class: starts the test host, owns the browser and the page
+│   ├── RequiresBrowserAttribute.cs                         # Makes every class opt-in (RUN_BROWSER_TESTS=1)
+│   ├── Bit*BrowserTests.cs                                 # The performance tests (BitActionButtonBrowserTests,
+│   │                                                       # BitDropdownBrowserTests) and the browser regression tests
 │   └── Bit.BlazorUI.Tests.Performance.csproj
+│
+├── Bit.BlazorUI.Tests.PdfPerformance/                      # A console benchmark of the PDF engine (see below)
 │
 └── README.md
 ```
@@ -28,7 +31,8 @@ Performance/
 
 The [buffered PDF engine benchmark](Bit.BlazorUI.Tests.PdfPerformance/README.md) is a separate console diagnostic for parsing/rendering and before/after byte-reading costs. It does not need Playwright or a test host.
 
-1. .NET 10.0 SDK
+1. The .NET SDK that `src/global.json` pins. A Debug build targets `net11.0` only; pass `-p:BuildAllTfms=true` to
+   build `net10.0` as well.
 2. Playwright browsers installed
 
 ## Setup
@@ -38,35 +42,40 @@ The [buffered PDF engine benchmark](Bit.BlazorUI.Tests.PdfPerformance/README.md)
 After building the Bit.BlazorUI.Tests.Performance project, install the required browsers:
 
 ```bash
-pwsh bin/Debug/net10.0/playwright.ps1 install
+pwsh bin/Debug/net11.0/playwright.ps1 install
 ```
 
 Or on Linux/macOS:
 
 ```bash
-./bin/Debug/net10.0/playwright.sh install
+./bin/Debug/net11.0/playwright.sh install
 ```
 
 # Running Tests
 
 ## Test Host
 
-The test host is a Blazor Server application that provides test pages for each component.
+The test host is a Blazor Server application that provides the pages the tests drive. The first test starts it
+(`dotnet run` on the same target framework as the test run) unless a host already answers on its URL, which the run
+then uses as it is.
 
 ### Running the Test Host Manually
 
+In the `Bit.BlazorUI.Tests.Performance.TestHost` folder:
+
 ```bash
-dotnet run --urls http://localhost:5280 -f net10.0
+dotnet run --urls http://localhost:5280 -f net11.0
 ```
 
 Then navigate to:
-- http://localhost:5280 - Home page with links to all test pages
+- http://localhost:5280 - Home page with links to the test pages
 - http://localhost:5280/perf/action-button - BitActionButton performance test
 - http://localhost:5280/perf/action-button/100 - BitActionButton with 100 components
+- http://localhost:5280/perf/dropdown - BitDropdown performance test
 
 ### Test Page Controls
 
-Each test page exposes:
+Each performance page (`/perf/action-button`, `/perf/dropdown`) exposes:
 - `#btn-render` - Button to trigger initial render
 - `#btn-clear` - Button to clear all components
 - `#btn-rerender` - Button to trigger re-render
@@ -79,44 +88,46 @@ Metrics are exposed via DOM elements:
 
 ## Performance Tests
 
-Run the following command in the `Bit.BlazorUI.Tests.Performance` folder:
+Every test class here is marked `[RequiresBrowser]`, the performance ones included, so a run without
+`RUN_BROWSER_TESTS=1` skips them all. Run the following command in the `Bit.BlazorUI.Tests.Performance` folder:
 ```bash
-dotnet test -f net10.0 --output detailed
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Performance" --output detailed
 ```
 
 ### Run Specific Test Categories
 
 ```bash
 # Initial render tests only
-dotnet test --filter "TestCategory=InitialRender"
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=InitialRender"
 
 # Re-render tests only
-dotnet test --filter "TestCategory=ReRender"
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=ReRender"
 
 # Memory tests only
-dotnet test --filter "TestCategory=Memory"
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Memory"
 
 # Scalability tests only
-dotnet test --filter "TestCategory=Scalability"
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Scalability"
 
 # Stress tests only
-dotnet test --filter "TestCategory=Stress"
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Stress"
 ```
 
 ### Run with Specific Browser
 
-The browser comes from the `BROWSER` environment variable (`chromium` by default); the Microsoft.Testing.Platform
-runner does not pass runsettings through, so there is no `.runsettings` to edit.
+The browser comes from the `BROWSER` environment variable: `chromium` (the default), `edge` (the installed Microsoft
+Edge), `firefox` or `webkit`. The Microsoft.Testing.Platform runner does not pass runsettings through, so there is no
+`.runsettings` to edit.
 
 ```bash
-BROWSER=firefox dotnet test
-BROWSER=webkit dotnet test
+RUN_BROWSER_TESTS=1 BROWSER=firefox dotnet test
+RUN_BROWSER_TESTS=1 BROWSER=webkit dotnet test
 ```
 
 ### Run in Headed Mode (for debugging)
 
 ```bash
-HEADED=1 dotnet test
+RUN_BROWSER_TESTS=1 HEADED=1 dotnet test
 ```
 
 ### Run the Browser Regression Tests
@@ -169,7 +180,7 @@ Run tests with Chromium browser for memory measurements.
 
 Run the Playwright install script:
 ```bash
-pwsh bin/Debug/net10.0/playwright.ps1 install
+pwsh bin/Debug/net11.0/playwright.ps1 install
 ```
 
 ## Adding Tests for New Components
@@ -187,6 +198,7 @@ pwsh bin/Debug/net10.0/playwright.ps1 install
    [TestClass]
    [TestCategory("Performance")]
    [TestCategory("Browser")]
+   [RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~YourComponentBrowserTests
    public class YourComponentBrowserTests : PerformanceTestBase
    {
        // Follow the pattern in BitActionButtonBrowserTests.cs

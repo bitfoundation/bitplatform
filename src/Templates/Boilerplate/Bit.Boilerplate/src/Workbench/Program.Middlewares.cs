@@ -56,7 +56,7 @@ public static partial class Program
             });
 
             // The agent's endpoints answer only in dev mode, for requests made on this machine; anyone else gets a 404.
-            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/review") || context.Request.Path.StartsWithSegments("/mcp"), local => local.Use(async (context, next) =>
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/review"), local => local.Use(async (context, next) =>
             {
                 if (WorkbenchLocalRequests.CanChange(context, app.Configuration) is false)
                 {

@@ -39,6 +39,27 @@ public static class BlazorUISearchIndex
         public string[] AliasWords { get; init; } = [];
 
         /// <summary>
+        /// A component's own name as one word, without the Bit prefix every name here shares -
+        /// "searchbox" for BitSearchBox - for a query that spells it in the words it is made of,
+        /// as it may spell an alias (see <see cref="SpelledNameSpan"/>), and for a query that is
+        /// nothing but the name, which puts the component first.
+        /// </summary>
+        public string? NamePhrase { get; init; }
+
+        /// <summary>
+        /// The last word of a component's name of two words or more - "chat" for BitAiChat, "picker"
+        /// for BitDatePicker - the word that says what the component is, where the ones before it say
+        /// which one. A term that is the head of a name counts as a title word twice over.
+        /// <para>
+        /// A title word alone is worth less than a word of an alias, so for "chat", BitAiPromptInput,
+        /// which lists "ChatInput", ranked above BitAiChat, whose own name says it is one. Only the
+        /// last word counts: BitAiChatMessage is a message, and a ChatInput an input. A name of one
+        /// word has no head apart from the whole name, which a query spells (see SpelledNameSpan).
+        /// </para>
+        /// </summary>
+        public string? NameHead { get; init; }
+
+        /// <summary>
         /// How much this entry outranks another that matched the query as well.
         /// <para>
         /// A component's answer already contains its parameters, its own enums and the titles of
@@ -73,10 +94,22 @@ public static class BlazorUISearchIndex
 
     private const int MaxTerms = 16;
 
+    // The words of a query a name is looked for across (see Runs): more than a question is phrased
+    // in, and a bound on the runs a pasted file would make of it.
+    private const int MaxWords = 64;
+
     // PublicationOnly rather than the default: the default mode caches the exception a failed build
     // threw and rethrows it for the lifetime of the process, so one transient failure would leave
     // the search permanently broken. Here a failed build is retried by the next caller.
     private static readonly Lazy<Entry[]> _entries = new(Build, LazyThreadSafetyMode.PublicationOnly);
+
+    // The longest name an entry goes by, plus the plural "s" Equivalent forgives: a run of words
+    // longer than this spells no name, and nor does a longer run from the same word (see Runs).
+    private static readonly Lazy<int> _longestName = new(() => _entries.Value.Max(entry => Math.Max(entry.NamePhrase?.Length ?? 0,
+                                                                                                     entry.AliasPhrases.Length == 0 ? 0 : entry.AliasPhrases.Max(phrase => phrase.Length))) + 1,
+                                                          LazyThreadSafetyMode.PublicationOnly);
+
+    private static readonly char[] _separators = ['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'];
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -104,17 +137,28 @@ public static class BlazorUISearchIndex
 
     public static string Search(string? query, int limit)
     {
-        var terms = Tokenize(query);
+        var words = Words(query);
+        var terms = Tokenize(words);
 
         if (terms.Length == 0)
         {
             return $"'{query}' carries no searchable term: words under three letters and words common to every entry here (\"the\", \"how\", \"bit\", \"blazor\", \"component\") are dropped before matching. Search for what the thing does - \"pick a date\", \"toast notification\", \"tabs\", \"virtualized table\".";
         }
 
+        var runs = Runs(words);
+
+        // The whole query as one word, read the way a component's name is kept (see NamePhrase).
+        var named = BlazorUISuggest.Normalize(query);
+
         var hits = _entries.Value
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+            .Select(entry => (Entry: entry, Score: Score(entry, terms, runs)))
             .Where(hit => hit.Score > 0)
-            .OrderByDescending(hit => hit.Score)
+            // The component a query names outright leads, whatever outscores it: someone typing "chart"
+            // wants BitChart, though BitChartLegacy's example titles say "chart" more often, and
+            // "accordion" is BitAccordion, though BitAccordionList lists the word as an alias of its
+            // own. The site's search box ranks a name above everything else the same way.
+            .OrderByDescending(hit => hit.Entry.NamePhrase is { } name && Equivalent(name, named))
+            .ThenByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
             .Take(Math.Clamp(limit, 1, 50))
             .ToArray();
@@ -143,7 +187,7 @@ public static class BlazorUISearchIndex
         return builder.ToString();
     }
 
-    private static int Score(Entry entry, string[] terms)
+    private static int Score(Entry entry, string[] terms, (string Text, int Words)[] runs)
     {
         var score = 0;
         var body = 0;
@@ -157,6 +201,7 @@ public static class BlazorUISearchIndex
                          : 0;
             var isAlias = aliasHit > 0;
             var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
+            var isNameHead = entry.NameHead is { } head && Equivalent(head, term);
             var inTitle = isTitleWord ? 0 : Count(entry.LoweredTitle, term);
             var inBoosted = Count(entry.LoweredBoosted, term);
             var inBody = Count(entry.LoweredBody, term);
@@ -167,8 +212,9 @@ public static class BlazorUISearchIndex
 
             // A term in a name is worth far more than the same term buried in prose: someone asking
             // for "Dropdown" wants the component, not the paragraphs that mention it. An alias is
-            // worth more still - it is the library saying "this is what you call it".
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5;
+            // worth more still - it is the library saying "this is what you call it" - and the word of a
+            // name that says what the component is, more than both (see NameHead).
+            score += (isTitleWord ? 12 : 0) + (isNameHead ? 12 : 0) + inTitle * 3 + inBoosted * 5;
             alias = Math.Max(alias, aliasHit);
             body += Math.Min(inBody, 3);
         }
@@ -177,7 +223,9 @@ public static class BlazorUISearchIndex
         // is not five times more relevant to a query that happens to touch two of them. Without the
         // cap, "loading skeleton placeholder" ranks BitTextShimmer - whose nav entry lists both
         // "Skeleton" and "Loading" - above BitShimmer, which is the skeleton.
-        score += alias;
+        // Words of the query that spell one of its names, its own included, are that name named once
+        // per word, so a whole-alias hit for each (see SpelledNameSpan).
+        score += Math.Max(alias, 25 * SpelledNameSpan(entry, runs));
 
         // A body here is a whole component description or a chapter of the theming guide, and a long
         // enough document mentions everything. Capping the prose as a whole rather than per term is
@@ -186,6 +234,85 @@ public static class BlazorUISearchIndex
         score += Math.Min(body, 9);
 
         return matched == 0 ? 0 : score * matched * entry.Weight;
+    }
+
+    /// <summary>
+    /// How many words of the query the longest run spelling one of the entry's names covers - its
+    /// own or an alias: two for "app bar", which is BitHeader's "AppBar", and for "search box", one
+    /// for "searchbox" - or 0 when no run does.
+    /// <para>
+    /// A query writes a multiword name the way a sentence would, a word at a time, and scored a word
+    /// at a time each is only a word of the name, which other entries match as well or better: for
+    /// "app bar", BitNavBar has "bar" in its name and in its own "TabBar", BitChart has bars in its
+    /// example titles, and both ranked above BitHeader; for "search box", BitDropdown's examples
+    /// ("SearchBox", "Search options", "ComboBox") ranked it above BitSearchBox. So the run counts as
+    /// the whole name once for every word it spans, which puts the component it names ahead of the
+    /// ones that only share its words.
+    /// </para>
+    /// <para>
+    /// A run of one word counts too. For an alias that changes nothing, since a word that is a whole
+    /// alias already scores as one; but a component's own name typed as one word is none of its title
+    /// words ("searchbox" is not "search" or "box"), and BitDropdown's "SearchBox" example outranked it.
+    /// </para>
+    /// </summary>
+    private static int SpelledNameSpan(Entry entry, (string Text, int Words)[] runs)
+    {
+        if (entry.NamePhrase is null && entry.AliasPhrases.Length == 0) return 0;
+
+        var longest = 0;
+
+        foreach (var run in runs)
+        {
+            if (run.Words > longest && IsNameOf(entry, run.Text)) longest = run.Words;
+        }
+
+        return longest;
+    }
+
+    /// <summary>Whether a word is one of the names the entry goes by, its own or an alias.</summary>
+    private static bool IsNameOf(Entry entry, string word)
+    {
+        if (entry.NamePhrase is { } name && Equivalent(name, word)) return true;
+
+        foreach (var alias in entry.AliasPhrases)
+        {
+            if (Equivalent(alias, word)) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Every run of consecutive words of the query, joined into one, with the number of words it
+    /// takes - "app", "appbar" and "bar" for "app bar" - the ones a name may be spelled in.
+    /// <para>
+    /// Read off the words as written rather than off the terms: a name is spelled with the short and
+    /// common words the terms leave out as often as not - "ai chat" is BitAiChat, which "chat" alone
+    /// ranked below BitAiPromptInput, and "md viewer" is BitMarkdownViewer's MdViewer - and two words
+    /// with another left out between them are not adjacent.
+    /// </para>
+    /// </summary>
+    private static (string Text, int Words)[] Runs(string[] words)
+    {
+        var longest = _longestName.Value;
+        var count = Math.Min(words.Length, MaxWords);
+        var runs = new List<(string Text, int Words)>();
+
+        for (var start = 0; start < count; start++)
+        {
+            var text = string.Empty;
+
+            for (var end = start; end < count; end++)
+            {
+                text += words[end];
+
+                if (text.Length > longest) break;
+
+                runs.Add((text, end - start + 1));
+            }
+        }
+
+        return [.. runs];
     }
 
     /// <summary>Same word, plural aside - "tags" has to find "Tag", and nobody phrases a question in the number the API happens to use.</summary>
@@ -263,14 +390,20 @@ public static class BlazorUISearchIndex
         return [.. words];
     }
 
-    private static string[] Tokenize(string? query)
+    /// <summary>The words of a query as written, in order and lower-cased.</summary>
+    private static string[] Words(string? query)
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        return [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
-                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        return [.. query.Split(_separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(word => word.ToLowerInvariant())];
+    }
+
+    /// <summary>The words of a query that are scored: the ones of three letters or more, less the stop words, once each.</summary>
+    private static string[] Tokenize(string[] words)
+    {
+        return [.. words
             .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
-            .Select(term => term.ToLowerInvariant())
             .Distinct(StringComparer.Ordinal)
             // Every term is counted in every entry's body, so the work is terms x corpus. No
             // question is phrased in more words than this, while a pasted file would scan for hours.
@@ -300,6 +433,9 @@ public static class BlazorUISearchIndex
                 $"{component.Package.PackageId} {string.Join(' ', component.Examples.Select(e => e.Title).Distinct())}")
             {
                 Weight = 3,
+                NamePhrase = BlazorUISuggest.Normalize(component.Name),
+                // Its first word is the Bit prefix every name here carries.
+                NameHead = SplitWords(component.Name) is { Length: > 2 } words ? words[^1].ToLowerInvariant() : null,
                 AliasPhrases = [.. Aliases(component.Aliases).Select(alias => new string([.. alias.Where(char.IsLetterOrDigit)]).ToLowerInvariant())],
                 AliasWords = [.. Aliases(component.Aliases).SelectMany(SplitWords).Select(word => word.ToLowerInvariant())]
             });

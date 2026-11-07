@@ -1,0 +1,19 @@
+@inherits LandingComponentBase
+
+<section class="scores @Class" aria-labelledby="gallery-scores-title">
+    <div class="score-card-bar">
+        <span class="score-address"><BitIcon IconName="@BitIconName.Lock" Class="score-icon" /> <bdi dir="ltr">@TestedAddress</bdi></span>
+        <span class="score-chip"><BitIcon IconName="@BitIconName.CellPhone" Class="score-icon" /> @Localizer[nameof(LandingStrings.GalleryScoreMobile)]</span>
+    </div>
+    <div class="score-card-body">
+        <h2 id="gallery-scores-title">@Localizer[nameof(LandingStrings.GalleryScoresTitle)]</h2>
+        <ul class="score-rings">
+            @foreach (var (label, index) in Labels().Select((label, index) => (label, index)))
+            {
+                <GalleryScoreRing Label="@label" Index="index" />
+            }
+        </ul>
+        <span class="score-pill"><BitIcon IconName="@BitIconName.Robot" Class="score-icon" /> <bdi dir="ltr">3/3</bdi> @Localizer[nameof(LandingStrings.GalleryScoreAgentic)]</span>
+    </div>
+    <p class="score-source">@Localizer[nameof(LandingStrings.GalleryScoreSource)] <a href="@RunItYourself" rel="noopener" target="_blank"><bdi dir="ltr">pagespeed.web.dev</bdi></a>@TestedText()</p>
+</section>

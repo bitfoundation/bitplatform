@@ -12,7 +12,7 @@ If this branch already added a plan under `specs/changes/`, the work was started
 Before phase 1, decide which track the task takes, and tell the user in one line:
 
 - **Short track**: a bug whose right behavior is known, or a small change that stays inside one feature and adds no entity, API or page. A bug comes first as a test: as far as an automated test can reach it, write one the way the **write-tests** skill (`.github/agents/write-tests.agent.md`) describes, see it fail the way the user saw the bug (phase 6; an existing test counts once you have seen it fail), and only then fix the cause and see the test pass, so the bug can't come back unnoticed. A small change gets its test too. Then run phases 5 and 7. Say in one line what you will change and go ahead; there is no plan to approve.
-- **Full track**: everything else - a new feature, entity, API or page, a change across features, a migration, anything touching security, or a request that is unclear. Every phase, with the plan approved before any code.
+- **Full track**: everything else - a new feature, entity, API or page, a complex UI with no design behind it, a change across features, a migration, anything touching security, or a request that is unclear. Every phase, with the plan approved before any code.
 
 A short-track task that turns out bigger moves to the full track, and you stop and ask before going on: when it needs a migration, changes behavior someone may rely on, touches security, or spreads beyond its feature.
 
@@ -31,7 +31,7 @@ In the same step, look at the branch you are on and what it holds that `develop`
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
 - When the feature rests on rules from outside the codebase - a tax, an invoicing or payroll regulation, a retention period, a payment provider's API - research them from primary sources, with a citation for each, and note where sources disagree. They go into the spec as input for the user to decide on, and what is still undecided under its open questions
-- Write the agreed requirements and acceptance criteria into the specs of the features the request touches (`specs/README.md`), and settle the open questions there that this work depends on
+- Write each requirement and its acceptance criteria into the specs of the features the request touches (`specs/README.md`) in the turn the user settles it, not once every question is answered, and settle the open questions there that this work depends on
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
@@ -47,7 +47,8 @@ In the same step, look at the branch you are on and what it holds that `develop`
 
 ### 3. Design
 - Identify affected files, components, APIs, and data models
-- When the work adds a page or changes how one looks, offer to design it first in the Workbench (`src/Workbench`): the same components and theme as the app, on sample data, so the user sees it on every device, theme, language and data state before any server code exists. If they agree, design it the way the **workbench** skill (`.github/agents/workbench.agent.md`) describes, and once they approve the design, build it into the app as the plan's next tasks. If they don't, build it in the app directly. The landing page (`src/LandingPage`) is the exception: it has a look of its own and is designed in place, as the **landing-page** skill (`.github/agents/landing-page.agent.md`) describes
+- When the work adds a page or changes how one looks, see whether it has a design to follow: a mock-up, a screenshot, a Figma file or a page the user names as the look to match. A complex UI without one, where words can't settle how it should look and behave, like a dense layout, many states or interactions across panels, is designed first in the Workbench (`src/Workbench`): the same components and theme as the app, on sample data, so the user sees it on every device, theme, language and data state before any server code exists. The plan says so, and it is built in the app directly only if the user asks for that. For anything simpler, or with a design in hand, offer the Workbench, and if they decline, build it in the app directly
+- A page going through the Workbench is designed the way the **workbench** skill (`.github/agents/workbench.agent.md`) describes, in every data state it will really have. Open it in the user's browser and wait for their approval: nothing of it goes into the app before then. Once they approve the design, build it into the app as the plan's next tasks
 - **Important:** a design approved in the Workbench approves the page's UI, styles and design, and its text with every translation, which moves into the app's resources as it is; not its code. Workbench pages don't inherit `AppPageBase`, keep their state in bit Blex stores the app may not have and run on sample data, so they are never copied into the app as they are: read them again and build the page into the app following `AGENTS.md`, connected to the server
 - Propose the approach and key design decisions, and record them in the change plan
 - Flag any trade-offs or risks
@@ -79,15 +80,16 @@ In the same step, look at the branch you are on and what it holds that `develop`
 - Confirm the fix against the same test and evidence that showed the problem, then re-run phase 5
 
 ### 7. Delivery
-Merging into `develop` updates the Test environment and merging into `main` updates Production, so a change goes into `develop` only once it is finished, and into `main` only when the user asks for a release.
+Merging into `develop` updates the Test environment and merging into `main` updates Production, once the **deploy** skill (`.github/agents/deploy.agent.md`) has turned on each one's `push` trigger, so a change goes into `develop` only once it is finished, and into `main` only when the user asks for a release.
 - Settle what the change still leaves open before it goes:
     - The `Localizer["..."]` literals it added move into the `.resx` files, through the **localize-strings** skill (`.github/agents/localize-strings.agent.md`).
     - The specs, the plan and the diff agree. Every task is ticked, and every open question this work depended on is answered.
     - Every defect in a library it had to work around has its upstream report offered and its workaround written into `specs/workarounds.md` (`AGENTS.md` section 6).
     - The diff holds only this change: no debugging leftovers, and no files of other work.
+    - The code passes the formatting check CI runs (`AGENTS.md` section 4).
 - Commit, push the branch and open a PR into `develop` (`gh pr create` on GitHub). Write its title and description from every commit on the branch, not only the last one: what changes for the user, then a test plan that lists each acceptance criterion with the test and the check that cover it, and links to the spec and the change plan. In the same message, tell the user that you will merge it yourself once CI passes, unless they want to review it first
 - Wait for CI (`gh pr checks`) the way `AGENTS.md` section 6 caps every wait. When it fails, fix the cause on the branch as phase 6 does, and push again
-- Once CI passes and the user hasn't asked to review, merge the PR and delete its branch. Tell the user it is on its way to the Test environment, and what to try there
+- Once CI passes and the user hasn't asked to review, merge the PR and delete its branch. If `.github/workflows/cd-test.yml` has its `push` trigger on and this merge changes one of its `paths`, tell the user it is on its way to the Test environment, and what to try there. Otherwise, tell them this merge deploys nothing
 - A release is a PR from `develop` into `main`. Open it when the user asks for one, and merge it only on their go-ahead, since it updates Production
 - When nothing deploys `develop` and `main` yet - no remote, no runner, no environments or secrets - offer the **deploy** skill (`.github/agents/deploy.agent.md`), which sets that up
 
@@ -125,7 +127,7 @@ The features below were switched **off** when this project was generated from th
 *   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and `BitDataGrid` CRUD pages with their controllers, one editing its rows in a modal popup and one on a page of its own.
 <!--#endif-->
 
-When the user asks for one of these, or the task needs it, tell them it is a first-class option that simply was not selected when the project was created, and bring it in with the **template-diff** skill (`.github/agents/template-diff.agent.md`), ahead of the work that builds on it.
+When the user asks for one of these, or the task needs it, tell them it is a first-class option that simply was not selected when the project was created, and once they agree, bring it in with the **template-diff** skill (`.github/agents/template-diff.agent.md`), ahead of the work that builds on it. Bringing it in waits for their go-ahead as a plan does, whether you do it yourself or hand it to another agent.
 <!--#endif-->
 
 ## Staying on the Newest bit Platform

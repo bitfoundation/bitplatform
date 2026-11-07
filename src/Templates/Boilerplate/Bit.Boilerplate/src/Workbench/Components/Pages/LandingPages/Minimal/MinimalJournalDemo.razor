@@ -1,0 +1,58 @@
+@* [mirror] the phone's journal demo - keep in sync with: *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Pages/Minimal/MinimalJournalDemo.razor *@
+@inherits WorkbenchComponentBase
+
+<div class="notch-app">
+    <div class="notch-app-head">
+        <p class="notch-app-date">@today.ToString("dddd d MMMM", CultureInfo.CurrentUICulture)</p>
+        <MinimalLogo />
+    </div>
+
+    @if (store.SavedLine is null)
+    {
+        <BitTextField Value="@store.Line"
+                      ValueChanged="store.TypeLine"
+                      Label="@Localizer[nameof(WorkbenchStrings.NotchDemoFieldLabel)]"
+                      Placeholder="@Localizer[nameof(WorkbenchStrings.NotchDemoPlaceholder)]"
+                      Multiline
+                      Rows="3"
+                      MaxLength="MaxLength"
+                      Immediate
+                      ShowCount
+                      Class="notch-app-field">
+            <CountTemplate>@Localizer[nameof(WorkbenchStrings.NotchDemoLeft), MaxLength - context]</CountTemplate>
+        </BitTextField>
+        <BitButton OnClick="Save" Disabled="string.IsNullOrWhiteSpace(store.Line)" FullWidth>@Localizer[nameof(WorkbenchStrings.NotchDemoSave)]</BitButton>
+    }
+    else
+    {
+        <div class="notch-app-saved">
+            <p class="notch-app-line">@store.SavedLine</p>
+            <p class="notch-app-note" role="status">@Localizer[nameof(WorkbenchStrings.NotchDemoSaved)]</p>
+        </div>
+    }
+
+    <div class="notch-app-week">
+        <p class="notch-app-label">
+            <span>@Localizer[nameof(WorkbenchStrings.NotchDemoWeek)]</span>
+            <span>@Localizer[nameof(WorkbenchStrings.NotchDemoWeekCount), Week.Count(day => day.Written)]</span>
+        </p>
+        <ol class="notch-app-days" aria-hidden="true">
+            @foreach (var (date, written) in Week)
+            {
+                <li class="@(written ? "is-written" : null) @(date == today ? "is-today" : null)">
+                    <span class="notch-app-mark"></span>
+                    <span>@CultureInfo.CurrentUICulture.DateTimeFormat.GetShortestDayName(date.DayOfWeek)</span>
+                </li>
+            }
+        </ol>
+    </div>
+
+    <div class="notch-app-past">
+        <p class="notch-app-label"><span>@Localizer[nameof(WorkbenchStrings.NotchDemoThisDay)]</span></p>
+        <ul>
+            <li><span class="notch-app-year">@today.AddYears(-1).ToString("yyyy", CultureInfo.CurrentUICulture)</span> @Localizer[nameof(WorkbenchStrings.NotchDemoPast1)]</li>
+            <li><span class="notch-app-year">@today.AddYears(-2).ToString("yyyy", CultureInfo.CurrentUICulture)</span> @Localizer[nameof(WorkbenchStrings.NotchDemoPast2)]</li>
+        </ul>
+    </div>
+</div>

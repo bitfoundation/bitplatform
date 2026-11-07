@@ -7,6 +7,11 @@ public partial class ProfileSection
 {
     [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    [CascadingParameter(Name = Parameters.IsOnline)] public bool? IsOnline { get; set; }
+
 
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ImageEditorService imageEditorService = default!;

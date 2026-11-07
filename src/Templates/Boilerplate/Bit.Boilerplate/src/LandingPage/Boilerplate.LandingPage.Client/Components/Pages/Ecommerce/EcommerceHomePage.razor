@@ -20,7 +20,7 @@
                 <DownloadQr Site="EcommerceSite.Info" />
             </div>
             <div class="ecommerce-hero-proof">
-                <StoreRating AppleAppId="@(EcommerceSite.Info.AppleAppId!)" />
+                <StoreRating @key="@("hero")" AppleAppId="@(EcommerceSite.Info.AppleAppId!)" />
                 <p><BitIcon IconName="@BitIconName.DeliveryTruck" /> @E[nameof(EcommerceStrings.HeroDelivery)]</p>
             </div>
         </div>
@@ -114,7 +114,7 @@
                 <p class="lp-eyebrow">@E[nameof(EcommerceStrings.ReviewsEyebrow)]</p>
                 <h2 id="ecommerce-reviews-title" class="lp-title">@E[nameof(EcommerceStrings.ReviewsTitle)]</h2>
             </div>
-            <StoreRating AppleAppId="@(EcommerceSite.Info.AppleAppId!)" Class="ecommerce-reviews-rating" />
+            <StoreRating @key="@("reviews")" AppleAppId="@(EcommerceSite.Info.AppleAppId!)" Class="ecommerce-reviews-rating" />
         </header>
         <div class="ecommerce-review-grid">
             @foreach (var (quote, name, place) in reviews)

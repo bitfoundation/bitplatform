@@ -1,4 +1,4 @@
-// bit version: 11.0.0-pre-16
+// bit version: 11.0.0-pre-17
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -20,6 +20,7 @@ self.externalAssets = [
 self.serverHandledUrls = [
     /\/api\//,
     /\/alive/,
+    /\/health/,
     /\/download/,
     /\/sitemap.xml/,
     /\/robots.txt/,

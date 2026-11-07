@@ -982,11 +982,22 @@ span.bit-ctp-txt {
         box-shadow: $box-shadow-sheet;
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
-        // Capped at the height Callouts.position gives the panel, so a screen an on-screen keyboard has shortened
-        // scrolls the dial in the container rather than cutting its bottom off.
+        // Capped at the height Callouts.position gives the panel, so a screen too short for the dial - or one an
+        // on-screen keyboard has shortened - scrolls it rather than cutting its bottom off. Only the body under the
+        // toolbar scrolls, never the container: the toolbar draws the top safe area as its border and the close
+        // button is laid over its corner, so the two stay where the panel opens them, below the status bar, however
+        // far the dial is scrolled - by a swipe, or by the focus moving to a part out of view.
         .bit-ctp-cac {
+            display: flex;
+            overflow: hidden;
             max-height: inherit;
             box-sizing: border-box;
+            flex-direction: column;
+        }
+
+        .bit-ctp-bdy {
+            min-height: 0;
+            overflow: hidden auto;
         }
 
         // The safe area is drawn as the top border of the first part of the container, which its own background

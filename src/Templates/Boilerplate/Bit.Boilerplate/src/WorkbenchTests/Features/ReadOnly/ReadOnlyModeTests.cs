@@ -1,8 +1,8 @@
 namespace Boilerplate.WorkbenchTests.Features.ReadOnly;
 
 /// <summary>
-/// Outside dev mode, like in a published demo or the plain run bit CLI starts, nothing can change, not even from this
-/// machine, and no agent can connect. The pages, screenshots and checks don't need any of that, so they still work.
+/// Outside dev mode, like in a published demo or the plain run bit CLI starts, only comments can change, and no agent can
+/// connect. The pages, screenshots and checks don't need any of that, so they still work.
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
 public class ReadOnlyModeTests
@@ -13,7 +13,6 @@ public class ReadOnlyModeTests
     [DataRow("GET", "api/review")]
     [DataRow("GET", "api/review/wait?cursor=0")]
     [DataRow("POST", "api/review/flows")]
-    [DataRow("POST", "mcp")]
     public async Task TheAgentsEndpoints_Should_NotExistEvenOnThisMachine(string method, string url)
     {
         var server = await WorkbenchTestsInitializer.ReadOnlyServer;
@@ -24,15 +23,18 @@ public class ReadOnlyModeTests
     }
 
     [TestMethod]
-    public async Task AReviewerOnThisMachine_Should_ChangeNothing()
+    public async Task AReviewerOnThisMachine_Should_LeaveCommentsForTheAgentAndChangeNothingElse()
     {
         var server = await WorkbenchTestsInitializer.ReadOnlyServer;
 
         await using var reviewer = await WorkbenchTestReviewer.Open(server);
 
         Assert.IsFalse(reviewer.Session.CanWrite);
-        Assert.IsNull(await reviewer.Session.AddThread("assistant", "", new("body", null, null, 0, 0), reviewer.Name, "Let me in", null));
         Assert.IsNull(reviewer.Session.CreateFlow("A flow"));
+
+        var id = await reviewer.Comment(server, "assistant", "For the agent that connects");
+
+        await reviewer.Change(session => session.Delete(id));
     }
 
     [TestMethod]

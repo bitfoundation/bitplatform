@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
-/// What the coding agent does on the review, over MCP and HTTP: read, wait for, answer and track comments, set page statuses,
+/// What the coding agent does on the review, over HTTP: read, wait for, answer and track comments, set page statuses,
 /// draw flows and take screenshots. It edits the server's copy of the review document, which syncs to every open browser.
 /// </summary>
 public sealed partial class WorkbenchReviewAgent

@@ -14,12 +14,11 @@ public partial class SecurityHeadersTests
     private static readonly Dictionary<string, string> baseline = new(StringComparer.OrdinalIgnoreCase)
     {
         ["X-Content-Type-Options"] = "nosniff",
-        ["X-XSS-Protection"] = "1; mode=block",
         ["X-Frame-Options"] = "SAMEORIGIN",
         ["Referrer-Policy"] = "strict-origin-when-cross-origin",
         ["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()",
         ["Cross-Origin-Resource-Policy"] = "cross-origin",
-        ["Content-Security-Policy"] = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; upgrade-insecure-requests;",
+        ["Content-Security-Policy"] = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; base-uri 'self'; upgrade-insecure-requests;",
     };
 
     /// <summary>30 days: what the three sources write. Cloudflare may only make it longer.</summary>
@@ -28,22 +27,22 @@ public partial class SecurityHeadersTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    [DataRow(DeployedApps.AdminPanel, "en-US/", DisplayName = "AdminPanel page (Server.Web, App.razor)")]
-    [DataRow(DeployedApps.Todo, "en-US/", DisplayName = "Todo page (Server.Web, App.razor)")]
-    [DataRow(DeployedApps.Sales, "", DisplayName = "Sales culture redirect (302)")]
-    [DataRow(DeployedApps.Sales, "sitemap.xml", DisplayName = "Sales sitemap.xml")]
-    [DataRow(DeployedApps.Sales, "openapi/v1.json", DisplayName = "Sales OpenAPI document (integrated API)")]
-    [DataRow(DeployedApps.AdminPanelApi, "openapi/v1.json", DisplayName = "AdminPanelApi OpenAPI document")]
-    [DataRow(DeployedApps.AdminPanelApi, "scalar/v1", DisplayName = "AdminPanelApi Scalar page")]
-    [DataRow(DeployedApps.TodoApi, "e2e/route/that-does-not-exist", DisplayName = "TodoApi 404")]
-    [DataRow(DeployedApps.AdminPanelWasmStandalone, "", DisplayName = "AdminPanelWasmStandalone index.html (Static Web App)")]
-    [DataRow(DeployedApps.TodoAot, "_framework/blazor.webassembly.js", DisplayName = "TodoAot framework script (Static Web App)")]
-    [DataRow(DeployedApps.TodoOffline, "offline-todo", DisplayName = "TodoOffline navigation fallback (Static Web App)")]
-    public async Task Response_Should_CarryTheSecurityBaseline(string host, string path)
+    [DataRow(DeployedApps.AdminPanel, "en-US/", true, DisplayName = "AdminPanel page (Server.Web, App.razor)")]
+    [DataRow(DeployedApps.Todo, "en-US/", true, DisplayName = "Todo page (Server.Web, App.razor)")]
+    [DataRow(DeployedApps.Sales, "", false, DisplayName = "Sales culture redirect (302)")]
+    [DataRow(DeployedApps.Sales, "sitemap.xml", false, DisplayName = "Sales sitemap.xml")]
+    [DataRow(DeployedApps.Sales, "openapi/v1.json", false, DisplayName = "Sales OpenAPI document (integrated API)")]
+    [DataRow(DeployedApps.AdminPanelApi, "openapi/v1.json", false, DisplayName = "AdminPanelApi OpenAPI document")]
+    [DataRow(DeployedApps.AdminPanelApi, "scalar/v1", false, DisplayName = "AdminPanelApi Scalar page")]
+    [DataRow(DeployedApps.TodoApi, "e2e/route/that-does-not-exist", false, DisplayName = "TodoApi 404")]
+    [DataRow(DeployedApps.AdminPanelWasmStandalone, "", false, DisplayName = "AdminPanelWasmStandalone index.html (Static Web App)")]
+    [DataRow(DeployedApps.TodoAot, "_framework/blazor.webassembly.js", false, DisplayName = "TodoAot framework script (Static Web App)")]
+    [DataRow(DeployedApps.TodoOffline, "offline-todo", false, DisplayName = "TodoOffline navigation fallback (Static Web App)")]
+    public async Task Response_Should_CarryTheSecurityBaseline(string host, string path, bool appWidePolicy)
     {
         using var response = await Send(HttpMethod.Get, new Uri(new Uri(host), path));
 
-        AssertBaseline(response);
+        AssertBaseline(response, appWidePolicy);
     }
 
     /// <summary>
@@ -81,9 +80,8 @@ public partial class SecurityHeadersTests
     }
 
     /// <summary>
-    /// The app-wide policy: ContentSecurityPolicy.razor's, which App.razor sends as a second header. It is stricter than the baseline's
-    /// (default-src, script-src, connect-src ...) and a browser enforces both. It must name the app's own API, or the
-    /// app could not call it.
+    /// The app-wide policy: ContentSecurityPolicy.razor's, which App.razor sends instead of the baseline's. It is stricter
+    /// (default-src, script-src, connect-src ...). It must name the app's own API, or the app could not call it.
     /// </summary>
     [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo (standalone API)")]
@@ -96,8 +94,8 @@ public partial class SecurityHeadersTests
 
         Assert.IsFalse(CspMetaTag().IsMatch(html), $"{app}'s prerendered page has a Content-Security-Policy meta tag, which turns off the browser's preload scanner.");
 
-        var policy = CspPolicies(response).SingleOrDefault(p => p.Contains("default-src"));
-        Assert.IsNotNull(policy, $"{app}'s prerendered page has no app-wide Content-Security-Policy header.");
+        var policy = CspPolicies(response).Single();
+        Assert.Contains("default-src", policy, $"{app}'s prerendered page has no app-wide Content-Security-Policy header.");
 
         var directives = policy
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -106,12 +104,12 @@ public partial class SecurityHeadersTests
 
         Assert.AreEqual("'none'", directives["object-src"]);
         Assert.AreEqual("'self'", directives["worker-src"]);
+        Assert.AreEqual("'self'", directives["frame-ancestors"]);
         Assert.IsTrue(directives.ContainsKey("upgrade-insecure-requests"), "Production pages should upgrade insecure requests.");
         Assert.Contains("'self'", directives["default-src"]);
         Assert.Contains(DeployedApps.ApiOf(app), directives["connect-src"], $"{app} could not reach its own API.");
         Assert.Contains(DeployedApps.ApiOf(app), directives["form-action"]);
-        // Meta policies ignore frame-ancestors, which is why the header carries it.
-        Assert.IsFalse(directives.ContainsKey("frame-ancestors"), "frame-ancestors is ignored in a meta tag; it belongs in the header.");
+        Assert.AreEqual("same-origin-allow-popups", HeaderOf(response, "Cross-Origin-Opener-Policy"), "Social sign-in comes back through window.opener, so same-origin is out.");
     }
 
     /// <summary>
@@ -131,7 +129,12 @@ public partial class SecurityHeadersTests
             $"{host} serves apple-app-site-association as {response.Content.Headers.ContentType}.");
     }
 
-    private void AssertBaseline(HttpResponseMessage response)
+    /// <param name="appWidePolicy">
+    /// A page App.razor renders carries the app-wide policy instead of the small one, which
+    /// <see cref="PrerenderedPage_Should_CarryTheAppWideCspHeader"/> checks directive by directive. Every other row keeps
+    /// the exact comparison, so a policy such as <c>default-src *</c> showing up there still fails.
+    /// </param>
+    private void AssertBaseline(HttpResponseMessage response, bool appWidePolicy = false)
     {
         var uri = response.RequestMessage!.RequestUri;
 
@@ -139,7 +142,15 @@ public partial class SecurityHeadersTests
         {
             if (name is "Content-Security-Policy")
             {
-                Assert.Contains(expected, CspPolicies(response), $"{name} on {uri} ({(int)response.StatusCode}): {HeaderOf(response, name)}");
+                var policy = CspPolicies(response).Single();
+                if (appWidePolicy)
+                {
+                    Assert.Contains("default-src", policy, $"{name} on {uri} ({(int)response.StatusCode}) is not the app-wide policy.");
+                }
+                else
+                {
+                    Assert.AreEqual(expected, policy, $"{name} on {uri} ({(int)response.StatusCode}).");
+                }
                 continue;
             }
 
@@ -151,11 +162,12 @@ public partial class SecurityHeadersTests
         var maxAge = int.Parse(HstsMaxAge().Match(hsts).Groups["seconds"].Value);
         Assert.IsGreaterThanOrEqualTo(minHstsMaxAge, maxAge, $"Strict-Transport-Security on {uri}: {hsts}");
 
-        // Nothing that names the stack behind the proxy.
+        // Nothing that names the stack behind the proxy, and nothing obsolete.
         foreach (var name in (string[])["X-Powered-By", "X-AspNet-Version", "X-AspNetMvc-Version"])
         {
             Assert.IsNull(HeaderOf(response, name), $"{name} on {uri}: {HeaderOf(response, name)}");
         }
+        Assert.IsTrue(HeaderOf(response, "X-XSS-Protection") is null or "0", $"X-XSS-Protection on {uri}: {HeaderOf(response, "X-XSS-Protection")}");
         Assert.IsFalse(HeaderOf(response, "Server") is string server && (server.Contains("Kestrel", StringComparison.OrdinalIgnoreCase) || server.Contains("IIS", StringComparison.OrdinalIgnoreCase)),
             $"Server on {uri}: {HeaderOf(response, "Server")}");
     }

@@ -273,6 +273,9 @@
     <data name="RatingsCount" xml:space="preserve">
         <value>{0} ratings</value>
     </data>
+    <data name="RatingsCountOne" xml:space="preserve">
+        <value>{0} rating</value>
+    </data>
     <data name="WaitlistEmailLabel" xml:space="preserve">
         <value>Email</value>
     </data>
@@ -633,12 +636,6 @@
     <data name="LegalAccessibility3Body" xml:space="preserve">
         <value>If anything here is hard to use, write to {1}. We answer within five working days.</value>
     </data>
-    <data name="StoreListingVersion" xml:space="preserve">
-        <value>Version {0} on the App Store</value>
-    </data>
-    <data name="StoreListingUpdated" xml:space="preserve">
-        <value>Updated {0}</value>
-    </data>
     <data name="GalleryTitle" xml:space="preserve">
         <value>Landing pages, ready to become yours</value>
     </data>
@@ -701,6 +698,42 @@
     </data>
     <data name="GalleryHowResultBody" xml:space="preserve">
         <value>Your agent puts it together with the project's agent skills, in both languages, and it deploys with the rest of the project.</value>
+    </data>
+    <data name="GalleryScoresTitle" xml:space="preserve">
+        <value>A perfect score, on a phone</value>
+    </data>
+    <data name="GalleryScoreMobile" xml:space="preserve">
+        <value>Mobile</value>
+    </data>
+    <data name="GalleryScorePerformance" xml:space="preserve">
+        <value>Performance</value>
+    </data>
+    <data name="GalleryScoreAccessibility" xml:space="preserve">
+        <value>Accessibility</value>
+    </data>
+    <data name="GalleryScoreBestPractices" xml:space="preserve">
+        <value>Best Practices</value>
+    </data>
+    <data name="GalleryScoreSeo" xml:space="preserve">
+        <value>SEO</value>
+    </data>
+    <data name="GalleryScoreAgentic" xml:space="preserve">
+        <value>Agentic Browsing</value>
+    </data>
+    <data name="GalleryScoreSource" xml:space="preserve">
+        <value>Source:</value>
+    </data>
+    <data name="GalleryScoreTested" xml:space="preserve">
+        <value>, mobile, tested on {0}</value>
+    </data>
+    <data name="ErrorPageTitle" xml:space="preserve">
+        <value>Something went wrong on our side</value>
+    </data>
+    <data name="ErrorPageBody" xml:space="preserve">
+        <value>Reloading the page usually fixes it.</value>
+    </data>
+    <data name="ErrorPageReload" xml:space="preserve">
+        <value>Reload</value>
     </data>
     <data name="GalleryFooter" xml:space="preserve">
         <value>Every business, person and number in these samples is made up.</value>

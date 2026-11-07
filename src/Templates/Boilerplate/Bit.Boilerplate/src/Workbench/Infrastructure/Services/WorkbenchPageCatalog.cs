@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 //#if (module == "Admin")
 using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 //#endif
@@ -104,7 +105,26 @@ public static class WorkbenchPageCatalog
             typeof(SettingsPage),
             nameof(WorkbenchStrings.CategoryAppPages),
             ["BitAccordionList", "BitPivot", "BitOtpInput", "BitFileUpload"],
-            nameof(WorkbenchStrings.SettingsCaption))
+            nameof(WorkbenchStrings.SettingsCaption)),
+        new("landing-minimal",
+            nameof(WorkbenchStrings.LandingMinimalTitle),
+            nameof(WorkbenchStrings.LandingMinimalDescription),
+            BitIconName.Globe,
+            typeof(MinimalLandingPage),
+            nameof(WorkbenchStrings.CategoryLandingPages),
+            ["BitTextField", "BitCheckbox", "BitPanel"],
+            nameof(WorkbenchStrings.LandingMinimalCaption))
+        {
+            HasAppShell = false,
+            Switches =
+            [
+                new("consent", nameof(WorkbenchStrings.LandingSwitchConsent),
+                [
+                    new("decided", nameof(WorkbenchStrings.LandingConsentDecided)),
+                    new("first-visit", nameof(WorkbenchStrings.LandingConsentFirstVisit))
+                ])
+            ]
+        }
     ];
 
     /// <summary>The page with this key, ignoring case, or null.</summary>

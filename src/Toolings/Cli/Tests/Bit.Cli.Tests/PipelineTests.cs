@@ -184,6 +184,32 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task Check_Should_TreatAnyServicesSettingsAsOptional()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.SERVEROPERATIONS_SETTINGS }} ${{ secrets.SERVERMANAGEMENT_SETTINGS }}\n");
+        host.Runner.On("gh", "secret list --repo contoso/shop --env Production", 0, "");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"));
+
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVEROPERATIONS_SETTINGS not set, optional"));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERMANAGEMENT_SETTINGS not set, optional"));
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_NotAskForAnyServicesSettings()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.SERVEROPERATIONS_SETTINGS }} ${{ secrets.DATABASE_PASSWORD }}\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production --silent", 0, "");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
+
+        CollectionAssert.AreEquivalent(new[] { "DATABASE_PASSWORD" }, Stored(host).Keys.ToArray(), host.Output);
+        Assert.IsFalse(host.FlatOutput.Contains("Skipped SERVEROPERATIONS_SETTINGS", StringComparison.Ordinal), host.Output);
+    }
+
+    [TestMethod]
     public async Task SecretNames_Should_MatchWhateverTheirCase()
     {
         using var host = Repository();

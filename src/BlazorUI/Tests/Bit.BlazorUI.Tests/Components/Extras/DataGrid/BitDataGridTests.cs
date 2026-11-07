@@ -1462,6 +1462,89 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(1, providerCalls);
     }
 
+    // A lazy tree whose every fetch waits for the test to answer it, over one folder root (Id 1) keyed by its id.
+    private IRenderedComponent<BitDataGrid<TreeNode>> RenderPendingLazyTree(List<TaskCompletionSource<IEnumerable<TreeNode>?>> fetches)
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+
+        return RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TreeNode> { new() { Id = 1, Name = "root", IsFolder = true } });
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.HasChildrenSelector, (Func<TreeNode, bool>)(n => n.IsFolder));
+            parameters.Add(p => p.ChildrenProvider, (Func<TreeNode, Task<IEnumerable<TreeNode>?>>)(_ =>
+            {
+                var fetch = new TaskCompletionSource<IEnumerable<TreeNode>?>();
+                fetches.Add(fetch);
+                return fetch.Task;
+            }));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+    }
+
+    [TestMethod]
+    public async Task LazyTreeFetchOutlivedByNewItemsDoesNotCacheTheOldHierarchysChildren()
+    {
+        var fetches = new List<TaskCompletionSource<IEnumerable<TreeNode>?>>();
+        var component = RenderPendingLazyTree(fetches);
+
+        // The root is expanded, and the app reloads its rows (a new list, the same ids) while the children are on their way.
+        // Each click is started on the renderer's dispatcher and its task kept rather than awaited there (a statement
+        // lambda, not an expression one, which would hand InvokeAsync the task to await): the handler waits on a fetch
+        // this test only answers further down.
+        Task oldExpand = Task.CompletedTask;
+        await component.InvokeAsync(() => { oldExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
+        component.Render(p => p.Add(x => x.Items, new List<TreeNode> { new() { Id = 1, Name = "root", IsFolder = true } }));
+
+        fetches[0].SetResult([new TreeNode { Id = 11, Name = "stale-child" }]);
+        await oldExpand;
+
+        // Expanding the reloaded root fetches its children, rather than showing what the old hierarchy brought back.
+        Task newExpand = Task.CompletedTask;
+        await component.InvokeAsync(() => { newExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
+        Assert.AreEqual(2, fetches.Count);
+        fetches[1].SetResult([new TreeNode { Id = 11, Name = "fresh-child" }]);
+        await newExpand;
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        StringAssert.Contains(component.Markup, "fresh-child");
+        Assert.IsFalse(component.Markup.Contains("stale-child"));
+    }
+
+    [TestMethod]
+    public async Task LazyTreeFetchOutlivedByNewItemsLeavesTheNewHierarchysFetchLoading()
+    {
+        var fetches = new List<TaskCompletionSource<IEnumerable<TreeNode>?>>();
+        var component = RenderPendingLazyTree(fetches);
+
+        Task oldExpand = Task.CompletedTask;
+        await component.InvokeAsync(() => { oldExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
+        component.Render(p => p.Add(x => x.Items, new List<TreeNode> { new() { Id = 1, Name = "root", IsFolder = true } }));
+
+        // The reloaded root is expanded too, and its own fetch is still out when the old one lands.
+        Task newExpand = Task.CompletedTask;
+        await component.InvokeAsync(() => { newExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
+        Assert.AreEqual(2, fetches.Count);
+
+        fetches[0].SetResult([new TreeNode { Id = 11, Name = "stale-child" }]);
+        await oldExpand;
+
+        // The old fetch ending must not end the new one's loading state.
+        component.WaitForAssertion(() => Assert.AreEqual("true", component.Find(".bit-dtg-tree-toggle").GetAttribute("aria-busy")));
+
+        fetches[1].SetResult([new TreeNode { Id = 11, Name = "fresh-child" }]);
+        await newExpand;
+
+        component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-dtg-tree-toggle").GetAttribute("aria-busy")));
+        StringAssert.Contains(component.Markup, "fresh-child");
+        Assert.IsFalse(component.Markup.Contains("stale-child"));
+    }
+
     [TestMethod]
     public async Task PointerDropHandlersReorderRowsAndColumns()
     {

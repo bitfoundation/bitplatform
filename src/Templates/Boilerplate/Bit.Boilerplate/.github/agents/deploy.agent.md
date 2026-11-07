@@ -18,6 +18,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
   are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
   secrets, and its own database, storage and keys.
+- **A merge deploys only after the first deployment.** A new project's CDs run only by hand, so the merges made before
+  there is anywhere to deploy to spend no Actions minutes and leave no run waiting for a runner. Section 9 turns on each
+  one's `push` trigger, once that environment's first deployment has worked.
 - **Built on GitHub, run on the VM.** A push to an environment's branch starts its CD workflow. Its build job runs on
   a GitHub-hosted runner: Aspire publishes the AppHost for Docker Compose, and the app's images go to GitHub Container
   Registry (GHCR), tagged with the commit. Its deploy job runs on that environment's self-hosted runner on the VM,
@@ -53,9 +56,6 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   work to someone who can't do it.
 - Explain every step before you take it, in the person's terms, and do it yourself wherever you have the access: the
   repository, `gh`, the VM. Where only the user can act, give them the exact clicks and wait.
-- Work the details out when you get to them, from the project, the VM and each tool's current documentation: Docker,
-  the GitHub Actions runner, Aspire's Docker Compose publishing (the aspire MCP server's `search_docs`), cloudflared.
-  They change between versions.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
   passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
   accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
@@ -86,6 +86,8 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
 - Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
   openssl.
+- Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
+  than the rest of the setup takes.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
   `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
   environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
@@ -149,6 +151,8 @@ business, and only what the project doesn't answer by itself.
   from the edge.
 - Blazor Server is for development only in this template, and so is Auto, which runs on Blazor Server until
   WebAssembly has loaded: offer neither for a deployment.
+- Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
+  `InvariantGlobalization` is on in `src/Directory.Build.props`.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
   keep the setting names for a technical user and for the files.
 
@@ -174,7 +178,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
   same Cloudflare account as the tunnel. The others work the same way, and `appsettings.json` has a sample connection
   string for R2 and for Hetzner Object Storage, DigitalOcean Spaces and Contabo. RustFS, the S3 server the app runs
-  in development, can be self-hosted too; on the app's own VM it needs the same backups as the database.
+  in development, can be self-hosted too; on the app's own VM it needs the same backups as the database. With R2, the
+  setup token of section 8 lets you create the bucket and its keys yourself.
 <!--#elif (filesStorage == "AzureBlobStorage")-->
 - **File storage**: an Azure Storage account, and its connection string.
 <!--#elif (filesStorage == "Local")-->
@@ -185,11 +190,13 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **SMS**: a Twilio account, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
-  compatible provider; `appsettings.json` lists samples.
+  compatible provider; `appsettings.json` lists samples. Each model has a key setting of its own under `AI:OpenAI`, and
+  one fills none of the others: an empty `EmbeddingApiKey` sends embeddings to `AI:HuggingFace:EmbeddingEndpoint`,
+  whose default, `http://localhost:7000`, is a local server a deployment doesn't have.
 <!--#endif-->
 <!--#if (signalR == true)-->
 - **Speech**: dictation needs a speech-to-text model, read-aloud a text-to-speech model, and the voice call a Realtime
-  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat.
+  model. OpenAI provides all three, so one OpenAI account covers them as well as the chat, each with its own key.
 <!--#endif-->
 <!--#if (sentry == true)-->
 - **Sentry**: a project per environment, and its DSN.
@@ -205,15 +212,16 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **reCAPTCHA**: a key pair registered for the environment's domain.
 <!--#endif-->
 <!--#if (cloudflare == true)-->
-- **Cloudflare cache purge**: the zone id, and an API token that may purge its cache.
+- **Cloudflare cache purge**: the zone id, and an API token that may purge its cache only, which you mint in section 8.
 <!--#endif-->
 - **External sign-in**: only the providers under `Authentication` the user wants to offer, each one registered with the
   environment's address.
 - **App certificate**: a new `AppCertificate` for each environment, never the development one (see `AppCertificate.md`
   in the server project). Generate it yourself.
 - **Client apps**: the Android, iOS, macOS and Windows signing keys, only for the apps the user ships
-  (`.docs/16- CI-CD Pipeline and Environments.md`). Take the jobs of the others out of the CD: every run draws on the
-  Actions minutes of the user's GitHub plan, and macOS minutes cost the most.
+  (`.docs/16- CI-CD Pipeline and Environments.md`). Their CD jobs are off (`if: false`); turn on only those of the
+  apps the user ships, since every run draws on the Actions minutes of the user's GitHub plan, and macOS minutes cost
+  the most.
 
 ## 6. GitHub environments and secrets
 
@@ -227,9 +235,11 @@ there, and the setting or secret that carries it. Every environment gets its own
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
-- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: its public address (`Site__Url`), the
-  `smtp` connection string its waitlist emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: the `smtp` connection string its waitlist
+  emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
+- The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
+  to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
@@ -242,7 +252,7 @@ them to GHCR, and `deploy_server` runs on the environment's own runner, migrates
 project up, and fails unless every container is healthy and the public address answers. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
-  the Test CD runs on `develop` and the Production CD on `main`.
+  the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
 - Set every variable and secret the CD reads for this project's options (section 6).
 - Carry what section 4 decided into the settings: prerendering and the caching flags go into the apps' settings
   secrets.
@@ -256,7 +266,37 @@ project up, and fails unless every container is healthy and the public address a
 
 ## 8. The domain and the tunnel
 
-- Add the user's domain to Cloudflare on the free plan, and create a named tunnel for each environment.
+- **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
+  with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
+  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
+  Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below
+  yourself through Cloudflare's API, for each environment, and mint every token that runs with it. Tell the user
+  Account API Tokens lets it mint any token on the account, so it is as strong as the account until they delete it.
+- The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
+  the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
+  dashboard, since a token can't delete itself. More environments later get a new one.
+- Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
+  domain is already in use, for mail or another site, first bring its existing DNS records into the zone and check
+  them against the current provider, and have DNSSEC turned off at the registrar and wait out its old DS record's TTL,
+  so nothing breaks on the switch.
+- Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
+  below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
+<!--#if (filesStorage == "S3")-->
+- For R2, create the environment's bucket, then mint an account API token with Object Read & Write on that bucket only.
+  Its id is the S3 Access Key ID and the SHA-256 of its value is the Secret Access Key, so `S3_CONNECTION_STRING` needs
+  nothing from the user. Check the keys with a write, a read and a delete before you store them.
+<!--#endif-->
+<!--#if (cloudflare == true)-->
+- Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
+  before you store it.
+<!--#endif-->
+- Create the Access applications and policies for SSH through the tunnel (section 2), and for the Workbench if the user
+  wants it.
+- Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
+  the free plan's certificate covers one level of subdomain only.
+- The Workbench isn't deployed. If the user wants it on Test, never Production, put its hostname behind Cloudflare
+  Access, Cloudflare's own sign-in, and let `/alive` through for the deploy job's check. Its screenshots need a base
+  image with a browser, such as Playwright's.
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
@@ -283,11 +323,18 @@ project up, and fails unless every container is healthy and the public address a
 ## 9. First deployment and hand-back
 
 - Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, and run the
-  Test CD by hand (`gh workflow run`) if that change didn't touch the app's code. Watch the run. The deploy job already
+  Test CD by hand (`gh workflow run cd-test.yml --ref develop`), since a merge doesn't deploy yet. Watch the run. The
+  deploy job already
   fails when a container isn't healthy or the public address doesn't answer; when it does, read that container's logs
   (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
+- The migrations seed `test@bitplatform.dev`, a global admin whose password is in this repository, in every
+  environment, and anyone can sign in with it until that changes. As soon as the environment's first deployment is
+  up, before the checks above, change its password in the app and give the new one to the user to keep. Then open
+  `<the web app's address>/settings/tfa` for them to turn two-factor sign-in on, since dev-mcp takes an account with
+  it, have them put their own email and phone number on the account, where its reset links and codes go, and connect
+  that environment's dev-mcp with this account.
 - Then ask that environment's dev-mcp for its health (`GetHealth`), after the sign-in the troubleshoot skill
   describes. It runs every health check the server has and returns each one that isn't Healthy with its reason, which
   the deploy job's own check doesn't see, since a Degraded check still answers 200. Outside Development, every service
@@ -299,7 +346,18 @@ project up, and fails unless every container is healthy and the public address a
 - Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
   launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**
   skill (`.github/agents/landing-page.agent.md`) describes, so every deployment empties it.
-- Once Test works, Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead.
+- Once Test works, uncomment the `push` block of `.github/workflows/cd-test.yml` and merge that through ai-dlc's phase
+  7. Uncomment all of it, since `paths` without `branches` runs the CD on every branch. The workflow is in its own
+  `paths`, so this merge is the first deployment that starts by itself: watch it, and fix whatever it shows before going
+  on. Then tell the user that from now on every merge into `develop` that changes the app deploys.
+- Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead, then the Production CD by
+  hand on the same go-ahead (`gh workflow run cd-production.yml --ref main`), since that merge doesn't deploy yet. Check
+  it the way you checked Test.
+- Once Production works, uncomment the `push` block of `.github/workflows/cd-production.yml` the same way, on a branch
+  merged into `develop`. It reaches `main` with the next release, and since GitHub reads a push's workflow from the
+  pushed commit, that release's merge is the first deployment to Production that starts by itself. Offer the user that
+  release now, so this is proven before they rely on it, merge it only on their go-ahead, and watch the run. Tell them
+  that from then on merging a release into `main` deploys it.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).
 - After the first deployment to Production, unless the database already has a backup, end with a warning the user

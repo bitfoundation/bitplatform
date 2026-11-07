@@ -4,6 +4,8 @@ namespace Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
+    // [mirror] crawler and benchmark detection - keep in sync with:
+    // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/HttpContextExtensions.cs
     private static readonly string[] CrawlerUserAgentTokens =
     [
         "googlebot", "storebot-google", "google-inspectiontool", "googleother", "google-extended",

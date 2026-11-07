@@ -1111,6 +1111,7 @@
                         "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelCardsUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelGreetingUITests.cs",
                         "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",

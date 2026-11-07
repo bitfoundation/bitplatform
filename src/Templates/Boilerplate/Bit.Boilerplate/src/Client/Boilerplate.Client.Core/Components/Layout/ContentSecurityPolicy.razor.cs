@@ -65,10 +65,6 @@ public partial class ContentSecurityPolicy
         mediaSrc.Add("blob:");
         //#endif
 
-        // --- Add Google Fonts ---
-        fontSrc.Add("https://fonts.gstatic.com");
-        styleSrc.Add("https://fonts.googleapis.com");
-
         // --- Add for home page's github stats ---
         imgSrc.Add("https://img.shields.io");
         connectSrc.Add("https://api.github.com");

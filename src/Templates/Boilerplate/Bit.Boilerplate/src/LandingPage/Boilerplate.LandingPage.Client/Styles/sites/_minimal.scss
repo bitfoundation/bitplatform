@@ -1,3 +1,5 @@
+// [mirror] the Minimal sample's look - keep in sync with:
+// - src/Workbench/Components/Pages/LandingPages/Minimal/_minimal-site.scss
 @include site(lp-minimal) {
     --notch-mark: #FFD43B;
     --notch-highlight: var(--notch-mark);

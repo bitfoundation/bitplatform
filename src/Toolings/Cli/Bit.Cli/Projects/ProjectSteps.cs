@@ -246,7 +246,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
+        string[] arguments = ["build", project.MauiProject, "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
         var administrator = cli.Environment.IsWindows && AdministratorNeeds.AndroidSdkNeedsIt(cli.Environment) ? cli.Administrator : null;
         var result = administrator is null
@@ -283,7 +283,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> XcodeAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var sdk = await Dotnet(["msbuild", Templates.Platforms.MauiProject(project.Name), $"-p:TargetFramework={project.TargetFrameworkVersion}-ios", "-getProperty:_XamarinSdkRootDirectory"], cancellationToken, progress, TimeSpan.FromMinutes(5));
+        var sdk = await Dotnet(["msbuild", project.MauiProject, $"-p:TargetFramework={project.TargetFrameworkVersion}-ios", "-getProperty:_XamarinSdkRootDirectory"], cancellationToken, progress, TimeSpan.FromMinutes(5));
         var sdkRoot = sdk.Succeeded ? sdk.OutputLines.Select(l => l.Trim()).LastOrDefault(Path.IsPathRooted) : null;
         var versions = sdkRoot is null ? null : Path.Combine(sdkRoot, "Versions.plist");
         var wanted = versions is not null && File.Exists(versions) ? RecommendedXcodeRegex().Match(File.ReadAllText(versions)) : null;

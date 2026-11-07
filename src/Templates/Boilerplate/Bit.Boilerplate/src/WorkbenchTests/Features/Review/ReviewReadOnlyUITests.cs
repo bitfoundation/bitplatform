@@ -1,6 +1,6 @@
 namespace Boilerplate.WorkbenchTests.Features.Review;
 
-/// <summary>The review where nothing can change it: a copy without an agent, like a published demo, and a visitor through a tunnel on a copy with one.</summary>
+/// <summary>The review without an agent: a copy like a published demo, where comments still work and little else changes, and a visitor through a tunnel on a copy with one.</summary>
 [TestClass, TestCategory("UITest")]
 public class ReviewReadOnlyUITests : ReviewPageTest
 {
@@ -15,54 +15,6 @@ public class ReviewReadOnlyUITests : ReviewPageTest
         await Expect(thread.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DeleteComment })).ToHaveCountAsync(0);
     }
 
-    [TestMethod, WithoutAnAgent]
-    public async Task TheCommentsAndAnswers_Should_ShowWithNoWayToChangeThem(WorkbenchSurface surface)
-    {
-        var text = Unique("Left before this copy was published");
-        var answer = Unique("Answered by the agent");
-        var id = await SeedComment("shifts", text);
-
-        await Server.Agent.SetTasks(AgentName, id, [new("Read it", true), new("Answer it", false)], CancellationToken.None);
-        await Server.Agent.Reply(AgentName, id, answer, CancellationToken.None);
-
-        await OpenWorkbench("shifts");
-        await OpenReview();
-
-        var thread = ThreadWith(answer);
-
-        await Expect(thread).ToBeVisibleAsync();
-        await Expect(thread.Locator(".message.from-agent .message-author")).ToContainTextAsync(AgentName);
-
-        await Press(thread.Locator("button.thread-head"));
-
-        await Expect(thread).ToContainTextAsync(text);
-        await Expect(thread.GetByRole(AriaRole.List, new() { Name = WorkbenchStrings.AgentTasks }).Locator("li.done")).ToHaveTextAsync(["Read it"]);
-        await Expect(thread.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowView })).ToBeVisibleAsync();
-
-        await ExpectNoWayToChangeTheThread(Tools, thread);
-
-        await Expect(Tools.GetByRole(AriaRole.Switch, new() { Name = WorkbenchStrings.ReplyNotifications })).ToHaveCountAsync(0);
-        await Expect(ToolsButton(WorkbenchStrings.PinComment)).ToHaveCountAsync(0);
-    }
-
-    [TestMethod, WithoutAnAgent]
-    public async Task ADoneComment_Should_HaveNoReopen(WorkbenchSurface surface)
-    {
-        var text = Unique("Finished before this copy was published");
-        var id = await SeedComment("shifts", text);
-
-        await Server.Agent.SetStatus(AgentName, id, WorkbenchReviewStatus.Done, CancellationToken.None);
-
-        await OpenWorkbench("shifts");
-        await OpenReview();
-        await Press(ListButton(WorkbenchStrings.DoneComments));
-        await OpenThread(text);
-
-        await Expect(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowView })).ToBeVisibleAsync();
-
-        await ExpectNoWayToChangeTheThread(Tools, ThreadWith(text));
-    }
-
     [TestMethod, OnDesktops]
     public async Task AClickWithoutCommentMode_Should_StartNoComment(WorkbenchSurface surface)
     {
@@ -75,7 +27,7 @@ public class ReviewReadOnlyUITests : ReviewPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
-    public async Task CommentMode_Should_OpenTheReviewAndLeaveThePageToUse(WorkbenchSurface surface)
+    public async Task CommentMode_Should_OpenTheReviewAndStartAComment(WorkbenchSurface surface)
     {
         await OpenWorkbench("buildings");
 
@@ -86,13 +38,13 @@ public class ReviewReadOnlyUITests : ReviewPageTest
 
         await Expect(Page.Locator(".text-panel")).ToHaveCountAsync(0);
         await Expect(AgentLine).ToHaveTextAsync(WorkbenchStrings.AgentOffline);
-        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "false");
-        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-mode", WorkbenchModes.Comment);
+        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("data-wb-mode", WorkbenchModes.Comment);
 
         await View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }).ClickAsync();
 
-        await Expect(View().GetByText(WorkbenchStrings.BuildingsAddTitle, new() { Exact = true })).ToBeVisibleAsync();
-        await Expect(Composer).ToHaveCountAsync(0);
+        await Expect(Composer).ToBeVisibleAsync();
+        await Expect(View().GetByText(WorkbenchStrings.BuildingsAddTitle, new() { Exact = true })).ToHaveCountAsync(0);
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
@@ -109,16 +61,16 @@ public class ReviewReadOnlyUITests : ReviewPageTest
         await Expect(Button(WorkbenchStrings.Tools)).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(AgentLine).ToHaveTextAsync(WorkbenchStrings.AgentOffline);
         await Expect(AgentLine).ToBeInViewportAsync();
-        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.PhoneWithoutAgent)]
-    public async Task ThePhonesTools_Should_OfferNoPinAndNoBanner(WorkbenchSurface surface)
+    public async Task ThePhonesTools_Should_OfferThePinWithThePageStillInUse(WorkbenchSurface surface)
     {
         await OpenWorkbench("buildings");
         await OpenTools();
 
-        await Expect(ToolsButton(WorkbenchStrings.PinComment)).ToHaveCountAsync(0);
+        await Expect(ToolsButton(WorkbenchStrings.PinComment)).ToBeVisibleAsync();
         await Expect(AgentLine).ToHaveTextAsync(WorkbenchStrings.AgentOffline);
 
         await CloseTools();
@@ -201,14 +153,14 @@ public class ReviewReadOnlyUITests : ReviewPageTest
         {
             await page.Locator(".tools-button").TapAsync();
             await Expect(page.Locator(".tools-header")).ToBeVisibleAsync();
-            await Expect(tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PinComment, Exact = true })).ToHaveCountAsync(0);
+            await Expect(tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PinComment, Exact = true })).ToBeVisibleAsync();
         }
         else
         {
             var commentMode = page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ModeComment, Exact = true });
 
             await commentMode.ClickAsync();
-            await Expect(commentMode).ToHaveAttributeAsync("aria-pressed", "false");
+            await Expect(commentMode).ToHaveAttributeAsync("aria-pressed", "true");
         }
 
         await Expect(page.GetByText(WorkbenchStrings.AgentNotConnected)).ToBeVisibleAsync();

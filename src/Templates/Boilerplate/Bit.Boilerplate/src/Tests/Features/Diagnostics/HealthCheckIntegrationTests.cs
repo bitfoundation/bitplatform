@@ -27,9 +27,11 @@ public partial class HealthCheckIntegrationTests
     /// Verifies the application exposes a working liveness health-check endpoint. <c>MapAppHealthChecks</c>
     /// (See <c>WebApplicationExtensions.MapAppHealthChecks</c>) maps <c>GET /alive</c> with a predicate that runs
     /// only the checks tagged <c>"live"</c> - which, per <c>AddDefaultHealthChecks</c>, is exactly the single
-    /// <c>binStorage</c> disk-storage check. That check is deterministically healthy in any test/CI environment
-    /// (it only requires free disk space), so the endpoint returns HTTP 200 with the default plain-text body
-    /// <c>"Healthy"</c>. <c>/alive</c> is deliberately preferred over <c>/health</c> here: <c>/health</c> also runs
+    /// <c>binStorage</c> disk-storage check. That check only needs 2 GB free at the root of the current directory's
+    /// path, which on Linux is <c>/</c> even when the workspace sits on another mount. <c>ci.yml</c> makes sure of it
+    /// with its <c>Free disk space</c> step, so the endpoint returns HTTP 200 with the
+    /// default plain-text body <c>"Healthy"</c>. <c>/alive</c> is deliberately preferred over <c>/health</c> here:
+    /// <c>/health</c> also runs
     /// the Hangfire check (which is racy right after the host starts, before the Hangfire server has written its
     /// first heartbeat) plus the DbContext and blob-storage checks, none of which are deterministic at this instant.
     /// The endpoint is anonymous, so no sign-in is required; the request is issued through the DI <see cref="HttpClient"/>
@@ -245,6 +247,31 @@ public partial class HealthCheckIntegrationTests
         Assert.Contains("live", registrations.Single(r => r.Name == "binStorage").Tags);
     }
 
+    //#if (redis == true)
+    [TestMethod]
+    public async Task RedisPersistentCheck_Should_ExistOnlyWhereServerApiRuns()
+    {
+        const string checkName = "StackExchange.Redis_redis-persistent";
+
+        var sharedBuilder = WebApplication.CreateBuilder();
+        sharedBuilder.AddServerSharedServices();
+
+        await using var sharedServices = sharedBuilder.Services.BuildServiceProvider();
+        var sharedRegistrations = sharedServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+
+        Assert.DoesNotContain(r => r.Name == checkName, sharedRegistrations,
+            "A standalone Server.Web calls AddServerSharedServices without having this connection, so the check would keep its /health at 503.");
+        Assert.Contains(r => r.Name == "StackExchange.Redis_redis-cache", sharedRegistrations);
+
+        await using var server = new AppTestServer();
+        server.Build();
+
+        var apiRegistrations = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+
+        Assert.Contains(r => r.Name == checkName, apiRegistrations, "Hangfire and the distributed lock of Server.Api depend on this connection.");
+    }
+
+    //#endif
     /// <summary>
     /// Outside development, an unconfigured dependency reports Degraded and names its settings. Only the services are
     /// built, which leaves <c>AppEnvironment</c>, shared by the parallel tests, untouched.

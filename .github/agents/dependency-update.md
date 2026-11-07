@@ -81,7 +81,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-16`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-17`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -120,7 +120,9 @@ version in each of the two framework groups at the end of the file: the 11.x one
 10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
 `Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
 the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
-on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
+on import order, and the build fails with CS0757. So do the `CommunityToolkit.Datasync.*` packages: from 10.2.0 the
+client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and the restore fails with NU1107, so the
+.NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace. A template line written with the .NET 10 value
 of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
@@ -365,6 +367,10 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.
-6. Clean up at once, without asking: `git restore` the pushed files in the original checkout (after
+6. CodeRabbit reviews the PR a few minutes after it opens, and again after every push, so come back to the PR
+   once its review is in. Check each of its comments against the code: fix the ones that hold in the same branch,
+   and answer every other thread with the reason it stays. Its pre-merge checks can't see the lock files it skips,
+   so an "inconclusive" that only asks for them needs no answer.
+7. Clean up at once, without asking: `git restore` the pushed files in the original checkout (after
    `git diff <pushed-commit> -- <files>` comes back empty), delete build artifacts the sweep created,
    and `git worktree remove` the worktree. `git status` must match what it was before the sweep.

@@ -100,10 +100,10 @@ Before implementing any changes, you **MUST** complete the following:
 
 <!--#if (aspire == true)-->
 -   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.AppHost project directory.
--   **Run the project**: Run `aspire start`. If needed, you may use the Playwright MCP tools to interact with the `serverweb` resource running by aspire to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
+-   **Run the project**: Run `aspire start`. If needed, you may use the Playwright MCP tools to interact with the `serverweb` resource running by aspire to validate things (navigate, click, fill forms, take screenshots without a file name, so they stay in the git-ignored `.playwright-mcp` folder), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 <!--#else-->
 -   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.Web project directory.
--   **Run the project**: Run `dotnet watch` in src/Server/Boilerplate.Server.Web project directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
+-   **Run the project**: Run `dotnet watch` in src/Server/Boilerplate.Server.Web project directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots without a file name, so they stay in the git-ignored `.playwright-mcp` folder), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 <!--#endif-->
 <!--#if (aspire == true && cloudflare == true)-->
 -   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so use the public URL of the `cloudflare-tunnel-web` resource that `aspire start` creates (a `*.trycloudflare.com` quick tunnel unless `cloudflare-tunnel-web-domain` is set; read it from the aspire dashboard or the aspire MCP `list_resources` tool) instead of a `localhost` URL.
@@ -131,6 +131,7 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#else-->
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
 <!--#endif-->
+-   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails a pull request on anything this would change.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 -   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations and `bit run` starts the native apps; `bit --help` lists them all.
 
@@ -164,7 +165,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 ## 6. Behavioral Directives
 
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
--   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec, and what is still undecided under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool. Your own proposals are not decisions, so a conversation that has settled nothing yet has nothing to write.
+-   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec in the turn it is settled, even while you still have questions for the user, and what is still undecided, those questions included, under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool. Your own proposals are not decisions, so a conversation that has settled nothing yet has nothing to write.
 -   **Never wait unbounded.** Cap every long-running command with `timeout <seconds> <command>` and report the exit code (`124` = hit the cap), and pair the wait with a stall check - a process at ~0% CPU is hung, not slow. Re-arm in ~5 minute slices, inspecting the state between them.
 -   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes. Whether or not they agree, write the workaround into `specs/workarounds.md`: what goes wrong, where the workaround lives, the report, and how to tell it can go.
 
@@ -174,7 +175,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
-| `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, fixing a reported bug even when its cause turns out obvious (its short track is what adds the regression test), work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
+| `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, even when the request is one sentence on what the user wants and nothing is settled yet, fixing a reported bug even when its cause turns out obvious (its short track is what adds the regression test), work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
 | `scaffold-entity` | Scaffolding a CRUD entity whose fields, rules and screens are already settled, usually as a task of an `ai-dlc` plan. A request for a new feature or section starts with `ai-dlc` | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
@@ -187,6 +188,6 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | `write-tests` | Writing or running the tests of a change: which kind each change needs, how this project's test server, test data and UI tests work, and reading a failure. The other skills use it wherever they test | `.github/agents/write-tests.agent.md` |
 | `troubleshoot` | A problem reported in the Test or Production environment: an error, wrong data, a failing background job, something a user saw in the deployed app. It hands the fix to `ai-dlc` | `.github/agents/troubleshoot.agent.md` |
 | `deploy` | Deploying or publishing the app, or setting up its Test or Production environment: the server, the runner, the external services and their secrets, the domain | `.github/agents/deploy.agent.md` |
-| `template-diff` | Moving the project to a newer version of its project template or to another .NET version, or adding one of the template's optional features this project was created without, or removing one it has | `.github/agents/template-diff.agent.md` |
+| `template-diff` | Moving the project to a newer version of its project template or to another .NET version, or adding one of the template's optional features this project was created without, or removing one it has. A request for a feature starts with `ai-dlc`, even when such an option would bring it, unless the user names the option | `.github/agents/template-diff.agent.md` |
 
 Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.

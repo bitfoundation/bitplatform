@@ -121,6 +121,47 @@ public class ComponentCatalogTests : McpTestBase
         }
     }
 
+    /// <summary>
+    /// The names other libraries give to what a component here already does. Resolving to SOME component is not
+    /// enough for these: an alias another component claimed first (the index keeps the first claim) would answer
+    /// with that one, and an agent told that a drawer is something else goes on to build its own.
+    /// </summary>
+    [TestMethod]
+    [DataRow("SegmentedControl", "BitButtonGroup")]
+    [DataRow("ToggleGroup", "BitButtonGroup")]
+    [DataRow("LoadingButton", "BitButton")]
+    [DataRow("MultiSelect", "BitDropdown")]
+    [DataRow("AutoComplete", "BitSearchBox")]
+    [DataRow("Typeahead", "BitSearchBox")]
+    [DataRow("TextArea", "BitTextField")]
+    [DataRow("PasswordField", "BitTextField")]
+    [DataRow("MonthPicker", "BitDatePicker")]
+    [DataRow("YearPicker", "BitDatePicker")]
+    [DataRow("DateTimePicker", "BitDatePicker")]
+    [DataRow("DateTimeRangePicker", "BitDateRangePicker")]
+    [DataRow("AppBar", "BitHeader")]
+    [DataRow("TabBar", "BitNavBar")]
+    [DataRow("BottomNavigation", "BitNavBar")]
+    [DataRow("HoverCard", "BitCallout")]
+    [DataRow("AlertDialog", "BitDialog")]
+    [DataRow("Drawer", "BitPanel")]
+    [DataRow("BottomSheet", "BitPanel")]
+    [DataRow("ScrollArea", "BitScrollablePane")]
+    [DataRow("SafeArea", "BitAppShell")]
+    [DataRow("TreeGrid", "BitDataGrid")]
+    [DataRow("DataTable", "BitDataGrid")]
+    [DataRow("Sidebar", "BitNavPanel")]
+    [DataRow("NavigationDrawer", "BitNavPanel")]
+    public async Task A_name_from_another_library_resolves_to_the_component_that_provides_it(string alias, string expected)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = alias });
+
+        var title = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n')[0];
+
+        // The title carries a generic component's type parameters, which the expected name leaves out.
+        Assert.AreEqual($"# {expected}", title.Split('<')[0], $"The alias '{alias}' should resolve to {expected}.");
+    }
+
     [TestMethod]
     public async Task Base_component_documents_the_parameters_every_component_shares()
     {

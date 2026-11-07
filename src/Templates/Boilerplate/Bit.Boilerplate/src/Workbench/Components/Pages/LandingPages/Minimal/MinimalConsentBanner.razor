@@ -1,0 +1,37 @@
+@* [mirror] the consent banner, on the view's store instead of the visitor's real consent - keep in sync with: *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Common/ConsentBanner.razor *@
+@inherits WorkbenchComponentBase
+
+@if (IsVisible)
+{
+    <section class="lp-consent" role="dialog" aria-labelledby="lp-consent-title" aria-describedby="lp-consent-body">
+        <h2 id="lp-consent-title">@Localizer[nameof(WorkbenchStrings.LandingConsentTitle)]</h2>
+        <p id="lp-consent-body">
+            @Localizer[nameof(WorkbenchStrings.LandingConsentBody)]
+            @(" ")<a href="privacy" @onclick="OnPrivacyLink" @onclick:preventDefault>@AppLocalizer[nameof(AppStrings.PrivacyTitle)]</a>
+        </p>
+
+        @if (store.IsConsentChoosing)
+        {
+            <div class="lp-consent-choices">
+                <BitToggle Value="store.WantsPerformance" ValueChanged="store.WantPerformance" Label="@Localizer[nameof(WorkbenchStrings.LandingConsentPerformance)]" />
+                <p class="lp-consent-hint">@Localizer[nameof(WorkbenchStrings.LandingConsentPerformanceHint)]</p>
+                <BitToggle Value="store.WantsAnalytics" ValueChanged="store.WantAnalytics" Label="@Localizer[nameof(WorkbenchStrings.LandingConsentAnalytics)]" />
+                <p class="lp-consent-hint">@Localizer[nameof(WorkbenchStrings.LandingConsentAnalyticsHint)]</p>
+            </div>
+        }
+
+        <div class="lp-consent-actions">
+            @if (store.IsConsentChoosing)
+            {
+                <BitButton OnClick="() => store.DecideConsent(store.WantsPerformance, store.WantsAnalytics)">@Localizer[nameof(WorkbenchStrings.LandingConsentSave)]</BitButton>
+            }
+            else
+            {
+                <BitButton OnClick="() => store.DecideConsent(true, true)">@Localizer[nameof(WorkbenchStrings.LandingConsentAccept)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => store.DecideConsent(false, false)">@Localizer[nameof(WorkbenchStrings.LandingConsentReject)]</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="store.ChooseConsent">@Localizer[nameof(WorkbenchStrings.LandingConsentChoose)]</BitButton>
+            }
+        </div>
+    </section>
+}

@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.Text.RegularExpressions;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;

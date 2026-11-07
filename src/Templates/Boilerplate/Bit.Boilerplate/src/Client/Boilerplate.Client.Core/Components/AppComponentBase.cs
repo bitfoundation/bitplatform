@@ -2,10 +2,6 @@ namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 {
-    /// <summary>
-    /// <inheritdoc cref="Parameters.IsOnline"/>
-    /// </summary>
-    [CascadingParameter(Name = Parameters.IsOnline)] protected bool? IsOnline { get; set; }
     [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [AutoInject] private IServiceProvider serviceProvider = default!;

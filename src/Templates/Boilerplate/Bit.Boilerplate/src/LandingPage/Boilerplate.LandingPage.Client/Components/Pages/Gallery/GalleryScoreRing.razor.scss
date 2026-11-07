@@ -1,0 +1,78 @@
+.score-ring {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+    text-align: center;
+}
+
+// The number scales with its dial, so the same ring works in a small card and on a big band
+.score-dial {
+    position: relative;
+    display: grid;
+    place-items: center;
+    container-type: inline-size;
+    width: min(100%, var(--ring-max, 92px));
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--score-fill);
+
+    svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        rotate: -90deg;
+    }
+
+    strong {
+        color: var(--score-ink);
+        font-family: var(--lp-font-mono);
+        font-size: 31cqi;
+        font-variant-numeric: tabular-nums;
+        font-weight: 500;
+        letter-spacing: -.02em;
+        line-height: 1;
+    }
+}
+
+circle {
+    fill: none;
+    stroke-width: var(--ring-stroke, 7);
+}
+
+.score-track {
+    stroke: var(--score-track);
+}
+
+.score-arc {
+    stroke: var(--score);
+    stroke-dasharray: 100 100;
+    stroke-linecap: round;
+    animation: score-draw 1.1s var(--lp-ease) calc(var(--i) * 120ms + 150ms) backwards;
+}
+
+.score-label {
+    color: var(--score-label, var(--lp-fg));
+    font-size: var(--label-size, .8125rem);
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+@keyframes score-draw {
+    from {
+        stroke-dashoffset: 100;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .score-arc {
+        animation: none;
+    }
+}

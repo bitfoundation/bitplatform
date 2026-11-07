@@ -28,8 +28,6 @@ public sealed partial class AppStoreListingService(HttpClient httpClient, IMemor
                     Name = app.TryGetProperty("trackName", out var name) ? name.GetString() : null,
                     AverageRating = app.TryGetProperty("averageUserRating", out var rating) ? Math.Round(rating.GetDouble(), 1) : null,
                     RatingCount = app.TryGetProperty("userRatingCount", out var count) ? count.GetInt32() : null,
-                    Version = app.TryGetProperty("version", out var version) ? version.GetString() : null,
-                    ReleasedOn = app.TryGetProperty("currentVersionReleaseDate", out var released) && released.TryGetDateTimeOffset(out var date) ? date : null,
                     SizeInBytes = app.TryGetProperty("fileSizeBytes", out var size) && long.TryParse(size.GetString(), out var bytes) ? bytes : null,
                     MinimumOsVersion = app.TryGetProperty("minimumOsVersion", out var os) ? os.GetString() : null,
                     Url = app.TryGetProperty("trackViewUrl", out var url) ? url.GetString() : null

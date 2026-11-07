@@ -2055,6 +2055,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>No agent is listening. Ask your agent to go through the review comments in the Workbench, and it answers each one here.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Got it. As soon as an AI agent connects, it takes care of this for you. To connect one, just ask the AI you use to run the Workbench project.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>This copy is shared, so your comment stays in this tab. In your own project, just ask the AI you use to run the Workbench project, and it takes care of comments like this one.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} is listening for comments</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Pin a comment on any spot of a page. On your own computer, your coding agent gets it as you write, changes the page, answers on the comment and ticks it off. Works with Claude Code, Codex, Copilot, Gemini, Junie and Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Pin a comment on any spot of a page. On your own computer, your coding agent gets it as you write, changes the page, answers on the comment and ticks it off. Works with Claude Code, Codex, Copilot, Gemini, Junie and Cursor. Try it now: write your comment and send it.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live review with AI</value>
@@ -2833,7 +2842,7 @@
         <value>Limited experience</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
+        <value>You can look around, switch views, take screenshots and write comments. Changing anything else needs an AI agent running the Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Sign-in pages aren't in the Workbench yet</value>
@@ -2879,5 +2888,224 @@
     </data>
     <data name="TourCaption" xml:space="preserve">
         <value>Every sale, live</value>
+    </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>Join the waitlist</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>Spring 2027, on iPhone and Android</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>One line a day. A year you can read in a minute.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch is a journal with one rule: a single line each day, 140 characters at most. No questions to answer, no streak to protect. Just the line, and the date it belongs to.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>Save me a spot</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>We write once, when Notch is ready. That's all.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>A preview of the Notch app: today's line, this week, and the same day in earlier years</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>Today's line</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>What will you remember today by?</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>{0} left</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>Notch it</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>Saved. Tomorrow's line opens at midnight.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>This week</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} of 7 days</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>On this day</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>First frost on the bike. Gloves stay in the bag from now on.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>Mia read a whole page out loud without stopping once.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>Three rules, and that is the app</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>One line, every day</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>140 characters at most. Short enough to write in the queue for coffee, long enough to remember the day by.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>The same day, years apart</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>Open today and read what you wrote on this date last year, and the year before. This is where a line a day starts to pay off.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>Only you can read it</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>Lines are encrypted on your phone before they leave it. No feed, no likes, no followers, and a plain text export whenever you want one.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>One line a day, kept for good.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>Where your lines go</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>Your phone</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>Every line is written and kept here, encrypted with a key that never leaves the phone.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>Backup</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>Off until you turn it on. Then an encrypted copy brings every line back to a new phone.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>Our server</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>Keeps that copy in Helsinki. We can see its size and date, and nothing in it.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>Advertisers and data brokers</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>Get nothing. There is nothing to sell them.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>If you want</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>Never</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>Skip to content</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>Contact</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>Legal</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>Imprint</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>Accessibility</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. All rights reserved.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>This is a sample site. The business, people and numbers on it are made up.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>Adding you…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>Tell me when it's out for</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone and iPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>One email when it launches. No spam, and you can leave any time.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>Check your inbox</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>We sent a confirmation link to {0}. Open it to keep your place: number {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>That email address doesn't look right.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>Landing pages</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>Landing page: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>One of the landing page's samples, with a theme of its own and no app shell around it: a waitlist, a phone demo that works, light and dark, and right-to-left.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>One line a day</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>A designer for several apps</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>Add your different apps here, each with a theme of its own, the way this Workbench keeps a landing page in its own look next to the app's pages.</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Your privacy</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>We'd like to measure how fast this site is and how it's used, so we can make it better. None of that is collected until you agree, and we use no cookies. Errors are reported either way, without telling who you are.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Performance and diagnostics</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>How fast pages load and respond, and the details that help fix the errors visitors run into.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Usage statistics</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Which pages are read and which buttons are pressed, without telling who you are.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Save my choices</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Accept</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>No, thanks</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Let me choose</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>This page isn't in the Workbench. Ask your agent to bring it here.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Consent banner</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Already decided</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>First visit</value>
     </data>
 </root>

@@ -47,10 +47,6 @@ public sealed record StoreListing
 
     public int? RatingCount { get; init; }
 
-    public string? Version { get; init; }
-
-    public DateTimeOffset? ReleasedOn { get; init; }
-
     public long? SizeInBytes { get; init; }
 
     public string? MinimumOsVersion { get; init; }

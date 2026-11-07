@@ -13,6 +13,11 @@ public partial class AppMenu
 
     [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    [CascadingParameter(Name = Parameters.IsOnline)] public bool? IsOnline { get; set; }
+
 
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;

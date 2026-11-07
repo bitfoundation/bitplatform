@@ -1,6 +1,9 @@
 //-:cnd:noEmit
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.LandingPage.Server;
 
@@ -10,9 +13,60 @@ public partial class LandingServerSettings
 
     public SiteOptions Site { get; set; } = new();
 
+    [ValidateObjectMembers]
     public EmailOptions Email { get; set; } = new();
 
+    [ValidateObjectMembers]
     public AIOptions AI { get; set; } = new();
+
+    // [mirror] trusted origins - keep in sync with:
+    // - src/Server/Boilerplate.Server.Shared/ServerSharedSettings.cs
+    public string[] TrustedOrigins { get; set; } = [];
+
+    public bool IsTrustedOrigin(Uri origin)
+    {
+        var requestOrigin = origin.GetLeftPart(UriPartial.Authority);
+
+        return TrustedOrigins.Any(trustedOrigin => MatchTrustedOrigin(trustedOrigin, requestOrigin))
+            || TrustedOriginsRegex().IsMatch(origin.ToString());
+    }
+
+    private static bool MatchTrustedOrigin(string trustedOrigin, string requestOrigin)
+    {
+        trustedOrigin = trustedOrigin.TrimEnd('/');
+
+        if (trustedOrigin.Contains('*') is false)
+            return string.Equals(trustedOrigin, requestOrigin, StringComparison.OrdinalIgnoreCase);
+
+        var pattern = $"^{Regex.Escape(trustedOrigin).Replace("\\*", "[^/]*")}$";
+        return Regex.IsMatch(requestOrigin, pattern, RegexOptions.IgnoreCase);
+    }
+
+    public static string GetTrustedOriginHost(string trustedOrigin)
+    {
+        var host = trustedOrigin;
+
+        var schemeSeparatorIndex = host.IndexOf("://", StringComparison.Ordinal);
+        if (schemeSeparatorIndex >= 0)
+            host = host[(schemeSeparatorIndex + 3)..];
+
+        host = host.Split('/')[0];
+        host = host.Split(':')[0];
+
+        return host;
+    }
+
+#if Development
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|[\w\-]+(\.[\w\-]+)*\.devtunnels\.ms|[\w\-]+(\.[\w\-]+)*\.github\.dev|[\w\-]+(\.[\w\-]+)*\.trycloudflare\.com)(:\d+)?(\/.*)?$")]
+#else
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
+#endif
+    public partial Regex TrustedOriginsRegex();
+}
+
+[OptionsValidator]
+public partial class LandingServerSettingsValidator : IValidateOptions<LandingServerSettings>
+{
 }
 
 // [mirror] WebAppRenderOptions - keep in sync with:
@@ -54,8 +108,6 @@ public enum BlazorWebAppMode
 
 public partial class SiteOptions
 {
-    public Uri? Url { get; set; }
-
     public bool AllowIndexing { get; set; }
 
     public string? GoogleSiteVerification { get; set; }
@@ -65,8 +117,10 @@ public partial class SiteOptions
 
 public partial class EmailOptions
 {
+    [Required, EmailAddress]
     public string DefaultFromEmail { get; set; } = "DoNotReply@bitplatform.dev";
 
+    [Required]
     public string DefaultFromName { get; set; } = "Boilerplate";
 }
 
@@ -74,14 +128,17 @@ public partial class AIOptions
 {
     public ChatOptions ChatOptions { get; set; } = new();
 
+    [ValidateObjectMembers]
     public OpenAIOptions OpenAI { get; set; } = new();
 }
 
 public partial class OpenAIOptions
 {
+    [Required]
     public string ChatModel { get; set; } = "gpt-5.6-luna";
 
     public string? ChatApiKey { get; set; }
 
+    [Required]
     public Uri ChatEndpoint { get; set; } = new("https://api.openai.com/v1");
 }

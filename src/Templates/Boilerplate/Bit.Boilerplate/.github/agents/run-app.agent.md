@@ -23,6 +23,9 @@ commands themselves are in `AGENTS.md` section 4.
 - Ready means a page answers, not that a process started: load the home page once before the first step.
 - The landing page (`src/LandingPage`) is a site of its own that the app's run doesn't start; `AGENTS.md` section 4
   says how to run it.
+- So is the Workbench (`src/Workbench`). To run or open it, follow section 1 of the **workbench** skill
+  (`.github/agents/workbench.agent.md`) even when nothing else in that skill applies: it has to run in dev mode, with you
+  connected to its review and listening to the comments the user leaves on it.
 
 ## 2. Edit while it runs
 
@@ -49,7 +52,8 @@ commands themselves are in `AGENTS.md` section 4.
 
 - Drive the web app with the Playwright MCP tools. Read the page with `browser_snapshot`, check what it holds with
   `browser_evaluate`, and act through what a user sees: a button's name, a field's label. Take a screenshot when the
-  question is how it looks, and look at it.
+  question is how it looks, and look at it. Leave its file name out, so it lands in the git-ignored `.playwright-mcp`
+  folder, not in the project.
 - Reach a state the way a user does. A click leaves the pointer where it clicked, so what you see next is that element
   hovered until the pointer moves away. A state you expected and don't see is a finding, not a pass.
 - Switch light and dark, the culture and the width the way the app does, and before the page loads for whatever the

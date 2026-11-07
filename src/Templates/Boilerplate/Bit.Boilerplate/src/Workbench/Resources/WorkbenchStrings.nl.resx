@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Er luistert geen agent. Vraag je agent om de beoordelingsopmerkingen op de werkbank door te nemen, dan beantwoordt hij ze hier een voor een.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Begrepen. Zodra een AI-agent verbinding maakt, regelt hij dit voor je. Vraag daarvoor gewoon de AI die je gebruikt om het project Workbench te starten.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Deze kopie is gedeeld, dus je opmerking blijft in dit tabblad. Vraag in je eigen project gewoon de AI die je gebruikt om het project Workbench te starten, dan regelt die opmerkingen zoals deze.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} luistert naar opmerkingen</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor. Probeer het nu: schrijf je opmerking en verstuur hem.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live beoordelen met AI</value>
@@ -2833,7 +2842,7 @@
         <value>Beperkte ervaring</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Je kunt rondkijken, van weergave wisselen en schermafbeeldingen maken. Om iets te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
+        <value>Je kunt rondkijken, van weergave wisselen, schermafbeeldingen maken en opmerkingen schrijven. Om iets anders te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>De aanmeldpagina's staan nog niet in de Workbench</value>
@@ -2879,5 +2888,224 @@
     </data>
     <data name="TourCaption" xml:space="preserve">
         <value>Elke verkoop, live</value>
+    </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>Op de wachtlijst</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>Voorjaar 2027, op iPhone en Android</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>Eén regel per dag. Een jaar dat je in een minuut leest.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch is een dagboek met één regel: elke dag één zin, maximaal 140 tekens. Geen vragen om te beantwoorden, geen reeks om vol te houden. Alleen de zin, en de datum waar hij bij hoort.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>Houd een plek voor me vrij</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>We schrijven één keer, als Notch klaar is. Meer niet.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>Een voorproefje van de Notch-app: de regel van vandaag, deze week en dezelfde dag in eerdere jaren</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>De regel van vandaag</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>Waaraan wil je je vandaag herinneren?</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>nog {0}</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>Vastleggen</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>Opgeslagen. De regel van morgen opent om middernacht.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>Deze week</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} van 7 dagen</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>Op deze dag</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>Eerste vorst op de fiets. De handschoenen blijven voortaan in de tas.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>Mia las een hele bladzijde hardop voor zonder één keer te stoppen.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>Drie regels, en dat is de app</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>Eén regel, elke dag</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>Maximaal 140 tekens. Kort genoeg om in de rij voor koffie te schrijven, lang genoeg om de dag te onthouden.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>Dezelfde dag, jaren later</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>Open vandaag en lees wat je op deze datum vorig jaar en het jaar daarvoor schreef. Hier begint een regel per dag zich uit te betalen.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>Alleen jij kunt het lezen</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>Regels worden op je telefoon versleuteld voordat ze hem verlaten. Geen feed, geen likes, geen volgers, en een export als platte tekst wanneer je maar wilt.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>Eén regel per dag, voorgoed bewaard.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>Waar je regels naartoe gaan</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>Je telefoon</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>Elke regel wordt hier geschreven en bewaard, versleuteld met een sleutel die de telefoon nooit verlaat.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>Back-up</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>Uit totdat je het aanzet. Daarna brengt een versleutelde kopie elke regel terug op een nieuwe telefoon.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>Onze server</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>Bewaart die kopie in Helsinki. We zien de grootte en de datum, en niets van de inhoud.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>Adverteerders en datahandelaren</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>Krijgen niets. Er valt niets aan hen te verkopen.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>Als je wilt</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>Nooit</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>Naar de inhoud</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>Bedrijf</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>Contact</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>Juridisch</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>Colofon</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>Toegankelijkheid</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. Alle rechten voorbehouden.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>Dit is een voorbeeldsite. Het bedrijf, de mensen en de cijfers zijn verzonnen.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>Je wordt toegevoegd…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>Laat het me weten wanneer het uit is voor</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone en iPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>Eén e-mail bij de lancering. Geen spam, en je kunt altijd weer weg.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>Kijk in je inbox</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>We hebben een bevestigingslink gestuurd naar {0}. Open hem om je plek te houden: nummer {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>Dat e-mailadres lijkt niet te kloppen.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>Landingspagina's</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>Landingspagina: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>Een van de voorbeelden van de landingspagina, met een eigen thema en zonder de app-schil eromheen: een wachtlijst, een werkende telefoondemo, licht en donker, en rechts-naar-links.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>Eén regel per dag</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>Een ontwerper voor meerdere apps</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>Voeg hier je verschillende apps toe, elk met een eigen thema, zoals deze Workbench een landingspagina in haar eigen uiterlijk naast de pagina's van de app houdt.</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Je privacy</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>We willen graag meten hoe snel deze site is en hoe hij wordt gebruikt, zodat we hem kunnen verbeteren. Daarvan wordt niets verzameld totdat je akkoord gaat, en we gebruiken geen cookies. Fouten worden hoe dan ook gemeld, zonder te vertellen wie je bent.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Prestaties en diagnose</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>Hoe snel pagina's laden en reageren, en de details die helpen fouten van bezoekers op te lossen.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Gebruiksstatistieken</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Welke pagina's worden gelezen en op welke knoppen wordt gedrukt, zonder te vertellen wie je bent.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Mijn keuzes opslaan</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Accepteren</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>Nee, bedankt</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Laat me kiezen</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>Deze pagina staat niet in de Workbench. Vraag je agent om haar hierheen te halen.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Toestemmingsbanner</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Al gekozen</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>Eerste bezoek</value>
     </data>
 </root>
