@@ -38,6 +38,13 @@ reference them, with the .NET 10 SDK: the package layout and the SDK paths a Pro
 Web App's client has a service worker too, whose manifest has to come out rewritten, and so does its Blazor WebAssembly
 app, a standalone PWA whose own manifest must be left to the SDK.
 
+`TrimmedSizeReportTests` records what the three apps keep: for every bundle the trimming put together (the line it logs,
+`Bit.BlazorUI: {package}/{bundle} -> {kept} of {all} pieces, {trimmed} of {full} bytes`), the pieces and bytes kept of
+the full bundle's, and the size of the Brotli and gzip copies the publish wrote of it. It writes them, with the commit,
+the SDK and the OS, to `trimmed-bundle-sizes.json` in the run's results directory (`--results-directory`, `TestResults`
+beside the test app otherwise), which CI uploads with the TRX. No size fails it: it is there to follow the sizes from
+one run to the next. It reuses the publishes the other classes make, so it costs a run of the whole suite nothing.
+
 ## Running
 
 ```
