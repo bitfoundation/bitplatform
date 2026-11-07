@@ -27,8 +27,12 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"grid-basic\"");
-        StringAssert.Contains(html, "role=\"table\"");
+        // Every grid of the page is a table, so the role is read off grid-basic's own: the first table after its root.
+        var root = html.IndexOf("id=\"grid-basic\"", StringComparison.Ordinal);
+        Assert.IsTrue(root > 0, "The grid is not in the prerendered HTML.");
+        var table = Regex.Match(html[root..], @"<div[^>]*\bclass=""bit-dtg-table""[^>]*>");
+        Assert.IsTrue(table.Success, "The grid's table is not in the prerendered HTML.");
+        StringAssert.Matches(table.Value, new Regex(@"\brole=""table"""));
         StringAssert.Contains(html, "Laptop");
         StringAssert.Contains(html, ">Loading<", "The prerendered page carries the status of a page not yet interactive.");
 
@@ -326,7 +330,9 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(table).Not.ToHaveAttributeAsync("aria-label", new Regex(".*"));
         await Expect(table).ToHaveAttributeAsync("aria-describedby", "aria-description");
         await Expect(table).ToHaveAccessibleNameAsync("Inventory heading");
-        await Expect(table).ToHaveAccessibleDescriptionAsync("Use the arrow keys to move between cells.");
+        await Expect(table).ToHaveAccessibleDescriptionAsync("A read-only table of the first three products.");
+        // Without CellNavigation it is a table, whose cells take no focus.
+        await Expect(table).ToHaveAttributeAsync("role", "table");
 
         await Expect(Table("grid-default-label")).ToHaveAttributeAsync("aria-label", "Data grid");
     }
@@ -385,7 +391,8 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(message.Locator(".bit-dtg-empty")).ToHaveTextAsync("No records to display.");
         await Expect(message.Locator(".bit-dtg-empty")).ToHaveAttributeAsync("aria-colspan", "2");
         await Expect(DataRows("grid-empty")).ToHaveCountAsync(0);
-        await Expect(Table("grid-empty")).ToHaveAttributeAsync("aria-rowcount", "1");
+        // The header row and the message row.
+        await Expect(Table("grid-empty")).ToHaveAttributeAsync("aria-rowcount", "2");
     }
 
     [TestMethod]

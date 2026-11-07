@@ -5263,14 +5263,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private int _ariaRowCount;
 
     /// <summary>
-    /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped)
-    /// and the footer. -1 when the total is unknown (infinite scrolling).
+    /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped),
+    /// the message row of a body with no data row and the footer. -1 when the total is unknown (infinite scrolling).
     /// </summary>
     internal int ComputeAriaRowCount()
     {
         if (IsInfiniteMode) return _ariaRowCount = -1;
 
         var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
+        // A body with no data row still renders a row: the loading message, or the empty one unless a new row is being
+        // added. Loading over rows that exist keeps their count, since they come back once it is done.
+        if (body == 0 && (Loading || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
         return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
     }
 
