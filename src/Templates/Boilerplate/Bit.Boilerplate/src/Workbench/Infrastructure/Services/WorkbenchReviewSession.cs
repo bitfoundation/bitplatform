@@ -4,8 +4,9 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// One circuit's copy of the review document, synced through the relay: the threads, page statuses, flows and the agent.
-/// Comments can always be written: on this machine they go into the document for the agent that connects, and from elsewhere
-/// they stay in the circuit. Everything else writes only in dev mode, for requests made on this machine.
+/// Comments can always be written: on this machine, or from a browser an invite link was opened in (WorkbenchReviewers), they
+/// go into the document for the agent that connects, and from anywhere else they stay in the circuit. Everything else writes
+/// only in dev mode, for requests made on this machine.
 /// </summary>
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
@@ -16,7 +17,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private IStringLocalizer<WorkbenchStrings> localizer = default!;
 
     private WorkbenchFlow[]? sampleFlows;
-    private (bool CanWrite, bool SavesComments)? access;
+    private (bool CanWrite, bool SavesComments, bool IsInvited)? access;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
     private Timer? agentGoneTimer;
@@ -31,13 +32,27 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// <summary>Whether this circuit may write: in dev mode, with its request from this machine, decided once per circuit.</summary>
     public bool CanWrite => Access.CanWrite;
 
-    /// <summary>Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev mode.</summary>
+    /// <summary>
+    /// Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev
+    /// mode, or from a reviewer elsewhere who opened an invite link.
+    /// </summary>
     public bool SavesComments => Access.SavesComments;
 
+    /// <summary>Whether this circuit is a reviewer elsewhere who opened an invite link: their comments reach the agent, nothing else they do is saved.</summary>
+    public bool IsInvitedReviewer => Access.IsInvited;
+
     // Read together, as the request is only there when the circuit starts.
-    private (bool CanWrite, bool SavesComments) Access => access ??= httpContextAccessor.HttpContext is { } context
-        ? (WorkbenchLocalRequests.CanChange(context, configuration), WorkbenchLocalRequests.IsLocal(context))
-        : (false, false);
+    private (bool CanWrite, bool SavesComments, bool IsInvited) Access => access ??= httpContextAccessor.HttpContext is { } context
+        ? ReadAccess(context)
+        : (false, false, false);
+
+    private (bool CanWrite, bool SavesComments, bool IsInvited) ReadAccess(HttpContext context)
+    {
+        var isLocal = WorkbenchLocalRequests.IsLocal(context);
+        var isInvited = isLocal is false && WorkbenchReviewers.IsInvited(context, configuration);
+
+        return (WorkbenchLocalRequests.CanChange(context, configuration), isLocal || isInvited, isInvited);
+    }
 
     public bool IsOpen => document is not null;
 
