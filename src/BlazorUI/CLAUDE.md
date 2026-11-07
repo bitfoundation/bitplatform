@@ -375,7 +375,9 @@ right - the layout and the behaviour would disagree.
   (previous section). An input that is left to right by definition (`type="tel"` with no `dir` of its own) is never
   `:dir(rtl)`, so its rule reads the direction off its parent (`.bit-phi-fgp:dir(rtl) > .bit-phi-inp`).
   `BitComponentDirFallbackTests.EveryRtlRuleAlsoFollowsADirectionDirDoesNotName` fails on a rule that reads the class alone.
-- The bUnit tests stand the browser's answer in with `Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", ...)`;
+- The bUnit tests stand the browser's answer in with `TestRtl`: `Context.JSInterop.UseRtl()` (or `UseRtl(false)`),
+  `SetupIsRtl()` for an answer given later or a failure, and `VerifyIsRtlInvoked()` / `VerifyIsRtlNotInvoked()`. A
+  suite still calling `Setup<bool>("BitBlazorUI.Utils.isRtl", ...)` itself moves to them when it is next changed;
   `BitDirResolvedBrowserTests` (`/regression/dir-resolved`) reads the live layout and drives the keys, the pointer and
   the placement in a box that reads each way.
 

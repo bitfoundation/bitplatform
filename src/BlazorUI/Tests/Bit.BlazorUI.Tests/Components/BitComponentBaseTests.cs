@@ -278,7 +278,7 @@ public class BitComponentBaseTests : BunitTestContext
         var isRtl = await IsRtlAsync(component.Instance, Context.JSInterop.JSRuntime);
 
         Assert.AreEqual(expected, isRtl);
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+        Context.JSInterop.VerifyIsRtlNotInvoked();
     }
 
     [TestMethod,
@@ -289,7 +289,7 @@ public class BitComponentBaseTests : BunitTestContext
     ]
     public async Task IsRtlAsyncShouldAskTheBrowserAboutTheRootForADirectionItDoesNotKnow(BitDir? dir, bool answer)
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(answer);
+        Context.JSInterop.UseRtl(answer);
 
         var component = RenderComponent<BitElement>(parameters => parameters.Add(p => p.Dir, dir));
 
@@ -297,14 +297,14 @@ public class BitComponentBaseTests : BunitTestContext
 
         Assert.AreEqual(answer, isRtl);
 
-        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.isRtl");
+        var invocation = Context.JSInterop.VerifyIsRtlInvoked();
         Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
     }
 
     [TestMethod]
     public async Task IsRtlAsyncShouldAnswerLeftToRightWhenTheBrowserCannotBeAsked()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetException(new JSException("no script"));
+        Context.JSInterop.SetupIsRtl().SetException(new JSException("no script"));
 
         var component = RenderComponent<BitElement>();
 
@@ -319,7 +319,7 @@ public class BitComponentBaseTests : BunitTestContext
         var component = new BitElement();
 
         Assert.IsFalse(await IsRtlAsync(component, Context.JSInterop.JSRuntime));
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+        Context.JSInterop.VerifyIsRtlNotInvoked();
     }
 
     [TestMethod,
@@ -328,12 +328,12 @@ public class BitComponentBaseTests : BunitTestContext
     ]
     public async Task IsRtlArrowAsyncShouldAskForTheHorizontalArrowsAlone(string key)
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.UseRtl();
 
         var component = RenderComponent<BitElement>();
 
         Assert.IsTrue(await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, key));
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.isRtl");
+        Context.JSInterop.VerifyIsRtlInvoked();
     }
 
     [TestMethod,
@@ -345,14 +345,14 @@ public class BitComponentBaseTests : BunitTestContext
     ]
     public async Task IsRtlArrowAsyncShouldAnswerFalseForEveryOtherKeyWithoutAsking(string? key)
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.UseRtl();
 
         var component = RenderComponent<BitElement>();
 
         // Only the two keys that move along the inline axis depend on the direction, so no other key pays the
         // round trip - even in a layout that is right to left.
         Assert.IsFalse(await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, key));
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+        Context.JSInterop.VerifyIsRtlNotInvoked();
     }
 
     [TestMethod,
@@ -364,13 +364,13 @@ public class BitComponentBaseTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters => parameters.Add(p => p.Dir, dir));
 
         Assert.AreEqual(expected, await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, "ArrowLeft"));
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+        Context.JSInterop.VerifyIsRtlNotInvoked();
     }
 
     [TestMethod]
     public async Task IsRtlArrowAsyncShouldTellTheBrowserTheQuestionIsAnArrowKeys()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.UseRtl(false);
 
         var component = RenderComponent<BitElement>();
 
@@ -378,7 +378,7 @@ public class BitComponentBaseTests : BunitTestContext
 
         // The flag is what lets the script refuse an arrow the user has moved on from; a plain IsRtlAsync (a pointer,
         // a measurement) is never refused.
-        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.isRtl");
+        var invocation = Context.JSInterop.VerifyIsRtlInvoked();
         Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
         Assert.AreEqual(true, invocation.Arguments[1]);
     }
@@ -388,7 +388,7 @@ public class BitComponentBaseTests : BunitTestContext
     {
         // The script throws ARROW_KEY_OVERTAKEN for an arrow whose focus a Tab or a click has taken elsewhere while the
         // round trip was out, and the handler waiting on it is cancelled rather than stealing that focus back.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true)
+        Context.JSInterop.SetupIsRtl()
                          .SetException(new JSException($"Error: {ArrowKeyOvertaken}\n    at Utils.isRtl (bit.blazorui.js:1:1)"));
 
         var component = RenderComponent<BitElement>();
@@ -401,7 +401,7 @@ public class BitComponentBaseTests : BunitTestContext
     {
         // Only the arrow keys are ever refused: a direction read for anything else falls back to left to right on any
         // failure of the call, the refusal included.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetException(new JSException(ArrowKeyOvertaken));
+        Context.JSInterop.SetupIsRtl().SetException(new JSException(ArrowKeyOvertaken));
 
         var component = RenderComponent<BitElement>();
 
@@ -413,7 +413,7 @@ public class BitComponentBaseTests : BunitTestContext
     {
         // What Blazor does with the cancellation: the handler stops where it awaited the direction - no focus moved, no
         // state changed - and the event is not reported as an unhandled error.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetException(new JSException(ArrowKeyOvertaken));
+        Context.JSInterop.SetupIsRtl().SetException(new JSException(ArrowKeyOvertaken));
 
         var component = RenderComponent<ArrowProbe>();
 
@@ -423,7 +423,7 @@ public class BitComponentBaseTests : BunitTestContext
         Assert.AreEqual(0, component.Instance.Moved);
 
         // The next arrow, whose direction does come back, is acted on.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.UseRtl();
 
         component.Find("div").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
 
