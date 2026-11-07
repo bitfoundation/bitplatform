@@ -8,7 +8,7 @@ using Bit.BlazorUI.Build;
 namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
 
 /// <summary>What a publish produced: its folder, how it ended and what it said.</summary>
-public sealed class PublishResult(string directory, int exitCode, string output)
+public sealed partial class PublishResult(string directory, int exitCode, string output)
 {
     private static readonly Dictionary<string, PackageAssets> Assets = [];
 
@@ -212,6 +212,40 @@ public sealed class PublishResult(string directory, int exitCode, string output)
                 : null;
         }
     }
+
+    /// <summary>
+    /// Every bundle the trimming put back together, in the order of the lines it wrote to the build output. A line the
+    /// trimming wrote for a bundle that no longer reads the way it is parsed here fails, rather than drop out of what is
+    /// recorded of the publish.
+    /// </summary>
+    public IReadOnlyList<TrimmedBundle> TrimmedBundles
+    {
+        get
+        {
+            var bundles = new List<TrimmedBundle>();
+
+            foreach (var line in Output.Split('\n'))
+            {
+                if (line.Contains("Bit.BlazorUI: ", StringComparison.Ordinal) is false || line.Contains(" pieces, ", StringComparison.Ordinal) is false) continue;
+
+                var match = TrimmedBundleLine().Match(line);
+                Assert.IsTrue(match.Success, $"A line of the trimming's report this suite does not read: {line.Trim()}");
+
+                bundles.Add(new(match.Groups["package"].Value, match.Groups["bundle"].Value,
+                                int.Parse(match.Groups["kept"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
+                                int.Parse(match.Groups["all"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
+                                long.Parse(match.Groups["trimmed"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture),
+                                long.Parse(match.Groups["full"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture)));
+            }
+
+            return bundles;
+        }
+    }
+
+    // "Bit.BlazorUI: Bit.BlazorUI/scripts/bit.blazorui.js -> 12 of 53 pieces, 101,234 of 977,000 bytes (-90%)." - the
+    // numbers in the invariant culture, the share "-" for an empty full bundle.
+    [GeneratedRegex(@"Bit\.BlazorUI: (?<package>[^/\s]+)/(?<bundle>\S+) -> (?<kept>[\d,]+) of (?<all>[\d,]+) pieces, (?<trimmed>[\d,]+) of (?<full>[\d,]+) bytes \((?:-\d+%|-)\)\.")]
+    private static partial Regex TrimmedBundleLine();
 
     private static readonly Dictionary<string, string> Hashes = [];
 
