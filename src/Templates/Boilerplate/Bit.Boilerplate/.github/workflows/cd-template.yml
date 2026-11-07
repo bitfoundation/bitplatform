@@ -172,6 +172,9 @@ jobs:
 #if (cloudflare == true)
           CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
 #endif
+#if (api == "Standalone" && cloudflare != true)
+          SERVER_API_ADDRESS: ${{ vars.SERVER_API_ADDRESS }}
+#endif
 #if (notification == true)
           VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
@@ -189,6 +192,8 @@ jobs:
 
           DASHBOARD_API_KEY="$(sed -n "s/^DASHBOARD_API_KEY='\([0-9a-f]*\)'$/\1/p" "$deploy_dir/.env" 2>/dev/null || true)"
           DASHBOARD_API_KEY="${DASHBOARD_API_KEY:-$(openssl rand -hex 32)}"
+          DASHBOARD_BROWSER_TOKEN="$(sed -n "s/^DASHBOARD_BROWSER_TOKEN='\([0-9a-f]*\)'$/\1/p" "$deploy_dir/.env" 2>/dev/null || true)"
+          DASHBOARD_BROWSER_TOKEN="${DASHBOARD_BROWSER_TOKEN:-$(openssl rand -hex 32)}"
 
           # The .env that aspire publish wrote lists every value the Compose project reads: the images and ports, and the
           # parameters this step's env carries. Single quotes keep Compose from expanding a $ inside a secret.
@@ -257,6 +262,23 @@ jobs:
               printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
             done <<< "${!settings:-}"
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+#if (cloudflare != true)
+
+          origin() { printf '%s' "$1" | grep -oE '^https?://[^/]+' || true; }
+#if (api == "Standalone")
+          if [[ -z "$(origin "$SERVER_API_ADDRESS")" ]]; then
+            echo "::error::Set SERVER_API_ADDRESS, the api's public address, for the reverse proxy."
+            exit 1
+          fi
+#endif
+          {
+            printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
+#if (api == "Standalone")
+            printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
+#endif
+            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
+          } > "$deploy_dir/Caddyfile"
+#endif
 
           # The environment's own AppCertificate, and the retired one it replaced while that one still validates tokens
           # (See AppCertificate.md), in the folder the api mounts. Each secret is a .crt and its .key in one PEM, which openssl
@@ -331,6 +353,10 @@ jobs:
               echo "::warning::${address%/}/health answered $status. The health checks page, or GetHealth on dev-mcp for the api, says which check fails."
             fi
           done
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 --request POST --header 'Content-Type: application/x-protobuf' --data-binary '' "${LANDING_PAGE_ADDRESS%/}/v1/logs" || true)"
+          if [[ "$status" != 200 ]]; then
+            echo "::warning::${LANDING_PAGE_ADDRESS%/}/v1/logs answered $status, so the landing page's browser telemetry doesn't reach the Aspire dashboard."
+          fi
 #if (cloudflare == true)
 
       - name: Purge Cloudflare cache

@@ -133,6 +133,9 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
 <!--#endif-->
+<!--#if (api == "Standalone" && cloudflare != true)-->
+| `SERVER_API_ADDRESS` | variable | The api's public address, which Caddy serves |
+<!--#endif-->
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
 | `DATABASE_PASSWORD` | secret | The database server's password |
 <!--#elif (database == "Other")-->

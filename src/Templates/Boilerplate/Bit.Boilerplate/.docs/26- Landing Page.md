@@ -168,7 +168,7 @@ English. To add a language, add it to
 
 It is a service of its own in the Docker Compose project, `landingpage`, built and deployed by the same CD as the app.
 Give it a hostname of its own, often the bare domain with the app on a subdomain such as `app.`, pointed at
-`http://landingpage:8080` through the Cloudflare Tunnel, and set the `LANDING_PAGE_ADDRESS` variable so each
+`http://landingpage:8080` through the Cloudflare Tunnel (or Caddy, without Cloudflare), and set the `LANDING_PAGE_ADDRESS` variable so each
 deployment checks that it answers. The **deploy** skill walks through it.
 
 ---

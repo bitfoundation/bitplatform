@@ -13,7 +13,11 @@ from the project and the tools in front of you, not from memory.
 ## 1. The shape
 
 Explain this first, in a few lines, together with what the user needs to bring: a Linux VM (one for both environments,
+<!--#if (cloudflare == true)-->
 or one each), a domain, a Cloudflare account and the services of section 5. Then go through the steps with them.
+<!--#else-->
+or one each), a domain and the services of section 5. Then go through the steps with them.
+<!--#endif-->
 
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
   are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
@@ -27,9 +31,14 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   which pulls those images and brings them up with Docker Compose, next to the containers the AppHost models. The VM
   holds Docker and the runner, and no SDK or source code: the job that has the source never reaches the server, and
   the one that reaches the server builds nothing.
+<!--#if (cloudflare == true)-->
 - **Nothing reaches the VM from outside.** The runner pulls its jobs from GitHub and cloudflared dials out to
   Cloudflare, so every inbound port on the VM stays closed. Visitors reach the app on the user's domain through a
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
+<!--#else-->
+- **Only 80 and 443 reach the VM.** Caddy, in the Compose project, takes them, gets each public address its
+  certificate and sends it to its app. The runner pulls its jobs from GitHub, so every other inbound port stays closed.
+<!--#endif-->
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
   the `LANDINGPAGE_SETTINGS` secret.
@@ -72,6 +81,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
 - If the user would rather keep a port, move SSH off 22, keep it key-only and rate-limited (fail2ban), and add a TOTP
   code as a second factor (`libpam-google-authenticator`) if they want one. A moved port only quiets the scanners;
   the key and the second factor are what keep others out.
+<!--#if (cloudflare != true)-->
+- Without a tunnel (section 8), that is how SSH stays, and 80 and 443 stay open for Caddy.
+<!--#endif-->
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
   the deploy jobs. CI and every workflow a pull request starts stay on GitHub-hosted runners, so a pull request never
   runs code on the VM.
@@ -99,35 +111,34 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   Redis containers of the Compose project, run on the VM too and listen on its loopback only: `127.0.0.1` for
   Production and `127.0.0.2` for Test, on ports `18888` and `3000`. Show the user how to open them through SSH, for
   Production `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
-  `http://localhost:3000`; the dashboard's sign-in link is in `docker compose logs compose-dashboard`. DbGate has no
-  sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in front of it.
+  `http://localhost:3000`. DbGate has no sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare
+  Access policy stands in front of it.
 <!--#if (database == "Sqlite")-->
 - Published, DbGate reaches Redis only: the Sqlite file sits in the app's volume, outside it.
 <!--#endif-->
-- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them both
-  on the web instead: DbGate to manage those containers, and the Aspire dashboard to read the logs, traces and
-  metrics, each on a hostname of its own for each environment, behind an Access policy that lets in only the people
-  they name (section 8). The tunnel reaches them inside the Compose network, at `http://dbgate:3000` and
-  `http://compose-dashboard:18888`, so their loopback ports and SSH stay as they are.
+<!--#if (cloudflare == true)-->
+- Give both a hostname of their own for each environment, behind an Access policy that lets in only the people the
+  user names (section 8). The tunnel reaches them at `http://dbgate:3000` and `http://compose-dashboard:18888`.
+<!--#endif-->
 <!--#else-->
 - The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, runs on the VM too and listens on
   its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on port `18888`. Show the user how to open it
-  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`; its sign-in link is
-  in `docker compose logs compose-dashboard`. It gets no route on the tunnel unless a Cloudflare Access policy stands
-  in front of it.
-- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them the
-  dashboard on the web instead, to read the logs, traces and metrics, on a hostname of its own for each environment,
-  behind an Access policy that lets in only the people they name (section 8). The tunnel reaches it inside the Compose
-  network, at `http://compose-dashboard:18888`, so its loopback port and SSH stay as they are.
+  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`. It gets no route on
+  the tunnel unless a Cloudflare Access policy stands in front of it.
+<!--#if (cloudflare == true)-->
+- Give it a hostname of its own for each environment, behind an Access policy that lets in only the people the user
+  names (section 8). The tunnel reaches it at `http://compose-dashboard:18888`.
 <!--#endif-->
-- The link in the dashboard's logs names the container's own address, so on its hostname give the user
-  `https://<its hostname>/login?t=<the token from that link>`. Or, since Access already guards it, set
-  `DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS` to `true` on the dashboard, and it opens without a token.
+<!--#endif-->
+- The dashboard's sign-in token is the one the deploy job makes on the first deployment and keeps in the project's
+  `.env` as `DASHBOARD_BROWSER_TOKEN`: give the user `<the dashboard's address>/login?t=<that token>`.
 - dev-mcp reads the dashboard's logs and traces inside the Compose network, with the key the deploy job makes on the
   first deployment and keeps in the project's `.env` as `DASHBOARD_API_KEY`. Through the SSH tunnel, the same key lets
   `aspire agent mcp --dashboard-url http://localhost:18888 --api-key <the key>` read them too.
+<!--#if (cloudflare == true)-->
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
+<!--#endif-->
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:
   the database's, and the files' if they stay on disk.
 
@@ -319,14 +330,14 @@ project up, and fails unless every container is healthy and the public address a
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
 <!--#endif-->
-- Create the Access applications and policies for SSH through the tunnel (section 2), for the Workbench if the user
-  wants it, and for the web routes of section 3 if the user took them.
+- Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
+  (section 3), and for the Workbench if the user wants it.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
 - The Workbench isn't deployed by default. If the user wants it on Test, never Production, deploy it as Blazor Server
   (section 4), put its hostname behind Cloudflare Access, Cloudflare's own sign-in, and let `/alive` through for the
   deploy job's check. Its screenshots need a base
-  image with a browser, such as Playwright's.
+  image with a browser, such as Playwright's. Without Cloudflare Access, it isn't deployed.
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
@@ -334,26 +345,26 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`.
 <!--#endif-->
+- On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
+  `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
+  Only those paths: the rest of that port is the dashboard's own.
 <!--#else-->
-- This project was created without the `cloudflare` option, so add cloudflared to the Compose project through the app
-  host, with the tunnel's token as a secret, and point the tunnel's public hostname at the web app's service and the
-  landing page's hostname at the `landingpage` service.
+- This project was created without the `cloudflare` option, so Caddy takes the place of the tunnel: point each
+  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the landing page's
+  `/v1/` paths to the dashboard included.
 <!--#if (api == "Standalone")-->
-- The web app and the api each get a hostname of their own.
+- The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
 <!--#endif-->
 <!--#endif-->
-- On the landing page's hostname, ahead of its own rule, send the path `^/v1/(traces|logs|metrics)$` to
-  `http://compose-dashboard:18890`, the dashboard's OTLP endpoint. The landing page's browser posts its errors there,
-  and its logs and traces once the visitor consents: the deploy job gives it its own address as `Belemetry:OtlpEndpoint`.
-  Only these paths: the same port also answers the dashboard's sign-in page and its API, which stay behind their token
-  and key.
 - Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
   takes from Cloudflare, and the address each provider of section 5 was registered with.
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.
-- If the user doesn't want Cloudflare, keep the same rule, that the VM only dials out, with another production-ready
-  tunnel, such as ngrok on a paid plan with the user's own domain.
+<!--#if (cloudflare == true)-->
+- If the user doesn't want Cloudflare, turn the project's `cloudflare` option off through the template-diff skill: the
+  Compose project then puts Caddy on 80 and 443 instead of the tunnel.
+<!--#endif-->
 
 ## 9. First deployment and hand-back
 
