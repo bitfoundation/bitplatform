@@ -31,6 +31,18 @@ public static class IServiceCollectionExtensions
             {
                 options.AddAzureMonitorExporter(configuration["Belemetry:AzureMonitorConnectionString"]!);
             }
+
+            // Belemetry reads the OTEL_ variables itself everywhere but in the browser, where App.razor hands them to the runtime
+            if (OperatingSystem.IsBrowser() && Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") is { Length: > 0 } otlpEndpoint)
+            {
+                options.AddOtlpExporter(otlpEndpoint, otlp =>
+                {
+                    if (Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL") is "http/json")
+                    {
+                        otlp.Protocol = BelemetryOtlpProtocol.HttpJson;
+                    }
+                });
+            }
         });
 
         return services;

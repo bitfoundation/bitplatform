@@ -48,13 +48,15 @@ public static class WebApplicationExtensions
         // - src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs (UseSecurityHeaders)
         public WebApplication UseLandingSecurityHeaders()
         {
+            var otlpOrigin = app.Configuration.GetBrowserOtlpEndpoint()?.Endpoint.GetLeftPart(UriPartial.Authority);
+
             var csp = string.Join(' ',
                 "default-src 'self';",
                 "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';",
                 "style-src 'self' 'unsafe-inline';",
                 "img-src 'self' data: blob:;",
                 "font-src 'self';",
-                "connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com;",
+                $"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com{(otlpOrigin is null ? null : $" {otlpOrigin}")};",
                 "frame-src https://www.openstreetmap.org;",
                 "object-src 'none';",
                 "frame-ancestors 'self';",

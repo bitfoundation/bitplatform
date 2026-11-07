@@ -1,4 +1,5 @@
 using Bit.Bortable;
+using Bit.Belemetry;
 using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Workbench.Infrastructure.Services.StandIns;
 
@@ -51,6 +52,16 @@ public static partial class Program
                 options.ReducedMotion = BmReducedMotionMode.User;
                 // Animates in CSS from the first paint, as content that waits for the circuit stays blank for seconds on a cold start.
                 options.Prerender = BmPrerenderMode.Animate;
+            });
+
+            // Sends the browser's and the server's logs, traces and metrics to the OTLP endpoint the OTEL_ variables name, such as the Aspire dashboard's.
+            services.AddBitBelemetryServices(options =>
+            {
+                options.ServiceName = "Boilerplate.Workbench";
+                // With no consent banner, a visitor's browser reports errors only, while a developer's sends everything.
+                options.Consent.Default = builder.Environment.IsDevelopment() ? BelemetryFeatures.All : BelemetryFeatures.Errors;
+                options.Server.CollectDotnetTelemetry = true;
+                options.Server.IgnoredRequestPaths.AddRange(["/_framework", "/_content", "/_blazor"]);
             });
 
             services.AddWorkbenchServices(configuration);

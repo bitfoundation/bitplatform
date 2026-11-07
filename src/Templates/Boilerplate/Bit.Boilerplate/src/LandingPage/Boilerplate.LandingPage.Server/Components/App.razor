@@ -46,7 +46,7 @@
             (() => {
                 @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options *@
                 const start = Blazor.start;
-                Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
+                Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name', environmentVariables: { ...options?.webAssembly?.environmentVariables, ...@((MarkupString)WebAssemblyEnvironmentVariables) } } });
 
                 @* A first install and an update both start at once: the browser keeps the scroll position, and these pages have little to lose *@
                 window.bitBswupHandler = (message, data) => {

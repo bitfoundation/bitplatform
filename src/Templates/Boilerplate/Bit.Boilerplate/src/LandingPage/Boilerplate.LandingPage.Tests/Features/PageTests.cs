@@ -297,6 +297,31 @@ public class PageTests
     }
 
     [TestMethod]
+    [DataRow("http/protobuf", "https://otlp.example.invalid:4318", true)]
+    [DataRow("HTTP/JSON", "https://otlp.example.invalid:4318", true)]
+    [DataRow(null, "https://otlp.example.invalid:4318", false)]
+    [DataRow("grpc", "https://otlp.example.invalid:4318", false)]
+    [DataRow("http/protobuf", "https://user:password@otlp.example.invalid:4318", false)]
+    public async Task TheOtlpEndpoint_Should_ReachTheBrowserOnlyOverHttp(string? protocol, string endpoint, bool reachesTheBrowser)
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production", before: builder =>
+        {
+            builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint;
+            builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] = protocol;
+            builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"] = "x-otlp-api-key=k3y-n0t-for-pages";
+        });
+        using var productionClient = production.CreateClient();
+
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
+        var html = await response.Content.ReadAsStringAsync();
+        var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
+
+        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"{protocol?.ToLowerInvariant()}\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("k3y-n0t-for-pages", html);
+    }
+
+    [TestMethod]
     public async Task ThePublicAddress_Should_ComeFromTheRequest()
     {
         await using var indexed = await new LandingTestServer().Start(before: builder =>
