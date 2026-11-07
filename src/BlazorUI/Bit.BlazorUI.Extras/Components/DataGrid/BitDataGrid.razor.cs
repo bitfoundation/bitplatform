@@ -328,6 +328,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
     /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>. Always on for an editable grid
     /// whose <see cref="EditMode"/> is <see cref="BitDataGridEditMode.Cell"/>, and for Single <see cref="SelectionMode"/>.
+    /// Without it the grid is announced as a table (<c>role="table"</c>, its cells <c>cell</c>), since none of its
+    /// cells can take the focus, unless it is a tree (<c>treegrid</c>).
     /// </summary>
     [Parameter] public bool CellNavigation { get; set; }
 
@@ -3355,6 +3357,16 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// does a grid whose rows are selected by a click (Single), which has no checkbox the keyboard could use instead.</summary>
     internal bool CellNavigationActive => CellNavigation || (Editable && IsCellEditMode) || SelectionMode == BitSelectionMode.Single;
 
+    /// <summary>Whether assistive technologies are told the grid is a table (<c>role="table"</c>, cells <c>cell</c>)
+    /// rather than a grid. The grid role promises the keyboard of the ARIA grid pattern - a cell takes the focus and the
+    /// arrow keys move it - which only <see cref="CellNavigationActive"/> provides: without it no cell can be focused.
+    /// A tree stays a treegrid, whose rows nest and open from the keyboard.</summary>
+    internal bool IsStaticTable => CellNavigationActive is false && IsTreeMode is false;
+
+    /// <summary>The role of every cell that heads nothing: <c>cell</c> in a table (<see cref="IsStaticTable"/>),
+    /// <c>gridcell</c> in a grid or a treegrid.</summary>
+    internal string CellRole => IsStaticTable ? "cell" : "gridcell";
+
     /// <summary>Whether this cell shows its editor: every cell of the edited row in Row mode, only the
     /// opened one in Cell mode.</summary>
     internal bool IsEditingCell(TItem item, BitDataGridColumn<TItem> column)
@@ -5251,14 +5263,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private int _ariaRowCount;
 
     /// <summary>
-    /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped)
-    /// and the footer. -1 when the total is unknown (infinite scrolling).
+    /// Counts the grid's rows for its aria-rowcount - the header rows, the data rows (with the group rows while grouped),
+    /// the message row of a body with no data row and the footer. -1 when the total is unknown (infinite scrolling).
     /// </summary>
     internal int ComputeAriaRowCount()
     {
         if (IsInfiniteMode) return _ariaRowCount = -1;
 
         var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
+        // A body with no data row still renders a row: the loading message, or the empty one unless a new row is being
+        // added. Loading over rows that exist keeps their count, since they come back once it is done.
+        if (body == 0 && (Loading || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
         return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
     }
 

@@ -48,6 +48,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         "icon", "text",
         "datagrid", "themeswitcher", "fullcalendar", "markdowneditor", "richtexteditor", "pdfviewer",
         "aicitationmarker", "aiconversationlist", "aipromptinput", "aitoolapproval",
+        "aithinkingindicator", "aicontextmeter", "aiagentstatusbadge", "aicodeblockview",
     ];
 
     [TestMethod]
@@ -217,6 +218,46 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         }
 
         Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+    }
+
+    // The context meter paints its track in the secondary border color, which the forced palette maps to CanvasText, a
+    // system color the mode keeps: the whole of its thin track was the color of text beside the Highlight fill, under
+    // 1.5:1 in either theme. A meter's fill is what it is read by, so it has to stand off the track by the 3:1 of
+    // WCAG 1.4.11 for the parts of a graphic.
+    [TestMethod]
+    [DataRow("dark")]
+    [DataRow("light")]
+    public async Task BitAiContextMeter_UnderForcedColors_KeepsItsFillApartFromItsTrack(string scheme)
+    {
+        await Open("aicontextmeter", scheme);
+
+        var pairs = await Page.EvaluateAsync<string[]>("""
+            () => {
+                const luminance = color => {
+                    const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map(Number)
+                        .map(c => (c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+                    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                };
+                const contrast = (a, b) => {
+                    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+                    return (hi + 0.05) / (lo + 0.05);
+                };
+                return [...document.querySelectorAll('#case .bit-aictm-mtr')].map(meter => {
+                    const track = getComputedStyle(meter.querySelector('.bit-prb-trc')).backgroundColor;
+                    const fill = getComputedStyle(meter.querySelector('.bit-prb-bar')).backgroundColor;
+                    return `${contrast(track, fill).toFixed(2)}|${fill} on ${track}`;
+                });
+            }
+            """);
+
+        Assert.AreEqual(5, pairs.Length, "The page holds the five meters of the part.");
+
+        var failures = pairs.Select(p => p.Split('|'))
+                            .Where(p => double.Parse(p[0], System.Globalization.CultureInfo.InvariantCulture) < MinimumContrast)
+                            .Select(p => $"A meter's fill is {p[1]}, {p[0]}:1.")
+                            .ToArray();
+
+        Assert.AreEqual(0, failures.Length, string.Join("\n", failures));
     }
 
     // The rows of the overflow menu reserve a border's room, which the mode would draw around each of them.

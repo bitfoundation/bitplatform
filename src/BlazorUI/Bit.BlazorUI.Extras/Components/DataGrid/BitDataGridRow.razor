@@ -19,7 +19,7 @@
         @* The row's position in the whole dataset, so the numbering keeps counting across pages and
            virtualized windows instead of restarting. A row the index map doesn't know (the pending
            new row) simply renders no number. *@
-        <div class="bit-dtg-cell bit-dtg-cell-rownumber bit-dtg-sticky" style="@Grid.RowNumberStickyStyle" role="gridcell" aria-colindex="@specialColIndex">
+        <div class="bit-dtg-cell bit-dtg-cell-rownumber bit-dtg-sticky" style="@Grid.RowNumberStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex">
             <span class="bit-dtg-cell-text">@(Grid.RowDataIndex(Item) + 1)</span>
         </div>
     }
@@ -29,7 +29,7 @@
     @if (Grid.RowReorderEnabled)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             @{ var reorderDisabled = Editing || Grid.Disabled; }
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing && Grid.Disabled is false ? "true" : null)"
@@ -47,7 +47,7 @@
     @if (Grid.HasDetailColumn)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
                     @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@(Grid.IsDetailExpanded(Item) ? "true" : "false")">
                 <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
@@ -58,7 +58,7 @@
     @if (Grid.HasSelectColumn)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
                on mousedown because the change event that carries the new value exposes no modifier
                keys, and mousedown is dispatched before it. *@
@@ -77,7 +77,7 @@
            spans never coexist with spacers (ColSpan disables column virtualization). *@
         if (slot.Column is null)
         {
-            <div class="bit-dtg-cell" role="gridcell" aria-hidden="true"></div>
+            <div class="bit-dtg-cell" role="@Grid.CellRole" aria-hidden="true"></div>
             continue;
         }
         if (skip > 0) { skip--; continue; }
@@ -96,7 +96,7 @@
 
     @if (Grid.HasCommandColumn)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-command" role="@Grid.CellRole" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
             @if (Grid.IsCellEditMode)
             {
                 @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
@@ -120,7 +120,7 @@
 @if (Grid.HasDetailTemplate && Grid.IsDetailExpanded(Item))
 {
     <div class="bit-dtg-detail-row" role="row">
-        <div class="bit-dtg-detail-content @Grid.Classes?.DetailRow" style="@Grid.Styles?.DetailRow" role="gridcell" aria-colindex="1" aria-colspan="@Grid.TotalColumnSpan">
+        <div class="bit-dtg-detail-content @Grid.Classes?.DetailRow" style="@Grid.Styles?.DetailRow" role="@Grid.CellRole" aria-colindex="1" aria-colspan="@Grid.TotalColumnSpan">
             @Grid.DetailTemplate?.Invoke(Item)
         </div>
     </div>

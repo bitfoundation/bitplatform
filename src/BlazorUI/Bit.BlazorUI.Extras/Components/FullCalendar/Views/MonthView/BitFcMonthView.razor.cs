@@ -35,12 +35,12 @@ public partial class BitFcMonthView
     }
 
     /// <summary>
-    /// True when a cell actually renders the add button the roving tabindex moves between: a blanked
-    /// day borrowed from a neighbouring month, or one the date bounds made inert, renders none.
+    /// True when a cell actually renders the stop the roving tabindex moves between - its add button, or in a
+    /// read-only calendar its day number: a blanked day borrowed from a neighbouring month, or one the date bounds
+    /// made inert, renders neither.
     /// </summary>
     private bool IsFocusable(BitFullCalendarCell cell)
         => (cell.CurrentMonth || State.ShowNonCurrentDates)
-           && State.CanAdd
            && State.IsDateInAllowedRange(cell.Date);
 
     private string CellButtonId(DateTime date) => FormattableString.Invariant($"{_gridId}-{date:yyyyMMdd}");

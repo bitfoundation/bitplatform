@@ -230,6 +230,148 @@ public class BitFullCalendarKeyboardAndTemplateTests : BunitTestContext
         Assert.AreEqual(3, component.Instance.State.SelectedDate.Month);
     }
 
+    // A read-only month - ReadOnly, or AllowAdd off - renders no add button, so its day numbers carry the grid's tab stop.
+    private IRenderedComponent<BitFullCalendar> RenderReadOnlyCalendar(string how, bool navLinks = false, List<BitFullCalendarEvent>? events = null)
+        => RenderCalendar(p =>
+        {
+            if (how == "ReadOnly")
+            {
+                p.Add(c => c.ReadOnly, true);
+                p.Add(c => c.Settings, new BitFullCalendarSettings { NavLinks = navLinks });
+            }
+            else
+            {
+                p.Add(c => c.Settings, new BitFullCalendarSettings { NavLinks = navLinks, AllowAdd = false });
+            }
+        }, events);
+
+    private static AngleSharp.Dom.IElement RovingDay(IRenderedComponent<BitFullCalendar> component)
+        => component.Find(".bit-bfc-month-cell-day[data-bit-bfc-roving][tabindex='0']");
+
+    private static void PressOnRovingDay(IRenderedComponent<BitFullCalendar> component, string key)
+        => RovingDay(component).KeyDown(new KeyboardEventArgs { Key = key });
+
+    [TestMethod]
+    [DataRow("ReadOnly")]
+    [DataRow("AllowAdd off")]
+    public void BitFullCalendarReadOnlyMonthGridShouldBeOneTabStopOnItsDayNumbers(string how)
+    {
+        var component = RenderReadOnlyCalendar(how);
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-cell-add-hint-month").Count);
+
+        var days = component.FindAll(".bit-bfc-month-cell-day[data-bit-bfc-roving]");
+        Assert.IsTrue(days.Count >= 28);
+        Assert.IsTrue(days.All(d => d.TagName == "BUTTON" && d.GetAttribute("tabindex") is "0" or "-1"));
+        Assert.AreEqual(1, days.Count(d => d.GetAttribute("tabindex") == "0"), "the grid is one tab stop");
+
+        // The first day of the month shown holds it, read with its full date.
+        Assert.AreEqual("Sunday, March 1, 2026", RovingDay(component).GetAttribute("aria-label"));
+        Assert.AreEqual("1", RovingDay(component).TextContent.Trim());
+    }
+
+    [TestMethod]
+    [DataRow("ReadOnly")]
+    [DataRow("AllowAdd off")]
+    public void BitFullCalendarReadOnlyMonthGridKeysShouldWalkTheDays(string how)
+    {
+        var component = RenderReadOnlyCalendar(how);
+
+        PressOnRovingDay(component, "ArrowRight");
+        Assert.AreEqual("Monday, March 2, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        PressOnRovingDay(component, "ArrowDown");
+        Assert.AreEqual("Monday, March 9, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        PressOnRovingDay(component, "End");
+        Assert.AreEqual("Saturday, March 14, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        PressOnRovingDay(component, "ArrowLeft");
+        Assert.AreEqual("Friday, March 13, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        PressOnRovingDay(component, "PageDown");
+        Assert.AreEqual(4, component.Instance.State.SelectedDate.Month);
+        Assert.AreEqual("Monday, April 13, 2026", RovingDay(component).GetAttribute("aria-label"));
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-month-cell-day[data-bit-bfc-roving][tabindex='0']").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarReadOnlyMonthGridArrowsShouldFollowTheReadingDirection()
+    {
+        var component = RenderCalendar(p =>
+        {
+            p.Add(c => c.ReadOnly, true);
+            p.Add(c => c.Dir, BitDir.Rtl);
+        });
+
+        PressOnRovingDay(component, "ArrowLeft");
+        Assert.AreEqual("Monday, March 2, 2026", RovingDay(component).GetAttribute("aria-label"), "in right-to-left the next day is to the left");
+
+        PressOnRovingDay(component, "ArrowRight");
+        Assert.AreEqual("Sunday, March 1, 2026", RovingDay(component).GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    [DataRow("ReadOnly")]
+    [DataRow("AllowAdd off")]
+    public void BitFullCalendarReadOnlyMonthDayShouldSelectItsDateAndAddNothing(string how)
+    {
+        var component = RenderReadOnlyCalendar(how);
+
+        PressOnRovingDay(component, "ArrowRight");
+        RovingDay(component).Click();
+
+        Assert.AreEqual(new DateTime(2026, 3, 2), component.Instance.State.SelectedDate.Date);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count, "a read-only calendar opens no add dialog");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarReadOnlyMonthDayShouldBeNamedWithItsBackgroundEvents()
+    {
+        var component = RenderReadOnlyCalendar("ReadOnly", events:
+        [
+            new() { Id = "holiday", Title = "Holiday", StartDate = Anchor.AddDays(1), EndDate = Anchor.AddDays(1), IsAllDay = true, IsBackground = true },
+        ]);
+
+        var day = component.FindAll(".bit-bfc-month-cell-day[data-bit-bfc-roving]")
+                           .Single(d => d.GetAttribute("aria-label")!.StartsWith("Thursday, March 19, 2026"));
+        Assert.AreEqual("Thursday, March 19, 2026, Holiday", day.GetAttribute("aria-label"));
+
+        // The day number speaks for it, so the background event's own title is not read a second time.
+        var background = day.Closest(".bit-bfc-month-cell")!.QuerySelector(".bit-bfc-bg-event")!;
+        Assert.AreEqual("true", background.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarReadOnlyMonthWithNavLinksShouldRoveOnTheNavLinks()
+    {
+        var component = RenderReadOnlyCalendar("ReadOnly", navLinks: true);
+
+        var links = component.FindAll(".bit-bfc-month-cell-day.bit-bfc-navlink");
+        Assert.IsTrue(links.Count >= 28);
+        Assert.IsTrue(links.All(l => l.HasAttribute("data-bit-bfc-roving")));
+        Assert.AreEqual(1, links.Count(l => l.GetAttribute("tabindex") == "0"), "a nav link per day, but one tab stop");
+        Assert.AreEqual("Go to Sunday, March 1, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        PressOnRovingDay(component, "ArrowRight");
+        Assert.AreEqual("Go to Monday, March 2, 2026", RovingDay(component).GetAttribute("aria-label"));
+
+        // Enter is the link's own activation: it opens the day.
+        RovingDay(component).Click();
+        Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
+        Assert.AreEqual(new DateTime(2026, 3, 2), component.Instance.State.SelectedDate.Date);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarEditableMonthShouldKeepItsTabStopOnTheAddButtons()
+    {
+        var component = RenderCalendar(p => p.Add(c => c.Settings, new BitFullCalendarSettings { NavLinks = true }));
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-cell-add-hint-month[tabindex='0']").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-month-cell-day[data-bit-bfc-roving]").Count);
+        Assert.IsTrue(component.FindAll(".bit-bfc-month-cell-day.bit-bfc-navlink").All(l => l.HasAttribute("tabindex") is false));
+    }
+
     [TestMethod]
     public void BitFullCalendarMultiDayEventShouldBeOneTabStopPerWeekRow()
     {

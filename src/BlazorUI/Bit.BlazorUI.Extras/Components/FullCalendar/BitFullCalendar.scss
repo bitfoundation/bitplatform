@@ -536,6 +536,18 @@ $bfc-private-properties: evt-color;
     color: var(--bit-bfc-text-muted);
 }
 
+/* The day number of a read-only month, the roving tab stop of its grid: a button with the look of the label. Ahead of
+   the label's own rule, which sets its type and, for today, its fill. */
+.bit-bfc-month-cell-day-btn {
+    appearance: none;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+    cursor: inherit;
+}
+
 .bit-bfc-month-cell-day {
     display: inline-flex;
     align-items: center;

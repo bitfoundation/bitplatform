@@ -60,6 +60,15 @@
     background-color: var(--bit-AiContextMeter-track-color, var(--bit-Progress-track-color, #{$clr-brd-sec}));
 }
 
+// Under forced colors the secondary border color is CanvasText, a system color the mode keeps, which would paint the
+// whole thin track the color of text right beside the Highlight fill - under 1.5:1 in either contrast theme. The track
+// takes the Canvas there, inside the CanvasText edge BitProgress gives it, so the fill stands off it.
+@media (forced-colors: active) {
+    .bit-aictm > .bit-aictm-mtr .bit-prb-trc {
+        background-color: Canvas;
+    }
+}
+
 .bit-aictm-ttl,
 .bit-aictm-pct {
     white-space: nowrap;
