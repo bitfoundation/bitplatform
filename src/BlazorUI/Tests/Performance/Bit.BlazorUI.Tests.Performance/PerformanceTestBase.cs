@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +38,11 @@ public abstract class PerformanceTestBase
                                                     : "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
 
+    internal static string HostUrl => BaseUrl;
+
     protected IPage Page { get; private set; } = null!;
+
+    public TestContext TestContext { get; set; } = null!;
 
     /// <summary>
     /// The browser context a test class needs, for the ones that cannot be driven in the default desktop one -
@@ -219,10 +224,14 @@ public abstract class PerformanceTestBase
         // Run the host on the same TFM as the test runner so the right one is used.
         var tfm = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
+        // And in the configuration the tests were built in: a Release build of the tests measures a Release host, the only
+        // kind whose numbers are a baseline.
+        var configuration = typeof(PerformanceTestBase).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration ?? "Debug";
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{testHostPath}\" --framework {tfm} --urls {BaseUrl}",
+            Arguments = $"run --project \"{testHostPath}\" --framework {tfm} --configuration {configuration} --urls {BaseUrl}",
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
@@ -471,6 +480,102 @@ public abstract class PerformanceTestBase
             Assert.Fail($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}");
             return 0; // unreachable
         }
+    }
+
+    /// <summary>
+    /// Records one value the test measured for the run's results file (<see cref="PerformanceResults"/>), under the test's
+    /// name: <paramref name="count"/> is the size of what was measured - the components rendered, the cycles run.
+    /// </summary>
+    protected void Record(string metric, double value, string unit, int? count = null)
+    {
+        // The BROWSER asked for (Edge is a channel of Playwright's chromium), with the engine and version that ran.
+        var asked = Environment.GetEnvironmentVariable("BROWSER") is { Length: > 0 } name ? name.ToLowerInvariant() : "chromium";
+
+        PerformanceResults.Add(new(TestContext.TestName ?? GetType().Name, metric, Math.Round(value, 3), unit, count),
+                               _browser is null ? asked : $"{asked} ({_browser.BrowserType.Name} {_browser.Version})");
+    }
+
+    /// <summary>
+    /// Records what an interaction cost on both sides: the server's time from the handler to its OnAfterRender (the page's
+    /// own stopwatch), and the browser's (<see cref="MeasureInBrowserAsync"/>).
+    /// </summary>
+    protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
+    {
+        Record($"{metric}.server", serverMs, "ms", count);
+        Record($"{metric}.browser", browser.Duration, "ms", count);
+        Record($"{metric}.domNodes", browser.DomNodes, "nodes", count);
+        if (browser.LongTasks is { } longTasks) Record($"{metric}.longTasks", longTasks, "tasks", count);
+        if (browser.LongTaskTime is { } longTaskTime) Record($"{metric}.longTaskTime", longTaskTime, "ms", count);
+    }
+
+    /// <summary>
+    /// What an interaction took in the browser, the way it is seen there (<see cref="MeasureInBrowserAsync"/>).
+    /// </summary>
+    /// <param name="Duration">From the click reaching the page to the frame after the status showed its end.</param>
+    /// <param name="LongTasks">The tasks of 50 ms or more the main thread ran in between; null where the browser does not report them (all but Chromium).</param>
+    /// <param name="LongTaskTime">How long those tasks took together.</param>
+    /// <param name="DomNodes">The elements on the page once it was over.</param>
+    public sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
+
+    // Arms the page for one interaction: performance.mark "bit-perf:start" as the trigger's click reaches the document,
+    // "bit-perf:end" in the frame after the #status text reads the given end - after an animation frame and the task
+    // after it, so the layout and paint of what was rendered are inside - and performance.measure "bit-perf" between
+    // them, which a trace of the page shows as well. The answer is kept on the window for MeasureInBrowserAsync to await.
+    private const string ArmInteractionScript = """
+        (done) => {
+            for (const name of ['bit-perf:start', 'bit-perf:end']) performance.clearMarks(name);
+            performance.clearMeasures('bit-perf');
+
+            const longTasks = [];
+            const observer = PerformanceObserver.supportedEntryTypes?.includes('longtask')
+                ? new PerformanceObserver(list => longTasks.push(...list.getEntries()))
+                : null;
+            observer?.observe({ type: 'longtask' });
+
+            window.__bitPerfInteraction = new Promise(resolve => {
+                document.addEventListener('click', () => performance.mark('bit-perf:start'), { capture: true, once: true });
+
+                const status = document.getElementById('status');
+                const watcher = new MutationObserver(() => {
+                    if (status.textContent !== done || performance.getEntriesByName('bit-perf:start').length === 0) return;
+                    watcher.disconnect();
+
+                    requestAnimationFrame(() => setTimeout(() => {
+                        performance.mark('bit-perf:end');
+                        const measure = performance.measure('bit-perf', 'bit-perf:start', 'bit-perf:end');
+                        observer?.disconnect();
+
+                        const inside = longTasks.filter(t => t.startTime >= measure.startTime && t.startTime < measure.startTime + measure.duration);
+                        resolve({
+                            duration: measure.duration,
+                            longTasks: observer ? inside.length : null,
+                            longTaskTime: observer ? inside.reduce((total, t) => total + t.duration, 0) : null,
+                            domNodes: document.getElementsByTagName('*').length,
+                        });
+                    }, 0));
+                });
+                watcher.observe(status, { childList: true, characterData: true, subtree: true });
+            });
+        }
+        """;
+
+    /// <summary>
+    /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until the #status element reads
+    /// <paramref name="done"/>: from the click reaching the page to the next frame after that text appeared - the round
+    /// trip, the render, the DOM it changed and the layout and paint of it - as performance.mark / performance.measure
+    /// ("bit-perf"). The page's own #render-time is the server's half of it alone.
+    /// </summary>
+    protected async Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done)
+    {
+        await Page.EvaluateAsync(ArmInteractionScript, done);
+        await trigger.ClickAsync();
+
+        var timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction");
+
+        return new(timing.GetProperty("duration").GetDouble(),
+                   timing.GetProperty("longTasks").ValueKind is JsonValueKind.Number ? timing.GetProperty("longTasks").GetInt32() : null,
+                   timing.GetProperty("longTaskTime").ValueKind is JsonValueKind.Number ? timing.GetProperty("longTaskTime").GetDouble() : null,
+                   timing.GetProperty("domNodes").GetInt32());
     }
 
     /// <summary>

@@ -51,17 +51,15 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
         await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
 
-        // Click the render button
-        await Page.Locator("#btn-render").ClickAsync();
-
-        // Wait for rendering to complete
-        await WaitForRenderComplete();
+        // Click the render button, and time it in the browser until the page says it rendered
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
         // Get and validate the render time
         var renderTime = await GetRenderTime();
         var componentCount = await GetComponentCount();
 
-        Console.WriteLine($"Initial Render - {count} components: {renderTime:F2}ms");
+        Console.WriteLine($"Initial Render - {count} components: {renderTime:F2}ms (browser {browser.Duration:F2}ms)");
+        RecordInteraction("render", count, renderTime, browser);
 
         Assert.AreEqual(count, componentCount, $"Expected {count} components, but got {componentCount}");
         AssertWithinThreshold(renderTime, threshold, $"Initial render time for {count} components");
@@ -110,13 +108,13 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         await WaitForRenderComplete();
 
         // Now trigger a re-render
-        await Page.Locator("#btn-rerender").ClickAsync();
-        await WaitForReRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-rerender"), "Re-rendered");
 
         // Get and validate the re-render time
         var reRenderTime = await GetReRenderTime();
 
-        Console.WriteLine($"Re-render - {count} components: {reRenderTime:F2}ms");
+        Console.WriteLine($"Re-render - {count} components: {reRenderTime:F2}ms (browser {browser.Duration:F2}ms)");
+        RecordInteraction("rerender", count, reRenderTime, browser);
 
         AssertWithinThreshold(reRenderTime, threshold, $"Re-render time for {count} components");
     }
@@ -175,6 +173,8 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         // Note: Memory API may not be available in all browsers
         if (afterRenderMemory > 0)
         {
+            Record("jsHeap", afterRenderMemory, "MB", count);
+            Record("jsHeapIncrease", memoryIncrease, "MB", count);
             AssertWithinThreshold(afterRenderMemory, threshold, $"Memory usage for {count} components");
         }
         else

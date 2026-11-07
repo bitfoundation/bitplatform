@@ -157,6 +157,44 @@ Default thresholds are defined in `PerformanceTestBase.Thresholds`:
 These thresholds are intentionally generous to account for CI/CD environment variations.
 Adjust as needed based on your performance requirements.
 
+## Results
+
+The performance tests also write what they measured to `performance-results_net11.0.json` (the framework the run was on)
+in the run's results directory - `--results-directory`, which CI uploads with the TRX, or `TestResults` beside the test
+app otherwise. No threshold reads it: it is there to compare one run with another.
+
+- **What each test measured**, as rows of test, metric, value, unit and count (the components rendered, the cycles run):
+  - `render.*` and `rerender.*`: `server` is the page's own stopwatch, from the click handler to `OnAfterRender`.
+    `browser` is the same click timed in the browser, from the click reaching the page to the frame after the status
+    showed it was done, which takes in the round trip, the DOM changes and their layout and paint. `domNodes` is the
+    page's element count at the end. `longTasks` and `longTaskTime` are the main thread's tasks of 50 ms or more in
+    between, which only Chromium-based browsers report.
+  - `jsHeap` and `jsHeapIncrease`: BitActionButton's JS heap after rendering, also Chromium only.
+  - `serverHeapGrowth.early` and `.late`: BitDropdown's mount and unmount windows.
+- **What it was measured on**:
+  - the OS, the CPU model and its cores, the memory, and whether it ran on CI;
+  - the browser and its version;
+  - the SDK, and the runtime and configuration of the test run;
+  - the commit;
+  - the host's own account of itself from `/api/environment`: the configuration it was built in, its runtime, its GC
+    mode, and the render mode of the performance pages.
+
+The browser timing is a `performance.measure` named `bit-perf`, between the marks `bit-perf:start` and `bit-perf:end`,
+so a trace of the page recorded in the browser's dev tools shows it as well.
+
+### A baseline is measured in Release
+
+The test run starts the host in the configuration the tests were built in, so a Release build of the tests measures a
+Release host. A Debug host (CI's) is no baseline: the `configuration` of the host in the results says which one it was.
+
+```bash
+dotnet build Bit.BlazorUI.Tests.Performance -c Release -f net11.0
+cd Bit.BlazorUI.Tests.Performance
+RUN_BROWSER_TESTS=1 dotnet exec bin/Release/net11.0/Bit.BlazorUI.Tests.Performance.dll --filter "TestCategory=Performance" --results-directory ../perf-results
+```
+
+A host already answering on the URL is reused whatever it was built in, so stop one started by hand in Debug first.
+
 ## Troubleshooting
 
 ### Test Host Doesn't Start
