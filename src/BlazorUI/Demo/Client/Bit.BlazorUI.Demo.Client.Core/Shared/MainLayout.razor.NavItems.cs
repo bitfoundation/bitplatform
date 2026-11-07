@@ -125,7 +125,7 @@ public partial class MainLayout
             Text = "Surfaces",
             ChildItems =
             [
-                new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
+                new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander", Data = "Collapsible" },
                 new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup, HoverCard" },
                 new() { Text = "Card", Url = "/components/card" },
                 new() { Text = "Collapse", Url = "/components/collapse" },
