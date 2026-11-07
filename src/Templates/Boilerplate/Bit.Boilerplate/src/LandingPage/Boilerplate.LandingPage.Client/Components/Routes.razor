@@ -1,3 +1,5 @@
+@using Bit.Belemetry
+
 @* While prerendering the failure goes on to the server's exception handler as a 500, since a page answering 200 with this panel would stay on a CDN *@
 <ErrorBoundary MaximumErrorCount="@(RendererInfo.IsInteractive ? 100 : 0)">
     <ChildContent>
@@ -15,3 +17,5 @@
         <LandingErrorPanel />
     </ErrorContent>
 </ErrorBoundary>
+
+<BelemetryInitializer />
