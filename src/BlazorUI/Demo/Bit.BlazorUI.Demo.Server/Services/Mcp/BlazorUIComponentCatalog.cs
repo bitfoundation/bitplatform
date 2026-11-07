@@ -34,6 +34,13 @@ public sealed record BlazorUIComponent
     public required string Url { get; init; }
     public required BlazorUIPackage Package { get; init; }
     public string? Aliases { get; init; }
+
+    /// <summary>
+    /// The words the nav entry tags it with ("Hex, RGB, Eyedropper"): what it does and what it is used for rather than the
+    /// names it goes by, which are <see cref="Aliases"/>. The site's search boxes rank by them too.
+    /// </summary>
+    public string? Keywords { get; init; }
+
     public string Summary { get; init; } = string.Empty;
     public string? Description { get; init; }
     public string? Notes { get; init; }
@@ -289,6 +296,7 @@ public static class BlazorUIComponentCatalog
                 Category = item.Category,
                 Url = item.Url,
                 Aliases = item.Aliases,
+                Keywords = item.Keywords,
                 Summary = item.Summary,
                 Package = componentType is null ? BlazorUIAssemblies.Core : BlazorUIAssemblies.Of(componentType),
                 Description = demo?.Description,

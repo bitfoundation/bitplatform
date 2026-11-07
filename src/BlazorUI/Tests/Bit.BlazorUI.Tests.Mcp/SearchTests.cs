@@ -21,7 +21,10 @@ public class SearchTests : McpTestBase
     [DataRow("searchable multi select with chips", "BitDropdown")]
     [DataRow("loading skeleton placeholder", "BitShimmer")]
     [DataRow("tabs", "BitPivot")]
-    [DataRow("collapsible expander panel", "BitAccordion")]
+    // BitAiCollapsible, which lists "Expander" among its keywords, matches all three words - BitAccordion two of them,
+    // and stays among the hits (see A_keyword_ranks_the_component_it_tags_first).
+    [DataRow("collapsible expander panel", "BitAiCollapsible")]
+    [DataRow("endless scroll", "BitInfiniteScrolling")]
     [DataRow("upload a file with progress", "BitFileUpload")]
     [DataRow("virtualized data table with sorting and paging", "BitDataGrid")]
     [DataRow("on off switch", "BitToggle")]
@@ -58,6 +61,10 @@ public class SearchTests : McpTestBase
     [DataRow("safe area", "BitAppShell")]
     [DataRow("tree grid", "BitDataGrid")]
     [DataRow("sidebar", "BitNavPanel")]
+    // Names a nav entry lists among its keywords rather than its aliases.
+    [DataRow("TagBox", "BitTagsInput")]
+    [DataRow("useMediaQuery", "BitMediaQuery")]
+    [DataRow("BlockUI", "BitOverlay")]
     public async Task A_name_from_another_library_finds_the_component_that_provides_it(string query, string expected)
     {
         var answer = await CallAsync("SearchBitBlazorUI", new { query, limit = 5 });
@@ -133,6 +140,32 @@ public class SearchTests : McpTestBase
 
         Assert.AreEqual(0, named, $"'{query}' is the word {expected}'s name ends in, which should lead. The whole answer:\n{answer}");
         Assert.IsGreaterThan(named, alias, $"'{query}' should still find {aliased}, below {expected}. The whole answer:\n{answer}");
+    }
+
+    /// <summary>
+    /// The keywords a component's nav entry tags it with - what it does and what it is used for - find it ahead of the
+    /// hits that led while the search read no keywords, which are asserted to be among the hits still, so the case keeps
+    /// testing a ranking. BitAiCollapsible lists "Expander", which makes it the one component matching every word of
+    /// "collapsible expander panel" - its name, that keyword and the disclosure panel its description calls it - while
+    /// BitAccordion, whose alias is Expander, matches two of the three.
+    /// </summary>
+    [TestMethod]
+    [DataRow("collapsible expander panel", "BitAiCollapsible", "BitAccordion")]
+    [DataRow("eyedropper", "BitColorPicker", "BitColorPicker.EyeDropperIcon")]
+    [DataRow("gauge", "BitChart", "BitProgress")]
+    [DataRow("thumbnails", "BitPdfViewer", "BitCarousel")]
+    [DataRow("pie chart", "BitChart", "BitChartLegacy")]
+    public async Task A_keyword_ranks_the_component_it_tags_first(string query, string expected, string other)
+    {
+        var (answer, names) = await HitsAsync(query);
+
+        var tagged = names.IndexOf(expected);
+        var rival = names.IndexOf(other);
+
+        using var scope = Assert.Scope();
+
+        Assert.AreEqual(0, tagged, $"'{query}' matches a keyword of {expected}, which should lead. The whole answer:\n{answer}");
+        Assert.IsGreaterThan(tagged, rival, $"'{query}' should still find {other}, below {expected}. The whole answer:\n{answer}");
     }
 
     /// <summary>The answer to a search, with the names of its hits in their order.</summary>

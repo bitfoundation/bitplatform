@@ -60,6 +60,19 @@ public static class BlazorUISearchIndex
         public string? NameHead { get; init; }
 
         /// <summary>
+        /// The words a component's nav entry tags it with, lowered: what it does and what it is used
+        /// for - "Eyedropper", "Hex" for BitColorPicker, "LLM", "GPT" for BitAiChat - which nothing
+        /// else here says, so without them those found nothing at all. The site's search boxes rank by
+        /// them too.
+        /// <para>
+        /// Scored as one occurrence in the boosted text, however many of the keywords hold the term: a
+        /// list of tags names a thing once, and BitChart's "Bar chart" and "Error bars" ranked it
+        /// above BitHeader, which is the AppBar, for "app bar".
+        /// </para>
+        /// </summary>
+        public string LoweredKeywords { get; init; } = string.Empty;
+
+        /// <summary>
         /// How much this entry outranks another that matched the query as well.
         /// <para>
         /// A component's answer already contains its parameters, its own enums and the titles of
@@ -203,7 +216,7 @@ public static class BlazorUISearchIndex
             var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
             var isNameHead = entry.NameHead is { } head && Equivalent(head, term);
             var inTitle = isTitleWord ? 0 : Count(entry.LoweredTitle, term);
-            var inBoosted = Count(entry.LoweredBoosted, term);
+            var inBoosted = Count(entry.LoweredBoosted, term) + (entry.LoweredKeywords.Contains(term, StringComparison.Ordinal) ? 1 : 0);
             var inBody = Count(entry.LoweredBody, term);
 
             if (isAlias is false && isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
@@ -433,6 +446,7 @@ public static class BlazorUISearchIndex
                 $"{component.Package.PackageId} {string.Join(' ', component.Examples.Select(e => e.Title).Distinct())}")
             {
                 Weight = 3,
+                LoweredKeywords = component.Keywords?.ToLowerInvariant() ?? string.Empty,
                 NamePhrase = BlazorUISuggest.Normalize(component.Name),
                 // Its first word is the Bit prefix every name here carries.
                 NameHead = SplitWords(component.Name) is { Length: > 2 } words ? words[^1].ToLowerInvariant() : null,
