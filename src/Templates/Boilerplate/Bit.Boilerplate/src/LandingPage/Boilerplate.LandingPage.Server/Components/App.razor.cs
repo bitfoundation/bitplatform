@@ -14,11 +14,11 @@ public partial class App
     private bool OmitScripts => HttpContext.Request.IsLightHouseRequest() || HttpContext.Request.IsCrawlerClient();
 
     // The OTLP endpoint for the WebAssembly runtime, which reads no server settings; the headers stay on the server
-    private string WebAssemblyEnvironmentVariables => configuration.GetBrowserOtlpEndpoint() is { } endpoint
+    private string WebAssemblyEnvironmentVariables => configuration.GetBrowserOtlpEndpoint() is { } otlp
         ? JsonSerializer.Serialize(new Dictionary<string, string>
         {
-            ["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint.OriginalString,
-            ["OTEL_EXPORTER_OTLP_PROTOCOL"] = configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] is { Length: > 0 } protocol ? protocol : "http/protobuf"
+            ["OTEL_EXPORTER_OTLP_ENDPOINT"] = otlp.Endpoint.OriginalString,
+            ["OTEL_EXPORTER_OTLP_PROTOCOL"] = otlp.Protocol
         })
         : "{}";
 

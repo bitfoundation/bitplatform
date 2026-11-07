@@ -48,7 +48,7 @@ public static class WebApplicationExtensions
         // - src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs (UseSecurityHeaders)
         public WebApplication UseLandingSecurityHeaders()
         {
-            var otlpOrigin = app.Configuration.GetBrowserOtlpEndpoint()?.GetLeftPart(UriPartial.Authority);
+            var otlpOrigin = app.Configuration.GetBrowserOtlpEndpoint()?.Endpoint.GetLeftPart(UriPartial.Authority);
 
             var csp = string.Join(' ',
                 "default-src 'self';",
