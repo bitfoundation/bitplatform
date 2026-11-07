@@ -59,6 +59,36 @@ public class ReviewInviteTests
     }
 
     [TestMethod]
+    public async Task AnInviteLink_Should_NeverSendTheBrowserToAnotherSite()
+    {
+        var server = await WorkbenchTestsInitializer.SharedServer;
+        using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+
+        using var request = WorkbenchTestServer.Remote(HttpMethod.Get, $"{server.Address.GetLeftPart(UriPartial.Authority)}//evil.example/x?{WorkbenchReviewers.QueryName}={WorkbenchReviewers.Key}");
+        using var response = await client.SendAsync(request, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.IsNull(response.Headers.Location);
+        Assert.IsFalse(response.Headers.Contains("Set-Cookie"));
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public async Task DeletingTheKey_Should_RevokeAnInviteAlreadyOpen()
+    {
+        var server = await WorkbenchTestsInitializer.SharedServer;
+
+        await using var invited = await WorkbenchTestReviewer.Open(server, isLocal: false, name: "Phone", isInvited: true);
+
+        Assert.IsTrue(invited.Session.SavesComments);
+
+        File.Delete(Path.Combine(WorkbenchFolders.Reviews, "reviewer-key.txt"));
+
+        Assert.IsFalse(invited.Session.SavesComments);
+        Assert.IsFalse(invited.Session.IsInvitedReviewer);
+    }
+
+    [TestMethod]
     public async Task AnInvitedReviewer_Should_ReachTheAgentButChangeNothingElse()
     {
         var server = await WorkbenchTestsInitializer.SharedServer;

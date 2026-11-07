@@ -21,25 +21,21 @@ public static class WorkbenchReviewers
     public const string CookieName = "workbench-reviewer";
 
     private static readonly Lock keyLock = new();
-    private static string? key;
 
     private static string KeyFile => Path.Combine(WorkbenchFolders.Reviews, "reviewer-key.txt");
 
-    /// <summary>The invite key, made the first time it is asked for.</summary>
+    /// <summary>The invite key, read from its file each time, so a deleted or replaced file counts at once; made when there is none.</summary>
     public static string Key
     {
         get
         {
             lock (keyLock)
             {
-                if (key is not null && File.Exists(KeyFile))
-                    return key;
-
                 if (File.Exists(KeyFile) && File.ReadAllText(KeyFile).Trim() is { Length: >= 32 } saved)
-                    return key = saved;
+                    return saved;
 
                 Directory.CreateDirectory(WorkbenchFolders.Reviews);
-                key = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(24));
+                var key = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(24));
                 File.WriteAllText(KeyFile, key);
 
                 return key;
@@ -48,12 +44,10 @@ public static class WorkbenchReviewers
     }
 
     /// <summary>Whether the request comes from a browser an invite link was opened in, in dev mode.</summary>
-    public static bool IsInvited(HttpContext context, IConfiguration configuration)
-    {
-        return WorkbenchLocalRequests.IsDevMode(configuration)
-            && context.Request.Cookies.TryGetValue(CookieName, out var value)
-            && Matches(value);
-    }
+    public static bool IsInvited(HttpContext context, IConfiguration configuration) => IsInvited(context.Request.Cookies[CookieName], configuration);
+
+    /// <summary>Whether an invite cookie's value still counts: in dev mode, with the current key.</summary>
+    public static bool IsInvited(string? cookie, IConfiguration configuration) => WorkbenchLocalRequests.IsDevMode(configuration) && Matches(cookie);
 
     /// <summary>
     /// Turns the key of an invite link into the cookie, then sends the browser on to the same address without it, so the key
@@ -63,6 +57,14 @@ public static class WorkbenchReviewers
     {
         if (context.Request.Query.TryGetValue(QueryName, out var value) is false || WorkbenchLocalRequests.IsDevMode(configuration) is false)
             return false;
+
+        var path = $"{context.Request.PathBase}{context.Request.Path}";
+
+        if (path.StartsWith("//", StringComparison.Ordinal) || path.StartsWith("/\\", StringComparison.Ordinal))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return true;
+        }
 
         if (Matches(value.ToString()))
         {
@@ -78,7 +80,7 @@ public static class WorkbenchReviewers
 
         var rest = context.Request.Query.Where(q => q.Key != QueryName).SelectMany(q => q.Value.Select(v => KeyValuePair.Create(q.Key, v)));
 
-        context.Response.Redirect($"{context.Request.PathBase}{context.Request.Path}{QueryString.Create(rest)}");
+        context.Response.Redirect($"{path}{QueryString.Create(rest)}");
 
         return true;
     }

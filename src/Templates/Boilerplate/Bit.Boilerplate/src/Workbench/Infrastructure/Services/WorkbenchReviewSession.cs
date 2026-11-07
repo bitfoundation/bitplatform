@@ -17,7 +17,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private IStringLocalizer<WorkbenchStrings> localizer = default!;
 
     private WorkbenchFlow[]? sampleFlows;
-    private (bool CanWrite, bool SavesComments, bool IsInvited)? access;
+    private (bool CanWrite, bool IsLocal, string? InviteCookie)? access;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
     private Timer? agentGoneTimer;
@@ -36,23 +36,18 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev
     /// mode, or from a reviewer elsewhere who opened an invite link.
     /// </summary>
-    public bool SavesComments => Access.SavesComments;
+    public bool SavesComments => Access.IsLocal || IsInvitedReviewer;
 
-    /// <summary>Whether this circuit is a reviewer elsewhere who opened an invite link: their comments reach the agent, nothing else they do is saved.</summary>
-    public bool IsInvitedReviewer => Access.IsInvited;
+    /// <summary>
+    /// Whether this circuit is a reviewer elsewhere who opened an invite link: their comments reach the agent, nothing else
+    /// they do is saved. Checked against the current key each time, so deleting its file revokes an open circuit too.
+    /// </summary>
+    public bool IsInvitedReviewer => Access is { IsLocal: false, InviteCookie: { } cookie } && WorkbenchReviewers.IsInvited(cookie, configuration);
 
     // Read together, as the request is only there when the circuit starts.
-    private (bool CanWrite, bool SavesComments, bool IsInvited) Access => access ??= httpContextAccessor.HttpContext is { } context
-        ? ReadAccess(context)
-        : (false, false, false);
-
-    private (bool CanWrite, bool SavesComments, bool IsInvited) ReadAccess(HttpContext context)
-    {
-        var isLocal = WorkbenchLocalRequests.IsLocal(context);
-        var isInvited = isLocal is false && WorkbenchReviewers.IsInvited(context, configuration);
-
-        return (WorkbenchLocalRequests.CanChange(context, configuration), isLocal || isInvited, isInvited);
-    }
+    private (bool CanWrite, bool IsLocal, string? InviteCookie) Access => access ??= httpContextAccessor.HttpContext is { } context
+        ? (WorkbenchLocalRequests.CanChange(context, configuration), WorkbenchLocalRequests.IsLocal(context), context.Request.Cookies[WorkbenchReviewers.CookieName])
+        : (false, false, null);
 
     public bool IsOpen => document is not null;
 
