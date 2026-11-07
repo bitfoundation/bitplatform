@@ -476,6 +476,9 @@
                     meaning and only runs on buffered fallback. <b>GetBytes()</b> returns null in Range mode;
                     <b>GetBytesAsync()</b> returns an unretained caller-owned copy. Download and whole-document
                     search/print can acquire the remaining bytes.
+                    Copies stream outside the page cache. A whole-file copy accepts a full <b>200</b> response
+                    only from byte zero, with the same strong ETag and exact length; shorter <b>206</b> responses
+                    continue from the next byte with the same validator.
                     <br /><br />
                     During prerendering, a URL reachable by the server uses the same Range path to render the current
                     page. A browser-only URL keeps the loading state until interactive rendering can fetch it.

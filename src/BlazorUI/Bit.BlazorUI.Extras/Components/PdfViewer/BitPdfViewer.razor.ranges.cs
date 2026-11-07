@@ -23,6 +23,11 @@ public partial class BitPdfViewer
     private bool HasDeferredEssentials => _rangeSource is not null && !_rangeEssentialsLoaded;
     private bool IsNonBuffered => _streamSource is not null || _rangeSource is not null;
 
+    // Instance-scoped test seam for exercising the single-threaded browser path
+    // on a server test host, without changing the public rendering policy.
+    internal bool ForceInlineRangeWork { get; set; }
+    private bool InlineRangeWork => ForceInlineRangeWork || (OperatingSystem.IsBrowser() && !BackgroundRendering);
+
     private sealed record RangeAttempt<T>(T? Value, List<(int Offset, int Length)>? Missing);
 
     private async Task<T> RunRangeFactoryAsync<T>(BitPdfHttpRangeByteSource source, Func<T> build, int version, CancellationToken token)
@@ -37,8 +42,7 @@ public partial class BitPdfViewer
                 CheckRangeOperation(source, version, token);
                 try
                 {
-                    return !OperatingSystem.IsBrowser() || BackgroundRendering
-                        ? await Task.Run(build, token) : build();
+                    return InlineRangeWork ? build() : await Task.Run(build, token);
                 }
                 catch (BitPdfMissingDataException ex) { missing = ex; }
             }
@@ -102,8 +106,7 @@ public partial class BitPdfViewer
                         }
                         finally { document.ReleaseByteWindows(); }
                     }
-                    outcome = !OperatingSystem.IsBrowser() || BackgroundRendering
-                        ? await Task.Run(Execute, token) : Execute();
+                    outcome = InlineRangeWork ? Execute() : await Task.Run(Execute, token);
                 }
                 finally { _renderGate.Release(); }
                 CheckRangeOperation(source, version, token);

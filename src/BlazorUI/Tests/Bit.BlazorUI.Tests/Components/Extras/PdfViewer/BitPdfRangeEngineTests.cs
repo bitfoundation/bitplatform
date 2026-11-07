@@ -13,7 +13,7 @@ using RangeHandler = Bit.BlazorUI.Tests.Components.Extras.PdfViewer.BitPdfRangeS
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
 
 [TestClass]
-public class BitPdfRangeEngineTests
+public partial class BitPdfRangeEngineTests
 {
     [TestMethod]
     [DataRow("hello")]

@@ -25,6 +25,29 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
     private static IDocument Parse(string html) => new HtmlParser().ParseDocument(html);
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task BrowserOnlyRangeSourceShouldPrerenderTheLoadingState(bool registerHttpClient)
+    {
+        var errors = new List<string>();
+        var html = await Prerenderer.RenderAsync<BitPdfViewer>(new Dictionary<string, object?>
+        {
+            [nameof(BitPdfViewer.Source)] = BitPdfSource.FromUrl("/docs/browser-only.pdf").WithRangeLoading(),
+            [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string>(this, errors.Add),
+        }, services =>
+        {
+            // Without BaseAddress this relative URL can be resolved only by the browser.
+            if (registerHttpClient) services.AddSingleton(new HttpClient());
+        });
+
+        var document = Parse(html);
+        Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
+        Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
+        Assert.AreEqual(0, document.QuerySelectorAll(".bit-pdv-page[data-page]").Length);
+        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+    }
+
+    [TestMethod]
     public async Task RangeSourceShouldPrerenderItsFirstPageWithoutAFullDownload()
     {
         using var handler = new BitPdfRangeSourceTests.RangeHandler(BitPdfRangeViewerTests.SpacedPages());

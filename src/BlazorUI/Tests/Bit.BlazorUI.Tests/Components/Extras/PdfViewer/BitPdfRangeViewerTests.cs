@@ -19,7 +19,7 @@ using RangeHandler = Bit.BlazorUI.Tests.Components.Extras.PdfViewer.BitPdfRangeS
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
 
 [TestClass]
-public class BitPdfRangeViewerTests : BunitTestContext
+public partial class BitPdfRangeViewerTests : BunitTestContext
 {
     [TestMethod]
     public async Task RangeViewerShouldPublishRequestedPageWithDeferredSafePropertiesAndExplicitCopies()

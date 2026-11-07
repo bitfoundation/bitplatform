@@ -14,7 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
 
 [TestClass]
-public class BitPdfRangeSourceTests
+public partial class BitPdfRangeSourceTests
 {
     [TestMethod]
     public void RangeOptionsShouldHaveStableDefaultsAndSurviveSourceCloning()
@@ -281,6 +281,7 @@ public class BitPdfRangeSourceTests
         internal readonly List<string?> Authorization = [];
         internal string? Problem;
         internal int FailuresRemaining, Failures;
+        internal int? OpenEndedLimit;
         internal CountingBody? LastBody;
         internal TaskCompletionSource? Pause;
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -296,19 +297,24 @@ public class BitPdfRangeSourceTests
             }
             var requested = request.Headers.Range!.Ranges.Single();
             int from = (int)requested.From!.Value, to = (int)Math.Min(Bytes.Length - 1, requested.To ?? Bytes.Length - 1);
-            if (Problem == "200") { from = 0; to = Bytes.Length - 1; }
+            bool complete = Problem?.StartsWith("200", StringComparison.Ordinal) is true;
+            if (complete) { from = 0; to = Bytes.Length - 1; }
+            else if (requested.To is null && OpenEndedLimit is int limit) to = Math.Min(to, from + limit - 1);
             byte[] data = Bytes[from..(to + 1)];
             if (Problem == "short") data = data[..^1];
             if (Problem == "extra") data = [..data, 42];
             LastBody = new CountingBody(data);
-            var response = new HttpResponseMessage(Problem == "200" ? HttpStatusCode.OK : Problem == "416" ? HttpStatusCode.RequestedRangeNotSatisfiable : HttpStatusCode.PartialContent)
+            var response = new HttpResponseMessage(complete ? HttpStatusCode.OK : Problem == "416" ? HttpStatusCode.RequestedRangeNotSatisfiable : HttpStatusCode.PartialContent)
             { Content = new StreamContent(LastBody) };
             response.Content.Headers.ContentRange = Problem == "total"
                 ? new ContentRangeHeaderValue(from, to)
                 : new ContentRangeHeaderValue(Problem == "range" ? from + 1 : from, to, Problem == "changedLength" ? Bytes.Length + 1 : Bytes.Length);
             response.Content.Headers.ContentLength = to - from + 1;
-            if (Problem == "compressed") response.Content.Headers.ContentEncoding.Add("gzip");
-            if (Problem != "etag") response.Headers.TryAddWithoutValidation("ETag", Problem == "weak" ? "W/" + Tag : Problem == "changed" ? "\"changed\"" : Tag);
+            if (complete) response.Content.Headers.ContentRange = null;
+            if (Problem == "200length") response.Content.Headers.ContentLength = Bytes.Length + 1;
+            if (Problem is "compressed" or "200compressed") response.Content.Headers.ContentEncoding.Add("gzip");
+            if (Problem is not ("etag" or "200etag")) response.Headers.TryAddWithoutValidation("ETag",
+                Problem is "weak" or "200weak" ? "W/" + Tag : Problem is "changed" or "200changed" ? "\"changed\"" : Tag);
             return response;
         }
     }
@@ -378,7 +384,11 @@ public class BitPdfRangeSourceTests
                         frame.GetType().GetMethod("Commit", Flags)!.Invoke(frame, null);
                         return result;
                     }
-                    catch (BitPdfMissingDataException ex) { missing = ex; }
+                    catch (BitPdfMissingDataException ex)
+                    {
+                        frame.GetType().GetMethod("CommitObjects", Flags)!.Invoke(frame, null);
+                        missing = ex;
+                    }
                     finally { typeof(BitPdfDocument).GetMethod("ReleaseByteWindows", Flags)!.Invoke(document, null); }
                 }
                 await Ensure(missing!.Offset, missing.Length);

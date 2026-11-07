@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 internal interface IBitPdfPartialByteSource : IBitPdfByteSource, IBitPdfByteSourceLifetime
 {
     bool IsDataAvailable(int offset, int length);
-    int ChunkSize => 4096;
+    int ChunkSize { get; }
 }
 
 // These are source/control-flow failures, never malformed-content recovery.

@@ -81,6 +81,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     private int _requestCount;
     private int _restartCount;
     private long _fetchedBytes;
+
     private BitPdfHttpRangeByteSource(HttpClient http, BitPdfSource source, int length, string etag, CancellationToken token)
     {
         _http = http;
@@ -93,8 +94,6 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     }
 
     public int Length { get; }
-    internal int ChunkSize => _options.ChunkSize;
-
     int IBitPdfPartialByteSource.ChunkSize => _options.ChunkSize;
 
     internal int AccountedBytes
@@ -123,6 +122,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     internal int RestartCount => Volatile.Read(ref _restartCount);
 
     internal void RecordRestart() => Interlocked.Increment(ref _restartCount);
+
     internal long FetchedBytes => Interlocked.Read(ref _fetchedBytes);
 
     internal Operation BeginOperation()
@@ -234,7 +234,8 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             && !tag.IsWeak ? value : null;
     }
 
-    private static int ValidateHeaders(HttpResponseMessage response, int start, int end, int? length, string? etag)
+    private static int ValidateHeaders(HttpResponseMessage response, int start, int end, int? length,
+        string? etag, bool allowShortRange = false)
     {
         if (response.StatusCode == HttpStatusCode.OK && etag is not null)
         {
@@ -271,9 +272,11 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
 
         int requestedEnd = Math.Min(end, total - 1);
         if (range.From != start
-            || range.To != requestedEnd
+            || range.To < start
+            || range.To > requestedEnd
+            || (!allowShortRange && range.To != requestedEnd)
             || (response.Content.Headers.ContentLength is long actual
-            && actual != (long)requestedEnd - start + 1))
+                && actual != range.To - start + 1))
         {
             throw new BitPdfRangePermanentException("The PDF Content-Range or body length does not match the requested bytes.");
         }
@@ -284,6 +287,31 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         }
 
         return total;
+    }
+
+    private int ValidateCopyResponse(HttpResponseMessage response, int start)
+    {
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            ValidateHeaders(response, start, Length - 1, Length, _etag, allowShortRange: true);
+            return checked((int)response.Content.Headers.ContentRange!.To!.Value + 1);
+        }
+
+        string? tag = ReadStrongTag(response);
+        if (tag is not null && !StringComparer.Ordinal.Equals(tag, _etag))
+        {
+            throw new BitPdfRangeVersionException("The PDF changed while it was open. Assign a new source to reload the document.");
+        }
+
+        // A full representation is safe only for a copy starting at zero, with
+        // the exact captured version and length. Cache acquisitions stay strict.
+        if (start != 0 || tag is null || response.Content.Headers.ContentLength != Length
+            || response.Content.Headers.ContentEncoding.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, "identity")))
+        {
+            throw new BitPdfRangePermanentException("The PDF copy response does not identify the complete original representation.");
+        }
+
+        return Length;
     }
 
     public void ThrowIfDisposed()
@@ -323,6 +351,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     }
 
     private int StartOf(int offset) => offset / _options.ChunkSize * _options.ChunkSize;
+
     public bool IsDataAvailable(int offset, int length)
     {
         CheckRead();
@@ -362,8 +391,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         foreach (var block in blocks)
         {
             _operation.Value?.Pin(block);
-            _lru.Remove(block.Node!);
-            _lru.AddFirst(block.Node!);
+            Touch(block);
         }
 
         return blocks;
@@ -469,13 +497,22 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             }
 
             _operation.Value?.Pin(block);
-            _lru.Remove(block.Node!);
-            _lru.AddFirst(block.Node!);
+            Touch(block);
             return block.Bytes[offset - block.Start];
         }
     }
 
+    private void Touch(Block block)
+    {
+        if (_lru.First != block.Node)
+        {
+            _lru.Remove(block.Node!);
+            _lru.AddFirst(block.Node!);
+        }
+    }
+
     private static TaskCompletionSource NewSignal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+
     private void Pulse()
     {
         var signal = _changed;
@@ -559,7 +596,8 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         }
 
         int alignedStart = StartOf(offset);
-        long alignedEnd = Math.Min(Length, ((long)offset + length + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
+        long alignedEnd = Math.Min(Length,
+            ((long)offset + length + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
         if (alignedEnd - alignedStart > _options.CacheSize)
         {
             throw new BitPdfRangeBudgetException();
@@ -573,6 +611,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             linked.Token.ThrowIfCancellationRequested();
             Task pending;
             TaskCompletionSource? completion = null;
+            Task? capacity = null;
             int first = alignedStart, count = 0;
             lock (_gate)
             {
@@ -593,7 +632,8 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                 }
                 else
                 {
-                    int limit = (int)Math.Min(alignedEnd, (long)first + Math.Max(_options.ChunkSize, Math.Min(1024 * 1024, _options.CacheSize)));
+                    int batchSize = Math.Max(_options.ChunkSize, Math.Min(1024 * 1024, _options.CacheSize));
+                    int limit = (int)Math.Min(alignedEnd, (long)first + batchSize);
                     long end = first;
                     while (end < limit && !_blocks.ContainsKey((int)end) && !_fetches.ContainsKey((int)end))
                     {
@@ -603,13 +643,16 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                     count = (int)end - first;
                     if (!EvictFor(count))
                     {
+                        // Accounting includes cached blocks, in-flight reservations
+                        // and leased windows. An operation's own pinned working set
+                        // must fit; another operation's pins are temporary contention.
                         if (owner is null || owner.PinnedBytes + (long)count > _options.CacheSize)
                         {
                             throw new BitPdfRangeBudgetException();
                         }
 
-                        // Abandon this retry's pins before waiting for another operation.
-                        // Never turn ordinary capacity contention into a failed page.
+                        // A retry can reacquire its bytes. Release its pins before
+                        // waiting so concurrent operations cannot keep each other full.
                         ReleasePins(owner);
                         if (EvictFor(count))
                         {
@@ -617,23 +660,33 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
                         }
                         else
                         {
-                            pending = _changed.Task;
-                            count = 0;
-                            goto WaitForCapacity;
+                            // Capture under the lock so an unpin cannot be missed.
+                            capacity = _changed.Task;
                         }
                     }
 
-                    Reserve(count);
-                    completion = NewSignal();
-                    pending = completion.Task;
-                    for (long start = first; start < (long)first + count; start += _options.ChunkSize)
+                    if (capacity is null)
                     {
-                        _fetches.Add((int)start, pending);
+                        Reserve(count);
+                        completion = NewSignal();
+                        pending = completion.Task;
+                        for (long start = first; start < (long)first + count; start += _options.ChunkSize)
+                        {
+                            _fetches.Add((int)start, pending);
+                        }
+                    }
+                    else
+                    {
+                        pending = capacity;
                     }
                 }
+            }
 
-WaitForCapacity:
-                ;
+            // Capacity and HTTP waits both happen outside the cache lock.
+            if (capacity is not null)
+            {
+                await WaitForAcquisitionAsync(capacity, linked.Token).ConfigureAwait(false);
+                continue;
             }
 
             if (completion is not null)
@@ -641,17 +694,24 @@ WaitForCapacity:
                 _ = FillAsync(first, count, owner, completion, linked.Token);
             }
 
-            try
-            {
-                await pending.WaitAsync(linked.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (_failure is not null)
-            {
-                throw _failure;
-            }
-            catch (OperationCanceledException) when (!linked.IsCancellationRequested)
-            {
-            }
+            await WaitForAcquisitionAsync(pending, linked.Token).ConfigureAwait(false);
+        }
+    }
+
+    private async Task WaitForAcquisitionAsync(Task pending, CancellationToken token)
+    {
+        try
+        {
+            await pending.WaitAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_failure is not null)
+        {
+            throw _failure;
+        }
+        catch (OperationCanceledException) when (!token.IsCancellationRequested)
+        {
+            // Another waiter cancelled the shared producer. The caller's next
+            // pass can reserve a replacement; transport timeouts still propagate.
         }
     }
 
@@ -665,17 +725,22 @@ WaitForCapacity:
         var merged = new List<(int Offset, int Length)>();
         foreach (var range in ordered)
         {
-            if (merged.Count > 0
-                && range.Offset <= (long)merged[^1].Offset + merged[^1].Length
-                && Math.Min(Length, (Math.Max((long)range.Offset + range.Length, (long)merged[^1].Offset + merged[^1].Length) + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize) - StartOf(merged[^1].Offset) <= Math.Min(_options.CacheSize, 1024 * 1024))
+            if (merged.Count > 0)
             {
                 var last = merged[^1];
-                merged[^1] = (last.Offset, (int)(Math.Max((long)range.Offset + range.Length, (long)last.Offset + last.Length) - last.Offset));
+                long lastEnd = (long)last.Offset + last.Length;
+                long mergedEnd = Math.Max((long)range.Offset + range.Length, lastEnd);
+                long alignedEnd = Math.Min(Length,
+                    (mergedEnd + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize);
+                long reservedLength = alignedEnd - StartOf(last.Offset);
+                if (range.Offset <= lastEnd && reservedLength <= Math.Min(_options.CacheSize, 1024 * 1024))
+                {
+                    merged[^1] = (last.Offset, (int)(mergedEnd - last.Offset));
+                    continue;
+                }
             }
-            else
-            {
-                merged.Add(range);
-            }
+
+            merged.Add(range);
         }
 
         await Task.WhenAll(merged.Select(r => EnsureAsync(r.Offset, r.Length, token))).ConfigureAwait(false);
@@ -791,7 +856,6 @@ WaitForCapacity:
             throw new InvalidOperationException("The PDF is too large for a single managed byte array.");
         }
 
-        using var operation = BeginOperation();
         await using var stream = OpenReadStream();
         var bytes = new byte[Length];
         for (int start = 0; start < Length;)
@@ -961,13 +1025,14 @@ WaitForCapacity:
 
     private sealed class DownloadStream(BitPdfHttpRangeByteSource source) : Stream
     {
-        // Copies own their response and bypass the LRU. A single validated,
-        // open-ended range preserves the reader's cache and costs one round trip.
+        // Copies own their responses and bypass the LRU. Usually one open-ended
+        // request suffices; shortened responses resume at the first unread byte.
         private readonly CancellationTokenSource _cancellation = CancellationTokenSource.CreateLinkedTokenSource(source._token);
         private readonly byte[] _probe = new byte[1];
         private HttpResponseMessage? _response;
         private Stream? _body;
         private int _position;
+        private int _responseEnd;
         private bool _disposed;
         public override bool CanRead => !_disposed;
         public override bool CanSeek => !_disposed;
@@ -1035,13 +1100,14 @@ WaitForCapacity:
             {
                 if (_body is null)
                 {
-                    source._operation.Value?.CountRequest();
+                    // Each validated segment advances the position, so copies do
+                    // not consume the parser's missing-data restart/request budget.
                     using var request = CreateRequest(source._source, _position, null, source._etag);
                     Interlocked.Increment(ref source._requestCount);
                     var response = await source._http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellation.Token).ConfigureAwait(false);
                     try
                     {
-                        ValidateHeaders(response, _position, source.Length - 1, source.Length, source._etag);
+                        _responseEnd = source.ValidateCopyResponse(response, _position);
                         var body = await response.Content.ReadAsStreamAsync(readCancellation.Token).ConfigureAwait(false);
                         source.CheckRead();
                         _response = response;
@@ -1054,14 +1120,15 @@ WaitForCapacity:
                     }
                 }
 
-                int count = Math.Min(buffer.Length, source.Length - _position);
+                int count = Math.Min(buffer.Length, _responseEnd - _position);
                 int read = await _body.ReadAsync(buffer[..count], readCancellation.Token).ConfigureAwait(false);
                 if (read == 0)
                 {
-                    throw new BitPdfRangePermanentException("The PDF range body ended prematurely.");
+                    throw new BitPdfByteSourceIOException("The PDF range body ended prematurely.");
                 }
 
-                if (_position + read == source.Length && await _body.ReadAsync(_probe, readCancellation.Token).ConfigureAwait(false) != 0)
+                if (_position + read == _responseEnd
+                    && await _body.ReadAsync(_probe, readCancellation.Token).ConfigureAwait(false) != 0)
                 {
                     throw new BitPdfRangePermanentException("The PDF range body exceeds its declared range.");
                 }
@@ -1069,6 +1136,11 @@ WaitForCapacity:
                 source.CheckRead();
                 readCancellation.Token.ThrowIfCancellationRequested();
                 _position += read;
+                if (_position == _responseEnd)
+                {
+                    CloseResponse();
+                }
+
                 Interlocked.Add(ref source._fetchedBytes, read);
                 return read;
             }

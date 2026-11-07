@@ -194,7 +194,9 @@ public sealed partial class BitPdfDocument
                     throw InvalidTree();
                 }
 
-                var page = new BitPdfPage(document._xref, _node, _index + 1, inherited.MediaBox ?? [0, 0, 612, 792], inherited.Resources, inherited.Rotate ?? 0, inherited.CropBox);
+                var page = new BitPdfPage(document._xref, _node, _index + 1,
+                    inherited.MediaBox ?? [0, 0, 612, 792], inherited.Resources,
+                    inherited.Rotate ?? 0, inherited.CropBox);
                 document._partialAttempt?.TrackPage(_index);
                 document._partialPageCache[_index] = page;
                 document._partialAttempt?.TrackIndex(_node);

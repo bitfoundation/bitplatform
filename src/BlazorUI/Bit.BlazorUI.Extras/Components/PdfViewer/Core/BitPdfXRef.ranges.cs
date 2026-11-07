@@ -131,7 +131,11 @@ public sealed partial class BitPdfXRef
                     return null;
                 }
 
-                _linearization = new(Integer("N")!.Value, Integer("P") ?? 0, Integer("O")!.Value, end, Enumerable.Range(0, hints.Count / 2).Select(i => ((int)(double)hints[i * 2]!, (int)(double)hints[i * 2 + 1]!)).ToArray());
+                var hintRanges = Enumerable.Range(0, hints.Count / 2)
+                    .Select(i => ((int)(double)hints[i * 2]!, (int)(double)hints[i * 2 + 1]!))
+                    .ToArray();
+                _linearization = new(Integer("N")!.Value, Integer("P") ?? 0,
+                    Integer("O")!.Value, end, hintRanges);
                 return offset;
             }
 
