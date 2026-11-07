@@ -1,6 +1,7 @@
 @inherits WorkbenchComponentBase
 
-@if (reviewSession.CanWrite is false)
+@* A reviewer with an invite link reaches the agent, so the notice isn't for them *@
+@if (reviewSession.CanWrite is false && reviewSession.IsInvitedReviewer is false)
 {
     <div class="chip" role="status" title="@Localizer[nameof(WorkbenchStrings.AgentNotConnectedHint)]">
         <span class="dot"></span>

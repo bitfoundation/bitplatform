@@ -20,6 +20,7 @@ public class ReviewAccessTests
     [DataRow("GET", "api/review/abc/screenshot")]
     [DataRow("POST", "api/review/pages/theme/status")]
     [DataRow("POST", "api/review/flows")]
+    [DataRow("GET", "api/review/invite")]
     public async Task TheAgentsEndpoints_Should_NotExistForARemoteRequest(string method, string url)
     {
         var server = await WorkbenchTestsInitializer.SharedServer;
