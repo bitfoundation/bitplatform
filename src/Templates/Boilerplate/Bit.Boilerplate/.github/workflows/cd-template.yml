@@ -346,8 +346,11 @@ jobs:
         env:
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
           LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
+#if (api == "Standalone" && cloudflare != true)
+          SERVER_API_ADDRESS: ${{ vars.SERVER_API_ADDRESS }}
+#endif
         run: |
-          for address in "$SERVER_ADDRESS" "$LANDING_PAGE_ADDRESS"; do
+          for address in "$SERVER_ADDRESS" "$LANDING_PAGE_ADDRESS" ${SERVER_API_ADDRESS:+"$SERVER_API_ADDRESS"}; do
             status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "${address%/}/health" || true)"
             if [[ "$status" != 200 ]]; then
               echo "::warning::${address%/}/health answered $status. The health checks page, or GetHealth on dev-mcp for the api, says which check fails."

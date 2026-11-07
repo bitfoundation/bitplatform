@@ -121,6 +121,7 @@ public partial class DevMcpTelemetryTools
 
             var logsAnswer = await reader.Get($"api/telemetry/logs?limit={MaxTraceLogs}{Query("traceId", id)}", cancellationToken);
             var logs = DevMcpTelemetryReader.ReadLogs(logsAnswer?["data"]).OrderBy(log => log.Timestamp).ToArray();
+            var logCount = Math.Max(logsAnswer?["totalCount"]?.GetValue<int>() ?? 0, logs.Length);
 
             var (spanItems, _) = DevMcpTelemetryReader.Fit(spans.Take(MaxTraceSpans).Select(span => new
             {
@@ -151,7 +152,7 @@ public partial class DevMcpTelemetryTools
                 Spans = spanItems,
                 SpansOmitted = spans.Length > spanItems.Length ? spans.Length - spanItems.Length : (int?)null,
                 Logs = logItems,
-                LogsOmitted = logs.Length > logItems.Length ? logs.Length - logItems.Length : (int?)null
+                LogsOmitted = logCount > logItems.Length ? logCount - logItems.Length : (int?)null
             });
         }, cancellationToken);
     }

@@ -81,6 +81,7 @@ public class DevMcpTelemetryTests
         Assert.AreEqual("exception", spans[0]!["events"]![0]!["name"]!.GetValue<string>());
         Assert.AreEqual("b7ad6b7169203331", spans[1]!["parentSpanId"]!.GetValue<string>());
         Assert.AreEqual("Order 42 failed", details["logs"]!.AsArray().Single()!["message"]!.GetValue<string>());
+        Assert.AreEqual(200, details["logsOmitted"]!.GetValue<int>(), "The logs past the dashboard's own limit count as omitted too.");
 
         var missing = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "GetTrace", new() { ["traceId"] = "ffff" }, TestContext.CancellationToken))!;
         Assert.IsFalse(missing["found"]!.GetValue<bool>());
@@ -164,7 +165,7 @@ public class DevMcpTelemetryTests
             app.MapGet("/api/telemetry/resources", () => Json(Resources));
             app.MapGet("/api/telemetry/logs", (string? traceId, string? search) => search?.Contains("resource:nope") is true
                 ? Json(NoLogs)
-                : Json(Logs(traceId is null ? [ErrorLog, InfoLog] : [ErrorLog])));
+                : Json(traceId is null ? Logs([ErrorLog, InfoLog]) : Logs([ErrorLog], totalCount: 201)));
             app.MapGet("/api/telemetry/traces", () => Json(Spans));
             app.MapGet("/api/telemetry/traces/{traceId}", (string traceId) => TraceId.StartsWith(traceId, StringComparison.Ordinal) ? Json(Spans) : Results.NotFound());
 
@@ -173,7 +174,7 @@ public class DevMcpTelemetryTests
             return dashboard;
         }
 
-        private static string Logs(string[] records) => $$$"""{"data":{"resourceLogs":[{"scopeLogs":[{"scope":{"name":"Boilerplate.Server.Api.Features.Orders"},"logRecords":[{{{string.Join(',', records)}}}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"Boilerplate.Server.Web"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":{{{records.Length}}},"returnedCount":{{{records.Length}}}}""";
+        private static string Logs(string[] records, int? totalCount = null) => $$$"""{"data":{"resourceLogs":[{"scopeLogs":[{"scope":{"name":"Boilerplate.Server.Api.Features.Orders"},"logRecords":[{{{string.Join(',', records)}}}]}],"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"Boilerplate.Server.Web"}},{"key":"service.instance.id","value":{"stringValue":"i1"}}]}}]},"totalCount":{{{totalCount ?? records.Length}}},"returnedCount":{{{records.Length}}}}""";
 
         private static IResult Json(string json) => Results.Content(json, "application/json");
 

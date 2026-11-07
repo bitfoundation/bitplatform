@@ -324,6 +324,7 @@ public class PageTests
     [TestMethod]
     [DataRow("https://landing.example.invalid", true)]
     [DataRow("https://user:password@landing.example.invalid", false)]
+    [DataRow("ftp://landing.example.invalid", false)]
     public async Task TheBelemetryOtlpEndpoint_Should_ReachTheBrowserWhileTheServerSendsOverGrpc(string endpoint, bool reachesTheBrowser)
     {
         await using var production = await new LandingTestServer().Start(environment: "Production", before: builder =>
@@ -340,6 +341,7 @@ public class PageTests
 
         Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
         Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"http/protobuf\"", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, html.Contains($"{{\"type\":\"otlp\",\"endpoint\":\"{endpoint}/\",\"protocol\":\"http/protobuf\"", StringComparison.Ordinal), "The browser script posts there too, before WebAssembly starts and for what only JavaScript sees.");
         Assert.DoesNotContain("compose-dashboard", html);
     }
 

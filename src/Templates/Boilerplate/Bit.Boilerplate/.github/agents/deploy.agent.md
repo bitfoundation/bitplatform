@@ -37,7 +37,8 @@ or one each), a domain and the services of section 5. Then go through the steps 
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
 <!--#else-->
 - **Only 80 and 443 reach the VM.** Caddy, in the Compose project, takes them, gets each public address its
-  certificate and sends it to its app. The runner pulls its jobs from GitHub, so every other inbound port stays closed.
+  certificate and sends it to its app. The runner pulls its jobs from GitHub, so no other inbound port is open but
+  SSH's (section 2).
 <!--#endif-->
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
@@ -104,6 +105,9 @@ or one each), a domain and the services of section 5. Then go through the steps 
   `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
   environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
   touch Production.
+<!--#if (cloudflare != true)-->
+- Without a tunnel, each environment's Caddy takes 80 and 443, so Test and Production need a VM each.
+<!--#endif-->
 - The deploy job keeps the environment's Compose files in `~/deployments/<project>-<environment>` of the runner's
   user. Leave that folder in place: every later deployment, and every `docker compose` command by hand, works from it.
 <!--#if (database == "PostgreSQL" || database == "SqlServer" || database == "MySql" || redis == true)-->
@@ -306,6 +310,7 @@ project up, and fails unless every container is healthy and the public address a
 
 ## 8. The domain and the tunnel
 
+<!--#if (cloudflare == true || filesStorage == "S3")-->
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
   Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
@@ -315,12 +320,15 @@ project up, and fails unless every container is healthy and the public address a
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
+<!--#endif-->
+<!--#if (cloudflare == true)-->
 - Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
   domain is already in use, for mail or another site, first bring its existing DNS records into the zone and check
   them against the current provider, and have DNSSEC turned off at the registrar and wait out its old DS record's TTL,
   so nothing breaks on the switch.
 - Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
   below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
+<!--#endif-->
 <!--#if (filesStorage == "S3")-->
 - For R2, create the environment's bucket, then mint an account API token with Object Read & Write on that bucket only.
   Its id is the S3 Access Key ID and the SHA-256 of its value is the Secret Access Key, so `S3_CONNECTION_STRING` needs
@@ -329,11 +337,11 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
-<!--#endif-->
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
   (section 3), and for the Workbench if the user wants it.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
+<!--#endif-->
 - The Workbench isn't deployed by default. If the user wants it on Test, never Production, deploy it as Blazor Server
   (section 4), put its hostname behind Cloudflare Access, Cloudflare's own sign-in, and let `/alive` through for the
   deploy job's check. Its screenshots need a base

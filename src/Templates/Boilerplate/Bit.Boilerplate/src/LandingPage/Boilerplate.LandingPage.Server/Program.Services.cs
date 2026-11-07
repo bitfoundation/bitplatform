@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using System.IO.Compression;
 using System.Threading.RateLimiting;
+using Bit.Belemetry;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,12 @@ public static partial class Program
 
             // The client's services, for prerendering; the server registers its direct clients after it
             services.AddLandingPageClientServices(configuration);
+
+            // The page's script gets the browser's endpoint too, as it can't post to the server's gRPC one
+            if (configuration.GetBrowserOtlpEndpoint() is { } browserOtlp)
+            {
+                services.Configure<BelemetryOptions>(options => options.AddOtlpExporter(otlp => otlp.BrowserEndpoint = browserOtlp.Endpoint));
+            }
 
             services.AddRazorComponents()
                 .AddInteractiveServerComponents()
