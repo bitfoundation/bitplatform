@@ -49,6 +49,11 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         }
     }
 
+    public int CountItems(BelemetryBatch batch) =>
+        (options.Signals.HasFlag(BelemetrySignals.Traces) ? batch.Spans.Count : 0)
+        + (options.Signals.HasFlag(BelemetrySignals.Logs) ? batch.Logs.Count : 0)
+        + (options.Signals.HasFlag(BelemetrySignals.Metrics) ? batch.Metrics.Sum(m => m.Points.Count) : 0);
+
     public bool PostsTo(string url) =>
         (options.Signals.HasFlag(BelemetrySignals.Traces) && url == Resolve(options.TracesEndpoint, options.Endpoint, options.Protocol, BelemetrySignals.Traces))
         || (options.Signals.HasFlag(BelemetrySignals.Logs) && url == Resolve(options.LogsEndpoint, options.Endpoint, options.Protocol, BelemetrySignals.Logs))

@@ -27,11 +27,16 @@ internal sealed class BelemetryErrorLimiter
     }
 
     /// <summary>Whether <paramref name="log"/>, an error record, should be recorded.</summary>
-    public bool ShouldRecord(BelemetryLogRecord log)
+    public bool ShouldRecord(BelemetryLogRecord log) => ShouldRecord(log.Scope.Name, log.Attributes, log.Body);
+
+    /// <summary>Whether <paramref name="exception"/>, an exception recorded on <paramref name="span"/>, should be recorded as an error of its own.</summary>
+    public bool ShouldRecord(BelemetrySpan span, BelemetrySpanEvent exception) => ShouldRecord(span.Scope.Name, exception.Attributes, null);
+
+    private bool ShouldRecord(string scope, BelemetryAttributes attributes, string? body)
     {
         if (_windowMs <= 0) return _rate is null || _rate.Take(1) == 1;
 
-        var signature = Signature(log);
+        var signature = Signature(scope, attributes, body);
         var now = _clock();
         lock (_lock)
         {
@@ -54,9 +59,10 @@ internal sealed class BelemetryErrorLimiter
     /// The scope, the exception type and message (or the body), and the first two lines of the stack trace - the
     /// message line and the first frame in .NET and Chrome, the first two frames in Firefox and Safari.
     /// </summary>
-    internal static string Signature(BelemetryLogRecord log)
+    internal static string Signature(BelemetryLogRecord log) => Signature(log.Scope.Name, log.Attributes, log.Body);
+
+    private static string Signature(string scope, BelemetryAttributes attributes, string? body)
     {
-        var attributes = log.Attributes;
         var stack = attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace);
         var head = stack;
         if (stack is not null)
@@ -66,9 +72,9 @@ internal sealed class BelemetryErrorLimiter
             if (second >= 0) head = stack[..second];
         }
 
-        return string.Join('\u0001', log.Scope.Name,
+        return string.Join('\u0001', scope,
                            attributes.GetString(BelemetrySemanticConventions.ExceptionType),
-                           attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? log.Body,
+                           attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? body,
                            head?.TrimEnd());
     }
 }

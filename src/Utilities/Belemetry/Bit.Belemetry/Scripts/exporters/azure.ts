@@ -165,27 +165,43 @@ function hasException(attributes: Attributes): boolean {
     return attributes['exception.type'] != null || attributes['exception.message'] != null;
 }
 
+// The ingestion limits, as in C#.
+const MAX_TYPE_NAME = 1024;
+const MAX_MESSAGE = 32768;
+
 function exceptionEnvelope(a: Attributes, time: number, ctx: AzureContext, tags: Record<string, string>, severityNumber: number, body: string | null): Json {
     const stack = str(a, 'exception.stacktrace');
-    const detail: Json = { id: 1, outerId: 0, typeName: str(a, 'exception.type') || 'Error', message: str(a, 'exception.message') || body || '', hasFullStack: !!stack };
-    if (stack) detail.stack = stack;
+    const detail: Json = {
+        id: 1,
+        outerId: 0,
+        typeName: (str(a, 'exception.type') || 'Error').slice(0, MAX_TYPE_NAME),
+        message: (str(a, 'exception.message') || body || '').slice(0, MAX_MESSAGE),
+        hasFullStack: !!stack,
+    };
+    if (stack) detail.stack = stack.slice(0, MAX_MESSAGE);
     return envelope('Exception', time, ctx, tags, { ver: 2, exceptions: [detail], severityLevel: severityLevel(severityNumber) },
         properties(a, Object.keys(a).filter(key => key.indexOf('exception.') === 0)));
 }
 
 /**
- * The exceptions recorded on a span (`exception` events), each an item of the exceptions table under the span, as in
- * C# and the Azure Monitor OpenTelemetry exporter.
+ * Appends the events of a span to `out`, each an item of its own under the span, as in C# and the Azure Monitor
+ * OpenTelemetry exporter: an exception (`exception` with `exception.*`) an Exception, any other named event a Message
+ * (with no severity: an event is not a log level). An `exception` event with no `exception.*` is neither. The script's
+ * own instrumentations record no exception on a span (an error is a log record); that branch keeps the contract the same.
  */
-export function spanExceptionEnvelopes(span: SpanRecord, resource: Attributes, ctx: AzureContext): Json[] {
-    const envelopes: Json[] = [];
-    for (const event of span.events || []) {
-        if (event.name !== 'exception' || !hasException(event.attributes)) continue;
-        // The ids are the span's attributes (records carry them, their events do not).
-        const tags = recordTags(baseTags(resource, ctx), span.attributes, span.traceId, span.spanId, isRequest(span) ? requestName(span) : undefined);
-        envelopes.push(exceptionEnvelope(event.attributes, event.time, ctx, tags, Severity.Error, null));
+function addEventEnvelopes(out: Json[], span: SpanRecord, resource: Attributes, ctx: AzureContext): void {
+    const events = span.events;
+    if (!events || !events.length) return;
+    let tags: Record<string, string> | undefined;
+    for (const event of events) {
+        const exception = event.name === 'exception';
+        if (exception ? !hasException(event.attributes) : !event.name) continue;
+        // Built once, for the first item; the ids are the span's attributes (records carry them, their events do not).
+        tags = tags || recordTags(baseTags(resource, ctx), span.attributes, span.traceId, span.spanId, isRequest(span) ? requestName(span) : undefined);
+        out.push(exception
+            ? exceptionEnvelope(event.attributes, event.time, ctx, tags, Severity.Error, null)
+            : envelope('Message', event.time, ctx, tags, { ver: 2, message: event.name.slice(0, MAX_MESSAGE) }, properties(event.attributes, [])));
     }
-    return envelopes;
 }
 
 export function spanToEnvelope(span: SpanRecord, resource: Attributes, ctx: AzureContext): Json {
@@ -260,7 +276,10 @@ export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureCo
 
 export function toEnvelopes(batch: RecordBatch, ctx: AzureContext): Json[] {
     const envelopes: Json[] = [];
-    for (const span of batch.spans) envelopes.push(spanToEnvelope(span, batch.resource, ctx), ...spanExceptionEnvelopes(span, batch.resource, ctx));
+    for (const span of batch.spans) {
+        envelopes.push(spanToEnvelope(span, batch.resource, ctx));
+        addEventEnvelopes(envelopes, span, batch.resource, ctx);
+    }
     for (const log of batch.logs) envelopes.push(logToEnvelope(log, batch.resource, ctx));
     return envelopes;
 }
