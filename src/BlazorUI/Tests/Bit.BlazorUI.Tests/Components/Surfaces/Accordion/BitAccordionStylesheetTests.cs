@@ -137,6 +137,11 @@ public class BitAccordionStylesheetTests
         // growing around it would move it away again.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {"), "transition: none;");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "transition: none;");
+
+        // So does the render that expands the accordion around a reveal, for where it lands ahead of the browser's
+        // own reveal (WebAssembly renders inside the beforematch event) and the pair above never applies.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-rvl {"), "transition: none;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-rvl) {"), "transition: none;");
     }
 
     [TestMethod]

@@ -2524,6 +2524,32 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldOpenARevealAtOnceAndCloseAsUsual()
+    {
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.HiddenUntilFound, true));
+
+        Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-rvl"));
+
+        // The render that expands the accordion for a reveal can land ahead of the browser's own reveal (WebAssembly
+        // renders inside the beforematch event), so it opens the panel at once by itself.
+        com.Find(".bit-acd-con").TriggerEvent("onbeforematch", System.EventArgs.Empty);
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-rvl"));
+
+        // The close plays as usual, and a click that opens it again is the ordinary open.
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.IsFalse(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-rvl"));
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-rvl"));
+    }
+
+    [TestMethod]
     public void BitAccordionHiddenUntilFoundShouldWriteTheRevealBackToTheBinding()
     {
         var isExpanded = false;

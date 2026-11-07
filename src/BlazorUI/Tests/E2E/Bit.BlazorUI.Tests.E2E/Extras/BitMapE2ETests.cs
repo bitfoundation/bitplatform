@@ -1353,7 +1353,9 @@ public class BitMapProvidersE2ETests : E2ETestBase
         await OpenAsync(Route);
         await Page.Locator("#btn-load-arcgis").ClickAsync();
         await Expect(Page.Locator("#ag-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 90000 });
-        if (await Page.Locator("#ag-state").InnerTextAsync() != "Ready") Assert.Inconclusive("The ArcGIS SDK could not be loaded from its CDN.");
+        var state = await Page.Locator("#ag-state").InnerTextAsync();
+        if (state == "Unsupported") Assert.Inconclusive("This browser has no WebGL 2 for the ArcGIS SDK.");
+        if (state == "Failed") Assert.Inconclusive("The ArcGIS SDK could not be loaded from its CDN.");
 
         // The markers are drawn on the view's canvas, and the double-click is told apart from the map's by the
         // provider's own synchronous hit test, since the view's hitTest answers too late to stop the zoom.

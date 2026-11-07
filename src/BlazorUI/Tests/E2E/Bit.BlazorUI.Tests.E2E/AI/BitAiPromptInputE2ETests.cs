@@ -1070,8 +1070,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         await Expect(Text("pi-draft-value")).ToHaveTextAsync("half-written thought");
         await Page.WaitForFunctionAsync("() => sessionStorage.getItem('bit-ai-draft:e2e-pi-draft') === 'half-written thought'");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
 
         await Expect(input).ToHaveValueAsync("half-written thought");
         await Expect(Text("pi-draft-value")).ToHaveTextAsync("half-written thought");
@@ -1081,8 +1080,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         await Expect(Text("pi-draft-count")).ToHaveTextAsync("1");
         await Page.WaitForFunctionAsync("() => sessionStorage.getItem('bit-ai-draft:e2e-pi-draft') === null");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(input).ToHaveValueAsync("");
 
         // An emptied composer takes its draft away too.

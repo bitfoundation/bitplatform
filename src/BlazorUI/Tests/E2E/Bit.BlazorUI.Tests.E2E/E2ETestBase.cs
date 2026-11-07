@@ -13,7 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E;
 /// run (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or <c>webkit</c>; <c>HEADED=1</c> to watch), and gives
 /// each test a fresh context and page. <see cref="OpenAsync"/> navigates to a page of the host and waits for its
 /// first interactive render. Every uncaught error the page raises and every console error it logs during the test
-/// fails it at cleanup, unless the test opted out through <see cref="AllowConsoleErrors"/>.
+/// fails it at cleanup, unless the test opted out through <see cref="AllowConsoleErrors"/> or ended inconclusive.
 /// </summary>
 public abstract class E2ETestBase
 {
@@ -36,6 +36,11 @@ public abstract class E2ETestBase
     private IBrowserContext? _context;
     private readonly List<string> _pageErrors = [];
     private readonly List<string> _consoleErrors = [];
+    // The stretches of _pageErrors and _consoleErrors (from, to) raised while the test was taking the page somewhere
+    // else, through OpenAsync or ReloadAsync: what of them only says the connection of the page being left is gone is
+    // not an error of the test (see LeaveThePageAsync).
+    private readonly List<(int From, int To)> _leavingPageErrors = [];
+    private readonly List<(int From, int To)> _leavingConsoleErrors = [];
     private int _serverErrorsBefore;
     private readonly HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
 
@@ -72,6 +77,11 @@ public abstract class E2ETestBase
     /// Lets a test end with uncaught page errors as well as console errors.
     /// </summary>
     protected bool AllowPageErrors { get; set; }
+
+    /// <summary>
+    /// The context MSTest gives the current test, which the cleanup reads the test's outcome off.
+    /// </summary>
+    public TestContext TestContext { get; set; } = null!;
 
     /// <summary>
     /// The browser the run drives, as <c>BROWSER</c> named it: chromium, edge, firefox or webkit.
@@ -159,6 +169,12 @@ public abstract class E2ETestBase
 
             if (_context is not null)
             {
+                // Closing the context leaves the page as a navigation does (see LeaveThePageAsync): a page still at work
+                // when the test ends - a reply streaming in, a timer about to report - calls .NET over a closed
+                // connection in Firefox, which is not an error of the test.
+                _leavingPageErrors.Add((_pageErrors.Count, int.MaxValue));
+                _leavingConsoleErrors.Add((_consoleErrors.Count, int.MaxValue));
+
                 try
                 {
                     await _context.CloseAsync();
@@ -183,14 +199,25 @@ public abstract class E2ETestBase
         }
         finally
         {
-            if (AllowPageErrors is false && _pageErrors.Count > 0)
+            // A test that gave up (Assert.Inconclusive) has verified nothing, and what its page raised is most often why
+            // it gave up: a library that could not be loaded from its CDN fails its request and throws on the way down.
+            // Failing it here would turn "could not tell" into a failure, so its errors are written to its output instead.
+            var gaveUp = TestContext?.CurrentTestOutcome == UnitTestOutcome.Inconclusive;
+
+            var pageErrors = WithoutTheConnectionsLeftBehind(_pageErrors, _leavingPageErrors);
+            if (AllowPageErrors is false && pageErrors.Count > 0)
             {
-                Assert.Fail($"The page raised {_pageErrors.Count} uncaught error(s):{Environment.NewLine}{string.Join(Environment.NewLine, _pageErrors)}");
+                var message = $"The page raised {pageErrors.Count} uncaught error(s):{Environment.NewLine}{string.Join(Environment.NewLine, pageErrors)}";
+                if (gaveUp) TestContext!.WriteLine(message);
+                else Assert.Fail(message);
             }
 
-            if (AllowConsoleErrors is false && _consoleErrors.Count > 0)
+            var consoleErrors = WithoutTheConnectionsLeftBehind(_consoleErrors, _leavingConsoleErrors);
+            if (AllowConsoleErrors is false && consoleErrors.Count > 0)
             {
-                Assert.Fail($"The page logged {_consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, _consoleErrors)}");
+                var message = $"The page logged {consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, consoleErrors)}";
+                if (gaveUp) TestContext!.WriteLine(message);
+                else Assert.Fail(message);
             }
         }
     }
@@ -208,8 +235,62 @@ public abstract class E2ETestBase
 
         // Not WaitForLoadStateAsync(NetworkIdle): Blazor Server keeps its SignalR connection open, which Playwright
         // counts as network activity, so it would never fire.
-        await Page.GotoAsync(url, new() { WaitUntil = waitForLoad ? WaitUntilState.Load : WaitUntilState.Commit });
-        await WaitForStatusAsync(status);
+        await LeaveThePageAsync(() => Page.GotoAsync(url, new() { WaitUntil = waitForLoad ? WaitUntilState.Load : WaitUntilState.Commit }), status);
+    }
+
+    /// <summary>
+    /// Reloads the page and waits until its first interactive render has run again ("Ready", or the status given), as
+    /// <see cref="OpenAsync"/> does for the page it opens. A test reloads through here rather than through
+    /// Page.ReloadAsync, so what the page being left raises over its closed connection is not taken for its error.
+    /// </summary>
+    protected Task ReloadAsync(string status = "Ready")
+    {
+        return LeaveThePageAsync(() => Page.ReloadAsync(), status);
+    }
+
+    // Takes the page somewhere else and waits for the status of the page it arrives on. Firefox closes the connection of
+    // the page it leaves first and keeps running that page's scripts until the next page commits, so a call to .NET the
+    // page makes in that time - a debounced report of the caret, a resize, a blur - fails with an error that only says
+    // the connection is gone (some of which Firefox reports only after the next page has committed), and part of it
+    // is raised by Blazor's own unawaited send, which no script of the page can catch. Those errors are told apart from
+    // the rest of what the test raises (HostE2ETests reads every page's the same way); a page whose own connection
+    // drops while it is on screen is still failed for it.
+    private async Task LeaveThePageAsync(Func<Task> navigate, string status)
+    {
+        var leaving = Page.Url.StartsWith(BaseUrl, StringComparison.OrdinalIgnoreCase);
+        (int Page, int Console) from = (_pageErrors.Count, _consoleErrors.Count);
+
+        try
+        {
+            await navigate();
+            await WaitForStatusAsync(status);
+        }
+        finally
+        {
+            if (leaving)
+            {
+                _leavingPageErrors.Add((from.Page, _pageErrors.Count));
+                _leavingConsoleErrors.Add((from.Console, _consoleErrors.Count));
+            }
+        }
+    }
+
+    private static List<string> WithoutTheConnectionsLeftBehind(List<string> errors, List<(int From, int To)> leaving)
+    {
+        return errors.Where((error, index) => IsTheConnectionGone(error) is false
+                                              || leaving.Any(stretch => index >= stretch.From && index < stretch.To) is false)
+                     .ToList();
+    }
+
+    /// <summary>
+    /// Whether an error is one Blazor and SignalR raise for a call made over a connection that has already been closed,
+    /// or by a circuit the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
+    /// </summary>
+    protected static bool IsTheConnectionGone(string error)
+    {
+        return error.Contains("Cannot send data if the connection is not in the 'Connected' State", StringComparison.Ordinal)
+            || error.Contains("WebSocket is not in the OPEN state", StringComparison.Ordinal)
+            || error.Contains("The circuit associated with this dispatcher is no longer available", StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -47,6 +47,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string? _lastCountryIso;
     private string? _lastErrorMessage;
 
+    // The text the number input reported with its last input event, and the Number it was typed over: the input shows
+    // that text for as long as the Number has not moved from there (see ElementValue).
+    private string? _typedText;
+    private string? _typedTextBase;
+
     // The countries the dropdown offers, what the search term leaves of them, the one the keyboard is on and the
     // type-ahead that moves it - the part of the list BitCountryPicker walks and searches the same way. A dialing
     // code is searched for as well here, and the countries sharing one are ordered the way the same code typed into
@@ -1182,6 +1187,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
             await AssignNumber(FormatNumber(number));
 
+            ReleaseTypedTextIfNumberMoved();
+
             _lastValue = CurrentValue;
             _lastNumber = Number;
             _lastCountryIso = Country?.Iso2;
@@ -1960,6 +1967,32 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         await SetNumber(e.Value?.ToString(), reportSettledValue);
     }
 
+    // What the number input is rendered with: the text it reported with its last input event for as long as the Number
+    // is still the one that text was typed over - Immediate off, a debounce or a throttle still waiting, a Number bound
+    // one way - and the Number once something has moved it: a commit, the page, a country picked for it. Rendering the
+    // Number in between would write it back over what is being typed.
+    private string? ElementValue => _typedText is not null && string.Equals(Number, _typedTextBase, StringComparison.Ordinal)
+                                    ? _typedText
+                                    : Number;
+
+    // The input event is bound rather than only handled for what the binding does before the handler runs: the renderer
+    // takes the text the event carries as what the input was last rendered with, so a render that has nothing newer to
+    // show finds no difference and leaves the element alone. Next to a plain handler, the render of a keystroke that moved
+    // the Number - a commit of Immediate, or one a throttle let through while the typing went on - wrote that keystroke's
+    // text into an input which, a round trip later, held the keys typed since, and the next key went onto the shorter text.
+    private Task HandleOnElementInput(string? text) => HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
+
+    // The text typed into the input is let go of for good once the Number has moved from the one it was typed over (see
+    // ElementValue): a Number coming back to that one later - a number committed and then cleared - would otherwise bring
+    // back a text typed long before.
+    private void ReleaseTypedTextIfNumberMoved()
+    {
+        if (_typedText is not null && string.Equals(Number, _typedTextBase, StringComparison.Ordinal) is false)
+        {
+            _typedText = null;
+        }
+    }
+
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
         if (Disabled || ReadOnly) return;
@@ -1967,6 +2000,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         var typed = e.Value?.ToString();
 
         var text = NormalizeTyped(typed);
+
+        // What the input holds from here on, typed over the current Number (see ElementValue) - recorded before anything
+        // is awaited, since the render that runs while this handler waits is drawn from it.
+        _typedText = text ?? string.Empty;
+        _typedTextBase = Number;
 
         if (text != typed)
         {
@@ -2001,6 +2039,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
     private async Task UpdateValueFromParts(bool reportSettledValue = true)
     {
+        // Every path that moves the Number comes through here, so the input shows the new Number from now on.
+        ReleaseTypedTextIfNumberMoved();
+
         var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 
         _lastValue = composed;

@@ -622,13 +622,44 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         var pane = El("scp-momentum");
         await pane.ScrollIntoViewIfNeededAsync();
         var box = await BoxAsync(pane);
-        await Page.Mouse.MoveAsync((float)(box.X + box.Width - 20), (float)(box.Y + 20));
-        await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync((float)(box.X + box.Width - 220), (float)(box.Y + 20), new() { Steps = 3 });
-        await Page.Mouse.UpAsync();
 
-        var released = await pane.EvaluateAsync<double>("el => el.scrollLeft");
-        await PollAsync(() => pane.EvaluateAsync<double>("el => el.scrollLeft"), left => left > released + 20, "the flick did not glide on");
+        // A release is a flick only when it comes within 90ms of the last move - a pointer held still before it is
+        // lifted is not one - and Playwright sends the release as a command of its own, which a loaded runner can take
+        // longer than that to deliver. So the page times the release against the last move where the pane hears both,
+        // and notes where the pane stood at that moment (the glide starts on the next frame): a gesture let go of too
+        // late to be a flick, which rightly does not glide, is made again.
+        await pane.EvaluateAsync(@"el => {
+            const flick = window.__e2eFlick = { move: 0, gap: -1, left: -1 };
+            document.addEventListener('pointermove', () => flick.move = performance.now(), { capture: true });
+            document.addEventListener('pointerup', () => {
+                flick.gap = performance.now() - flick.move;
+                flick.left = el.scrollLeft;
+            }, { capture: true });
+        }");
+
+        var lateReleases = new List<double>();
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            await pane.EvaluateAsync("el => { el.scrollLeft = 0; window.__e2eFlick.gap = -1; }");
+            await Page.Mouse.MoveAsync((float)(box.X + box.Width - 20), (float)(box.Y + 20));
+            await Page.Mouse.DownAsync();
+            await Page.Mouse.MoveAsync((float)(box.X + box.Width - 220), (float)(box.Y + 20), new() { Steps = 3 });
+            await Page.Mouse.UpAsync();
+
+            var release = await Page.EvaluateAsync<double[]>("() => [window.__e2eFlick.gap, window.__e2eFlick.left]");
+            Assert.IsTrue(release[0] >= 0, "The pane heard no release.");
+
+            if (release[0] > 80)
+            {
+                lateReleases.Add(release[0]);
+                continue;
+            }
+
+            await PollAsync(() => pane.EvaluateAsync<double>("el => el.scrollLeft"), left => left > release[1] + 20, "the flick did not glide on");
+            return;
+        }
+
+        Assert.Fail($"Every release came too late after the last move to be a flick ({string.Join(", ", lateReleases.Select(gap => $"{gap:0}ms"))}).");
     }
 
     [TestMethod]

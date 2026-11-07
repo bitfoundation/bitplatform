@@ -495,6 +495,18 @@ $acd-private-properties:
     transition: none;
 }
 
+// The render that expands the accordion around a reveal opens it at once as well (bit-acd-rvl), for where that render
+// lands ahead of the browser's own reveal: WebAssembly renders inside the beforematch event, before the browser takes
+// the attribute off, so the attribute and bit-acd-huf leave together and the pair above never applies. The class only
+// stops the transitions; what the panel looks like is the expanded state's.
+.bit-acd-rvl {
+    transition: none;
+}
+
+.bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-rvl) {
+    transition: none;
+}
+
 
 // Windows High Contrast / forced-colors: the palette is reduced to the system pair, so a disabled accordion -
 // greyed out through its colors alone - would read as a live one. It is re-established in the system color.

@@ -3268,6 +3268,32 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the press of a double click starts no drag");
     }
 
+    // Over a fast link the overlay of the first press can reach the browser before that press is released, and it goes
+    // away only a round trip after the release: the second press then lands on the overlay rather than on the handle.
+    [TestMethod]
+    public void AutoFitRunsOnTheSecondPressOfADoubleClickThatLandsOnTheDragOverlay()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+
+        // A press with a click count of one on the overlay is no double click.
+        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+        Assert.AreEqual(0, measures());
+
+        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
+
+        Assert.AreEqual(1, measures());
+        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the double click leaves no drag behind");
+    }
+
     [TestMethod]
     public async Task AutoFitStaysWithinTheColumnsWidthBounds()
     {

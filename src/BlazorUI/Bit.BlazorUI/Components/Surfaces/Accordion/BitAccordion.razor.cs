@@ -42,6 +42,14 @@ public partial class BitAccordion : BitComponentBase
     // panel stays shut, so the accordion stops offering itself to find-in-page until its state next changes.
     private bool _revealRefused;
 
+    // Whether the panel is expanded for a find-in-page reveal, which opens it at once (bit-acd-rvl) the way the
+    // stylesheet opens a panel the browser has revealed ahead of the render. The render can land first: WebAssembly
+    // runs the beforematch listener and renders inside the event, before the browser takes the attribute off and
+    // scrolls to the match, so the attribute and bit-acd-huf leave together and the stylesheet's own reveal never
+    // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is let
+    // go of once the panel closes, so the close plays as usual.
+    private bool _revealing;
+
     // The beforematch listener the panel carries while it is searchable, splatted onto the element rather than
     // written as an @onbeforematch attribute: Blazor does not know the event by name, and a delegate handed to the
     // renderer as an attribute value becomes a listener all the same. It is built once, so it survives a re-render.
@@ -655,6 +663,8 @@ public partial class BitAccordion : BitComponentBase
 
         var closed = _wasExpanded && IsExpanded is false;
 
+        if (closed) _revealing = false;
+
         _wasExpanded = IsExpanded;
 
         if (IsExpanded)
@@ -807,12 +817,15 @@ public partial class BitAccordion : BitComponentBase
             if (IsDisposed || IsExpanded || _IsSearchable is false) return;
         }
 
+        _revealing = true;
+
         var revealed = RevealHandler is not null
                      ? await RevealHandler()
                      : await AssignExpanded(true, BitAccordionToggleReason.Reveal);
 
         if (revealed || IsExpanded || IsDisposed) return;
 
+        _revealing = false;
         _revealRefused = true;
     }
 

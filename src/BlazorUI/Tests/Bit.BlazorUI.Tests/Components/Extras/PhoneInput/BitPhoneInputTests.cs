@@ -605,6 +605,36 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPhoneInputShouldKeepShowingTheTypedTextWhileAThrottleHoldsItsNumberBack()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ThrottleTime, 60_000);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        // The first keystroke is let through at once, and the next one waits out the throttle.
+        component.Find("input.bit-phi-inp").Input("2");
+        Assert.AreEqual("2", component.Instance.Number);
+
+        var typing = component.Find("input.bit-phi-inp").InputAsync(new ChangeEventArgs { Value = "20" });
+        Assert.AreEqual("2", component.Instance.Number);
+
+        // The input is rendered with what was typed into it rather than with the Number held back behind it: rendered with
+        // that Number, the reply to a keystroke wrote it back over the keys typed since.
+        Assert.AreEqual("20", component.Find("input.bit-phi-inp").GetAttribute("value"));
+
+        // The change event commits the text and drops the keystroke still waiting, and the input shows the Number again.
+        component.Find("input.bit-phi-inp").Change("20");
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual("20", component.Instance.Number);
+        Assert.AreEqual("20", component.Find("input.bit-phi-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitPhoneInputClearButtonShouldLeaveTheFocusInTheField()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>

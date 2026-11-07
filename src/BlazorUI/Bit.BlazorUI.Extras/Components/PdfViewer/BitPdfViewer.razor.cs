@@ -1057,6 +1057,7 @@ public partial class BitPdfViewer : BitComponentBase
             _zoomAnchorPending = true;
         }
         catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) when (IsDisposed) { } // a circuit going down cancels the calls in flight
     }
 
     /// <summary>
@@ -1919,7 +1920,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task EnsurePagesRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null || IsDisposed) return;
+        if (IsDisposing || _document is null || pageNumbers is null) return;
 
         // Insert this batch ahead of older pending work (preserving its own order):
         // it reflects what is near the viewport now, so it must not wait behind
@@ -2009,7 +2010,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task EnsureThumbsRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null || IsDisposed) return;
+        if (IsDisposing || _document is null || pageNumbers is null) return;
 
         // Newest sidebar batch first, promoting already-queued thumbnails, mirroring
         // EnsurePagesRendered's prioritization.
@@ -2087,6 +2088,11 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnPageVisible(int pageNumber)
     {
+        // The scroll spy reports until its teardown reaches the script, and a report it sent before
+        // that (or one already queued behind the disposal of the circuit) arrives at a viewer that is
+        // going away: it moves no page, raises no event and measures nothing.
+        if (IsDisposing) return;
+
         // One page (or spread) at a time: what is on screen is the current page by
         // construction, so a report can only be late - the page just left, arriving
         // while the key that moves on from it is already navigating - and acting on it
@@ -2111,6 +2117,9 @@ public partial class BitPdfViewer : BitComponentBase
             if (_showThumbnails)
             {
                 await ScrollActiveThumbIntoViewAsync();
+                // A round trip: a viewer disposed meanwhile has no viewport left to measure,
+                // and over a circuit on its way down the measurement throws.
+                if (IsDisposed) return;
             }
             // A document whose pages differ in size re-fits as the reader reaches one
             // of another size; a uniform document never pays for the check.
@@ -2128,7 +2137,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     [JSInvokable]
     public Task OnLinkNavigate(int pageNumber, double? top)
-        => GoToDestination(new BitPdfDestination { PageNumber = pageNumber, Top = top });
+        => IsDisposing ? Task.CompletedTask : GoToDestination(new BitPdfDestination { PageNumber = pageNumber, Top = top });
 
     /// <summary>
     /// Invoked from JavaScript when the viewport size changes.
@@ -2136,12 +2145,18 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnViewportResized()
     {
+        // A box taken off the page resizes as well, and its report can reach a viewer that is going away.
+        if (IsDisposing) return;
+
         if (_zoomMode != BitPdfZoomMode.Custom)
         {
             // A fit re-sizes every page when the box changes (leaving fullscreen, a
             // sidebar opening, the window resizing), which moves the reader just as a
             // zoom does.
             await KeepReadingPositionAsync();
+            // Measuring the box is the next round trip, which a viewer disposed during
+            // this one (its circuit going down with it, say) has no business making.
+            if (IsDisposed) return;
             await ApplyFitAsync();
             StateHasChanged();
         }
@@ -2153,6 +2168,8 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnWheelZoom(double deltaY)
     {
+        if (IsDisposing) return;
+
         // The point under the cursor is stashed on the JS side before this call; the
         // render pass below puts it back where it was once the pages have re-sized.
         _zoomAnchorPending = true;
@@ -2168,7 +2185,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnFullscreenChanged(bool isFullscreen)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _fullscreen = isFullscreen;
         if (isFullscreen is false && _presenting)
@@ -2198,7 +2215,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnShortcut(string command)
     {
-        if (IsDisposed || Disabled) return;
+        if (IsDisposing || Disabled) return;
 
         switch (command)
         {
@@ -3664,6 +3681,7 @@ public partial class BitPdfViewer : BitComponentBase
             await _js.BitPdfViewerScrollThumbIntoView(_thumbsRef, CurrentPage);
         }
         catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) when (IsDisposed) { } // a circuit going down cancels the calls in flight
     }
 
     private ElementReference _pageInputRef;
@@ -3802,7 +3820,17 @@ public partial class BitPdfViewer : BitComponentBase
         var mode = _zoomMode;
         if (_pages.Count == 0 || mode is BitPdfZoomMode.Custom or BitPdfZoomMode.ActualSize) return;
 
-        var vp = await _js.BitPdfViewerGetViewport(_containerRef);
+        BitPdfViewerViewport vp;
+        try
+        {
+            vp = await _js.BitPdfViewerGetViewport(_containerRef);
+        }
+        // A viewer disposed while it measures has nothing left to fit: a circuit going down cancels the
+        // measurement in flight, and refuses it once gone.
+        catch (Exception ex) when (IsDisposed && ex is (JSDisconnectedException or OperationCanceledException))
+        {
+            return;
+        }
         // The measurement is a JS round-trip: a zoom the reader picked meanwhile (or a
         // newer fit) owns the value now, and this stale fit must not overwrite it.
         if (vp.Width <= 0 || IsDisposed || _zoomMode != mode) return;
@@ -4702,7 +4730,10 @@ public partial class BitPdfViewer : BitComponentBase
         _streamLoadCancellation?.Dispose();
         _streamLoadCancellation = null;
 
-        try
+        // The spies and listeners still call back through the reference until they are removed, so it is
+        // released only once they are (every [JSInvokable] of the viewer ignores a call arriving meanwhile).
+        // A circuit already gone, or a teardown that raced an in-flight interop call, has nothing to clean up.
+        await _dotnetObj.DisposeAfterAsync(async () =>
         {
             await _js.BitPdfViewerDisposeScrollSpy(_containerRef);
             await _js.BitPdfViewerDisposeThumbSpy(_thumbsRef);
@@ -4710,11 +4741,8 @@ public partial class BitPdfViewer : BitComponentBase
             await _js.BitPdfViewerDisposeDropZone(RootElement);
             await _js.BitPdfViewerDisposeFullscreenSpy(RootElement);
             await _js.BitPdfViewerDisposeFocusTracker(RootElement);
-        }
-        catch (JSDisconnectedException) { } // Circuit already gone; nothing to clean up.
-        catch (TaskCanceledException) { } // Disposal raced an in-flight interop call; safe to ignore.
+        });
 
-        _dotnetObj?.Dispose();
         _renderGate.Dispose();
 
         await base.DisposeAsync(disposing);

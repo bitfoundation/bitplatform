@@ -427,8 +427,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         // The None strategy leaves the document untouched before first paint.
         await Expect(Page.Locator("html")).Not.ToHaveAttributeAsync("bit-accent", new Regex(".*"));
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
 
         await Expect(Page.Locator("#active-accent")).ToHaveTextAsync("#6750A4");
         await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", accented);
@@ -440,8 +439,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         Assert.IsNull(await Page.EvaluateAsync<string?>("() => localStorage.getItem('bit-accent-color')"));
         Assert.IsFalse((await Page.Context.CookiesAsync()).Any(c => c.Name == "bit-accent-color"));
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(Swatches("acs-persist").Nth(0)).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", DefaultPrimary);
     }
@@ -464,9 +462,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
 
         // Blazor's own script is served empty: what is painted now is the head script's and the stylesheet's alone.
         await Page.RouteAsync("**/_framework/blazor.web.js", route => route.FulfillAsync(new() { Status = 200, ContentType = "text/javascript", Body = "" }));
-        await Page.ReloadAsync();
-
-        await Expect(Page.Locator("#status")).ToHaveTextAsync("Loading");
+        await ReloadAsync("Loading");
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-accent", new Regex("6750a4", RegexOptions.IgnoreCase));
         await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", accented);
 

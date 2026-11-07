@@ -26,12 +26,31 @@ public class BitTooltipTouchE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
+        // The tooltip is on the screen for the 800ms of TouchHideDelay only, and an expectation polling for it looks
+        // again only a second after its third look, so on a loaded runner it can step right over the whole of it - the
+        // first look delayed past the shown tooltip, the next one landing after it is gone. So the page watches for it
+        // from before the tap, on every frame, by what Playwright counts as visible: a box with a size, and visible.
+        await Page.EvaluateAsync(@"() => {
+            const tip = document.querySelector('#ttp-touch [role=tooltip]');
+            const seen = window.__e2eTouchTip = { shown: false };
+            const started = performance.now();
+            const look = () => {
+                const box = tip.getBoundingClientRect();
+                if (box.width > 0 && box.height > 0 && getComputedStyle(tip).visibility === 'visible') {
+                    seen.shown = true;
+                    return;
+                }
+                if (performance.now() - started < 60000) requestAnimationFrame(look);
+            };
+            requestAnimationFrame(look);
+        }");
+
         // Timed from the tap, which the 800ms TouchHideDelay can only start after, rather than from the moment the
         // tooltip was seen: an expectation can see it shown half a second late on a loaded runner, which would leave
         // little of the delay to measure.
         var watch = Stopwatch.StartNew();
         await Page.Locator("#ttp-touch-anchor").TapAsync();
-        await Expect(Tip("ttp-touch")).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("() => window.__e2eTouchTip.shown");
         await Expect(Page.Locator("#touch-anchor-clicks")).ToHaveTextAsync("1");
 
         await Expect(Tip("ttp-touch")).ToBeHiddenAsync();

@@ -75,4 +75,13 @@ public class BitCircularTimePickerStylesheetTests
         Assert.IsTrue(rootIndex < stylesheet.IndexOf("\n    .bit-ctp-#{$role} {", System.StringComparison.Ordinal), "The role classes come before the root that resets what they publish.");
         Assert.IsTrue(rootIndex < stylesheet.IndexOf("\n.bit-ctp-sm {", System.StringComparison.Ordinal), "The size classes come before the root that resets what they publish.");
     }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldLetThePointerThroughItsHand()
+    {
+        // The hand is drawn over the numbers - the hand of an outer-ring hour across the inner-ring hour at its angle -
+        // so it takes no pointer of its own: a press, the hover and the cursor are those of the number underneath. Its
+        // thumb inherits that.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-ctp-ptr {"), "pointer-events: none;");
+    }
 }

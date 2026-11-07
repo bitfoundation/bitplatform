@@ -182,6 +182,17 @@
                     lastY = y;
                 }
 
+                // Revealing the footer when the focus enters it is not enough on its own: the browser scrolls the
+                // focused control into the view right after the focus handler re-read the baseline, which reads as a
+                // scroll down and slides the footer straight back out, and a keyboard user who scrolls on (the arrow
+                // keys and the space bar scroll the page from a focused button) would roll the control out of the
+                // view as well (WCAG 2.4.11). The footer stays revealed while it holds the keyboard focus, as the
+                // header does. A focus left behind by a click does not count, or a mouse user who clicked a button in
+                // the bar could never scroll it away again.
+                if (next && Footers.hasKeyboardFocus(element)) {
+                    next = false;
+                }
+
                 apply(next);
             };
 
@@ -318,6 +329,20 @@
             }
 
             return window;
+        }
+
+        private static hasKeyboardFocus(element: HTMLElement): boolean {
+            const active = document.activeElement;
+
+            if (!active || !element.contains(active)) return false;
+
+            // An engine that does not know the selector throws on it rather than answering false, and
+            // then the focus is kept either way: a control hidden under the edge is the worse outcome.
+            try {
+                return active.matches(':focus-visible');
+            } catch {
+                return true;
+            }
         }
 
         private static scrollTop(target: HTMLElement | Window): number {

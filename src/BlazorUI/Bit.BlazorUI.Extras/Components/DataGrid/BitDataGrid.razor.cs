@@ -3747,6 +3747,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     internal async Task StartResizeAsync(BitDataGridColumn<TItem> column, double clientX)
     {
         var press = ++_resizePress;
+        _resizePressColumn = column;
         // Everything the drag reads is gathered before it starts: setting _resizingColumn renders the
         // overlay that feeds OnResizeMove, which must not see a start width or direction still pending.
         var rtl = await IsRtlAsync(JS);
@@ -3780,6 +3781,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // the handle has been let go in the meantime.
     private int _resizePress;
 
+    // The column of the resize handle pressed last, which the second press of a double click that lands on the overlay
+    // the first press put up still belongs to (see OnResizeOverlayMouseDownAsync).
+    private BitDataGridColumn<TItem>? _resizePressColumn;
+
     /// <summary>The release of a resize handle's press, before the overlay that follows a drag has been rendered: a drag
     /// still being started is called off, and one the overlay is already on its way to the browser for is ended - the
     /// overlay would otherwise stay over the page with no button down, resizing the column as the pointer moves.</summary>
@@ -3800,6 +3805,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         ReleaseResizeHandle();
         await AutoFitAsync(column);
+    }
+
+    /// <summary>The second press of a double click on a resize handle that lands on the drag overlay instead. Where the
+    /// overlay of the first press reaches the browser before that press is released - over a fast link - it is taken down
+    /// only a round trip after the release, and a second press that follows quickly finds it still over the handle. That
+    /// is the handle's second press all the same, so it fits the column the first press was on, as OnResizerMouseDownAsync
+    /// does: a drag holds the button down, so no other press of the primary button with a click count of two reaches the
+    /// overlay.</summary>
+    internal Task OnResizeOverlayMouseDownAsync(MouseEventArgs e)
+    {
+        return _resizePressColumn is { } column ? OnResizerMouseDownAsync(column, e) : Task.CompletedTask;
     }
 
     internal void OnResizeMove(double clientX)

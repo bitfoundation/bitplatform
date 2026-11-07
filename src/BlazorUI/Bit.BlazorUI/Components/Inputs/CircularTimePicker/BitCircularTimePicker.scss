@@ -715,9 +715,14 @@ span.bit-ctp-txt {
     background-color: var(--bit-ctp-ptr-clr);
 }
 
+// The hand and its thumb are drawn over the numbers, and the hand of an outer-ring hour runs straight across the
+// inner-ring hour at its angle (15 over 03). They are decoration the dial reads no press off - the press is read by
+// its angle and distance - so the pointer goes through them to the number underneath, which keeps its pointer
+// cursor and its hover rather than losing both wherever the hand happens to rest.
 .bit-ctp-ptr {
     bottom: 50%;
     position: absolute;
+    pointer-events: none;
     width: var(--bit-ctp-ptr-w);
     height: var(--bit-ctp-ptr-h);
     left: calc(50% - var(--bit-ctp-ptr-w) / 2);
