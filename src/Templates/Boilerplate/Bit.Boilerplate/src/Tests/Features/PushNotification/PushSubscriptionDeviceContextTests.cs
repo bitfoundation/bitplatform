@@ -32,7 +32,11 @@ public partial class PushSubscriptionDeviceContextTests
             Assert.IsNotNull(afterFirstSubscribe);
             Assert.IsNull(afterFirstSubscribe.UserSessionId, "The caller never signed in, so there is no session to carry any of this - which is the whole reason the columns are on the row.");
             Assert.IsFalse(string.IsNullOrWhiteSpace(afterFirstSubscribe.IP), "The address the request came from must be recorded for an anonymous device too.");
+            //#if (cloudflare == true)
             Assert.AreEqual("NL, Amsterdam", afterFirstSubscribe.Address, "Country and city come from the CDN's headers, formatted the same way UserSession formats them.");
+            //#else
+            Assert.IsNull(afterFirstSubscribe.Address, "Without Cloudflare in front, these headers come from the caller, so they must not be stored as the device's location.");
+            //#endif
             Assert.AreEqual(1_002_003, afterFirstSubscribe.AppVersionCode, "The version the device subscribed with is the X-App-Version every internal request already carries, encoded so it can be compared in SQL.");
             Assert.AreEqual("1.2.3", afterFirstSubscribe.AppVersion, "The stored code has to render back as the version the device reported.");
 
@@ -42,7 +46,9 @@ public partial class PushSubscriptionDeviceContextTests
             var afterResubscribe = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
 
             Assert.IsNotNull(afterResubscribe);
+            //#if (cloudflare == true)
             Assert.AreEqual("DE, Berlin", afterResubscribe.Address, "Subscribe runs on every auth state change and app start, so these have to be rewritten alongside RenewedOn rather than kept from the first visit.");
+            //#endif
             Assert.AreEqual(1_003_000, afterResubscribe.AppVersionCode, "A stale app version aims a version-targeted push at the wrong devices.");
 
             Assert.IsTrue(afterResubscribe.AppVersionCode > afterFirstSubscribe.AppVersionCode,

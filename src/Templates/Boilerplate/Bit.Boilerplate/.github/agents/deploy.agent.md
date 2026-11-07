@@ -80,6 +80,7 @@ domain and the services of section 5. Then go through the steps with them.
   accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
   too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
   log.
+<!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
   VM's SSH, and an Access policy that lets in only the people the user names, with a one-time PIN sent to their email
@@ -91,8 +92,11 @@ domain and the services of section 5. Then go through the steps with them.
 - If the user would rather keep a port, move SSH off 22, keep it key-only and rate-limited (fail2ban), and add a TOTP
   code as a second factor (`libpam-google-authenticator`) if they want one. A moved port only quiets the scanners;
   the key and the second factor are what keep others out.
-<!--#if (cloudflare != true)-->
-- Without a tunnel (section 8), that is how SSH stays, and 80 and 443 stay open for Caddy.
+<!--#else-->
+- **SSH stays open, so lock it.** Key only, with password and root sign-in off, moved off 22 and rate-limited
+  (fail2ban), and a TOTP code as a second factor (`libpam-google-authenticator`) if the user wants one. A moved port
+  only quiets the scanners; the key and the second factor are what keep others out. Of the other inbound ports, only
+  80 and 443 stay open, for Caddy (section 8).
 <!--#endif-->
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
   the deploy jobs. CI and every workflow a pull request starts stay on GitHub-hosted runners, so a pull request never
@@ -125,8 +129,13 @@ domain and the services of section 5. Then go through the steps with them.
   Redis containers of the Compose project, run on the VM too and listen on its loopback only: `127.0.0.1` for
   Production and `127.0.0.2` for Test, on ports `18888` and `3000`. Show the user how to open them through SSH, for
   Production `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
-  `http://localhost:3000`. DbGate has no sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare
-  Access policy stands in front of it.
+  `http://localhost:3000`.
+<!--#if (cloudflare == true)-->
+  DbGate has no sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in
+  front of it.
+<!--#else-->
+  DbGate has no sign-in of its own, so neither gets a site in Caddy.
+<!--#endif-->
 <!--#if (database == "Sqlite")-->
 - Published, DbGate reaches Redis only: the Sqlite file sits in the app's volume, outside it.
 <!--#endif-->
@@ -137,8 +146,12 @@ domain and the services of section 5. Then go through the steps with them.
 <!--#else-->
 - The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, runs on the VM too and listens on
   its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on port `18888`. Show the user how to open it
-  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`. It gets no route on
-  the tunnel unless a Cloudflare Access policy stands in front of it.
+  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`.
+<!--#if (cloudflare == true)-->
+  It gets no route on the tunnel unless a Cloudflare Access policy stands in front of it.
+<!--#else-->
+  It gets no site in Caddy.
+<!--#endif-->
 <!--#if (cloudflare == true)-->
 - Give it a hostname of its own for each environment, behind an Access policy that lets in only the people the user
   names (section 8). The tunnel reaches it at `http://compose-dashboard:18888`.
@@ -176,33 +189,38 @@ business, and only what the project doesn't answer by itself.
 - **Needed**: prerendering on (`WebAppRender:PrerenderEnabled`), so crawlers and link previews get each page's title,
   description and structured data, and visitors see the page before the app has loaded. It costs server work on every
   first visit, so cache the public pages:
+<!--#if (cloudflare == true)-->
     - **Cloudflare's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`), the recommendation when traffic is large or
       far from the VM, since the app sits behind Cloudflare anyway. It needs the runtime `Cloudflare` token and zone to
       purge, and the zone rules `.docs/14- Response Caching System.md` lists.
+<!--#else-->
+    - **A CDN's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`). This project was created without the
+      `cloudflare` option, so nothing would purge it when data changes. Prefer the output cache, or edge-cache only
+      what may stay stale for its whole lifetime.
+<!--#endif-->
     - **ASP.NET Core's output cache** (`ResponseCaching:EnableOutputCaching`), on the server itself: enough for one
       server and moderate traffic.
     - One of them, never both: a page cached in two places goes stale in two, and a stale page is hard to trace to the
       layer that served it. A static host is out here, since it can't prerender.
 <!--#if (api == "Standalone")-->
 - The app host already points `ServerSideHttpClientBaseAddress` at the api inside the Compose network, so prerendering
-  never goes out through the tunnel and back.
+  never goes out to its public address and back.
 <!--#else-->
 - With prerendering, set `ServerSideHttpClientBaseAddress` to `http://localhost:8080`, the app itself inside its
-  container, so prerendering doesn't go out through the tunnel and back.
-<!--#endif-->
-<!--#if (cloudflare != true)-->
-- This project was created without the `cloudflare` option, so nothing would purge the edge cache when data changes.
-  Prefer the output cache, or edge-cache only what may stay stale for its whole lifetime.
+  container, so prerendering doesn't go out to its public address and back.
 <!--#endif-->
 <!--#if (multitenant == true)-->
 - Pages that differ per tenant stay out of the edge cache (`UserAgnostic` in `.docs/14- Response Caching System.md`).
 <!--#endif-->
 - The landing page (`src/LandingPage`), when the user deploys it, runs as Blazor WebAssembly (`WebAppRender:BlazorMode`
   in its settings) whatever this decides for the app, so a visitor holds no connection to the server. It is always
-  prerendered, since being found is what it is for. Its pages set no cookies and a short
-  shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them from the edge.
+  prerendered, since being found is what it is for.
+<!--#if (cloudflare == true)-->
+  Its pages set no cookies and a short shared cache lifetime, so a Cloudflare cache rule for its hostname can serve
+  them from the edge.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
+<!--#endif-->
 - Apart from the Workbench, Blazor Server is for development only in this template, and so is Auto, which runs on
   Blazor Server until WebAssembly has loaded: offer neither for the app or the landing page.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
@@ -229,8 +247,11 @@ there, and the setting or secret that carries it. Every environment gets its own
   encodes, where a `/`, `?`, `#` or `%` breaks it (`specs/workarounds.md`).
 <!--#endif-->
 <!--#if (filesStorage == "S3")-->
-- **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
-  same Cloudflare account as the tunnel. The others work the same way, and `appsettings.json` has a sample connection
+- **File storage**: S3-compatible object storage. Recommend Cloudflare R2, which has no egress fees.
+<!--#if (cloudflare == true)-->
+  It lives in the same Cloudflare account as the tunnel.
+<!--#endif-->
+  The others work the same way, and `appsettings.json` has a sample connection
   string for R2 and for Hetzner Object Storage, DigitalOcean Spaces and Contabo. RustFS, the S3 server the app runs
   in development, can be self-hosted too; on the app's own VM it needs the same backups as the database. With R2, the
   setup token of section 8 lets you create the bucket and its keys yourself.
@@ -318,7 +339,11 @@ project up, and fails unless every container is healthy and the public address a
   (section 1), the template's CD builds and deploys the server the way section 1 describes.
 <!--#endif-->
 
+<!--#if (cloudflare == true)-->
 ## 8. The domain and the tunnel
+<!--#else-->
+## 8. The domain and Caddy
+<!--#endif-->
 
 <!--#if (cloudflare == true || filesStorage == "S3")-->
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
@@ -352,10 +377,14 @@ project up, and fails unless every container is healthy and the public address a
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
 <!--#endif-->
+<!--#if (cloudflare == true)-->
 - The Workbench isn't deployed by default. If the user wants it on Test, never Production, deploy it as Blazor Server
   (section 4), put its hostname behind Cloudflare Access, Cloudflare's own sign-in, and let `/alive` through for the
   deploy job's check. Its screenshots need a base
   image with a browser, such as Playwright's. Without Cloudflare Access, it isn't deployed.
+<!--#else-->
+- The Workbench isn't deployed: it needs Cloudflare Access in front of it, which comes with the `cloudflare` option.
+<!--#endif-->
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
@@ -375,7 +404,11 @@ project up, and fails unless every container is healthy and the public address a
 <!--#endif-->
 <!--#endif-->
 - Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
+<!--#if (cloudflare == true)-->
   takes from Cloudflare, and the address each provider of section 5 was registered with.
+<!--#else-->
+  takes from Caddy, and the address each provider of section 5 was registered with.
+<!--#endif-->
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.

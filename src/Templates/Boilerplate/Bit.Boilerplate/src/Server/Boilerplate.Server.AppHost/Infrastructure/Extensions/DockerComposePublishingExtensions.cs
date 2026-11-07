@@ -59,7 +59,11 @@ public static class DockerComposePublishingExtensions
             foreach (var project in projects)
             {
                 project
+                    //#if (cloudflare == true)
                     // A fixed port, because cloudflared reaches the apps at http://serverweb:8080 (and http://serverapi:8080).
+                    //#else
+                    // A fixed port, because Caddy reaches the apps at http://serverweb:8080 (and http://serverapi:8080).
+                    //#endif
                     .WithEndpoint("http", endpoint => endpoint.TargetPort = 8080)
                     // The environment `aspire publish --environment` names (Test or Production). Without it the apps run as
                     // Production everywhere, and AppEnvironment takes its value from it on the server.
@@ -67,7 +71,11 @@ public static class DockerComposePublishingExtensions
                     .WithRemoteImageTag(imageTag)
                     .PublishAsDockerComposeService((_, service) =>
                     {
+                        //#if (cloudflare == true)
                         // No host port: the server keeps every inbound port closed, and cloudflared dials out instead.
+                        //#else
+                        // No host port: Caddy is the only way in from outside.
+                        //#endif
                         service.Ports.Clear();
                         service.Restart = "unless-stopped";
                         // The app's own settings that no parameter carries (AI keys, Sentry, external sign-in...), which the
@@ -155,8 +163,12 @@ public static class DockerComposePublishingExtensions
             //#endif
             //#if (database != "Other" || redis == true)
 
-            // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard. It has no sign-in of
-            // its own: a route on the tunnel to it needs Cloudflare Access in front.
+            // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard.
+            //#if (cloudflare == true)
+            // It has no sign-in of its own: a route on the tunnel to it needs Cloudflare Access in front.
+            //#else
+            // It has no sign-in of its own, so it stays on the loopback.
+            //#endif
             if (builder.Resources.OfType<DbGateContainerResource>().SingleOrDefault() is { } dbGate)
             {
                 foreach (var exclusion in dbGate.Annotations.OfType<ManifestPublishingCallbackAnnotation>().ToArray())

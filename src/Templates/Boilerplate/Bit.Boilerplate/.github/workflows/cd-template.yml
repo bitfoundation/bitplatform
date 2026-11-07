@@ -245,7 +245,11 @@ jobs:
             if [[ "$file" == "serverapi.env" ]]; then
               printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
             fi
+            #if (cloudflare == true)
             # The landing page's browser posts its telemetry to its own address, where the tunnel sends /v1/ to the dashboard.
+            #else
+            # The landing page's browser posts its telemetry to its own address, where Caddy sends /v1/ to the dashboard.
+            #endif
             if [[ "$file" == "landingpage.env" ]]; then
               printf "Belemetry__OtlpEndpoint='%s'\n" "$origin" >> "$deploy_dir/$file"
             fi

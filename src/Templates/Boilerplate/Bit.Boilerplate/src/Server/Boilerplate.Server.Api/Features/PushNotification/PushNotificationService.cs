@@ -89,11 +89,13 @@ public partial class PushNotificationService
         //#endif
 
         // Kept on the row rather than read through UserSession, which an anonymous visitor has none of.
-        // Relying on Cloudflare cdn to retrieve address, same as UserSession's.
-        // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
         var request = httpContextAccessor.HttpContext!.Request;
         subscription.IP = httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+        //#if (cloudflare == true)
+        // Relying on Cloudflare cdn to retrieve address, same as UserSession's.
+        // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
         subscription.Address = $"{request.Headers["cf-ipcountry"]}, {request.Headers["cf-ipcity"]}";
+        //#endif
         subscription.AppVersionCode = AppVersionCodes.TryEncode(request.Headers["X-App-Version"].FirstOrDefault());
 
         if (subscription.Platform is "browser")

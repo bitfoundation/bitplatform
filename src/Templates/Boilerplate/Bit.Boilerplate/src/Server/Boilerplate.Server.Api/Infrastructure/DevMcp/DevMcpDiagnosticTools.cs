@@ -70,7 +70,9 @@ public partial class DevMcpDiagnosticTools
             {
                 settings.ResponseCaching?.EnableOutputCaching,
                 settings.ResponseCaching?.EnableCdnEdgeCaching,
-                CloudflareZoneConfigured = ReadCloudflareConfigured()
+                //#if (cloudflare == true)
+                CloudflareZoneConfigured = settings.Cloudflare?.Configured is true
+                //#endif
             },
             Identity = new
             {
@@ -242,14 +244,5 @@ public partial class DevMcpDiagnosticTools
             Keycloak = string.IsNullOrWhiteSpace(configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"]) is false,
             AzureAD = string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false
         };
-    }
-
-    private bool ReadCloudflareConfigured()
-    {
-        //#if (cloudflare == true)
-        return settings.Cloudflare?.Configured is true;
-        //#else
-        return false;
-        //#endif
     }
 }

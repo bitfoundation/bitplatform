@@ -277,6 +277,11 @@ The `UserAgnostic` property is critical for security. If a response contains use
 The `ResponseCacheService` (located in `/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ResponseCacheService.cs`) provides methods to **purge/invalidate cached responses** when data changes.
 
 **Purpose**: When you update data on the server (e.g., edit a product in the admin panel), you need to invalidate the cached versions of pages/APIs that display that data. Otherwise, users will continue to see stale/outdated information until the cache expires naturally.
+<!--#if (cloudflare != true)-->
+
+This project was created without the `cloudflare` option, so a purge reaches the output cache only: nothing purges a
+CDN in front of the app. The Cloudflare parts below are what that option adds.
+<!--#endif-->
 
 **Real-World Example - Product Page Caching:**
 
@@ -304,8 +309,10 @@ public partial class ResponseCacheService
             await outputCacheStore.EvictByTagAsync(tag, default);
         }
         
+<!--#if (cloudflare == true)-->
         // Purge from Cloudflare CDN, by the same tags
         await PurgeCloudflareCache(tags);
+<!--#endif-->
     }
 
     /// <summary>
@@ -586,12 +593,14 @@ This prevents accidentally serving User A's data to User B through shared caches
     "EnableOutputCaching": true,  // ASP.NET Core output cache
     "EnableCdnEdgeCaching": true  // CDN edge caching
   },
+<!--#if (cloudflare == true)-->
   "Cloudflare": {
     "ApiToken": "your-cloudflare-api-token",
     // One zone covers all of its hostnames. List several only if your app is served from domains
     // that belong to different Cloudflare zones (e.g. sales.bitplatform.com and sales.bitplatform.uk).
     "ZoneIds": [ "your-cloudflare-zone-id" ]
   },
+<!--#endif-->
   // Shared/appsettings.json - shared by the server AND every client (WASM, MAUI, Windows)
   "MemoryCache": {
     "SizeLimit": 268435456  // 256 MB, in bytes
