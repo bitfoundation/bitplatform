@@ -104,8 +104,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   on the web instead: DbGate to manage the database and Redis, and the Aspire dashboard to read the logs, traces and
   metrics, each on a hostname of its own for each environment, behind an Access policy that lets in only the people
   they name (section 8). The tunnel reaches them inside the Compose network, at `http://dbgate:3000` and
-  `http://compose-dashboard:18888`, so their loopback ports and SSH stay as they are, and the dashboard keeps its own
-  sign-in link behind Access.
+  `http://compose-dashboard:18888`, so their loopback ports and SSH stay as they are. Give the user the dashboard's
+  link with its token from the logs above, or, since Access already guards it, set
+  `DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS` to `true` on the dashboard so it opens without one.
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:
@@ -152,9 +153,9 @@ business, and only what the project doesn't answer by itself.
 <!--#if (multitenant == true)-->
 - Pages that differ per tenant stay out of the edge cache (`UserAgnostic` in `.docs/14- Response Caching System.md`).
 <!--#endif-->
-- The landing page (`src/LandingPage`), when the user deploys it, runs as Blazor WebAssembly with prerendering
-  (`WebAppRender:BlazorMode` and `PrerenderEnabled` in its settings) whatever this decides for the app, since being
-  found is what it is for, and a visitor then holds no connection to the server. Its pages set no cookies and a short
+- The landing page (`src/LandingPage`), when the user deploys it, runs as Blazor WebAssembly (`WebAppRender:BlazorMode`
+  in its settings) whatever this decides for the app, so a visitor holds no connection to the server. It is always
+  prerendered, since being found is what it is for. Its pages set no cookies and a short
   shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them from the edge.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.

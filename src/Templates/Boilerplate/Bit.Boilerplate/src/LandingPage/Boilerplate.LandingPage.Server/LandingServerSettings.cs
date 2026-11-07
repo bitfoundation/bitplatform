@@ -73,8 +73,6 @@ public partial class LandingServerSettingsValidator : IValidateOptions<LandingSe
 // - src/Server/Boilerplate.Server.Web/ServerWebSettings.cs
 public partial class WebAppRenderOptions
 {
-    public bool PrerenderEnabled { get; set; } = true;
-
     public BlazorWebAppMode BlazorMode { get; set; } = BlazorWebAppMode.BlazorWebAssembly;
 
     private BlazorWebAppMode EffectiveBlazorMode
@@ -91,9 +89,9 @@ public partial class WebAppRenderOptions
 
     public IComponentRenderMode RenderMode => EffectiveBlazorMode switch
     {
-        BlazorWebAppMode.BlazorAuto => new InteractiveAutoRenderMode(PrerenderEnabled),
-        BlazorWebAppMode.BlazorServer => new InteractiveServerRenderMode(PrerenderEnabled),
-        _ => new InteractiveWebAssemblyRenderMode(PrerenderEnabled)
+        BlazorWebAppMode.BlazorAuto => new InteractiveAutoRenderMode(),
+        BlazorWebAppMode.BlazorServer => new InteractiveServerRenderMode(),
+        _ => new InteractiveWebAssemblyRenderMode()
     };
 
     public bool IsWebAssembly => EffectiveBlazorMode is BlazorWebAppMode.BlazorWebAssembly;

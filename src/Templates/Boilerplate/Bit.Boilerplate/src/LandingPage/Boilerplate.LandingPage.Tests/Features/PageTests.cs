@@ -235,17 +235,6 @@ public class PageTests
     }
 
     [TestMethod]
-    public async Task ACrawler_Should_GetTheScripts_WhenNothingIsPrerendered()
-    {
-        await using var unrendered = await new LandingTestServer().Start(before: builder => builder.Configuration["WebAppRender:PrerenderEnabled"] = "false");
-        using var unrenderedClient = unrendered.CreateClient();
-
-        using var response = await GetAs(unrenderedClient, googlebot, SamplePath());
-
-        Assert.MatchesRegex(scriptTagWithSource, await response.Content.ReadAsStringAsync(), "With no page to read, the scripts are the only way to fill it in.");
-    }
-
-    [TestMethod]
     [DataRow(googlebot)]
     [DataRow(lighthouse)]
     [DataRow(pageSpeed)]
