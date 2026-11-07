@@ -19,8 +19,9 @@ Nothing here claims WCAG conformance. A record says what was checked, on what, b
 - **Always** before a component is marked remediated in the accessibility work (W2 of the improvement plan).
 - **Recommended** for any other change a user of AT would notice: a new accessible name, a new live-region
   announcement, a different focus target.
-- **Not needed** for a change with no rendered effect (refactoring, a test, a style change that leaves color, focus
-  and motion alone).
+- **Not needed** for a change with no rendered effect and no effect on the accessibility tree (refactoring, a test, a
+  style change that leaves the content, color, focus, motion and what is exposed to AT alone). A style change can
+  reach the tree: `display`, `visibility` and generated `content` all change what AT is given.
 
 ## The matrix
 
@@ -56,15 +57,19 @@ Beside the screen readers, every manual check covers:
 
 1. **Name, role, state:** what is announced when the focus lands on each part (the name, the role, and every state:
    expanded, selected, checked, pressed, disabled, invalid, busy, current).
-2. **Reading:** the browse or virtual mode reads the component in a sensible order. A table or grid is read with its
-   headers, and a hidden part is not read.
+2. **Reading:** the browse or virtual mode reads the component in a sensible order. On touch (VoiceOver on iOS,
+   TalkBack) it is read by swiping through it and by exploring it with a finger, and both follow the same order. A
+   table or grid is read with its headers. A part hidden from AT (`aria-hidden`, `hidden`, `display: none`, `inert`)
+   is not read; text hidden only visually and written for screen reader users is read, and that is no failure.
 3. **Operation:** every action the component offers works in focus or forms mode with the keys its pattern defines
    (the WAI-ARIA Authoring Practices pattern linked from the record). On touch, every action works with the screen
    reader's gestures.
 4. **Changes:** what changes without the focus moving is announced once, through a live region or a state change.
    That covers a sort, a filter, a loading state, an error or a count.
-5. **Focus:** opening a popup or dialog moves the focus into it. Closing returns the focus to where it came from, and a
-   removed element hands the focus on instead of dropping it on the page.
+5. **Focus:** opening a popup or dialog moves the focus into it. A combobox whose list is driven from its input
+   (`BitSearchBox`) keeps the DOM focus on the input instead: `aria-activedescendant` names the active option, and
+   the option is announced as it changes. Closing returns the focus to where it came from, and a removed element hands
+   the focus on instead of dropping it on the page.
 
 ## Recording a run
 
