@@ -42,6 +42,10 @@ internal static class E2EAxe
         RunOnly = new RunOnlyOptions { Type = "tag", Values = [.. Tags] },
     };
 
+    /// <summary>
+    /// Scans the one element <paramref name="scope"/> finds once the page is at rest, and fails with every violation the
+    /// suppressions do not cover, and every suppression that covered nothing.
+    /// </summary>
     public static async Task AssertNoViolationsAsync(IPage page, string scope, IReadOnlyCollection<AxeSuppression> suppressions)
     {
         var root = page.Locator(scope);
@@ -101,17 +105,36 @@ internal static class E2EAxe
 
     /// <summary>
     /// The suppression of the rule that covers the node: the one whose selector finds the node's element or one of its
-    /// ancestors, so a selector naming a component covers the parts of it axe reports.
+    /// ancestors, so a selector naming a component covers the parts of it axe reports. A node in a shadow root is found
+    /// through its hosts, which count as its ancestors; one in an iframe is never covered and stays in the report, since
+    /// the selectors are the page's.
     /// </summary>
     private static async Task<AxeSuppression?> FindSuppressionAsync(IPage page, string rule, AxeResultNode node, IReadOnlyCollection<AxeSuppression> suppressions)
     {
+        // One list per frame, one selector per shadow root in each: AxeSelector.Selector throws for anything but one of one.
+        var frames = node.Target.FrameShadowSelectors;
+        if (frames.Count != 1) return null;
+
+        string[] shadowPath = [.. frames[0]];
+
         foreach (var suppression in suppressions)
         {
             if (suppression.Rule != rule) continue;
 
             var covered = await page.EvaluateAsync<bool>(
-                "([target, selector]) => { const el = document.querySelector(target); return !!el && el.closest(selector) !== null; }",
-                new[] { node.Target.Selector, suppression.Selector });
+                """
+                ([shadowPath, selector]) => {
+                  let el = document.querySelector(shadowPath[0]);
+                  for (const part of shadowPath.slice(1)) el = el?.shadowRoot?.querySelector(part) ?? null;
+                  for (let n = el; n; ) {
+                    if (n.closest(selector)) return true;
+                    const root = n.getRootNode();
+                    n = root instanceof ShadowRoot ? root.host : null;
+                  }
+                  return false;
+                }
+                """,
+                new object[] { shadowPath, suppression.Selector });
 
             if (covered) return suppression;
         }
@@ -141,6 +164,9 @@ internal static class E2EAxe
 /// </summary>
 public sealed record AxeSuppression
 {
+    /// <summary>
+    /// Through <see cref="KnownIssue"/> or <see cref="Fixture"/>, which say which kind of suppression it is.
+    /// </summary>
     private AxeSuppression(string rule, string selector, string reason, string? issue)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rule);
