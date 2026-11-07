@@ -479,6 +479,42 @@
                 <BitAiToolApproval Call="_aiCall" OnDecision="_ => { }" />
             </div>
             break;
+
+        case "aithinkingindicator":
+            @* Its dots and its label, the default one and one of the page's own, and disabled. *@
+            <BitAiThinkingIndicator />
+            <BitAiThinkingIndicator Label="Searching the handbook" />
+            <BitAiThinkingIndicator Disabled />
+            break;
+
+        case "aicontextmeter":
+            @* The meter's fill in each of its colors - under the warning, past it, past the critical mark, over the
+               window - beside the label and the readout. *@
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 320px;">
+                <BitAiContextMeter Used="3000" Window="10000" />
+                <BitAiContextMeter Used="8500" Window="10000" />
+                <BitAiContextMeter Used="9700" Window="10000" />
+                <BitAiContextMeter Used="12000" Window="10000" />
+                <BitAiContextMeter Used="3000" Window="10000" Disabled />
+            </div>
+            break;
+
+        case "aiagentstatusbadge":
+            @* Every status on the tag of its color, and a disabled one. *@
+            @foreach (var status in Enum.GetValues<BitAiAgentRunStatus>())
+            {
+                <BitAiAgentStatusBadge Status="status" />
+            }
+            <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" Disabled />
+            break;
+
+        case "aicodeblockview":
+            @* The header with its language, its file name and its copy button over the code, and one still streaming. *@
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 480px;">
+                <BitAiCodeBlockView Code="@_aiCode" Language="csharp" FileName="Program.cs" />
+                <BitAiCodeBlockView Code="@_aiCode" Language="csharp" IsStreaming />
+            </div>
+            break;
     }
 </div>
 
@@ -495,6 +531,7 @@
     private readonly List<BitAiConversationSummary> _aiConversations = [new("c1", "Trip", DateTimeOffset.Now), new("c2", "Budget", DateTimeOffset.Now)];
     private readonly List<BitAiSlashCommand> _aiCommands = [new("summarize", "Summarize the conversation"), new("translate", "Translate the last answer")];
     private readonly BitAiToolCallPart _aiCall = AiApprovalCall();
+    private const string _aiCode = "var total = items.Sum(item => item.Price); // the sum\nConsole.WriteLine($\"Total: {total}\");";
 
     private static BitAiToolCallPart AiApprovalCall()
     {
