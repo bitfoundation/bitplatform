@@ -201,6 +201,17 @@ describe('envelopes', () => {
         expect(dependency[1].data.baseData.exceptions[0]).toEqual({ id: 1, outerId: 0, typeName: 'Error', message: 'gone', hasFullStack: false });
     });
 
+    it('sends no item for an exception the error limits dropped, which stays on the span', () => {
+        const s = span({
+            events: [
+                { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'TypeError' }, limited: true },
+                { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'RangeError' } },
+            ],
+        });
+        const envelopes = toEnvelopes({ resource, spans: [s], logs: [] }, ctx);
+        expect(envelopes.map(e => e.data.baseData.exceptions && e.data.baseData.exceptions[0].typeName)).toEqual([undefined, 'RangeError']);
+    });
+
     it('truncates an exception as C# does', () => {
         const e = logToEnvelope(log({ attributes: { 'exception.type': 'T'.repeat(2000), 'exception.message': 'm'.repeat(40000), 'exception.stacktrace': 's'.repeat(40000) } }), resource, ctx);
         const detail = e.data.baseData.exceptions[0];

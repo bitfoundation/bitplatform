@@ -15,12 +15,13 @@ public class AzureMonitorLiveMetricsTests
         span.Events.Add(Exception());
         span.Events.Add(Exception());
         span.Events.Add(new BelemetrySpanEvent { Name = "exception" });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.stacktrace", "at Y()") });
         span.Events.Add(new BelemetrySpanEvent { Name = "retry" });
         var limited = Exception();
         limited.Limited = true;
         span.Events.Add(limited);
         var logged = Exception();
-        logged.LoggedAs = new BelemetryLoggedException("System.TimeoutException", null, BelemetrySeverity.Error, false);
+        logged.LoggedAs = new BelemetryLoggedException("System.TimeoutException", null, null, BelemetrySeverity.Error, false);
         span.Events.Add(logged);
 
         var log = Records.Log(severity: BelemetrySeverity.Error);
@@ -29,6 +30,6 @@ public class AzureMonitorLiveMetricsTests
         live.OnRecord(span);
         live.OnRecord(log);
 
-        Assert.AreEqual(3, live.Exceptions, "The 2 exceptions recorded on the span and the logged one - counted once, as its log record.");
+        Assert.AreEqual(3, live.Exceptions, "The 2 exceptions recorded on the span and the logged one - counted once, as its log record. A stack trace alone is no item.");
     }
 }

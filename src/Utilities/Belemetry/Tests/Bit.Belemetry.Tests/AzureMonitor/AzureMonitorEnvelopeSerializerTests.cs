@@ -296,15 +296,18 @@ public class AzureMonitorEnvelopeSerializerTests
     [TestMethod]
     public void SpanException_LoggedUnderTheSpan_IsTheLogsItemAlone()
     {
-        static BelemetrySpan Span(BelemetrySeverity severity, bool isEvent = false, bool limited = false)
+        static BelemetrySpan Span(BelemetrySeverity severity, bool isEvent = false, bool limited = false, bool dropped = false)
         {
+            var logged = limited ? null : new BelemetryLoggedException("System.TimeoutException", "slow", "at Y()", severity, isEvent);
+            if (dropped) logged!.Drop();
+
             var span = Records.Span();
             span.Events.Add(new BelemetrySpanEvent
             {
                 Name = "exception",
                 TimeUnixNano = Records.Start,
                 Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException").Set("exception.message", "slow"),
-                LoggedAs = limited ? null : new BelemetryLoggedException("System.TimeoutException", "slow", severity, isEvent),
+                LoggedAs = logged,
                 Limited = limited,
             });
             return span;
@@ -321,6 +324,7 @@ public class AzureMonitorEnvelopeSerializerTests
         var all = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
         Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), all), "The log record's Exception stands for it.");
         Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error, limited: true), all), "The error limits dropped it as an item of its own.");
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error, dropped: true), all), "A log record dropped before the export stands for nothing.");
 
         Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error), all with { Logs = false }), "An exporter that sends no logs sends it from the span.");
         var errorsOnly = all with { MinimumSeverity = BelemetrySeverity.Error };

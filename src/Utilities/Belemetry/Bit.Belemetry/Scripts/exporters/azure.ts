@@ -4,7 +4,7 @@
 import type { AzureMonitorExporterConfig } from '../config';
 import { debug } from '../log';
 import { newSpanId } from '../ids';
-import { Severity, SpanKind, StatusCode, type AttributeValue, type Attributes, type LogRecord, type RecordBatch, type SpanRecord } from '../model';
+import { hasException, Severity, SpanKind, StatusCode, type AttributeValue, type Attributes, type LogRecord, type RecordBatch, type SpanRecord } from '../model';
 import { gzip, type OutgoingRequest, type Transport } from '../transport';
 import { Signals, signalsOf, type Exporter } from './exporter';
 import { encodeUtf8 } from './protobuf';
@@ -161,10 +161,6 @@ function requestName(span: SpanRecord): string {
     return method && route ? method + ' ' + route : span.name;
 }
 
-function hasException(attributes: Attributes): boolean {
-    return attributes['exception.type'] != null || attributes['exception.message'] != null;
-}
-
 // The ingestion limits, as in C#.
 const MAX_TYPE_NAME = 1024;
 const MAX_MESSAGE = 32768;
@@ -185,9 +181,10 @@ function exceptionEnvelope(a: Attributes, time: number, ctx: AzureContext, tags:
 
 /**
  * Appends the events of a span to `out`, each an item of its own under the span, as in C# and the Azure Monitor
- * OpenTelemetry exporter: an exception (`exception` with `exception.*`) an Exception, any other named event a Message
- * (with no severity: an event is not a log level). An `exception` event with no `exception.*` is neither. The script's
- * own instrumentations record no exception on a span (an error is a log record); that branch keeps the contract the same.
+ * OpenTelemetry exporter: an exception (`exception` with `exception.type` or `exception.message`) an Exception - unless
+ * the error limits dropped it (`limited`, set by the pipeline) - any other named event a Message (with no severity: an
+ * event is not a log level). An `exception` event with neither is neither. The script's own instrumentations record no
+ * exception on a span (an error is a log record), but an app processor may add one.
  */
 function addEventEnvelopes(out: Json[], span: SpanRecord, resource: Attributes, ctx: AzureContext): void {
     const events = span.events;
@@ -195,7 +192,7 @@ function addEventEnvelopes(out: Json[], span: SpanRecord, resource: Attributes, 
     let tags: Record<string, string> | undefined;
     for (const event of events) {
         const exception = event.name === 'exception';
-        if (exception ? !hasException(event.attributes) : !event.name) continue;
+        if (exception ? !hasException(event.attributes) || event.limited : !event.name) continue;
         // Built once, for the first item; the ids are the span's attributes (records carry them, their events do not).
         tags = tags || recordTags(baseTags(resource, ctx), span.attributes, span.traceId, span.spanId, isRequest(span) ? requestName(span) : undefined);
         out.push(exception

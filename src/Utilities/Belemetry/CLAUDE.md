@@ -251,7 +251,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   "resource": { "browser.language": "en-US", "user_agent.original": "...", "telemetry.sdk.language": "webjs", ... },
   "spans": [ { "traceId": "<32 hex>", "spanId": "<16 hex>", "parentSpanId": "<16 hex>|null", "name": "GET",
                "kind": 3, "startTime": 1.0, "endTime": 2.0, "attributes": {}, "status": { "code": 2, "message": "..." },
-               "events": [ { "name": "...", "time": 1.5, "attributes": {} } ], "scope": "bit.belemetry.http", "feature": 16 } ],
+               "events": [ { "name": "...", "time": 1.5, "attributes": {}, "limited": true } ], "scope": "bit.belemetry.http", "feature": 16 } ],
   "logs":  [ { "time": 1.0, "severityNumber": 17, "severityText": "ERROR", "body": "message", "eventName": "browser.page_view|null",
                "attributes": {}, "traceId": null, "spanId": null, "scope": "bit.belemetry.errors", "feature": 1 } ]
 }
@@ -260,6 +260,12 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - `kind` uses the OTLP `SpanKind` numbers (1 internal, 2 server, 3 client, 4 producer, 5 consumer).
 - `status.code` uses the OTLP numbers (0 unset, 1 ok, 2 error).
 - `severityNumber` uses the OTLP `SeverityNumber`.
+- An event may carry `"limited": true`: an exception the page's error limits dropped as a record of its own (it stays
+  on the span; .NET reads it into `BelemetrySpanEvent.Limited`).
+- The exceptions on a span (an `exception` event with `exception.type`, `exception.message` or `exception.stacktrace`)
+  are `Errors` data on both sides: the script records none, but after the app's processors (which may add one) it takes
+  them off without `Errors`, applies the error limits to the rest, and marks their batch with `Errors`. .NET takes them
+  off a relayed span when the configuration switches `Errors` off.
 
 ### JS module API (`_content/Bit.Belemetry/bit-belemetry.js`, ES module; also on `window.BitBelemetry`)
 
@@ -348,7 +354,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | --- | --- | --- |
   | Span, kind SERVER/CONSUMER | `Request` | `id`, `name` (as `ai.operation.name`), `duration` (`d.hh:mm:ss.fffffff`), `responseCode`, `success`, `url` |
   | Any other span | `RemoteDependency` | `id`, `name`, `resultCode`, `data`, `duration`, `success`, `type` (`Ajax` for browser HTTP, `HTTP` for .NET, `InProc` otherwise), `target` |
-  | Span event `exception` with `exception.*` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape (`typeName` cut to 1024, `message` and `stack` to 32768 characters, on both sides), at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Not sent when the .NET error limits dropped it, or when a log record this exporter sends carries the same exception (type and message) under the same span (`LogError(ex)` plus `AddException(ex)` is one item) - both .NET-only: the script records no exception on a span. An `exception` event without `exception.*` is not sent |
+  | Span event `exception` with `exception.type` or `exception.message` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape (`typeName` cut to 1024, `message` and `stack` to 32768 characters, on both sides), at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Not sent when the error limits dropped it (`Limited`, `limited`), or (.NET only) when a log record this exporter sends carries the same exception - type, message and stack trace - under the same span (`LogError(ex)` plus `AddException(ex)` is one item; a log record dropped before the export stands for nothing). An `exception` event without a type or message is not sent |
   | Any other span event | `Message` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: `message` = the event name, no `severityLevel`, at the event's time, the event's attributes as properties, the ids from the span's attributes. An event without a name is not sent |
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |

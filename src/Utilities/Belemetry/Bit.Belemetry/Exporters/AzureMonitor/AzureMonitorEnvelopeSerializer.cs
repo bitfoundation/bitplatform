@@ -25,8 +25,11 @@ internal static class AzureMonitorEnvelopeSerializer
     /// <param name="MinimumSeverity">The exporter's minimum log level, which a logged exception must pass to stand for that one.</param>
     public sealed record Context(string InstrumentationKey, bool MaskIp, bool Logs = true, BelemetrySeverity? MinimumSeverity = null)
     {
-        /// <summary>Whether the exporter sends the log record of <paramref name="logged"/>, as an Exception item.</summary>
-        public bool Sends(BelemetryLoggedException logged) => Logs && logged.Passes(MinimumSeverity);
+        /// <summary>
+        /// Whether the exporter sends the log record of <paramref name="logged"/>, as an Exception item: not one dropped
+        /// before any exporter had it.
+        /// </summary>
+        public bool Sends(BelemetryLoggedException logged) => Logs && logged.IsDropped is false && logged.Passes(MinimumSeverity);
     }
 
     /// <summary>Serializes every record of <paramref name="batch"/> as a JSON array of envelopes; <paramref name="count"/> is how many.</summary>
@@ -85,7 +88,7 @@ internal static class AzureMonitorEnvelopeSerializer
     /// Whether a span event is an item of its own, as the Azure Monitor OpenTelemetry exporter writes them: an exception
     /// (<see cref="BelemetrySpanEvent.IsException"/>) is an Exception - unless the error limits dropped it, or a log record
     /// this exporter sends is the same exception - and any other named event is a Message. An <c>exception</c> event with
-    /// no <c>exception.*</c> is neither, as there.
+    /// neither <c>exception.type</c> nor <c>exception.message</c> is neither, as there.
     /// </summary>
     private static bool IsItem(BelemetrySpanEvent spanEvent, Context context)
     {

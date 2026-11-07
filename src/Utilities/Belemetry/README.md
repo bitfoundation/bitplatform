@@ -1178,7 +1178,7 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Server/consumer span | `requests` |
 | Other spans | `dependencies` (`Ajax` from the browser, `HTTP`, the database system, `InProc`) |
 | Log with an exception | `exceptions` |
-| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it - but once only when the same exception is also logged under the span (`LogError(ex)` plus `AddException(ex)`): the log's item stands for both, unless this exporter does not send that log (`Signals`, `MinimumLogLevel`) |
+| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it - but once only when the same exception (type, message and stack trace) is also logged under the span (`LogError(ex)` plus `AddException(ex)`): the log's item stands for both, unless this exporter does not send that log (`Signals`, `MinimumLogLevel`, or the log was dropped before the export) |
 | Any other span event | `traces`, under the span, with the event name as the message - as the Azure Monitor OpenTelemetry exporter writes it |
 | `browser.page_view` | `pageViews` |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
@@ -1300,8 +1300,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   item, any other event (the document-load span's timings, for one) as a `traces` item - as the Azure Monitor
   OpenTelemetry exporter sends them; they were dropped. Expect more items. An exception also logged under its span
   is still one item, and `belemetry.records.exported` counts them for Azure Monitor.
-- **An exception recorded on a span needs `Errors`**: without it the exception comes off the span (for every exporter,
-  OTLP included) and the span is sent without it. The error limits apply to it too.
+- **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
+  span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
+  browser as well, to an exception an app processor adds to a span.
 - **Strings longer than `MaxValueLength` (32768) are cut.** `0` keeps them whole.
 - **An aborted fetch/XHR is not an error span** (it keeps `error.type = AbortError`); unknown HTTP methods are
   `_OTHER`.

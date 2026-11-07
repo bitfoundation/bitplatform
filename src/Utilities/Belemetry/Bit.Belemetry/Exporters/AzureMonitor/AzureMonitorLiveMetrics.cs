@@ -66,11 +66,14 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
                     if (IsFailure(span, 400)) Interlocked.Increment(ref _dependenciesFailed);
                 }
 
-                // The exceptions recorded on it count as the Azure Monitor exporter counts them - but not one the error
-                // limits dropped, nor one whose log record was counted already.
+                // The exceptions recorded on it count as the Azure Monitor exporter counts them (a stack trace alone is no
+                // item) - but not one the error limits dropped, nor one whose log record was counted already.
                 foreach (var spanEvent in span.Events)
                 {
-                    if (spanEvent.IsException && spanEvent.Limited is false && spanEvent.LoggedAs is null) Interlocked.Increment(ref _exceptions);
+                    if (spanEvent.IsException && spanEvent.Attributes.HasException && spanEvent.Limited is false && spanEvent.LoggedAs is null)
+                    {
+                        Interlocked.Increment(ref _exceptions);
+                    }
                 }
                 break;
             case BelemetryLogRecord log when log.HasException:

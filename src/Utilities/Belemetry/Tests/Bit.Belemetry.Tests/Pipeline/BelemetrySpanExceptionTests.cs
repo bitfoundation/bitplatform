@@ -18,14 +18,20 @@ public class BelemetrySpanExceptionTests
         return span;
     }
 
-    private static BelemetryLogRecord LoggedUnder(string spanId, string message = "slow")
+    private static BelemetryLogRecord LoggedUnder(string spanId, string message = "slow", string stack = "at Y()")
     {
         var log = Records.Log("Charge failed", severity: BelemetrySeverity.Error);
         log.Feature = BelemetryFeatures.Errors;
         log.TraceId = Records.TraceId;
         log.SpanId = spanId;
-        log.Attributes.Set("exception.type", "System.TimeoutException").Set("exception.message", message).Set("exception.stacktrace", "at Y()");
+        log.Attributes.Set("exception.type", "System.TimeoutException").Set("exception.message", message).Set("exception.stacktrace", stack);
         return log;
+    }
+
+    private static int AzureItems(BelemetrySpan span, params BelemetryLogRecord[] logs)
+    {
+        AzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), [span], logs), new AzureMonitorEnvelopeSerializer.Context("ikey", true), out var count);
+        return count;
     }
 
     private static string[] EventNames(BelemetrySpan span) => span.Events.Select(e => e.Name).ToArray();
@@ -40,6 +46,20 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
 
         CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()));
+    }
+
+    [TestMethod]
+    public async Task WithoutErrors_AStackTraceAlone_ComesOffTheSpanToo()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.Traces);
+
+        var span = Records.Span();
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.stacktrace", "at Y()") });
+        host.Pipeline.Enqueue(span);
+        await host.FlushAsync();
+
+        Assert.IsEmpty(host.Memory.Spans.Single().Events, "A stack trace is Errors data, with or without a type or message.");
     }
 
     [TestMethod]
@@ -58,6 +78,21 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
         var held = host.Memory.Spans.Single(s => s.SpanId == "1111111111111111");
         CollectionAssert.AreEqual(new[] { "retry" }, EventNames(held), "Errors was not granted: the span goes without its exceptions.");
+    }
+
+    [TestMethod]
+    public async Task ASpanReleasedByTheDecision_IsAccepted_ForLiveMetrics()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.Traces);
+        var accepted = new List<object>();
+        host.Pipeline.RecordAccepted += accepted.Add;
+
+        var span = Span();
+        host.Pipeline.Enqueue(span);
+        Assert.IsEmpty(accepted, "Held for a decision on Errors.");
+
+        host.Consent.Decide(BelemetryFeatures.Traces | BelemetryFeatures.Errors);
+        CollectionAssert.AreEqual(new object[] { span }, accepted);
     }
 
     [TestMethod]
@@ -116,6 +151,23 @@ public class BelemetrySpanExceptionTests
     }
 
     [TestMethod]
+    public async Task TheErrorRateCap_AppliesToSpanExceptions_WithoutTheDuplicateWindow()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Errors.DuplicateWindow = TimeSpan.Zero;
+            o.Errors.MaxPerMinute = 2;
+        });
+
+        for (var i = 0; i < 4; i++) host.Pipeline.Enqueue(Span($"{i + 1}{i + 1}{i + 1}{i + 1}000000000000", message: $"failure {i}"));
+        await host.FlushAsync();
+
+        var exceptions = host.Memory.Spans.Select(s => s.Events.Single(e => e.IsException)).ToArray();
+        CollectionAssert.AreEqual(new[] { false, false, true, true }, exceptions.Select(e => e.Limited).ToArray(),
+            "Distinct exceptions take the per-minute tokens one each; past the burst they are not error records of their own.");
+    }
+
+    [TestMethod]
     public async Task AnExceptionLoggedUnderTheSpan_IsLinkedToIt_AndSentToAzureMonitorOnce()
     {
         await using var host = TestHost.Create();
@@ -126,12 +178,13 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
 
         var exception = host.Memory.Spans.Single().Events.Single(e => e.IsException);
-        Assert.AreEqual(new BelemetryLoggedException("System.TimeoutException", "slow", BelemetrySeverity.Error, false), exception.LoggedAs);
+        Assert.IsNotNull(exception.LoggedAs);
+        Assert.AreEqual(BelemetrySeverity.Error, exception.LoggedAs.Severity);
+        Assert.IsFalse(exception.LoggedAs.IsEvent);
+        Assert.IsFalse(exception.LoggedAs.IsDropped);
         Assert.IsFalse(exception.Limited, "The log record took its place under the error limits.");
 
-        var batch = new BelemetryBatch(Records.Resource(), host.Memory.Spans.ToList(), [host.Memory.Logs.First(l => l.SpanId == Records.SpanId)]);
-        AzureMonitorEnvelopeSerializer.Serialize(batch, new AzureMonitorEnvelopeSerializer.Context("ikey", true), out var count);
-        Assert.AreEqual(3, count, "The span, its other event, and one Exception: the log's.");
+        Assert.AreEqual(3, AzureItems(host.Memory.Spans.Single(), host.Memory.Logs.First(l => l.SpanId == Records.SpanId)), "The span, its other event, and one Exception: the log's.");
 
         // Taken once: a later span with the same id (none should exist) finds nothing left.
         host.Pipeline.Enqueue(Span());
@@ -152,6 +205,69 @@ public class BelemetrySpanExceptionTests
     }
 
     [TestMethod]
+    public async Task AnotherFailureWithTheSameTypeAndMessage_IsNotLinked()
+    {
+        await using var host = TestHost.Create();
+
+        host.Pipeline.Enqueue(LoggedUnder(Records.SpanId, stack: "at Z()"));
+        host.Pipeline.Enqueue(Span());
+        await host.FlushAsync();
+
+        Assert.IsNull(host.Memory.Spans.Single().Events.Single(e => e.IsException).LoggedAs, "Thrown elsewhere: another failure, sent on its own.");
+    }
+
+    [TestMethod]
+    public async Task WithoutAStackTrace_ALoggedException_IsNotLinked()
+    {
+        await using var host = TestHost.Create();
+
+        var log = LoggedUnder(Records.SpanId);
+        log.Attributes.Remove("exception.stacktrace");
+        var span = Span();
+        span.Events.Single(e => e.IsException).Attributes.Remove("exception.stacktrace");
+        host.Pipeline.Enqueue(log);
+        host.Pipeline.Enqueue(span);
+        await host.FlushAsync();
+
+        Assert.IsNull(host.Memory.Spans.Single().Events.Single(e => e.IsException).LoggedAs, "Its identity is unknown: the span keeps its exception.");
+    }
+
+    [TestMethod]
+    public async Task ALoggedExceptionDroppedBeforeExport_LeavesTheExceptionToTheSpan()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.All);
+
+        var log = LoggedUnder(Records.SpanId);
+        host.Pipeline.Enqueue(log);
+
+        // Revoked before the export (the queued log is purged), granted again before the span ends.
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
+        host.Consent.Decide(BelemetryFeatures.All);
+        host.Pipeline.Enqueue(Span());
+        await host.FlushAsync();
+
+        Assert.IsEmpty(host.Memory.Logs);
+        var span = host.Memory.Spans.Single();
+        Assert.IsTrue(span.Events.Single(e => e.IsException).LoggedAs?.IsDropped);
+        Assert.AreEqual(3, AzureItems(span), "The span, its other event, and its Exception: the log never left.");
+    }
+
+    [TestMethod]
+    public async Task ALoggedExceptionTheQueueDrops_LeavesTheExceptionToTheSpan()
+    {
+        await using var host = TestHost.Create(o => o.Batch.MaxQueueSize = 1);
+
+        host.Pipeline.Enqueue(LoggedUnder(Records.SpanId));
+        host.Pipeline.Enqueue(Span());
+        host.Pipeline.Enqueue(Records.Log("Newer"));
+        await host.FlushAsync();
+
+        Assert.AreEqual("Newer", host.Memory.Logs.Single().Body);
+        Assert.AreEqual(3, AzureItems(host.Memory.Spans.Single()), "The span, its other event, and its Exception: the log was dropped.");
+    }
+
+    [TestMethod]
     public async Task ARelayedSpan_KeepsItsExceptions_ThePageAppliedConsent()
     {
         await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay, consentDefault: BelemetryFeatures.None);
@@ -162,6 +278,39 @@ public class BelemetrySpanExceptionTests
 
         var exception = host.Memory.Spans.Single().Events.Single(e => e.IsException);
         Assert.IsFalse(exception.Limited);
+    }
+
+    [TestMethod]
+    public async Task ARelayedException_ThePagesErrorLimitsDropped_StaysLimited()
+    {
+        await using var host = TestHost.Create();
+        var json = """
+        { "spans": [ { "traceId": "0af7651916cd43dd8448eb211c80319c", "spanId": "b7ad6b7169203331", "name": "GET", "kind": 3, "startTime": 1, "endTime": 2, "feature": 16,
+                       "events": [ { "name": "exception", "time": 1, "attributes": { "exception.type": "TypeError" }, "limited": true },
+                                   { "name": "exception", "time": 1, "attributes": { "exception.type": "RangeError" } } ] } ] }
+        """;
+
+        host.Pipeline.Relay(System.Text.Json.JsonSerializer.Deserialize(json, BelemetryJsonContext.Default.BelemetryRelayBatch)!);
+        await host.FlushAsync();
+
+        var span = host.Memory.Spans.Single();
+        CollectionAssert.AreEqual(new[] { true, false }, span.Events.Select(e => e.Limited).ToArray());
+        Assert.AreEqual(2, AzureItems(span), "The span and the exception the page did not limit.");
+    }
+
+    [TestMethod]
+    public async Task ARelayedSpan_LosesItsExceptions_WhenTheConfigurationSwitchesErrorsOff()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Features = BelemetryFeatures.All & ~BelemetryFeatures.Errors;
+        });
+
+        host.Pipeline.Enqueue(Span(), relayed: true);
+        await host.FlushAsync();
+
+        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()), "A page can be anything that speaks the interop protocol.");
     }
 
     [TestMethod]

@@ -53,6 +53,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     public int CountItems(BelemetryBatch batch) => AzureMonitorEnvelopeSerializer.Count(Filter(batch), _context);
 
+    /// <summary>The part of <paramref name="batch"/> this exporter sends (<see cref="BelemetryAzureMonitorExporterOptions.Signals"/>).</summary>
     private BelemetryBatch Filter(BelemetryBatch batch) => new(batch.Resource,
         _options.Signals.HasFlag(BelemetrySignals.Traces) ? batch.Spans : [],
         _options.Signals.HasFlag(BelemetrySignals.Logs) ? batch.Logs : [],
