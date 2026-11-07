@@ -404,6 +404,19 @@ ignored and every day of a calendar lands in the tab order; `margin:1,5px` is dr
   in any `.razor` of the packages. A test's expected markup is built invariantly too (`FormattableString.Invariant`),
   or it fails on the machine of everyone whose culture writes numbers differently.
 
+## A key pressed in a bUnit test is a bUnit `Key`
+
+`element.KeyDown(Key.Down)`, `Key.Tab + Key.Shift`, `Key.End + Key.Alt`, `Key.Enter + Key.Control`, `Key.Get(',')`,
+rather than a `new KeyboardEventArgs { ... }` written by hand. A named key carries the `Code` a browser sends with it
+(`Key.Space` is `" "` and `Space`), and `Key.Command` is the `MetaKey`.
+
+- **A typed character's `Code` is the character** (`Key.Get('a')` sends `a`, where a browser sends `KeyA`). A handler
+  that reads the `Code` of one (BitMarkdownEditor's shortcuts key, `Slash` whatever character the layout puts on it) is
+  pressed with the browser's code: `Key.Get("?", "Slash") + Key.Control`.
+- **What `Key` cannot say is still written out**: `Repeat` (the `repeat` argument of `KeyDown`), `IsComposing`, a
+  `Location`, or a key built from a variable.
+- A suite still building its own `KeyboardEventArgs` moves over when it is next changed.
+
 ## Demo pages
 
 A component's demo page is
