@@ -175,6 +175,87 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void Exception_FromSpanExceptionEvent()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", "/orders/{id}").Set("session.id", "s-1").Set("user.id", "u-1");
+        span.Events.Add(new BelemetrySpanEvent { Name = "retry", TimeUnixNano = Records.Start, Attributes = new BelemetryAttributes().Set("attempt", 2) });
+        span.Events.Add(new BelemetrySpanEvent
+        {
+            Name = "exception",
+            TimeUnixNano = Records.Start + 1_000_000_000,
+            Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException").Set("exception.message", "slow").Set("exception.stacktrace", "at Y()")
+                .Set("exception.escaped", true).Set("order", 7),
+        });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", TimeUnixNano = Records.Start, Attributes = new BelemetryAttributes().Set("other", 1) });
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span]), true, out var count);
+
+        Assert.HasCount(2, envelopes, "The exception is an item of its own; another event, or an exception event without exception.*, is not.");
+        Assert.AreEqual(2, count, "The count is the envelopes', the items a 206 response indexes.");
+        AssertEnvelope(envelopes[0], "Request");
+
+        var e = envelopes[1];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", e.GetProperty("name").GetString());
+        Assert.AreEqual("2023-11-14T22:13:21.1234567Z", e.GetProperty("time").GetString(), "At the event's time, not the span's.");
+        Assert.AreEqual(IKey, e.GetProperty("iKey").GetString());
+        Assert.AreEqual("ExceptionData", e.GetProperty("data").GetProperty("baseType").GetString());
+        var data = BaseData(e);
+        var ex = data.GetProperty("exceptions")[0];
+        Assert.AreEqual(1, ex.GetProperty("id").GetInt32());
+        Assert.AreEqual(0, ex.GetProperty("outerId").GetInt32());
+        Assert.AreEqual("System.TimeoutException", ex.GetProperty("typeName").GetString());
+        Assert.AreEqual("slow", ex.GetProperty("message").GetString());
+        Assert.IsTrue(ex.GetProperty("hasFullStack").GetBoolean());
+        Assert.AreEqual("at Y()", ex.GetProperty("stack").GetString());
+        Assert.AreEqual(3, data.GetProperty("severityLevel").GetInt32());
+
+        var tags = Tags(e);
+        Assert.AreEqual("[shop]/checkout", tags.GetProperty("ai.cloud.role").GetString());
+        Assert.AreEqual(Records.TraceId, tags.GetProperty("ai.operation.id").GetString());
+        Assert.AreEqual(Records.SpanId, tags.GetProperty("ai.operation.parentId").GetString(), "Its parent is the span it was recorded on.");
+        Assert.AreEqual("GET /orders/{id}", tags.GetProperty("ai.operation.name").GetString(), "A request's exception carries the request's operation name.");
+        Assert.AreEqual("s-1", tags.GetProperty("ai.session.id").GetString(), "The ids come from the span's attributes.");
+        Assert.AreEqual("u-1", tags.GetProperty("ai.user.authUserId").GetString());
+
+        Assert.AreEqual("7", Prop(e, "order"));
+        Assert.IsNull(Prop(e, "exception.escaped"));
+        Assert.IsNull(Prop(e, "http.route"), "The span's attributes stay on the span's envelope.");
+        Assert.IsNull(Prop(e, "session.id"));
+    }
+
+    [TestMethod]
+    public void Exception_FromActivityAddException()
+    {
+        using var activity = new Activity("charge").SetIdFormat(ActivityIdFormat.W3C);
+        activity.Start();
+        try
+        {
+            throw new InvalidOperationException("declined");
+        }
+        catch (InvalidOperationException thrown)
+        {
+            activity.AddException(thrown);
+        }
+        activity.Stop();
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [BelemetryActivityCollector.Convert(activity, new BelemetryTracingOptions())]));
+
+        Assert.HasCount(2, envelopes);
+        Assert.AreEqual("Microsoft.ApplicationInsights.RemoteDependency", envelopes[0].GetProperty("name").GetString());
+        var e = envelopes[1];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", e.GetProperty("name").GetString());
+        var ex = BaseData(e).GetProperty("exceptions")[0];
+        Assert.AreEqual("System.InvalidOperationException", ex.GetProperty("typeName").GetString());
+        Assert.AreEqual("declined", ex.GetProperty("message").GetString());
+        Assert.IsTrue(ex.GetProperty("hasFullStack").GetBoolean());
+        Assert.IsTrue(ex.GetProperty("stack").GetString()!.Contains(nameof(Exception_FromActivityAddException), StringComparison.Ordinal));
+        Assert.AreEqual(activity.TraceId.ToHexString(), Tags(e).GetProperty("ai.operation.id").GetString());
+        Assert.AreEqual(activity.SpanId.ToHexString(), Tags(e).GetProperty("ai.operation.parentId").GetString());
+        Assert.IsFalse(Tags(e).TryGetProperty("ai.operation.name", out _), "Only a request's exceptions name the operation.");
+    }
+
+    [TestMethod]
     public void PageView()
     {
         var log = Records.Log(null, "browser.page_view");

@@ -1175,6 +1175,7 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Server/consumer span | `requests` |
 | Other spans | `dependencies` (`Ajax` from the browser, `HTTP`, the database system, `InProc`) |
 | Log with an exception | `exceptions` |
+| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it |
 | `browser.page_view` | `pageViews` |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
 | `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName`/`PageUrl` properties - the Application Insights JS SDK's shape |
@@ -1185,7 +1186,7 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 Tags: `ai.cloud.role` (`[service.namespace]/service.name`, or `service.name` alone - as the Azure Monitor
 OpenTelemetry exporter writes it), `ai.cloud.roleInstance`, `ai.application.ver` (`service.version`), `ai.user.agent`
 and `ai.device.locale` (browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
-`ai.operation.name` (requests: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
+`ai.operation.name` (requests and the exceptions recorded on them: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
 `ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
 `ai.internal.sdkVersion`.
 

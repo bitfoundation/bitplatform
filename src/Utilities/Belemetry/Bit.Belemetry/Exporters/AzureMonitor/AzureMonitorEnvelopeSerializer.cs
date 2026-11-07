@@ -34,8 +34,7 @@ internal static class AzureMonitorEnvelopeSerializer
             w.WriteStartArray();
             foreach (var span in batch.Spans)
             {
-                WriteSpan(w, span, resource);
-                count++;
+                count += WriteSpan(w, span, resource);
             }
             foreach (var log in batch.Logs)
             {
@@ -52,7 +51,8 @@ internal static class AzureMonitorEnvelopeSerializer
         return buffer.WrittenSpan.ToArray();
     }
 
-    private static void WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource)
+    /// <summary>Writes the span's envelope and one per exception recorded on it; returns how many it wrote.</summary>
+    private static int WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource)
     {
         var isRequest = span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer;
         var attributes = span.Attributes;
@@ -102,7 +102,51 @@ internal static class AzureMonitorEnvelopeSerializer
         w.WriteEndObject();
         w.WriteEndObject();
         w.WriteEndObject();
+
+        // An exception recorded on the span (Activity.AddException, or any "exception" event) is an item of the exceptions
+        // table under the span, as the Azure Monitor OpenTelemetry exporter writes it: the span's envelope has no room for it.
+        var written = 1;
+        foreach (var spanEvent in span.Events)
+        {
+            if (spanEvent.Name != BelemetrySemanticConventions.ExceptionEvent || HasException(spanEvent.Attributes) is false) continue;
+
+            // The ids are the span's attributes (the enrichment step adds them to records, not to their events).
+            WriteException(w, resource, spanEvent.TimeUnixNano, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
+            written++;
+        }
+
+        return written;
     }
+
+    private static void WriteException(Utf8JsonWriter w, ResourceTags resource, long timeUnixNano, string? traceId, string? parentId, string? operationName,
+                                       BelemetryAttributes idAttributes, BelemetryAttributes attributes, string? body, BelemetrySeverity severity)
+    {
+        BeginEnvelope(w, "Exception", timeUnixNano);
+        WriteTags(w, resource, traceId, parentId, operationName, idAttributes);
+        w.WriteStartObject("data");
+        w.WriteString("baseType", "ExceptionData");
+        w.WriteStartObject("baseData");
+        w.WriteNumber("ver", 2);
+        w.WriteStartArray("exceptions");
+        w.WriteStartObject();
+        w.WriteNumber("id", 1);
+        w.WriteNumber("outerId", 0);
+        w.WriteString("typeName", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionType) ?? "Error", 1024));
+        w.WriteString("message", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? body ?? string.Empty, MaxMessageLength));
+        var stack = attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace);
+        w.WriteBoolean("hasFullStack", stack is not null);
+        if (stack is not null) w.WriteString("stack", Truncate(stack, MaxMessageLength));
+        w.WriteEndObject();
+        w.WriteEndArray();
+        w.WriteNumber("severityLevel", ToSeverityLevel(severity == BelemetrySeverity.Unspecified ? BelemetrySeverity.Error : severity));
+        WriteProperties(w, attributes, static key => key.StartsWith("exception.", StringComparison.Ordinal), null);
+        w.WriteEndObject();
+        w.WriteEndObject();
+        w.WriteEndObject();
+    }
+
+    private static bool HasException(BelemetryAttributes attributes) =>
+        attributes.Contains(BelemetrySemanticConventions.ExceptionType) || attributes.Contains(BelemetrySemanticConventions.ExceptionMessage);
 
     private static void WriteLog(Utf8JsonWriter w, BelemetryLogRecord log, ResourceTags resource)
     {
@@ -110,28 +154,7 @@ internal static class AzureMonitorEnvelopeSerializer
 
         if (log.HasException)
         {
-            BeginEnvelope(w, "Exception", log.TimeUnixNano);
-            WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
-            w.WriteStartObject("data");
-            w.WriteString("baseType", "ExceptionData");
-            w.WriteStartObject("baseData");
-            w.WriteNumber("ver", 2);
-            w.WriteStartArray("exceptions");
-            w.WriteStartObject();
-            w.WriteNumber("id", 1);
-            w.WriteNumber("outerId", 0);
-            w.WriteString("typeName", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionType) ?? "Error", 1024));
-            w.WriteString("message", Truncate(attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? log.Body ?? string.Empty, MaxMessageLength));
-            var stack = attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace);
-            w.WriteBoolean("hasFullStack", stack is not null);
-            if (stack is not null) w.WriteString("stack", Truncate(stack, MaxMessageLength));
-            w.WriteEndObject();
-            w.WriteEndArray();
-            w.WriteNumber("severityLevel", ToSeverityLevel(log.Severity == BelemetrySeverity.Unspecified ? BelemetrySeverity.Error : log.Severity));
-            WriteProperties(w, attributes, static key => key.StartsWith("exception.", StringComparison.Ordinal), null);
-            w.WriteEndObject();
-            w.WriteEndObject();
-            w.WriteEndObject();
+            WriteException(w, resource, log.TimeUnixNano, log.TraceId, log.SpanId, null, attributes, attributes, log.Body, log.Severity);
             return;
         }
 
