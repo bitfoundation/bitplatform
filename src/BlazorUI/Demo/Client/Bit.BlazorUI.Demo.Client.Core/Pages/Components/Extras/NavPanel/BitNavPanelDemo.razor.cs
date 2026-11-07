@@ -1461,6 +1461,7 @@ public partial class BitNavPanelDemo
     private bool stickyIsOpen;
     private bool cascadeIsOpen;
     private bool cascadeOwnIsOpen;
+    private bool a11yIsOpen;
 
     private readonly BitNavPanelParams[] navPanelParams =
     [
@@ -1473,6 +1474,13 @@ public partial class BitNavPanelDemo
             SearchAnnouncementProvider = count => count == 1 ? "One page matches." : $"{count} pages match.",
         }
     ];
+
+    private readonly Func<int, string?> a11ySearchAnnouncement = count => count switch
+    {
+        0 => "No page matches.",
+        1 => "One page matches.",
+        _ => $"{count} pages match."
+    };
 
     private bool publicApiIsOpen;
     private BitNavPanel<BitNavItem> navPanelRef = default!;
@@ -1503,6 +1511,7 @@ public partial class BitNavPanelDemo
     private readonly List<BitNavItem> templateNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> cascadeNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> a11yNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> colorNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> sizeSmallNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> sizeMediumNavItems = CreateBasicNavItems();

@@ -449,6 +449,21 @@ private readonly BitMarkdownEditorParams[] markdownEditorParams =
 ];";
 
     private readonly string example17RazorCode = @"
+<BitMarkdownEditor Label=""Keyboard tour"" DefaultValue=""@accessibilityDefaultValue"" Height=""12rem"" />";
+    private readonly string example17CsharpCode = @"
+private string accessibilityDefaultValue =
+@""# Keyboard tour
+
+- Tab indents this item, Shift+Tab outdents it
+- Escape, then Tab, moves the focus out
+
+| Tab | walks |
+| --- | ----- |
+| the | cells |
+
+F9 cycles the panes, F11 goes full-screen and Ctrl+/ lists every shortcut."";";
+
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         box-shadow: aqua 0 0 1rem 0.5rem;
@@ -471,7 +486,7 @@ private readonly BitMarkdownEditorParams[] markdownEditorParams =
                    Height=""8rem"" />
 
 <BitMarkdownEditor Style=""@cssVariablesStyle"" DefaultValue=""@cssVariablesDefaultValue"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private const string cssVariablesStyle = ""--bit-MarkdownEditor-border-radius:1rem;"" +
                                          ""--bit-MarkdownEditor-border-color:var(--bit-clr-pri);"" +
                                          ""--bit-MarkdownEditor-toolbar-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);"" +
@@ -489,9 +504,9 @@ private string cssVariablesDefaultValue =
 Rounded corners, a tinted toolbar, pill buttons, a serif writing font,
 and split panes that never stack (`--bit-MarkdownEditor-pane-min-width:0`)."";";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitMarkdownEditor Dir=""BitDir.Rtl"" DefaultValue=""@rtlDefaultValue"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private string rtlDefaultValue =
 @""# ویرایشگر مارک‌داون
 این یک متن **راست به چپ** برای نمایش قابلیت RTL است.

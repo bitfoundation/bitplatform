@@ -703,6 +703,30 @@ private readonly BitCalloutParams[] calloutParams =
 ];";
 
     private readonly string example18RazorCode = @"
+<BitCallout AriaLabel=""Sharing options"">
+    <Anchor>
+        <BitButton>Share</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""0.25rem"">
+                <BitButton Variant=""BitVariant.Text"">Copy link</BitButton>
+                <BitButton Variant=""BitVariant.Text"">Email</BitButton>
+            </BitStack>
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout OpenOnHover AriaLabel=""Keyboard hint"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Hover, then press Escape</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">Escape closes this one wherever the focus is.</div>
+    </Content>
+</BitCallout>";
+
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         border-radius: 4px;
@@ -799,7 +823,7 @@ private readonly BitCalloutParams[] calloutParams =
     </Content>
 </BitCallout>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitCallout Dir=""BitDir.Rtl"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton>نمایش کال‌اوت</BitButton>

@@ -743,6 +743,44 @@ public partial class BitModalServiceDemo : IDisposable
     }
 
 
+    // A dialog with aria-modal, named by the title its header shows.
+    private async Task ShowNamedModal()
+    {
+        await modalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "26rem",
+            HeaderText = "Named by its header",
+            ShowCloseButton = true
+        });
+    }
+
+    // Blocking and no IsAlert: announced as an alertdialog. Only the overlay click is refused; Escape and the
+    // close button still dismiss it.
+    private async Task ShowBlockingModal()
+    {
+        await modalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "26rem",
+            HeaderText = "Blocking",
+            ShowCloseButton = true,
+            Blocking = true
+        });
+    }
+
+    // Modeless: no aria-modal, overlay, focus trap or scroll lock, so Tab walks out of it into the page.
+    private async Task ShowModelessModal()
+    {
+        await modalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "24rem",
+            HeaderText = "Modeless",
+            ShowCloseButton = true,
+            Modeless = true,
+            Position = BitPosition.TopStart
+        });
+    }
+
+
     private async Task ShowExternalIconModal()
     {
         await modalService.Show<ModalBodyContent>(new BitModalParameters

@@ -350,7 +350,102 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                The field is a native button with the <code>combobox</code> role that pops up a <code>listbox</code>: it
+                reports <code>aria-expanded</code> and points at the list through <code>aria-controls</code> while it is
+                open. Each country is an <code>option</code> with <code>aria-selected</code>, kept out of the tab order.
+                The country the keys are on is not focused but named through <code>aria-activedescendant</code> - by the
+                search box, itself a combobox of the same list, or by the field when <b>NoSearchBox</b> is set - and
+                outlined on screen.
+            </div>
+            <br />
+            <div>
+                <b>Label</b> (or <b>LabelTemplate</b>) names the field and the list through <code>aria-labelledby</code>.
+                <b>AriaLabel</b> names both instead, for a field with no visible label; with neither, the field is read as
+                "Country" and the list as "Countries". The search box is named by <b>SearchBoxAriaLabel</b>, else
+                <b>SearchBoxPlaceholder</b>, else "Search countries". Flags and the caret are hidden from screen readers,
+                so each country is read by its name alone.
+            </div>
+            <br />
+            <div>
+                On the closed field:
+                <ul>
+                    <li>
+                        <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> and <b>ArrowUp</b> open the list on the selected
+                        country, or the first one; <b>Home</b> and <b>End</b> open it on the first and the last.
+                    </li>
+                    <li>
+                        A letter or a digit opens it with that character as the start of the search, or, with
+                        <b>NoSearchBox</b>, on the country whose name it starts.
+                    </li>
+                </ul>
+                In the open list:
+                <ul>
+                    <li>
+                        <b>ArrowDown</b> / <b>ArrowUp</b> move one country, wrapping around the ends unless
+                        <b>NoWrapNavigation</b> is set; <b>PageDown</b> / <b>PageUp</b> move ten and stop at the ends;
+                        <b>Home</b> / <b>End</b> jump to the first and the last country, except in the search box, where
+                        they move the caret.
+                    </li>
+                    <li>
+                        <b>Enter</b> picks the active country. <b>Space</b> does too when there is no search box to type
+                        it into, unless it falls inside a name being typed ahead.
+                    </li>
+                    <li>
+                        Without a search box, letters typed in quick succession move to the country whose name they
+                        start; after a pause of a second the next letter starts a new term.
+                    </li>
+                    <li>
+                        <b>Escape</b> closes the list. <b>Alt+ArrowUp</b> closes it too, picking the active country when
+                        there is no search box.
+                    </li>
+                    <li>
+                        <b>Tab</b>: the search box of the open list comes right after the field in the tab order. Tab out of
+                        the list moves on to what follows the field and closes it; <b>Shift+Tab</b> from the search box
+                        goes back to the field with the list still open, where the arrows and letters lead back into the
+                        search box. Without a search box, Tab closes the list and moves on.
+                    </li>
+                </ul>
+                Opening moves the focus into the search box; without one it stays on the field. Picking a country,
+                Escape, Alt+ArrowUp, a click outside the list and the close button of the <b>Responsive</b> panel all
+                return it to the field, and the list closes on its own once the focus has left both the field and the list.
+            </div>
+            <br />
+            <div>
+                A visually hidden polite live region says how many countries a search term leaves ("1 country found",
+                "12 countries found"), or reads <b>NoResultsMessage</b> when none is left; <b>SearchResultsAnnouncement</b>
+                rephrases the count. It also reads out an <b>ErrorMessage</b> when it appears, and the country picked from
+                a list without a search box, where the focus never leaves the field.
+            </div>
+            <br />
+            <div>
+                <b>Required</b> sets <code>aria-required</code>, and its asterisk carries empty alternative text so it is
+                not read out on top of that. <b>Invalid</b>, <b>ErrorMessage</b> and a failed EditForm validation set
+                <code>aria-invalid</code>, and <code>aria-describedby</code> points at the error message and the
+                <b>Description</b>. <b>Disabled</b> disables the native button, which takes it out of the tab order, and
+                adds <code>aria-disabled</code>; <b>ReadOnly</b> sets <code>aria-readonly</code> and keeps the field
+                focusable while refusing to open the list. In forced colors (Windows High Contrast) the selected, active
+                and hovered rows and the disabled field keep showing in system colors.
+            </div>
+            <br />
+            <div>
+                Try both with the keyboard alone: the first searches its list, the second has no visible label and types
+                ahead.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCountryPicker Label="Country of birth"
+                                  Required
+                                  Description="Arrow keys open the list, typing searches it, Enter picks."
+                                  Placeholder="Select a country" />
+                <BitCountryPicker AriaLabel="Country of citizenship"
+                                  NoSearchBox
+                                  Placeholder="Named by AriaLabel, no search box" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
             <div>
                 <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
                 neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
@@ -370,7 +465,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
             <div>
                 <b>ResponsiveCloseIcon</b> takes the icon of the close button of the responsive panel from any CSS-class
                 based library (FontAwesome, Bootstrap Icons) as raw classes or through the <b>BitIconInfo</b> helpers, and
@@ -387,7 +482,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+        <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
             <div>
                 <b>Size</b> scales the height, padding, text, flags and list rows together.
             </div>
@@ -399,7 +494,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CodeFiles="@example22CodeFiles" Id="example22">
+        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CodeFiles="@example23CodeFiles" Id="example23">
             <div>
                 The public <b>--bit-CountryPicker-*</b> custom properties (see the
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a
@@ -430,7 +525,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
                 <b>Dir="BitDir.Rtl"</b> mirrors the field, the callout and the responsive panel.
             </div>

@@ -415,7 +415,54 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                The items sit in a <b>nav</b> landmark named by <b>AriaLabel</b>; name it whenever the page has more
+                than one navigation. They behave as in <BitLink Href="/components/nav">BitNav</BitLink>: an item with a
+                URL is a link and one without is a button, the selected item carries <b>aria-current</b>, a parent
+                reports <b>aria-expanded</b>, and the arrow keys, Home, End, * and type-ahead move between the items.
+            </div>
+            <br />
+            <div>
+                The toggle button carries <b>aria-controls</b>, pointing at the panel, and <b>aria-expanded</b>: true
+                for the open panel, false for the rail. Its name says what a press does ("Collapse the navigation
+                panel" / "Expand the navigation panel"); <b>ToggleAriaLabel</b> replaces it with one fixed name and
+                leaves the state to aria-expanded. In the rail each item keeps its text as its name and its tooltip,
+                and the search box gives way to a button of the same name that widens the panel and moves the focus
+                into the box.
+            </div>
+            <br />
+            <div>
+                The search box is a <b>searchbox</b> named by <b>SearchBoxPlaceholder</b>, or "Search" without one. A
+                visually hidden, polite live region announces the result count ("2 items found.", "No item found."),
+                or the text <b>SearchAnnouncementProvider</b> returns for it. Escape empties an active search from
+                anywhere in the panel.
+            </div>
+            <br />
+            <div>
+                Below the breakpoint the open drawer is a <b>dialog</b> named by <b>AriaLabel</b> ("Navigation" without
+                one) and marked <b>aria-modal</b>. It takes the focus as it opens, keeps Tab inside, closes on the
+                Escape that finds no search to empty, and hands the focus back to the element that had it. The overlay
+                is hidden from screen readers, and the closed drawer is hidden outright, so its links leave the tab
+                order. The drawer hides the toggle button; <b>ShowCloseButton</b> adds a close button named by
+                <b>CloseAriaLabel</b> ("Close the navigation panel" without one). <b>NoFocusTrap</b> keeps the dialog
+                role but drops aria-modal, and <b>NoOverlay</b> drops the role as well. On a wide screen the panel is a
+                plain column: no dialog, and no focus moves.
+            </div>
+            <br />
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="a11yIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="a11yIsOpen"
+                             Items="a11yNavItems"
+                             AriaLabel="Main menu"
+                             SearchBoxPlaceholder="Search pages"
+                             SearchAnnouncementProvider="a11ySearchAnnouncement" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <b>Color</b> colors the icons, the search box and the selection; <b>Accent</b> paints the panel
                 background and the hovered/selected item.
@@ -429,7 +476,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 The item <b>Icon</b>, <b>ToggleIcon</b>, <b>ChevronDownIcon</b>, <b>SearchIcon</b> and
                 <b>CloseIcon</b> take icons of any external library (FontAwesome, Bootstrap Icons, ...) and win
@@ -448,7 +495,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 <b>Size</b> scales the row height, the icons and the text of every item.
             </div>
@@ -472,7 +519,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
                 <b>Styles</b> / <b>Classes</b> reach every part of the panel; <b>NavStyles</b> / <b>NavClasses</b>
                 and <b>SearchBoxStyles</b> / <b>SearchBoxClasses</b> pass on to the nav and the search box. The
@@ -517,7 +564,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
                 <b>Dir</b> <b>Rtl</b> mirrors the panel: it docks to the right, the indentation and chevrons flip,
                 and the closing swipe goes the other way.

@@ -257,6 +257,9 @@ public partial class BitThemeSwitcherDemo
 }";
 
     private readonly string example6RazorCode = @"
+<BitThemeSwitcher />";
+
+    private readonly string example7RazorCode = @"
 <style>
     .custom-scheme-btn {
         border-radius: 0.25rem;
@@ -269,6 +272,6 @@ public partial class BitThemeSwitcherDemo
 
 <BitThemeSwitcher Styles=""@(new() { Root = ""gap:1.5rem"", ColorSchemeButton = ""border-radius:0.25rem"" })"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitThemeSwitcher Dir=""BitDir.Rtl"" />";
 }

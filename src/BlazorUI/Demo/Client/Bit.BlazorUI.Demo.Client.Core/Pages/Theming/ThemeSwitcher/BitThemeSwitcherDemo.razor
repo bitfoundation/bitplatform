@@ -96,7 +96,63 @@
             <div>Applied theme: @changedTheme</div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="Accessibility" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                The BitThemeSwitcher renders its controls inside a <b>role="group"</b> named "Theme", unless the
+                <b>AriaLabel</b> parameter or an aria-label attribute on the component names it otherwise. The design
+                system picker comes before the light/dark toggle in the tab order.
+            </div>
+            <br />
+            <div>
+                The design system picker is a BitDropdown, exposed as a combobox. <b>DesignSystemTitle</b> ("Design
+                system" by default) is both its tooltip and its accessible name, and also names the list of options it
+                opens. Each design system is an option of that list, named by the item's <b>AriaLabel</b> or else by the
+                text it shows. The design system in use has aria-selected="true", and an item with <b>IsDisabled</b> is
+                marked aria-disabled="true" and cannot be picked. The picker follows the applied theme, so a change made
+                elsewhere - by another switcher, such as the one in this website's header, or by the app's own code -
+                moves its selection too.
+            </div>
+            <br />
+            <div>
+                Enter, Space or an arrow key opens the list and moves the focus to the selected option. In the list the
+                arrow keys, Home and End move through the options, and typing the start of a name jumps to it. Enter or
+                Space picks the focused option and closes the list, Escape or Tab closes it without a pick, and in both
+                cases the focus goes back to the picker.
+            </div>
+            <br />
+            <div>
+                The light/dark toggle is two native buttons, of which the stylesheet shows only the one that fits the
+                page's current scheme; the other is not displayed, which also takes it out of the tab order and the
+                accessibility tree. The shown button is named after what it does: <b>DarkSchemeTitle</b> ("Turn off
+                light", shown while the light scheme is on) or <b>LightSchemeTitle</b> ("Turn on light", shown while
+                the dark scheme is on) is both its tooltip and its accessible name. Neither button carries aria-pressed,
+                so which scheme is on is told by which of the two names is there. The glyph is aria-hidden, Enter or
+                Space activates the button, and a focused one shows the library's focus ring. In forced-colors mode the
+                buttons are drawn in the system button colors with a border, and the focus ring becomes a Highlight
+                outline.
+            </div>
+            <br />
+            <div>
+                The switcher has no live region of its own, so a theme change is not announced. A page can have theme
+                swaps cross-fade through the View Transitions API by opting in with the bit-theme-view-transition
+                attribute, as this website does; the theme script skips the cross-fade whenever the visitor's system
+                asks for reduced motion.
+            </div>
+            <br />
+            <div>
+                <b>Disabled</b> disables the picker and both scheme buttons: they leave the tab order and are marked
+                aria-disabled="true".
+            </div>
+            <br />
+            <div>
+                Tab to the picker or the toggle below and try the keys - like the one in the Basic section, this
+                switcher re-themes the whole website:
+            </div>
+            <br />
+            <BitThemeSwitcher />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
             <div>Use Style, Class, Styles and Classes to customize the switcher:</div>
             <br />
             <BitThemeSwitcher Style="padding:0.5rem;border:1px dashed gray;border-radius:0.5rem" />
@@ -108,7 +164,7 @@
             <BitThemeSwitcher Styles="@(new() { Root = "gap:1.5rem", ColorSchemeButton = "border-radius:0.25rem" })" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
             <div>Use Dir="BitDir.Rtl" to change the direction of the switcher:</div>
             <br />
             <BitThemeSwitcher Dir="BitDir.Rtl" />

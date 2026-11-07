@@ -355,7 +355,40 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                Shown through the <b>BitMessageBoxService</b>, the box is the content of a modal <b>dialog</b>
+                (<b>aria-modal="true"</b>) that its <b>Title</b> names (<b>aria-labelledby</b>) and its <b>Body</b> describes
+                (<b>aria-describedby</b>). With no title on the screen - none given, or a <b>HeaderTemplate</b> in its place -
+                the title text, or else the body text, is the dialog's <b>aria-label</b>. A question (<b>Confirm</b>, or any
+                <b>Buttons</b> set but Ok and None) and the Warning, SevereWarning and Error colors make it an
+                <b>alertdialog</b>; a <b>Prompt</b> stays a <b>dialog</b>, and an <b>IsAlert</b> set on <b>Modal</b> wins over
+                both. Rendered on its own, the box has no role: it is part of the page, and its title is a heading
+                (<b>TitleElement</b>).
+            </div>
+            <br />
+            <div>
+                The focus starts on the <b>DefaultButton</b> - Ok or Yes unless set, the close button when the box has no
+                action buttons of its own, the text field of a <b>Prompt</b>. Tab and Shift+Tab cycle inside the dialog in
+                the order the buttons are drawn (<b>Reversed</b> flips it), Enter presses the focused button, and Escape
+                closes the dialog with the answer <b>None</b>.
+            </div>
+            <br />
+            <div>
+                <b>CloseButtonTitle</b> is the close button's accessible name ("Close" by default), and its glyph is hidden
+                from screen readers - as the leading icon is, unless <b>IconAriaLabel</b> names it. Try both boxes with the
+                keyboard alone: the question starts on Stay, and the notice announces its icon as "Success".
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="ShowAccessibleQuestion">Ask a question</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowAccessibleNotice">Show a notice</BitButton>
+            </div>
+            <br />
+            <div>Last answer: <b>@accessibilityResult</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 <b>Color</b> is the severity: it paints the glyph and, for Info, Success, Warning, SevereWarning and
                 Error, picks it. <b>IconName</b> still overrides the glyph and <b>HideIcon</b> removes it.
@@ -386,7 +419,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 <b>Icon</b> and <b>CloseIcon</b> take any CSS-class icon library (raw classes or <b>BitIconInfo.Css</b> /
                 <b>Fa</b> / <b>Bi</b>) and win over <b>IconName</b> / <b>CloseIconName</b>. Reference the library's
@@ -412,7 +445,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
             <div>
                 <b>Size</b> scales the inset, title, body, glyph and buttons together. Medium is the default.
             </div>
@@ -430,7 +463,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (<b>ActionButton</b>
                 covers the buttons given nothing of their own). The public <b>--bit-MessageBox-*</b> variables (see the
@@ -468,7 +501,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
             <div>Use BitMessageBox in right-to-left (RTL).</div>
             <br />
             <div dir="rtl" class="example-grid">
