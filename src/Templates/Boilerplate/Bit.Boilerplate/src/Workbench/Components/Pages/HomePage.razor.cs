@@ -24,6 +24,7 @@ public partial class HomePage
         (BitIconName.Devices2, nameof(WorkbenchStrings.HomeWhyDevicesTitle), nameof(WorkbenchStrings.HomeWhyDevicesText)),
         (BitIconName.Camera, nameof(WorkbenchStrings.HomeWhyStoresTitle), nameof(WorkbenchStrings.HomeWhyStoresText)),
         (BitIconName.Lightbulb, nameof(WorkbenchStrings.HomeWhyHeadStartTitle), nameof(WorkbenchStrings.HomeWhyHeadStartText)),
+        (BitIconName.Tiles, nameof(WorkbenchStrings.HomeWhyManyAppsTitle), nameof(WorkbenchStrings.HomeWhyManyAppsText)),
         (BitIconName.Lock, nameof(WorkbenchStrings.HomeWhySafeTitle), nameof(WorkbenchStrings.HomeWhySafeText)),
         (BitIconName.Repair, nameof(WorkbenchStrings.HomeWhyCustomizeTitle), nameof(WorkbenchStrings.HomeWhyCustomizeText))
     ];
@@ -36,6 +37,8 @@ public partial class HomePage
     ];
 
     private bool isPromptCopied;
+    // Hands the cards over to their reveal, which by then has played for those in sight, so they don't blink.
+    private bool areRevealsLive;
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
@@ -59,6 +62,8 @@ public partial class HomePage
     {
         if (firstRender)
         {
+            await JSRuntime.InvokeVoidAsync("workbench.loadThumbnails");
+
             // The review document joins once interactive, for the statuses, comment counts and flows on the cards.
             try
             {
@@ -69,6 +74,11 @@ public partial class HomePage
                 logger.LogError(exception, "The review document could not be opened for the home page.");
             }
 
+            StateHasChanged();
+
+            await Task.Delay(5000);
+
+            areRevealsLive = true;
             StateHasChanged();
         }
     }

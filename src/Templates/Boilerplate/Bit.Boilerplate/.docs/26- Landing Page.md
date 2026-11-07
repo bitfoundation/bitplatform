@@ -50,9 +50,9 @@ fits its business:
   the unsubscribe link every email carries. A hidden field and a minimum fill time keep bots out, and the server
   limits how often one visitor can try.
 - **After launch, the stores**: the official App Store, Google Play and Microsoft Store badges, ordered for the
-  visitor's own device; a QR code for desktop visitors; one link, `/<sample>/download`, that sends each phone to its
-  own store with the campaign it came from; and the App Store rating, read from Apple and shown once there are enough
-  ratings for it to mean something.
+  visitor's own device; a QR code that opens the right store on the phone that scans it; one link,
+  `/<sample>/download`, that sends each phone to its own store with the campaign it came from; and the App Store
+  rating, read from Apple and shown once the app has one.
 - **A chat** that answers visitors' questions about the product, in three looks: a bubble, a panel inside the page,
   and a concierge. It is built on Bit.BlazorUI.AI and talks to the server over a WebSocket; neither is downloaded
   until a visitor opens it.
@@ -81,12 +81,18 @@ step whose sample is gone is left out, and one whose element isn't there shows i
 
 - **Prerendered on every visit.** The server renders each page to HTML, so a crawler, a link preview and a visitor on
   a slow phone all see it at once, then WebAssembly takes over. bit Bswup runs it as a PWA in `AlwaysPrerender` mode:
-  each visit still gets the server's fresh page, and the app's files come from the device's cache.
-- **Small to download.** Trimmed and minified with Bit.Minifier, the chat and the tour lazy-loaded, only the visitor's
-  language's data downloaded, fonts self-hosted as small subsets, static files precompressed with Brotli, and responses
+  each visit still gets the server's fresh page, and the app's files come from the device's cache. A new version
+  reloads the page as soon as it's ready.
+- **Small to download.** Trimmed and minified with Bit.Minifier, the chat and the tour lazy-loaded, only the page's
+  language's data downloaded, so changing the language reloads the page, fonts self-hosted as small subsets, static files precompressed with Brotli, and responses
   compressed with Brotli and Gzip (and Zstandard on .NET 11).
 - **Cacheable.** The pages set no cookies, the antiforgery check included, so a CDN can cache them; static files are
   cached for a week when their URL carries a version, and pages for ten minutes.
+- **No scripts for crawlers and benchmarks.** Search engine crawlers, Lighthouse and PageSpeed Insights get the
+  prerendered page without its JavaScript tags, so a benchmark isn't charged for code a visitor's device already keeps
+  and a crawler reads the page as it is. That response is marked `private`, so a CDN never hands it to a visitor. The
+  other direction takes a rule on the CDN: a page a visitor left in its cache still has the scripts, so these callers
+  have to bypass it.
 - **Light on the server.** The waitlist and the chat have rate limits of their own, the rating is looked up only for
   the samples' own apps and cached for hours, and the chat checks where its connection comes from, keeps
   conversations short and answers only from the facts it is given about the product.
@@ -134,14 +140,15 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 
 | Setting | What it does |
 | --- | --- |
-| `Site:Url` | The public address. Canonical links, the sitemap, shared links and the QR codes are built from it; without it, from the request. |
+| `TrustedOrigins` | The addresses the site is served from, such as `https://landing.example.com`, as in the app. The waitlist emails, the sitemap and the download QR code link to the address a request came in on only when it's listed here, since any client can write the `Host` header. Any other address gets a 400. Localhost needs no entry, and the template's CD adds `LANDING_PAGE_ADDRESS` on its own. |
 | `Site:AllowIndexing` | Whether search engines may index the site. On only in `appsettings.Production.json`. |
 | `Site:GoogleSiteVerification`, `Site:BingSiteVerification` | The search consoles' verification codes. |
 | `Email:DefaultFromEmail`, `Email:DefaultFromName` | The sender of the waitlist emails. |
-| `ConnectionStrings:smtp` | The SMTP server, in the same format as the app's server. Without it, emails are logged. |
+| `ConnectionStrings:smtp` | The SMTP server, in the same format as the app's server. Without it, emails are logged and `/health` answers `Degraded`. |
 | `AI:ChatOptions`, `AI:OpenAI:ChatModel`, `AI:OpenAI:ChatApiKey`, `AI:OpenAI:ChatEndpoint` | The chat's model and what it is sent, the same settings and user secrets as the app's server. |
 | `WebAppRender:BlazorMode`, `WebAppRender:PrerenderEnabled` | WebAssembly with prerendering. Blazor Server and Auto are for development only. |
-| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. |
+| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. The server sends its logs, traces and metrics there too. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the server also sends them over OTLP, such as the Aspire dashboard. |
 
 The server's settings are in
 [`appsettings.json`](/src/LandingPage/Boilerplate.LandingPage.Server/appsettings.json), and a deployment reads them

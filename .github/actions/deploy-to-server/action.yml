@@ -114,7 +114,10 @@ runs:
         $url = '${{ inputs.health-check-url }}'
         for ($attempt = 1; $attempt -le 10; $attempt++) {
           try {
-            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
+            $uncached = [UriBuilder]::new($url)
+            $query = $uncached.Query.TrimStart('?')
+            $uncached.Query = ($query ? "$query&" : '') + "deploy-check=$([guid]::NewGuid().ToString('N'))"
+            $response = Invoke-WebRequest -Uri $uncached.Uri -UseBasicParsing -TimeoutSec 30
             Write-Host "$url returned $($response.StatusCode) on attempt $attempt."
             exit 0
           }

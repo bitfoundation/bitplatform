@@ -1,6 +1,6 @@
 ---
 name: port
-description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages, existing data - plans and builds through ai-dlc, hands the look to rebrand, and proves feature parity scenario by scenario in the running app.
+description: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied. The source can be code in any language, a running app, screenshots, videos or manuals, or a database; when it is not C#, or there is no source code at all, the work starts from a reverse-engineering pass. It recommends how the source maps onto the template - identity, tenancy, further apps, optional features, client packages - designs the database again instead of copying its structure, plans and builds through ai-dlc, hands the look to rebrand, rebuilds the source's landing page on the project's own with its AI chat, brings the main pages into the Workbench, proves feature parity scenario by scenario in the running app, and at the end offers to help bring the source's data over.
 ---
 
 # Port: bring an existing app's functionality into this project
@@ -14,8 +14,9 @@ Ports fail in three predictable ways, and this file is built around them:
 
 1. **The source is translated instead of understood** - its code is carried over line by line with its framework's
    habits and its bugs, while the features nobody opened are missed (section 2).
-2. **The source's architecture comes along** - its sign-in, its packages, its client-side batches and its project
-   layout are rebuilt, instead of mapped onto what the template already does (sections 3 and 4).
+2. **The source's architecture comes along** - its sign-in, its database structure, its packages, its client-side
+   batches and its project layout are rebuilt, instead of mapped onto what the template already does (sections 3 and
+   4).
 3. **Parity is assumed, not shown** - the build and the tests are green while a total never computes, a keypad
    misreads its first digit and a report crashes on one of its buttons (section 6).
 
@@ -23,8 +24,8 @@ Ports fail in three predictable ways, and this file is built around them:
 
 - **Behavior comes over; code does not.** Read the source to learn what it does, then write that again the way this
   project writes things (AGENTS.md), even when the source is C#: copied code brings its patterns, its packages and its
-  bugs with it. Images, fonts and other assets can come over as files, with their licenses recorded. JavaScript has a
-  rule of its own (4.2).
+  bugs with it, and a copied database structure its design mistakes and slow queries (3.4). Images, fonts and other
+  assets can come over as files, with their licenses recorded. JavaScript has a rule of its own (4.2).
 - **Secrets preferably stay behind.** Treat every key, password, connection string and certificate in the source as
   leaked, and give the new project new ones. Carry one over only when the user asks for it or it can't be reissued,
   and then into user secrets or the pipeline's secrets, never into a committed file. Before you hand back, search the
@@ -55,7 +56,7 @@ What you are given decides the first step, and most sources are a mix - read eve
 | C# and .NET code | Read the code and its tests. The tests become acceptance criteria (section 6), and the code is evidence of behavior, not a draft of the new one. |
 | Code in another language or framework | A reverse-engineering pass over it (below), which separates the business logic from the framework it was written in. |
 | No source code: the app running, videos, screenshots, manuals | A reverse-engineering pass from what the app does: walk every screen of a running web app with the Playwright MCP tools, or work from the captures and the manual's pages. Behavior nobody has shown you is an open question in the spec, not a guess. |
-| A database, or a dump of one | Its schema, constraints, triggers, stored procedures and seed data: business rules often live there and nowhere else. |
+| A database, or a dump of one | Its schema, constraints, triggers, stored procedures and seed data: business rules often live there and nowhere else. Read them for those rules and for what the product stores, not as the model to build (3.4). |
 | A spreadsheet the business runs on | Read it twice: once for its formulas, which are the calculations to port, and once for its stored values, which are the figures the port must reproduce and become the expected values of its parity tests. |
 | Manuals, requirement documents, PDFs | Read them as text, keeping their tables as tables, and look at their pages as images where the layout or a screenshot carries the meaning. |
 
@@ -73,7 +74,9 @@ Without one, do its job yourself, by the same rules:
 
 Cover everything that exists: every page, dialog and action, every report and export, every setting, background job
 and scheduled task, every integration (payments, printers, scanners, email, SMS, other systems), every role and
-permission, and every calculation that produces a number - totals, taxes, discounts, rounding, stock, balances.
+permission, and every calculation that produces a number - totals, taxes, discounts, rounding, stock, balances. The
+product's public site belongs here too: find its project or its address from the source, the app's own links and the
+user, and note which of them you have (4.4).
 
 **Inventory lanes.** A large source reads faster in parallel. If your tool runs subagents, split the source into
 areas that don't overlap and together cover all of it - by module, or by group of screens - and give each area the
@@ -150,10 +153,24 @@ Wiring a further app takes more than its projects, and these are the parts that 
 <!--#endif-->
 - The solution files, `AGENTS.md` section 2, CI and CD list, build, test and deploy it next to the first app.
 
-### 3.4 Existing data
+### 3.4 The database and its data
 
-Ask whether the source's data moves over - a mapping per table and a one-time import, verified against the source's
-own totals - or the product starts empty. Write the answer into the spec of the features it touches.
+The source's database shows what the product stores and the rules it enforces. It is not the model to build, whether
+you see it in a schema, a dump or the source's code, so don't carry its tables over. Design the model again from the
+features, the way this project models things (AGENTS.md), so it comes out better than the source's in design and in
+performance: one fact in one place instead of repeated columns or several values packed into one, types, keys and
+constraints that keep bad data out, and indexes for the queries the features really run. A rule that lived in a
+trigger or a stored procedure moves into the server's code. Only the user can keep the structure as it is, for example
+when another system still reads it.
+
+Everything the source stored has a place in the new model, or its removal is in a spec. Keep where each table and
+column went in the spec of the features they touch, since bringing the data over starts from that.
+
+When the rest of the port is done, offer to help bring the source's data over, unless the user has already said the
+product starts empty. How is yours to work out from the scenario: how much data there is, how far its shape changed,
+whether the source keeps running meanwhile, who runs the move and how many times. A script, a small app of its own or
+an existing tool can each be the right answer, so recommend one with its reason. Whatever moves is verified against
+the source's own totals.
 <!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 
 ### 3.5 Optional features
@@ -194,12 +211,37 @@ replace - a card terminal, a receipt printer, a scanner - stays: Java, Kotlin, S
 used from the MAUI app, through a binding library for a `.jar`, `.aar` or framework, or through Native Library
 Interop - a thin wrapper written in Android Studio or Xcode around the part of the SDK the app needs.
 
+### 4.4 The landing page
+
+The product's public site is rebuilt in `src/LandingPage` with the **landing-page** skill
+(`.github/agents/landing-page.agent.md`), on that project whatever the source's site was made with, so its
+prerendering, search engine files, waitlist and telemetry stay. The samples the result doesn't use go, as that skill's
+section 4 says.
+
+- **When the source's site is known**, through its project or an address that answers, the result looks the same. Its
+  images, fonts, videos, other assets and texts come over, with the assets' licenses recorded, and its pages are
+  written again with this project's components and styles: none of its markup, styles or scripts is copied, a site
+  builder's output included. Compare the two side by side at the breakpoints the site itself uses, with its scroll,
+  hover and menu states, until every difference left is one the spec lists. It has the languages and color schemes the
+  source's site has, instead of that skill's two of each.
+- **When it can't be found or reached**, make one that fits the business, from the sample closest to it, with what the
+  inventory says about the product and the look the app got.
+- **The AI chat stays in both cases**, even when the source's site has nothing like it. It answers from facts about
+  this product, taken from the inventory, and wears the page's look.
+- **Text a script reveals still shows without scripts.** Crawlers and benchmarks get the page without them, so an effect
+  taken from the source's site can't leave its text hidden from them.
+
 ## 5. Plan and build
 
 - **Order**: the decisions that change the foundation first - multi-tenancy, further apps, optional features - then
   the domain model and the API, then each app's features. Each task names its rows of the parity table.
 - **The look**: when the result should look like the source too, run `rebrand` once per app, each with that app's
   screens as its reference. One run over several apps makes them look alike.
+- **The Workbench**: once an app's look is settled, bring its main pages into the Workbench, the ones its users spend
+  their day in, as the **workbench** skill's section 3 says (`.github/agents/workbench.agent.md`): on sample data that
+  looks real, with the product's images and the states each page can be in, so the user can review the product there and
+  make store screenshots from it. The copies of template pages the port removed go. With several apps, each app's pages
+  wear that app's look.
 - **Lanes**: a port is long. If your tool runs subagents, split the work into lanes - the server, and the UI of each
   app - each in a git worktree of its own. A UI lane that needs an API it doesn't have writes the request into a file
   under `specs/changes/` for the server lane instead of building it. Agents you start don't start agents of their own,
@@ -233,7 +275,12 @@ section 4).
   agreement.
 - Every decision in section 3 is in a spec, and the report lists the ones decided without review.
 - No source code was copied, and no secret came over that the report doesn't list.
+- The database is designed for this project instead of copied, and a spec says where each of the source's tables and
+  columns went.
 - Every heavy client package of the source is replaced, moved to the server, or kept with its reason.
+- The landing page looks like the source's site, or fits the business when that site couldn't be found or reached, is
+  built on `src/LandingPage`, and its chat answers about this product.
+- The main pages of each app are in the Workbench.
 - Each app serves only its own pages, and the tests say so.
 - The build is clean, the tests pass, and the review skill has run.
 
@@ -243,7 +290,8 @@ Write the report as an HTML page, `.playwright-mcp/port/<slug>/report.html`, in 
 in, and hand that file to the user:
 
 - The decisions to revisit first, those decided without review at the top.
-- The parity table with each row's status, and the source-and-result captures of the key flows.
+- The parity table with each row's status, and the source-and-result captures of the key flows and the landing page.
 - What is left and why, how to run each app, the secrets the user has to set, and the licenses of the assets that
   came over.
 - What was verified, each claim with its evidence (the command and its result, or the capture), and what wasn't.
+- The offer to help bring the source's data over, with the way you recommend for it (3.4).

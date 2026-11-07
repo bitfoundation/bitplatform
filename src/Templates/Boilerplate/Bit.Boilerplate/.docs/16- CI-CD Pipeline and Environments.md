@@ -25,12 +25,17 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 | Workflow | Runs on | Does |
 | --- | --- | --- |
 | `ci.yml` | every pull request, and by hand | builds the whole solution and runs every test |
-| `cd-test.yml` | every push to `develop` that changes the app, and by hand | deploys the Test environment |
-| `cd-production.yml` | every push to `main` that changes the app, and by hand | runs `ci.yml`, then deploys the Production environment |
+| `cd-test.yml` | by hand, and once its `push` trigger is on, every push to `develop` that changes the app | deploys the Test environment |
+| `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | runs `ci.yml`, then deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
 
-Merging a pull request into `develop` updates Test, and a release into `main` updates Production. Only a change under
-`src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props` or `src/Directory.Packages.props`, deploys:
+A new project's CDs run only by hand, so the merges made before there is anywhere to deploy to spend none of the plan's
+Actions minutes, and leave no run waiting for a runner that doesn't exist yet. Their `push` block is commented out, and
+the **deploy** skill uncomments each one once the first deployment to that environment has worked. A project that was
+already deploying keeps its `push` block when it takes this from a newer template, or its merges stop deploying.
+
+From then on, merging a pull request into `develop` updates Test, and a release into `main` updates Production. Only a change under
+`src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. `cd-test.yml` doesn't
 wait for the tests, so protect `develop` with a required `ci.yml` check, which a private repository has with GitHub Pro
@@ -40,7 +45,7 @@ In a public repository, every build also gets a signed attestation of the commit
 `gh attestation verify` checks, and the About page links to them.
 
 Two steps use short composite actions from
-[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
+[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/bit-bp), at the
 release tag of the project's bit platform version, so the workflows stay short and get their fixes with each upgrade:
 `bit-setup` installs the bit CLI and runs `bit setup`, which installs only what the runner is missing, and
 `artifact-signing` lets `vpk pack` sign the Windows app with Artifact Signing. Each is a few lines of YAML; to stop
@@ -89,7 +94,8 @@ and the `deploy` skill (`.github/agents/deploy.agent.md`) sets up the rest.
 ## The apps
 
 The same CD builds the native apps next to the server and leaves them as artifacts of the run for a day, which keeps
-the runs inside the storage GitHub Free includes; publishing them to the stores is up to you.
+the runs inside the storage GitHub Free includes; publishing them to the stores is up to you. Each app's job is off
+(`if: false`) until you turn it on for the environments that build it.
 
 - **Windows**: an installer with automatic updates (Velopack). Once the `CODE_SIGNING_*` settings are there, it is
   signed with Azure Artifact Signing, so Windows shows your organization as the publisher.
@@ -114,7 +120,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 
 | Name | Kind | Holds |
 | --- | --- | --- |
-| `SERVER_ADDRESS` | variable | The environment's public address |
+| `SERVER_ADDRESS` | variable | The environment's public address, which the deployment adds to the app's `TrustedOrigins` |
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
@@ -122,8 +128,8 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
 | `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
-| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `Site__Url`, `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
-| `LANDING_PAGE_ADDRESS` | variable, optional | The landing page's public address, which the deployment checks answers |
+| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
+| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
 <!--#endif-->

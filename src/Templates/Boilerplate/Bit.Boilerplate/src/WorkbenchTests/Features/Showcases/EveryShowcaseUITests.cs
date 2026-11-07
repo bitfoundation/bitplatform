@@ -13,7 +13,8 @@ public class EveryShowcaseUITests : ShowcaseUITest
         ("pos-dashboard", nameof(WorkbenchStrings.PosCustomize)),
         ("buildings", nameof(WorkbenchStrings.BuildingsHeading)),
         ("assistant", nameof(WorkbenchStrings.AssistantWelcomeTitle)),
-        ("shifts", nameof(WorkbenchStrings.ShiftsHeading))
+        ("shifts", nameof(WorkbenchStrings.ShiftsHeading)),
+        ("landing-minimal", nameof(WorkbenchStrings.NotchHeroTitle))
     ];
 
     [TestMethod, EverySurface]
@@ -34,6 +35,21 @@ public class EveryShowcaseUITests : ShowcaseUITest
 
         await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2, Exact = true })).ToBeVisibleAsync();
         await Expect(View().GetByText(AppStrings.YouAreNotAuthorized)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task APageWithTheAppShellOff_Should_StillScroll(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?chrome=false");
+
+        var heading = View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 1, Exact = true });
+
+        await Expect(heading).ToBeInViewportAsync();
+
+        await Page.Locator("iframe[data-pane-id='1']").HoverAsync();
+        await Page.Mouse.WheelAsync(0, 1600);
+
+        await Expect(heading).Not.ToBeInViewportAsync();
     }
 
     [TestMethod, EverySurface]

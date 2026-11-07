@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Localization;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -27,6 +29,8 @@ public static class WebApplicationExtensions
 
             foreach (var host in section.GetSection(nameof(ForwardedHeadersOptions.AllowedHosts)).Get<string[]>() ?? [])
                 options.AllowedHosts.Add(host);
+            foreach (var host in app.Services.GetRequiredService<LandingServerSettings>().TrustedOrigins.Select(LandingServerSettings.GetTrustedOriginHost))
+                options.AllowedHosts.Add(host);
             foreach (var proxy in section.GetSection("KnownProxies").Get<string[]>() ?? [])
                 options.KnownProxies.Add(IPAddress.Parse(proxy));
             foreach (var network in section.GetSection("KnownIPNetworks").Get<string[]>() ?? [])
@@ -48,14 +52,15 @@ public static class WebApplicationExtensions
                 "default-src 'self';",
                 "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';",
                 "style-src 'self' 'unsafe-inline';",
-                "img-src 'self' data: blob: https:;",
+                "img-src 'self' data: blob:;",
                 "font-src 'self';",
-                "connect-src 'self' wss: https:;",
+                "connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com;",
                 "frame-src https://www.openstreetmap.org;",
                 "object-src 'none';",
                 "frame-ancestors 'self';",
                 "form-action 'self';",
                 "worker-src 'self';",
+                "base-uri 'self';",
                 "upgrade-insecure-requests;");
 
             app.Use(async (context, next) =>
@@ -120,6 +125,43 @@ public static class WebApplicationExtensions
             return app;
         }
 
+        // Plain HTML, since Blazor may be what failed; a 500 gets no cache header, so a CDN doesn't keep it
+        public WebApplication UseLandingExceptionHandler()
+        {
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                // A bad request is the caller's fault: it isn't a 500, and it isn't worth an error in the log
+                StatusCodeSelector = exception => exception is BadHttpRequestException badRequest ? badRequest.StatusCode : StatusCodes.Status500InternalServerError,
+                SuppressDiagnosticsCallback = context => context.Exception is BadHttpRequestException,
+                ExceptionHandler = async context =>
+                {
+                    var path = context.Features.Get<IExceptionHandlerPathFeature>()?.Path ?? string.Empty;
+                    var culture = LandingCultures.Find(path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()) ?? LandingCultures.Default;
+                    LandingCultures.Apply(culture);
+
+                    var localizer = context.RequestServices.GetRequiredService<IStringLocalizer<LandingStrings>>();
+
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    await context.Response.WriteAsync($"""
+                        <!DOCTYPE html>
+                        <html lang="{culture.Name}" dir="{(culture.TextInfo.IsRightToLeft ? "rtl" : "ltr")}">
+                        <meta charset="utf-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1" />
+                        <meta name="color-scheme" content="light dark" />
+                        <title>{localizer[nameof(LandingStrings.ErrorPageTitle)]}</title>
+                        <body style="display:grid;place-content:center;gap:8px;min-height:90vh;margin:0;padding:16px;text-align:center;font-family:system-ui,sans-serif">
+                        <h1 style="margin:0;font-size:1.5rem">{localizer[nameof(LandingStrings.ErrorPageTitle)]}</h1>
+                        <p style="margin:0">{localizer[nameof(LandingStrings.ErrorPageBody)]}</p>
+                        <p><a href="">{localizer[nameof(LandingStrings.ErrorPageReload)]}</a></p>
+                        </body>
+                        </html>
+                        """);
+                }
+            });
+
+            return app;
+        }
+
         public WebApplication UseLandingStaticFiles()
         {
             var env = app.Environment;
@@ -139,6 +181,12 @@ public static class WebApplicationExtensions
                     else if (context.Request.Query.ContainsKey("v") && env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
                         headers.CacheControl = new() { Public = true, NoTransform = true, MaxAge = TimeSpan.FromDays(7) };
+                    }
+                    else if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true
+                        && (context.Request.IsLightHouseRequest() || context.Request.IsCrawlerClient()))
+                    {
+                        // These callers get no scripts (See App.razor) and a CDN doesn't key on the user agent, so it must never store this page for visitors
+                        headers.CacheControl = new() { Private = true, MaxAge = TimeSpan.Zero };
                     }
                     else if (context.Response.StatusCode is StatusCodes.Status200OK && context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true)
                     {
@@ -168,6 +216,7 @@ public static class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                && context.GetEndpoint()?.RequestDelegate is null
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {

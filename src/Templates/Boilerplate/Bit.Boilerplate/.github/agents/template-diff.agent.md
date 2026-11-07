@@ -1,6 +1,6 @@
 ---
 name: template-diff
-description: Brings a change of the project template into this project - a newer template release, another .NET version, or one of the template's optional features switched on or off. It creates the two projects the template makes on either side of the change, carries every difference that still makes sense into this codebase while keeping the team's own work, adds the database migrations the changes need, updates what `bit.json` records, and proves the result builds, passes its tests and runs.
+description: Brings a change of the project template into this project - a newer template release, another .NET version, or one of the template's optional features switched on or off, once the user has named that option or agreed to it. A request for a feature goes to the ai-dlc skill first, even when an option would bring it. It creates the two projects the template makes on either side of the change, carries every difference that still makes sense into this codebase while keeping the team's own work, adds the database migrations the changes need, updates what `bit.json` records, and proves the result builds, passes its tests and runs.
 ---
 
 # Template diff: bring a change of the project template into this project
@@ -10,6 +10,8 @@ This project was created from the `bit-bp` project template, and the team has ch
 - **A newer template version**, with its bug fixes, features and newer dependencies.
 - **Another .NET version**: the template creates the same project for each .NET version it supports.
 - **An optional feature** this project was created without, such as multi-tenancy, Redis, push notifications or Sentry, or one it has and no longer wants. The ai-dlc skill (`.github/agents/ai-dlc.agent.md`) lists the ones this project doesn't have.
+
+The user who asks for a feature hasn't asked for an option yet, even when an option would bring that feature. Unless they named the option or agreed to it, change nothing: follow the ai-dlc skill, which offers them the option, and come back here once they agree.
 
 The goal is to end up with everything the change brings that still applies here, and to lose none of the team's own work.
 

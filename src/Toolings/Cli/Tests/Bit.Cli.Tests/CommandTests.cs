@@ -220,6 +220,23 @@ public class CommandTests
     }
 
     [TestMethod]
+    public async Task Setup_Should_CheckTheAppIdOfAMauiProjectTheSolutionLists()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Shop")).FullName;
+        const string maui = "src/Client/Shop.Client.Operations.Maui/Shop.Client.Operations.Maui.csproj";
+        File.WriteAllText(Path.Combine(folder, "Shop.Web.slnf"), "{}");
+        File.WriteAllText(Path.Combine(folder, "Shop.slnx"), $"""<Solution><Project Path="{maui}" /></Solution>""");
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(folder, maui))!);
+        File.WriteAllText(Path.Combine(folder, maui), "<Project><PropertyGroup><ApplicationId>com.companyname.</ApplicationId></PropertyGroup></Project>");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", folder, "--platforms", "android", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "the app id com.companyname.,");
+        StringAssert.Contains(host.FlatOutput, maui);
+    }
+
+    [TestMethod]
     public async Task Decode_Should_RunTheBitMinifierThatWroteTheMap()
     {
         using var host = new TestHost();

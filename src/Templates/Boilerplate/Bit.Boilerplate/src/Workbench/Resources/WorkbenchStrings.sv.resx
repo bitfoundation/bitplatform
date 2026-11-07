@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>Ingen agent lyssnar. Be din agent att gå igenom granskningskommentarerna på arbetsbänken, så svarar den på var och en här.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>Uppfattat. Så snart en AI-agent ansluter tar den hand om det här åt dig. För att ansluta en ber du bara den AI du använder att köra projektet Workbench.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>Den här kopian är delad, så din kommentar stannar i den här fliken. I ditt eget projekt ber du bara den AI du använder att köra projektet Workbench, så tar den hand om kommentarer som den här.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} lyssnar efter kommentarer</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor. Prova nu: skriv din kommentar och skicka den.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Livegranskning med AI</value>
@@ -2833,7 +2842,7 @@
         <value>Begränsad upplevelse</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>Du kan titta runt, byta vy och ta skärmbilder. För att ändra något måste en AI-agent köra Workbench.</value>
+        <value>Du kan titta runt, byta vy, ta skärmbilder och skriva kommentarer. För att ändra något annat måste en AI-agent köra Workbench.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>Inloggningssidorna finns inte i Workbench än</value>
@@ -2879,5 +2888,224 @@
     </data>
     <data name="TourCaption" xml:space="preserve">
         <value>Varje försäljning, live</value>
+    </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>Ställ dig i kö</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>Våren 2027, på iPhone och Android</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>En rad om dagen. Ett år du läser på en minut.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch är en dagbok med en enda regel: en rad varje dag, högst 140 tecken. Inga frågor att svara på, ingen svit att skydda. Bara raden och datumet den hör till.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>Spara en plats åt mig</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>Vi hör av oss en gång, när Notch är klar. Det är allt.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>En förhandsvisning av Notch-appen: dagens rad, den här veckan och samma dag tidigare år</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>Dagens rad</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>Vad ska du minnas i dag?</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>{0} kvar</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>Spara raden</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>Sparat. Morgondagens rad öppnas vid midnatt.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>Den här veckan</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} av 7 dagar</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>Den här dagen</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>Första frosten på cykeln. Handskarna stannar i väskan från och med nu.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>Mia läste en hel sida högt utan att stanna en enda gång.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>Tre regler, och det är hela appen</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>En rad, varje dag</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>Högst 140 tecken. Kort nog att skriva i kön till kaffet, långt nog att minnas dagen.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>Samma dag, flera år senare</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>Öppna i dag och läs vad du skrev samma datum i fjol och året före. Det är här en rad om dagen börjar löna sig.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>Bara du kan läsa den</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>Raderna krypteras i telefonen innan de lämnar den. Inget flöde, inga gillningar, inga följare, och en export som vanlig text när du vill.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>En rad om dagen, sparad för alltid.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>Vart dina rader tar vägen</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>Din telefon</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>Varje rad skrivs och sparas här, krypterad med en nyckel som aldrig lämnar telefonen.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>Säkerhetskopia</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>Av tills du slår på den. Då tar en krypterad kopia tillbaka varje rad till en ny telefon.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>Vår server</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>Förvarar kopian i Helsingfors. Vi ser dess storlek och datum, men inget av innehållet.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>Annonsörer och datamäklare</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>Får ingenting. Det finns inget att sälja till dem.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>Om du vill</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>Aldrig</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>Hoppa till innehållet</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>Företag</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>Kontakt</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>Juridik</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>Företagsuppgifter</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>Tillgänglighet</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. Alla rättigheter förbehållna.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>Det här är en exempelsajt. Företaget, människorna och siffrorna är påhittade.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>Lägger till dig…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>Säg till när den finns för</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>iPhone och iPad</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>Ett mejl när den lanseras. Ingen skräppost, och du kan lämna när du vill.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>Kolla din inkorg</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>Vi skickade en bekräftelselänk till {0}. Öppna den för att behålla din plats: nummer {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>Den e-postadressen ser inte rätt ut.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>Landningssidor</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>Landningssida: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>Ett av landningssidans exempel, med eget tema och utan appens skal runt sig: en väntelista, en fungerande telefondemo, ljust och mörkt, och höger till vänster.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>En rad om dagen</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>En designer för flera appar</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>Lägg till dina olika appar här, var och en med sitt eget tema, precis som denna Workbench har en landningssida med eget utseende bredvid appens sidor.</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>Din integritet</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>Vi vill mäta hur snabb den här sajten är och hur den används, så att vi kan göra den bättre. Inget av det samlas in förrän du godkänner, och vi använder inga cookies. Fel rapporteras i alla fall, utan att det framgår vem du är.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>Prestanda och diagnostik</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>Hur snabbt sidor laddas och svarar, och detaljerna som hjälper till att åtgärda fel som besökare stöter på.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>Användningsstatistik</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>Vilka sidor som läses och vilka knappar som trycks, utan att det framgår vem du är.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>Spara mina val</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>Godkänn</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>Nej tack</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>Låt mig välja</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>Den här sidan finns inte i Workbench. Be din agent att lägga till den här.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>Samtyckesbanner</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>Redan valt</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>Första besöket</value>
     </data>
 </root>

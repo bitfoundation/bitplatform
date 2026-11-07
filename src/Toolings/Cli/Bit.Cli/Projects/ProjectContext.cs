@@ -59,11 +59,28 @@ public sealed partial class ProjectContext
 
     public string? SeedPassword { get; set; }
 
+    public string MauiProject => FindMauiProject(Directory, Name);
+
+    public string WindowsProject => FindWindowsProject(Directory, Name);
+
     public string TargetFrameworkVersion => ReadTargetFramework(Directory, Name) ?? $"net{Environment.Version.Major}.0";
+
+    public static string FindMauiProject(string directory, string name) => FindClientProject(directory, name, Templates.Platforms.MauiProject(name), ".Maui.csproj");
+
+    public static string FindWindowsProject(string directory, string name) => FindClientProject(directory, name, Templates.Platforms.WindowsProject(name), ".Windows.csproj");
+
+    /// <summary>
+    /// The path the template gives a client project, or, when a project has moved it, the one its solution lists:
+    /// a project split into two apps may keep src/Client/Shop.Client.Operations.Maui, for example.
+    /// </summary>
+    private static string FindClientProject(string directory, string name, string templatePath, string fileEnding) =>
+        File.Exists(Path.Combine(directory, templatePath))
+            ? templatePath
+            : ReadSolutionProjects(Path.Combine(directory, $"{name}.slnx")).FirstOrDefault(project => project.StartsWith("src/Client/", StringComparison.OrdinalIgnoreCase) && project.EndsWith(fileEnding, StringComparison.OrdinalIgnoreCase)) ?? templatePath;
 
     public static string? ReadTargetFramework(string directory, string name)
     {
-        var core = Path.Combine(directory, "src", "Client", $"{name}.Client.Core", $"{name}.Client.Core.csproj");
+        var core = Path.Combine(directory, FindClientProject(directory, name, $"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", ".Core.csproj"));
 
         try
         {
@@ -127,7 +144,7 @@ public sealed partial class ProjectContext
 
     public static string? ReadAppId(string directory, string name)
     {
-        var maui = Path.Combine(directory, Templates.Platforms.MauiProject(name));
+        var maui = Path.Combine(directory, FindMauiProject(directory, name));
 
         try
         {

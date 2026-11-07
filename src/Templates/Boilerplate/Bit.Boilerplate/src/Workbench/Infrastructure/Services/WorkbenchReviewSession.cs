@@ -4,7 +4,8 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// One circuit's copy of the review document, synced through the relay: the threads, page statuses, flows and the agent.
-/// It writes only in dev mode, for requests made on this machine; anywhere else, the review is read-only.
+/// Comments can always be written: on this machine they go into the document for the agent that connects, and from elsewhere
+/// they stay in the circuit. Everything else writes only in dev mode, for requests made on this machine.
 /// </summary>
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
@@ -15,16 +16,28 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private IStringLocalizer<WorkbenchStrings> localizer = default!;
 
     private WorkbenchFlow[]? sampleFlows;
-    private bool? canWrite;
+    private (bool CanWrite, bool SavesComments)? access;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
     private Timer? agentGoneTimer;
+
+    // A visitor's comments, which live and die with the circuit and never reach the document.
+    private readonly BcrdtDocument visitorComments = new();
+    private readonly Dictionary<string, string> visitorStates = [];
 
     /// <summary>Raised after the document changes, whoever changed it.</summary>
     public event Action? Changed;
 
     /// <summary>Whether this circuit may write: in dev mode, with its request from this machine, decided once per circuit.</summary>
-    public bool CanWrite => canWrite ??= httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.CanChange(context, configuration);
+    public bool CanWrite => Access.CanWrite;
+
+    /// <summary>Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev mode.</summary>
+    public bool SavesComments => Access.SavesComments;
+
+    // Read together, as the request is only there when the circuit starts.
+    private (bool CanWrite, bool SavesComments) Access => access ??= httpContextAccessor.HttpContext is { } context
+        ? (WorkbenchLocalRequests.CanChange(context, configuration), WorkbenchLocalRequests.IsLocal(context))
+        : (false, false);
 
     public bool IsOpen => document is not null;
 
@@ -154,13 +167,33 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public WorkbenchPageReview? PageOf(string pageKey) => Pages.GetValueOrDefault(pageKey);
 
-    /// <summary>Adds a comment with the view's page state; returns its id, or null when this circuit can't write.</summary>
+    /// <summary>Whether this circuit can answer, finish or delete a comment: on this machine any of them, and from elsewhere only its own.</summary>
+    public bool CanChange(string threadId) => SavesComments || visitorComments.GetMap("threads").GetMap(threadId) is not null;
+
+    /// <summary>Adds a comment, with the view's page state when it goes into the document; returns its id, or null when it has no text or the document isn't open.</summary>
     public async Task<string?> AddThread(string pageKey, string query, WorkbenchReviewAnchor anchor, string author, string text, string? state)
     {
-        if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(text))
             return null;
 
         var id = Guid.NewGuid().ToString("N")[..16];
+
+        if (SavesComments is false)
+        {
+            if (state is not null)
+            {
+                visitorStates[id] = state;
+            }
+
+            visitorComments.Transact(_ => WorkbenchReviewDocument.AddThread(visitorComments.GetMap("threads"), id, pageKey, query, anchor, author, text, state is not null));
+            OnCommentsChanged();
+
+            return id;
+        }
+
+        if (document is null)
+            return null;
+
         var hasState = await attachments.SaveState(id, state);
 
         document.Transact(_ => WorkbenchReviewDocument.AddThread(document.GetMap("threads"), id, pageKey, query, anchor, author, text, hasState), null);
@@ -170,28 +203,44 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public void Reply(string threadId, string author, string text)
     {
-        if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(text))
             return;
 
-        document.Transact(_ => WorkbenchReviewDocument.AddMessage(document.GetMap("threads"), threadId, fromAgent: false, author, text), null);
+        EditComments(threadId, threads => WorkbenchReviewDocument.AddMessage(threads, threadId, fromAgent: false, author, text));
     }
 
     public void SetStatus(string threadId, WorkbenchReviewStatus status)
     {
-        if (CanWrite is false)
-            return;
-
-        document?.Transact(_ => WorkbenchReviewDocument.SetStatus(document.GetMap("threads"), threadId, status, fromAgent: false), null);
+        EditComments(threadId, threads => WorkbenchReviewDocument.SetStatus(threads, threadId, status, fromAgent: false));
     }
+
+    /// <summary>The page state kept with a comment.</summary>
+    public async Task<string?> ReadState(string threadId) => visitorStates.TryGetValue(threadId, out var state) ? state : await attachments.ReadState(threadId);
 
     /// <summary>Deletes a comment and the page state saved with it.</summary>
     public void Delete(string threadId)
     {
-        if (document is null || CanWrite is false)
-            return;
+        EditComments(threadId, threads => threads.Delete(threadId));
+        visitorStates.Remove(threadId);
 
-        document.Transact(_ => document.GetMap("threads").Delete(threadId), null);
-        attachments.DeleteState(threadId);
+        if (SavesComments)
+        {
+            attachments.DeleteState(threadId);
+        }
+    }
+
+    /// <summary>Edits a comment where it lives, when this circuit may change it.</summary>
+    private void EditComments(string threadId, Action<BcrdtMap> edit)
+    {
+        if (SavesComments)
+        {
+            document?.Transact(_ => edit(document.GetMap("threads")), null);
+        }
+        else if (CanChange(threadId))
+        {
+            visitorComments.Transact(_ => edit(visitorComments.GetMap("threads")));
+            OnCommentsChanged();
+        }
     }
 
     public void SetPageStatus(string pageKey, WorkbenchPageStatus status, string by)
@@ -202,7 +251,10 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         document?.Transact(_ => WorkbenchReviewDocument.SetPageStatus(document.GetMap("pages"), pageKey, status, by), null);
     }
 
-    private void OnDocumentChanged(BcrdtUpdateEventArgs args)
+    private void OnDocumentChanged(BcrdtUpdateEventArgs args) => OnCommentsChanged();
+
+    // Also when the document never opened, as a visitor's comments don't need it.
+    private void OnCommentsChanged()
     {
         Refresh();
         Changed?.Invoke();
@@ -211,10 +263,14 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// <summary>Reads the document into the properties above.</summary>
     private void Refresh()
     {
+        List<WorkbenchReviewThread> saved = document is null ? [] : WorkbenchReviewDocument.ReadThreads(document.GetMap("threads"));
+
+        // A visitor's comments are numbered on from the page's saved ones.
+        Threads = [.. saved, .. WorkbenchReviewDocument.ReadThreads(visitorComments.GetMap("threads")).Select(t => t with { Number = t.Number + saved.Count(s => s.PageKey == t.PageKey) })];
+
         if (document is null)
             return;
 
-        Threads = WorkbenchReviewDocument.ReadThreads(document.GetMap("threads"));
         Pages = WorkbenchReviewDocument.ReadPages(document.GetMap("pages"));
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
         Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));
@@ -234,6 +290,8 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        visitorComments.Dispose();
+
         if (document is null)
             return;
 

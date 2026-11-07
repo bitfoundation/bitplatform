@@ -18,6 +18,27 @@
     }
 }
 
+.gallery-hero {
+    @media (min-width: 1000px) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+        column-gap: 56px;
+
+        > * {
+            grid-column: 1;
+        }
+
+        ::deep .gallery-hero-scores {
+            grid-column: 2;
+            grid-row: 1 / span 4;
+            align-self: center;
+        }
+    }
+
+    ::deep .gallery-hero-scores {
+        width: 100%;
+    }
+}
+
 .gallery-eyebrow {
     font-family: var(--lp-font-mono);
     font-size: .8125rem;

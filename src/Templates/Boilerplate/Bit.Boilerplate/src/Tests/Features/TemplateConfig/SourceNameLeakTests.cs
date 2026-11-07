@@ -39,7 +39,9 @@ public class SourceNameLeakTests
     /// </summary>
     private static readonly string[] OwnHosts = ["use-your-web-app-url-here.com", "localhost", "0.0.0.1", "127.0.0.1"];
 
-    private static readonly string[] ScannedExtensions = [".razor", ".cs", ".html", ".cshtml", ".ts", ".json", ".md"];
+    private const string LowercaseSourceName = "boilerplate";
+
+    private static readonly string[] ScannedExtensions = [".razor", ".cs", ".html", ".cshtml", ".ts", ".json", ".md", ".yml"];
 
     [TestMethod]
     public void NoForeignUrl_Should_ContainTheSourceName()
@@ -78,6 +80,36 @@ public class SourceNameLeakTests
             $"'{SourceName}', so `dotnet new -n Contoso` will rewrite it and ship a broken link. Either drop the " +
             $"renameable segment from the url or build it from a token that does not match the sourceName. " +
             $"Note that a `cnd:noEmit` pragma does NOT prevent this - it only toggles conditional processing." +
+            $"{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [TestMethod]
+    public void BitPlatformRepositoryPath_Should_NotContainTheLowercaseSourceName()
+    {
+        var root = GetTemplateRoot();
+
+        var pathPattern = new Regex($@"bitfoundation/bitplatform[^\s""'<>)\]}}\\]*{LowercaseSourceName}[^\s""'<>)\]}}\\]*", RegexOptions.Compiled);
+
+        var offenders = new List<string>();
+
+        foreach (var file in EnumerateSourceFiles(root))
+        {
+            var lineNumber = 0;
+            foreach (var line in File.ReadAllText(file).Split('\n'))
+            {
+                lineNumber++;
+
+                foreach (Match match in pathPattern.Matches(line))
+                {
+                    offenders.Add($"{Path.GetRelativePath(root, file)}:{lineNumber} -> {match.Value}");
+                }
+            }
+        }
+
+        Assert.IsEmpty(offenders,
+            $"A path in the bitplatform repository contains '{LowercaseSourceName}', which the template engine rewrites " +
+            $"along with the sourceName, so `dotnet new -n Contoso` names a folder that doesn't exist there. A symbol that " +
+            $"replaces a token with itself doesn't help, the engine drops it: name that folder without the word." +
             $"{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 

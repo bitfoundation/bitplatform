@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Options;
 using Boilerplate.LandingPage.Server.Features.Chat;
 using Boilerplate.LandingPage.Server.Features.Email;
 using Boilerplate.LandingPage.Server.Features.Waitlist;
@@ -23,9 +24,15 @@ public static partial class Program
             configuration.Bind(settings);
             services.AddSingleton(settings);
 
-            // The client's services, for prerendering; the server registers its own ISiteAddress and direct clients after it
+            services.AddSingleton<IValidateOptions<LandingServerSettings>, LandingServerSettingsValidator>();
+            services.AddOptions<LandingServerSettings>()
+                .Bind(configuration)
+                .ValidateOnStart();
+
+            builder.AddLandingOpenTelemetry();
+
+            // The client's services, for prerendering; the server registers its direct clients after it
             services.AddLandingPageClientServices(configuration);
-            services.AddScoped<ISiteAddress, ConfiguredSiteAddress>();
 
             services.AddRazorComponents()
                 .AddInteractiveServerComponents()
@@ -71,6 +78,14 @@ public static partial class Program
                     SegmentsPerWindow = 5,
                     QueueLimit = 0
                 }));
+            });
+
+            services.AddOutputCache(options =>
+            {
+                // The addresses in these files come from the request's host
+                options.AddPolicy(LandingOutputCaches.SeoFiles, policy => policy.Expire(TimeSpan.FromHours(1)).SetVaryByHost(true));
+                // A failure isn't stored, so a recovery shows on the next probe, while a healthy mail server isn't signed in to on every probe
+                options.AddPolicy(LandingOutputCaches.Health, policy => policy.Expire(TimeSpan.FromMinutes(5)).SetVaryByQuery([]));
             });
 
             services.AddLandingEmail(configuration, settings);

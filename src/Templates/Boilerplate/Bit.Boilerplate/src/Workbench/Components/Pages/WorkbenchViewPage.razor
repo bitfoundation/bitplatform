@@ -63,7 +63,7 @@ else if (isSmallScreen && IsTouring is false)
                 }
                 <ReviewPanel Page="pageInfo"
                              Drafts="drafts"
-                             PendingAnchor="pendingComment?.Anchor"
+                             PendingAnchor="ComposerAnchor"
                              SelectedThreadId="@selectedThreadId"
                              ReviewerName="@ReviewerName"
                              ReviewerNameChanged="store.NameReviewer"
@@ -238,7 +238,7 @@ else
                 {
                     <ReviewPanel Page="pageInfo"
                                  Drafts="drafts"
-                                 PendingAnchor="pendingComment?.Anchor"
+                                 PendingAnchor="ComposerAnchor"
                                  SelectedThreadId="@selectedThreadId"
                                  ReviewerName="@ReviewerName"
                                  ReviewerNameChanged="store.NameReviewer"

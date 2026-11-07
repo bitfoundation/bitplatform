@@ -223,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
+<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-17" />
 ```
 
 You write this in `.csproj`:
@@ -233,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-17" />
 ```
 
 **Benefits**:
@@ -244,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
-<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-16" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-17" />
+<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-17" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
@@ -339,7 +339,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ```bash
 # Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
-dnx Bit.Cli --version 11.0.0-pre-16 -- translate
+dnx Bit.Cli --version 11.0.0-pre-17 -- translate
 ```
 
 **To add a new language**:
@@ -661,11 +661,11 @@ slnf
    - Ensures code quality
 
 2. **`cd-test.yml`**: Deploy to Test environment
-   - Triggered manually or on merge to `develop` branch
+   - Triggered manually, or on merge to `develop` branch once the deploy skill has turned that on
    - Deploys to test/staging servers
 
 3. **`cd-production.yml`**: Deploy to Production
-   - Triggered manually or on merge to `main` branch
+   - Triggered manually, or on merge to `main` branch once the deploy skill has turned that on
    - Deploys to production servers
 
 4. **`cd-template.yml`**: Template for creating custom CD workflows

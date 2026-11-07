@@ -39,6 +39,8 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
 
     private Task<string> ViewPrimaryColor() => View().Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-pri').trim()");
 
+    private Task<string> ViewBackgroundColor() => View().Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-bg-pri').trim()");
+
     /// <summary>The theme's color swatches as the screen shows them, as the largest gap between a pixel's red, green and blue: none on a gray picture.</summary>
     private async Task<int> ColorOfTheSwatches()
     {
@@ -147,6 +149,25 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
 
         await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
         await Expect(View().Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AView_Should_WearTheProjectsTheme(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", AppThemePresets.Light);
+        Assert.AreEqual(AppThemePresets.LightBackground, await ViewBackgroundColor(), ignoreCase: true);
+
+        await OpenWorkbench("theme", "?theme=dark");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", AppThemePresets.Dark);
+        Assert.AreEqual(AppThemePresets.DarkBackground, await ViewBackgroundColor(), ignoreCase: true);
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Dark });
+        await OpenWorkbench("theme", "?theme=system");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", AppThemePresets.Dark);
     }
 
     [TestMethod, OnDesktops]
@@ -280,8 +301,8 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         await CloseTools();
 
         await Expect(Page).Not.ToHaveURLAsync(new Regex("vision="));
-        await WaitForViews();
         await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-vision", new Regex("."));
+        await WaitForViews();
 
         Assert.IsGreaterThan(60, await ColorOfTheSwatches(), "The colors are back.");
     }

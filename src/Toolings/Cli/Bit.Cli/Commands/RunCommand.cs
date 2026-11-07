@@ -65,8 +65,8 @@ public static class RunCommand
             var app = platform switch
             {
                 Platform.Web => null,
-                Platform.Windows => Platforms.WindowsProject(name),
-                _ => Platforms.MauiProject(name)
+                Platform.Windows => ProjectContext.FindWindowsProject(directory, name),
+                _ => ProjectContext.FindMauiProject(directory, name)
             };
 
             if (app is not null && File.Exists(Path.Combine(directory, app)) is false)

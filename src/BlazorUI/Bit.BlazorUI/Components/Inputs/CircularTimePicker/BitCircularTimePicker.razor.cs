@@ -1030,7 +1030,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (Standalone is false) return;
         if (Disabled) return;
 
-        await FocusDial();
+        await FocusDial(clicked: true);
     }
 
     private void OnSetCulture()
@@ -2057,20 +2057,26 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     }
 
     // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
-    // is editable, where the text the person came to type has to keep it.
+    // is editable, where the text the person came to type has to keep it. The open awaited the toggle and OnOpen
+    // on its way here, and the picker can have been closed in the meantime - an Escape pressed straight away, an
+    // OnOpen handler, IsOpen set back - so a closed one leaves the focus where that close handed it, rather than
+    // pulling it into a panel that is on its way out.
     private async Task FocusClock()
     {
         if (AllowTextInput) return;
+        if (IsOpen is false) return;
 
         await FocusDial();
     }
 
-    // Without scrolling the page: the script reveals a dial out of sight in the callout's own scroller only.
-    private async Task FocusDial()
+    // A dial the focus is handed to for a click on something else - the label of a standalone picker - is the part
+    // of the very field the click landed on, so it is focused without scrolling to it (FocusClickedSafelyAsync);
+    // every other move of the focus to it may be to a dial out of view, which the person is brought to.
+    private async Task FocusDial(bool clicked = false)
     {
         if (IsRendered is false || IsDisposed) return;
 
-        await ElementReferenceExtensions.FocusSafelyAsync(() => _js.BitCircularTimePickerFocusDial(_clockRef));
+        await (clicked ? _clockRef.FocusClickedSafelyAsync() : _clockRef.FocusSafelyAsync());
     }
 
     private string? GetHourButtonStyle()

@@ -219,11 +219,21 @@ public partial class AppAiChatPanel : IAiChatCardHost
 
     protected override async Task OnParamsSetAsync()
     {
+        // The greeting is written on the first render, which on a fresh load comes before MainLayout has the user's
+        // profile, and the name can change afterwards on the profile page.
+        if (greetingMessage is not null)
+        {
+            greetingMessage.Content = GreetingText;
+        }
+
         // CurrentUser cascades, so this is where a sign in or a sign out reaches the panel.
         await SyncHistoryOwner();
 
         await base.OnParamsSetAsync();
     }
+
+    private string GreetingText
+        => Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrWhiteSpace(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"];
 
 
     /// <summary>The server's wait on a card ends with the connection it asked over (See AppChatbot.AwaitCard).</summary>
@@ -530,7 +540,7 @@ public partial class AppAiChatPanel : IAiChatCardHost
         greetingMessage = new()
         {
             Role = AiChatMessageRole.Assistant,
-            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrWhiteSpace(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
+            Content = GreetingText,
             SentAt = TimeProvider.GetUtcNow()
         };
         chatMessages = [greetingMessage];

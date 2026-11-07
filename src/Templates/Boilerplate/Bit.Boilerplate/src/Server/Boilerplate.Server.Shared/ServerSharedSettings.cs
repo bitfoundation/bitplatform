@@ -7,6 +7,8 @@ namespace Boilerplate.Server.Shared;
 
 public partial class ServerSharedSettings : SharedSettings
 {
+    // [mirror] trusted origins - keep in sync with:
+    // - src/LandingPage/Boilerplate.LandingPage.Server/LandingServerSettings.cs
     /// <summary>
     /// Specifies the allowed origins for CORS requests, URLs returned after external sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
     /// Each entry may contain the <c>*</c> wildcard (e.g. <c>https://*.myapp.com</c>) so a single entry can trust every tenant subdomain.

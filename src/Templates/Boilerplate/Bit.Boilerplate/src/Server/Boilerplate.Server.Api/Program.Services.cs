@@ -84,6 +84,11 @@ public static partial class Program
 
         builder.AddServerSharedServices();
 
+        //#if (redis == true)
+        // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
+        builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
+
+        //#endif
         builder.AddServerApiHealthChecks();
 
         ServerApiSettings appSettings = new();
@@ -535,7 +540,6 @@ public static partial class Program
         {
             c.Timeout = TimeSpan.FromSeconds(5);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
-            c.DefaultRequestVersion = HttpVersion.Version11;
         });
 
         services.AddHttpClient<ResponseCacheService>(c =>
@@ -551,7 +555,6 @@ public static partial class Program
             c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"]
                 ?? configuration["Authentication:Keycloak:KeycloakUrl"]
                 ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
-            c.DefaultRequestVersion = HttpVersion.Version11;
         });
 
         services.AddFido2(options =>

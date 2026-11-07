@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.Text;
 using Bit.BevTools;
 

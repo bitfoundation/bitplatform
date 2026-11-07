@@ -13,6 +13,8 @@ namespace Bit.Cli.Tests;
 public class RunTests
 {
     private const string Maui = "src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj";
+    private const string MovedMaui = "src/Client/Contoso.Client.Operations.Maui/Contoso.Client.Operations.Maui.csproj";
+    private const string MovedWindows = "src/Client/Contoso.Client.Operations.Windows/Contoso.Client.Operations.Windows.csproj";
 
     [TestMethod]
     [DataRow(HostOs.Windows, "ios", "The iOS app runs in the iOS simulator, which needs macOS.")]
@@ -319,6 +321,67 @@ public class RunTests
         Assert.AreEqual("dotnet", started.FileName);
         CollectionAssert.AreEqual(new[] { "run", "--project", windows, "--no-build", "--property:Environment=Staging" }, started.Arguments.ToArray());
         Assert.AreEqual(host.WorkingDirectory, started.WorkingDirectory);
+    }
+
+    [TestMethod]
+    public async Task AMauiProjectTheSolutionLists_Should_BeRunWhereverItIs()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        MoveClientProjects(host, CreateProject(host));
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nmaui   10.0.1/10.0.100   SDK 10.0.100\n");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "ios"), host.Output);
+
+        CollectionAssert.AreEqual(new[] { "build", MovedMaui, "-t:Run", "-f", "net10.0-ios" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task AWindowsProjectTheSolutionLists_Should_BeRunWhereverItIs()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        MoveClientProjects(host, CreateProject(host));
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "windows"), host.Output);
+
+        CollectionAssert.AreEqual(new[] { "build", MovedWindows }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "run", "--project", MovedWindows, "--no-build" }, host.Runner.Detached.Single().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task AMauiProjectNeitherTheTemplateNorTheSolutionKnows_Should_BeRefused()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        var directory = CreateProject(host);
+        Directory.Delete(Path.Combine(directory, "src", "Client", "Contoso.Client.Maui"), true);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run", "ios"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Contoso has no src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    private static void MoveClientProjects(TestHost host, string directory)
+    {
+        foreach (var app in new[] { "Core", "Maui", "Windows" })
+        {
+            var client = Path.Combine(directory, "src", "Client");
+            var moved = Path.Combine(client, $"Contoso.Client.Operations.{app}");
+            Directory.Move(Path.Combine(client, $"Contoso.Client.{app}"), moved);
+            File.Move(Path.Combine(moved, $"Contoso.Client.{app}.csproj"), Path.Combine(moved, $"Contoso.Client.Operations.{app}.csproj"));
+        }
+
+        File.WriteAllText(Path.Combine(directory, "Contoso.slnx"), $"""
+            <Solution>
+              <Folder Name="/Tests/">
+                <Project Path="src/Tests/Contoso.Tests.Maui.csproj" />
+              </Folder>
+              <Folder Name="/Client/">
+                <Project Path="src/Client/Contoso.Client.Operations.Core/Contoso.Client.Operations.Core.csproj" />
+                <Project Path="{MovedMaui}" />
+                <Project Path="{MovedWindows}" />
+              </Folder>
+            </Solution>
+            """);
     }
 
     private static string CreateProject(TestHost host)

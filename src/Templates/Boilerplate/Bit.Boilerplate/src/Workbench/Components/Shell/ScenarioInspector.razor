@@ -100,8 +100,11 @@
 
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.AppSection)]</BitText>
-        <BitToggle Text="@Localizer[nameof(WorkbenchStrings.AppChrome)]" Value="Value.Chrome" ValueChanged="(bool chrome) => Update(Value with { Chrome = chrome })" />
-        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AppChromeHint)]</BitText>
+        @if (Page?.HasAppShell is not false)
+        {
+            <BitToggle Text="@Localizer[nameof(WorkbenchStrings.AppChrome)]" Value="Value.Chrome" ValueChanged="(bool chrome) => Update(Value with { Chrome = chrome })" />
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AppChromeHint)]</BitText>
+        }
 
         <BitToggle Text="@Localizer[nameof(WorkbenchStrings.Backdrop)]" Value="Value.Backdrop is not null" ValueChanged="(bool backdrop) => ToggleBackdrop(backdrop)" />
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BackdropHint)]</BitText>

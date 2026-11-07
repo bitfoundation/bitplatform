@@ -467,7 +467,7 @@
           "onlyChanged": "src/LandingPage/*"
         },
         {
-          "called": "dotnet build"
+          "called": ["dotnet build", "dotnet watch", "dotnet run"]
         }
       ]
     },

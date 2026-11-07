@@ -3,7 +3,7 @@
 
 <PageTitle>@Localizer[nameof(WorkbenchStrings.HomePageTitle)]</PageTitle>
 
-<div id="top" class="home">
+<div id="top" class="home @(areRevealsLive ? "reveals-live" : null)">
     <ShellHeader />
 
     <section class="hero">
@@ -44,8 +44,8 @@
                     <DeviceFrame Device="@DevicePresets.Find("laptop-hidpi")">
                         @if (HeroPage is { } laptopPage)
                         {
-                            <img class="light-only" src="@($"api/thumbnails/{laptopPage.Key}")" alt="" loading="lazy" />
-                            <img class="dark-only" src="@($"api/thumbnails/{laptopPage.Key}?theme=Dark")" alt="" loading="lazy" />
+                            <img class="light-only" data-thumbnail="@($"api/thumbnails/{laptopPage.Key}")" alt="" />
+                            <img class="dark-only" data-thumbnail="@($"api/thumbnails/{laptopPage.Key}?theme=Dark")" alt="" />
                         }
                     </DeviceFrame>
                 </div>
@@ -55,8 +55,8 @@
                     <DeviceFrame Device="DevicePresets.Default">
                         @if (PhonePage is { } phonePage)
                         {
-                            <img class="light-only" src="@($"api/thumbnails/{phonePage.Key}?phone=true")" alt="" loading="lazy" />
-                            <img class="dark-only" src="@($"api/thumbnails/{phonePage.Key}?phone=true&theme=Dark")" alt="" loading="lazy" />
+                            <img class="light-only" data-thumbnail="@($"api/thumbnails/{phonePage.Key}?phone=true")" alt="" />
+                            <img class="dark-only" data-thumbnail="@($"api/thumbnails/{phonePage.Key}?phone=true&theme=Dark")" alt="" />
                         }
                     </DeviceFrame>
                 </div>
@@ -126,8 +126,8 @@
                 <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
                     <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
                         <span class="thumbnail">
-                            <img class="light-only" src="@($"api/thumbnails/{entry.Key}")" alt="" loading="lazy" />
-                            <img class="dark-only" src="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="" loading="lazy" />
+                            <img class="light-only" data-thumbnail="@($"api/thumbnails/{entry.Key}")" alt="" />
+                            <img class="dark-only" data-thumbnail="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="" />
                         </span>
                         <span class="page-body">
                             <span class="page-category"><BitIcon IconName="@entry.IconName" Size="BitSize.Small" /> @Localizer[entry.CategoryKey]</span>

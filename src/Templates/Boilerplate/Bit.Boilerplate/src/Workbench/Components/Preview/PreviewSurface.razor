@@ -5,7 +5,13 @@
     <DeviceStatusBar Device="Scenario.DevicePreset" />
 }
 
-@if (Scenario.Chrome)
+@if (Page.HasAppShell is false)
+{
+    <div class="wb-no-shell">
+        <PreviewPageView Page="Page" />
+    </div>
+}
+else if (Scenario.Chrome)
 {
     <ChromeShell Page="Page">
         <PreviewPageView Page="Page" />
@@ -13,7 +19,7 @@
 }
 else
 {
-    <div class="bare-surface">
+    <div class="bare-surface wb-no-shell">
         <PreviewPageView Page="Page" />
     </div>
 }

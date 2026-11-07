@@ -36,6 +36,9 @@
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
 
+        <IncludeSourceRevisionInInformationalVersion Condition="$(Configuration.Contains('Debug'))">false</IncludeSourceRevisionInInformationalVersion>
+        <EnableSourceLink Condition="$(Configuration.Contains('Debug'))">false</EnableSourceLink>
+
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 
         <WasmFingerprintAssets>false</WasmFingerprintAssets>

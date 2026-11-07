@@ -2013,6 +2013,12 @@
     <data name="NoAgentListening" xml:space="preserve">
         <value>هیچ عاملی گوش‌به‌زنگ نیست. از عاملتان بخواهید نظرهای بازبینی را در میز کار مرور کند تا به تک‌تکشان همین‌جا جواب بدهد.</value>
     </data>
+    <data name="CommentWaitsForAgent" xml:space="preserve">
+        <value>دریافت شد. به محض این‌که یک عامل هوش مصنوعی وصل شود، این کار برایتان انجام می‌شود. برای وصل شدنش کافی است به هوش مصنوعی‌ای که استفاده می‌کنید بگویید پروژه Workbench را اجرا کند.</value>
+    </data>
+    <data name="CommentStaysInTab" xml:space="preserve">
+        <value>این نسخه اشتراکی است، پس نظرتان فقط در همین تب می‌ماند. در پروژه خودتان کافی است به هوش مصنوعی‌ای که استفاده می‌کنید بگویید پروژه Workbench را اجرا کند تا به نظرهایی مثل این رسیدگی کند.</value>
+    </data>
     <data name="AgentListening" xml:space="preserve">
         <value>{0} گوش‌به‌زنگ نظرهاست</value>
     </data>
@@ -2420,6 +2426,9 @@
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
         <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند.</value>
+    </data>
+    <data name="TourLiveText" xml:space="preserve">
+        <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند. همین حالا امتحان کنید: نظرتان را بنویسید و بفرستید.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>بازبینی زنده با هوش مصنوعی</value>
@@ -2833,7 +2842,7 @@
         <value>تجربه محدود</value>
     </data>
     <data name="AgentNotConnectedHint" xml:space="preserve">
-        <value>می‌توانید بگردید، نماها را عوض کنید و اسکرین‌شات بگیرید. برای تغییر دادن، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
+        <value>می‌توانید بگردید، نماها را عوض کنید، اسکرین‌شات بگیرید و نظر بنویسید. برای هر تغییر دیگری، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
     </data>
     <data name="SignInNoteTitle" xml:space="preserve">
         <value>صفحه‌های ورود هنوز در Workbench نیستند</value>
@@ -2879,5 +2888,224 @@
     </data>
     <data name="TourCaption" xml:space="preserve">
         <value>هر فروش، زنده</value>
+    </data>
+    <data name="NotchNavJoin" xml:space="preserve">
+        <value>عضویت در فهرست انتظار</value>
+    </data>
+    <data name="NotchHeroKicker" xml:space="preserve">
+        <value>بهار 1406، روی آیفون و اندروید</value>
+    </data>
+    <data name="NotchHeroTitle" xml:space="preserve">
+        <value>روزی یک خط. سالی که در یک دقیقه خوانده می‌شود.</value>
+    </data>
+    <data name="NotchHeroLede" xml:space="preserve">
+        <value>Notch دفترچه‌ای است با یک قانون: هر روز فقط یک خط، حداکثر 140 حرف. نه سؤالی که باید جوابش را بدهید، نه رکوردی که باید حفظش کنید. فقط همان خط، و روزی که مال آن است.</value>
+    </data>
+    <data name="NotchJoinSubmit" xml:space="preserve">
+        <value>جایم را نگه دارید</value>
+    </data>
+    <data name="NotchJoinNote" xml:space="preserve">
+        <value>وقتی Notch آماده شد، یک بار برایتان می‌نویسیم. همین.</value>
+    </data>
+    <data name="NotchDemoLabel" xml:space="preserve">
+        <value>پیش‌نمایش اپ Notch: خط امروز، این هفته و همین روز در سال‌های پیش</value>
+    </data>
+    <data name="NotchDemoFieldLabel" xml:space="preserve">
+        <value>خط امروز</value>
+    </data>
+    <data name="NotchDemoPlaceholder" xml:space="preserve">
+        <value>امروز را با چه چیزی به یاد می‌آورید؟</value>
+    </data>
+    <data name="NotchDemoLeft" xml:space="preserve">
+        <value>{0} حرف مانده</value>
+    </data>
+    <data name="NotchDemoSave" xml:space="preserve">
+        <value>ثبتش کن</value>
+    </data>
+    <data name="NotchDemoSaved" xml:space="preserve">
+        <value>ثبت شد. خط فردا از نیمه‌شب باز می‌شود.</value>
+    </data>
+    <data name="NotchDemoWeek" xml:space="preserve">
+        <value>این هفته</value>
+    </data>
+    <data name="NotchDemoWeekCount" xml:space="preserve">
+        <value>{0} روز از 7</value>
+    </data>
+    <data name="NotchDemoThisDay" xml:space="preserve">
+        <value>در همین روز</value>
+    </data>
+    <data name="NotchDemoPast1" xml:space="preserve">
+        <value>اولین یخ‌بندان روی دوچرخه. از امروز دستکش‌ها توی کیف می‌مانند.</value>
+    </data>
+    <data name="NotchDemoPast2" xml:space="preserve">
+        <value>میا یک صفحه‌ی کامل را بلند خواند و یک بار هم مکث نکرد.</value>
+    </data>
+    <data name="NotchFeaturesTitle" xml:space="preserve">
+        <value>سه قانون؛ اپ همین است</value>
+    </data>
+    <data name="NotchFeature1Title" xml:space="preserve">
+        <value>هر روز، یک خط</value>
+    </data>
+    <data name="NotchFeature1Body" xml:space="preserve">
+        <value>حداکثر 140 حرف. آن‌قدر کوتاه که در صف قهوه نوشته شود و آن‌قدر بلند که روز را با آن به یاد بیاورید.</value>
+    </data>
+    <data name="NotchFeature2Title" xml:space="preserve">
+        <value>همین روز، سال‌ها بعد</value>
+    </data>
+    <data name="NotchFeature2Body" xml:space="preserve">
+        <value>امروز را که باز کنید، خطی را که پارسال و پیرارسال در همین روز نوشته‌اید می‌بینید. روزی یک خط این‌جاست که ارزشش را نشان می‌دهد.</value>
+    </data>
+    <data name="NotchFeature3Title" xml:space="preserve">
+        <value>فقط خودتان می‌خوانید</value>
+    </data>
+    <data name="NotchFeature3Body" xml:space="preserve">
+        <value>خط‌ها پیش از آن‌که از گوشی‌تان بیرون بروند رمزنگاری می‌شوند. نه فیدی، نه لایکی، نه دنبال‌کننده‌ای؛ و هر وقت بخواهید، خروجی متنی ساده.</value>
+    </data>
+    <data name="NotchFooterTagline" xml:space="preserve">
+        <value>روزی یک خط، برای همیشه.</value>
+    </data>
+    <data name="NotchRouteTitle" xml:space="preserve">
+        <value>خط‌هایتان کجا می‌روند</value>
+    </data>
+    <data name="NotchRoutePhoneTitle" xml:space="preserve">
+        <value>گوشی شما</value>
+    </data>
+    <data name="NotchRoutePhoneBody" xml:space="preserve">
+        <value>هر خط همین‌جا نوشته و نگه داشته می‌شود، رمزنگاری‌شده با کلیدی که هیچ‌وقت از گوشی بیرون نمی‌رود.</value>
+    </data>
+    <data name="NotchRouteBackupTitle" xml:space="preserve">
+        <value>پشتیبان</value>
+    </data>
+    <data name="NotchRouteBackupBody" xml:space="preserve">
+        <value>خاموش است تا روشنش کنید. آن‌وقت یک نسخه‌ی رمزنگاری‌شده همه‌ی خط‌ها را به گوشی تازه برمی‌گرداند.</value>
+    </data>
+    <data name="NotchRouteServerTitle" xml:space="preserve">
+        <value>سرور ما</value>
+    </data>
+    <data name="NotchRouteServerBody" xml:space="preserve">
+        <value>همان نسخه را در هلسینکی نگه می‌دارد. ما فقط اندازه و تاریخش را می‌بینیم، نه چیزی از درونش.</value>
+    </data>
+    <data name="NotchRouteNeverTitle" xml:space="preserve">
+        <value>تبلیغ‌کننده‌ها و دلال‌های داده</value>
+    </data>
+    <data name="NotchRouteNeverBody" xml:space="preserve">
+        <value>هیچ چیز نمی‌گیرند. چیزی برای فروختن به آن‌ها نیست.</value>
+    </data>
+    <data name="NotchRouteOptional" xml:space="preserve">
+        <value>اگر بخواهید</value>
+    </data>
+    <data name="NotchRouteNever" xml:space="preserve">
+        <value>هرگز</value>
+    </data>
+    <data name="LandingSkipToContent" xml:space="preserve">
+        <value>رفتن به محتوا</value>
+    </data>
+    <data name="LandingFooterCompany" xml:space="preserve">
+        <value>شرکت</value>
+    </data>
+    <data name="LandingContact" xml:space="preserve">
+        <value>تماس</value>
+    </data>
+    <data name="LandingFooterLegal" xml:space="preserve">
+        <value>قوانین</value>
+    </data>
+    <data name="LandingCookies" xml:space="preserve">
+        <value>کوکی‌ها</value>
+    </data>
+    <data name="LandingImprint" xml:space="preserve">
+        <value>اطلاعات حقوقی</value>
+    </data>
+    <data name="LandingAccessibility" xml:space="preserve">
+        <value>دسترس‌پذیری</value>
+    </data>
+    <data name="LandingCopyright" xml:space="preserve">
+        <value>© {0} {1}. همه‌ی حقوق محفوظ است.</value>
+    </data>
+    <data name="LandingSampleSite" xml:space="preserve">
+        <value>این یک سایت نمونه است. کسب‌وکار، آدم‌ها و عددهایش ساختگی‌اند.</value>
+    </data>
+    <data name="LandingWaitlistSubmitting" xml:space="preserve">
+        <value>در حال ثبت…</value>
+    </data>
+    <data name="LandingWaitlistPlatforms" xml:space="preserve">
+        <value>وقتی منتشر شد خبرم کن برای</value>
+    </data>
+    <data name="LandingPlatformIos" xml:space="preserve">
+        <value>آیفون و آی‌پد</value>
+    </data>
+    <data name="LandingPlatformAndroid" xml:space="preserve">
+        <value>اندروید</value>
+    </data>
+    <data name="LandingWaitlistPromise" xml:space="preserve">
+        <value>فقط یک ایمیل در روز انتشار. هرزنامه نمی‌فرستیم و هر وقت خواستید می‌توانید خارج شوید.</value>
+    </data>
+    <data name="LandingWaitlistDoneTitle" xml:space="preserve">
+        <value>صندوق ایمیلتان را ببینید</value>
+    </data>
+    <data name="LandingWaitlistDoneBody" xml:space="preserve">
+        <value>یک پیوند تأیید به {0} فرستادیم. بازش کنید تا جایتان حفظ شود: نفر {1}.</value>
+    </data>
+    <data name="LandingWaitlistInvalidEmail" xml:space="preserve">
+        <value>این نشانی ایمیل درست به نظر نمی‌رسد.</value>
+    </data>
+    <data name="CategoryLandingPages" xml:space="preserve">
+        <value>صفحه‌های فرود</value>
+    </data>
+    <data name="LandingMinimalTitle" xml:space="preserve">
+        <value>صفحه‌ی فرود: Notch</value>
+    </data>
+    <data name="LandingMinimalDescription" xml:space="preserve">
+        <value>یکی از نمونه‌های صفحه‌ی فرود، با تم خودش و بدون پوسته‌ی برنامه: فهرست انتظار، نمونه‌ی زنده روی گوشی، حالت روشن و تیره و راست‌به‌چپ.</value>
+    </data>
+    <data name="LandingMinimalCaption" xml:space="preserve">
+        <value>روزی یک خط</value>
+    </data>
+    <data name="HomeWhyManyAppsTitle" xml:space="preserve">
+        <value>طراح چند برنامه</value>
+    </data>
+    <data name="HomeWhyManyAppsText" xml:space="preserve">
+        <value>برنامه‌های مختلفتان را با تم‌های مختلف این‌جا اضافه کنید، همان‌طور که این میز کار یک صفحه‌ی فرود را با ظاهر خودش کنار صفحه‌های برنامه نگه داشته است.</value>
+    </data>
+    <data name="LandingConsentTitle" xml:space="preserve">
+        <value>حریم خصوصی شما</value>
+    </data>
+    <data name="LandingConsentBody" xml:space="preserve">
+        <value>می‌خواهیم ببینیم این سایت چقدر سریع است و چطور استفاده می‌شود تا بهترش کنیم. تا موافقت نکنید هیچ‌کدام جمع نمی‌شود و از کوکی هم استفاده نمی‌کنیم. خطاها در هر حال گزارش می‌شوند، بدون شناسایی شما.</value>
+    </data>
+    <data name="LandingConsentPerformance" xml:space="preserve">
+        <value>سرعت و عیب‌یابی</value>
+    </data>
+    <data name="LandingConsentPerformanceHint" xml:space="preserve">
+        <value>سرعت بارگذاری و پاسخ صفحه‌ها، و جزئیاتی که به رفع خطاهای بازدیدکننده‌ها کمک می‌کند.</value>
+    </data>
+    <data name="LandingConsentAnalytics" xml:space="preserve">
+        <value>آمار استفاده</value>
+    </data>
+    <data name="LandingConsentAnalyticsHint" xml:space="preserve">
+        <value>کدام صفحه‌ها خوانده و کدام دکمه‌ها زده می‌شوند، بدون این‌که معلوم شود شما چه کسی هستید.</value>
+    </data>
+    <data name="LandingConsentSave" xml:space="preserve">
+        <value>ذخیره‌ی انتخاب‌ها</value>
+    </data>
+    <data name="LandingConsentAccept" xml:space="preserve">
+        <value>موافقم</value>
+    </data>
+    <data name="LandingConsentReject" xml:space="preserve">
+        <value>نه، ممنون</value>
+    </data>
+    <data name="LandingConsentChoose" xml:space="preserve">
+        <value>خودم انتخاب می‌کنم</value>
+    </data>
+    <data name="LandingMissingPage" xml:space="preserve">
+        <value>این صفحه در Workbench نیست. از عاملتان بخواهید آن را این‌جا بیاورد.</value>
+    </data>
+    <data name="LandingSwitchConsent" xml:space="preserve">
+        <value>پنجره‌ی رضایت</value>
+    </data>
+    <data name="LandingConsentDecided" xml:space="preserve">
+        <value>قبلاً انتخاب کرده</value>
+    </data>
+    <data name="LandingConsentFirstVisit" xml:space="preserve">
+        <value>بازدید اول</value>
     </data>
 </root>

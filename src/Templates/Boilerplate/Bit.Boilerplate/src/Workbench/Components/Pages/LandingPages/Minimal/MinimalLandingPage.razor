@@ -1,0 +1,152 @@
+@* [mirror] the Minimal sample's home page with its layout, on sample data - keep in sync with: *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Pages/Minimal/MinimalHomePage.razor *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Pages/Minimal/MinimalLayout.razor *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Common/LandingNav.razor *@
+@* - src/LandingPage/Boilerplate.LandingPage.Client/Components/Common/LandingFooter.razor *@
+@inherits WorkbenchComponentBase
+
+<div class="lp-site lp-minimal">
+    <a class="lp-skip" href="@SectionUrl("main")">@Localizer[nameof(WorkbenchStrings.LandingSkipToContent)]</a>
+
+    <header class="lp-nav">
+        <div class="lp-container lp-nav-bar">
+            <a class="lp-nav-brand" href="@SectionUrl("main")"><MinimalLogo /><span>Notch</span></a>
+
+            <div class="lp-nav-actions">
+                @foreach (var (name, culture) in OtherCultures)
+                {
+                    <button type="button" class="lp-lang lp-nav-tool" lang="@culture" title="@AppLocalizer[nameof(AppStrings.Language)]" @onclick="() => ChangeCulture(culture)">@name</button>
+                }
+                <BitButton Variant="BitVariant.Text"
+                           Color="BitColor.PrimaryForeground"
+                           Class="lp-nav-tool"
+                           IconName="@(isDark ? BitIconName.Sunny : BitIconName.ClearNight)"
+                           Title="@ThemeToggleLabel"
+                           AriaDescription="@ThemeToggleLabel"
+                           OnClick="ToggleTheme" />
+                <BitButton Href="@SectionUrl("join")" Size="BitSize.Small" Variant="BitVariant.Outline">@Localizer[nameof(WorkbenchStrings.NotchNavJoin)]</BitButton>
+                <BitButton Class="lp-nav-menu"
+                           Variant="BitVariant.Text"
+                           Color="BitColor.PrimaryForeground"
+                           IconName="@BitIconName.GlobalNavButton"
+                           Title="@AppLocalizer[nameof(AppStrings.OpenNavigationMenuTitle)]"
+                           OnClick="() => store.ShowMenu(true)" />
+            </div>
+        </div>
+    </header>
+
+    <BitPanel IsOpen="store.IsMenuOpen"
+              IsOpenChanged="store.ShowMenu"
+              Placement="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitPlacement.Left : BitPlacement.Right)"
+              Styles="@(new() { Root = "--bit-Panel-size: min(360px, 88vw)" })"
+              ShowCloseButton
+              CloseButtonTitle="@AppLocalizer[nameof(AppStrings.Close)]">
+        <div class="lp-nav-panel-tools">
+            @foreach (var (name, culture) in OtherCultures)
+            {
+                <button type="button" class="lp-lang" lang="@culture" title="@AppLocalizer[nameof(AppStrings.Language)]" @onclick="() => ChangeCulture(culture)">@name</button>
+            }
+            <BitButton Variant="BitVariant.Text"
+                       Color="BitColor.PrimaryForeground"
+                       IconName="@(isDark ? BitIconName.Sunny : BitIconName.ClearNight)"
+                       Title="@ThemeToggleLabel"
+                       AriaDescription="@ThemeToggleLabel"
+                       OnClick="ToggleTheme" />
+        </div>
+        <div class="lp-nav-panel-actions" @onclick="() => store.ShowMenu(false)">
+            <BitButton Href="@SectionUrl("join")" Size="BitSize.Small" Variant="BitVariant.Outline">@Localizer[nameof(WorkbenchStrings.NotchNavJoin)]</BitButton>
+        </div>
+    </BitPanel>
+
+    <main id="main">
+        <section class="minimal-hero" aria-labelledby="minimal-hero-title">
+            <div class="lp-container minimal-hero-grid">
+                <div class="minimal-hero-text">
+                    <p class="minimal-kicker">@Localizer[nameof(WorkbenchStrings.NotchHeroKicker)]</p>
+                    <h1 id="minimal-hero-title">@Localizer[nameof(WorkbenchStrings.NotchHeroTitle)]</h1>
+                    <p class="lp-lede">@Localizer[nameof(WorkbenchStrings.NotchHeroLede)]</p>
+                    <MinimalWaitlistForm Id="join" SubmitText="@Localizer[nameof(WorkbenchStrings.NotchJoinSubmit)]" Class="minimal-join" />
+                    <p class="minimal-join-note">@Localizer[nameof(WorkbenchStrings.NotchJoinNote)]</p>
+                </div>
+                <figure class="minimal-hero-visual">
+                    <div class="lp-device lp-device-phone">
+                        <div class="lp-device-island" aria-hidden="true"></div>
+                        <div class="lp-device-screen">
+                            <MinimalJournalDemo />
+                        </div>
+                    </div>
+                    <figcaption class="lp-visually-hidden">@Localizer[nameof(WorkbenchStrings.NotchDemoLabel)]</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section class="minimal-rules" aria-labelledby="minimal-rules-title">
+            <div class="lp-container">
+                <h2 id="minimal-rules-title">@Localizer[nameof(WorkbenchStrings.NotchFeaturesTitle)]</h2>
+                <ul class="minimal-rule-list">
+                    @foreach (var (title, body) in features)
+                    {
+                        <li>
+                            <h3><span>@Localizer[title]</span></h3>
+                            <p>@Localizer[body]</p>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </section>
+
+        <section class="minimal-route" aria-labelledby="minimal-route-title">
+            <div class="lp-container">
+                <h2 id="minimal-route-title">@Localizer[nameof(WorkbenchStrings.NotchRouteTitle)]</h2>
+                <ol class="minimal-route-list">
+                    @foreach (var (icon, title, body, tag, isNever) in route)
+                    {
+                        <li class="@(isNever ? "is-never" : null)">
+                            <span class="minimal-route-head">
+                                <BitIcon IconName="@icon" Class="minimal-route-icon" />
+                                @if (tag is not null)
+                                {
+                                    <span class="minimal-route-tag">@Localizer[tag]</span>
+                                }
+                            </span>
+                            <h3>@Localizer[title]</h3>
+                            <p>@Localizer[body]</p>
+                        </li>
+                    }
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <footer class="lp-footer">
+        <div class="lp-container lp-footer-grid">
+            <div class="lp-footer-intro">
+                <a class="lp-footer-brand" href="@SectionUrl("main")"><MinimalLogo /><span>Notch</span></a>
+                <p class="lp-footer-tagline">@Localizer[nameof(WorkbenchStrings.NotchFooterTagline)]</p>
+            </div>
+
+            <div class="lp-footer-col">
+                <h2>@Localizer[nameof(WorkbenchStrings.LandingFooterCompany)]</h2>
+                <a href="mailto:hello@notch.example">@Localizer[nameof(WorkbenchStrings.LandingContact)]</a>
+            </div>
+
+            <div class="lp-footer-col">
+                <h2>@Localizer[nameof(WorkbenchStrings.LandingFooterLegal)]</h2>
+                <a href="privacy" @onclick="ShowMissingPage" @onclick:preventDefault>@AppLocalizer[nameof(AppStrings.PrivacyTitle)]</a>
+                <a href="terms" @onclick="ShowMissingPage" @onclick:preventDefault>@AppLocalizer[nameof(AppStrings.Terms)]</a>
+                <a href="cookies" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingCookies)]</a>
+                <a href="imprint" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingImprint)]</a>
+                <a href="accessibility" @onclick="ShowMissingPage" @onclick:preventDefault>@Localizer[nameof(WorkbenchStrings.LandingAccessibility)]</a>
+                <button type="button" class="lp-footer-link-button" @onclick="store.OpenConsent">@AppLocalizer[nameof(AppStrings.PrivacySettings)]</button>
+            </div>
+        </div>
+
+        <div class="lp-container lp-footer-bottom">
+            <p>@Localizer[nameof(WorkbenchStrings.LandingCopyright), DateTime.UtcNow.Year, "Notch Journal Oy"]</p>
+            <p class="lp-footer-address"><bdi>Tallberginkatu 1 C, 00180 Helsinki, Finland</bdi></p>
+            <p class="lp-footer-sample">@Localizer[nameof(WorkbenchStrings.LandingSampleSite)]</p>
+        </div>
+    </footer>
+
+    <MinimalConsentBanner OnPrivacyLink="ShowMissingPage" />
+</div>

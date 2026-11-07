@@ -194,15 +194,38 @@ public class ReviewPanelTests
     }
 
     [TestMethod]
-    public async Task ARemoteViewer_Should_SeeTheReviewButNoWayToChangeIt()
+    public async Task AVisitorsComment_Should_ShowEvenWithTheSharedReviewNotOpen()
+    {
+        await using var ctx = WorkbenchBunit.Create(isLocal: false);
+
+        var session = ctx.Services.GetRequiredService<WorkbenchReviewSession>();
+        var id = await session.AddThread(page.Key, "", anchor, "Sarah", "Only in my tab", null);
+
+        Assert.IsFalse(session.IsOpen);
+        Assert.Contains(thread => thread.Id == id, session.Threads);
+    }
+
+    [TestMethod]
+    public async Task ARemoteViewer_Should_GetTheComposerOnAPickedSpot()
     {
         await using var ctx = WorkbenchBunit.Create(isLocal: false);
         await OpenSession(ctx);
 
         var cut = Render(ctx, p => p.Add(x => x.PendingAnchor, anchor));
 
+        Assert.IsNotEmpty(cut.FindAll("textarea"));
+    }
+
+    [TestMethod]
+    public async Task ARemoteViewer_Should_SeeTheReviewButNoWayToChangeIt()
+    {
+        await using var ctx = WorkbenchBunit.Create(isLocal: false);
+        await OpenSession(ctx);
+
+        var cut = Render(ctx);
+
         Assert.Contains(WorkbenchStrings.AgentOffline, cut.Markup);
-        Assert.IsEmpty(cut.FindAll("textarea"), "No composer and no reply box.");
+        Assert.IsEmpty(cut.FindAll("textarea"), "No composer until a spot is picked, and no reply box.");
         Assert.IsEmpty(cut.FindAll("button").Where(b => b.TextContent.Trim() == WorkbenchStrings.PageStatusApproved), "The page status is shown, not set.");
         Assert.Contains(WorkbenchStrings.PageStatusDraft, cut.Markup);
     }

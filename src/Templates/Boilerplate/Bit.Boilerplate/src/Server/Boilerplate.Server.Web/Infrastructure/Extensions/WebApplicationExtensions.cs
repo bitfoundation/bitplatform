@@ -94,6 +94,7 @@ public static partial class WebApplicationExtensions
             contentTypes.Mappings[".br"] = "application/octet-stream";
 
             app.UseWhen(context => (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                && context.GetEndpoint()?.RequestDelegate is null
                 && contentTypes.TryGetContentType(context.Request.Path.Value!, out _)
                 && app.Environment.WebRootFileProvider.GetFileInfo($"{context.Request.Path}.br").Exists, precompressedApp =>
             {
@@ -182,6 +183,20 @@ public static partial class WebApplicationExtensions
                 context.Response.Headers.ContentType = "application/xml";
 
                 await context.Response.WriteAsync(siteMap, context.RequestAborted);
+            }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
+
+            app.MapGet("/robots.txt", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
+            {
+                var robots = "User-agent: *\nDisallow:\n";
+
+                if (app.Environment.IsProduction())
+                {
+                    robots += $"\nSitemap: {new Uri(context.Request.GetBaseUrl(), "sitemap_index.xml")}\n";
+                }
+
+                context.Response.Headers.ContentType = "text/plain; charset=utf-8";
+
+                await context.Response.WriteAsync(robots, context.RequestAborted);
             }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
             // https://llmstxt.org - a markdown file that helps LLMs discover the app's pages.

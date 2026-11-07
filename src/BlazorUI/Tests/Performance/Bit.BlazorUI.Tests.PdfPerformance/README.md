@@ -8,7 +8,7 @@ Build from this directory, where `src/global.json` selects the repository SDK:
 
 ```powershell
 dotnet build -c Release -p:GeneratePackageOnBuild=false
-dotnet bin/Release/net10.0/Bit.BlazorUI.Tests.PdfPerformance.dll 15 10 ../../../Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/samples/article.pdf > C:/outside-checkout/article-results.json
+dotnet bin/Release/net11.0/Bit.BlazorUI.Tests.PdfPerformance.dll 15 10 ../../../Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/samples/article.pdf > C:/outside-checkout/article-results.json
 ```
 
 Pass additional PDF paths to include more fixtures. Use meaningful documents with actual page resources. Keep large/private fixtures and result files outside the checkout. The bundled `hello-world.pdf`, `sample-pdf.pdf`, and `article.pdf` are useful reproducible inputs. Include damaged xref/recovery workloads when changing raw scans.
@@ -28,8 +28,8 @@ Allocated bytes are cumulative managed allocations on the synchronous engine thr
 Use separate processes to compare actual opening costs and peak memory of buffered files and the seekable backend:
 
 ```powershell
-dotnet bin/Release/net10.0/Bit.BlazorUI.Tests.PdfPerformance.dll --source buffered 15 10 C:/outside-checkout/large.pdf > C:/outside-checkout/buffered-source.json
-dotnet bin/Release/net10.0/Bit.BlazorUI.Tests.PdfPerformance.dll --source seekable 15 10 C:/outside-checkout/large.pdf > C:/outside-checkout/seekable-source.json
+dotnet bin/Release/net11.0/Bit.BlazorUI.Tests.PdfPerformance.dll --source buffered 15 10 C:/outside-checkout/large.pdf > C:/outside-checkout/buffered-source.json
+dotnet bin/Release/net11.0/Bit.BlazorUI.Tests.PdfPerformance.dll --source seekable 15 10 C:/outside-checkout/large.pdf > C:/outside-checkout/seekable-source.json
 ```
 
 These modes include file opening, reads, the page tree and the metadata/sidebar preparation used by the viewer. Timings stop before disposal. SHA256 calculation streams the fixture in both modes. The seekable process never creates a whole-file array for setup or comparison. Use one large fixture per process when comparing opening peak working set; alternate process order and retain repeated samples. `rawStoragePeakBytes` reports the buffered input length or the seekable source's peak accounted raw bytes (cached, pinned, in-flight and cross-block copies). The current internal cache budget is 16 MiB with 64 KiB blocks. Decoded resources, rendering output, cache metadata and explicit caller-owned arrays are separate allocations, so neither this counter nor the process working set is a bound on total viewer memory.

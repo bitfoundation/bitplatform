@@ -311,11 +311,12 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         Assert.AreEqual(844 - 10, box.Y + box.Height, 1.5, "The list keeps its gap from the bottom of a screen with no safe area.");
 
         // The cap is only half of it: the user still reaches the last item by scrolling the list itself. Wheeled over
-        // the list rather than scrolled into view from script, which would move a list that clips its overflow too.
+        // the list to its end rather than scrolled into view from script, which would move a list that clips its
+        // overflow too.
         var last = callout.GetByRole(AriaRole.Option, new() { Name = "Item 60", Exact = true });
 
         await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
-        await Page.Mouse.WheelAsync(0, 10000);
+        await WheelInPagesAsync($"[id='{await callout.GetAttributeAsync("id")}'] .bit-drp-scn", int.MaxValue);
         await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
 
         var item = await BoxAsync(last);

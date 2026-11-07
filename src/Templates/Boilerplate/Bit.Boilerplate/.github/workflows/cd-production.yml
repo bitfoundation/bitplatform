@@ -2,9 +2,12 @@ name: Boilerplate Production CD
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths: [ "src/Shared/**", "src/Server/**", "src/Client/**", "src/LandingPage/**", "src/Directory.Build.props", "src/Directory.Packages.props" ]
+  # The deploy skill uncomments this once the first deployment to Production has worked. Until then this runs only by hand,
+  # so a project with nowhere to deploy to yet spends no Actions minutes on it. Uncomment all of it: `paths` without
+  # `branches` would run this on every branch. This file is in its own `paths`, so the merge that turns it on deploys.
+  # push:
+  #   branches: [ "main" ]
+  #   paths: [ ".github/workflows/cd-production.yml", "src/Shared/**", "src/Server/**", "src/Client/**", "src/LandingPage/**", "src/Directory.Build.props", "src/Directory.Packages.props" ]
 
 # `environment:` gates approval but does NOT serialize runs, so without this two pushes in quick
 # succession can finish out of order and leave the OLDER commit deployed. Queue instead of cancelling:

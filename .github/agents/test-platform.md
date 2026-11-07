@@ -17,15 +17,15 @@ Four rules for working on it:
 
 - **Redis is the `Garnet` Windows service.** TodoApi needs a Redis on port 6379 and dies at startup without one
   ("No redis server available"), which shows up as a 502 at todo-api.bitplatform.dev. The service starts at boot
-  with nobody signed in; when TodoApi fails, check that it runs and listens on 6379 before anything else. Docker
-  Desktop no longer serves the demos, only steps 5 and 6: start it when it is off. When `docker info` hasn't
-  answered within a minute, quit Docker Desktop and start it again instead of waiting on it: after days of uptime
-  its engine has hung here, with its backend holding several GB.
+  with nobody signed in; when TodoApi fails, check that it runs and listens on 6379 before anything else. No
+  container engine serves the demos. Steps 5 and 6 run on Podman, the engine bit installs on Windows, since Docker
+  Desktop is off this machine for its license: `podman machine start` when `podman info` doesn't answer. The helper
+  calls `podman` wherever no `docker` is installed.
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
   local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
-  Docker's VM (`vmmemWSL`) keeps the page cache of every image it built and every container it ran, often several
-  GB, and doesn't give it back on its own: `wsl -d docker-desktop -u root sh -c "sync; echo 1 > /proc/sys/vm/drop_caches"`
+  Podman's VM (`vmmemWSL`) keeps the page cache of every image it built and every container it ran, often several
+  GB, and doesn't give it back on its own: `wsl -d podman-machine-default -u root sh -c "sync; echo 1 > /proc/sys/vm/drop_caches"`
   does, and is safe while containers run.
 - **Read the configuration before changing it.** Before any fix to the machine itself (IIS, permissions, folders,
   tools), query what it really is: an app pool's identity (`appcmd list apppool /text:processModel.userName`,
@@ -223,6 +223,21 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A WebAssembly demo or sample started from its build output answers its `_framework` files with empty 200s
      outside Development, since its static web assets come from the build's development manifest. A probe of
      your own starts it with `ASPNETCORE_ENVIRONMENT=Development`, as the suites do.
+   - A job cancelled with no runner and no steps never ran: `gh api repos/bitfoundation/bitplatform/check-runs/<job-id>/annotations`
+     says "The job was not acquired by Runner of type hosted", usually for macOS when GitHub has no capacity. Re-run it
+     once its run ends.
+   - A Prerelease run that stops at `dotnet pack` with CP0002 met a public API that a merge changed without its
+     `CompatibilitySuppressions.xml`. `dotnet build` the project with `-p:GeneratePackageOnBuild=false` first, as the
+     workflow does, or the pack fails with NU5026, then pack with `-p:ApiCompatGenerateSuppressionFile=true` and put
+     back the BOM it drops. Only packing validates: All CD and a demo's Release build still go through.
+   - A template conditional that stays in a generated project at random, and only in CI, comes from the template
+     engine's one conditional switch for all `.cs` files: a file that ends with it off leaves it off for the next one,
+     unless that one starts with `//+:cnd:noEmit`. A template in a folder is read in the file system's order, which on
+     a Linux runner changes from run to run, while Windows reads by name and never shows it. To reproduce it, plant a
+     file that leaves it off right before the one that failed.
+   - A Workbench test on a phone whose tap does nothing can be a tap on the shell's floating Tools button: it lies
+     outside the view's iframe, so Playwright's check of what the tap would hit doesn't see it. A screenshot right
+     after the tap shows the Tools panel. The Workbench's tests exist only in a project made with `--advancedTests`.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
@@ -512,12 +527,16 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
-- It's heavy: a few GB in Docker's VM and about ten minutes, most of them for the container's image and the
+- It's heavy: a few GB in the container engine's VM and about ten minutes, most of them for the container's image and the
   restore, then about half an hour for the Aspire check below. Run it on its own, never next to the E2E suite or
   `aspire`, and only with several GB free: its image build next to the CD's deploy jobs once left this machine under
   3 GB of free memory.
+- On Podman, the devcontainers CLI can miss the container's start and wait for it forever, with nothing in its log
+  after the container's first lines: it listens for the start event only from when it starts the container, and
+  Podman's event stream takes about half a second to connect. Once `podman ps` shows the container running, stop
+  the CLI and run its `up` again with the same arguments, which skips that wait on a running container.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
-  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker's VM, not this machine,
+  and the Aspire check below passes. `bit doctor`'s memory warning describes the container engine's VM, not this machine,
   and is expected. So is a `bit setup` warning that the web app didn't get healthy, when the machine was busy: Aspire
   gives up on a project that is still starting after about two minutes. An `aspire start` in the container with
   nothing else running tells that from a broken app.
@@ -564,7 +583,7 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   Start it in the background as soon as its packages exist and this machine has several GB free, and never next to
   `devcontainer`, `agents` or the Android stage: a new project's web app always takes the same port, so another
   project's app can answer for this one. A second run can start once the first is in its idle wait. Its containers
-  hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
+  hold that memory, and the container engine's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
 - `-Keep` leaves the project and its containers for a closer look. Remove them by hand afterwards, with only the
@@ -624,7 +643,8 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
 - The checks are mechanical: the skills it read, the tools it called (a `ToolSearch` that only loads a tool doesn't
   count), the files changed after each turn, words in its final message. They say whether it followed the
   instructions, not how good its work is: for that, read each scenario's final messages and changed files in
-  `results` against its request. A check that fails once and passes on the next run or with the other model is
+  `results` against its request. A skill counts as read even when the agent opened its file only to edit it, so check the
+  first tools in the transcript too. A check that fails once and passes on the next run or with the other model is
   variance; one that fails twice is a finding. A run whose session started with the bit platform MCP server failed,
   because the platform website was down, counts for neither: run it again.
 - `-Model sonnet,opus` runs every scenario with both, and their habits differ: Sonnet tends to write the plan before

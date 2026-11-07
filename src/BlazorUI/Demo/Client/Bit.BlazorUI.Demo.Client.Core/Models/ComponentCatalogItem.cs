@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
+﻿using System;
+using System.Linq;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 /// <summary>
 /// One component as the documentation site talks about it: the gallery card, the home page list and
@@ -85,29 +88,42 @@ public sealed class ComponentCatalogItem
     /// tiers the whole name beats a prefix of it and a prefix beats a hit in the middle, which is
     /// what puts Tag above TagsInput, and TagsInput above the components merely tagged with it.
     /// </para>
+    /// <para>
+    /// A name and an alias are each one word ("SearchBox", "AppBar"), which a reader types as the
+    /// words it is made of as often as not - "search box", "app bar", "date-picker" - so those two
+    /// tiers compare the term with what separates its words left out. Compared as typed, "app bar"
+    /// found no component at all. The keywords and the summary hold phrases ("Floating Action
+    /// Button"), and are compared with the term as typed.
+    /// </para>
     /// </summary>
     /// <param name="term">The search term, already trimmed and lower-cased.</param>
     public int Relevance(string term)
     {
         if (term.Length == 0) return 0;
 
-        _nameKey ??= Name.ToLowerInvariant();
+        // A term of separators alone ("-") would be empty here, which every name starts with.
+        var word = Compact(term);
 
-        if (Rank(_nameKey, term) is int name) return name;
-
-        // The aliases arrive as one string ("Select, ComboBox"), and a reader types one of the names
-        // in it, not the list, so they are compared one by one.
-        _secondaryKeys ??= string.IsNullOrWhiteSpace(Aliases)
-            ? []
-            : [.. Aliases.ToLowerInvariant().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
-
-        var secondary = NoMatch;
-        foreach (var key in _secondaryKeys)
+        if (word.Length > 0)
         {
-            if (Rank(key, term) is int rank && rank < secondary) secondary = rank;
-        }
+            _nameKey ??= Name.ToLowerInvariant();
 
-        if (secondary != NoMatch) return 3 + secondary;
+            if (Rank(_nameKey, word) is int name) return name;
+
+            // The aliases arrive as one string ("Select, ComboBox"), and a reader types one of the names
+            // in it, not the list, so they are compared one by one.
+            _secondaryKeys ??= string.IsNullOrWhiteSpace(Aliases)
+                ? []
+                : [.. Aliases.ToLowerInvariant().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+
+            var secondary = NoMatch;
+            foreach (var key in _secondaryKeys)
+            {
+                if (Rank(key, word) is int rank && rank < secondary) secondary = rank;
+            }
+
+            if (secondary != NoMatch) return 3 + secondary;
+        }
 
         _keywordsKey ??= Keywords?.ToLowerInvariant() ?? string.Empty;
 
@@ -130,5 +146,14 @@ public sealed class ComponentCatalogItem
         if (candidate.StartsWith(term, StringComparison.Ordinal)) return 1;
 
         return candidate.Contains(term, StringComparison.Ordinal) ? 2 : null;
+    }
+
+    /// <summary>
+    /// The term as one word: its letters and digits, without the spaces, hyphens and other
+    /// separators between them. A term that is one word already - most of them - is returned as is.
+    /// </summary>
+    private static string Compact(string term)
+    {
+        return term.All(char.IsLetterOrDigit) ? term : new string([.. term.Where(char.IsLetterOrDigit)]);
     }
 }

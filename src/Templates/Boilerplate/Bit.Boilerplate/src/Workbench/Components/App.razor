@@ -9,8 +9,14 @@
 @{
     var isPreview = HttpContext.Request.Path.StartsWithSegments("/preview");
     var scenario = isPreview ? WorkbenchScenario.Parse(HttpContext.Request.QueryString.Value) : null;
+    // By the preset's name: a plain "light" or "dark" is bit's own theme, not the project's.
     var themePreference = scenario is not null
-        ? scenario.Theme.ToString().ToLowerInvariant()
+        ? scenario.Theme switch
+        {
+            WorkbenchThemeMode.Light => AppThemePresets.Light,
+            WorkbenchThemeMode.Dark => AppThemePresets.Dark,
+            _ => BitThemePresets.System
+        }
         : HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
     var themeOptions = new BitThemeSsrOptions
     {
@@ -62,6 +68,7 @@
     <Link rel="stylesheet" Href="_content/Bit.Bortable/bit-bortable.css" />
     <Link rel="stylesheet" Href="_content/Bit.Blow/bit-blow.css" />
     <Link rel="stylesheet" Href="_content/Bit.Bonboarding/bit-bonboarding.css" />
+    <Link rel="stylesheet" Href="_content/Bit.Bmotion/bit-bmotion.css" />
     <Link rel="stylesheet" Href="styles/workbench.css" />
     <Link rel="stylesheet" Href="Boilerplate.Workbench.styles.css" />
 

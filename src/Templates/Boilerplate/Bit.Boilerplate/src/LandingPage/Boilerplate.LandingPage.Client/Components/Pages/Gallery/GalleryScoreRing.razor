@@ -1,0 +1,12 @@
+@inherits LandingComponentBase
+
+<li class="score-ring" style="--i:@Index">
+    <span class="score-dial">
+        <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+            <circle class="score-track" cx="60" cy="60" r="54" pathLength="100" />
+            <circle class="score-arc" cx="60" cy="60" r="54" pathLength="100" />
+        </svg>
+        <strong>100</strong>
+    </span>
+    <span class="score-label">@Label</span>
+</li>

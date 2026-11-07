@@ -158,31 +158,6 @@
             return bitController.id;
         }
 
-        // The dial takes the focus without the page moving under it: what holds it is already on the screen - a
-        // callout placed in the viewport, a dial whose label or clear button was just pressed - and a focus() left
-        // to scroll on its own would scroll the page, or pan the viewport an on-screen keyboard has shortened, as
-        // well as the container the dial sits in. Only that container is scrolled, and only for a dial it has
-        // scrolled entirely out of sight (a sheet the keyboard has cut short): one still partly in view is left
-        // where it is, as a focus() leaves a dial in view.
-        public static focusDial(clock: HTMLElement): void {
-            if (!clock) return;
-
-            clock.focus({ preventScroll: true });
-
-            const container = clock.closest('.bit-ctp-cac') as HTMLElement | null;
-            if (!container || container.scrollHeight <= container.clientHeight) return;
-
-            const top = container.getBoundingClientRect().top + container.clientTop;
-            const bottom = top + container.clientHeight;
-            const rect = clock.getBoundingClientRect();
-
-            if (rect.bottom > top && rect.top < bottom) return;
-
-            // To the nearest edge, as a focus() would: a dial below is brought up to the bottom edge - unless it is
-            // taller than the container, where its top is what has to show - and one above down to the top edge.
-            container.scrollTop += rect.top < top ? rect.top - top : Math.min(rect.bottom - bottom, rect.top - top);
-        }
-
         public static dispose(id: string): void {
             const bitController = CircularTimePicker._bitControllers.find(bc => bc.id == id);
             bitController?.controller.abort();

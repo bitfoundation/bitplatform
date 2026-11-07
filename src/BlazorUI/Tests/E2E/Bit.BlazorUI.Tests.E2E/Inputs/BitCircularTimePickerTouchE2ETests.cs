@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Tests.E2E.Inputs;
+﻿using System.Text.RegularExpressions;
+
+namespace Bit.BlazorUI.Tests.E2E.Inputs;
 
 /// <summary>
 /// Drives BitCircularTimePicker (/e2e/circular-time-picker) on a phone: a touch device at a phone's viewport, where
@@ -17,7 +19,21 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
         IsMobile = IsChromium ? true : null
     };
 
+    // A sheet that has slid in: no transform left, or the identity an engine reports for the end of the transition.
+    private static readonly Regex AtRest = new(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$");
+
     private ILocator Field(string scope) => Page.Locator($"#{scope} .bit-ctp-inp").First;
+
+    // What can be read and pressed at the top of the sheet - the read-out of the toolbar and the close button laid over
+    // its corner - starts below the top safe area rather than under it.
+    private static async Task AssertClearOfTopSafeAreaAsync(ILocator callout, double safeArea)
+    {
+        var readOut = (await callout.Locator(".bit-ctp-hmc").BoundingBoxAsync())!;
+        Assert.IsTrue(readOut.Y >= safeArea, $"The read-out sits under the top safe area ({readOut.Y}px).");
+
+        var close = (await callout.Locator(".bit-ctp-cbn").BoundingBoxAsync())!;
+        Assert.IsTrue(close.Y >= safeArea, $"The close button sits under the top safe area ({close.Y}px).");
+    }
 
     private ILocator StandaloneCallout(string scope) => Page.Locator($"#{scope} .bit-ctp-cal").First;
 
@@ -111,7 +127,7 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("responsive");
         await Expect(callout).ToHaveClassAsync(HasClass("bit-ctp-res"));
-        await Expect(callout).ToHaveCSSAsync("transform", new System.Text.RegularExpressions.Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
+        await Expect(callout).ToHaveCSSAsync("transform", AtRest);
         var box = (await callout.BoundingBoxAsync())!;
         Assert.AreEqual(0, box.Y, 1, "The sheet is pinned to the top of the screen.");
         Assert.AreEqual(390, box.Width, 1, "The sheet spans the width of the screen.");
@@ -146,7 +162,7 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
         await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
 
         var callout = await OpenCalloutAsync("responsive");
-        await Expect(callout).ToHaveCSSAsync("transform", new System.Text.RegularExpressions.Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
+        await Expect(callout).ToHaveCSSAsync("transform", AtRest);
 
         // The safe area is a border of the toolbar, painted in its accent, so the bar reads as one with the status bar
         // rather than sitting under a band of the surface below it.
@@ -155,11 +171,42 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
         await Expect(toolbar).ToHaveCSSAsync("border-top-width", "47px");
         await Expect(toolbar).ToHaveCSSAsync("border-top-color", "rgba(0, 0, 0, 0)");
 
-        // What can be read and pressed starts below the notch, the close button laid over the corner of the bar included.
-        var readOut = (await callout.Locator(".bit-ctp-hmc").BoundingBoxAsync())!;
-        Assert.IsTrue(readOut.Y >= 47, $"The read-out sits under the notch ({readOut.Y}px).");
-        var close = (await callout.Locator(".bit-ctp-cbn").BoundingBoxAsync())!;
-        Assert.IsTrue(close.Y >= 47, $"The close button sits under the notch ({close.Y}px).");
+        await AssertClearOfTopSafeAreaAsync(callout, 47);
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAShortScreenWithSafeAreas_ScrollsTheDialUnderAToolbarKeptClearOfThem()
+    {
+        // The safe areas an app shell is given, which every engine reads, unlike the ones of a device.
+        await OpenAsync(Url);
+        await Page.SetViewportSizeAsync(390, 400);
+        await Page.EvaluateAsync(@"() => {
+            document.documentElement.style.setProperty('--bit-AppShell-safe-area-top', '47px');
+            document.documentElement.style.setProperty('--bit-AppShell-safe-area-bottom', '34px');
+        }");
+
+        var callout = await OpenCalloutAsync("responsive");
+        await Expect(callout).ToHaveCSSAsync("transform", AtRest);
+        await SettleAsync(callout);
+
+        // The panel ends above the bottom safe area, which leaves the dial more than the room there is for it.
+        var container = callout.Locator(".bit-ctp-cac");
+        var body = callout.Locator(".bit-ctp-bdy");
+        Assert.AreEqual(400 - 34, (await callout.BoundingBoxAsync())!.Height, 1, "The panel does not end above the bottom safe area.");
+        Assert.IsTrue(await body.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"),
+            "The dial fits the short screen, which leaves nothing to scroll.");
+
+        // Whatever scrolls the dial - the focus the opening hands it, a Tab to an action below it, a swipe - scrolls the
+        // body under the toolbar only: the toolbar, its read-out and the close button laid over its corner stay where
+        // the panel opens them, below the top safe area rather than under it.
+        await Expect(callout.Locator(".bit-ctp-clf")).ToBeFocusedAsync();
+        await body.EvaluateAsync("el => { el.scrollTop = el.scrollHeight; }");
+        await NextFramesAsync();
+
+        Assert.IsTrue(await body.EvaluateAsync<double>("el => el.scrollTop") > 0, "The body under the toolbar does not scroll.");
+        Assert.AreEqual(0, await container.EvaluateAsync<double>("el => el.scrollTop"), "The container scrolled the toolbar away.");
+        Assert.AreEqual(0, (await callout.Locator(".bit-ctp-tlb").BoundingBoxAsync())!.Y, 1, "The toolbar no longer runs up to the top of the screen.");
+        await AssertClearOfTopSafeAreaAsync(callout, 47);
     }
 
     [TestMethod]

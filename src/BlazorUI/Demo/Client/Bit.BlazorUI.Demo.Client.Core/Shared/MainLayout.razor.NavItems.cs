@@ -22,8 +22,8 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = ["/components/action-button"] },
-                new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton", Data = "FAB, Floating Action Button, Submit" },
-                new() { Text = "ButtonGroup", Url = "/components/button-group" },
+                new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton, LoadingButton", Data = "FAB, Floating Action Button, Submit" },
+                new() { Text = "ButtonGroup", Url = "/components/button-group", Description = "SegmentedControl, SegmentedButton, ToggleGroup" },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"], Description = "DropdownButton, SplitButton, Menu" },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
             ]
@@ -36,16 +36,16 @@ public partial class MainLayout
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
-                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox", Data = "Chips" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox, MultiSelect", Data = "Chips" },
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
                 new() { Text = "Rating", Url = "/components/rating", Description = "Rate, Stars", Data = "Review, Score, Feedback" },
-                new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
+                new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Description = "AutoComplete, Typeahead" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
                 new() { Text = "TagsInput", Url = "/components/tagsinput", AdditionalUrls = ["/components/tags-input"], Description = "Chips, Tokens", Data = "TagBox, TokenInput, ChipInput, TagField, Keywords, Labels, Recipients, Multiple" },
-                new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput" },
+                new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput, TextArea, PasswordField" },
                 new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" },
                 new()
                 {
@@ -54,8 +54,8 @@ public partial class MainLayout
                     [
                         new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"] },
                         new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"], Description = "ColorPalette, Swatch", Data = "Hex, RGB, HSL, HSV, Alpha, Transparency, Eyedropper, Contrast" },
-                        new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"] },
-                        new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"] },
+                        new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"], Description = "MonthPicker, YearPicker, DateTimePicker" },
+                        new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"], Description = "DateTimeRangePicker" },
                         new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = ["/components/time-picker"] },
                     ]
                 },
@@ -68,7 +68,7 @@ public partial class MainLayout
             [
                 new() { Text = "Footer", Url = "/components/footer" },
                 new() { Text = "Grid", Url = "/components/grid" },
-                new() { Text = "Header", Url = "/components/header" },
+                new() { Text = "Header", Url = "/components/header", Description = "AppBar, TopBar" },
                 new() { Text = "Layout", Url = "/components/layout" },
                 new() { Text = "Spacer", Url = "/components/spacer" },
                 new() { Text = "Stack", Url = "/components/stack", Description = "WrapPanel" },
@@ -93,7 +93,7 @@ public partial class MainLayout
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new() { Text = "DropMenu", Url = "/components/dropmenu" },
                 new() { Text = "Nav", Url = "/components/nav", Description = "Tree, TreeView" },
-                new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel" },
+                new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel, TabBar, BottomNavigation" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab, TabPage" },
             ]
@@ -126,14 +126,14 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
-                new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup" },
+                new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup, HoverCard" },
                 new() { Text = "Card", Url = "/components/card" },
                 new() { Text = "Collapse", Url = "/components/collapse" },
-                new() { Text = "Dialog", Url = "/components/dialog" },
+                new() { Text = "Dialog", Url = "/components/dialog", Description = "AlertDialog" },
                 new() { Text = "Modal", Url = "/components/modal", AdditionalUrls = ["/components/promodal"] },
                 new() { Text = "ModalService", Url = "/components/modalservice", AdditionalUrls = ["/components/promodalservice"] },
-                new() { Text = "Panel", Url = "/components/panel", AdditionalUrls = ["/components/propanel"] },
-                new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
+                new() { Text = "Panel", Url = "/components/panel", AdditionalUrls = ["/components/propanel"], Description = "Drawer, Sheet, BottomSheet, Offcanvas" },
+                new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView, ScrollArea" },
                 new() { Text = "Splitter", Url = "/components/splitter", Description = "SplitPane, Resizable" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },
             ],
@@ -165,10 +165,10 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
-                new() { Text = "AppShell", Url = "/components/appshell" },
+                new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
-                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
+                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner" },
@@ -177,7 +177,7 @@ public partial class MainLayout
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox", Data = "Confirmation dialog, Alert dialog, Yes No, Ok Cancel, Are you sure, Question" },
-                new() { Text = "NavPanel", Url = "/components/navpanel" },
+                new() { Text = "NavPanel", Url = "/components/navpanel", Description = "Sidebar, NavigationDrawer, SideNav" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", Data = "PDF, Document viewer, Preview, Print, Thumbnails, Bookmarks, Find in document, Attachments, Fullscreen, Presentation", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
@@ -213,7 +213,7 @@ public partial class MainLayout
                 new() { Text = "AiErrorView", Url = "/components/ai/errorview", Data = "Error, Retry, Rate limit, Failure" },
                 new() { Text = "AiForm", Url = "/components/ai/form", Description = "SchemaForm", Data = "JSON Schema, Form builder, Confirmation, Structured input" },
                 new() { Text = "AiGenerativeUiView", Url = "/components/ai/generativeuiview", Data = "Generative UI, Dynamic components, Model-rendered UI, Registry" },
-                new() { Text = "AiImagePartView", Url = "/components/ai/imagepartview", Data = "Image, Generated image, Vision, Lightbox" },
+                new() { Text = "AiImagePartView", Url = "/components/ai/imagepartview", Data = "Image, Generated image, Vision" },
                 new() { Text = "AiJsonView", Url = "/components/ai/jsonview", Description = "JsonViewer", Data = "JSON, Tree, Inspector" },
                 new() { Text = "AiMarkdownView", Url = "/components/ai/markdownview", Data = "Markdown, Rich text, Tables, Code, Math" },
                 new() { Text = "AiMessageActions", Url = "/components/ai/messageactions", Data = "Copy, Regenerate, Edit, Feedback, Thumbs up, Thumbs down" },

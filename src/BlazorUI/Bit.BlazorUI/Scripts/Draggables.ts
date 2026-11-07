@@ -22,6 +22,9 @@
             let sx = 0;
             let sy = 0;
             let thresholdDragged = false;
+            // The pointer the drag under way follows, or null between drags. Another contact (a second finger on the
+            // button) neither moves the button nor ends the drag, and a press of its own does not restart it.
+            let pointerId: number | null = null;
 
             dragElement.classList.add('bit-nta');
             const origCursor = dragElement.style.cursor;
@@ -38,12 +41,24 @@
                 //e.preventDefault();
                 //e.stopPropagation();
 
+                // Only a pointer that is not primary is turned away while a drag is under way: a primary one is the
+                // first contact of its kind, so the drag it would be refused for has lost its end - it restarts the
+                // drag rather than leave the button undraggable for good.
+                if (pointerId !== null && e.pointerId !== pointerId && e.isPrimary === false) return;
+
+                pointerId = e.pointerId;
                 x = sx = e.clientX;
                 y = sy = e.clientY;
                 thresholdDragged = false;
 
                 document.addEventListener('pointerup', handlePointerUp, { signal: ac.signal });
                 document.addEventListener('pointermove', handlePointerMove, { signal: ac.signal });
+                // A drag the browser takes away (a system gesture, an alert, a contact it turns into a pan) ends in a
+                // pointercancel and never in a pointerup, so it is ended the same way. Left running, the document would
+                // go on moving the element under every later pointer, a mouse merely hovering included, and the
+                // component would never hear that the drag is over (BitButton would swallow its next click as the
+                // one that ends a drag).
+                document.addEventListener('pointercancel', handlePointerUp, { signal: ac.signal });
 
                 dragElement.style.cursor = 'grabbing';
 
@@ -53,6 +68,8 @@
             async function handlePointerMove(e: PointerEvent) {
                 //e.preventDefault();
                 //e.stopPropagation();
+
+                if (e.pointerId !== pointerId) return;
 
                 if (!thresholdDragged) {
                     const diffX = e.clientX - sx;
@@ -147,8 +164,13 @@
                 //e.preventDefault();
                 //e.stopPropagation();
 
+                if (e.pointerId !== pointerId) return;
+
+                pointerId = null;
+
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointermove', handlePointerMove);
+                document.removeEventListener('pointercancel', handlePointerUp);
 
                 dragElement.style.cursor = origCursor;
                 //dragElement.classList.remove('bit-nta');

@@ -8,12 +8,12 @@ public static class WebManifestEndpoints
     {
         foreach (var site in LandingSites.All)
         {
-            app.MapGet($"{site.Path}/manifest.webmanifest", (HttpContext context) => Manifest(context, site, LandingCultures.Default)).ExcludeFromDescription();
+            app.MapGet($"{site.Path}/manifest.webmanifest", (HttpContext context) => Manifest(context, site, LandingCultures.Default)).ExcludeFromDescription().CacheOutput(LandingOutputCaches.SeoFiles);
 
             if (LandingCultures.InvariantGlobalization is false)
             {
                 app.MapGet($"/{{culture}}{site.Path}/manifest.webmanifest", (HttpContext context, string culture) =>
-                    LandingCultures.IsPrefix(culture) ? Manifest(context, site, LandingCultures.Find(culture)!) : Results.NotFound()).ExcludeFromDescription();
+                    LandingCultures.IsPrefix(culture) ? Manifest(context, site, LandingCultures.Find(culture)!) : Results.NotFound()).ExcludeFromDescription().CacheOutput(LandingOutputCaches.SeoFiles);
             }
         }
     }

@@ -46,7 +46,12 @@ public static partial class Program
             });
 
             services.AddBitBortableServices();
-            services.AddBitBmotionServices(options => options.ReducedMotion = BmReducedMotionMode.User);
+            services.AddBitBmotionServices(options =>
+            {
+                options.ReducedMotion = BmReducedMotionMode.User;
+                // Animates in CSS from the first paint, as content that waits for the circuit stays blank for seconds on a cold start.
+                options.Prerender = BmPrerenderMode.Animate;
+            });
 
             services.AddWorkbenchServices(configuration);
 
