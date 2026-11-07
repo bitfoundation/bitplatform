@@ -10,7 +10,7 @@ public partial class DevMcpTelemetryTools
     private const int MaxTraceSpans = 200;
     private const int MaxTraceLogs = 200;
 
-    private const string SamplingNote = "Outside Development the server sends the dashboard about 5% of its ordinary logs and fast successful traces, and every unexpected error and every trace slower than a second, so a missing line proves nothing. The dashboard keeps 100,000 logs and 100,000 traces at most and drops the oldest first.";
+    private const string SamplingNote = "Outside Development the server sends the dashboard about 5% of its ordinary logs and fast successful spans, and every unexpected error and every span slower than a second, though not always the rest of its trace, so a missing line proves nothing. The dashboard keeps 100,000 logs and 100,000 traces at most and drops the oldest first.";
 
     [AutoInject] private DevMcpTelemetryReader reader = default!;
     [AutoInject] private ServerApiSettings settings = default!;

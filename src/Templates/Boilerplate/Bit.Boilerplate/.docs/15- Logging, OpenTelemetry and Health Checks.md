@@ -296,8 +296,8 @@ https://localhost:2030
 A Docker Compose deployment runs the dashboard next to the apps, on the server's loopback (`.github/agents/deploy.agent.md`
 says how to open it). It keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it, and
 holds 100,000 logs and 100,000 traces at most. Outside Development the server sends it about 5% of its ordinary logs and
-fast successful traces, and every unexpected error and every trace slower than a second (`AppLoggingSampler` and
-`AppOpenTelemetryProcessor`).
+fast successful spans, and every unexpected error and every span slower than a second, though not always the rest of its
+trace (`AppLoggingSampler` and `AppOpenTelemetryProcessor`).
 
 The landing page's browser sends the dashboard its errors, and its logs and traces once the visitor consents. It can't
 reach the gRPC endpoint the apps use inside the Compose network, so the deploy job gives it the landing page's own

@@ -57,8 +57,8 @@ without one of them, knowing what it hides.
 - Start from the evidence: the exception and its stack trace, the trace id an error or the diagnostic modal shows, the
   request that failed, the job that failed with its arguments, the row that looks wrong. Follow one trace from end to
   end rather than reading the logs at random: dev-mcp's `GetTrace` gives a trace's spans and the logs written inside it.
-  Outside Development the server keeps only about 5% of its ordinary logs and fast successful traces, so a missing line
-  proves nothing; every unexpected error and every slow trace is kept.
+  Outside Development the server keeps only about 5% of its ordinary logs and fast successful spans, so a missing line
+  proves nothing; every unexpected error and every slow span is kept, though not always the rest of its trace.
 - Then compare it with what should be. These are the usual causes, roughly in order of how often they are the one:
     - **Configuration.** `GetDeploymentInfo` against `appsettings.json` and the environment's secrets: a missing or
       wrong value is the commonest cause right after a deployment, and the one setting an environment has that the
