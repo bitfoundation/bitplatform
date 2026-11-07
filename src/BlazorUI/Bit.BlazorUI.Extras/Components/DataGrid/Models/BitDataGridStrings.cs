@@ -9,7 +9,7 @@
 public class BitDataGridStrings
 {
     /// <summary>
-    /// Default accessible name of the grid itself (its <c>role="grid"</c> element), used when no
+    /// Default accessible name of the grid itself (its <c>role="grid"</c>, <c>"treegrid"</c> or <c>"table"</c> element), used when no
     /// <c>AriaLabel</c> is given. A page with several grids should name each one through
     /// <c>AriaLabel</c> instead, so screen-reader users can tell them apart.
     /// </summary>

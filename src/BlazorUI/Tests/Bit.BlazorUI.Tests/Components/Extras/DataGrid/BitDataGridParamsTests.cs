@@ -247,7 +247,7 @@ public class BitDataGridParamsTests : BunitTestContext
 
         Assert.IsNotNull(component.Find(".bit-dtg-hcell-rownumber"));
         Assert.IsNotNull(component.Find(".bit-dtg-footer-row"));
-        Assert.AreEqual("Cascaded label", component.Find("[role=grid]").GetAttribute("aria-label"));
+        Assert.AreEqual("Cascaded label", component.Find(".bit-dtg-table").GetAttribute("aria-label"));
 
         var nameCell = BodyRows(component)[0].QuerySelector(".bit-dtg-cell:not(.bit-dtg-cell-rownumber)")!;
         Assert.AreEqual("Banana", nameCell.GetAttribute("title"));
@@ -541,7 +541,7 @@ public class BitDataGridParamsTests : BunitTestContext
         StringAssert.Contains(viewportStyle, "height:200px;");
         Assert.IsFalse(viewportStyle.Contains("480px"));
 
-        Assert.AreEqual("Own label", component.Find("[role=grid]").GetAttribute("aria-label"));
+        Assert.AreEqual("Own label", component.Find(".bit-dtg-table").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -561,7 +561,7 @@ public class BitDataGridParamsTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-dtg-toolbar, .bit-dtg-pager, .bit-dtg-filter-row, .bit-dtg-footer-row, .bit-dtg-resizer, .bit-dtg-group-btn, .bit-dtg-hcell-rownumber").Count);
         Assert.IsTrue(component.FindAll(".bit-dtg-header-row .bit-dtg-hcell").All(h => h.GetAttribute("draggable") == "false"));
         Assert.AreEqual(0, component.FindAll(".bit-dtg-body .bit-dtg-cell[tabindex]").Count);
-        Assert.AreEqual("Data grid", component.Find("[role=grid]").GetAttribute("aria-label"));
+        Assert.AreEqual("Data grid", component.Find(".bit-dtg-table").GetAttribute("aria-label"));
     }
 
     private static object SampleValue(Type type, object? defaultValue)
