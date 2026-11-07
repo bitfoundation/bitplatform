@@ -79,7 +79,7 @@ together, plus the tests on both sides.
 
 | Name | Bit | Covers |
 | --- | --- | --- |
-| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException` |
+| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException`; the exceptions recorded on spans (`Activity.AddException`, taken off the span without it) |
 | `PageViews` | 2 | Page views (history/enhanced navigation, `TrackPageView`) |
 | `Interactions` | 4 | Clicks and other user interactions |
 | `Performance` | 8 | Web vitals (LCP, INP, CLS, FCP, TTFB), document-load span, resource timing, long tasks |
@@ -333,8 +333,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | `ai.user.agent` | `user_agent.original` (browser resource) |
   | `ai.device.locale` | `browser.language` (browser resource) |
   | `ai.operation.id` | traceId |
-  | `ai.operation.parentId` | parent span id (span) or span id (log, exception recorded on a span) |
-  | `ai.operation.name` | Requests, and the exceptions recorded on a request span: the request name (`{http.request.method} {http.route}` when both are set, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
+  | `ai.operation.parentId` | parent span id (span) or span id (log, event of a span) |
+  | `ai.operation.name` | Requests, and the events of a request span: the request name (`{http.request.method} {http.route}` when both are non-empty, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
   | `ai.session.id` | `session.id` |
   | `ai.user.id` | `enduser.pseudo.id` |
   | `ai.user.authUserId` | `user.id` |
@@ -348,7 +348,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | --- | --- | --- |
   | Span, kind SERVER/CONSUMER | `Request` | `id`, `name` (as `ai.operation.name`), `duration` (`d.hh:mm:ss.fffffff`), `responseCode`, `success`, `url` |
   | Any other span | `RemoteDependency` | `id`, `name`, `resultCode`, `data`, `duration`, `success`, `type` (`Ajax` for browser HTTP, `HTTP` for .NET, `InProc` otherwise), `target` |
-  | Span event `exception` with `exception.*` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape, at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Other span events are not sent |
+  | Span event `exception` with `exception.*` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape (`typeName` cut to 1024, `message` and `stack` to 32768 characters, on both sides), at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Not sent when the .NET error limits dropped it, or when a log record this exporter sends carries the same exception (type and message) under the same span (`LogError(ex)` plus `AddException(ex)` is one item) - both .NET-only: the script records no exception on a span. An `exception` event without `exception.*` is not sent |
+  | Any other span event | `Message` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: `message` = the event name, no `severityLevel`, at the event's time, the event's attributes as properties, the ids from the span's attributes. An event without a name is not sent |
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |
   | `eventName == "browser.web_vital"` | `Metric` | `metrics:[{name:"<web_vital.name>",kind:0,value,count:1}]` |

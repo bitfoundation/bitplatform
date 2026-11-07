@@ -106,6 +106,12 @@ public sealed class BelemetryAttributes : IEnumerable<KeyValuePair<string, objec
     /// <summary>Whether <paramref name="key"/> is present.</summary>
     public bool Contains(string key) => IndexOf(key) >= 0;
 
+    /// <summary>
+    /// Whether these attributes describe an exception (<c>exception.type</c> or <c>exception.message</c>): the one rule for
+    /// log records and span events alike.
+    /// </summary>
+    internal bool HasException => Contains(BelemetrySemanticConventions.ExceptionType) || Contains(BelemetrySemanticConventions.ExceptionMessage);
+
     /// <summary>Gets the value of <paramref name="key"/> as a string (formatting non-string values with the invariant culture).</summary>
     public string? GetString(string key) => TryGetValue(key, out var value) ? ToInvariantString(value) : null;
 

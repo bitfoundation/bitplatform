@@ -45,19 +45,33 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         _loop = RunAsync(pipeline, stopping);
     }
 
-    private void OnRecord(object record)
+    /// <summary>The exceptions counted since the last data point.</summary>
+    internal long Exceptions => Interlocked.Read(ref _exceptions);
+
+    internal void OnRecord(object record)
     {
         switch (record)
         {
-            case BelemetrySpan span when span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer:
-                Interlocked.Increment(ref _requests);
-                Interlocked.Add(ref _requestTicks, span.Duration.Ticks);
-                if (IsFailure(span, 500)) Interlocked.Increment(ref _requestsFailed);
-                break;
             case BelemetrySpan span:
-                Interlocked.Increment(ref _dependencies);
-                Interlocked.Add(ref _dependencyTicks, span.Duration.Ticks);
-                if (IsFailure(span, 400)) Interlocked.Increment(ref _dependenciesFailed);
+                if (span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer)
+                {
+                    Interlocked.Increment(ref _requests);
+                    Interlocked.Add(ref _requestTicks, span.Duration.Ticks);
+                    if (IsFailure(span, 500)) Interlocked.Increment(ref _requestsFailed);
+                }
+                else
+                {
+                    Interlocked.Increment(ref _dependencies);
+                    Interlocked.Add(ref _dependencyTicks, span.Duration.Ticks);
+                    if (IsFailure(span, 400)) Interlocked.Increment(ref _dependenciesFailed);
+                }
+
+                // The exceptions recorded on it count as the Azure Monitor exporter counts them - but not one the error
+                // limits dropped, nor one whose log record was counted already.
+                foreach (var spanEvent in span.Events)
+                {
+                    if (spanEvent.IsException && spanEvent.Limited is false && spanEvent.LoggedAs is null) Interlocked.Increment(ref _exceptions);
+                }
                 break;
             case BelemetryLogRecord log when log.HasException:
                 Interlocked.Increment(ref _exceptions);

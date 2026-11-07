@@ -19,9 +19,17 @@ internal static class AzureMonitorEnvelopeSerializer
         BelemetrySemanticConventions.SessionId, BelemetrySemanticConventions.UserId, BelemetrySemanticConventions.EndUserPseudoId,
     ];
 
-    public sealed record Context(string InstrumentationKey, bool MaskIp);
+    /// <param name="InstrumentationKey">The iKey of every envelope.</param>
+    /// <param name="MaskIp">Whether envelopes carry <c>ai.location.ip = 0.0.0.0</c>.</param>
+    /// <param name="Logs">Whether the exporter sends log records: only then does a logged exception stand for the same one recorded on its span.</param>
+    /// <param name="MinimumSeverity">The exporter's minimum log level, which a logged exception must pass to stand for that one.</param>
+    public sealed record Context(string InstrumentationKey, bool MaskIp, bool Logs = true, BelemetrySeverity? MinimumSeverity = null)
+    {
+        /// <summary>Whether the exporter sends the log record of <paramref name="logged"/>, as an Exception item.</summary>
+        public bool Sends(BelemetryLoggedException logged) => Logs && logged.Passes(MinimumSeverity);
+    }
 
-    /// <summary>Serializes every record of <paramref name="batch"/> as a JSON array of envelopes.</summary>
+    /// <summary>Serializes every record of <paramref name="batch"/> as a JSON array of envelopes; <paramref name="count"/> is how many.</summary>
     public static byte[] Serialize(BelemetryBatch batch, Context context, out int count)
     {
         var buffer = new ArrayBufferWriter<byte>(4096);
@@ -34,7 +42,7 @@ internal static class AzureMonitorEnvelopeSerializer
             w.WriteStartArray();
             foreach (var span in batch.Spans)
             {
-                count += WriteSpan(w, span, resource);
+                count += WriteSpan(w, span, resource, context);
             }
             foreach (var log in batch.Logs)
             {
@@ -51,8 +59,51 @@ internal static class AzureMonitorEnvelopeSerializer
         return buffer.WrittenSpan.ToArray();
     }
 
-    /// <summary>Writes the span's envelope and one per exception recorded on it; returns how many it wrote.</summary>
-    private static int WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource)
+    /// <summary>The number of envelopes <see cref="Serialize"/> writes for <paramref name="batch"/>, without writing them.</summary>
+    public static int Count(BelemetryBatch batch, Context context)
+    {
+        var count = batch.Logs.Count;
+        foreach (var span in batch.Spans)
+        {
+            count++;
+            foreach (var spanEvent in span.Events)
+            {
+                if (IsItem(spanEvent, context)) count++;
+            }
+        }
+        foreach (var metric in batch.Metrics)
+        {
+            foreach (var point in metric.Points)
+            {
+                if (IsItem(metric.Type, point)) count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// Whether a span event is an item of its own, as the Azure Monitor OpenTelemetry exporter writes them: an exception
+    /// (<see cref="BelemetrySpanEvent.IsException"/>) is an Exception - unless the error limits dropped it, or a log record
+    /// this exporter sends is the same exception - and any other named event is a Message. An <c>exception</c> event with
+    /// no <c>exception.*</c> is neither, as there.
+    /// </summary>
+    private static bool IsItem(BelemetrySpanEvent spanEvent, Context context)
+    {
+        if (spanEvent.Name != BelemetrySemanticConventions.ExceptionEvent) return string.IsNullOrEmpty(spanEvent.Name) is false;
+
+        return spanEvent.Attributes.HasException && spanEvent.Limited is false && (spanEvent.LoggedAs is not { } logged || context.Sends(logged) is false);
+    }
+
+    /// <summary>Whether a metric point is an item: a sum or histogram point with nothing new since the last export is not.</summary>
+    private static bool IsItem(BelemetryMetricType type, BelemetryMetricPoint p) => type switch
+    {
+        BelemetryMetricType.Gauge => true,
+        BelemetryMetricType.Sum => p.HasDeltaUpdate || p.DeltaValue != 0 || p.DeltaLongValue != 0,
+        _ => p.DeltaCount != 0,
+    };
+
+    /// <summary>Writes the span's envelope and one per event of it that is an item of its own; returns how many it wrote.</summary>
+    private static int WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource, Context context)
     {
         var isRequest = span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer;
         var attributes = span.Attributes;
@@ -63,8 +114,9 @@ internal static class AzureMonitorEnvelopeSerializer
         var success = span.Status != BelemetryStatusCode.Error
                       && (statusCode is null || statusCode == 0 || statusCode < (isRequest ? 500 : 400));
 
+        // As in TS: an empty method or route is not known.
         var name = span.Name;
-        if (isRequest && method is not null && attributes.GetString(BelemetrySemanticConventions.HttpRoute) is { } route) name = $"{method} {route}";
+        if (isRequest && method is { Length: > 0 } && attributes.GetString(BelemetrySemanticConventions.HttpRoute) is { Length: > 0 } route) name = $"{method} {route}";
 
         BeginEnvelope(w, isRequest ? "Request" : "RemoteDependency", span.StartTimeUnixNano);
         WriteTags(w, resource, span.TraceId, span.ParentSpanId, isRequest ? name : null, attributes);
@@ -103,15 +155,32 @@ internal static class AzureMonitorEnvelopeSerializer
         w.WriteEndObject();
         w.WriteEndObject();
 
-        // An exception recorded on the span (Activity.AddException, or any "exception" event) is an item of the exceptions
-        // table under the span, as the Azure Monitor OpenTelemetry exporter writes it: the span's envelope has no room for it.
+        // The span's envelope has no room for its events: each is an item under the span (IsItem), at its own time. The ids
+        // are the span's attributes (the enrichment step adds them to records, not to their events).
         var written = 1;
         foreach (var spanEvent in span.Events)
         {
-            if (spanEvent.Name != BelemetrySemanticConventions.ExceptionEvent || HasException(spanEvent.Attributes) is false) continue;
+            if (IsItem(spanEvent, context) is false) continue;
 
-            // The ids are the span's attributes (the enrichment step adds them to records, not to their events).
-            WriteException(w, resource, spanEvent.TimeUnixNano, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
+            if (spanEvent.Name == BelemetrySemanticConventions.ExceptionEvent)
+            {
+                WriteException(w, resource, spanEvent.TimeUnixNano, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
+            }
+            else
+            {
+                // No severity, as the Azure Monitor OpenTelemetry exporter writes it: an event is not a log level.
+                BeginEnvelope(w, "Message", spanEvent.TimeUnixNano);
+                WriteTags(w, resource, span.TraceId, span.SpanId, isRequest ? name : null, attributes);
+                w.WriteStartObject("data");
+                w.WriteString("baseType", "MessageData");
+                w.WriteStartObject("baseData");
+                w.WriteNumber("ver", 2);
+                w.WriteString("message", Truncate(spanEvent.Name, MaxMessageLength));
+                WriteProperties(w, spanEvent.Attributes, null, null);
+                w.WriteEndObject();
+                w.WriteEndObject();
+                w.WriteEndObject();
+            }
             written++;
         }
 
@@ -144,9 +213,6 @@ internal static class AzureMonitorEnvelopeSerializer
         w.WriteEndObject();
         w.WriteEndObject();
     }
-
-    private static bool HasException(BelemetryAttributes attributes) =>
-        attributes.Contains(BelemetrySemanticConventions.ExceptionType) || attributes.Contains(BelemetrySemanticConventions.ExceptionMessage);
 
     private static void WriteLog(Utf8JsonWriter w, BelemetryLogRecord log, ResourceTags resource)
     {
@@ -274,6 +340,8 @@ internal static class AzureMonitorEnvelopeSerializer
         var written = 0;
         foreach (var p in metric.Points)
         {
+            if (IsItem(metric.Type, p) is false) continue;
+
             double value;
             long count = 1;
             double? min = null, max = null;
@@ -284,11 +352,9 @@ internal static class AzureMonitorEnvelopeSerializer
                     value = p.IsInteger ? p.LongValue : p.Value;
                     break;
                 case BelemetryMetricType.Sum:
-                    if (p.HasDeltaUpdate is false && p.DeltaValue == 0 && p.DeltaLongValue == 0) continue;
                     value = p.IsInteger ? p.DeltaLongValue : p.DeltaValue;
                     break;
                 default:
-                    if (p.DeltaCount == 0) continue;
                     value = p.DeltaSum;
                     count = p.DeltaCount;
                     min = p.DeltaMin;
