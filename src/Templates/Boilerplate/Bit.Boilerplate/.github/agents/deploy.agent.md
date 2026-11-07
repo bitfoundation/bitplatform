@@ -44,8 +44,16 @@ domain and the services of section 5. Then go through the steps with them.
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
   the `LANDINGPAGE_SETTINGS` secret.
-- **Cloudflare is the recommendation, and it is free.** Its free plan covers the tunnel, the DNS, the certificates and
-  the cache this needs, so tell the user they need no paid plan to start.
+<!--#if (cloudflare == true)-->
+- **Cloudflare is strongly recommended, and it is free.** Its free plan covers the tunnel, the DNS, the certificates,
+  the cache and DDoS protection, so tell the user they need no paid plan to start. If they still don't want it, Caddy
+  on the VM's ports 80 and 443 is the good alternative: the template-diff skill, with the `cloudflare` option off,
+  shows what it takes.
+<!--#else-->
+- **This project was created without the `cloudflare` option**, which is strongly recommended: Cloudflare's free plan
+  adds DDoS protection, its cache and a tunnel that keeps every inbound port on the VM closed. Tell the user once, and
+  if they want it, turn the option on through the template-diff skill.
+<!--#endif-->
 - **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch each
   one deploys from; only protecting `develop` and `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
   Team would make this more professional, with its pros and cons as they stand then, and let them choose.
@@ -371,10 +379,6 @@ project up, and fails unless every container is healthy and the public address a
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.
-<!--#if (cloudflare == true)-->
-- If the user doesn't want Cloudflare, turn the project's `cloudflare` option off through the template-diff skill: the
-  Compose project then puts Caddy on 80 and 443 instead of the tunnel.
-<!--#endif-->
 
 ## 9. First deployment and hand-back
 
