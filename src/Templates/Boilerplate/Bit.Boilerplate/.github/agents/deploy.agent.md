@@ -150,8 +150,7 @@ business, and only what the project doesn't answer by itself.
   first visit, so cache the public pages:
     - **Cloudflare's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`), the recommendation when traffic is large or
       far from the VM, since the app sits behind Cloudflare anyway. It needs the runtime `Cloudflare` token and zone to
-      purge, and the Cache Rule and `Vary` setting `.docs/14- Response Caching System.md` lists. Without that Cache Rule,
-      Cloudflare caches no page at all, whatever the app sends.
+      purge, and the zone rules `.docs/14- Response Caching System.md` lists.
     - **ASP.NET Core's output cache** (`ResponseCaching:EnableOutputCaching`), on the server itself: enough for one
       server and moderate traffic.
     - One of them, never both: a page cached in two places goes stale in two, and a stale page is hard to trace to the

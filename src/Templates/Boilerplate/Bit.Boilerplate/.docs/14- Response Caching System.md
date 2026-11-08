@@ -261,42 +261,9 @@ Vary: Origin, X-Origin
 > Without that rule the edge keeps a single variant per URL and hands it to callers of every origin. Configure it before
 > turning `EnableCdnEdgeCaching` on.
 
-**The Cloudflare Cache Rule `EnableCdnEdgeCaching` needs:**
-
-Cloudflare doesn't cache HTML or JSON by default, whatever `Cache-Control` the origin sends. Until a Cache Rule makes
-those responses eligible, every page reaches the server and `EnableCdnEdgeCaching` does nothing. In **Caching → Cache
-Rules**, create one rule for the app's hostname, and put the `Vary` setting above in the same rule:
-
-| Setting | Value |
-|---|---|
-| Cache eligibility | Eligible for cache |
-| Edge TTL | Use cache-control header if present, bypass cache if not |
-
-Choose *bypass cache if not*. The other option, *use default Cloudflare caching behavior if not*, would keep any `200`
-without a `Cache-Control` header on the edge for two hours, so responses the app never meant to cache would be shared.
-
-Keep the paths the server handles itself out of the rule:
-
-```
-http.host eq "app.example.com"
-and not starts_with(http.request.uri.path, "/api/")
-and not starts_with(http.request.uri.path, "/odata/")
-and not starts_with(http.request.uri.path, "/core/")
-and not starts_with(http.request.uri.path, "/hangfire")
-and not starts_with(http.request.uri.path, "/healthchecks-ui")
-and not starts_with(http.request.uri.path, "/health")
-and not starts_with(http.request.uri.path, "/alive")
-and not starts_with(http.request.uri.path, "/swagger")
-and not starts_with(http.request.uri.path, "/scalar")
-and not starts_with(http.request.uri.path, "/signin-")
-and not starts_with(http.request.uri.path, "/oauth/")
-```
-
-If API responses that use `AppResponseCache` should be cached on the edge too, such as the product endpoint above, leave
-`/api/` out of that list. The sitemaps and `llms.txt` stay in the rule on purpose, since they use `AppResponseCache`.
-
-To check it, request a public page twice while signed out: the second response should have `cf-cache-status: HIT`.
-`DYNAMIC` means no Cache Rule made the page eligible.
+> **Cloudflare also needs a Cache Rule.** It doesn't cache HTML or JSON by default, so `EnableCdnEdgeCaching` does nothing
+> until a rule for the app's hostname sets **Eligible for cache** and the Edge TTL **Use cache-control header if present,
+> bypass cache if not**. `AppResponseCache` then decides what is cached, pages and APIs alike.
 
 **Important Security Note:**
 
