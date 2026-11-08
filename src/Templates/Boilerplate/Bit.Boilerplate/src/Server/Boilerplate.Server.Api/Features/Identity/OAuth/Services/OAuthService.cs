@@ -21,7 +21,11 @@ public partial class OAuthService(AppDbContext dbContext,
 {
     private HttpRequest Request => httpContextAccessor.HttpContext!.Request;
 
-    public string Issuer => Request.GetIssuer();
+    /// <summary>
+    /// The consent page can reach the api through the web app's forwarder, where the request's own host is the internal
+    /// one, so a deployment names the api's public address in <see cref="ServerApiSettings.OAuthIssuer"/>.
+    /// </summary>
+    public string Issuer => string.IsNullOrWhiteSpace(appSettings.OAuthIssuer) ? Request.GetIssuer() : appSettings.OAuthIssuer.TrimEnd('/');
 
     /// <summary>
     /// Everything checkable before a user is involved. The two failure kinds are split because until the client and its

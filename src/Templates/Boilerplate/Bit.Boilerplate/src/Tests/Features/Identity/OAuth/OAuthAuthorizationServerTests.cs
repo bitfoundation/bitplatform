@@ -396,6 +396,38 @@ public class OAuthAuthorizationServerTests
     }
 
     /// <summary>
+    /// A deployed consent page calls the api through the web app's forwarder, so the request's own host is an internal
+    /// one while the resource names the public address the client started from.
+    /// </summary>
+    [TestMethod]
+    public async Task AConfiguredIssuer_Should_AcceptAResourceOnThePublicAddress_WhateverHostTheRequestArrivedAt()
+    {
+        const string publicAddress = "https://api.example.test";
+
+        await using var server = new AppTestServer();
+        await server.Build(configureTestConfiguration: configuration =>
+        {
+            ConfigureTestClient(configuration);
+            configuration["OAuthIssuer"] = $"{publicAddress}/";
+        }).Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        var (_, challenge) = GeneratePkcePair();
+
+        var request = BuildRequest(server, challenge);
+        request.Resource = $"{publicAddress}/dev-mcp";
+
+        var approval = await client.GetController<IOAuthController>()
+                                                  .Approve(request, TestContext.CancellationToken);
+
+        Assert.AreEqual(publicAddress, QueryValueOf(approval.RedirectUrl, "iss"),
+            "The client checks iss against the authorization server it started from, not the host the page called.");
+    }
+
+    /// <summary>
     /// The OAuth scheme is a way <b>in</b> for other people's apps, not a way to sign in - and it sits on the same
     /// builder as Google and GitHub, where a display name would make it a sign-in button that cannot work.
     /// </summary>
