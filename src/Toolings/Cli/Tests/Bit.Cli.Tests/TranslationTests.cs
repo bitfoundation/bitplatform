@@ -287,6 +287,97 @@ public class TranslationTests
         StringAssert.Contains(host.FlatOutput, $"at http://127.0.0.1:{port}/v1 (OpenAI's chat completions API) to translate the 1 missing string of {Path.Combine("src", "Strings.resx")} from en to fa");
     }
 
+    [TestMethod]
+    public async Task AModelThatRejectsTheTemperature_Should_BeAskedAgainWithoutIt()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+
+        using var server = new HttpListener();
+        server.Prefixes.Add($"http://localhost:{port}/");
+        server.Start();
+        var requests = new List<bool>();
+        using var stop = new CancellationTokenSource();
+        var serving = ServeAModelThatRejectsTheTemperature(server, requests, stop.Token);
+
+        using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("https://api.openai.com/v1", $"http://localhost:{port}/v1", StringComparison.Ordinal));
+
+        var exitCode = await new TranslationRun(host.Services).RunAsync(new TranslateRequest(null, [], false, false), CancellationToken.None);
+
+        await stop.CancelAsync();
+        server.Stop();
+        await serving;
+
+        Assert.AreEqual(CliApp.ExitOk, exitCode, host.Output);
+        Assert.AreEqual("[Hello]", ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx"))["Hello"]);
+        Assert.AreEqual("[Hello]", ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.de.resx"))["Hello"]);
+        CollectionAssert.AreEqual(new[] { true, false, false }, requests, "Once rejected, the temperature isn't sent again.");
+    }
+
+    [TestMethod]
+    public async Task AnInvalidXmlCharacterInAReply_Should_NotCostTheFile()
+    {
+        using var host = CreateProject(new() { ["Hello"] = "Hello", ["Bye"] = "Bye {0}", ["Smile"] = "Hi 😀" });
+        var client = new FakeTranslationClient { Suffix = "\u0016\u0000\u001E￿\uD800" };
+
+        var exitCode = await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
+
+        Assert.AreEqual(CliApp.ExitOk, exitCode, host.Output);
+
+        var values = ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx"));
+        Assert.AreEqual("fa:Hello", values["Hello"]);
+        Assert.AreEqual("fa:Bye {0}", values["Bye"]);
+        Assert.AreEqual("fa:Hi 😀", values["Smile"]);
+    }
+
+    [TestMethod]
+    public void AValueWithTabsAndLineBreaks_Should_KeepThem()
+    {
+        Assert.AreEqual("a\tb\r\nc", ResxCatalog.RemoveInvalidXmlCharacters("a\tb\r\u0001\nc"));
+    }
+
+    private static async Task ServeAModelThatRejectsTheTemperature(HttpListener server, List<bool> requests, CancellationToken cancellationToken)
+    {
+        while (cancellationToken.IsCancellationRequested is false)
+        {
+            HttpListenerContext context;
+
+            try
+            {
+                context = await server.GetContextAsync();
+            }
+            catch (Exception exp) when (exp is HttpListenerException or ObjectDisposedException)
+            {
+                return;
+            }
+
+            using var reader = new StreamReader(context.Request.InputStream);
+            using var body = JsonDocument.Parse(await reader.ReadToEndAsync(cancellationToken));
+            var hasTemperature = body.RootElement.TryGetProperty("temperature", out _);
+            requests.Add(hasTemperature);
+
+            var content = """{ "translations": [ "[Hello]" ] }""";
+            var answer = hasTemperature
+                ? """{ "error": { "message": "Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported.", "type": "invalid_request_error", "param": "temperature", "code": "unsupported_value" } }"""
+                : JsonSerializer.Serialize(new
+                {
+                    id = "chatcmpl-1",
+                    @object = "chat.completion",
+                    created = 1,
+                    model = "test-model",
+                    choices = new[] { new { index = 0, finish_reason = "stop", message = new { role = "assistant", content } } },
+                    usage = new { prompt_tokens = 1, completion_tokens = 1, total_tokens = 2 }
+                });
+
+            context.Response.StatusCode = hasTemperature ? 400 : 200;
+            context.Response.ContentType = "application/json";
+            await context.Response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes(answer), cancellationToken);
+            context.Response.Close();
+        }
+    }
+
     private static TestHost CreateProject(Dictionary<string, string> strings, string config = Config)
     {
         var host = new TestHost();
@@ -318,6 +409,8 @@ public class TranslationTests
 
         public int ShortBatch { get; set; }
 
+        public string Suffix { get; set; } = "";
+
         public Task<TranslationOutput> TranslateAsync(TranslationBatch batch, CancellationToken cancellationToken)
         {
             Batches.Add(batch);
@@ -330,7 +423,7 @@ public class TranslationTests
                     return $"{batch.Target.Name}:broken";
                 }
 
-                return $"{batch.Target.Name}:{v}";
+                return $"{batch.Target.Name}:{v}{Suffix}";
             }).ToList();
 
             if (Batches.Count == ShortBatch)
