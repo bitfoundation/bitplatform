@@ -4,8 +4,8 @@ name: Boilerplate CI
 
 on:
   workflow_dispatch:
-  workflow_call:
   pull_request:
+    types: [ opened, synchronize, reopened, ready_for_review ]
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -21,7 +21,11 @@ jobs:
 
   build_and_test:
     name: build and test
+    # A draft is still changing, so it spends none of the plan's Actions minutes. Marking it ready runs this.
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-26.04
+    # Without a cap, a hung job runs for six hours, close to a fifth of a GitHub Free plan's monthly minutes.
+    timeout-minutes: 45
 
     steps:
 

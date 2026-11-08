@@ -655,7 +655,7 @@ slnf
 **Workflow Files**:
 
 1. **`ci.yml`**: Continuous Integration
-   - Runs on every push/pull request
+   - Runs on every pull request that isn't a draft
    - Builds all projects
    - Runs tests
    - Ensures code quality
