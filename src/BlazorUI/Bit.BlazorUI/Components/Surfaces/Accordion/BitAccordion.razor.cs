@@ -47,8 +47,11 @@ public partial class BitAccordion : BitComponentBase
     // runs the beforematch listener and renders inside the event, before the browser takes the attribute off and
     // scrolls to the match, so the attribute and bit-acd-huf leave together and the stylesheet's own reveal never
     // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is let
-    // go of once the panel closes, so the close plays as usual.
+    // go of once the panel the reveal opened is collapsed again (TrackReveal), so the close and every later open play
+    // as usual. _revealOpened says the reveal's expansion has happened: a collapsed state seen before it is the panel
+    // still on its way open (a RevealHandler re-rendering the page first, an OnToggling being awaited).
     private bool _revealing;
+    private bool _revealOpened;
 
     // The beforematch listener the panel carries while it is searchable, splatted onto the element rather than
     // written as an @onbeforematch attribute: Blazor does not know the event by name, and a delegate handed to the
@@ -619,6 +622,8 @@ public partial class BitAccordion : BitComponentBase
 
         if (IsExpanded) _hasBeenExpanded = true;
 
+        TrackReveal();
+
         // A render the page asks for is never the one the focus bookkeeping below is trying to skip.
         _skipRender = false;
 
@@ -663,7 +668,7 @@ public partial class BitAccordion : BitComponentBase
 
         var closed = _wasExpanded && IsExpanded is false;
 
-        if (closed) _revealing = false;
+        TrackReveal();
 
         _wasExpanded = IsExpanded;
 
@@ -771,6 +776,8 @@ public partial class BitAccordion : BitComponentBase
 
         if (IsExpanded) _hasBeenExpanded = true;
 
+        TrackReveal();
+
         await OnChange.InvokeAsync(IsExpanded);
 
         if (IsExpanded)
@@ -818,6 +825,7 @@ public partial class BitAccordion : BitComponentBase
         }
 
         _revealing = true;
+        _revealOpened = false;
 
         var revealed = RevealHandler is not null
                      ? await RevealHandler()
@@ -827,6 +835,24 @@ public partial class BitAccordion : BitComponentBase
 
         _revealing = false;
         _revealRefused = true;
+    }
+
+    // Follows the panel a reveal opened (see _revealing) through every way its state is learnt: the parameters the page
+    // hands in, a toggle of the accordion's own and a render. A collapse is let go of the reveal wherever it is seen
+    // first - a close whose render the focus bookkeeping skipped included - so no later open inherits it.
+    private void TrackReveal()
+    {
+        if (_revealing is false) return;
+
+        if (IsExpanded)
+        {
+            _revealOpened = true;
+        }
+        else if (_revealOpened)
+        {
+            _revealing = false;
+            _revealOpened = false;
+        }
     }
 
     // The render that started the close has just put the collapsed state on the panel, so the transitions the browser

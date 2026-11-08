@@ -149,15 +149,6 @@
             });
         }
 
-        // Every call the viewer makes into .NET is a notification nobody waits for the answer to. One landing after the
-        // viewer (or its circuit) is gone rejects - a page the observer settled on, a resize, a scroll, sent as the
-        // viewer is taken off the page or its circuit is torn down - and so does one over a connection that is already
-        // closed (see Utils.invokeDotNet) as Firefox leaves the page; neither is anything the viewer can act on, and
-        // left unhandled each would surface as an error of an application that did nothing wrong.
-        private static tellDotNet(dotnetRef: any, method: string, ...args: any[]) {
-            Utils.invokeDotNet(dotnetRef, method, ...args).catch(() => { });
-        }
-
         // Scroll-driven rendering: rendering a page runs .NET on the UI thread (on
         // WASM there is only one thread), so a render pass on every scroll frame
         // freezes the scroll itself. Instead, while the user is actively scrolling,
@@ -250,7 +241,7 @@
             buffered.sort((a, b) => a.d - b.d);
             const needed = visible.concat(buffered.map(b => b.n));
             if (needed.length) {
-                PdfViewer.tellDotNet(dotnetRef, "EnsurePagesRendered", needed);
+                Utils.notifyDotNet(dotnetRef, "EnsurePagesRendered", needed);
             }
         }
 
@@ -278,7 +269,7 @@
                     // scrolling, and each call would otherwise run .NET on the UI thread.
                     if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
                         (container as any).__bitPdvLastPage = n;
-                        PdfViewer.tellDotNet(dotnetRef, "OnPageVisible", n);
+                        Utils.notifyDotNet(dotnetRef, "OnPageVisible", n);
                     }
                 }
             };
@@ -347,10 +338,10 @@
                         const top = raw === null ? null : parseFloat(raw);
                         (container as any).__bitPdvLastPage = n;
                         if (top !== null && !Number.isNaN(top)) {
-                            PdfViewer.tellDotNet(dotnetRef, "OnLinkNavigate", n, top);
+                            Utils.notifyDotNet(dotnetRef, "OnLinkNavigate", n, top);
                         } else {
                             PdfViewer.scrollToPage(container, n);
-                            PdfViewer.tellDotNet(dotnetRef, "OnPageVisible", n);
+                            Utils.notifyDotNet(dotnetRef, "OnPageVisible", n);
                         }
                     }
                     return;
@@ -360,7 +351,7 @@
                 // actual text selection is not an advance.
                 const root = container.closest(".bit-pdv-presenting");
                 if (root && !target.closest("a") && !window.getSelection()?.toString()) {
-                    PdfViewer.tellDotNet(dotnetRef, "OnShortcut", e.shiftKey ? "prev" : "next");
+                    Utils.notifyDotNet(dotnetRef, "OnShortcut", e.shiftKey ? "prev" : "next");
                 }
             };
             container.addEventListener("click", onClick);
@@ -384,7 +375,7 @@
                 if (e.ctrlKey) {
                     e.preventDefault();
                     PdfViewer.stashZoomAnchor(container, e.clientX, e.clientY);
-                    PdfViewer.tellDotNet(dotnetRef, "OnWheelZoom", e.deltaY);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", e.deltaY);
                 }
             };
             container.addEventListener("wheel", onWheel, { passive: false });
@@ -468,10 +459,10 @@
                 // frame would stall the UI thread on WebAssembly.
                 if (ratio / pinch.scale > 1.1) {
                     pinch.scale *= 1.1;
-                    PdfViewer.tellDotNet(dotnetRef, "OnWheelZoom", -1);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", -1);
                 } else if (pinch.scale / ratio > 1.1) {
                     pinch.scale /= 1.1;
-                    PdfViewer.tellDotNet(dotnetRef, "OnWheelZoom", 1);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", 1);
                 }
             };
             const onTouchEnd = (e: TouchEvent) => {
@@ -495,7 +486,7 @@
                 // The pages run the way the reading direction does, so a right-to-left
                 // viewer turns forward on a swipe to the right.
                 const forward = getComputedStyle(root).direction === "rtl" ? dx > 0 : dx < 0;
-                PdfViewer.tellDotNet(dotnetRef, "OnShortcut", forward ? "next" : "prev");
+                Utils.notifyDotNet(dotnetRef, "OnShortcut", forward ? "next" : "prev");
             };
             container.addEventListener("touchstart", onTouchStart, { passive: true });
             container.addEventListener("touchmove", onTouchMove, { passive: false });
@@ -506,7 +497,7 @@
             // Notify .NET when the container resizes (used for fit-to-width/page).
             if (typeof ResizeObserver !== "undefined") {
                 const resize = new ResizeObserver(() => {
-                    PdfViewer.tellDotNet(dotnetRef, "OnViewportResized");
+                    Utils.notifyDotNet(dotnetRef, "OnViewportResized");
                     PdfViewer.scheduleRender(container, dotnetRef);
                 });
                 resize.observe(container);
@@ -837,7 +828,7 @@
                 if (hit.prevent) {
                     e.preventDefault();
                 }
-                PdfViewer.tellDotNet(dotnetRef, "OnShortcut", hit.command);
+                Utils.notifyDotNet(dotnetRef, "OnShortcut", hit.command);
             };
             root.addEventListener("keydown", onKeyDown);
             (root as any).__bitPdvKeys = onKeyDown;
@@ -1162,7 +1153,7 @@
                 }
             }
             if (needed.length) {
-                PdfViewer.tellDotNet(dotnetRef, "EnsureThumbsRendered", needed);
+                Utils.notifyDotNet(dotnetRef, "EnsureThumbsRendered", needed);
             }
         }
 
@@ -1291,7 +1282,7 @@
                 return;
             }
             PdfViewer.disposeFullscreenSpy(root);
-            const onChange = () => PdfViewer.tellDotNet(dotnetRef, "OnFullscreenChanged", document.fullscreenElement === root);
+            const onChange = () => Utils.notifyDotNet(dotnetRef, "OnFullscreenChanged", document.fullscreenElement === root);
             document.addEventListener("fullscreenchange", onChange);
             (root as any).__bitPdvFsc = onChange;
         }

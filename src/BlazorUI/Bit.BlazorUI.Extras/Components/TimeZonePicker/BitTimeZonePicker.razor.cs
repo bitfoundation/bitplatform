@@ -1255,8 +1255,8 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         _isCalloutDisplayed = shown;
     }
 
-    private Task HandleOnSearchInput(ChangeEventArgs e) => ApplySearchText(e.Value?.ToString());
-
+    // The setter of the search box's binding (see the markup), and what a letter typed on the field of an open list
+    // goes through as well.
     private async Task ApplySearchText(string? text)
     {
         SearchFor(text);

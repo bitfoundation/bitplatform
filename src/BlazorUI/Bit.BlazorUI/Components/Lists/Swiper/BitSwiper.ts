@@ -768,9 +768,9 @@
 
             this.keysOwned = owned;
 
-            // Not awaited, and let go of the way the state is (see notify): the focus leaving the swiper as the page
-            // is left is a call over a circuit that is already gone.
-            Utils.invokeDotNet(this.dotnetObj, 'OnKeysOwnerChange', owned).catch(() => { });
+            // Not awaited, as the state is not (see notify): the focus leaving the swiper as the page is left is a call
+            // over a circuit that is already gone, which Utils.notifyDotNet lets go of.
+            Utils.notifyDotNet(this.dotnetObj, 'OnKeysOwnerChange', owned);
         }
 
         private onFocusIn = (e: FocusEvent) => {
@@ -850,13 +850,11 @@
 
             this.keepFocus(state);
 
-            // The call is not awaited (the swiper has nothing to do with what comes back), and its
-            // rejection is let go of rather than reported: a swiper that went away mid-flight, or one
-            // whose circuit is already gone - Firefox keeps running the frames and observers of the page
-            // it leaves after letting go of its circuit (see Utils.invokeDotNet) - is nothing the swiper
-            // can act on, and reported, it is an error in the console of an application that did
-            // nothing wrong.
-            Utils.invokeDotNet(this.dotnetObj, 'OnStateChange', state).catch(() => { });
+            // The call is not awaited (the swiper has nothing to do with what comes back). A swiper that
+            // went away mid-flight, or one whose circuit is already gone - Firefox keeps running the frames
+            // and observers of the page it leaves after letting go of its circuit - is let go of, and a
+            // handler that threw is logged (see Utils.notifyDotNet).
+            Utils.notifyDotNet(this.dotnetObj, 'OnStateChange', state);
         }
 
         // A next/prev button hides itself at the end it cannot move any further towards, and a button that

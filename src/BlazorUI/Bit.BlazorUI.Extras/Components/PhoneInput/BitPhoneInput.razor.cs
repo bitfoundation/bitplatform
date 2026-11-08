@@ -47,11 +47,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string? _lastCountryIso;
     private string? _lastErrorMessage;
 
-    // The text the number input reported with its last input event, and the Number it was typed over: the input shows
-    // that text for as long as the Number has not moved from there (see ElementValue).
-    private string? _typedText;
-    private string? _typedTextBase;
-
     // The countries the dropdown offers, what the search term leaves of them, the one the keyboard is on and the
     // type-ahead that moves it - the part of the list BitCountryPicker walks and searches the same way. A dialing
     // code is searched for as well here, and the countries sharing one are ordered the way the same code typed into
@@ -1187,7 +1182,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
             await AssignNumber(FormatNumber(number));
 
-            ReleaseTypedTextIfNumberMoved();
+            ReleaseTypedTextIfMoved(Number);
 
             _lastValue = CurrentValue;
             _lastNumber = Number;
@@ -1854,8 +1849,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _isCalloutDisplayed = shown;
     }
 
-    private Task HandleOnSearchInput(ChangeEventArgs e) => ApplySearchText(e.Value?.ToString());
-
+    // The setter of the search box's binding (see the markup), and what a letter typed on the field of an open list
+    // goes through as well.
     private async Task ApplySearchText(string? text)
     {
         // The active option moves to the first match, so pressing Enter selects it instead of a stale one.
@@ -1965,15 +1960,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         var reportSettledValue = PrepareStringValueCommit();
 
         await SetNumber(e.Value?.ToString(), reportSettledValue);
+
+        // A Number the commit moved has already let go of the typed text (UpdateValueFromParts); one that ends up
+        // showing it lets go of it as well, as BitTextField does.
+        SettleTypedText(Number, Number);
     }
 
     // What the number input is rendered with: the text it reported with its last input event for as long as the Number
     // is still the one that text was typed over - Immediate off, a debounce or a throttle still waiting, a Number bound
-    // one way - and the Number once something has moved it: a commit, the page, a country picked for it. Rendering the
-    // Number in between would write it back over what is being typed.
-    private string? ElementValue => _typedText is not null && string.Equals(Number, _typedTextBase, StringComparison.Ordinal)
-                                    ? _typedText
-                                    : Number;
+    // one way - and the Number once something has moved it: a commit, the page, a country picked for it (see TypedText).
+    private string? ElementValue => HoldsTypedTextFor(Number) ? TypedText : Number;
 
     // The input event is bound rather than only handled for what the binding does before the handler runs: the renderer
     // takes the text the event carries as what the input was last rendered with, so a render that has nothing newer to
@@ -1981,17 +1977,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // the Number - a commit of Immediate, or one a throttle let through while the typing went on - wrote that keystroke's
     // text into an input which, a round trip later, held the keys typed since, and the next key went onto the shorter text.
     private Task HandleOnElementInput(string? text) => HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
-
-    // The text typed into the input is let go of for good once the Number has moved from the one it was typed over (see
-    // ElementValue): a Number coming back to that one later - a number committed and then cleared - would otherwise bring
-    // back a text typed long before.
-    private void ReleaseTypedTextIfNumberMoved()
-    {
-        if (_typedText is not null && string.Equals(Number, _typedTextBase, StringComparison.Ordinal) is false)
-        {
-            _typedText = null;
-        }
-    }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
@@ -2001,10 +1986,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         var text = NormalizeTyped(typed);
 
-        // What the input holds from here on, typed over the current Number (see ElementValue) - recorded before anything
-        // is awaited, since the render that runs while this handler waits is drawn from it.
-        _typedText = text ?? string.Empty;
-        _typedTextBase = Number;
+        // What the input holds from here on, typed over the current Number (see ElementValue).
+        RecordTypedText(text ?? string.Empty, Number);
 
         if (text != typed)
         {
@@ -2040,7 +2023,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private async Task UpdateValueFromParts(bool reportSettledValue = true)
     {
         // Every path that moves the Number comes through here, so the input shows the new Number from now on.
-        ReleaseTypedTextIfNumberMoved();
+        ReleaseTypedTextIfMoved(Number);
 
         var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 

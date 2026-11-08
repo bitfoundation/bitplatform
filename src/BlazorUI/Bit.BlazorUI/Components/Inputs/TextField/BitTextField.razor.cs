@@ -34,8 +34,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
-    private string? _typedText;
-    private string? _typedTextBase;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -888,10 +886,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
         // input shows from then on, whatever had been typed into it before.
-        if (_typedText is not null && string.Equals(Value, _typedTextBase, StringComparison.Ordinal) is false)
-        {
-            _typedText = null;
-        }
+        ReleaseTypedTextIfMoved(Value);
 
         SyncLiveRegion();
 
@@ -1071,8 +1066,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     // What the value attribute of the input is rendered with: the text typed into it while the value has not caught
     // up with that text - Immediate off, a debounce or a throttle still running, a binding that refuses it - and the
-    // value itself otherwise. Rendering the value in between would write it back over what is being typed.
-    private string? ElementValue => _typedText ?? CurrentValueAsString;
+    // value itself otherwise (see TypedText).
+    private string? ElementValue => TypedText ?? CurrentValueAsString;
 
     // The input event is bound rather than only handled for what the binding does before the handler runs: the
     // renderer writes the text the event carries into the value attribute of the last render, so the render that
@@ -1081,8 +1076,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     // since, and fast typing lost them.
     private async Task HandleOnElementInput(string? text)
     {
-        _typedText = text;
-        _typedTextBase = Value;
+        RecordTypedText(text, Value);
 
         await HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
     }
@@ -1091,18 +1085,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         await base.HandleOnStringValueChangeAsync(e);
 
-        if (_typedText is null) return;
-
         // Once the value holds the typed text the input shows the value again; until then the value this commit
         // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
-        if (string.Equals(_typedText, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal))
-        {
-            _typedText = null;
-        }
-        else
-        {
-            _typedTextBase = Value;
-        }
+        SettleTypedText(Value, CurrentValueAsString);
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
@@ -1473,7 +1458,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // Whatever the commit made of the text - all of it, trimmed, or refused - the input shows the value from here on.
-        _typedText = null;
+        ReleaseTypedText();
 
         // The change event is the one that commits the value, so the counter and the clear button are
         // re-synced from what the value ended up being rather than from the text the event carried: an
@@ -1523,7 +1508,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         await SetCurrentValueAsStringAsync(string.Empty, true);
 
-        _typedText = null;
+        ReleaseTypedText();
 
         var cleared = string.IsNullOrEmpty(CurrentValue);
 

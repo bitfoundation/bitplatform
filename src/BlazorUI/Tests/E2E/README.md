@@ -86,9 +86,11 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Te
   component: real clicks, real keys, real focus, the computed styles of the real stylesheet.
 - A test fails at cleanup on any uncaught page error or console error its page raised; a test whose subject is an
   error sets `AllowConsoleErrors` (or `AllowPageErrors`). A test that ends inconclusive (a library its page needs could
-  not be loaded from its CDN) has them written to its output instead. A test reloads with the base's `ReloadAsync`,
-  never `Page.ReloadAsync`: like `OpenAsync`, it lets go of the errors that only say the connection of the page being
-  left is gone, which Firefox raises as it keeps running that page's scripts after closing its connection.
+  not be loaded from its CDN) has them written to its output instead. A test leaves a page only through the base's
+  `OpenAsync` or `ReloadAsync` (or by ending), never `Page.GotoAsync` or `Page.ReloadAsync`: they let go of the errors
+  that only say the connection of the page being left is gone, which Firefox raises as it keeps running that page's
+  scripts after closing its connection. Everything the page raised before it is left is caught up with first, so a
+  connection that dropped while the page was on screen still fails the test.
   `AssertNoServerErrorsAsync` reads what the host logged for the circuits of the pages this test visited (the host
   records which pages each circuit was on), so a neighbouring test's error never fails it.
 - Read state through Playwright's auto-waiting assertions (`Expect(...)`), never a one-off read right after an

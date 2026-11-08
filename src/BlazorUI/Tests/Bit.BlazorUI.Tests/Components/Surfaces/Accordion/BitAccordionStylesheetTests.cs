@@ -139,9 +139,10 @@ public class BitAccordionStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "transition: none;");
 
         // So does the render that expands the accordion around a reveal, for where it lands ahead of the browser's
-        // own reveal (WebAssembly renders inside the beforematch event) and the pair above never applies.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-rvl {"), "transition: none;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-rvl) {"), "transition: none;");
+        // own reveal (WebAssembly renders inside the beforematch event) and the pair above never applies. The class is
+        // on the grid row itself, so the row stops animating in an engine without :has() as well.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-rvl,\n.bit-acd-rvl > .bit-acd-cwr > .bit-acd-con {"), "transition: none;");
+        Assert.IsFalse(stylesheet.Contains(":has(> .bit-acd-cwr > .bit-acd-rvl)"));
     }
 
     [TestMethod]

@@ -498,12 +498,10 @@ $acd-private-properties:
 // The render that expands the accordion around a reveal opens it at once as well (bit-acd-rvl), for where that render
 // lands ahead of the browser's own reveal: WebAssembly renders inside the beforematch event, before the browser takes
 // the attribute off, so the attribute and bit-acd-huf leave together and the pair above never applies. The class only
-// stops the transitions; what the panel looks like is the expanded state's.
-.bit-acd-rvl {
-    transition: none;
-}
-
-.bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-rvl) {
+// stops the transitions; what the panel looks like is the expanded state's. It is rendered on the grid row itself
+// rather than read off the panel through :has(), which an engine without it would drop, animating the row anyway.
+.bit-acd-rvl,
+.bit-acd-rvl > .bit-acd-cwr > .bit-acd-con {
     transition: none;
 }
 

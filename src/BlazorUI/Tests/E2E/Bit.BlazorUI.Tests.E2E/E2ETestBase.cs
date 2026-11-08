@@ -171,7 +171,10 @@ public abstract class E2ETestBase
             {
                 // Closing the context leaves the page as a navigation does (see LeaveThePageAsync): a page still at work
                 // when the test ends - a reply streaming in, a timer about to report - calls .NET over a closed
-                // connection in Firefox, which is not an error of the test.
+                // connection in Firefox, which is not an error of the test. What the page raised before is caught up
+                // with first, so the test's own errors - a connection that dropped under its last step - stay its own.
+                await CatchUpWithThePageAsync();
+
                 _leavingPageErrors.Add((_pageErrors.Count, int.MaxValue));
                 _leavingConsoleErrors.Add((_consoleErrors.Count, int.MaxValue));
 
@@ -254,10 +257,19 @@ public abstract class E2ETestBase
     // the connection is gone (some of which Firefox reports only after the next page has committed), and part of it
     // is raised by Blazor's own unawaited send, which no script of the page can catch. Those errors are told apart from
     // the rest of what the test raises (HostE2ETests reads every page's the same way); a page whose own connection
-    // drops while it is on screen is still failed for it.
+    // drops while it is on screen is still failed for it, since what it raised is caught up with before the stretch
+    // starts. The stretch ends once the next page has reported its status, which it does from its first interactive
+    // render: before that render it holds no reference to call .NET through, and one whose connection never comes up
+    // never reports its status, which fails the test on its own.
     private async Task LeaveThePageAsync(Func<Task> navigate, string status)
     {
         var leaving = Page.Url.StartsWith(BaseUrl, StringComparison.OrdinalIgnoreCase);
+
+        if (leaving)
+        {
+            await CatchUpWithThePageAsync();
+        }
+
         (int Page, int Console) from = (_pageErrors.Count, _consoleErrors.Count);
 
         try
@@ -273,6 +285,32 @@ public abstract class E2ETestBase
                 _leavingConsoleErrors.Add((from.Console, _consoleErrors.Count));
             }
         }
+    }
+
+    // Waits until what the page has raised so far is in _pageErrors and _consoleErrors. Playwright hands the page's
+    // errors over as events, after the page raised them, and the answer to an evaluation comes after every event the
+    // page raised before answering it; the timeout lets a rejection nobody handled be reported first. A page that does
+    // not answer (closed, crashed, busy past the wait) is left as it is: this only narrows what the leaving stretches
+    // that start next can take in.
+    private async Task CatchUpWithThePageAsync()
+    {
+        try
+        {
+            var answered = Page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve))");
+
+            await Task.WhenAny(answered, Task.Delay(TimeSpan.FromSeconds(5)));
+
+            if (answered.IsCompleted)
+            {
+                await answered;
+            }
+            else
+            {
+                // Observed later, so a page that answers (or fails) after the wait raises nothing unobserved.
+                _ = answered.ContinueWith(t => t.Exception, TaskScheduler.Default);
+            }
+        }
+        catch (PlaywrightException) { }
     }
 
     private static List<string> WithoutTheConnectionsLeftBehind(List<string> errors, List<(int From, int To)> leaving)

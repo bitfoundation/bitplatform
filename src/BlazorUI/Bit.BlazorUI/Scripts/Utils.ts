@@ -310,14 +310,47 @@
         // rejection. Over a connection that is already closed invokeMethodAsync throws before it has a promise to
         // reject - which Firefox runs into as it leaves or reloads the page, since it keeps running the page's
         // scripts (a blur, a key up, a last resize) after closing that connection - and a throw out of a listener
-        // skips whatever the caller does once the call has settled. Every script of the packages that calls .NET
-        // without awaiting the answer goes through here, and lets go of the rejection itself.
+        // skips whatever the caller does once the call has settled. A script that does not wait for the answer calls
+        // notifyDotNet instead, which settles what becomes of a failure.
         export function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T> {
             try {
                 return dotnetObj.invokeMethodAsync<T>(method, ...args);
             } catch (e) {
                 return Promise.reject(e);
             }
+        }
+
+        // Calls .NET without waiting for the answer: a script telling its component something happened (a scroll, a
+        // resize, a key) rather than asking it for anything. Every script of the packages that does so goes through
+        // here, so what becomes of a failed call is decided in one place. A call that never reached a live component -
+        // over a connection already closed (Firefox keeps running the scripts of a page it is leaving), through a circuit
+        // already gone, or on a reference released as its component went away - is let go of: nothing the script or the
+        // app can act on, and reported, it is an error of an application that did nothing wrong. Any other failure is a
+        // .NET handler (or a callback of the app behind it) that threw, and it is logged with the method it came from
+        // rather than lost. The promise it returns settles once the call has, and never rejects.
+        export function notifyDotNet(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<void> {
+            return invokeDotNet(dotnetObj, method, ...args).then(
+                () => { },
+                e => {
+                    if (isDotNetUnreachable(e)) return;
+
+                    console.error(`BitBlazorUI: ${method}:`, e);
+                });
+        }
+
+        // Whether a failed call to .NET is one that never reached a live component (see notifyDotNet): the messages
+        // SignalR and Blazor raise for a connection or a circuit that is gone, and the ones .NET raises for a reference
+        // that is no longer tracked. A circuit that hides the details of its exceptions (no DetailedErrors) words the
+        // last ones as it does any other exception, and those are logged.
+        function isDotNetUnreachable(e: unknown): boolean {
+            const message = typeof (e as any)?.message === 'string' ? (e as any).message as string : String(e ?? '');
+
+            return message.includes("Cannot send data if the connection is not in the 'Connected' State")
+                || message.includes('WebSocket is not in the OPEN state')
+                || message.includes('Invocation canceled due to the underlying connection being closed')
+                || message.includes('The circuit associated with this dispatcher is no longer available')
+                || message.includes('There is no tracked object with id')
+                || /Cannot access a disposed object[\s\S]*DotNetObjectReference/.test(message);
         }
     }
 }

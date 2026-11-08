@@ -299,5 +299,54 @@
 
             return null;
         }
+
+        // Whether the last press of the page was a pointer's rather than a key's, and the element the focus landed on
+        // while it was (see hasKeyboardFocus).
+        let pointerPressed = false;
+        let pointerFocused: EventTarget | null = null;
+        let watchingFocusOrigin = false;
+
+        // Starts telling a focus a pointer press put on an element apart from one the keyboard put there (see
+        // hasKeyboardFocus). Every script that asks calls it as it is set up rather than as the page loads; only the
+        // first call adds the listeners, which stay for the life of the page. A key that only modifies others (or a
+        // shortcut made with one) is no use of the keyboard, any more than it is to :focus-visible; any other key
+        // pressed on a control a pointer focused is the keyboard taking it over.
+        export function watchFocusOrigin() {
+            if (watchingFocusOrigin) return;
+
+            watchingFocusOrigin = true;
+
+            document.addEventListener('pointerdown', () => { pointerPressed = true; }, { capture: true, passive: true });
+            document.addEventListener('keydown', e => {
+                if (e.ctrlKey || e.metaKey || e.altKey || /^(Control|Shift|Alt|AltGraph|Meta|OS|CapsLock)$/.test(e.key)) return;
+
+                pointerPressed = false;
+                pointerFocused = null;
+            }, { capture: true, passive: true });
+            document.addEventListener('focusin', e => { pointerFocused = pointerPressed ? e.target : null; }, { capture: true, passive: true });
+        }
+
+        // Whether the focus is inside the container and the keyboard is what put it there - a control a scroll must
+        // not roll out of the view, a bar to keep on the screen. :focus-visible says so of most elements, but the
+        // engines match it on a text field however it was focused (the field shows its caret to a mouse user too), so
+        // a field a pointer press focused is told apart through watchFocusOrigin, which the caller has started. A
+        // frame cannot say either way, its focus being in a document of its own, and answers `frame`: what the caller
+        // knows of the focus that moved into it. An engine that does not know :focus-visible throws on it rather than
+        // answering false, and every focus then counts: a control hidden under an edge is the worse outcome.
+        export function hasKeyboardFocus(container: Element, frame = false): boolean {
+            const active = document.activeElement;
+
+            if (!active || !container.contains(active)) return false;
+
+            if (/^(IFRAME|FRAME|OBJECT|EMBED)$/.test(active.tagName)) return frame;
+
+            if (active === pointerFocused) return false;
+
+            try {
+                return active.matches(':focus-visible');
+            } catch {
+                return true;
+            }
+        }
     }
 }

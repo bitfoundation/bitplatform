@@ -350,25 +350,8 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
         _measurePasses = 0;
         _measureRequested = true;
 
-        StartMeasuringOnceTheObserverIsDone();
-    }
-
-    // Not awaited: the observer has nothing to wait for. A method of its own, since the callback's parameter is named _.
-    private void StartMeasuringOnceTheObserverIsDone() => _ = MeasureOnceTheObserverIsDoneAsync();
-
-    // The observer calls in from inside its callback, and in WebAssembly the call runs right there - the render and the
-    // measurements that follow it included. A trail that collapses an item there changes its own height (the overflow
-    // button sits on the line differently than an item does), which the observer would have to report again within the
-    // same frame, and refuses to with the "loop completed with undelivered notifications" error - an uncaught error of
-    // the page in WebKit. So the measuring starts once the callback is over, and a height it changes is reported on the
-    // next frame like any other. The callback keeps its signature (a public member of the package) and leaves the render
-    // to this task.
-    private async Task MeasureOnceTheObserverIsDoneAsync()
-    {
-        await Task.Yield();
-
-        if (IsDisposing || IsAutoCollapsing is false) return;
-
+        // The observer reports from the frame after its callback rather than from inside it (Observers.registerResize),
+        // so the height a collapse changes here is observed like any other rather than looping the observer.
         StateHasChanged();
     }
 

@@ -1013,6 +1013,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _filterOps.Remove(key);
             _filterRaw.Remove(key);
             CancelFilterDebounce(key);
+            if (ReferenceEquals(_resizePressColumn, column)) _resizePressColumn = null;
             // Drop any sort/filter/group descriptors that referenced the removed column so later
             // refreshes and remote reads no longer carry descriptors for a column that is gone.
             var removedDescriptors = _sorts.RemoveAll(s => s.ColumnId == key)
@@ -3782,8 +3783,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private int _resizePress;
 
     // The column of the resize handle pressed last, which the second press of a double click that lands on the overlay
-    // the first press put up still belongs to (see OnResizeOverlayMouseDownAsync).
+    // the first press put up still belongs to (see OnResizeOverlayMouseDownAsync). It is let go of once that press could
+    // no longer be the first of a double click: the press became a drag, or another press came after it.
     private BitDataGridColumn<TItem>? _resizePressColumn;
+
+    // How far the pointer may move from a press of a resize handle, in CSS pixels, before the press is a drag rather than
+    // the first press of a double click - about the distance within which the platforms still count two presses as one.
+    private const double ResizeDoubleClickSlop = 4;
 
     /// <summary>The release of a resize handle's press, before the overlay that follows a drag has been rendered: a drag
     /// still being started is called off, and one the overlay is already on its way to the browser for is ended - the
@@ -3803,6 +3809,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         if (e.Detail < 2 || e.Button != 0) return;
 
+        _resizePressColumn = null;
         ReleaseResizeHandle();
         await AutoFitAsync(column);
     }
@@ -3811,17 +3818,23 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// overlay of the first press reaches the browser before that press is released - over a fast link - it is taken down
     /// only a round trip after the release, and a second press that follows quickly finds it still over the handle. That
     /// is the handle's second press all the same, so it fits the column the first press was on, as OnResizerMouseDownAsync
-    /// does: a drag holds the button down, so no other press of the primary button with a click count of two reaches the
-    /// overlay.</summary>
+    /// does. Only the first press on the overlay after the handle's can be that one, and only while the handle's press is
+    /// still a click rather than a drag: a press after a drag, or the second press of a double click whose first press
+    /// already landed on the overlay (a cell double-clicked under an overlay a slow link keeps up), fits nothing.</summary>
     internal Task OnResizeOverlayMouseDownAsync(MouseEventArgs e)
     {
-        return _resizePressColumn is { } column ? OnResizerMouseDownAsync(column, e) : Task.CompletedTask;
+        var column = _resizePressColumn;
+        _resizePressColumn = null;
+
+        return column is null ? Task.CompletedTask : OnResizerMouseDownAsync(column, e);
     }
 
     internal void OnResizeMove(double clientX)
     {
         if (_resizingColumn is null) return;
         var delta = clientX - _resizeStartX;
+        // A press that has become a drag is no first press of a double click (see OnResizeOverlayMouseDownAsync).
+        if (Math.Abs(delta) > ResizeDoubleClickSlop) _resizePressColumn = null;
         if (_resizeRtl) delta = -delta;
         var newWidth = Math.Max(_resizingColumn.MinWidth, _resizeStartWidth + delta);
         if (_resizingColumn.MaxWidth is { } max) newWidth = Math.Min(max, newWidth);

@@ -124,7 +124,7 @@
     @* The collapse is a grid track animating between 0fr and 1fr, which is the only cross-browser way to
        transition to the intrinsic height of the content: the padding therefore has to sit on the innermost
        element, since a border box can never be shorter than its own padding. *@
-    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
+    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @(IsExpanded && _revealing ? "bit-acd-rvl" : null) @Classes?.ContentContainer">
         <div style="@Styles?.ContentWrapper" class="bit-acd-cwr @Classes?.ContentWrapper">
             @* aria-labelledby names a landmark, and on an element without the role it names nothing at all,
                so the two are dropped together rather than leaving one behind.
@@ -137,7 +137,7 @@
                  aria-labelledby="@(NoContentRegion ? null : _PanelLabelledBy)"
                  hidden="@(_IsHiddenUntilFound ? "until-found" : null)"
                  style="@Styles?.Content"
-                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @(_IsHiddenUntilFound ? "bit-acd-huf" : null) @(IsExpanded && _revealing ? "bit-acd-rvl" : null) @Classes?.Content"
+                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @(_IsHiddenUntilFound ? "bit-acd-huf" : null) @Classes?.Content"
                  tabindex="@(_IsContentFocusable ? "0" : null)"
                  @onfocusin="HandleOnContentFocusIn"
                  @onfocusout="HandleOnContentFocusOut"

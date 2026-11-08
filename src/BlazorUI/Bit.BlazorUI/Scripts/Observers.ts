@@ -67,12 +67,36 @@
                 // calling .NET on its own. The reference it was handed is left alone: it may be this one again.
                 Observers._resizeObservers[id]?.disconnect();
 
+                // The size is reported on the next frame rather than from inside the callback. In WebAssembly the call
+                // runs right where it is made - the render of the component and the measurements that follow it
+                // included - and a component that changes its own size there (a breadcrumb collapsing an item, a
+                // carousel re-laying its slides) is a size the observer would have to report again within the same
+                // frame, which it refuses to with the "loop completed with undelivered notifications" error (an
+                // uncaught error of the page in WebKit). Reported from the frame, the change is observed on that
+                // frame like any other. The resizes of one frame make one call, with the size the last one left.
+                let pending: DOMRectReadOnly | null = null;
+
                 const observer = new ResizeObserver(entries => {
-                    const entry = entries[0];
+                    const entry = entries[entries.length - 1];
                     if (!entry) return;
 
-                    // A component disposed while a resize was on its way rejects the call; that is nobody's error.
-                    obj.invokeMethodAsync("OnResize", entry.contentRect).catch(() => { });
+                    const scheduled = pending !== null;
+
+                    pending = entry.contentRect;
+
+                    if (scheduled) return;
+
+                    requestAnimationFrame(() => {
+                        const rect = pending;
+
+                        pending = null;
+
+                        // An observer unregistered (or replaced) meanwhile has a reference that is released or about
+                        // to be, and a component that no longer listens.
+                        if (rect === null || Observers._resizeObservers[id] !== observer) return;
+
+                        Utils.notifyDotNet(obj, "OnResize", rect);
+                    });
                 });
                 observer.observe(element);
 
