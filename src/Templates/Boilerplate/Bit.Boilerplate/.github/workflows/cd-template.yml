@@ -115,7 +115,6 @@ jobs:
   deploy_server:
     name: deploy server
     needs: build_server
-    # No timeout-minutes: this runner spends none of the plan's minutes, and a deployment must not be killed halfway.
     runs-on: [self-hosted, "${{ inputs.ENV_NAME }}"]
     permissions:
       contents: read
