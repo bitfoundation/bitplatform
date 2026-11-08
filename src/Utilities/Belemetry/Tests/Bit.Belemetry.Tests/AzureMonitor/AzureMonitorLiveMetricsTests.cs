@@ -549,7 +549,8 @@ public class AzureMonitorLiveMetricsTests
         await using var live = Create();
         Apply(live, Streams("""{ "TelemetryType": "Event", "Filters": { "Filters": [ { "FieldName": "CustomDimensions.PageName", "Predicate": "Equal", "Comparand": "Orders" } ] } }"""));
 
-        var visit = Records.Log("/orders", eventName: BelemetrySemanticConventions.PageVisitTimeEvent);
+        // Its body is its page view's name, as the script writes it: the name given, else the title.
+        var visit = Records.Log("Orders", eventName: BelemetrySemanticConventions.PageVisitTimeEvent);
         visit.Attributes.Set(BelemetrySemanticConventions.UrlFull, "https://shop.test/orders").Set(BelemetrySemanticConventions.UrlPath, "/orders")
                         .Set(BelemetrySemanticConventions.PageTitle, "Orders").Set(BelemetrySemanticConventions.PageVisitDuration, 1200L)
                         .Set("PageName", "an attribute").Set("tenant", "contoso");

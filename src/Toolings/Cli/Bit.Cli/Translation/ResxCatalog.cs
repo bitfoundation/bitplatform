@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.IO.Enumeration;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -106,6 +108,25 @@ public static partial class ResxCatalog
         using var stream = new MemoryStream();
         document.Save(stream, SaveOptions.DisableFormatting);
         Infrastructure.AtomicFile.WriteAllText(pair.TargetPath, System.Text.Encoding.UTF8.GetString(stream.ToArray()).TrimStart('\uFEFF'));
+    }
+
+    public static string RemoveInvalidXmlCharacters(string value)
+    {
+        var valid = new StringBuilder(value.Length);
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (XmlConvert.IsXmlChar(value[i]))
+            {
+                valid.Append(value[i]);
+            }
+            else if (i + 1 < value.Length && XmlConvert.IsXmlSurrogatePair(value[i + 1], value[i]))
+            {
+                valid.Append(value[i]).Append(value[++i]);
+            }
+        }
+
+        return valid.ToString();
     }
 
     private static IEnumerable<string> Find(string root, string pattern, Action<string>? warn)

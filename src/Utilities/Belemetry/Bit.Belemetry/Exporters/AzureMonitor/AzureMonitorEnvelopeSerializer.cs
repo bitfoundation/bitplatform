@@ -220,7 +220,11 @@ internal static class AzureMonitorEnvelopeSerializer
             case BelemetrySemanticConventions.PageViewEvent:
                 {
                     var url = attributes.GetString(BelemetrySemanticConventions.UrlFull);
-                    var name = attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
+                    // The body is the page view's name (the one given to TrackPageView, else the title, else the template),
+                    // as the script writes it.
+                    var name = log.Body is { Length: > 0 } body ? body
+                             : attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
+                             : attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is { Length: > 0 } template ? template
                              : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? url ?? "page";
 
                     BeginEnvelope(w, "PageView", log.TimeUnixNano);

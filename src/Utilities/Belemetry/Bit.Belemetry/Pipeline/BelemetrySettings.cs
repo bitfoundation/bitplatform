@@ -131,6 +131,72 @@ internal sealed class BelemetrySettings
 
     public List<string> Meters { get; }
 
+    private IReadOnlyList<string>? _pageRoutes;
+    private IReadOnlyList<string>? _configuredPageRoutes;
+    private BelemetryPageRouteMatcher? _pageRouteMatcher;
+    private volatile bool _noPageRoutesFound;
+    private int _noPageRoutesReported;
+
+    /// <summary>
+    /// The route templates page paths are matched against: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the
+    /// discovered ones (<see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>, from
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> when there are any), once each. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes();
+
+    /// <summary>
+    /// The route templates the app named itself: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the routes of the
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> (with <see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>),
+    /// once each - <see cref="PageRoutes"/> without the scan of the app's references. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> ConfiguredPageRoutes => _configuredPageRoutes ??= ResolveConfiguredPageRoutes();
+
+    /// <summary>The <see cref="PageRoutes"/>, compiled for the page views .NET records itself. Built on first use.</summary>
+    public BelemetryPageRouteMatcher PageRouteMatcher => _pageRouteMatcher ??= new(PageRoutes);
+
+    /// <summary>
+    /// True once, after <see cref="PageRoutes"/> were resolved, when discovery was on and found no route at all - most
+    /// likely an app whose pages discovery cannot see (no entry assembly, as on .NET for Android, and its pages not
+    /// loaded yet): every page view then falls back to its path's template, which deserves a warning.
+    /// </summary>
+    public bool TakeNoPageRoutesWarning() => _noPageRoutesFound && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
+
+    private List<string> ResolveConfiguredPageRoutes()
+    {
+        var browser = Options.Browser;
+        var routes = AddPageRoutes([], browser.PageRoutes);
+        if (browser.DiscoverPageRoutes && browser.PageRouteAssemblies.Count > 0)
+        {
+            var read = BelemetryPageRoutes.Read(browser.PageRouteAssemblies);
+            _noPageRoutesFound = read.Length == 0;
+            AddPageRoutes(routes, read);
+        }
+        return routes;
+    }
+
+    private IReadOnlyList<string> ResolvePageRoutes()
+    {
+        var browser = Options.Browser;
+        var configured = ConfiguredPageRoutes;
+        // The assemblies' routes are among the configured ones already.
+        if (browser.DiscoverPageRoutes is false || browser.PageRouteAssemblies.Count > 0) return configured;
+
+        var discovered = BelemetryPageRoutes.Discovered;
+        _noPageRoutesFound = discovered.Count == 0;
+        return AddPageRoutes([.. configured], discovered);
+    }
+
+    /// <summary>Appends the <paramref name="templates"/> not listed yet (blank ones skipped, trimmed, compared case-insensitively).</summary>
+    private static List<string> AddPageRoutes(List<string> routes, IEnumerable<string> templates)
+    {
+        var seen = new HashSet<string>(routes, StringComparer.OrdinalIgnoreCase);
+        foreach (var route in templates)
+        {
+            if (string.IsNullOrWhiteSpace(route) is false && seen.Add(route.Trim())) routes.Add(route.Trim());
+        }
+        return routes;
+    }
+
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
 
     /// <summary>The runtime feature switch behind the <c>MetricsSupport</c> MSBuild property.</summary>

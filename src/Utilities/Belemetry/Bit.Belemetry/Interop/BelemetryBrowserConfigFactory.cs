@@ -6,7 +6,14 @@ namespace Bit.Belemetry;
 /// <summary>Builds the browser script's configuration from the resolved settings.</summary>
 internal static class BelemetryBrowserConfigFactory
 {
-    public static BelemetryBrowserConfig Create(BelemetrySettings settings)
+    /// <param name="settings">The resolved settings.</param>
+    /// <param name="includeDiscoveredRoutes">
+    /// Whether <c>pageViews.routes</c> lists the discovered routes besides the configured ones: not for a script that is
+    /// started already, which a repeated <c>start</c> only adds the routes it lacks to. Its page (a server's, Auto) has the
+    /// routes the server discovered - among them its client project's - and finding them again may cost a scan of the
+    /// app's assemblies; the routes configured here may be this side's own.
+    /// </param>
+    public static BelemetryBrowserConfig Create(BelemetrySettings settings, bool includeDiscoveredRoutes = true)
     {
         var options = settings.Options;
         var browser = options.Browser;
@@ -33,7 +40,15 @@ internal static class BelemetryBrowserConfigFactory
                 HonorGlobalPrivacyControl = options.Consent.HonorGlobalPrivacyControl,
                 PendingLimit = options.Consent.PendingLimit,
             },
-            PageViews = new() { TrackHashChanges = browser.TrackHashChanges, TrackVisitTime = browser.TrackPageVisitTime },
+            PageViews = new()
+            {
+                TrackHashChanges = browser.TrackHashChanges,
+                TrackVisitTime = browser.TrackPageVisitTime,
+                // Only for a page that records page views: the list costs its bytes in every page and its discovery a
+                // scan. The settings' own list, resolved once per process, is serialized as it is.
+                Routes = options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0
+                         && (includeDiscoveredRoutes ? settings.PageRoutes : settings.ConfiguredPageRoutes) is { Count: > 0 } routes ? routes : null,
+            },
             Interactions = new()
             {
                 // Distinct: a configuration binder appends to the list's defaults, and a DOM event listed twice would

@@ -8,6 +8,7 @@ import type { DiagnosticsConfig } from './config';
 import { Features } from './features';
 import { debug } from './log';
 import { isSpan, type Attributes, type TelemetryRecord } from './model';
+import { templatePath, templateRoute } from './routes';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** The category names of C# BelemetryDiagnosticCategories, with their bits (the config's `categories` mask). */
@@ -74,32 +75,6 @@ const RESOURCE_KEYS = ['browser.brands', 'browser.platform', 'browser.mobile', '
 
 function perfNow(): number {
     return typeof performance !== 'undefined' && performance.now ? performance.now() : 0;
-}
-
-/** A path with the segments that identify an instance replaced, as C# BelemetryUrlTemplate.TemplatePath does. */
-export function templatePath(path: string): string {
-    if (!path) return '/';
-    return path.split('/').map(segment => {
-        if (!segment || segment[0] === '{') return segment;
-        let digits = 0;
-        let hex = 0;
-        let letters = 0;
-        for (let i = 0; i < segment.length; i++) {
-            const c = segment.charCodeAt(i);
-            const digit = c >= 48 && c <= 57;
-            const lower = c >= 97 && c <= 122;
-            const upper = c >= 65 && c <= 90;
-            if (digit) digits++;
-            if (digit || (c >= 97 && c <= 102) || (c >= 65 && c <= 70)) hex++;
-            if (lower || upper) letters++;
-        }
-        if (digits === segment.length) return '{n}';
-        if (segment.length === 36 && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(segment)) return '{guid}';
-        if (hex === segment.length && segment.length >= 16 && digits > 0) return '{hex}';
-        if (segment.length >= 16 && digits > 0 && letters > 0) return '{id}';
-        if (segment.indexOf('@') >= 0 || segment.indexOf('[') >= 0) return '{value}';
-        return segment;
-    }).join('/');
 }
 
 /** A URL as the timeline keeps it: origin, templated path, the allowlisted query parameters only, no fragment. */
@@ -375,8 +350,11 @@ export class DiagnosticRecorder {
                 break;
             case 'navigation': {
                 event.name = 'page_view';
-                const path = str(a, 'url.path');
-                if (path) event.route = templatePath(path);
+                // The page's route template, else its path's. Templated either way: a caller's `url.template` may hold
+                // ids or a query, and the timeline is kept in sessionStorage (a route's `{...}` segments stay as they
+                // are; .NET templates it again, as the page is untrusted).
+                const route = str(a, 'url.template') || str(a, 'url.path');
+                if (route) event.route = templateRoute(route);
                 const type = str(a, 'browser.navigation.type');
                 if (type) event.attrs = { 'browser.navigation.type': type };
                 break;

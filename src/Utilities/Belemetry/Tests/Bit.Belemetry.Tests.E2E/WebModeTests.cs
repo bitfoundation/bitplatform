@@ -138,10 +138,16 @@ public abstract partial class WebModeTests : HarnessTest
 
         var second = await Collector.WaitForAsync(t => PageView(t, "/second"), "the page view of /second", session);
         Assert.AreEqual("push", second.Attributes.GetValueOrDefault("browser.navigation.type"));
+        Assert.AreEqual("/second", second.Attributes.GetValueOrDefault("url.template"));
 
         var third = await Collector.WaitForAsync(t => PageView(t, "/third"), "the page view of /third", session);
         Assert.AreEqual("push", third.Attributes.GetValueOrDefault("browser.navigation.type"));
         Assert.AreEqual(BaseUrl + "/second", third.Attributes.GetValueOrDefault("page.referrer"));
+
+        // A page with a route parameter: its views carry the route the host found, not the path.
+        await Page.EvaluateAsync("() => Blazor.navigateTo('/third/7')");
+        var parameterized = await Collector.WaitForAsync(t => PageView(t, "/third/7"), "the page view of /third/7", session);
+        Assert.AreEqual("/third/{N:int}", parameterized.Attributes.GetValueOrDefault("url.template"));
 
         // Each navigation counts once, however many history calls and enhanced loads it took.
         var all = await Collector.ReceivedAsync(session);

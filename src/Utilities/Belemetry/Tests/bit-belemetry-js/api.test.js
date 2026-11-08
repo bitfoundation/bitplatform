@@ -319,6 +319,20 @@ describe('a second start', () => {
         const spans = api._getState().pipeline.queue.slice(before);
         expect(spans.map(s => s.attributes['url.full'])).toEqual(['https://api.test/items']);
     });
+
+    it('adds the routes it brings (configured on the client only) to those of the first, as a new list', async () => {
+        await load();
+        api.start(relayConfig({ pageViews: { routes: ['/orders/{id:int}', '/'] } }));
+        const first = api._getState().config.pageViews.routes;
+        api.start(relayConfig({ pageViews: { routes: ['/Orders/{ID:int}', '/wizard/{step:int}', '/wizard/{STEP:int}', 42] } }));
+
+        const routes = api._getState().config.pageViews.routes;
+        expect(routes).toEqual(['/orders/{id:int}', '/', '/wizard/{step:int}']);
+        expect(routes).not.toBe(first);
+
+        api.start(relayConfig({ pageViews: { routes: ['/'] } }));
+        expect(api._getState().config.pageViews.routes).toBe(routes);
+    });
 });
 
 describe('getStats', () => {
