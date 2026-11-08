@@ -317,9 +317,9 @@ project up, and fails unless every container is healthy and the public address a
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
 <!--#endif-->
-- If section 4 chose Cloudflare's edge cache, create the Cache Rule for the app's hostname, with its `Vary` setting, as
-  `.docs/14- Response Caching System.md` describes. Once the app is up, check that a public page requested twice comes
-  back from the edge the second time.
+- If section 4 chose Cloudflare's edge cache, make sure the app's hostname has the Cache Rule, with its `Vary` setting,
+  as `.docs/14- Response Caching System.md` describes, and leave the zone's other rules alone. Once the app is up, check
+  that a page with a shared cache lifetime, requested twice, comes back from the edge the second time.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the Workbench if the user
   wants it, and for the web routes of section 3 if the user took them.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
