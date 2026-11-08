@@ -143,7 +143,8 @@ RUN_BROWSER_TESTS=1 BROWSER=webkit dotnet test
 ### Run in WebAssembly
 
 The performance pages run on the server unless `PERF_RENDER_MODE=wasm` moves them into the browser. Every performance
-test checks that its page runs where the variable asked (`#renderer`) and fails otherwise.
+test checks that its page runs where the variable asked (`#renderer`) and fails otherwise. A value other than `server`,
+`wasm` or `webassembly` (in any case) fails every test before the host is started.
 
 ```bash
 RUN_BROWSER_TESTS=1 PERF_RENDER_MODE=wasm dotnet test --filter "TestCategory=Performance"

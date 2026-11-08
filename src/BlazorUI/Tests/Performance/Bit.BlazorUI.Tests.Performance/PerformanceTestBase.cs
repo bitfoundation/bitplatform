@@ -47,13 +47,17 @@ public abstract class PerformanceTestBase
     /// <summary>
     /// Where the performance pages run, as <c>PERF_RENDER_MODE</c> names it: <c>server</c> (InteractiveServer, the default)
     /// or <c>wasm</c> (InteractiveWebAssembly). The host reads it off a cookie every browser context of the run carries; the
-    /// other pages of the host run on the server whatever it says.
+    /// other pages of the host run on the server whatever it says. Any other value fails every test before the host or the
+    /// browser is started, rather than measuring the server under a name that asked for something else.
     /// </summary>
-    internal static string RenderMode => (Environment.GetEnvironmentVariable("PERF_RENDER_MODE") ?? "server").ToLowerInvariant() switch
-    {
-        "wasm" or "webassembly" => "wasm",
-        _ => "server"
-    };
+    internal static string RenderMode => Environment.GetEnvironmentVariable("PERF_RENDER_MODE") is { Length: > 0 } mode
+        ? mode.ToLowerInvariant() switch
+        {
+            "server" => "server",
+            "wasm" or "webassembly" => "wasm",
+            _ => throw new InvalidOperationException($"Unknown PERF_RENDER_MODE '{mode}'. Use server or wasm.")
+        }
+        : "server";
 
     protected IPage Page { get; private set; } = null!;
 
@@ -92,6 +96,9 @@ public abstract class PerformanceTestBase
     [TestInitialize]
     public async Task TestInitializeBase()
     {
+        // Read first, so a PERF_RENDER_MODE the run does not know fails here and starts neither the host nor the browser.
+        var renderMode = RenderMode;
+
         // The host and the browser are started by the first test and kept for the whole run (BrowserTestRun stops
         // them once it is over). Stopping them whenever no test happened to be running - between any two tests of a
         // sequential run - had every test start its own `dotnet run` and browser, racing the port of the last one.
@@ -115,7 +122,7 @@ public abstract class PerformanceTestBase
         }
 
         _context = await _browser.NewContextAsync(ContextOptions);
-        await _context.AddCookiesAsync([new Cookie { Name = "perf-render-mode", Value = RenderMode, Url = BaseUrl }]);
+        await _context.AddCookiesAsync([new Cookie { Name = "perf-render-mode", Value = renderMode, Url = BaseUrl }]);
         Page = await _context.NewPageAsync();
 
         // Wait for page to be ready.
