@@ -1,6 +1,7 @@
 ﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { log, span } from './helpers.js';
-import { DiagnosticRecorder, templatePath, templateUrl } from '../../Bit.Belemetry/Scripts/diagnostics.ts';
+import { DiagnosticRecorder, templateUrl } from '../../Bit.Belemetry/Scripts/diagnostics.ts';
+import { templatePath } from '../../Bit.Belemetry/Scripts/routes.ts';
 
 let api;
 
@@ -101,6 +102,9 @@ describe('DiagnosticRecorder', () => {
         expect(JSON.stringify(e)).not.toContain('a@b.c');
         recorder.record(log({ eventName: 'browser.page_view', scope: 'bit.belemetry.page_views', feature: 2, attributes: { 'url.path': '/orders/42', 'url.template': '/orders/{id:int}' } }));
         expect(recorder.snapshot(4095, {}).events[1].route).toBe('/orders/{id:int}');
+        // A caller's template is a caller's string: its ids are templated like a path's.
+        recorder.record(log({ eventName: 'browser.page_view', scope: 'bit.belemetry.page_views', feature: 2, attributes: { 'url.path': '/users/1', 'url.template': '/users/jane@x.com/42' } }));
+        expect(recorder.snapshot(4095, {}).events[2].route).toBe('/users/{value}/{n}');
     });
 
     it('console messages are left out unless log messages are allowed', () => {

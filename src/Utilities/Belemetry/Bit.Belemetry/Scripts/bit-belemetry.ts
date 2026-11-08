@@ -387,6 +387,11 @@ export function start(config?: BelemetryConfig | null): void {
     }
 }
 
+/** Whether the script has started: a repeated `start` only updates consent and transport, so .NET leaves out the rest (the routes). */
+export function isStarted(): boolean {
+    return state !== null;
+}
+
 /** Records the user's consent decision (a bit mask of Features). */
 export function setConsent(features: number): void {
     try {
@@ -678,7 +683,7 @@ export function _getState(): State | null {
 }
 
 const api = {
-    start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
+    start, isStarted, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
     getStats, attachDotNet, sendRequests, getDiagnostics, getDiagnosticsStream, clearDiagnostics, downloadFile, Features,
 };
 

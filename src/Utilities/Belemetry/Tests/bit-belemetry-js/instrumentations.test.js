@@ -58,6 +58,19 @@ describe('page views', () => {
         expect(visit).toMatchObject({ body: '/checkout/{step}', attributes: { 'url.path': '/checkout/2', 'url.template': '/checkout/{step}' } });
     });
 
+    it('names a page view and its visit after the name given, over the title', () => {
+        const ctx = fakeContext({ pageViews: { trackVisitTime: true } });
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        document.title = 'Checkout';
+        trackPageView(ctx, 'manual', { name: 'Wizard step 2', url: '/checkout/2' });
+        t += 1000;
+        trackPageView(ctx, 'push', { url: '/next' });
+        const [view, visit] = ctx.records;
+        expect(view).toMatchObject({ eventName: 'browser.page_view', body: 'Wizard step 2', attributes: { 'page.title': 'Checkout' } });
+        expect(visit).toMatchObject({ eventName: 'browser.page_visit_time', body: 'Wizard step 2', attributes: { 'page.title': 'Checkout' } });
+    });
+
     it('matches the routes below the base href, and prefixes the template with it', () => {
         const base = document.createElement('base');
         base.href = '/shop/';

@@ -911,6 +911,15 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
     }
 
+    /// <summary>Warns, once, when route discovery found no route at all (<see cref="BelemetrySettings.TakeNoPageRoutesWarning"/>).</summary>
+    internal void WarnIfNoPageRoutes()
+    {
+        if (Settings.TakeNoPageRoutesWarning() is false) return;
+        LogDiagnostic(null, "No @page routes were found (Browser.DiscoverPageRoutes), so page views are named after their paths with the ids replaced " +
+                            "(url.template /orders/{n}, not /orders/{id:int}). List the router's assemblies in Browser.PageRouteAssemblies, or the routes in Browser.PageRoutes.",
+                      LogLevel.Warning);
+    }
+
     /// <summary>Logs at Debug, or at Information with <see cref="BelemetryOptions.Debug"/>.</summary>
     internal void LogDiagnostic(Exception? exception, string message) =>
         LogDiagnostic(exception, message, Settings.Options.Debug ? LogLevel.Information : LogLevel.Debug);

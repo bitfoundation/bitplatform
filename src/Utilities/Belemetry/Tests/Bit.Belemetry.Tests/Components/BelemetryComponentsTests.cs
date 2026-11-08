@@ -97,6 +97,7 @@ public class BelemetryComponentsTests
         await using var context = CreateContext(o => o.Browser.Transport = BelemetryBrowserTransport.Relay);
         context.JSInterop.Mode = JSRuntimeMode.Strict;
         var module = context.JSInterop.SetupModule(ModulePath);
+        module.Setup<bool>("isStarted").SetResult(false);
         module.SetupVoid("start", _ => true).SetVoidResult();
         // The attach options are a JsonDocument the bridge disposes once the call is made, so read them in the matcher.
         string? attachOptions = null;
@@ -163,6 +164,24 @@ public class BelemetryComponentsTests
         Assert.HasCount(1, module.Invocations["start"]);
         Assert.HasCount(1, module.Invocations["attachDotNet"]);
         Assert.AreEqual("direct", ((JsonElement)module.Invocations["start"][0].Arguments[0]!).GetProperty("transport").GetString());
+    }
+
+    [TestMethod]
+    public async Task Initializer_ListsTheRoutes_OnlyToAScriptNotStartedYet()
+    {
+        foreach (var started in new[] { false, true })
+        {
+            await using var context = CreateContext(o => o.Browser.PageRoutes.Add("/orders/{id:int}"));
+            context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var module = context.JSInterop.SetupModule(ModulePath);
+            module.Setup<bool>("isStarted").SetResult(started);
+
+            context.Render<BelemetryInitializer>();
+
+            var pageViews = ((JsonElement)module.Invocations["start"].Single().Arguments[0]!).GetProperty("pageViews");
+            Assert.AreEqual(started is false, pageViews.TryGetProperty("routes", out _),
+                            started ? "A started script ignores a second list (a server rendered it, Auto)." : "A script started here needs the routes.");
+        }
     }
 
     [TestMethod]

@@ -114,7 +114,7 @@ public class BrowserConfigHostingTests
 
         var script = await response.Content.ReadAsStringAsync();
         var exports = ExportedNames(script);
-        foreach (var export in new[] { "start", "setConsent", "getConsent", "isConsentDecided", "setUser", "trackEvent", "trackPageView", "trackException", "flush", "getContext", "attachDotNet", "sendRequests" })
+        foreach (var export in new[] { "start", "isStarted", "setConsent", "getConsent", "isConsentDecided", "setUser", "trackEvent", "trackPageView", "trackException", "flush", "getContext", "attachDotNet", "sendRequests" })
         {
             Assert.IsTrue(exports.Contains(export), $"bit-belemetry.js does not export {export}. Exports: {string.Join(", ", exports)}");
         }

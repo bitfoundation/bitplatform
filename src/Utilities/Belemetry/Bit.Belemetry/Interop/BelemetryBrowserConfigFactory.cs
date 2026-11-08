@@ -6,7 +6,12 @@ namespace Bit.Belemetry;
 /// <summary>Builds the browser script's configuration from the resolved settings.</summary>
 internal static class BelemetryBrowserConfigFactory
 {
-    public static BelemetryBrowserConfig Create(BelemetrySettings settings)
+    /// <param name="settings">The resolved settings.</param>
+    /// <param name="includeRoutes">
+    /// Whether <c>pageViews.routes</c> is filled in: not for a script that is started already (a repeated <c>start</c>
+    /// ignores it), as finding the routes may cost a scan of the app's assemblies.
+    /// </param>
+    public static BelemetryBrowserConfig Create(BelemetrySettings settings, bool includeRoutes = true)
     {
         var options = settings.Options;
         var browser = options.Browser;
@@ -37,8 +42,9 @@ internal static class BelemetryBrowserConfigFactory
             {
                 TrackHashChanges = browser.TrackHashChanges,
                 TrackVisitTime = browser.TrackPageVisitTime,
-                // Only for a page that records page views: the list costs its bytes in every page and its discovery a scan.
-                Routes = options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0 && settings.PageRoutes is { Count: > 0 } routes ? [.. routes] : null,
+                // Only for a page that records page views: the list costs its bytes in every page and its discovery a
+                // scan. The settings' own list, resolved once per process, is serialized as it is.
+                Routes = includeRoutes && options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0 && settings.PageRoutes is { Count: > 0 } routes ? routes : null,
             },
             Interactions = new()
             {

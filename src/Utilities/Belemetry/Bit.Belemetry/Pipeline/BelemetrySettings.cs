@@ -132,15 +132,30 @@ internal sealed class BelemetrySettings
     public List<string> Meters { get; }
 
     private IReadOnlyList<string>? _pageRoutes;
+    private BelemetryPageRouteMatcher? _pageRouteMatcher;
+    private volatile bool _noPageRoutesFound;
+    private int _noPageRoutesReported;
 
     /// <summary>
-    /// The route templates the script matches page paths against: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then
-    /// the discovered ones (<see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>), once each. Resolved on first use.
+    /// The route templates page paths are matched against: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the
+    /// discovered ones (<see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>, from
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> when there are any), once each. Resolved on first use.
     /// </summary>
-    public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes(Options.Browser);
+    public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes();
 
-    private static List<string> ResolvePageRoutes(BelemetryBrowserOptions browser)
+    /// <summary>The <see cref="PageRoutes"/>, compiled for the page views .NET records itself. Built on first use.</summary>
+    public BelemetryPageRouteMatcher PageRouteMatcher => _pageRouteMatcher ??= new(PageRoutes);
+
+    /// <summary>
+    /// True once, after <see cref="PageRoutes"/> were resolved, when discovery was on and found no route at all - most
+    /// likely an app whose pages discovery cannot see (no entry assembly, as on .NET for Android, and its pages not
+    /// loaded yet): every page view then falls back to its path's template, which deserves a warning.
+    /// </summary>
+    public bool TakeNoPageRoutesWarning() => _noPageRoutesFound && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
+
+    private List<string> ResolvePageRoutes()
     {
+        var browser = Options.Browser;
         var routes = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var route in browser.PageRoutes)
@@ -149,7 +164,9 @@ internal sealed class BelemetrySettings
         }
         if (browser.DiscoverPageRoutes)
         {
-            foreach (var route in BelemetryPageRoutes.Discovered)
+            IReadOnlyList<string> discovered = browser.PageRouteAssemblies.Count > 0 ? BelemetryPageRoutes.Read(browser.PageRouteAssemblies) : BelemetryPageRoutes.Discovered;
+            _noPageRoutesFound = discovered.Count == 0;
+            foreach (var route in discovered)
             {
                 if (seen.Add(route)) routes.Add(route);
             }

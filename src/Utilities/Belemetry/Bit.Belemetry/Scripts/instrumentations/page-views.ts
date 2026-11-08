@@ -32,7 +32,8 @@ export const URL_TEMPLATE = 'url.template';
 // pushState followed by Blazor's enhancedload (or a router that pushes twice) must count once.
 export const DEDUPE_MS = 100;
 
-const state = { key: '', url: '', path: '', template: '', title: '', time: -Infinity, visitStart: -Infinity, initialSent: false };
+// `name` is the page view's: the name given to trackPageView, else the title, else the template.
+const state = { key: '', url: '', path: '', template: '', title: '', name: '', time: -Infinity, visitStart: -Infinity, initialSent: false };
 
 /** Resets the module state (tests only). */
 export function resetPageViewState(): void {
@@ -41,6 +42,7 @@ export function resetPageViewState(): void {
     state.path = '';
     state.template = '';
     state.title = '';
+    state.name = '';
     state.time = -Infinity;
     state.visitStart = -Infinity;
     state.initialSent = false;
@@ -66,7 +68,8 @@ export function trackPageVisitTime(ctx: InstrumentationContext, time = now()): b
     attributes[URL_TEMPLATE] = state.template;
     attributes['page.title'] = state.title;
     attributes[PAGE_VISIT_DURATION] = Math.round(duration);
-    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, state.title || state.template, PAGE_VISIT_TIME_EVENT, attributes, time));
+    // Named as its page view, so a page tracked as "Wizard step 2" has its visits under that name too.
+    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, state.name, PAGE_VISIT_TIME_EVENT, attributes, time));
     return true;
 }
 
@@ -98,16 +101,18 @@ export function trackPageView(ctx: InstrumentationContext, type: NavigationType,
     // `/orders/43` are both `/orders/{id:int}` (or `/orders/{n}` when no route of the app matches).
     const given = attributes[URL_TEMPLATE];
     const template = typeof given === 'string' && given ? given : pageTemplate(path, ctx.config.pageViews.routes);
+    const name = options.name || title || template;
     state.path = path;
     state.template = template;
     state.title = title;
+    state.name = name;
     attributes['url.full'] = url;
     attributes['url.path'] = path;
     attributes[URL_TEMPLATE] = template;
     attributes['page.title'] = title;
     if (referrer) attributes['page.referrer'] = referrer;
     attributes['browser.navigation.type'] = type;
-    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, options.name || title || template, 'browser.page_view', attributes, time));
+    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, name, 'browser.page_view', attributes, time));
     return true;
 }
 

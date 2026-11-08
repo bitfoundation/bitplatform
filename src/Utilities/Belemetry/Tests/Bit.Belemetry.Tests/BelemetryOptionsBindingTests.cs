@@ -244,6 +244,7 @@ public class BelemetryOptionsBindingTests
 
         Assert.IsEmpty(o.Exporters, "Code-only members are left alone.");
         Assert.IsEmpty(o.Processors);
+        Assert.IsEmpty(o.Browser.PageRouteAssemblies);
     }
 
     [TestMethod]

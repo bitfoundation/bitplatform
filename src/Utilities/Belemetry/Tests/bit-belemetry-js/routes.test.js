@@ -42,10 +42,12 @@ describe('page route templates', () => {
             ['{v:guid}', ['3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e', '3f2a8c1e0b6d4f3a9c1e2b6d4f3a9c1e', '{3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e}'], ['3f2a8c1e', 'x']],
             ['{v:decimal}', ['4.2', '-1', '1,000.5'], ['1e3', 'x']],
             ['{v:double}', ['4.2', '1e3', 'NaN'], ['x']],
-            ['{v:datetime}', ['2026-11-08'], ['not a date']],
+            // As .NET's invariant DateTime.TryParse: a bare number is no date, though Date.parse takes it.
+            ['{v:datetime}', ['2026-11-08', '2026-11-08T10:30', '2024-01-02T10:30:00Z', '1/2/2024', '1/2/24', '2024/1', '12-2024', '1.5', '10:30', '10:30 PM', 'Jan 2 2024'],
+                ['not a date', '7', '42', '12345', '2024', 'abc 5', '2024-13-01', '2024-02-30', '13/01/2024', '25:00', '24-01-02', '2024-001', '2024-01-02T10']],
             ['{v:alpha}', ['abc'], ['ab1']],
             ['{v:nonfile}', ['readme'], ['readme.md']],
-            ['{v:file}', ['readme.md'], ['readme']],
+            ['{v:file}', ['readme.md', 'a.b.'], ['readme', 'readme.']],
             ['{v:length(3)}', ['abc'], ['ab']],
             ['{v:length(2,3)}', ['ab', 'abc'], ['a', 'abcd']],
             ['{v:minlength(2):maxlength(3)}', ['ab'], ['a', 'abcd']],
@@ -62,12 +64,33 @@ describe('page route templates', () => {
         }
     });
 
-    it('matches segments of several parts, and skips malformed templates', () => {
+    it('does not let a datetime route claim a number', () => {
+        const routes = ['/x/{d:datetime}', '/x/{n:int}'];
+        expect(match(routes, '/x/42')).toBe('/x/{n:int}');
+        expect(match(routes, '/x/2026-11-08')).toBe('/x/{d:datetime}');
+        expect(match(['/archive/{date:datetime}'], '/archive/2')).toBe('/archive/{n}');
+    });
+
+    it('matches segments of several parts from the right, and skips malformed templates', () => {
         const routes = ['/files/{name}.{ext}', '/broken/{id', '/files/{name}'];
         expect(compileRoutes(routes).map(r => r.template)).toEqual(['/files/{name}.{ext}', '/files/{name}']);
         expect(match(routes, '/files/report.pdf')).toBe('/files/{name}.{ext}');
         expect(match(routes, '/files/report')).toBe('/files/{name}');
         expect(match(routes, '/broken/1')).toBe('/broken/{n}');
+
+        // archive.tar + gz, as ASP.NET Core splits it - not archive + tar.gz.
+        expect(match(['/files/{name}.{ext:alpha}'], '/files/archive.tar.gz')).toBe('/files/{name}.{ext:alpha}');
+        expect(match(['/f/{a}-{b:int}'], '/f/x-y-2')).toBe('/f/{a}-{b:int}');
+        expect(match(['/f/{a}-{b:int}'], '/f/x-2-y')).toBe('/f/x-2-y');
+        expect(match(['/p/a{x}'], '/p/ab')).toBe('/p/a{x}');
+        expect(match(['/p/a{x}'], '/p/ba1')).toBe('/p/ba1');
+    });
+
+    it('lets an optional last part be left out with its dot', () => {
+        const routes = ['/files/{name}.{ext?}'];
+        expect(match(routes, '/files/report.pdf')).toBe('/files/{name}.{ext?}');
+        expect(match(routes, '/files/report')).toBe('/files/{name}.{ext?}');
+        expect(match(routes, '/files/report.')).toBe('/files/report.');
     });
 
     it('lists a template once, however it is written', () => {

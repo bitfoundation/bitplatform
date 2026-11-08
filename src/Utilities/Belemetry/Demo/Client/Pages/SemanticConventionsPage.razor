@@ -74,7 +74,7 @@
             <tbody>
                 <tr>
                     <td>Page view</td>
-                    <td>Log record, <code>eventName = "browser.page_view"</code>, named after the page title, else its route template. Attributes: <code>url.full</code>, <code>url.path</code>, <code>url.template</code> (the route the path matches, else the path with its ids replaced), <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>/<code>restore</code> - <code>restore</code> is a return from the back/forward cache, which fires no history event)</td>
+                    <td>Log record, <code>eventName = "browser.page_view"</code>, named (in its body) after the name given to <code>trackPageView</code>, else the page title, else its route template. Attributes: <code>url.full</code>, <code>url.path</code>, <code>url.template</code> (the route the path matches, else the path with its ids replaced), <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>/<code>restore</code> - <code>restore</code> is a return from the back/forward cache, which fires no history event)</td>
                     <td><code>bit.belemetry.page_views</code></td>
                     <td>PageViews</td>
                 </tr>

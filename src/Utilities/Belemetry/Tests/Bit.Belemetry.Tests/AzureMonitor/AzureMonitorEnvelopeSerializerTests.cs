@@ -415,6 +415,23 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void APageView_IsNamedByItsBody_TheNameGivenToTrackPageView()
+    {
+        // The script's body (relayed records) and .NET's TrackPageView: the name given, else the title, else the template.
+        var log = Records.Log("Wizard step 2", "browser.page_view");
+        log.Attributes.Set("url.full", "https://app.test/checkout/2").Set("url.template", "/checkout/{n}").Set("page.title", "Checkout");
+
+        var e = Single(log);
+        Assert.AreEqual("Wizard step 2", BaseData(e).GetProperty("name").GetString());
+        Assert.AreEqual("Wizard step 2", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("/checkout/{n}", Prop(e, "url.template"));
+
+        var visit = Records.Log("Wizard step 2", "browser.page_visit_time");
+        visit.Attributes.Set("url.template", "/checkout/{n}").Set("page.title", "Checkout").Set("page.visit.duration", 10);
+        Assert.AreEqual("Wizard step 2", Prop(Single(visit), "PageName"));
+    }
+
+    [TestMethod]
     public void WebVital_IsAMetric()
     {
         var log = Records.Log(null, "browser.web_vital");

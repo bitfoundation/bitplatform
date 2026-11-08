@@ -79,7 +79,7 @@ internal sealed class BelemetryBrowserConfig
         public bool TrackVisitTime { get; set; }
 
         /// <summary>The route templates page paths are matched against; null (left out) when there are none.</summary>
-        public List<string>? Routes { get; set; }
+        public IReadOnlyList<string>? Routes { get; set; }
     }
 
     internal sealed class InteractionsConfig

@@ -47,8 +47,8 @@ interface Segment {
     rank: number;
     /** A literal segment, lower-cased (routes match case-insensitively). */
     literal?: string;
-    /** A segment of several parts (`{name}.{extension}`): its parameters are the groups. */
-    pattern?: RegExp;
+    /** A segment of several parts (`{name}.{extension}`): its literals (lower-cased) and parameters, in order. */
+    parts?: (string | Parameter)[];
     parameters: Parameter[];
 }
 
@@ -81,10 +81,59 @@ function isGuid(value: string): boolean {
     return GUID.test(v) && (v.length === 32 || v.length === 36);
 }
 
-/** ASP.NET Core's file name test: the last segment has a dot with something after it. */
+/** ASP.NET Core's file name test: the last segment has a dot, and something other than dots after its first one. */
 function isFileName(value: string): boolean {
-    const dot = value.lastIndexOf('.');
-    return dot > value.lastIndexOf('/') && dot < value.length - 1;
+    const name = value.slice(value.lastIndexOf('/') + 1);
+    const dot = name.indexOf('.');
+    return dot >= 0 && /[^.]/.test(name.slice(dot + 1));
+}
+
+const TIME = '\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d+)?)?(?:\\s*[ap]\\.?m\\.?)?';
+const DATE_TIME = new RegExp('^(?:(\\d{1,4}(?:[-/.,]\\d{1,4}){1,2})(?:(?:t|\\s+)(' + TIME + '))?|(' + TIME + '))(?:\\s*(?:z|[+-]\\d{2}(?::?\\d{2})?|gmt|utc))?$', 'i');
+const MONTH_NAME = /(?:^|[^a-z])(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
+
+function isDate(year: number, month: number, day: number): boolean {
+    if (year < 1 || year > 9999 || month < 1 || month > 12 || day < 1) return false;
+    const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    return day <= [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+}
+
+/** A year as .NET's invariant calendar reads it: one or two digits are 1950 to 2049. */
+function fullYear(text: string): number {
+    const year = Number(text);
+    return text.length > 2 ? year : year < 50 ? 2000 + year : 1900 + year;
+}
+
+/** A numeric date as .NET's invariant culture reads it: `y-M-d`, `M/d/y`, `y-M`, `M/y`, or `M/d` of this year. */
+function isNumericDate(text: string): boolean {
+    const parts = text.split(/[-/.,]/);
+    const n = parts.map(Number);
+    if (parts.length === 2) {
+        if (parts[0].length > 2) return parts[1].length <= 2 && isDate(n[0], n[1], 1);
+        if (parts[1].length > 2) return isDate(n[1], n[0], 1);
+        return isDate(new Date().getFullYear(), n[0], n[1]);
+    }
+    if (parts[0].length > 2) return parts[1].length <= 2 && parts[2].length <= 2 && isDate(n[0], n[1], n[2]);
+    return parts[1].length <= 2 && isDate(fullYear(parts[2]), n[0], n[1]);
+}
+
+function isTime(text: string): boolean {
+    const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(text);
+    if (!m) return false;
+    const hour = Number(m[1]);
+    return (/[ap]\.?m\.?$/i.test(text) ? hour >= 1 && hour <= 12 : hour <= 23) && Number(m[2]) <= 59 && Number(m[3] || 0) <= 59;
+}
+
+/**
+ * .NET's `DateTime.TryParse` with the invariant culture, which the `datetime` constraint runs, for the forms a route
+ * value takes: a numeric date, optionally with a time and a zone, or a time alone; a date with a month name is left to
+ * `Date.parse`. A bare number is no date (though `Date.parse('42')` is one).
+ */
+function isDateTime(value: string): boolean {
+    const v = value.trim();
+    const m = DATE_TIME.exec(v);
+    if (m) return m[3] ? isTime(m[3]) : isNumericDate(m[1]) && (!m[2] || isTime(m[2]));
+    return MONTH_NAME.test(v) && /\d/.test(v) && !isNaN(Date.parse(v));
 }
 
 /** The check of one inline constraint (`int`, `length(2,8)`, `regex(...)`); null for one this side does not know. */
@@ -109,7 +158,7 @@ function constraint(spec: string): Check | null {
         case 'float':
             return v => FLOAT.test(v);
         case 'datetime':
-            return v => !isNaN(Date.parse(v));
+            return isDateTime;
         case 'alpha':
             return v => /^[a-z]*$/i.test(v);
         case 'nonfile':
@@ -181,10 +230,6 @@ function parseParameter(inner: string): Parameter {
     return parameter;
 }
 
-function escapeRegExp(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 /** One `/`-separated part of a template; null when it is malformed (an unclosed brace). */
 function parseSegment(text: string): Segment | null {
     const parts: (string | Parameter)[] = [];
@@ -219,8 +264,7 @@ function parseSegment(text: string): Segment | null {
         return { rank: (p.catchAll ? 5 : 3) - (p.constrained ? 1 : 0), parameters: [p] };
     }
     const parameters = parts.filter((p): p is Parameter => typeof p !== 'string');
-    const source = parts.map(p => (typeof p === 'string' ? escapeRegExp(p) : '(.+?)')).join('');
-    return { rank: 2, pattern: new RegExp('^' + source + '$', 'i'), parameters };
+    return { rank: 2, parts: parts.map(p => (typeof p === 'string' ? p.toLowerCase() : p)), parameters };
 }
 
 /** Parses route templates and orders them as the Blazor router tries them: the most specific first. */
@@ -258,19 +302,75 @@ function passes(parameter: Parameter, value: string): boolean {
     return true;
 }
 
+/**
+ * ASP.NET Core's RoutePatternMatcher.MatchComplexSegmentCore, from the part at `from` leftwards: each literal at its
+ * last occurrence left of what the parts after it took, a parameter the text up to the literal after it. The
+ * constraints are checked on that one split only, as the router does.
+ */
+function matchPartsFrom(parts: (string | Parameter)[], value: string, from: number): boolean {
+    const lower = value.toLowerCase();
+    const captured: [Parameter, string][] = [];
+    let lastIndex = value.length;
+    let pending: Parameter | null = null;
+    let lastLiteral: string | null = null;
+    for (let i = from; i >= 0; i--) {
+        const part = parts[i];
+        let newLastIndex = lastIndex;
+        if (typeof part !== 'string') {
+            pending = part;
+        } else {
+            lastLiteral = part;
+            // A parameter waiting for its value needs at least one character.
+            const end = pending ? lastIndex - 1 : lastIndex;
+            if (end <= 0) return false;
+            const index = lower.slice(0, end).lastIndexOf(part);
+            if (index < 0) return false;
+            // A literal that ends the template ends the value.
+            if (i === parts.length - 1 && index + part.length !== value.length) return false;
+            newLastIndex = index;
+        }
+        if (pending && ((lastLiteral !== null && typeof part === 'string') || i === 0)) {
+            const start = lastLiteral === null || typeof part !== 'string' ? 0 : newLastIndex + lastLiteral.length;
+            const text = value.slice(start, lastIndex);
+            if (!text) return false;
+            captured.push([pending, text]);
+            pending = null;
+            lastLiteral = null;
+        }
+        lastIndex = newLastIndex;
+    }
+    if (lastIndex !== 0 && typeof parts[0] === 'string') return false;
+    return captured.every(([parameter, text]) => passes(parameter, text));
+}
+
+/**
+ * A segment of several parts, as ASP.NET Core matches it: from the right (`{name}.{ext}` splits `archive.tar.gz` into
+ * `archive.tar` and `gz`). An optional last parameter after a `.` may be left out with its dot (`{name}.{ext?}` takes
+ * `report`), unless the value ends with the dot.
+ */
+function matchParts(parts: (string | Parameter)[], value: string): boolean {
+    const last = parts.length - 1;
+    const tail = parts[last];
+    if (typeof tail !== 'string' && tail.optional && parts[last - 1] === '.') {
+        if (matchPartsFrom(parts, value, last)) return true;
+        return value[value.length - 1] !== '.' && matchPartsFrom(parts, value, last - 2);
+    }
+    return matchPartsFrom(parts, value, last);
+}
+
 /** Whether a route matches a path's (decoded, non-empty) segments. */
 export function matchRoute(route: CompiledRoute, segments: string[]): boolean {
     const t = route.segments;
     for (let i = 0; i < t.length; i++) {
         const s = t[i];
-        const single = s.literal === undefined && !s.pattern ? s.parameters[0] : null;
+        const single = s.literal === undefined && !s.parts ? s.parameters[0] : null;
         if (single && single.catchAll) {
             // The rest of the path, if any; a parameter left out is not checked.
             return i >= segments.length || passes(single, segments.slice(i).join('/'));
         }
         if (i >= segments.length) {
             for (let j = i; j < t.length; j++) {
-                const p = t[j].literal === undefined && !t[j].pattern ? t[j].parameters[0] : null;
+                const p = t[j].literal === undefined && !t[j].parts ? t[j].parameters[0] : null;
                 if (!p || !(p.optional || p.catchAll)) return false;
             }
             return true;
@@ -278,12 +378,8 @@ export function matchRoute(route: CompiledRoute, segments: string[]): boolean {
         const value = segments[i];
         if (s.literal !== undefined) {
             if (value.toLowerCase() !== s.literal) return false;
-        } else if (s.pattern) {
-            const m = s.pattern.exec(value);
-            if (!m) return false;
-            for (let k = 0; k < s.parameters.length; k++) {
-                if (!passes(s.parameters[k], m[k + 1])) return false;
-            }
+        } else if (s.parts) {
+            if (!matchParts(s.parts, value)) return false;
         } else if (!passes(single as Parameter, value)) {
             return false;
         }
