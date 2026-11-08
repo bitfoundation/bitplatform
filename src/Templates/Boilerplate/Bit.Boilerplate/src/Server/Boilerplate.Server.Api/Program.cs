@@ -38,6 +38,12 @@ public static partial class Program
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            if (migrateDatabaseAndExit && builder.Environment.IsDevelopment() is false)
+            {
+                await DeploymentGuards.RefuseSeedPasswords(dbContext);
+            }
+
             await dbContext.Database.MigrateAsync();
         }
 

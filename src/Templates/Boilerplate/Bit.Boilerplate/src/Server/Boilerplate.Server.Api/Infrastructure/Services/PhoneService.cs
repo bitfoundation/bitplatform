@@ -18,14 +18,12 @@ public partial class PhoneService
         if (string.IsNullOrWhiteSpace(phoneNumber))
             return null;
 
-        //#if (cloudflare == true)
         // Get region from Cloudflare "CF-IPCountry" header if available, otherwise use UI culture's region if multilingual is enabled, or fallback to the default region.
-        var region = httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("CF-IPCountry", out var value)
-                         ? value.ToString()
-                         : new RegionInfo((CultureInfoManager.InvariantGlobalization is false ? CultureInfo.CurrentUICulture : CultureInfoManager.DefaultCulture).Name).TwoLetterISORegionName;
-        //#else
-        var region = new RegionInfo((CultureInfoManager.InvariantGlobalization is false ? CultureInfo.CurrentUICulture : CultureInfoManager.DefaultCulture).Name).TwoLetterISORegionName;
-        //#endif
+        var region =
+            //#if (cloudflare == true)
+            httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("CF-IPCountry", out var value) ? value.ToString() :
+            //#endif
+            new RegionInfo((CultureInfoManager.InvariantGlobalization is false ? CultureInfo.CurrentUICulture : CultureInfoManager.DefaultCulture).Name).TwoLetterISORegionName;
 
         try
         {

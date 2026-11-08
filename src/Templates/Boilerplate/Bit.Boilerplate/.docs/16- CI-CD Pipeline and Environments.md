@@ -126,7 +126,8 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 
 | Name | Kind | Holds |
 | --- | --- | --- |
-| `SERVER_ADDRESS` | variable | The environment's public address, which the deployment adds to the app's `TrustedOrigins` |
+| `SERVER_ADDRESS` | variable | The web app's public address, which the deployment adds to the app's `TrustedOrigins` |
+| `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if a standalone api has none |
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
@@ -140,7 +141,6 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
 <!--#endif-->
 <!--#if (api == "Standalone" && cloudflare != true)-->
-| `SERVER_API_ADDRESS` | variable | The api's public address, which Caddy serves |
 <!--#endif-->
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
 | `DATABASE_PASSWORD` | secret | The database server's password |

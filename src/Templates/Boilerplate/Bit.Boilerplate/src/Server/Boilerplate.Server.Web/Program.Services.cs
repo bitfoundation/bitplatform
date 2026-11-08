@@ -6,6 +6,12 @@ using Boilerplate.Server.Api;
 //#else
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+//#if (redis == true)
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+using StackExchange.Redis;
+//#endif
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Shared;
@@ -38,6 +44,19 @@ public static partial class Program
         /*
         //#endif
         builder.AddServerSharedServices();
+        //#if (redis == true)
+
+        // Every instance reads the same keys, and a deployment doesn't lose them: left alone, each container keeps its own
+        // in its file system. Absent when the app host runs without a container runtime.
+        if (string.IsNullOrEmpty(configuration.GetConnectionString("redis-persistent")) is false)
+        {
+            builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableHealthChecks = true);
+            services.AddDataProtection();
+            services.AddOptions<KeyManagementOptions>().Configure<IServiceProvider>((options, serviceProvider) =>
+                options.XmlRepository = new RedisXmlRepository(() => serviceProvider.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent").GetDatabase(), "serverweb:data-protection-keys"));
+        }
+
+        //#endif
         services.AddHttpForwarder();
         var healthChecksBuilder = builder.AddDefaultHealthChecks();
         var serverWebSettings = configuration.Get<ServerWebSettings>()!;

@@ -84,9 +84,15 @@ domain and the services of section 5. Then go through the steps with them.
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
   VM's SSH, and an Access policy that lets in only the people the user names, with a one-time PIN sent to their email
-  or their Google, GitHub or Microsoft sign-in and its own second factor. You connect with `cloudflared access ssh`
-  once the user approves the first sign-in, and Access's browser-rendered terminal lets the user in with nothing
-  installed. Close 22, 80 and 443, in the VM's own firewall and in the provider's, only once a new session got in
+  or their Google, GitHub or Microsoft sign-in and its own second factor. Have the Access application issue short-lived
+  certificates, so nobody keeps a key on their machine: create its CA through the API (`POST
+  accounts/<id>/access/apps/<app id>/ca`), put the public key in `/etc/ssh/ca.pub`, and add `TrustedUserCAKeys
+  /etc/ssh/ca.pub` to `sshd_config`. A certificate signs in as the part of the person's email before the `@`, so create
+  that user on the VM, and without a certificate the browser-rendered terminal asks for a key. Run SSH's route on a
+  tunnel of its own, with its connector installed on the VM as a service rather than in the Compose project, so a
+  deployment or a stopped Compose project never locks you out. You connect with `cloudflared access ssh` once the user
+  approves the first sign-in, and Access's browser-rendered terminal lets the user in with nothing installed. Close
+  22, 80 and 443, in the VM's own firewall and in the provider's, only once a new session got in
   through the tunnel. The provider's web console stays the way back in if everything else fails; tell the user where
   it is.
 - If the user would rather keep a port, move SSH off 22, keep it key-only and rate-limited (fail2ban), and add a TOTP
@@ -112,6 +118,8 @@ domain and the services of section 5. Then go through the steps with them.
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
 - Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
   openssl.
+- Point the VM at public DNS resolvers (`1.1.1.1` and `9.9.9.9`, through `systemd-resolved`) when the provider's own
+  time out, which shows up as image pulls and `curl` failing now and then.
 - Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
   than the rest of the setup takes.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
@@ -260,7 +268,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: the files stay on disk, in a volume of the app's container. Once they outgrow the VM, suggest
   S3-compatible storage such as Cloudflare R2.
 <!--#endif-->
-- **Email**: a real SMTP provider. Mailpit is for development only.
+- **Email**: a real SMTP provider. Mailpit is for development only. `Email__DefaultFromEmail` in the api's settings
+  secret has to be an address that provider has verified. Left at its default, the provider rejects the mail or it lands
+  in spam.
 - **SMS**: a Twilio account, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
@@ -314,6 +324,12 @@ there, and the setting or secret that carries it. Every environment gets its own
   variable to its public address, and the deployment checks that it answers.
 - The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
   to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
+<!--#if (api == "Standalone")-->
+- `SERVER_ADDRESS` is the web app's public address and `SERVER_API_ADDRESS` is the api's, and they are never the same.
+  Every app is built with `SERVER_API_ADDRESS` as its `ServerAddress`, which is where the clients call the api, the
+  SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
+  calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
+<!--#endif-->
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
@@ -323,7 +339,10 @@ there, and the setting or secret that carries it. Every environment gets its own
 The template's CD already works this way (`.github/workflows/cd-template.yml`, described in
 `.docs/16- CI-CD Pipeline and Environments.md`): `build_server` builds the images on a GitHub-hosted runner and pushes
 them to GHCR, and `deploy_server` runs on the environment's own runner, migrates the database, brings the Compose
-project up, and fails unless every container is healthy and the public address answers. What is left:
+project up, and fails unless every container is healthy and the public addresses answer. It replaces the apps with no
+downtime: a new container starts next to the running one, and the old one stops only once the new one is healthy. The
+old version keeps serving while the migrations run, so a migration has to leave the database working for it, and a
+column is dropped one release after the code stops using it. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
   the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
@@ -351,7 +370,8 @@ project up, and fails unless every container is healthy and the public address a
   Rules with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
   everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
   Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
-  delete it.
+  delete it. Before anything else, try one read with it for each permission (tunnels, Access applications, R2 buckets,
+  DNS records, rulesets and the token list), so a missing one shows now and not halfway through.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
@@ -379,7 +399,8 @@ project up, and fails unless every container is healthy and the public address a
   which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
   default.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
-  (section 3), and for the Workbench if the user wants it.
+  (section 3), and for the Workbench if the user wants it. Give this project policies of its own: a policy already on the
+  account may be shared with WARP or another project, and changing it widens that access too.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
 <!--#endif-->
@@ -396,7 +417,8 @@ project up, and fails unless every container is healthy and the public address a
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
   `http://landingpage:8080`.
 <!--#if (api == "Standalone")-->
-- The api gets a hostname of its own, pointed at `http://serverapi:8080`.
+- The api gets a hostname of its own, pointed at `http://serverapi:8080`, and that address goes into `SERVER_API_ADDRESS`
+  (section 6).
 <!--#endif-->
 - On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
   `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
@@ -409,7 +431,7 @@ project up, and fails unless every container is healthy and the public address a
 - The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
 <!--#endif-->
 <!--#endif-->
-- Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
+- Update the settings that carry the app's own address: `TrustedOrigins`, the forwarded headers it
 <!--#if (cloudflare == true)-->
   takes from Cloudflare, and the address each provider of section 5 was registered with.
 <!--#else-->
@@ -428,9 +450,11 @@ project up, and fails unless every container is healthy and the public address a
   (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
-- The migrations seed `test@bitplatform.dev`, a global admin whose password is in this repository, in every
-  environment, and anyone can sign in with it until that changes. As soon as the environment's first deployment is
-  up, before the checks above, change its password in the app and give the new one to the user to keep. Then open
+- The migrations seed `test@bitplatform.dev`, a global admin, and `store-admin@bitplatform.dev` and
+  `store-user@bitplatform.dev`, all with a password that is in this repository, in every environment, and anyone can sign
+  in with them until that changes. As soon as the environment's first deployment is up, before the checks above, change
+  the admin's password in the app and give the new one to the user to keep, and delete the other two or change theirs.
+  The next deployment refuses to run while any account still has that password. Then open
   `<the web app's address>/settings/tfa` for them to turn two-factor sign-in on, since dev-mcp takes an account with
   it, have them put their own email and phone number on the account, where its reset links and codes go, and connect
   that environment's dev-mcp with this account.
@@ -440,7 +464,8 @@ project up, and fails unless every container is healthy and the public address a
   whose settings are missing reports that they are not configured. Go through them with the user: configure each one
   (section 5), or, for a service they don't want, remove the code that uses it.
 <!--#if (signalR == true)-->
-- Check the AI chat and a voice call there too.
+- A deployment isn't finished because `/alive` and `/health` answer. Sign in on the public address and try what depends
+  on the api's real address: the AI chat and a voice call, the Operations page, and signing out and back in.
 <!--#endif-->
 - Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
   launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**

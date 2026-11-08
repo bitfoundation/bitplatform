@@ -106,6 +106,7 @@ if (embedding is not null)
 //#if (redis == true)
 serverApiProject.WithReference(redisCache).WaitFor(redisCache);
 serverWebProject.WithReference(redisCache).WaitFor(redisCache);
+serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent); // Its Data Protection keys
 serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#else
