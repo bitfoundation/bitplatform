@@ -6,5 +6,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddBitBlazorUIServices();
+builder.Services.AddBitBlazorUIExtrasServices();
 
 await builder.Build().RunAsync();

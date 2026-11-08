@@ -1,0 +1,155 @@
+﻿@page "/perf/data-grid"
+@page "/perf/data-grid/{Count:int}"
+
+<PageTitle>BitDataGrid Performance Test</PageTitle>
+
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitDataGrid Performance Test</h3>
+    <div style="margin-bottom: 10px;">
+        <label>Row Count: </label>
+        <input type="number" @bind="Count" min="1" max="200000" style="width: 100px;" />
+        <button @onclick="Render" id="btn-render">Render</button>
+        <button @onclick="SortAsync" id="btn-sort">Sort by price</button>
+        <button @onclick="FilterAsync" id="btn-filter">Filter one category</button>
+        <button @onclick="GroupAsync" id="btn-group">Group by category</button>
+        <button @onclick="RevealLastAsync" id="btn-reveal-last">Scroll to the last row</button>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Render Time: <span id="render-time">@_renderTimeMs</span> ms</p>
+        <p>Re-render Time: <span id="rerender-time">@_reRenderTimeMs</span> ms</p>
+        <p>Row Count: <span id="component-count">@_renderedCount</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+        @* Where the page runs (Server or WebAssembly), for the tests to check it runs where PERF_RENDER_MODE asked. *@
+        <p>Renderer: <span id="renderer">@RendererInfo.Name</span></p>
+    </div>
+</div>
+
+@if (_isRendered)
+{
+    <BitDataGrid @ref="_grid"
+                 Id="perf-grid"
+                 TItem="PerfRow"
+                 Items="_rows"
+                 KeyField="r => r.Id"
+                 Virtualize
+                 Height="600px"
+                 RowClass="RowClass">
+        <Columns>
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Id" Title="ID" Width="90px" Align="BitTextAlign.End" />
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Name" Width="200px" />
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Category" Width="140px" />
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Price" Format="N2" Width="110px" Align="BitTextAlign.End" />
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Quantity" Width="100px" Align="BitTextAlign.End" />
+            <BitDataGridColumn TItem="PerfRow" Property="r => r.Date" Format="yyyy-MM-dd" Width="120px" />
+        </Columns>
+    </BitDataGrid>
+}
+
+@code {
+    // One row of the grid: a key, two texts, a number to sort by, a category to filter and group by, and a date.
+    public sealed record PerfRow(int Id, string Name, string Category, decimal Price, int Quantity, DateTime Date);
+
+    // The categories the rows fall into, in turn: every one holds Count / 20 rows.
+    private const int CategoryCount = 20;
+
+    /// <summary>The category FilterAsync keeps.</summary>
+    public const string FilteredCategory = "Category 07";
+
+    [Parameter]
+    public int Count { get; set; } = 1000;
+
+    private BitDataGrid<PerfRow>? _grid;
+    private List<PerfRow> _rows = [];
+    private int _lastId;
+    private int _renderedCount;
+    private double _renderTimeMs;
+    private double _reRenderTimeMs;
+    // "Loading" in the prerendered HTML; "Ready" once the page is interactive (OnAfterRender's first run), which is
+    // what the tests wait for.
+    private string _status = "Loading";
+    private bool _isRendered;
+    // The status the next render reports once it is on the screen, with the time since the stopwatch started: set when
+    // the change it times has been made, so a render the change awaits along the way reports nothing.
+    private string? _done;
+    private readonly System.Diagnostics.Stopwatch _stopwatch = new();
+
+    // The last row carries a class of its own, for the scroll test to see it rendered (the grid shows it only once
+    // its virtualization has reached it).
+    private string? RowClass(PerfRow row) => row.Id == _lastId ? "perf-last-row" : null;
+
+    // The rows are made as the page starts, before it is ready: what the tests time from the click is the grid, not the
+    // data. A count changed in the box makes its rows on the click, before the stopwatch starts.
+    protected override void OnInitialized() => MakeRows();
+
+    private void MakeRows()
+    {
+        _rows = Enumerable.Range(1, Count)
+                          .Select(i => new PerfRow(i,
+                                                   $"Item {i:D6}",
+                                                   $"Category {i % CategoryCount:D2}",
+                                                   // A price that is not in the order of the ids, so a sort moves rows.
+                                                   (i * 7919 % 100_000) / 100m,
+                                                   i % 500,
+                                                   new DateTime(2026, 1, 1).AddDays(i % 365)))
+                          .ToList();
+        _lastId = Count;
+    }
+
+    private void Render()
+    {
+        if (_rows.Count != Count) MakeRows();
+
+        _stopwatch.Restart();
+        _isRendered = true;
+        _renderedCount = Count;
+        _status = "Rendering...";
+        _done = "Rendered";
+    }
+
+    private Task SortAsync() => TimeAsync("Sorting...", "Sorted", grid => grid.SortByAsync(nameof(PerfRow.Price), BitDataGridSortDirection.Descending));
+
+    private Task FilterAsync() => TimeAsync("Filtering...", "Filtered", grid => grid.ApplyFilterAsync(nameof(PerfRow.Category), BitDataGridFilterOperator.Equals, FilteredCategory));
+
+    private Task GroupAsync() => TimeAsync("Grouping...", "Grouped", grid => grid.GroupByAsync(nameof(PerfRow.Category)));
+
+    // The grid scrolls to the row after its next render and its virtualization renders the rows there once the browser
+    // has reported the scroll, so the end of this one is read off the page (.perf-last-row), not off the status.
+    private Task RevealLastAsync() => TimeAsync("Scrolling...", "Scrolled", grid => grid.RevealItemAsync(_rows[^1]));
+
+    private async Task TimeAsync(string status, string done, Func<BitDataGrid<PerfRow>, Task> change)
+    {
+        if (_grid is null) return;
+
+        _stopwatch.Restart();
+        _status = status;
+        await change(_grid);
+        _done = done;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Runs only in interactive mode (never during the prerender): the page is ready to handle events.
+            _status = "Ready";
+            StateHasChanged();
+            return;
+        }
+
+        if (_done is null || _stopwatch.IsRunning is false) return;
+
+        _stopwatch.Stop();
+        if (_done == "Rendered")
+        {
+            _renderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+        }
+        else
+        {
+            _reRenderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+        }
+
+        _status = _done;
+        _done = null;
+        StateHasChanged();
+    }
+}
