@@ -635,6 +635,8 @@ services.AddHangfire(configuration => configuration
 | `Enabled` | `true` | the script at all |
 | `TrackHashChanges` | `false` | fragment-only changes count as page views |
 | `TrackPageVisitTime` | `false` | how long each page was visited, as a `browser.page_visit_time` event (Application Insights: `PageVisitTime`) |
+| `PageRoutes` | none | route templates (`/orders/{id:int}`) page paths are matched against, besides the discovered ones - see [Page route templates](#page-route-templates) |
+| `DiscoverPageRoutes` | `true` | add the `@page` routes of the app's components to `PageRoutes` |
 | `InteractionEvents` | `click` | DOM events recorded as interactions |
 | `CaptureInteractionText` | `false` | record the clicked element's text (may contain personal data) |
 | `TrackRageClicks` | `true` | three clicks on one element within a second also emit one `browser.rage_click` event per burst - the frustration signal of a user who expected something to happen |
@@ -650,6 +652,30 @@ services.AddHangfire(configuration => configuration
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
 | `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
+
+### Page route templates
+
+Every page view carries `url.template`: the route of the page, not its address, so that `/orders/42` and `/orders/43`
+are both `/orders/{id:int}` - one page in per-page charts, alerts and the Application Insights `pageViews` table, not
+one per order. It is, in this order:
+
+1. the `url.template` you pass to `TrackPageView` (a dialog or a wizard step has no route of its own);
+2. the first of the app's routes that matches the path, as the Blazor router picks it (literal segments before
+   constrained parameters, before parameters, before catch-alls; case-insensitive; constraints such as `int`, `guid`
+   or `length(3)` checked), relative to the `<base href>` and written after it (`/shop/orders/{id:int}` under
+   `<base href="/shop/" />`);
+3. otherwise the path with the segments that look like ids replaced: numbers by `{n}`, GUIDs by `{guid}`, long
+   hexadecimal or mixed letters-and-digits tokens by `{hex}` or `{id}` (`/orders/{n}`). A slug or a user name stays.
+
+The app's routes are found once per process: the `@page` (`[Route]`) templates of the components in the entry
+assembly and in the component libraries it references (a server's `.Client` project, a shared page library for MAUI),
+the assemblies an app hands its router. They are written into the browser config, only when page views are recorded.
+Add routes the discovery cannot see (a lazy-loaded WebAssembly assembly's) to `Browser.PageRoutes`, or switch the
+discovery off with `Browser.DiscoverPageRoutes = false` and list them yourself.
+
+An untitled page view is named after its template (it was its path), in its log record's body and in Application
+Insights; a page with a `<PageTitle>` keeps its title as its name. `TrackPageView` from .NET in WebAssembly or Hybrid
+(where .NET records it itself) uses the third rule only, unless you pass `url.template`.
 
 ### Error floods and runaway values
 
@@ -874,7 +900,7 @@ capture is ready (raised outside any render: use `InvokeAsync(StateHasChanged)`)
 | Release | `service.name`, version, environment, commit, build id, configuration version, metadata, host kind, runtime, OS family, architecture, browser brands/platform/language |
 | Exceptions | Groups by fingerprint: type, message template, anchor frame, classification, count, first/last seen, releases, and the occurrences (at most the last five) of the events the bundle holds - an older failure the timeline no longer holds counts, but its message, trace and route are not exported |
 | Timeline (.NET) | Navigation (route templates from the router), component UI events (`HandleEvent`: component type, method, event attribute), exceptions (type, scrubbed message, stack without file paths, inner exceptions, origin), logs (category, template), HTTP client and server spans (method, status, URL template, error type), framework circuit activities, the app's own events and recorded snapshots |
-| Browser | Page views (path template), fetch/XHR (method, status, URL template, trace ids), JS errors and rejections (type, message, stack), clicks (event type and element only), long tasks, reconnection transitions, page hide/restore |
+| Browser | Page views (route template), fetch/XHR (method, status, URL template, trace ids), JS errors and rejections (type, message, stack), clicks (event type and element only), long tasks, reconnection transitions, page hide/restore |
 | Components | The component types the timeline names, ranked by association - `trace` (the failure happened in that component's event-handler trace), `stack` (inferred from the first application frame), `framework` - with render statistics when measured, and ancestry when a component-context provider (BevTools) knows it |
 | Snapshots | The app's snapshot providers' sanitized output, only when the capture asks for them |
 | Report | The issue report: title, summary, exception, release, route, triggering action, navigation, failed requests, interop failures, circuit transitions, components, trace ids, prerequisites, missing evidence, and every finding marked **observed**, **inferred** or **user-provided** |
@@ -1179,8 +1205,8 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 
 | Record | Shape |
 | --- | --- |
-| Page view | log record, event `browser.page_view`: `url.full`, `url.path`, `page.title`, `page.referrer`, `browser.navigation.type` (`initial`, `push`, `replace`, `pop`, `hash`, `manual`, or `restore` - the page came back from the back/forward cache, which fires no history event) |
-| Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms) |
+| Page view | log record, event `browser.page_view`, named after the page title or else its route template: `url.full`, `url.path`, `url.template` (the route, see [Page route templates](#page-route-templates)), `page.title`, `page.referrer`, `browser.navigation.type` (`initial`, `push`, `replace`, `pop`, `hash`, `manual`, or `restore` - the page came back from the back/forward cache, which fires no history event) |
+| Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `url.template`, `page.title`, `page.visit.duration` (ms) |
 | Interaction | log record, event `browser.user_interaction`: `event.type`, `target.element`, `target.id`, `target.name`, `target.xpath` |
 | Rage click | log record, event `browser.rage_click` (with `Browser.TrackRageClicks`): the target attributes, `event.type = rage_click`, `interaction.click_count` |
 | Web vital | log record, event `browser.web_vital`: `web_vital.name`, `web_vital.value`, `web_vital.delta`, `web_vital.rating`, `web_vital.id`, `web_vital.navigation_type`. A back/forward-cache restore starts a new generation under new ids, as Google's web-vitals library does: FCP and LCP measured from the restore to the next painted frame, CLS and INP from zero, navigation type `back-forward-cache` |
@@ -1203,9 +1229,9 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Log with an exception | `exceptions` |
 | Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it - but once only when the same exception (type, message and stack trace) is also logged under the span (`LogError(ex)` plus `AddException(ex)`): the log's item stands for both, unless this exporter does not send that log (`Signals`, `MinimumLogLevel`, or the log was dropped before the export) |
 | Any other span event | `traces`, under the span, with the event name as the message - as the Azure Monitor OpenTelemetry exporter writes it |
-| `browser.page_view` | `pageViews` |
+| `browser.page_view` | `pageViews`, named after `page.title`, else `url.template` (with `url.template` among the custom dimensions) |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
-| `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName`/`PageUrl` properties - the Application Insights JS SDK's shape |
+| `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName` (the page view's name)/`PageUrl` properties - the Application Insights JS SDK's shape |
 | Other events | `customEvents` |
 | Other logs | `traces` |
 | Metrics | `customMetrics` (deltas; histograms with count, min, max) |
@@ -1331,6 +1357,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   `_OTHER`.
 - **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new
   web-vitals generation after a back/forward-cache restore.
+- **Page views carry `url.template`, and an untitled one is named after it** (`/orders/{id:int}`, was `/orders/42`):
+  in the log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the `PageName` of
+  `PageVisitTime`. Group by `url.path` for the old breakdown. See [Page route templates](#page-route-templates).
 - **`OTEL_SDK_DISABLED=true` turns Belemetry off**, overriding code.
 
 **Production diagnostics** (opt-in, `BelemetryOptions.Diagnostics`; see

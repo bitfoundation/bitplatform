@@ -106,7 +106,7 @@
                     <td><code>eventName == "browser.page_view"</code></td>
                     <td><code>PageView</code></td>
                     <td><code>pageViews</code></td>
-                    <td><code>name</code> (<code>page.title</code>, else <code>url.path</code>, else <code>url.full</code>), <code>url</code>, <code>id</code></td>
+                    <td><code>name</code> (<code>page.title</code>, else <code>url.template</code>, else <code>url.path</code>, else <code>url.full</code>), <code>url</code>, <code>id</code></td>
                 </tr>
                 <tr>
                     <td><code>eventName == "browser.web_vital"</code></td>
@@ -118,7 +118,7 @@
                     <td><code>eventName == "browser.page_visit_time"</code></td>
                     <td><code>Event</code></td>
                     <td><code>customEvents</code></td>
-                    <td><code>name</code> = <code>PageVisitTime</code>, <code>measurements:{PageVisitTime:&lt;ms&gt;}</code>, properties <code>PageName</code> and <code>PageUrl</code> - the Application Insights JS SDK's <code>autoTrackPageVisitTime</code> shape</td>
+                    <td><code>name</code> = <code>PageVisitTime</code>, <code>measurements:{PageVisitTime:&lt;ms&gt;}</code>, properties <code>PageName</code> (the page view's name) and <code>PageUrl</code> - the Application Insights JS SDK's <code>autoTrackPageVisitTime</code> shape</td>
                 </tr>
                 <tr>
                     <td>Any other <code>eventName</code></td>
@@ -234,7 +234,7 @@
               "name": "Checkout",
               "url": "https://myapp.example.com/checkout",
               "duration": "00:00:00",
-              "properties": { "url.path": "/checkout", "browser.navigation.type": "push" }
+              "properties": { "url.path": "/checkout", "url.template": "/checkout", "browser.navigation.type": "push" }
             }
           }
         }

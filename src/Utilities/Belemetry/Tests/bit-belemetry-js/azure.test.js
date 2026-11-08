@@ -141,6 +141,23 @@ describe('envelopes', () => {
         expect(untitled.data.baseData.name).toBe('/p');
     });
 
+    it('names an untitled page view by its route template, which stays a property', () => {
+        const e = logToEnvelope(log({
+            eventName: 'browser.page_view',
+            attributes: { 'url.full': 'https://x.test/orders/42', 'url.path': '/orders/42', 'url.template': '/orders/{id:int}', 'page.title': '' },
+        }), resource, ctx);
+        expect(e.data.baseData.name).toBe('/orders/{id:int}');
+        expect(e.tags['ai.operation.name']).toBe('/orders/{id:int}');
+        expect(e.data.baseData.properties['url.template']).toBe('/orders/{id:int}');
+        const titled = logToEnvelope(log({ eventName: 'browser.page_view', attributes: { 'url.template': '/orders/{id:int}', 'page.title': 'Order' } }), resource, ctx);
+        expect(titled.data.baseData.name).toBe('Order');
+        const visit = logToEnvelope(log({
+            eventName: 'browser.page_visit_time',
+            attributes: { 'url.full': 'https://x.test/orders/42', 'url.path': '/orders/42', 'url.template': '/orders/{id:int}', 'page.title': '', 'page.visit.duration': 10 },
+        }), resource, ctx);
+        expect(visit.data.baseData.properties).toMatchObject({ PageName: '/orders/{id:int}', 'url.template': '/orders/{id:int}' });
+    });
+
     it('maps web vitals to Metric', () => {
         const e = logToEnvelope(log({
             eventName: 'browser.web_vital', body: 'LCP',

@@ -42,7 +42,7 @@ public class BelemetryOptionsBindingTests
               "Snapshots": { "MaxDepth": 3, "MaxItems": 10, "MaxStringLength": 100, "MaxBytes": 4096, "Timeout": "00:00:01", "MaxRecorded": 4 }
             },
             "Browser": {
-              "Enabled": true, "Transport": "Relay", "TrackHashChanges": true, "TrackPageVisitTime": true,
+              "Enabled": true, "Transport": "Relay", "TrackHashChanges": true, "TrackPageVisitTime": true, "PageRoutes": [ "/orders/{id:int}" ], "DiscoverPageRoutes": false,
               "InteractionEvents": [ "click", "submit" ], "CaptureInteractionText": true, "MaxInteractionTextLength": 32, "TrackRageClicks": false,
               "WebVitals": false, "DocumentLoad": false, "ResourceTiming": true, "LongTasks": true, "Fetch": false, "Xhr": false,
               "PropagateTraceContextTo": [ "same-origin", "^https://api\\.shop\\.test/" ], "IgnoreUrls": [ "/cdn/" ], "IgnoreErrorMessages": [ "Script error" ],
@@ -119,6 +119,8 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetryBrowserTransport.Relay, b.Transport);
         Assert.IsTrue(b.TrackHashChanges);
         Assert.IsTrue(b.TrackPageVisitTime);
+        CollectionAssert.AreEqual(new[] { "/orders/{id:int}" }, b.PageRoutes);
+        Assert.IsFalse(b.DiscoverPageRoutes);
         // The binder appends to a list's defaults, so "click" is there twice; the browser config dedupes it (see BelemetryBrowserConfigFactoryTests).
         CollectionAssert.AreEqual(new[] { "click", "click", "submit" }, b.InteractionEvents);
         Assert.IsTrue(b.CaptureInteractionText);

@@ -29,8 +29,8 @@
         Feature <code>PageViews</code>. The script records the initial load and every client-side navigation -
         <code>history.pushState</code>, <code>replaceState</code>, <code>popstate</code> and Blazor's enhanced
         navigation - as a log record with the event name <code>browser.page_view</code>, carrying
-        <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> and
-        <code>browser.navigation.type</code>:
+        <code>url.full</code>, <code>url.path</code>, <code>url.template</code>, <code>page.title</code>,
+        <code>page.referrer</code> and <code>browser.navigation.type</code>:
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
@@ -52,6 +52,15 @@
         visit starts when the page is shown again, so time in a background tab or in the back/forward cache is
         counted nowhere and nothing is counted twice. Application Insights shows it as the
         <code>PageVisitTime</code> event, the shape its own JavaScript SDK uses.
+    </p>
+    <p>
+        <code>url.template</code> is the page's route, so the views of one page share one name whatever its ids:
+        <code>/orders/42</code> and <code>/orders/43</code> are both <code>/orders/{id:int}</code>. Belemetry finds the
+        <code>@@page</code> routes of the app's components once (the entry assembly and the component libraries it
+        references - <code>DiscoverPageRoutes</code>, plus any in <code>PageRoutes</code>), and the script matches the
+        path against them as the Blazor router does, below the <code>&lt;base href&gt;</code>. A path no route matches
+        gets its ids replaced (<code>/orders/{n}</code>), and a <code>url.template</code> passed to
+        <code>TrackPageView</code> wins. A page view without a title is named after its template.
     </p>
     <p>
         For views the URL does not show - a dialog, a wizard step, a tab - call <code>IBelemetry.TrackPageView</code>.

@@ -28,6 +28,30 @@ public class BelemetryBrowserConfigFactoryTests
 
     private static string[] Keys(JsonElement element) => element.EnumerateObject().Select(p => p.Name).ToArray();
 
+    [TestMethod]
+    public void PageRoutes_AreListed_TheConfiguredFirst_OnceEach_AndOnlyForPageViews()
+    {
+        var config = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.PageRoutes.AddRange(["/orders/{id:int}", " /orders ", "/Orders/{ID:int}", ""]);
+            o.Browser.DiscoverPageRoutes = true;
+        });
+        var routes = Strings(config.GetProperty("pageViews").GetProperty("routes"));
+        CollectionAssert.AreEqual(new[] { "/orders/{id:int}", "/orders" }, routes.Take(2).ToArray());
+        Assert.AreEqual(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        CollectionAssert.IsSubsetOf(BelemetryPageRoutes.Discovered.Where(r => routes.Take(2).Contains(r, StringComparer.OrdinalIgnoreCase) is false).ToArray(), routes,
+                                    "The discovered routes follow the configured ones.");
+
+        var withoutPageViews = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.PageRoutes.Add("/orders/{id:int}");
+            o.Features &= ~BelemetryFeatures.PageViews;
+        });
+        Assert.IsFalse(withoutPageViews.GetProperty("pageViews").TryGetProperty("routes", out _), "No page views, no routes in every page.");
+    }
+
     private static string[] Strings(JsonElement element) => element.EnumerateArray().Select(e => e.GetString()!).ToArray();
 
     private static void AssertKeys(JsonElement element, params string[] expected) =>

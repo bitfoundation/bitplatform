@@ -32,6 +32,45 @@ describe('page views', () => {
         });
     });
 
+    it('names every view of a page by its route template', () => {
+        const routes = ['/', '/orders', '/orders/{id:int}', '/orders/new', '/users/{name}'];
+        const ctx = fakeContext({ pageViews: { routes } });
+        document.title = '';
+        for (const url of ['/orders/42', '/orders/43', '/orders/new', '/Orders', '/users/jdoe', '/files/10423']) trackPageView(ctx, 'push', { url });
+        expect(ctx.records.map(r => r.attributes['url.template'])).toEqual(['/orders/{id:int}', '/orders/{id:int}', '/orders/new', '/orders', '/users/{name}', '/files/{n}']);
+        // Without a title, the template - not the path - names the page view: one name for every order.
+        expect(ctx.records.map(r => r.body)).toEqual(['/orders/{id:int}', '/orders/{id:int}', '/orders/new', '/orders', '/users/{name}', '/files/{n}']);
+        expect(ctx.records[0].attributes['url.path']).toBe('/orders/42');
+    });
+
+    it('templates the path itself without routes, and keeps a url.template the caller gives', () => {
+        const ctx = fakeContext({ pageViews: { trackVisitTime: true } });
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        document.title = '';
+        trackPageView(ctx, 'push', { url: '/orders/42/lines/3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e' });
+        trackPageView(ctx, 'manual', { url: '/checkout/2', attributes: { 'url.template': '/checkout/{step}' } });
+        t += 1000;
+        trackPageView(ctx, 'push', { url: '/next' });
+        const views = ctx.records.filter(r => r.eventName === 'browser.page_view');
+        expect(views.map(r => r.attributes['url.template'])).toEqual(['/orders/{n}/lines/{guid}', '/checkout/{step}', '/next']);
+        const visit = ctx.records.find(r => r.eventName === 'browser.page_visit_time');
+        expect(visit).toMatchObject({ body: '/checkout/{step}', attributes: { 'url.path': '/checkout/2', 'url.template': '/checkout/{step}' } });
+    });
+
+    it('matches the routes below the base href, and prefixes the template with it', () => {
+        const base = document.createElement('base');
+        base.href = '/shop/';
+        document.head.appendChild(base);
+        try {
+            const ctx = fakeContext({ pageViews: { routes: ['/', '/orders/{id:int}'] } });
+            for (const url of ['/shop/orders/42', '/shop/', '/shop', '/other/orders/42']) trackPageView(ctx, 'push', { url });
+            expect(ctx.records.map(r => r.attributes['url.template'])).toEqual(['/shop/orders/{id:int}', '/shop/', '/shop/', '/other/orders/{n}']);
+        } finally {
+            base.remove();
+        }
+    });
+
     it('tracks pushState once per URL change and ignores same-URL replaceState', async () => {
         vi.useFakeTimers();
         const ctx = fakeContext();
@@ -104,7 +143,7 @@ describe('page views', () => {
         expect(ctx.records.map(r => r.eventName)).toEqual(['browser.page_view', 'browser.page_visit_time', 'browser.page_view']);
         const visit = ctx.records[1];
         expect(visit).toMatchObject({ body: 'A', feature: 2, severityNumber: 9, scope: 'bit.belemetry.page_views' });
-        expect(visit.attributes).toEqual({ 'url.full': location.origin + '/a', 'url.path': '/a', 'page.title': 'A', 'page.visit.duration': 5000 });
+        expect(visit.attributes).toEqual({ 'url.full': location.origin + '/a', 'url.path': '/a', 'url.template': '/a', 'page.title': 'A', 'page.visit.duration': 5000 });
         // The visit ends where the next page view starts: same timestamp.
         expect(visit.time).toBe(ctx.records[2].time);
     });

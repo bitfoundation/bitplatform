@@ -79,6 +79,10 @@ public class BrowserConfigHostingTests
         Assert.AreEqual(500, root.GetProperty("batch").GetProperty("flushIntervalMs").GetInt32());
         Assert.IsFalse(root.GetProperty("persistence").GetProperty("enabled").GetBoolean());
 
+        // The harness pages' @page routes, found in the component library the host references, for url.template.
+        var routes = root.GetProperty("pageViews").GetProperty("routes").EnumerateArray().Select(r => r.GetString()).ToArray();
+        CollectionAssert.IsSubsetOf(new[] { "/", "/second", "/third", "/third/{N:int}", "/diagnostics" }, routes, string.Join(", ", routes));
+
         var exporters = root.GetProperty("exporters").EnumerateArray().ToList();
         var otlp = exporters.Single(e => e.GetProperty("type").GetString() == "otlp");
         Assert.AreEqual("http://localhost/test-collector", otlp.GetProperty("endpoint").GetString());

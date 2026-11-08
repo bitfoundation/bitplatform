@@ -19,6 +19,21 @@ public sealed class BelemetryBrowserOptions
     /// </summary>
     public bool TrackPageVisitTime { get; set; }
 
+    /// <summary>
+    /// Route templates (<c>/orders/{id:int}</c>, relative to the app's base path) that page views are matched against, as
+    /// the Blazor router matches them, besides the ones <see cref="DiscoverPageRoutes"/> finds. A page view carries the
+    /// template of the route its path matches as <c>url.template</c> - or, when none matches, its path with the segments
+    /// that look like ids replaced (<c>/orders/{n}</c>) - so the views of one page share one name. Defaults to none.
+    /// </summary>
+    public List<string> PageRoutes { get; } = [];
+
+    /// <summary>
+    /// Whether the <c>@page</c> routes of the app's components are added to <see cref="PageRoutes"/>: those of the entry
+    /// assembly and of the component libraries it references (a server's client project, a shared page library). Found
+    /// once per process, by reflection, as the Blazor router finds them. Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool DiscoverPageRoutes { get; set; } = true;
+
     /// <summary>The DOM events recorded as interactions. Defaults to <c>click</c>.</summary>
     public List<string> InteractionEvents { get; } = ["click"];
 

@@ -244,7 +244,7 @@ export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureCo
     }
     if (log.eventName === 'browser.page_view') {
         const url = str(a, 'url.full');
-        const name = str(a, 'page.title') || str(a, 'url.path') || url || log.body;
+        const name = str(a, 'page.title') || str(a, 'url.template') || str(a, 'url.path') || url || log.body;
         const tags = recordTags(base, a, log.traceId, log.spanId, name);
         const data: Json = { ver: 2, name, id: newSpanId(), duration: '00:00:00' };
         if (url) data.url = url;
@@ -260,7 +260,7 @@ export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureCo
         // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply.
         const url = str(a, 'url.full');
         const props = properties(a, ['url.full', 'url.path', 'page.title', 'page.visit.duration']) || {};
-        props.PageName = str(a, 'page.title') || str(a, 'url.path') || log.body;
+        props.PageName = str(a, 'page.title') || str(a, 'url.template') || str(a, 'url.path') || log.body;
         if (url) props.PageUrl = url;
         const duration = Number(a['page.visit.duration']);
         return envelope('Event', log.time, ctx, tags, { ver: 2, name: 'PageVisitTime', measurements: { PageVisitTime: isFinite(duration) ? duration : 0 } }, props);

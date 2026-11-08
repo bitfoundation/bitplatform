@@ -131,6 +131,32 @@ internal sealed class BelemetrySettings
 
     public List<string> Meters { get; }
 
+    private IReadOnlyList<string>? _pageRoutes;
+
+    /// <summary>
+    /// The route templates the script matches page paths against: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then
+    /// the discovered ones (<see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>), once each. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes(Options.Browser);
+
+    private static List<string> ResolvePageRoutes(BelemetryBrowserOptions browser)
+    {
+        var routes = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var route in browser.PageRoutes)
+        {
+            if (string.IsNullOrWhiteSpace(route) is false && seen.Add(route.Trim())) routes.Add(route.Trim());
+        }
+        if (browser.DiscoverPageRoutes)
+        {
+            foreach (var route in BelemetryPageRoutes.Discovered)
+            {
+                if (seen.Add(route)) routes.Add(route);
+            }
+        }
+        return routes;
+    }
+
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
 
     /// <summary>The runtime feature switch behind the <c>MetricsSupport</c> MSBuild property.</summary>

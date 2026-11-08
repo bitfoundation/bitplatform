@@ -392,6 +392,29 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void AnUntitledPageView_IsNamedByItsRouteTemplate_WhichStaysAProperty()
+    {
+        var log = Records.Log(null, "browser.page_view");
+        log.Attributes.Set("url.full", "https://app.test/orders/42").Set("url.path", "/orders/42").Set("url.template", "/orders/{id:int}").Set("page.title", "");
+
+        var e = Single(log);
+        Assert.AreEqual("/orders/{id:int}", BaseData(e).GetProperty("name").GetString());
+        Assert.AreEqual("/orders/{id:int}", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("/orders/{id:int}", Prop(e, "url.template"));
+        Assert.AreEqual("/orders/42", Prop(e, "url.path"));
+
+        var titled = Records.Log(null, "browser.page_view");
+        titled.Attributes.Set("url.template", "/orders/{id:int}").Set("page.title", "Order");
+        Assert.AreEqual("Order", BaseData(Single(titled)).GetProperty("name").GetString());
+
+        var visit = Records.Log(null, "browser.page_visit_time");
+        visit.Attributes.Set("url.path", "/orders/42").Set("url.template", "/orders/{id:int}").Set("page.visit.duration", 10);
+        var v = Single(visit);
+        Assert.AreEqual("/orders/{id:int}", Prop(v, "PageName"));
+        Assert.AreEqual("/orders/{id:int}", Prop(v, "url.template"));
+    }
+
+    [TestMethod]
     public void WebVital_IsAMetric()
     {
         var log = Records.Log(null, "browser.web_vital");

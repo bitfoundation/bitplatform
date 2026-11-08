@@ -520,11 +520,32 @@ public class BelemetryPipelineTests
         Assert.AreEqual(9.5, logs[0].Attributes["amount"]);
         Assert.AreEqual("browser.page_view", logs[1].EventName);
         Assert.AreEqual("/home", logs[1].Attributes["url.path"]);
+        Assert.AreEqual("/home", logs[1].Attributes["url.template"]);
         Assert.AreEqual("Home", logs[1].Attributes["page.title"]);
         Assert.AreEqual(BelemetryFeatures.PageViews, logs[1].Feature);
         Assert.AreEqual("exception", logs[2].EventName);
         Assert.AreEqual(BelemetryFeatures.Errors, logs[2].Feature);
         Assert.AreEqual("System.InvalidOperationException", logs[2].Attributes["exception.type"]);
+    }
+
+    [TestMethod]
+    public async Task Api_PageViews_CarryTheirPathAsATemplate_OrTheCallersTemplate()
+    {
+        await using var host = TestHost.Create();
+        using var scope = host.Services.CreateScope();
+        var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
+
+        api.TrackPageView("Order", "https://app.test/orders/42/lines/3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e?x=1");
+        api.TrackPageView("Step", "/checkout/2#top", new Dictionary<string, object?> { ["url.template"] = "/checkout/{step}" });
+        api.TrackPageView("Dialog");
+
+        await host.FlushAsync();
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual("/orders/{n}/lines/{guid}", logs[0].Attributes["url.template"]);
+        Assert.AreEqual("/checkout/2", logs[1].Attributes["url.path"], "A relative URL has a path too.");
+        Assert.AreEqual("/checkout/{step}", logs[1].Attributes["url.template"]);
+        Assert.IsNull(logs[2].Attributes.GetString("url.template"), "No URL, no template.");
     }
 
     [TestMethod]

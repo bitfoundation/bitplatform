@@ -99,6 +99,8 @@ describe('DiagnosticRecorder', () => {
         const e = recorder.snapshot(4095, {}).events[0];
         expect(e).toMatchObject({ cat: 'navigation', name: 'page_view', route: '/orders/{n}', attrs: { 'browser.navigation.type': 'push' } });
         expect(JSON.stringify(e)).not.toContain('a@b.c');
+        recorder.record(log({ eventName: 'browser.page_view', scope: 'bit.belemetry.page_views', feature: 2, attributes: { 'url.path': '/orders/42', 'url.template': '/orders/{id:int}' } }));
+        expect(recorder.snapshot(4095, {}).events[1].route).toBe('/orders/{id:int}');
     });
 
     it('console messages are left out unless log messages are allowed', () => {

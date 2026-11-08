@@ -49,6 +49,11 @@ export interface PageViewsConfig {
     trackHashChanges: boolean;
     /** Whether the time spent on each page is recorded (`browser.page_visit_time`). */
     trackVisitTime: boolean;
+    /**
+     * The app's route templates (`/orders/{id:int}`, relative to the `<base href>`), which a page's path is matched
+     * against for its `url.template`, as the Blazor router matches them. .NET lists the `@page` routes it finds.
+     */
+    routes: string[];
 }
 
 export interface InteractionsConfig {
@@ -175,7 +180,7 @@ export function createDefaults(): ResolvedConfig {
         exporters: [],
         features: Features.All,
         consent: { default: Features.None, persist: true, honorGlobalPrivacyControl: true, pendingLimit: 500 },
-        pageViews: { trackHashChanges: false, trackVisitTime: false },
+        pageViews: { trackHashChanges: false, trackVisitTime: false, routes: [] },
         interactions: { events: ['click'], captureText: false, maxTextLength: 64, rageClicks: true },
         performance: { webVitals: true, documentLoad: true, resources: false, longTasks: false },
         dependencies: { fetch: true, xhr: true, propagateTraceContextTo: ['same-origin'], ignoreUrls: ['/_framework/', '/_blazor', '/_content/'] },

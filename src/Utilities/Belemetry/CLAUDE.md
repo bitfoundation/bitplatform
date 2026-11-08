@@ -167,7 +167,7 @@ idempotent: a second call only updates the consent defaults and the bridge.
   ],
   "features": 4095,                                      // instrumentations switched on by configuration
   "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-  "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
+  "pageViews": { "trackHashChanges": false, "trackVisitTime": false, "routes": ["/", "/orders/{id:int}"] },  // routes: absent when none
   "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
   "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
   "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
@@ -240,6 +240,13 @@ Notes on the fields:
   same, so storing them would deliver each twice on the next visit. Offline, it is stored as before.
 - `service.instanceId` is null from `<BelemetryScript />`: a browser tab is its own instance, so the script
   generates a random `service.instance.id` per page load.
+- `pageViews.routes` are `Browser.PageRoutes` then the `@page` templates `BelemetryPageRoutes` discovers (entry
+  assembly, then the referenced assemblies that use `Microsoft.AspNetCore.Components`, transitively), once each, and
+  only when page views are configured. The script (`routes.ts`) matches a page's path below the `<base href>` against
+  them in the Blazor router's order (ASP.NET Core's inbound precedence digits: literal 1, constrained parameter or
+  several parts 2, parameter 3, constrained catch-all 4, catch-all 5) and falls back to `templatePath` (C#
+  `BelemetryUrlTemplate.TemplatePath`). .NET's own `TrackPageView` (WebAssembly, Hybrid, a server without a page) only
+  falls back: there is no route matcher in C#.
 
 ### Browser record model (TS internal, and the relay payload C# `BelemetryRelayBatch`)
 
@@ -310,8 +317,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 
 | Record | Shape |
 | --- | --- |
-| Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
-| Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Attributes: `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms, integer) |
+| Page view | Log record, `eventName = "browser.page_view"`, body = the name given to `trackPageView`, else `page.title`, else `url.template`. Attributes: `url.full`, `url.path`, `url.template` (a `url.template` the caller passes, else the first of `pageViews.routes` the path matches, after the base path, else `templatePath(url.path)`), `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
+| Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Body = `page.title`, else `url.template`. Attributes: `url.full`, `url.path`, `url.template`, `page.title`, `page.visit.duration` (ms, integer) |
 | Rage click | Log record, `eventName = "browser.rage_click"`, with `interactions.rageClicks`: once per burst of 3 clicks on one element within 1 s (from the burst's first click). The click's target attributes, `event.type = "rage_click"`, `interaction.click_count = 3` |
 | Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped (in a shadow root under one too), and their text is left out of `target.text` |
 | Web vital | Log record, `eventName = "browser.web_vital"`. Attributes: `web_vital.name` (`LCP`/`INP`/`CLS`/`FCP`/`TTFB`), `web_vital.value`, `web_vital.delta`, `web_vital.rating` (`good`/`needs-improvement`/`poor`), `web_vital.id`, `web_vital.navigation_type` |
@@ -340,7 +347,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | `ai.device.locale` | `browser.language` (browser resource) |
   | `ai.operation.id` | traceId |
   | `ai.operation.parentId` | parent span id (span) or span id (log, event of a span) |
-  | `ai.operation.name` | Requests, and the events of a request span: the request name (`{http.request.method} {http.route}` when both are non-empty, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
+  | `ai.operation.name` | Requests, and the events of a request span: the request name (`{http.request.method} {http.route}` when both are non-empty, else the span name). Page views: the page name (`page.title`, else `url.template`, else `url.path`, else `url.full`). Not set on other records |
   | `ai.session.id` | `session.id` |
   | `ai.user.id` | `enduser.pseudo.id` |
   | `ai.user.authUserId` | `user.id` |
@@ -359,7 +366,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |
   | `eventName == "browser.web_vital"` | `Metric` | `metrics:[{name:"<web_vital.name>",kind:0,value,count:1}]` |
-  | `eventName == "browser.page_visit_time"` | `Event` | `name` = `PageVisitTime`, `measurements:{PageVisitTime:<ms>}`, properties `PageName` (`page.title`, else `url.path`) and `PageUrl` - the Application Insights JS SDK's `autoTrackPageVisitTime` shape |
+  | `eventName == "browser.page_visit_time"` | `Event` | `name` = `PageVisitTime`, `measurements:{PageVisitTime:<ms>}`, properties `PageName` (`page.title`, else `url.template`, else `url.path`) and `PageUrl` - the Application Insights JS SDK's `autoTrackPageVisitTime` shape |
   | Any other `eventName` | `Event` | `name` = eventName |
   | Any other log | `Message` | `message`, `severityLevel` (0 Verbose, 1 Information, 2 Warning, 3 Error, 4 Critical) |
   | Metric point | `Metric` | Gauge: last value. Sum: delta. Histogram: delta sum/count/min/max |
@@ -380,7 +387,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   elapsed (performance.now), cat, name, sev (OTLP number), outcome?, traceId?, spanId?, parentSpanId?, route? (path
   template), dur?, feature, msg?, exc?: {type, message, stack?}, attrs?, prev?}`. The script keeps metadata only:
   HTTP method, status, `server.address`, `error.type` and `url.template` (origin + templated path + allowlisted query);
-  click `event.type` and `target.element`; page view path template and navigation type; console messages only with
+  click `event.type` and `target.element`; page view route (`url.template`, else the path template) and navigation type; console messages only with
   `includeLogMessages`. .NET bounds (2 x `BrowserMaxEvents`, at most 1000), re-sanitizes, re-templates routes, validates
   ids and fingerprints exceptions itself: the page is untrusted on a server.
 - **The timeline taps the pipeline after privacy and processors** (`BelemetryPipeline.Enqueue`: `export` and `diagnose`

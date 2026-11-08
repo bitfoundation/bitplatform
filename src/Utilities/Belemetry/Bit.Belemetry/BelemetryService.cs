@@ -37,7 +37,19 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
         if (url is not null)
         {
             record.Attributes.Set(BelemetrySemanticConventions.UrlFull, url);
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uri)) record.Attributes.Set(BelemetrySemanticConventions.UrlPath, uri.AbsolutePath);
+            var path = url.StartsWith('/') && url.StartsWith("//", StringComparison.Ordinal) is false ? url.Split('?', '#')[0]
+                     : Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.AbsolutePath
+                     : null;
+            if (path is not null)
+            {
+                record.Attributes.Set(BelemetrySemanticConventions.UrlPath, path);
+                // One name for all the views of a page whatever its ids, as the script's page views have (which also
+                // match the app's routes): the caller's template, else the path with its ids replaced.
+                if (record.Attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is not { Length: > 0 })
+                {
+                    record.Attributes.Set(BelemetrySemanticConventions.UrlTemplate, BelemetryUrlTemplate.TemplatePath(path));
+                }
+            }
         }
         Enqueue(record);
     }

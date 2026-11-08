@@ -33,7 +33,13 @@ internal static class BelemetryBrowserConfigFactory
                 HonorGlobalPrivacyControl = options.Consent.HonorGlobalPrivacyControl,
                 PendingLimit = options.Consent.PendingLimit,
             },
-            PageViews = new() { TrackHashChanges = browser.TrackHashChanges, TrackVisitTime = browser.TrackPageVisitTime },
+            PageViews = new()
+            {
+                TrackHashChanges = browser.TrackHashChanges,
+                TrackVisitTime = browser.TrackPageVisitTime,
+                // Only for a page that records page views: the list costs its bytes in every page and its discovery a scan.
+                Routes = options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0 && settings.PageRoutes is { Count: > 0 } routes ? [.. routes] : null,
+            },
             Interactions = new()
             {
                 // Distinct: a configuration binder appends to the list's defaults, and a DOM event listed twice would

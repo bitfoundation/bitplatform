@@ -54,6 +54,8 @@ internal sealed class TestHost : IAsyncDisposable
         o.Metrics.ExportInterval = TimeSpan.FromHours(1);
         o.Traces.Sources.Clear();
         o.Metrics.Meters.Clear();
+        // What discovery finds depends on the entry assembly - the test runner's; BelemetryPageRoutesTests covers it.
+        o.Browser.DiscoverPageRoutes = false;
     }
 
     /// <summary>Builds settings straight from options, without DI.</summary>

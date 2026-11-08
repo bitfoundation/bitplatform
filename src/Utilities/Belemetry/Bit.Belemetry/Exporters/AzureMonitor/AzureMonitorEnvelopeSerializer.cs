@@ -221,6 +221,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 {
                     var url = attributes.GetString(BelemetrySemanticConventions.UrlFull);
                     var name = attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
+                             : attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is { Length: > 0 } template ? template
                              : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? url ?? "page";
 
                     BeginEnvelope(w, "PageView", log.TimeUnixNano);
