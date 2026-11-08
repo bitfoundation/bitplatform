@@ -981,15 +981,20 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
                 return true;
         }
 
-        if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
-        {
-            if (BitCountryList.IsTypeAheadKey(e) is false) return false;
-
-            await ApplySearchText(_list.SearchText + e.Key);
-        }
-
         try
         {
+            if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
+            {
+                if (BitCountryList.IsTypeAheadKey(e) is false) return false;
+
+                // The letter is typed into the box where it is, after whatever the box holds by the time it arrives, and
+                // reaches the search through the box's own binding (ApplySearchText): rendered from here instead, the
+                // term a round trip behind on a server circuit was written over the letters typed into the box since.
+                await _js.BitExtrasTypeInto(_searchInputRef, e.Key);
+
+                return true;
+            }
+
             await _searchInputRef.FocusAsync();
         }
         catch (JSException) { } // the element might not be ready/visible yet
@@ -1214,8 +1219,8 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         _isCalloutDisplayed = shown;
     }
 
-    // The setter of the search box's binding (see the markup), and what a letter typed on the field of an open list
-    // goes through as well.
+    // The setter of the search box's binding (see the markup), which a letter typed on the field of an open list reaches
+    // as well, typed into the box (see HandleOnFieldOfSearchableListKeyDown).
     private async Task ApplySearchText(string? text)
     {
         SearchFor(text);

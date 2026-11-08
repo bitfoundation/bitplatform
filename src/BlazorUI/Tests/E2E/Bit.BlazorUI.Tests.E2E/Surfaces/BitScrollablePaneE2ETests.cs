@@ -623,43 +623,51 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await pane.ScrollIntoViewIfNeededAsync();
         var box = await BoxAsync(pane);
 
-        // A release is a flick only when it comes within 90ms of the last move - a pointer held still before it is
-        // lifted is not one - and Playwright sends the release as a command of its own, which a loaded runner can take
-        // longer than that to deliver. So the page times the release against the last move where the pane hears both,
-        // and notes where the pane stood at that moment (the glide starts on the next frame): a gesture let go of too
-        // late to be a flick, which rightly does not glide, is made again.
+        // A release is a flick only when it comes within the pane's flick window (90ms) of the last move it sampled - a
+        // pointer held still before it is lifted is not one - and Playwright sends the release as a command of its own,
+        // which a loaded runner can take longer than that to deliver. So the release is classified by the pane's own
+        // reading: the time it sampled the last move at, taken as the release reaches the document, against the window
+        // it decides by, timed once its own release handler has run - never sooner than it timed it, so a release read
+        // as in time is one the pane took for a flick. It also notes where the pane stood then (the glide starts on the
+        // next frame). A gesture let go of too late to be a flick, which rightly does not glide, is made again.
         await pane.EvaluateAsync(@"el => {
-            const flick = window.__e2eFlick = { move: 0, gap: -1, left: -1 };
-            document.addEventListener('pointermove', () => flick.move = performance.now(), { capture: true });
-            document.addEventListener('pointerup', () => {
-                flick.gap = performance.now() - flick.move;
+            const instance = Object.values(BitBlazorUI.ScrollablePane._panes).find(p => p._element === el);
+            if (!instance) throw new Error('The pane is not set up.');
+            const flickWindow = instance.constructor._flickWindow;
+            if (typeof flickWindow !== 'number') throw new Error('The pane names no flick window.');
+            const flick = window.__e2eFlick = { at: -1, gap: -1, left: -1, window: flickWindow };
+            document.addEventListener('pointerup', () => flick.at = instance._drag?.at ?? -1, { capture: true });
+            window.addEventListener('pointerup', () => {
+                if (flick.at < 0) return;
+                flick.gap = performance.now() - flick.at;
                 flick.left = el.scrollLeft;
-            }, { capture: true });
+            });
         }");
 
         var lateReleases = new List<double>();
         for (var attempt = 0; attempt < 5; attempt++)
         {
-            await pane.EvaluateAsync("el => { el.scrollLeft = 0; window.__e2eFlick.gap = -1; }");
+            await pane.EvaluateAsync("el => { el.scrollLeft = 0; window.__e2eFlick.at = -1; window.__e2eFlick.gap = -1; }");
             await Page.Mouse.MoveAsync((float)(box.X + box.Width - 20), (float)(box.Y + 20));
             await Page.Mouse.DownAsync();
             await Page.Mouse.MoveAsync((float)(box.X + box.Width - 220), (float)(box.Y + 20), new() { Steps = 3 });
             await Page.Mouse.UpAsync();
 
-            var release = await Page.EvaluateAsync<double[]>("() => [window.__e2eFlick.gap, window.__e2eFlick.left]");
-            Assert.IsTrue(release[0] >= 0, "The pane heard no release.");
+            var release = await Page.EvaluateAsync<double[]>("() => [window.__e2eFlick.gap, window.__e2eFlick.left, window.__e2eFlick.window]");
+            Assert.IsTrue(release[0] >= 0, "The pane heard no drag released.");
 
-            if (release[0] > 80)
+            if (release[0] > release[2])
             {
                 lateReleases.Add(release[0]);
                 continue;
             }
 
-            await PollAsync(() => pane.EvaluateAsync<double>("el => el.scrollLeft"), left => left > release[1] + 20, "the flick did not glide on");
+            await PollAsync(() => pane.EvaluateAsync<double>("el => el.scrollLeft"), left => left > release[1] + 20,
+                            $"the flick released {release[0]:0.#}ms after the last move the pane sampled, inside its {release[2]:0}ms window, did not glide on");
             return;
         }
 
-        Assert.Fail($"Every release came too late after the last move to be a flick ({string.Join(", ", lateReleases.Select(gap => $"{gap:0}ms"))}).");
+        Assert.Fail($"Every release came too late after the last move the pane sampled to be a flick ({string.Join(", ", lateReleases.Select(gap => $"{gap:0}ms"))}).");
     }
 
     [TestMethod]

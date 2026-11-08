@@ -82,6 +82,18 @@ public class BitCircularTimePickerStylesheetTests
         // The hand is drawn over the numbers - the hand of an outer-ring hour across the inner-ring hour at its angle -
         // so it takes no pointer of its own: a press, the hover and the cursor are those of the number underneath. Its
         // thumb inherits that.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-ctp-ptr {"), "pointer-events: none;");
+        StringAssert.Contains(SourceFiles.StripScssComments(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-ctp-ptr {")), "pointer-events: none;");
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReachOutUnderAThumbLargerThanTheDial()
+    {
+        // A thumb larger than the gap a number leaves inside the rim reaches past it, and it takes no pointer of its own:
+        // the face reaches out under it by as much, so a press on the part outside the dial is still the face's - and
+        // reaches nowhere while the thumb fits.
+        var reach = SourceFiles.StripScssComments(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-ctp-clf::before {"));
+
+        StringAssert.Contains(reach, "position: absolute;");
+        StringAssert.Contains(reach, "inset: min(0px, calc(var(--bit-ctp-num) / 2 + var(--bit-ctp-num-gap) - max(var(--bit-ctp-thb), var(--bit-ctp-thb-min)) / 2));");
     }
 }

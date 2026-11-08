@@ -2550,6 +2550,68 @@ public class BitAccordionTests : BunitTestContext
         Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
     }
 
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public async Task BitAccordionHiddenUntilFoundShouldAnimateAnOpenThePageMakesWhileARevealIsAwaited(bool refuse)
+    {
+        var gate = new TaskCompletionSource();
+        var isExpanded = false;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = refuse;
+            });
+        });
+
+        var revealing = com.InvokeAsync(() => com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty));
+
+        // The page opens the panel itself while the reveal waits on OnToggling: that open is its own, not the reveal's.
+        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
+
+        // Whatever then becomes of the reveal, the open stays the ordinary one, and so does the next open after a close.
+        gate.SetResult();
+        await revealing;
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
+
+        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
+        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+
+        Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionHiddenUntilFoundShouldOpenARevealOnceOnTogglingLetsItThrough()
+    {
+        var gate = new TaskCompletionSource();
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs _) => await gate.Task);
+        });
+
+        var revealing = com.InvokeAsync(() => com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty));
+
+        Assert.IsFalse(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
+
+        gate.SetResult();
+        await revealing;
+
+        Assert.IsTrue(com.Instance.IsExpanded);
+        Assert.IsTrue(com.Find(".bit-acd-cnt").ClassList.Contains("bit-acd-rvl"));
+    }
+
     [TestMethod]
     public void BitAccordionHiddenUntilFoundShouldLetGoOfARevealOnACollapseThePageHandsIn()
     {

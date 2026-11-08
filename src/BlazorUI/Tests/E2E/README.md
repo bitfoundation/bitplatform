@@ -90,7 +90,9 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Te
   `OpenAsync` or `ReloadAsync` (or by ending), never `Page.GotoAsync` or `Page.ReloadAsync`: they let go of the errors
   that only say the connection of the page being left is gone, which Firefox raises as it keeps running that page's
   scripts after closing its connection. Everything the page raised before it is left is caught up with first, so a
-  connection that dropped while the page was on screen still fails the test.
+  connection that dropped while the page was on screen still fails the test - and so does one the page arrived on lost
+  on its way to its first render, even when it came back in time: every page records its own (a script the base adds
+  to every page of the context), which the base reads once the page is ready.
   `AssertNoServerErrorsAsync` reads what the host logged for the circuits of the pages this test visited (the host
   records which pages each circuit was on), so a neighbouring test's error never fails it.
 - Read state through Playwright's auto-waiting assertions (`Expect(...)`), never a one-off read right after an

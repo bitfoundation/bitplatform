@@ -85,6 +85,58 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListHiddenUntilFoundShouldOpenTheRevealedItemAtOnce()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.HiddenUntilFound, true);
+        });
+
+        component.FindAll(".bit-acd-con")[1].TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        // The open the list applies for the reveal is taken at once, around the match the browser has scrolled to.
+        Assert.IsTrue(component.FindAll(".bit-acd-cnt")[1].ClassList.Contains("bit-acd-rvl"));
+        Assert.IsFalse(component.FindAll(".bit-acd-cnt")[0].ClassList.Contains("bit-acd-rvl"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public async Task BitAccordionListHiddenUntilFoundShouldAnimateAnOpenThePageMakesWhileARevealIsAwaited(bool refuse)
+    {
+        var toggling = new TaskCompletionSource();
+        string? boundKey = null;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Bind(p => p.ExpandedKey, boundKey, v => boundKey = v);
+            parameters.Add(p => p.OnToggling, EventCallback.Factory.Create<BitAccordionListToggleArgs<BitAccordionListItem>>(this, async args =>
+            {
+                await toggling.Task;
+                args.Cancel = refuse;
+            }));
+        });
+
+        var reveal = component.InvokeAsync(() => component.FindAll(".bit-acd-con")[1].TriggerEventAsync("onbeforematch", EventArgs.Empty));
+
+        // The page opens the item through ExpandedKey while the reveal waits on OnToggling: that open is the page's own.
+        component.Render(parameters => parameters.Add(p => p.ExpandedKey, "b"));
+
+        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.IsFalse(component.FindAll(".bit-acd-cnt")[1].ClassList.Contains("bit-acd-rvl"));
+
+        // Whatever then becomes of the reveal, the open stays the ordinary one.
+        toggling.SetResult();
+        await reveal;
+
+        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.IsFalse(component.FindAll(".bit-acd-cnt")[1].ClassList.Contains("bit-acd-rvl"));
+    }
+
+    [TestMethod]
     public void BitAccordionListHiddenUntilFoundShouldStopOfferingAPanelWhoseRevealIsRefused()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>

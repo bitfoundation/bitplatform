@@ -332,25 +332,46 @@
             return invokeDotNet(dotnetObj, method, ...args).then(
                 () => { },
                 e => {
-                    if (isDotNetUnreachable(e)) return;
+                    if (isDotNetUnreachable(e, dotnetObj)) return;
 
                     console.error(`BitBlazorUI: ${method}:`, e);
                 });
         }
 
         // Whether a failed call to .NET is one that never reached a live component (see notifyDotNet): the messages
-        // SignalR and Blazor raise for a connection or a circuit that is gone, and the ones .NET raises for a reference
-        // that is no longer tracked. A circuit that hides the details of its exceptions (no DetailedErrors) words the
-        // last ones as it does any other exception, and those are logged.
-        function isDotNetUnreachable(e: unknown): boolean {
+        // SignalR and Blazor raise for a connection or a circuit that is gone, and the one .NET raises for a reference
+        // it no longer tracks - when it is the reference that was called. A handler can fail with that same message
+        // about a reference of its own (a script it called back into through one already released), and that is a
+        // handler that threw, so the id the message names is read against the id of the reference called rather than
+        // the message being taken for the call's at its word. A circuit that hides the details of its exceptions (no
+        // DetailedErrors) words the reference's as it does any other exception, and it is logged.
+        function isDotNetUnreachable(e: unknown, dotnetObj: DotNetObject): boolean {
             const message = typeof (e as any)?.message === 'string' ? (e as any).message as string : String(e ?? '');
 
-            return message.includes("Cannot send data if the connection is not in the 'Connected' State")
+            if (message.includes("Cannot send data if the connection is not in the 'Connected' State")
                 || message.includes('WebSocket is not in the OPEN state')
                 || message.includes('Invocation canceled due to the underlying connection being closed')
-                || message.includes('The circuit associated with this dispatcher is no longer available')
-                || message.includes('There is no tracked object with id')
-                || /Cannot access a disposed object[\s\S]*DotNetObjectReference/.test(message);
+                || message.includes('The circuit associated with this dispatcher is no longer available')) return true;
+
+            const untracked = /There is no tracked object with id '(-?\d+)'/.exec(message);
+            if (!untracked) return false;
+
+            // An engine whose reference does not say its id leaves only the message to go by.
+            const called = dotNetObjectId(dotnetObj);
+
+            return called === null || called === untracked[1];
+        }
+
+        // The id .NET tracks the reference by: what the reference sends of itself when it is passed back to .NET, which
+        // is the id its own calls are dispatched with.
+        function dotNetObjectId(dotnetObj: DotNetObject): string | null {
+            try {
+                const id = (dotnetObj as any)?._id ?? (dotnetObj as any)?.serializeAsArg?.()?.__dotNetObject;
+
+                return typeof id === 'number' || typeof id === 'string' ? String(id) : null;
+            } catch {
+                return null;
+            }
         }
     }
 }

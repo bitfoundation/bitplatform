@@ -51,7 +51,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
 
     // The absolutely positioned parts of the CircularTimePicker that are laid out against its dial rather than against
     // the container its band does not border (see APanelShouldKeepWhatItPlacesAgainstTheTopOfItsBoxBelowTheBand).
-    private static readonly string[] CircularTimePickerDialParts = [".bit-ctp-pin", ".bit-ctp-ptr", ".bit-ctp-pth", ".bit-ctp-num"];
+    private static readonly string[] CircularTimePickerDialParts = [".bit-ctp-pin", ".bit-ctp-ptr", ".bit-ctp-pth", ".bit-ctp-num", ".bit-ctp-clf::before"];
 
     [TestMethod]
     public void TheMixinShouldInsetEachEdgeByTheLargestOfWhatCanCoverIt()

@@ -3820,13 +3820,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// is the handle's second press all the same, so it fits the column the first press was on, as OnResizerMouseDownAsync
     /// does. Only the first press on the overlay after the handle's can be that one, and only while the handle's press is
     /// still a click rather than a drag: a press after a drag, or the second press of a double click whose first press
-    /// already landed on the overlay (a cell double-clicked under an overlay a slow link keeps up), fits nothing.</summary>
+    /// already landed on the overlay (a cell double-clicked under an overlay a slow link keeps up), fits nothing. Nor does
+    /// a column whose handle is gone by then - the grid disabled, the column made fixed - which the press of a handle
+    /// that is still there could not have reached either.</summary>
     internal Task OnResizeOverlayMouseDownAsync(MouseEventArgs e)
     {
         var column = _resizePressColumn;
         _resizePressColumn = null;
 
-        return column is null ? Task.CompletedTask : OnResizerMouseDownAsync(column, e);
+        if (column is null || ColumnResizable(column) is false) return Task.CompletedTask;
+
+        return OnResizerMouseDownAsync(column, e);
     }
 
     internal void OnResizeMove(double clientX)

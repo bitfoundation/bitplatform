@@ -41,6 +41,10 @@ public abstract class E2ETestBase
     // not an error of the test (see LeaveThePageAsync).
     private readonly List<(int From, int To)> _leavingPageErrors = [];
     private readonly List<(int From, int To)> _leavingConsoleErrors = [];
+    // What the pages arrived on through OpenAsync or ReloadAsync recorded of their own connection being gone, on the way
+    // to their first interactive render: those stretches let go of such errors whichever page raised them, so the
+    // arriving page's are read off the page itself (see ConnectionErrorsRecorder) and fail the test all the same.
+    private readonly List<string> _arrivingConnectionErrors = [];
     private int _serverErrorsBefore;
     private readonly HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
 
@@ -144,6 +148,7 @@ public abstract class E2ETestBase
 
         _context = await browser.NewContextAsync(ContextOptions);
         await _context.AddCookiesAsync([new Cookie { Name = "e2e-render-mode", Value = RenderMode, Url = BaseUrl }]);
+        await _context.AddInitScriptAsync(ConnectionErrorsRecorder);
         Page = await _context.NewPageAsync();
         Page.SetDefaultTimeout(DefaultTimeout);
         Page.PageError += (_, error) => _pageErrors.Add(error);
@@ -216,6 +221,7 @@ public abstract class E2ETestBase
             }
 
             var consoleErrors = WithoutTheConnectionsLeftBehind(_consoleErrors, _leavingConsoleErrors);
+            consoleErrors.AddRange(_arrivingConnectionErrors.Select(error => $"(raised by a page arriving) {error}"));
             if (AllowConsoleErrors is false && consoleErrors.Count > 0)
             {
                 var message = $"The page logged {consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, consoleErrors)}";
@@ -260,7 +266,10 @@ public abstract class E2ETestBase
     // drops while it is on screen is still failed for it, since what it raised is caught up with before the stretch
     // starts. The stretch ends once the next page has reported its status, which it does from its first interactive
     // render: before that render it holds no reference to call .NET through, and one whose connection never comes up
-    // never reports its status, which fails the test on its own.
+    // never reports its status, which fails the test on its own. One whose connection is lost on the way and comes back
+    // before that render still reports it, so what the stretch lets go of is read again off the page arrived on, which
+    // records its own (see ConnectionErrorsRecorder) - after which the stretch ends, so everything it raised before that
+    // read lies inside the stretch and is counted once, off its record.
     private async Task LeaveThePageAsync(Func<Task> navigate, string status)
     {
         var leaving = Page.Url.StartsWith(BaseUrl, StringComparison.OrdinalIgnoreCase);
@@ -276,6 +285,7 @@ public abstract class E2ETestBase
         {
             await navigate();
             await WaitForStatusAsync(status);
+            await ReadTheArrivingPagesConnectionErrorsAsync();
         }
         finally
         {
@@ -320,15 +330,60 @@ public abstract class E2ETestBase
                      .ToList();
     }
 
+    // The connection-gone errors the page arrived on recorded itself, from its first script on: the stretch of the
+    // navigation that brought it lets go of them, as the page being left raises the same ones (see LeaveThePageAsync).
+    // A page that cannot be read (closed, crashed) has failed the test some other way.
+    private async Task ReadTheArrivingPagesConnectionErrorsAsync()
+    {
+        try
+        {
+            _arrivingConnectionErrors.AddRange(await Page.EvaluateAsync<string[]>("() => (window.__e2eConnectionErrors ?? []).slice()"));
+        }
+        catch (PlaywrightException) { }
+    }
+
+    // The messages Blazor and SignalR raise for a call made over a connection that has already been closed, or by a
+    // circuit the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
+    private static readonly string[] _connectionGoneMessages =
+    [
+        "Cannot send data if the connection is not in the 'Connected' State",
+        "WebSocket is not in the OPEN state",
+        "The circuit associated with this dispatcher is no longer available",
+    ];
+
+    // Run in every document of the context before its own scripts: records the errors of that document that say its
+    // connection is gone - logged, thrown or rejected - so the ones of a page arriving can be told apart from the same
+    // ones the page being left raises, which reach the test interleaved with them. The record is the document's own,
+    // so a page left behind (Firefox reports some of its errors after the next page has committed) adds nothing to it.
+    private static readonly string ConnectionErrorsRecorder = $$"""
+        (() => {
+            if (window.__e2eConnectionErrors) return;
+            const seen = window.__e2eConnectionErrors = [];
+            const gone = {{System.Text.Json.JsonSerializer.Serialize(_connectionGoneMessages)}};
+            const text = value => value instanceof Error ? `${value.name}: ${value.message}` : String(value);
+            const note = values => {
+                try {
+                    const message = values.map(text).join(' ');
+                    if (gone.some(g => message.includes(g))) seen.push(message);
+                } catch { }
+            };
+            const error = console.error;
+            console.error = function (...args) {
+                note(args);
+                return error.apply(this, args);
+            };
+            window.addEventListener('error', e => note([e.error ?? e.message]), true);
+            window.addEventListener('unhandledrejection', e => note([e.reason]), true);
+        })();
+        """;
+
     /// <summary>
     /// Whether an error is one Blazor and SignalR raise for a call made over a connection that has already been closed,
     /// or by a circuit the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
     /// </summary>
     protected static bool IsTheConnectionGone(string error)
     {
-        return error.Contains("Cannot send data if the connection is not in the 'Connected' State", StringComparison.Ordinal)
-            || error.Contains("WebSocket is not in the OPEN state", StringComparison.Ordinal)
-            || error.Contains("The circuit associated with this dispatcher is no longer available", StringComparison.Ordinal);
+        return _connectionGoneMessages.Any(message => error.Contains(message, StringComparison.Ordinal));
     }
 
     /// <summary>

@@ -46,10 +46,12 @@ public partial class BitAccordion : BitComponentBase
     // stylesheet opens a panel the browser has revealed ahead of the render. The render can land first: WebAssembly
     // runs the beforematch listener and renders inside the event, before the browser takes the attribute off and
     // scrolls to the match, so the attribute and bit-acd-huf leave together and the stylesheet's own reveal never
-    // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is let
-    // go of once the panel the reveal opened is collapsed again (TrackReveal), so the close and every later open play
-    // as usual. _revealOpened says the reveal's expansion has happened: a collapsed state seen before it is the panel
-    // still on its way open (a RevealHandler re-rendering the page first, an OnToggling being awaited).
+    // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is set
+    // only as the reveal's own expansion is applied (BeginRevealExpansion), once OnToggling has let it through: an open
+    // the page makes meanwhile - a bound IsExpanded, the ExpandedKey of a list - is an ordinary open, which animates
+    // whatever becomes of the reveal. It is let go of once the panel the reveal opened is collapsed again (TrackReveal),
+    // so the close and every later open play as usual. _revealOpened says the reveal's expansion has happened: a
+    // collapsed state seen before it is the panel still on its way open (a RevealHandler re-rendering the page first).
     private bool _revealing;
     private bool _revealOpened;
 
@@ -772,6 +774,9 @@ public partial class BitAccordion : BitComponentBase
             }
         }
 
+        // A reveal let through is what opens the panel from here on, so that open - and only that one - is the reveal's.
+        if (reason is BitAccordionToggleReason.Reveal) BeginRevealExpansion();
+
         if (await AssignIsExpanded(value) is false) return false;
 
         if (IsExpanded) _hasBeenExpanded = true;
@@ -824,9 +829,6 @@ public partial class BitAccordion : BitComponentBase
             if (IsDisposed || IsExpanded || _IsSearchable is false) return;
         }
 
-        _revealing = true;
-        _revealOpened = false;
-
         var revealed = RevealHandler is not null
                      ? await RevealHandler()
                      : await AssignExpanded(true, BitAccordionToggleReason.Reveal);
@@ -835,6 +837,18 @@ public partial class BitAccordion : BitComponentBase
 
         _revealing = false;
         _revealRefused = true;
+    }
+
+    /// <summary>
+    /// Marks the open about to be applied as the one a find-in-page reveal makes, which the panel takes at once
+    /// (bit-acd-rvl, see _revealing). Called by the accordion as it applies a reveal of its own, and by the owner of a
+    /// one-way bound expansion (BitAccordionList) as it applies the reveal its RevealHandler was asked for: once
+    /// OnToggling has let the reveal through, and not before, so an open made while it was awaited stays the ordinary one.
+    /// </summary>
+    internal void BeginRevealExpansion()
+    {
+        _revealing = true;
+        _revealOpened = false;
     }
 
     // Follows the panel a reveal opened (see _revealing) through every way its state is learnt: the parameters the page

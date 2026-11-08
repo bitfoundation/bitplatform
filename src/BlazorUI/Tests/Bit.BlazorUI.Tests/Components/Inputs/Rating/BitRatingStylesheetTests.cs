@@ -57,7 +57,7 @@ public class BitRatingStylesheetTests
         // The filled glyph of an item grows and shrinks with the value under a pointer that does not move: as a target of
         // its own it took the pointer from one element to another without a move, which Firefox answers with a mouseover
         // that bubbles up to the item as a fresh hover - bringing back the preview a click had just ended.
-        var iconContainer = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-rtg-ict {");
+        var iconContainer = SourceFiles.StripScssComments(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-rtg-ict {"));
 
         StringAssert.Contains(iconContainer, "pointer-events: none;");
     }

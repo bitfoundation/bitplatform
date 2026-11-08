@@ -822,6 +822,18 @@ span.bit-ctp-txt {
     }
 }
 
+// The thumb of the hand takes no pointer events (see .bit-ctp-ptr), and a thumb larger than the gap a number leaves
+// inside the rim - a --bit-CircularTimePicker-thumb-size or -minor-thumb-size on a picker whose Size is left unset -
+// reaches past the rim, where a press would fall through to the surface around the dial. So the face reaches out under
+// the thumb by as much, beneath every number and laid out against the dial like them, and a press on the part of the
+// thumb outside the dial is the face's as it always was. At the sizes that fit the dial it reaches nowhere.
+.bit-ctp-clf::before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    inset: min(0px, calc(var(--bit-ctp-num) / 2 + var(--bit-ctp-num-gap) - max(var(--bit-ctp-thb), var(--bit-ctp-thb-min)) / 2));
+}
+
 .bit-ctp-act {
     display: flex;
     gap: spacing(1);

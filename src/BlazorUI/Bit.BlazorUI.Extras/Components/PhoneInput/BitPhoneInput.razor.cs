@@ -643,8 +643,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     });
 
     // Commits a number the way typing it does: the change event and the input events of Immediate come through here
-    // as well (see HandleOnStringValueChangeAsync). reportSettledValue is what SetCurrentValueAsStringAsync takes.
-    private async Task SetNumber(string? number, bool reportSettledValue = true)
+    // as well (see HandleOnStringValueChangeAsync). reportSettledValue is what SetCurrentValueAsStringAsync takes, and
+    // typed says the number is the text an input event carried (see UpdateValueFromParts).
+    private async Task SetNumber(string? number, bool reportSettledValue = true, bool typed = false)
     {
         if (Disabled || ReadOnly) return;
 
@@ -680,7 +681,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             await AssignNumber(FormatNumber(local));
         }
 
-        await UpdateValueFromParts(reportSettledValue);
+        await UpdateValueFromParts(reportSettledValue, typed);
     }
 
 
@@ -1625,15 +1626,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 return true;
         }
 
-        if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
-        {
-            if (BitCountryList.IsTypeAheadKey(e) is false) return false;
-
-            await ApplySearchText(_list.SearchText + e.Key);
-        }
-
         try
         {
+            if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
+            {
+                if (BitCountryList.IsTypeAheadKey(e) is false) return false;
+
+                // Typed into the box where it is, and searched for through the box's own binding, as in BitCountryPicker.
+                await _js.BitExtrasTypeInto(_searchInputRef, e.Key);
+
+                return true;
+            }
+
             await _searchInputRef.FocusAsync();
         }
         catch (JSException) { } // the element might not be ready/visible yet
@@ -1849,8 +1853,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _isCalloutDisplayed = shown;
     }
 
-    // The setter of the search box's binding (see the markup), and what a letter typed on the field of an open list
-    // goes through as well.
+    // The setter of the search box's binding (see the markup), which a letter typed on the button of an open list reaches
+    // as well, typed into the box (see HandleOnButtonOfSearchableListKeyDown).
     private async Task ApplySearchText(string? text)
     {
         // The active option moves to the first match, so pressing Enter selects it instead of a stale one.
@@ -1959,16 +1963,40 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // out their debounce or throttle, and under Immediate it does not report a number the input events already did.
         var reportSettledValue = PrepareStringValueCommit();
 
-        await SetNumber(e.Value?.ToString(), reportSettledValue);
+        var text = e.Value?.ToString();
+
+        // An input event of Immediate commits the text the input holds as it is typed, which the input goes on being
+        // rendered with (see ElementValue); the change event, and every other move of the Number, puts the Number in it.
+        var typed = e is BitPhoneInputTypedEventArgs;
+        var before = Number;
+
+        await SetNumber(text, reportSettledValue, typed);
+
+        if (typed)
+        {
+            // What the commit made of the text beyond laying it out - the country a dialing code typed in front of it
+            // was taken off for - reaches the input the way the layout does: only while it still holds that text.
+            if (Number != before && Number != text)
+            {
+                await WriteTypedText(Number, expected: text ?? string.Empty);
+            }
+
+            return;
+        }
 
         // A Number the commit moved has already let go of the typed text (UpdateValueFromParts); one that ends up
         // showing it lets go of it as well, as BitTextField does.
         SettleTypedText(Number, Number);
     }
 
-    // What the number input is rendered with: the text it reported with its last input event for as long as the Number
-    // is still the one that text was typed over - Immediate off, a debounce or a throttle still waiting, a Number bound
-    // one way - and the Number once something has moved it: a commit, the page, a country picked for it (see TypedText).
+    // What the number input is rendered with: the text its last input event carried - which the binding takes the input
+    // to hold, so a render with it writes nothing - for as long as the Number is the one that text was typed over or
+    // committed as (Immediate off, a debounce or a throttle still waiting, a Number bound one way, a commit of the text
+    // itself), and the Number once something else has moved it: a change event, the page, a country picked for it (see
+    // TypedText). What the component makes of a typed text - its layout, a dialing code taken off it - is written into the
+    // input by a script that leaves an input typed into since alone (WriteTypedText), never by a render: a render of an
+    // older keystroke, a round trip behind the typing on a server circuit, wrote it over the keys typed since and parked
+    // the caret at the end.
     private string? ElementValue => HoldsTypedTextFor(Number) ? TypedText : Number;
 
     // The input event is bound rather than only handled for what the binding does before the handler runs: the renderer
@@ -1986,25 +2014,36 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         var text = NormalizeTyped(typed);
 
-        // What the input holds from here on, typed over the current Number (see ElementValue).
-        RecordTypedText(text ?? string.Empty, Number);
+        // What the input holds from here on - the text the event carried, which the binding takes it to hold - typed over
+        // the current Number (see ElementValue).
+        RecordTypedText(typed ?? string.Empty, Number);
 
         if (text != typed)
         {
-            e.Value = text;
-
-            // Only written back when the text actually changed, and through the helper that keeps the
-            // caret on the digit it was on: assigning the value of an input parks the caret at the end
-            // of it, which would make the middle of a formatted number impossible to edit.
-            try
-            {
-                await _js.BitExtrasSetInputValue(InputElement, text);
-            }
-            catch (JSException) { } // the element might not be ready/visible yet
+            // Only written back when the text actually changed, and only into an input that still holds the text the
+            // event carried (see WriteTypedText).
+            await WriteTypedText(text, expected: typed ?? string.Empty);
         }
 
-        await base.HandleOnStringValueInputAsync(e);
+        // Marked as an input event's, for the commit Immediate makes of it (see HandleOnStringValueChangeAsync).
+        await base.HandleOnStringValueInputAsync(new BitPhoneInputTypedEventArgs { Value = text });
     }
+
+    // Writes what the component made of a typed text into the input, through the helper that keeps the caret on the
+    // digit it was on - assigning the value of an input parks the caret at the end of it, which would make the middle of a
+    // formatted number impossible to edit - and only while the input still holds the text it was made of: one typed into
+    // since holds a newer text, whose own input event lays it out, and written over it would lose the keys typed since.
+    private async Task WriteTypedText(string? text, string expected)
+    {
+        try
+        {
+            await _js.BitExtrasSetInputValue(InputElement, text, expected);
+        }
+        catch (JSException) { } // the element might not be ready/visible yet
+    }
+
+    // The input events the base class commits under Immediate, told apart from the change event in the commit.
+    private sealed class BitPhoneInputTypedEventArgs : ChangeEventArgs { }
 
     // What the field shows for the text that was typed into it: Strict throws away what cannot be part
     // of a number, the current pattern lays out what is left, and MaxLength caps the result - the
@@ -2020,10 +2059,19 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // Recomposes the full Value from the current Number and Country and pushes it out through
     // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
-    private async Task UpdateValueFromParts(bool reportSettledValue = true)
+    private async Task UpdateValueFromParts(bool reportSettledValue = true, bool typed = false)
     {
-        // Every path that moves the Number comes through here, so the input shows the new Number from now on.
-        ReleaseTypedTextIfMoved(Number);
+        // Every path that moves the Number comes through here, so the input shows the new Number from now on - but for
+        // the commit of a typed text itself, whose Number is the component's own doing: the input goes on being rendered
+        // with the text it holds, and what the commit made of that text reaches it through WriteTypedText.
+        if (typed)
+        {
+            SettleTypedText(Number, Number);
+        }
+        else
+        {
+            ReleaseTypedTextIfMoved(Number);
+        }
 
         var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 

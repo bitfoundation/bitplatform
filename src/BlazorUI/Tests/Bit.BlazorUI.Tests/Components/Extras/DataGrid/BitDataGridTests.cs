@@ -3269,9 +3269,10 @@ public class BitDataGridTests : BunitTestContext
     }
 
     // Over a fast link the overlay of the first press can reach the browser before that press is released, and it goes
-    // away only a round trip after the release: the second press then lands on the overlay rather than on the handle.
+    // away only a round trip after the release: the second press then lands on the overlay rather than on the handle -
+    // on the overlay the grid has already taken down by the time that press reaches it, through the handler it had.
     [TestMethod]
-    public void AutoFitRunsOnTheSecondPressOfADoubleClickThatLandsOnTheDragOverlay()
+    public async Task AutoFitRunsOnTheSecondPressOfADoubleClickThatLandsOnTheDragOverlay()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
         Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
@@ -3279,17 +3280,55 @@ public class BitDataGridTests : BunitTestContext
 
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
         var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+        var overlayPress = OverlayMouseDown(component);
 
         component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
         component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
 
-        // The pointer shakes a pixel between the two presses, which is still a double click.
+        // The pointer shakes a pixel between the two presses, which is still a double click, and the release of the first
+        // press lands on the overlay, which the grid takes down.
         component.Find(".bit-dtg-resize-overlay").PointerMove(new PointerEventArgs { ClientX = 101 });
-        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
+        component.Find(".bit-dtg-resize-overlay").PointerUp();
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count);
+
+        await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
 
         Assert.AreEqual(1, measures());
         StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
         Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the double click leaves no drag behind");
+    }
+
+    // A column whose handle is gone by the time the second press reaches the overlay - the grid turned off resizing in
+    // between - is fitted by no press, as the press of its handle could not have reached it either.
+    [TestMethod]
+    public async Task AutoFitIgnoresADoubleClickOnTheDragOverlayOfAColumnNoLongerResizable()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+        var overlayPress = OverlayMouseDown(component);
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+        component.Find(".bit-dtg-resize-overlay").PointerUp();
+
+        component.Render(parameters => parameters.Add(p => p.Resizable, false));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resizer").Count);
+
+        await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
+
+        Assert.AreEqual(0, measures());
+    }
+
+    // The handler of the drag overlay's mousedown, which a press on an overlay the grid has already taken down still
+    // reaches (the browser holds the handler until the render that removed it has arrived) and bUnit no longer can.
+    private static Func<MouseEventArgs, Task> OverlayMouseDown(IRenderedComponent<BitDataGrid<TestRow>> component)
+    {
+        return typeof(BitDataGrid<TestRow>).GetMethod("OnResizeOverlayMouseDownAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                                           .CreateDelegate<Func<MouseEventArgs, Task>>(component.Instance);
     }
 
     // A double click that starts on the overlay - a cell double-clicked under an overlay a slow link keeps up after a

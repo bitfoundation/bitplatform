@@ -189,7 +189,13 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.IsTrue(component.FindAll("button.bit-tzp-itm")[1].ClassList.Contains("bit-tzp-act"));
 
+        // A letter is typed into the search box where it is (after whatever the box holds by the time it arrives), and
+        // reaches the search through the box's own input event, as a letter typed there does.
         component.Find("button.bit-tzp-fld").KeyDown("t");
+
+        CollectionAssert.AreEqual(new[] { "t" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
+
+        component.Find(".bit-tzp-srch").Input("t");
 
         Assert.AreEqual("t", searched);
 

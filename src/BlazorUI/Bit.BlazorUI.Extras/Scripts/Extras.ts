@@ -281,12 +281,17 @@
         // middle of a number impossible. The caret is therefore expressed as "the nth digit of the
         // text" before the write and put back on the same digit afterwards, so the separators the
         // mask inserts or removes around it never move it.
-        public static setInputValue(element: HTMLInputElement, value: string) {
+        // expected, when it is given, is the text the input has to still hold for the write to happen: what is written
+        // back for an input event is the layout of the text that event carried, and an input typed into since holds a
+        // newer text - written over, the keys typed since would be lost - whose own input event lays it out instead.
+        public static setInputValue(element: HTMLInputElement, value: string, expected?: string | null) {
             if (!element) return;
 
             value ??= '';
 
             const typed = element.value ?? '';
+            if (expected != null && typed !== expected) return;
+
             const focused = document.activeElement === element;
             const start = focused ? element.selectionStart : null;
 
@@ -332,6 +337,26 @@
                 if (Extras.isPhoneDigit(text[i])) count++;
             }
             return count;
+        }
+
+        // Types a text into an input the way keys pressed in it would: at the end of what it holds when the call
+        // arrives, with the caret after it and the focus on it, raising the input event typing raises - so whatever
+        // the input is bound to hears it as it hears the keys typed there. It is what a letter typed on the trigger of
+        // an open list does to the list's search box: written by the component's render instead, a server circuit's
+        // answer to that letter landed a round trip later on a box typed into since, and put back the shorter term
+        // the letter was added to.
+        public static typeInto(element: HTMLInputElement, text: string) {
+            if (!element || !text) return;
+
+            element.focus();
+
+            element.value = (element.value ?? '') + text;
+
+            try {
+                element.setSelectionRange(element.value.length, element.value.length);
+            } catch (e) { /* an input type that has no text selection to set */ }
+
+            element.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
         // Scrolls the option element into the visible area of its scroll container using
