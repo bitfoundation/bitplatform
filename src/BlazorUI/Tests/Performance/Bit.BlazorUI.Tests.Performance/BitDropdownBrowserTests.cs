@@ -203,6 +203,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
             samples.Add((checkpoint, heapNow));
             Console.WriteLine(
                 $"After {checkpoint} cycles – heap: {heapNow:F2} MB, growth: {(heapNow - baseline):F2} MB");
+            Record("serverHeapGrowth", heapNow - baseline, "MB", checkpoint);
         }
 
         // Per-cycle growth in the first 5 cycles vs. the last 20 (cycles 21..40).

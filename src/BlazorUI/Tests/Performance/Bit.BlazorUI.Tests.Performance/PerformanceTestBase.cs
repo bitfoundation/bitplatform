@@ -40,6 +40,9 @@ public abstract class PerformanceTestBase
 
     internal static string HostUrl => BaseUrl;
 
+    /// <summary>The BROWSER the run asked for (Edge is a channel of Playwright's chromium): <c>chromium</c> when it asked for none.</summary>
+    internal static string BrowserName => Environment.GetEnvironmentVariable("BROWSER") is { Length: > 0 } name ? name.ToLowerInvariant() : "chromium";
+
     protected IPage Page { get; private set; } = null!;
 
     public TestContext TestContext { get; set; } = null!;
@@ -488,11 +491,9 @@ public abstract class PerformanceTestBase
     /// </summary>
     protected void Record(string metric, double value, string unit, int? count = null)
     {
-        // The BROWSER asked for (Edge is a channel of Playwright's chromium), with the engine and version that ran.
-        var asked = Environment.GetEnvironmentVariable("BROWSER") is { Length: > 0 } name ? name.ToLowerInvariant() : "chromium";
-
+        // The BROWSER asked for, with the engine and version that ran.
         PerformanceResults.Add(new(TestContext.TestName ?? GetType().Name, metric, Math.Round(value, 3), unit, count),
-                               _browser is null ? asked : $"{asked} ({_browser.BrowserType.Name} {_browser.Version})");
+                               _browser is null ? BrowserName : $"{BrowserName} ({_browser.BrowserType.Name} {_browser.Version})");
     }
 
     /// <summary>
@@ -512,15 +513,17 @@ public abstract class PerformanceTestBase
     /// What an interaction took in the browser, the way it is seen there (<see cref="MeasureInBrowserAsync"/>).
     /// </summary>
     /// <param name="Duration">From the click reaching the page to the frame after the status showed its end.</param>
-    /// <param name="LongTasks">The tasks of 50 ms or more the main thread ran in between; null where the browser does not report them (all but Chromium).</param>
-    /// <param name="LongTaskTime">How long those tasks took together.</param>
+    /// <param name="LongTasks">The tasks of 50 ms or more the main thread ran in between, wholly or in part; null where the browser does not report them (all but Chromium).</param>
+    /// <param name="LongTaskTime">How much of those tasks' time fell in between: a task begun before the click (the click's own) or ended after the end counts for its part inside.</param>
     /// <param name="DomNodes">The elements on the page once it was over.</param>
     public sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
 
     // Arms the page for one interaction: performance.mark "bit-perf:start" as the trigger's click reaches the document,
     // "bit-perf:end" in the frame after the #status text reads the given end - after an animation frame and the task
     // after it, so the layout and paint of what was rendered are inside - and performance.measure "bit-perf" between
-    // them, which a trace of the page shows as well. The answer is kept on the window for MeasureInBrowserAsync to await.
+    // them, which a trace of the page shows as well. A long task counts for the part of it inside that window, and the
+    // entries the observer holds but has not delivered yet are taken before it stops. The answer is kept on the window for
+    // MeasureInBrowserAsync to await.
     private const string ArmInteractionScript = """
         (done) => {
             for (const name of ['bit-perf:start', 'bit-perf:end']) performance.clearMarks(name);
@@ -543,13 +546,18 @@ public abstract class PerformanceTestBase
                     requestAnimationFrame(() => setTimeout(() => {
                         performance.mark('bit-perf:end');
                         const measure = performance.measure('bit-perf', 'bit-perf:start', 'bit-perf:end');
-                        observer?.disconnect();
+                        if (observer) {
+                            longTasks.push(...observer.takeRecords());
+                            observer.disconnect();
+                        }
 
-                        const inside = longTasks.filter(t => t.startTime >= measure.startTime && t.startTime < measure.startTime + measure.duration);
+                        const end = measure.startTime + measure.duration;
+                        const inside = longTasks.map(t => Math.min(t.startTime + t.duration, end) - Math.max(t.startTime, measure.startTime))
+                                                .filter(overlap => overlap > 0);
                         resolve({
                             duration: measure.duration,
                             longTasks: observer ? inside.length : null,
-                            longTaskTime: observer ? inside.reduce((total, t) => total + t.duration, 0) : null,
+                            longTaskTime: observer ? inside.reduce((total, overlap) => total + overlap, 0) : null,
                             domNodes: document.getElementsByTagName('*').length,
                         });
                     }, 0));
@@ -563,14 +571,25 @@ public abstract class PerformanceTestBase
     /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until the #status element reads
     /// <paramref name="done"/>: from the click reaching the page to the next frame after that text appeared - the round
     /// trip, the render, the DOM it changed and the layout and paint of it - as performance.mark / performance.measure
-    /// ("bit-perf"). The page's own #render-time is the server's half of it alone.
+    /// ("bit-perf"). The page's own #render-time is the server's half of it alone. Fails once <see cref="DefaultTimeout"/>
+    /// has passed without the status reading <paramref name="done"/>.
     /// </summary>
     protected async Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done)
     {
         await Page.EvaluateAsync(ArmInteractionScript, done);
         await trigger.ClickAsync();
 
-        var timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction");
+        // An evaluation has no timeout of its own: it would await the page's promise for as long as the status never
+        // reads its end. The one left pending here is rejected when the test's context is closed.
+        JsonElement timing;
+        try
+        {
+            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(TimeSpan.FromMilliseconds(DefaultTimeout));
+        }
+        catch (System.TimeoutException exception)
+        {
+            throw new System.TimeoutException($"#status did not read '{done}' within {DefaultTimeout} ms of the click.", exception);
+        }
 
         return new(timing.GetProperty("duration").GetDouble(),
                    timing.GetProperty("longTasks").ValueKind is JsonValueKind.Number ? timing.GetProperty("longTasks").GetInt32() : null,

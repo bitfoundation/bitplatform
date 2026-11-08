@@ -159,18 +159,25 @@ Adjust as needed based on your performance requirements.
 
 ## Results
 
-The performance tests also write what they measured to `performance-results_net11.0.json` (the framework the run was on)
-in the run's results directory - `--results-directory`, which CI uploads with the TRX, or `TestResults` beside the test
-app otherwise. No threshold reads it: it is there to compare one run with another.
+The performance tests also write what they measured to `performance-results_chromium_net11.0_20261107-142530_3f9a1c2e.json`
+(the browser, the framework, the UTC time of the run and a random id, so every run - a Chromium and a Firefox one sharing a
+directory, or two finishing in the same second, included - keeps a file of its own, and none overwrites another) in the
+run's results directory - `--results-directory`, which CI uploads with the
+TRX, or `TestResults` beside the test app otherwise. No threshold reads it: it is there to compare one run with another.
 
 - **What each test measured**, as rows of test, metric, value, unit and count (the components rendered, the cycles run):
   - `render.*` and `rerender.*`: `server` is the page's own stopwatch, from the click handler to `OnAfterRender`.
     `browser` is the same click timed in the browser, from the click reaching the page to the frame after the status
     showed it was done, which takes in the round trip, the DOM changes and their layout and paint. `domNodes` is the
     page's element count at the end. `longTasks` and `longTaskTime` are the main thread's tasks of 50 ms or more in
-    between, which only Chromium-based browsers report.
+    between and how much of their time fell in between, which only Chromium-based browsers report. BitActionButton's
+    scalability and 2000-component stress tests record their renders the same way.
+  - `render.timePerComponentGrowth`: the scalability test's time per component at its largest count, over the cheapest.
+  - `rerender.server.mean` and `.max`: BitActionButton's repeated re-renders.
+  - `renderClearCycle.mean`: BitActionButton's render and clear cycles, as the test runner timed them.
   - `jsHeap` and `jsHeapIncrease`: BitActionButton's JS heap after rendering, also Chromium only.
-  - `serverHeapGrowth.early` and `.late`: BitDropdown's mount and unmount windows.
+  - `serverHeapGrowth.early` and `.late`: BitDropdown's mount and unmount windows; `serverHeapGrowth` alone, its heap
+    growth after the count of cycles.
 - **What it was measured on**:
   - the OS, the CPU model and its cores, the memory, and whether it ran on CI;
   - the browser and its version;
