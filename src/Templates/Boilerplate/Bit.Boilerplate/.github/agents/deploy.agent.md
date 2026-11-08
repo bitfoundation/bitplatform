@@ -192,7 +192,7 @@ business, and only what the project doesn't answer by itself.
 <!--#if (cloudflare == true)-->
     - **Cloudflare's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`), the recommendation when traffic is large or
       far from the VM, since the app sits behind Cloudflare anyway. It needs the runtime `Cloudflare` token and zone to
-      purge, and the zone rules `.docs/14- Response Caching System.md` lists.
+      purge, and the cache rule of section 8.
 <!--#else-->
     - **A CDN's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`). This project was created without the
       `cloudflare` option, so nothing would purge it when data changes. Prefer the output cache, or edge-cache only
@@ -216,8 +216,7 @@ business, and only what the project doesn't answer by itself.
   in its settings) whatever this decides for the app, so a visitor holds no connection to the server. It is always
   prerendered, since being found is what it is for.
 <!--#if (cloudflare == true)-->
-  Its pages set no cookies and a short shared cache lifetime, so a Cloudflare cache rule for its hostname can serve
-  them from the edge.
+  Its pages set no cookies and a short shared cache lifetime, so the cache rule of section 8 serves them from the edge.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
 <!--#endif-->
@@ -348,10 +347,11 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (cloudflare == true || filesStorage == "S3")-->
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
-  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
-  Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below
-  yourself through Cloudflare's API, for each environment, and mint every token that runs with it. Tell the user
-  Account API Tokens lets it mint any token on the account, so it is as strong as the account until they delete it.
+  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS and Cache
+  Rules with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
+  everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
+  Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
+  delete it.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
@@ -372,6 +372,11 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
+- The app decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only follows
+  it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for cache, edge
+  TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that has none),
+  browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary with
+  `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its default.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
   (section 3), and for the Workbench if the user wants it.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
