@@ -14,4 +14,5 @@ declare namespace BitBlazorUI.Utils {
     function isInteractive(el: Element): boolean;
     function isRtl(element: HTMLElement): boolean;
     function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T>;
+    function notifyDotNet(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<void>;
 }

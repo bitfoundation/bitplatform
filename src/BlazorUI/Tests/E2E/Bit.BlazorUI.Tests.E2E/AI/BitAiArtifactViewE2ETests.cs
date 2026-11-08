@@ -579,6 +579,10 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         await Page.Locator("#btn-open-modal").ClickAsync();
         await Expect(Page.Locator("#atv-modal-state")).ToHaveTextAsync("open");
         await Expect(Root("atv-in-modal")).ToBeVisibleAsync();
+        // The Modal is shown a chain of round trips before it is done opening (BitModal.HandleOnOpened), the last of which
+        // moves the focus to the first control of its content - the artifact's copy button. Landing between the focus of
+        // the toggle below and the Enter, it would take the key to that button, and the panel would never expand.
+        await Page.WaitForFunctionAsync("() => document.getElementById('atv-modal')?.contains(document.activeElement) === true");
 
         var expand = ExpandButton("atv-in-modal");
         await expand.FocusAsync();

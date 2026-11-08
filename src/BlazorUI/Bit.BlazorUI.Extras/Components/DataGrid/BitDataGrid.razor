@@ -556,10 +556,12 @@
 @* --------------------------------------------- Resize tracking overlay (zero-JS) *@
 @if (IsResizing)
 {
+    @* The second press of a double click on a handle can land here rather than on the handle (OnResizeOverlayMouseDownAsync). *@
     <div class="bit-dtg-resize-overlay"
          @onpointermove="e => OnResizeMove(e.ClientX)"
          @onpointerup="EndResize"
-         @onpointerleave="EndResize"></div>
+         @onpointerleave="EndResize"
+         @onmousedown="OnResizeOverlayMouseDownAsync"></div>
 }
 
 @code {

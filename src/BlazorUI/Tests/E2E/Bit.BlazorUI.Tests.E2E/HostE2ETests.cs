@@ -120,15 +120,6 @@ public class HostE2ETests : E2ETestBase
         return Page.EvaluateAsync<bool>("() => document.getElementById('components-reconnect-modal') !== null");
     }
 
-    // The errors Blazor and SignalR raise for a call made over a connection that has already been closed, or by a circuit
-    // the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
-    private static bool IsTheConnectionGone(string error)
-    {
-        return error.Contains("Cannot send data if the connection is not in the 'Connected' State", StringComparison.Ordinal)
-            || error.Contains("WebSocket is not in the OPEN state", StringComparison.Ordinal)
-            || error.Contains("The circuit associated with this dispatcher is no longer available", StringComparison.Ordinal);
-    }
-
     // A request of the page being left that the navigation cut off, which Firefox reports as failed with the status of a
     // load aborted (NS_BINDING_ABORTED, 0x804B0002) - a font it was still downloading, say.
     private static bool IsCutOffByLeaving(string error)

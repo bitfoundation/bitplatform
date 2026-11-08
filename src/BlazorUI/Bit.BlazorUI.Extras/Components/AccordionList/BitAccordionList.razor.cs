@@ -1511,6 +1511,13 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
 
         if (expand)
         {
+            // The item's panel opens at once around the match a reveal is for - this open, now that OnToggling has let it
+            // through, rather than one the page made of the same item while it was awaited.
+            if (reason is BitAccordionToggleReason.Reveal && _itemRefs.TryGetValue(item, out var itemRef))
+            {
+                itemRef.BeginRevealExpansion();
+            }
+
             AddExpandedKey(key);
             SetIsExpanded(item, true);
             await OnExpand.InvokeAsync(item);

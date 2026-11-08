@@ -560,8 +560,7 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         Assert.AreEqual("material-dark", cookies.FirstOrDefault(c => c.Name == "bit-theme-preference")?.Value);
         Assert.IsTrue(cookies.Any(c => c.Name == "bit-theme-pair"), "The pair cookie was not written.");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
 
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme", "material-dark");
         await Expect(PickerText("ths-persist")).ToHaveTextAsync("Material");
@@ -588,9 +587,7 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         // Blazor's own script is served empty, so the page stays the prerendered one: whatever is painted now is the
         // theme script's own restore.
         await Page.RouteAsync("**/_framework/blazor.web.js", route => route.FulfillAsync(new() { Status = 200, ContentType = "text/javascript", Body = "" }));
-        await Page.ReloadAsync();
-
-        await Expect(Page.Locator("#status")).ToHaveTextAsync("Loading");
+        await ReloadAsync("Loading");
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme", "cupertino-dark");
         await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", "rgb(90, 161, 255)");
         await Expect(Page.Locator("#ths-persist .bit-ths-drk")).ToBeVisibleAsync();

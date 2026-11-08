@@ -171,8 +171,13 @@
     @if (NoSearchBox is false)
     {
         <div style="@Styles?.SearchBox" class="bit-tzp-sbx @Classes?.SearchBox">
+            @* The term is bound rather than written as a value next to an input handler, as in BitCountryPicker: the
+               render of an older keystroke - a round trip behind the typing on a server circuit - would otherwise put the
+               shorter term back, and the keys typed after it would be appended to it. *@
             <input @ref="_searchInputRef"
-                   @oninput="HandleOnSearchInput"
+                   @bind:get="_list.SearchText"
+                   @bind:set="ApplySearchText"
+                   @bind:event="oninput"
                    @onkeydown="HandleOnSearchKeyDown"
                    type="text"
                    role="combobox"
@@ -181,7 +186,6 @@
                    spellcheck="false"
                    autocorrect="off"
                    autocapitalize="off"
-                   value="@_list.SearchText"
                    aria-autocomplete="list"
                    aria-haspopup="listbox"
                    aria-expanded="@(IsCalloutShown ? "true" : "false")"

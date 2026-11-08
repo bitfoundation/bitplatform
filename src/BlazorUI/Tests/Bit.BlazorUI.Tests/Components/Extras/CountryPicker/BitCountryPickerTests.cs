@@ -800,7 +800,23 @@ public class BitCountryPickerTests : BunitTestContext
 
         keys.SetVoidResult();
 
-        component.WaitForAssertion(() => Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value")));
+        // The letter the list was opened with is the term it opens with, and the ones typed while it opened are typed
+        // into the box after it, in order - where the browser appends them to whatever the box holds by then, rather than
+        // a render writing a term a round trip old over the letters typed into the box since.
+        component.WaitForAssertion(() => Assert.AreEqual("n", component.Find(".bit-cnp-srch").GetAttribute("value")));
+        CollectionAssert.AreEqual(new[] { "o", "r" }, TypedIntoTheSearchBox());
+
+        // The box reports what it holds through its binding, which is what searches for it.
+        component.Find(".bit-cnp-srch").Input("nor");
+
+        Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value"));
+        StringAssert.StartsWith(component.Find("button.bit-cnp-act").GetAttribute("title"), "Nor");
+    }
+
+    // The letters a component typed into its search box by script (Extras.typeInto), in order.
+    private string[] TypedIntoTheSearchBox()
+    {
+        return [.. Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!)];
     }
 
     [TestMethod]
@@ -966,7 +982,13 @@ public class BitCountryPickerTests : BunitTestContext
 
         Assert.IsTrue(component.FindAll("button.bit-cnp-itm")[1].ClassList.Contains("bit-cnp-act"));
 
+        // A letter is typed into the search box where it is (after whatever the box holds by the time it arrives), and
+        // reaches the search through the box's own input event, as a letter typed there does.
         component.Find("button.bit-cnp-fld").KeyDown("f");
+
+        Assert.AreEqual("f", TypedIntoTheSearchBox().Single());
+
+        component.Find(".bit-cnp-srch").Input("f");
 
         Assert.AreEqual("f", searched);
 

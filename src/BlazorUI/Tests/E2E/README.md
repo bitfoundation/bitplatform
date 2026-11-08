@@ -86,9 +86,16 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Te
   for what the user does and sees. A test opens the page with `OpenAsync("/e2e/<component>")` and drives the real
   component: real clicks, real keys, real focus, the computed styles of the real stylesheet.
 - A test fails at cleanup on any uncaught page error or console error its page raised; a test whose subject is an
-  error sets `AllowConsoleErrors` (or `AllowPageErrors`). `AssertNoServerErrorsAsync` reads what the host logged for
-  the circuits of the pages this test visited (the host records which pages each circuit was on), so a neighbouring
-  test's error never fails it.
+  error sets `AllowConsoleErrors` (or `AllowPageErrors`). A test that ends inconclusive (a library its page needs could
+  not be loaded from its CDN) has them written to its output instead. A test leaves a page only through the base's
+  `OpenAsync` or `ReloadAsync` (or by ending), never `Page.GotoAsync` or `Page.ReloadAsync`: they let go of the errors
+  that only say the connection of the page being left is gone, which Firefox raises as it keeps running that page's
+  scripts after closing its connection. Everything the page raised before it is left is caught up with first, so a
+  connection that dropped while the page was on screen still fails the test - and so does one the page arrived on lost
+  on its way to its first render, even when it came back in time: every page records its own (a script the base adds
+  to every page of the context), which the base reads once the page is ready.
+  `AssertNoServerErrorsAsync` reads what the host logged for the circuits of the pages this test visited (the host
+  records which pages each circuit was on), so a neighbouring test's error never fails it.
 - Read state through Playwright's auto-waiting assertions (`Expect(...)`), never a one-off read right after an
   action: every change is a round trip to the server, and a transition may still be running.
 - A category whose tests share helpers keeps them in a file of its own (`ButtonsE2EHelpers.cs`,

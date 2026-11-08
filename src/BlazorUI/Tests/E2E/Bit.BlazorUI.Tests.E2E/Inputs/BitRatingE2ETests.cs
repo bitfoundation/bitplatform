@@ -781,7 +781,14 @@ public class BitRatingE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         await ExpectFillsAsync("rtg-one-way", "0", "0", "0", "0", "0");
+
+        // The pointer previews the item first, so the click is seen to land: the refused value ends the preview, and the
+        // items go back to the value the page holds, under a pointer that is still on the item. Read right after the
+        // click instead, the items were still at rest because the click had not been answered yet.
+        await Items("rtg-one-way").Nth(3).HoverAsync();
+        await ExpectFillsAsync("rtg-one-way", "100", "100", "100", "100", "0");
         await Items("rtg-one-way").Nth(3).ClickAsync();
+        await ExpectFillsAsync("rtg-one-way", "0", "0", "0", "0", "0");
         await NextFramesAsync();
         await ExpectFillsAsync("rtg-one-way", "0", "0", "0", "0", "0");
         await ExpectTextAsync("one-way-value", "0");

@@ -42,7 +42,7 @@ public interface IBitMapProvider
     /// version matters because a WebGL 1-only browser runs MapLibre and fails Mapbox GL JS v3.
     /// <para>
     /// Defaults to <see cref="BitMapWebGlRequirement.None"/> so existing providers keep compiling;
-    /// the built-in GL-backed ones (MapLibre, Azure Maps, Cesium, and Mapbox at WebGL 2) override it.
+    /// the built-in GL-backed ones (MapLibre, Azure Maps, Cesium, and Mapbox and ArcGIS at WebGL 2) override it.
     /// </para>
     /// </summary>
     BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.None;

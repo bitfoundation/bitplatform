@@ -241,7 +241,7 @@
             buffered.sort((a, b) => a.d - b.d);
             const needed = visible.concat(buffered.map(b => b.n));
             if (needed.length) {
-                dotnetRef.invokeMethodAsync("EnsurePagesRendered", needed);
+                Utils.notifyDotNet(dotnetRef, "EnsurePagesRendered", needed);
             }
         }
 
@@ -269,7 +269,7 @@
                     // scrolling, and each call would otherwise run .NET on the UI thread.
                     if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
                         (container as any).__bitPdvLastPage = n;
-                        dotnetRef.invokeMethodAsync("OnPageVisible", n);
+                        Utils.notifyDotNet(dotnetRef, "OnPageVisible", n);
                     }
                 }
             };
@@ -338,10 +338,10 @@
                         const top = raw === null ? null : parseFloat(raw);
                         (container as any).__bitPdvLastPage = n;
                         if (top !== null && !Number.isNaN(top)) {
-                            dotnetRef.invokeMethodAsync("OnLinkNavigate", n, top);
+                            Utils.notifyDotNet(dotnetRef, "OnLinkNavigate", n, top);
                         } else {
                             PdfViewer.scrollToPage(container, n);
-                            dotnetRef.invokeMethodAsync("OnPageVisible", n);
+                            Utils.notifyDotNet(dotnetRef, "OnPageVisible", n);
                         }
                     }
                     return;
@@ -351,7 +351,7 @@
                 // actual text selection is not an advance.
                 const root = container.closest(".bit-pdv-presenting");
                 if (root && !target.closest("a") && !window.getSelection()?.toString()) {
-                    dotnetRef.invokeMethodAsync("OnShortcut", e.shiftKey ? "prev" : "next");
+                    Utils.notifyDotNet(dotnetRef, "OnShortcut", e.shiftKey ? "prev" : "next");
                 }
             };
             container.addEventListener("click", onClick);
@@ -375,7 +375,7 @@
                 if (e.ctrlKey) {
                     e.preventDefault();
                     PdfViewer.stashZoomAnchor(container, e.clientX, e.clientY);
-                    dotnetRef.invokeMethodAsync("OnWheelZoom", e.deltaY);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", e.deltaY);
                 }
             };
             container.addEventListener("wheel", onWheel, { passive: false });
@@ -459,10 +459,10 @@
                 // frame would stall the UI thread on WebAssembly.
                 if (ratio / pinch.scale > 1.1) {
                     pinch.scale *= 1.1;
-                    dotnetRef.invokeMethodAsync("OnWheelZoom", -1);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", -1);
                 } else if (pinch.scale / ratio > 1.1) {
                     pinch.scale /= 1.1;
-                    dotnetRef.invokeMethodAsync("OnWheelZoom", 1);
+                    Utils.notifyDotNet(dotnetRef, "OnWheelZoom", 1);
                 }
             };
             const onTouchEnd = (e: TouchEvent) => {
@@ -486,7 +486,7 @@
                 // The pages run the way the reading direction does, so a right-to-left
                 // viewer turns forward on a swipe to the right.
                 const forward = getComputedStyle(root).direction === "rtl" ? dx > 0 : dx < 0;
-                dotnetRef.invokeMethodAsync("OnShortcut", forward ? "next" : "prev");
+                Utils.notifyDotNet(dotnetRef, "OnShortcut", forward ? "next" : "prev");
             };
             container.addEventListener("touchstart", onTouchStart, { passive: true });
             container.addEventListener("touchmove", onTouchMove, { passive: false });
@@ -497,7 +497,7 @@
             // Notify .NET when the container resizes (used for fit-to-width/page).
             if (typeof ResizeObserver !== "undefined") {
                 const resize = new ResizeObserver(() => {
-                    dotnetRef.invokeMethodAsync("OnViewportResized");
+                    Utils.notifyDotNet(dotnetRef, "OnViewportResized");
                     PdfViewer.scheduleRender(container, dotnetRef);
                 });
                 resize.observe(container);
@@ -828,7 +828,7 @@
                 if (hit.prevent) {
                     e.preventDefault();
                 }
-                dotnetRef.invokeMethodAsync("OnShortcut", hit.command);
+                Utils.notifyDotNet(dotnetRef, "OnShortcut", hit.command);
             };
             root.addEventListener("keydown", onKeyDown);
             (root as any).__bitPdvKeys = onKeyDown;
@@ -1153,7 +1153,7 @@
                 }
             }
             if (needed.length) {
-                dotnetRef.invokeMethodAsync("EnsureThumbsRendered", needed);
+                Utils.notifyDotNet(dotnetRef, "EnsureThumbsRendered", needed);
             }
         }
 
@@ -1282,7 +1282,7 @@
                 return;
             }
             PdfViewer.disposeFullscreenSpy(root);
-            const onChange = () => dotnetRef.invokeMethodAsync("OnFullscreenChanged", document.fullscreenElement === root);
+            const onChange = () => Utils.notifyDotNet(dotnetRef, "OnFullscreenChanged", document.fullscreenElement === root);
             document.addEventListener("fullscreenchange", onChange);
             (root as any).__bitPdvFsc = onChange;
         }
