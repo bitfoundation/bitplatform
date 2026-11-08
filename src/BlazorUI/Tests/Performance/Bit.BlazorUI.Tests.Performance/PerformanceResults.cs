@@ -14,17 +14,20 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// The measurements the performance tests take, written once the run is over to
-/// performance-results_{browser}_{framework}_{time}.json - a file of its own for every run, so runs of two browsers sharing
-/// a results directory keep both - in the run's results directory (--results-directory, which CI uploads with the TRX;
+/// performance-results_{browser}_{framework}_{time}_{run}.json - a file of its own for every run, so runs of two browsers,
+/// or two runs finishing in the same second, sharing a results directory keep both - in the run's results directory (--results-directory, which CI uploads with the TRX;
 /// TestResults beside the test app otherwise), together with what they were measured on: the machine, the
 /// browser, the SDK and runtime, the commit, the configuration the host was built in and its render mode. The tests'
 /// thresholds stay generous, to catch what is catastrophic; a trend is read by comparing these files.
 /// </summary>
 internal static class PerformanceResults
 {
-    /// <summary>The name of the file a run written at <paramref name="generatedAt"/> writes: the browser, the framework and the time, in UTC.</summary>
-    public static string FileName(DateTimeOffset generatedAt) =>
-        FormattableString.Invariant($"performance-results_{PerformanceTestBase.BrowserName}_net{Environment.Version.Major}.{Environment.Version.Minor}_{generatedAt.UtcDateTime:yyyyMMdd-HHmmss}.json");
+    /// <summary>
+    /// The name of the file a run written at <paramref name="generatedAt"/> writes: the browser, the framework, the time, in
+    /// UTC, and <paramref name="runId"/>, which tells apart two runs of one browser and framework finishing in the same second.
+    /// </summary>
+    public static string FileName(DateTimeOffset generatedAt, string runId) =>
+        FormattableString.Invariant($"performance-results_{PerformanceTestBase.BrowserName}_net{Environment.Version.Major}.{Environment.Version.Minor}_{generatedAt.UtcDateTime:yyyyMMdd-HHmmss}_{runId}.json");
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -79,9 +82,15 @@ internal static class PerformanceResults
             Measurements = measurements,
         };
 
+        // Serialized before the file is created, so a report that cannot be written leaves no empty file behind.
+        var json = JsonSerializer.SerializeToUtf8Bytes(report, Json);
+
         var directory = ResultsDirectory();
         Directory.CreateDirectory(directory);
-        await File.WriteAllTextAsync(Path.Combine(directory, FileName(generatedAt)), JsonSerializer.Serialize(report, Json));
+
+        // CreateNew: a name that is somehow taken fails the write rather than overwriting another run's results.
+        await using var file = new FileStream(Path.Combine(directory, FileName(generatedAt, Guid.NewGuid().ToString("N")[..8])), FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        await file.WriteAsync(json);
     }
 
     // The folder the run writes its TRX to: TestContext's own folders are the test app's, or with --report-trx a folder of
@@ -159,7 +168,15 @@ internal static class PerformanceResults
             }
             catch (System.TimeoutException)
             {
-                process.Kill(entireProcessTree: true);
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (AggregateException)
+                {
+                    // A descendant that could not be killed is left behind; the report and the cleanup after it go on.
+                }
+
                 return null;
             }
 

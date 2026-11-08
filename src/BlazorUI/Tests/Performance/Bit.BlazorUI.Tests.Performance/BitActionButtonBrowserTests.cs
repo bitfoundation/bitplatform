@@ -222,6 +222,14 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
         Console.WriteLine($"Average time per component: {avgTimePerComponent:F4}ms");
         Console.WriteLine($"Growth ratio at {counts[^1]} components: {growth:F2}x");
+
+        // A render timed at 0 ms makes the ratio NaN (which the threshold below would let through) or infinite (which the
+        // results file cannot hold), so it fails here, before it is recorded.
+        if (double.IsFinite(growth) is false)
+        {
+            Assert.Fail($"The growth ratio at {counts[^1]} components is {growth}: {string.Join(", ", renderTimes.Select(r => $"{r.Count} components in {r.Time:F2}ms"))}");
+        }
+
         Record("render.timePerComponentGrowth", growth, "x", counts[^1]);
 
         // Allow up to 5x growth (a pause of the runner during the largest render)

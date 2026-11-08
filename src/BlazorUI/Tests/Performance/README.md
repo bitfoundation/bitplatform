@@ -159,9 +159,10 @@ Adjust as needed based on your performance requirements.
 
 ## Results
 
-The performance tests also write what they measured to `performance-results_chromium_net11.0_20261107-142530.json` (the
-browser, the framework and the UTC time of the run, so every run - a Chromium and a Firefox one sharing a directory
-included - keeps a file of its own) in the run's results directory - `--results-directory`, which CI uploads with the
+The performance tests also write what they measured to `performance-results_chromium_net11.0_20261107-142530_3f9a1c2e.json`
+(the browser, the framework, the UTC time of the run and a random id, so every run - a Chromium and a Firefox one sharing a
+directory, or two finishing in the same second, included - keeps a file of its own, and none overwrites another) in the
+run's results directory - `--results-directory`, which CI uploads with the
 TRX, or `TestResults` beside the test app otherwise. No threshold reads it: it is there to compare one run with another.
 
 - **What each test measured**, as rows of test, metric, value, unit and count (the components rendered, the cycles run):
