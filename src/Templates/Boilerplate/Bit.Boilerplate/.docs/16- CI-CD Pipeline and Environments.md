@@ -24,9 +24,9 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
-| `ci.yml` | every pull request, and by hand | builds the whole solution and runs every test |
+| `ci.yml` | every pull request that isn't a draft, and by hand | builds the whole solution and runs every test |
 | `cd-test.yml` | by hand, and once its `push` trigger is on, every push to `develop` that changes the app | deploys the Test environment |
-| `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | runs `ci.yml`, then deploys the Production environment |
+| `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
 
 A new project's CDs run only by hand, so the merges made before there is anywhere to deploy to spend none of the plan's
@@ -37,8 +37,8 @@ already deploying keeps its `push` block when it takes this from a newer templat
 From then on, merging a pull request into `develop` updates Test, and a release into `main` updates Production. Only a change under
 `src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
-workflow queue up instead of overlapping, and one that has started is never cancelled halfway. `cd-test.yml` doesn't
-wait for the tests, so protect `develop` with a required `ci.yml` check, which a private repository has with GitHub Pro
+workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Neither CD
+waits for the tests, so protect `develop` and `main` with a required `ci.yml` check, which a private repository has with GitHub Pro
 or Team.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
