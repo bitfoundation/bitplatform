@@ -21,10 +21,8 @@ jobs:
 
   build_and_test:
     name: build and test
-    # A draft is still changing, so it spends none of the plan's Actions minutes. Marking it ready runs this.
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-26.04
-    # Without a cap, a hung job runs for six hours, close to a fifth of a GitHub Free plan's monthly minutes.
     timeout-minutes: 45
 
     steps:
