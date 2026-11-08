@@ -17,6 +17,8 @@
         <p>Re-render Time: <span id="rerender-time">@ReRenderTimeMs</span> ms</p>
         <p>Component Count: <span id="component-count">@RenderedCount</span></p>
         <p>Status: <span id="status">@Status</span></p>
+        @* Where the page runs (Server or WebAssembly), for the tests to check it runs where PERF_RENDER_MODE asked. *@
+        <p>Renderer: <span id="renderer">@RendererInfo.Name</span></p>
     </div>
 </div>
 

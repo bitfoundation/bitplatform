@@ -16,8 +16,12 @@ builder.Services.AddBitBlazorUIExtrasServices();
 builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport<Bit.BlazorUI.Tests.Performance.TestHost.EchoAiTransport>());
 builder.Services.AddScoped(_ => new HttpClient());
 
+// The performance pages (Bit.BlazorUI.Tests.Performance.TestHost.Client) run on the server or in the browser: App.razor
+// picks the mode per request from the perf-render-mode cookie the tests set on their browser context (PERF_RENDER_MODE).
+// Every other page runs on the server.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
 
 // The services some components inject (BitCarousel's page visibility, ...), as an app registers them.
 builder.Services.AddBitBlazorUIServices();
@@ -35,8 +39,13 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+// The framework scripts and the WebAssembly client's boot resources are endpoints of their own since .NET 9.
+app.MapStaticAssets();
+
 app.MapRazorComponents<Bit.BlazorUI.Tests.Performance.TestHost.Components.App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Bit.BlazorUI.Tests.Performance.TestHost.Components.ClientRoutes).Assembly);
 
 // Endpoint used by performance tests to force a server-side GC and report heap size.
 // This allows tests to verify that server memory returns to near-baseline after
@@ -56,15 +65,15 @@ app.MapGet("/api/gc-info", () =>
 });
 
 // What the performance results were measured on, as the host itself knows it (PerformanceResults in the tests): the
-// configuration it was built in - a host started by hand, or left running from another run, is reused as it is - its
-// runtime and GC mode, and the render mode of the performance pages.
+// configuration it was built in - a host started by hand, or left running from another run, is reused as it is - and its
+// runtime and GC mode. The render mode of the performance pages is the test run's (PERF_RENDER_MODE), which every page
+// checks it runs in.
 app.MapGet("/api/environment", () => Results.Ok(new
 {
     configuration = typeof(Program).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
                                             .OfType<System.Reflection.AssemblyConfigurationAttribute>().FirstOrDefault()?.Configuration,
     framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
     serverGC = System.Runtime.GCSettings.IsServerGC,
-    renderMode = "InteractiveServer",
 }));
 
 // A host page with nothing but the theme setup (BitThemePairBrowserTests): the

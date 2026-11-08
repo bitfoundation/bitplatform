@@ -7,13 +7,20 @@ regression tests that need a real browser's layout, focus or timing.
 
 ```
 Performance/
-├── Bit.BlazorUI.Tests.Performance.TestHost/                # Blazor Server application for hosting test pages
+├── Bit.BlazorUI.Tests.Performance.TestHost/                # Blazor Web App hosting the test pages
 │   ├── Components/
-│   │   ├── App.razor
+│   │   ├── App.razor                                       # Picks where the performance pages run
 │   │   ├── Routes.razor
-│   │   └── Pages/                                          # The pages the tests drive, and Home.razor
+│   │   └── Pages/                                          # The pages the browser regression tests drive, and Home.razor
 │   ├── Program.cs
 │   └── Bit.BlazorUI.Tests.Performance.TestHost.csproj
+│
+├── Bit.BlazorUI.Tests.Performance.TestHost.Client/         # WebAssembly project holding the performance pages
+│   ├── Components/
+│   │   ├── ClientRoutes.razor                              # Their router in the browser
+│   │   └── Pages/                                          # BitActionButtonPerf.razor, BitDropdownPerf.razor
+│   ├── Program.cs
+│   └── Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj
 │
 ├── Bit.BlazorUI.Tests.Performance/                         # The Playwright test project
 │   ├── PerformanceTestBase.cs                              # Base class: starts the test host, owns the browser and the page
@@ -55,9 +62,14 @@ Or on Linux/macOS:
 
 ## Test Host
 
-The test host is a Blazor Server application that provides the pages the tests drive. The first test starts it
+The test host is a Blazor Web App that provides the pages the tests drive. The first test starts it
 (`dotnet run` on the same target framework as the test run) unless a host already answers on its URL, which the run
 then uses as it is.
+
+The browser regression pages run on the server (InteractiveServer). The performance pages live in
+`Bit.BlazorUI.Tests.Performance.TestHost.Client`, a WebAssembly project, so they can run either on the server or in the
+browser (InteractiveWebAssembly): the host runs them in the browser for a request carrying the cookie
+`perf-render-mode=wasm`, which the tests set from `PERF_RENDER_MODE` (see [Run in WebAssembly](#run-in-webassembly)).
 
 ### Running the Test Host Manually
 
@@ -85,6 +97,10 @@ Metrics are exposed via DOM elements:
 - `#rerender-time` - Re-render time in milliseconds
 - `#component-count` - Number of components rendered
 - `#status` - Current status (Ready, Rendering, Rendered, etc.)
+- `#renderer` - Where the page runs once it is interactive: `Server` or `WebAssembly`
+
+To open a page in the browser render mode by hand, set the cookie in the browser's dev tools console and reload:
+`document.cookie = "perf-render-mode=wasm; path=/"`.
 
 ## Performance Tests
 
@@ -124,6 +140,23 @@ RUN_BROWSER_TESTS=1 BROWSER=firefox dotnet test
 RUN_BROWSER_TESTS=1 BROWSER=webkit dotnet test
 ```
 
+### Run in WebAssembly
+
+The performance pages run on the server unless `PERF_RENDER_MODE=wasm` moves them into the browser. Every performance
+test checks that its page runs where the variable asked (`#renderer`) and fails otherwise. A value other than `server`,
+`wasm` or `webassembly` (in any case) fails every test before the host is started.
+
+```bash
+RUN_BROWSER_TESTS=1 PERF_RENDER_MODE=wasm dotnet test --filter "TestCategory=Performance"
+```
+
+- Every test opens its page afresh, so each one starts the WebAssembly runtime before it measures anything; the
+  measurements start once the page reads `Ready`.
+- The host is started with `dotnet run`, which builds the client and does not publish it: the WebAssembly side runs
+  untrimmed on the interpreter, with no AOT compilation.
+- BitDropdown's three memory-leak tests read the server's heap, which holds none of the components in this mode, so
+  they are reported inconclusive instead.
+
 ### Run in Headed Mode (for debugging)
 
 ```bash
@@ -159,15 +192,15 @@ Adjust as needed based on your performance requirements.
 
 ## Results
 
-The performance tests also write what they measured to `performance-results_chromium_net11.0_20261107-142530_3f9a1c2e.json`
-(the browser, the framework, the UTC time of the run and a random id, so every run - a Chromium and a Firefox one sharing a
-directory, or two finishing in the same second, included - keeps a file of its own, and none overwrites another) in the
-run's results directory - `--results-directory`, which CI uploads with the
+The performance tests also write what they measured to `performance-results_chromium_server_net11.0_20261107-142530_3f9a1c2e.json`
+(the browser, the render mode, the framework, the UTC time of the run and a random id, so every run - a Chromium and a
+Firefox one, or a server and a wasm one, sharing a directory, or two finishing in the same second, included - keeps a
+file of its own, and none overwrites another) in the run's results directory - `--results-directory`, which CI uploads with the
 TRX, or `TestResults` beside the test app otherwise. No threshold reads it: it is there to compare one run with another.
 
 - **What each test measured**, as rows of test, metric, value, unit and count (the components rendered, the cycles run):
-  - `render.*` and `rerender.*`: `server` is the page's own stopwatch, from the click handler to `OnAfterRender`.
-    `browser` is the same click timed in the browser, from the click reaching the page to the frame after the status
+  - `render.*` and `rerender.*`: `server` is the page's own stopwatch, from the click handler to `OnAfterRender`,
+    which in wasm mode runs in the browser's .NET runtime and keeps the name. `browser` is the same click timed in the browser, from the click reaching the page to the frame after the status
     showed it was done, which takes in the round trip, the DOM changes and their layout and paint. `domNodes` is the
     page's element count at the end. `longTasks` and `longTaskTime` are the main thread's tasks of 50 ms or more in
     between and how much of their time fell in between, which only Chromium-based browsers report. BitActionButton's
@@ -181,10 +214,12 @@ TRX, or `TestResults` beside the test app otherwise. No threshold reads it: it i
 - **What it was measured on**:
   - the OS, the CPU model and its cores, the memory, and whether it ran on CI;
   - the browser and its version;
+  - `renderMode`: where the performance pages ran, `InteractiveServer` or `InteractiveWebAssembly`, which every test
+    checked on its page;
   - the SDK, and the runtime and configuration of the test run;
   - the commit;
-  - the host's own account of itself from `/api/environment`: the configuration it was built in, its runtime, its GC
-    mode, and the render mode of the performance pages.
+  - the host's own account of itself from `/api/environment`: the configuration it was built in, its runtime and its GC
+    mode.
 
 The browser timing is a `performance.measure` named `bit-perf`, between the marks `bit-perf:start` and `bit-perf:end`,
 so a trace of the page recorded in the browser's dev tools shows it as well.
@@ -192,7 +227,7 @@ so a trace of the page recorded in the browser's dev tools shows it as well.
 ### A baseline is measured in Release
 
 The test run starts the host in the configuration the tests were built in, so a Release build of the tests measures a
-Release host. A Debug host (CI's) is no baseline: the `configuration` of the host in the results says which one it was.
+Release host, and a Release WebAssembly client with it. A Debug host (CI's) is no baseline: the `configuration` of the host in the results says which one it was.
 
 ```bash
 dotnet build Bit.BlazorUI.Tests.Performance -c Release -f net11.0
@@ -230,12 +265,13 @@ pwsh bin/Debug/net11.0/playwright.ps1 install
 
 ## Adding Tests for New Components
 
-1. Create a new test page in `Bit.BlazorUI.Tests.Performance.TestHost/Components/Pages/`:
+1. Create a new test page in `Bit.BlazorUI.Tests.Performance.TestHost.Client/Components/Pages/`, so it runs in either
+   render mode (a browser regression page goes in the host's `Components/Pages/` instead):
    ```razor
    @page "/perf/your-component"
    @page "/perf/your-component/{Count:int}"
    
-   <!-- Follow the pattern in BitActionButtonPerf.razor -->
+   <!-- Follow the pattern in BitActionButtonPerf.razor, #renderer included -->
    ```
 
 2. Create a new test class in `Bit.BlazorUI.Tests.Performance` project:
@@ -246,6 +282,6 @@ pwsh bin/Debug/net11.0/playwright.ps1 install
    [RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~YourComponentBrowserTests
    public class YourComponentBrowserTests : PerformanceTestBase
    {
-       // Follow the pattern in BitActionButtonBrowserTests.cs
+       // Follow the pattern in BitActionButtonBrowserTests.cs: open the page with OpenPerformancePageAsync
    }
    ```
