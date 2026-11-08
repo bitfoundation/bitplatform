@@ -38,6 +38,29 @@ file that was just created.
 - A new extension that has to go without a BOM (a served asset, a manifest) is exempted in
   `src/BlazorUI/.editorconfig`, never in the test's list.
 
+## A public API break goes into CompatibilitySuppressions.xml
+
+`Bit.BlazorUI`, `Bit.BlazorUI.Extras`, `Bit.BlazorUI.Assets` and `Bit.BlazorUI.Icons` import
+`Bit.BlazorUI.PackageValidation.props`: a Release build packs, and the pack compares the package's public API with the
+last published one (`PackageValidationBaselineVersion`). A public type or member that is removed, renamed, made
+non-public or changed in signature, or that is on one target framework and not on the other, fails that build with
+`error CP0001` / `CP0002` / `CP0011` / ... unless the project's `CompatibilitySuppressions.xml` lists it. Debug builds
+do not pack, so the tests and the demo pass and nothing says so until someone builds Release.
+
+- **A change that removes or alters anything public updates the project's `CompatibilitySuppressions.xml` in the same
+  change**, with its entry in `BreakingChanges.md`. A rename is a removal: every renamed parameter, its `BitXxxParams`
+  counterpart and every `BitXxxClassStyles` / `BitXxxNameSelectors` member is an entry for its getter and its setter.
+  Adding API is never a break, so a new component, parameter or member needs no entry.
+- **Regenerate the file, never hand-write it**: `dotnet build <Project>/<Project>.csproj -c Release
+  -p:ApiCompatGenerateSuppressionFile=true`, then read the diff - every entry it adds is a break that was meant and is
+  in `BreakingChanges.md`, and an entry it drops is a break that is gone. Use `build`, never `pack`: Release sets
+  `GeneratePackageOnBuild`, under which `dotnet pack` does not compile the project and validates whatever stale assembly
+  `bin/Release` still holds. Build every package whose public API changed on its own, the core included - building
+  the Extras compiles the core as a reference but does not regenerate the core's file.
+- **The regenerated file comes out without a BOM**; put it back (previous section), so the diff is the entries alone.
+- After a change that touches public API, a plain `dotnet build -c Release` of each of the four projects passes with
+  no `error CP` - that is the check.
+
 ## The scripts and stylesheets are trimmed at publish
 
 Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', AI's, Legacy's and
