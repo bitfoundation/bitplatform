@@ -1,5 +1,5 @@
 ﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mockFetch } from './helpers.js';
+import { mockFetch, span } from './helpers.js';
 
 
 let api;
@@ -390,6 +390,50 @@ describe('processors and global attributes', () => {
         api.trackEvent('noise');
         await api.flush();
         expect(relayed(dotnet).map(l => l.eventName)).toEqual(['browser.page_view', 'checkout', 'noise']);
+    });
+
+    const relayedSpans = dotnet => dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].spans);
+
+    it('takes the exceptions a processor adds to a span off it without Errors, as in C#', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 & ~1 } }));
+        api.addProcessor(record => {
+            if (record.events) {
+                record.events.push(
+                    { name: 'exception', time: 1, attributes: { 'exception.type': 'TypeError' } },
+                    { name: 'exception', time: 1, attributes: { 'exception.stacktrace': 'at x' } },
+                    { name: 'retry', time: 1, attributes: {} });
+            }
+        });
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api._getState().pipeline.emit(span());
+        await api.flush();
+        expect(relayedSpans(dotnet).map(s => s.events.map(e => e.name)), 'A stack trace alone is Errors data too.').toEqual([['retry']]);
+    });
+
+    it('applies the error limits to the exceptions a processor adds to a span, and marks their batch with Errors', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        api.addProcessor(record => {
+            if (record.events) record.events.push({ name: 'exception', time: 1, attributes: { 'exception.type': 'TypeError', 'exception.message': 'boom' } });
+        });
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        const pipeline = api._getState().pipeline;
+        const sink = pipeline.sink;
+        const marks = [];
+        pipeline.sink = (batch, unload, mark) => {
+            marks.push(mark.features);
+            return sink(batch, unload, mark);
+        };
+        pipeline.emit(span());
+        pipeline.emit(span({ spanId: '1111111111111111' }));
+        await api.flush();
+
+        expect(relayedSpans(dotnet).map(s => s.events[0].limited), 'A repeat within the duplicate window stays on its span, limited.').toEqual([undefined, true]);
+        expect(marks).toHaveLength(1);
+        expect(marks[0] & 1, 'A revoke of Errors withdraws the batch.').toBe(1);
     });
 
     it('adds global attributes to every record, scrubbed, never over the record or the consent-governed ids', async () => {

@@ -3,7 +3,7 @@ import type { ConsentManager, ConsentMark } from './consent';
 import { Features } from './features';
 import { ErrorLimiter, limitRecord } from './limits';
 import { debug } from './log';
-import { isSpan, type Attributes, type RecordBatch, type TelemetryRecord } from './model';
+import { hasException, isExceptionEvent, isSpan, type Attributes, type RecordBatch, type SpanRecord, type TelemetryRecord } from './model';
 import { applyPrivacy, isBlocked } from './privacy';
 import { isSessionSampled, type SessionManager } from './session';
 import { countDropped } from './stats';
@@ -164,8 +164,12 @@ export class Pipeline {
             for (const record of this.queue.splice(0, size)) {
                 if (!this.process(record)) continue;
                 features |= record.feature;
-                if (isSpan(record)) batch.spans.push(record);
-                else batch.logs.push(record);
+                if (isSpan(record)) {
+                    if (this.prepareExceptionEvents(record)) features |= Features.Errors;
+                    batch.spans.push(record);
+                } else {
+                    batch.logs.push(record);
+                }
             }
             if (!batch.spans.length && !batch.logs.length) continue;
             try {
@@ -176,6 +180,26 @@ export class Pipeline {
             }
         }
         return Promise.all(sends).then(() => undefined);
+    }
+
+    /**
+     * The exceptions on a span (`isExceptionEvent`) are Errors records, as in C# (`PrepareExceptionEvents`). The script's
+     * instrumentations record none, but an app processor may add one, so this runs after the processors: without Errors
+     * they come off the span, and the error limits apply to the rest (`limited`: still on the span, but no Azure Monitor
+     * item; relayed to .NET with the flag). True when any stays, for the batch's mark: a revoke of Errors withdraws it.
+     */
+    private prepareExceptionEvents(span: SpanRecord): boolean {
+        const events = span.events;
+        if (!events || !events.some(isExceptionEvent)) return false;
+        if (!this.consent.isGranted(Features.Errors)) {
+            span.events = events.filter(event => !isExceptionEvent(event));
+            return false;
+        }
+        for (const event of events) {
+            // A stack trace alone is Errors data, but no error record of its own.
+            if (isExceptionEvent(event) && hasException(event.attributes) && !this.errors.allowException(span.scope, event.attributes)) event.limited = true;
+        }
+        return true;
     }
 
     /**

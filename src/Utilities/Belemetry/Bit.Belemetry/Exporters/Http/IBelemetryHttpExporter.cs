@@ -10,6 +10,12 @@ internal interface IBelemetryHttpExporter
     IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch);
 
     /// <summary>
+    /// The items the requests of <see cref="CreateRequests"/> would carry for <paramref name="batch"/> (the sum of their
+    /// <see cref="BelemetryHttpRequest.Count"/>), without serializing it: the self-telemetry of a batch withdrawn before.
+    /// </summary>
+    int CountItems(BelemetryBatch batch);
+
+    /// <summary>
     /// Whether this exporter, as configured now, posts to <paramref name="url"/>: a stored request for another address
     /// is dropped rather than sent there with the current headers.
     /// </summary>

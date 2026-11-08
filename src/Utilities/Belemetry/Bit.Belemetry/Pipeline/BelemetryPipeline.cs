@@ -25,6 +25,12 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private readonly BelemetryErrorLimiter? _errors;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<IBelemetryProcessor, byte> _failedProcessors = new(ReferenceEqualityComparer.Instance);
 
+    // The exceptions logged while a span was current, by its span id, until the span ends (PrepareExceptionEvents). A
+    // span that never reaches the pipeline (not recorded, filtered) leaves its entry behind, so the map is bounded.
+    private const int MaxLoggedSpans = 256;
+    private const int MaxLoggedPerSpan = 16;
+    private readonly Dictionary<string, List<BelemetryLoggedException>> _loggedExceptions = new(StringComparer.Ordinal);
+
     private BelemetryExporterSet? _exporters;
     private BelemetryActivityCollector? _activities;
     private BelemetryMeterCollector? _meters;
@@ -187,9 +193,97 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        if (export) Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
+        if (export)
+        {
+            if (relayed is false) PrepareExceptionEvents(span);
+
+            // The page applied its consent and the error limits to a relayed span, but the configuration still decides,
+            // as in Relay: a page can be anything that speaks the interop protocol.
+            else if ((Settings.ConfiguredFeatures & BelemetryFeatures.Errors) == 0) RemoveExceptionEvents(span);
+
+            Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
+        }
         if (diagnose) Diagnostics.OnSpan(span, relayed);
     }
+
+    /// <summary>
+    /// Applies to the exceptions recorded on a span (<see cref="BelemetrySpanEvent.IsException"/>) what applies to every
+    /// error record: without <see cref="BelemetryFeatures.Errors"/> they are taken off the span, as their type, message
+    /// and stack are what that feature covers; and, for an exporter that sends them as items of their own, one logged
+    /// under the span already is not sent again (<see cref="BelemetrySpanEvent.LoggedAs"/>) and the error limits apply
+    /// to the rest (<see cref="BelemetrySpanEvent.Limited"/>). Not for a relayed span: the page applied both.
+    /// </summary>
+    private void PrepareExceptionEvents(BelemetrySpan span)
+    {
+        var logged = TakeLoggedExceptions(span.SpanId);
+        if (HasExceptionEvents(span) is false) return;
+
+        if (CanRecord(BelemetryFeatures.Errors, allowPending: true) is false)
+        {
+            RemoveExceptionEvents(span);
+            return;
+        }
+
+        foreach (var spanEvent in span.Events)
+        {
+            // A stack trace alone is Errors data, but no error record of its own: neither matched nor limited.
+            if (spanEvent.IsException is false || spanEvent.Attributes.HasException is false) continue;
+
+            var index = logged?.FindIndex(l => l.Matches(spanEvent.Attributes)) ?? -1;
+            if (index >= 0)
+            {
+                // The log record took its place under the error limits already - even one dropped since, which then
+                // stands for nothing (IsDropped) and leaves the exception to the span.
+                spanEvent.LoggedAs = logged![index];
+                logged.RemoveAt(index);
+            }
+            else if (_errors?.ShouldRecord(span, spanEvent) is false)
+            {
+                spanEvent.Limited = true;
+            }
+        }
+    }
+
+    /// <summary>Keeps <paramref name="logged"/>, logged under the span <paramref name="spanId"/>, until that span ends.</summary>
+    private void RememberLoggedException(string spanId, BelemetryLoggedException logged)
+    {
+        lock (_loggedExceptions)
+        {
+            if (_loggedExceptions.TryGetValue(spanId, out var list) is false)
+            {
+                // Full only of spans that never ended here: forgetting them costs at worst an exception sent twice.
+                if (_loggedExceptions.Count >= MaxLoggedSpans) _loggedExceptions.Clear();
+                _loggedExceptions[spanId] = list = [];
+            }
+
+            if (list.Count < MaxLoggedPerSpan) list.Add(logged);
+        }
+    }
+
+    /// <summary>The exceptions logged under the span <paramref name="spanId"/>, which has ended; null when none.</summary>
+    private List<BelemetryLoggedException>? TakeLoggedExceptions(string spanId)
+    {
+        // Read without the lock first: almost every span ends with nothing logged under it.
+        if (_loggedExceptions.Count == 0) return null;
+
+        lock (_loggedExceptions)
+        {
+            return _loggedExceptions.Remove(spanId, out var list) ? list : null;
+        }
+    }
+
+    /// <summary>Whether the span carries an exception (<see cref="BelemetrySpanEvent.IsException"/>).</summary>
+    private static bool HasExceptionEvents(BelemetrySpan span)
+    {
+        foreach (var spanEvent in span.Events)
+        {
+            if (spanEvent.IsException) return true;
+        }
+        return false;
+    }
+
+    /// <summary>Takes the exceptions (<see cref="BelemetrySpanEvent.IsException"/>) off the span; its other events stay.</summary>
+    private static void RemoveExceptionEvents(BelemetrySpan span) => span.Events.RemoveAll(static e => e.IsException);
 
     /// <param name="log">The log record.</param>
     /// <param name="resource">Its resource; the .NET side's when null.</param>
@@ -234,7 +328,18 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        if (export) Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed, userIds));
+        if (export)
+        {
+            // Logged and recorded on the span too (LogError(ex) and Activity.AddException(ex)): one failure, one error item.
+            // Not remembered when no span could take it: their spans would never come for it. The entry carries it, to
+            // say when the record is dropped before any exporter had it (Drop).
+            var logged = relayed is false && log.SpanId is not null && log.HasException && CanRecord(BelemetryFeatures.Traces, allowPending: true)
+                ? BelemetryLoggedException.Of(log)
+                : null;
+
+            Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed, userIds, logged));
+            if (logged is not null) RememberLoggedException(log.SpanId!, logged);
+        }
         if (diagnose) Diagnostics.OnLog(log, relayed);
     }
 
@@ -363,12 +468,17 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     /// <summary>
     /// The features of queued records (and of metrics), with <see cref="BelemetryFeatures.UserTracking"/>: any of them
-    /// may carry the user ids, so a revoke of it withdraws them too.
+    /// may carry the user ids, so a revoke of it withdraws them too. And with <see cref="BelemetryFeatures.Errors"/> for
+    /// a span that carries exceptions, which are records of that feature.
     /// </summary>
     private static BelemetryFeatures FeaturesOf(List<Entry> entries, bool metrics = false)
     {
         var features = BelemetryFeatures.UserTracking | (metrics ? BelemetryFeatures.Metrics : BelemetryFeatures.None);
-        foreach (var entry in entries) features |= entry.Feature;
+        foreach (var entry in entries)
+        {
+            features |= entry.Feature;
+            if (entry.Record is BelemetrySpan { Events.Count: > 0 } span && HasExceptionEvents(span)) features |= BelemetryFeatures.Errors;
+        }
         return features;
     }
 
@@ -442,17 +552,27 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
 
             var held = entry.PreConsented is false && Settings.IsServer is false && _consent.IsGranted(entry.Feature) is false;
+
+            // The exceptions on a span are Errors records (PrepareExceptionEvents): before a decision on Errors the span
+            // waits with them; decided against meanwhile, they come off it.
+            if (held is false && entry.PreConsented is false && Settings.IsServer is false && entry.Record is BelemetrySpan { Events.Count: > 0 } span
+                && _consent.IsGranted(BelemetryFeatures.Errors) is false && HasExceptionEvents(span))
+            {
+                if (_consent.IsDecided) RemoveExceptionEvents(span);
+                else held = true;
+            }
+
             if (held)
             {
                 // Not decided yet: keep it in memory - never on the wire, never on disk - until the user chooses.
                 if (Settings.Options.Consent.PendingLimit <= 0)
                 {
-                    Self.Dropped("pending_full", entry.Record is BelemetrySpan);
+                    Drop(entry, "pending_full");
                     return;
                 }
                 if (_pending.Count >= Settings.Options.Consent.PendingLimit)
                 {
-                    Self.Dropped("pending_full", _pending[0].Record is BelemetrySpan);
+                    Drop(_pending[0], "pending_full");
                     _pending.RemoveAt(0);
                 }
                 _pending.Add(entry);
@@ -481,7 +601,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 {
                     _queue.Remove(node);
                     if (isSpan) _queuedSpans--; else _queuedLogs--;
-                    Self.Dropped("queue_full", isSpan);
+                    Drop(node.Value, "queue_full");
                     break;
                 }
             }
@@ -489,6 +609,16 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _queue.AddLast(entry);
         if (isSpan) _queuedSpans++; else _queuedLogs++;
+    }
+
+    /// <summary>
+    /// Counts a record dropped before any exporter had it - and, for an exception logged under a span, says so to that
+    /// span (<see cref="BelemetryLoggedException.IsDropped"/>), which then sends the exception itself.
+    /// </summary>
+    private void Drop(Entry entry, string reason)
+    {
+        Self.Dropped(reason, entry.Record is BelemetrySpan);
+        entry.Logged?.Drop();
     }
 
     private List<Entry> TakeReady(int max)
@@ -509,6 +639,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         var revoked = previous & ~current;
         TaskCompletionSource? cleared = null;
+        List<Entry>? released = null;
         lock (_lock)
         {
             if (revoked != BelemetryFeatures.None)
@@ -527,7 +658,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                     {
                         _queue.Remove(node);
                         if (node.Value.Record is BelemetrySpan) _queuedSpans--; else _queuedLogs--;
-                        Self.Dropped("consent_revoked", node.Value.Record is BelemetrySpan);
+                        Drop(node.Value, "consent_revoked");
                     }
                     node = next;
                 }
@@ -535,10 +666,19 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
             if (_consent.IsDecided)
             {
+                var errors = _consent.IsGranted(BelemetryFeatures.Errors);
                 foreach (var entry in _pending)
                 {
-                    if (_consent.IsGranted(entry.Feature)) AddToQueue(entry);
-                    else Self.Dropped("not_consented", entry.Record is BelemetrySpan);
+                    if (_consent.IsGranted(entry.Feature) is false)
+                    {
+                        Drop(entry, "not_consented");
+                        continue;
+                    }
+
+                    // A span held for its exceptions goes without them when Errors was not granted.
+                    if (errors is false && entry.Record is BelemetrySpan span) RemoveExceptionEvents(span);
+                    AddToQueue(entry);
+                    (released ??= []).Add(entry);
                 }
                 _pending.Clear();
             }
@@ -547,6 +687,21 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             {
                 foreach (var entry in _queue.Concat(_pending)) RemoveUserIds(entry.Record);
             }
+
+            if ((revoked & BelemetryFeatures.Errors) != 0)
+            {
+                // The spans stay (their feature is another one); the exceptions recorded on them were Errors records.
+                foreach (var entry in _queue.Concat(_pending))
+                {
+                    if (entry.Record is BelemetrySpan span) RemoveExceptionEvents(span);
+                }
+            }
+        }
+
+        // Accepted into the queue now, as by Add - outside the lock, like there.
+        if (released is not null && RecordAccepted is { } accepted)
+        {
+            foreach (var entry in released) accepted(entry.Record);
         }
 
         if (cleared is not null) _ = ClearStoreAsync(cleared);
@@ -812,5 +967,6 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// <param name="Feature">Its consent feature.</param>
     /// <param name="PreConsented">Relayed by the browser script, which applied the page's consent.</param>
     /// <param name="UserIds">Enriched while <see cref="BelemetryFeatures.UserTracking"/> was granted: it may carry the user ids.</param>
-    private sealed record Entry(object Record, BelemetryResource Resource, BelemetryFeatures Feature, bool PreConsented, bool UserIds);
+    /// <param name="Logged">For a log record of an exception logged under a span: what that span matches it by (<see cref="Drop"/>).</param>
+    private sealed record Entry(object Record, BelemetryResource Resource, BelemetryFeatures Feature, bool PreConsented, bool UserIds, BelemetryLoggedException? Logged = null);
 }

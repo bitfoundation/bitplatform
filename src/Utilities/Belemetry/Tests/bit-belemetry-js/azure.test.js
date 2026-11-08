@@ -165,19 +165,28 @@ describe('envelopes', () => {
         expect(toEnvelopes({ resource, spans: [span()], logs: [log(), log()] }, ctx)).toHaveLength(3);
     });
 
-    it('maps the exception events of a span to Exception items after it, as in C#', () => {
+    it('maps the events of a span to Exception and Message items after it, as in C#', () => {
         const s = span({
             kind: 2,
             attributes: { 'http.request.method': 'GET', 'http.route': '/a/{id}', ...ids },
             events: [
-                { name: 'domInteractive', time: 1700000000100, attributes: {} },
+                { name: 'domInteractive', time: 1700000000100, attributes: { 'session.id': 'other', phase: 'dom' } },
                 { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'TypeError', 'exception.message': 'bad', 'exception.stacktrace': 'at x', 'exception.escaped': true, extra: 'y' } },
                 { name: 'exception', time: 1700000000200, attributes: { other: 1 } },
+                { name: '', time: 1700000000200, attributes: {} },
             ],
         });
         const envelopes = toEnvelopes({ resource, spans: [s], logs: [] }, ctx);
-        expect(envelopes.map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.Request', 'Microsoft.ApplicationInsights.Exception']);
-        const e = envelopes[1];
+        expect(envelopes.map(e => e.name), 'An exception event without exception.*, or an event without a name, is no item.')
+            .toEqual(['Microsoft.ApplicationInsights.Request', 'Microsoft.ApplicationInsights.Message', 'Microsoft.ApplicationInsights.Exception']);
+
+        const message = envelopes[1];
+        expect(message.time).toBe('2023-11-14T22:13:20.100Z');
+        expect(message.tags).toMatchObject({ 'ai.operation.parentId': s.spanId, 'ai.operation.name': 'GET /a/{id}', 'ai.session.id': 's'.repeat(32) });
+        expect(message.data, 'The name is the message, with no severity: an event is not a log level.')
+            .toEqual({ baseType: 'MessageData', baseData: { ver: 2, message: 'domInteractive', properties: { phase: 'dom' } } });
+
+        const e = envelopes[2];
         expect(e.time).toBe('2023-11-14T22:13:20.200Z');
         expect(e.tags).toMatchObject({
             'ai.operation.id': s.traceId, 'ai.operation.parentId': s.spanId, 'ai.operation.name': 'GET /a/{id}', 'ai.session.id': 's'.repeat(32), 'ai.user.authUserId': 'alice',
@@ -190,6 +199,31 @@ describe('envelopes', () => {
         const dependency = toEnvelopes({ resource, spans: [span({ events: [{ name: 'exception', time: 1700000000200, attributes: { 'exception.message': 'gone' } }] })], logs: [] }, ctx);
         expect(dependency[1].tags['ai.operation.name'], 'Only a request\'s exceptions name the operation.').toBeUndefined();
         expect(dependency[1].data.baseData.exceptions[0]).toEqual({ id: 1, outerId: 0, typeName: 'Error', message: 'gone', hasFullStack: false });
+    });
+
+    it('sends no item for an exception the error limits dropped, which stays on the span', () => {
+        const s = span({
+            events: [
+                { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'TypeError' }, limited: true },
+                { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'RangeError' } },
+            ],
+        });
+        const envelopes = toEnvelopes({ resource, spans: [s], logs: [] }, ctx);
+        expect(envelopes.map(e => e.data.baseData.exceptions && e.data.baseData.exceptions[0].typeName)).toEqual([undefined, 'RangeError']);
+    });
+
+    it('truncates an exception as C# does', () => {
+        const e = logToEnvelope(log({ attributes: { 'exception.type': 'T'.repeat(2000), 'exception.message': 'm'.repeat(40000), 'exception.stacktrace': 's'.repeat(40000) } }), resource, ctx);
+        const detail = e.data.baseData.exceptions[0];
+        expect(detail.typeName).toHaveLength(1024);
+        expect(detail.message).toHaveLength(32768);
+        expect(detail.stack).toHaveLength(32768);
+        expect(detail.hasFullStack).toBe(true);
+    });
+
+    it('names a request with an empty route after its span, as C# does', () => {
+        const e = spanToEnvelope(span({ kind: 2, attributes: { 'http.request.method': 'GET', 'http.route': '' } }), resource, ctx);
+        expect(e.data.baseData.name).toBe('GET');
     });
 });
 
