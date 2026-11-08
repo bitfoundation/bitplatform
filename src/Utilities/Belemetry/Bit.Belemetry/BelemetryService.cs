@@ -1,9 +1,14 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Belemetry;
 
 /// <summary>The scoped <see cref="IBelemetry"/>.</summary>
-internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipeline pipeline, BelemetryConsentState consent, BelemetryJsBridge bridge) : IBelemetry
+/// <remarks>
+/// The scope's <see cref="NavigationManager"/>, when the host has one (a host without Blazor registers none), gives the
+/// page views .NET records itself their current page and base path.
+/// </remarks>
+internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipeline pipeline, BelemetryConsentState consent, BelemetryJsBridge bridge, NavigationManager? navigation = null) : IBelemetry
 {
     private static readonly BelemetryScope _scope = new("Bit.Belemetry.Api", BelemetrySettings.SdkVersion);
 
@@ -34,12 +39,56 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
         record.EventName = BelemetrySemanticConventions.PageViewEvent;
         record.Attributes.Set(BelemetrySemanticConventions.PageTitle, name);
         record.Attributes.Set("browser.navigation.type", "manual");
+        var template = record.Attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is { Length: > 0 } given ? given : null;
+        // The current page when no URL is given, as the script takes location.href.
+        var baseUri = Navigation(n => n.BaseUri);
+        url ??= Navigation(n => n.Uri);
         if (url is not null)
         {
             record.Attributes.Set(BelemetrySemanticConventions.UrlFull, url);
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uri)) record.Attributes.Set(BelemetrySemanticConventions.UrlPath, uri.AbsolutePath);
+            if (PathOf(url, baseUri) is { } path)
+            {
+                record.Attributes.Set(BelemetrySemanticConventions.UrlPath, path);
+                // One name for all the views of a page whatever its ids, as the script's page views have: the caller's
+                // template, else the app's route the path matches below the base path, else the path with its ids replaced.
+                if (template is null)
+                {
+                    template = settings.PageRouteMatcher.Template(path, BelemetryPageRouteMatcher.BasePath(baseUri));
+                    record.Attributes.Set(BelemetrySemanticConventions.UrlTemplate, template);
+                    pipeline.WarnIfNoPageRoutes();
+                }
+            }
         }
+        // The page view's name, as the script writes it: the name given, else the template.
+        record.Body = name is { Length: > 0 } ? name : template;
         Enqueue(record);
+    }
+
+    /// <summary>
+    /// The path of a page view's URL: an absolute URL's, a root-relative one's, or a relative one's below the base URI
+    /// (<c>orders/42</c> under <c>/shop/</c> is <c>/shop/orders/42</c>), as the browser resolves it.
+    /// </summary>
+    private static string? PathOf(string url, string? baseUri)
+    {
+        // Before Uri: on Unix "/orders/42" is an absolute file URI.
+        if (url.StartsWith('/') && url.StartsWith("//", StringComparison.Ordinal) is false) return url.Split('?', '#')[0];
+        if (Uri.TryCreate(url, UriKind.Absolute, out var absolute)) return absolute.AbsolutePath;
+        var root = baseUri is not null && Uri.TryCreate(baseUri, UriKind.Absolute, out var b) ? b : new Uri("http://localhost/");
+        return Uri.TryCreate(root, url, out var resolved) ? resolved.AbsolutePath : null;
+    }
+
+    /// <summary>A value of the scope's <see cref="NavigationManager"/>; null without one, or outside a page (not initialized).</summary>
+    private string? Navigation(Func<NavigationManager, string> read)
+    {
+        if (navigation is null) return null;
+        try
+        {
+            return read(navigation);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     public void TrackException(Exception exception, IReadOnlyDictionary<string, object?>? attributes = null)

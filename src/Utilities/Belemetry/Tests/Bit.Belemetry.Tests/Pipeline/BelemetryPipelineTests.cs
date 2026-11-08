@@ -520,11 +520,64 @@ public class BelemetryPipelineTests
         Assert.AreEqual(9.5, logs[0].Attributes["amount"]);
         Assert.AreEqual("browser.page_view", logs[1].EventName);
         Assert.AreEqual("/home", logs[1].Attributes["url.path"]);
+        Assert.AreEqual("/home", logs[1].Attributes["url.template"]);
         Assert.AreEqual("Home", logs[1].Attributes["page.title"]);
         Assert.AreEqual(BelemetryFeatures.PageViews, logs[1].Feature);
         Assert.AreEqual("exception", logs[2].EventName);
         Assert.AreEqual(BelemetryFeatures.Errors, logs[2].Feature);
         Assert.AreEqual("System.InvalidOperationException", logs[2].Attributes["exception.type"]);
+    }
+
+    [TestMethod]
+    public async Task Api_PageViews_CarryTheirPathAsATemplate_OrTheCallersTemplate()
+    {
+        await using var host = TestHost.Create();
+        using var scope = host.Services.CreateScope();
+        var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
+
+        api.TrackPageView("Order", "https://app.test/orders/42/lines/3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e?x=1");
+        api.TrackPageView("Step", "/checkout/2#top", new Dictionary<string, object?> { ["url.template"] = "/checkout/{step}" });
+        api.TrackPageView("Dialog");
+
+        await host.FlushAsync();
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual("/orders/{n}/lines/{guid}", logs[0].Attributes["url.template"]);
+        Assert.AreEqual("/checkout/2", logs[1].Attributes["url.path"], "A relative URL has a path too.");
+        Assert.AreEqual("/checkout/{step}", logs[1].Attributes["url.template"]);
+        Assert.IsNull(logs[2].Attributes.GetString("url.template"), "No URL and no current page (no NavigationManager), no template.");
+        Assert.AreEqual("Order", logs[0].Body, "A page view is named after the name given, as the script names it.");
+        Assert.AreEqual("Dialog", logs[2].Body);
+    }
+
+    [TestMethod]
+    public async Task Api_PageViews_MatchTheAppsRoutes_BelowTheBasePath_AndDefaultToTheCurrentPage()
+    {
+        await using var host = TestHost.Create(o => o.Browser.PageRoutes.AddRange(["/orders/{id:int}", "/checkout/{step:int}"]));
+        using var scope = host.Services.CreateScope();
+        var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime),
+            new TestNavigationManager("https://app.test/shop/", "https://app.test/shop/checkout/2?x=1"));
+
+        api.TrackPageView("Order", "https://app.test/shop/orders/42");
+        api.TrackPageView(url: "orders/43");
+        api.TrackPageView("Wizard step 2");
+
+        await host.FlushAsync();
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual("/shop/orders/{id:int}", logs[0].Attributes["url.template"], "The app's route, as the script's page views have it.");
+        Assert.AreEqual("Order", logs[0].Body);
+        Assert.AreEqual("/shop/orders/43", logs[1].Attributes["url.path"], "A relative URL is below the base path.");
+        Assert.AreEqual("/shop/orders/{id:int}", logs[1].Attributes["url.template"]);
+        Assert.AreEqual("/shop/orders/{id:int}", logs[1].Body, "An unnamed page view is named after its template.");
+        Assert.AreEqual("https://app.test/shop/checkout/2?x=1", logs[2].Attributes["url.full"], "No URL: the current page, as the script takes location.href.");
+        Assert.AreEqual("/shop/checkout/{step:int}", logs[2].Attributes["url.template"]);
+        Assert.AreEqual("Wizard step 2", logs[2].Body);
+    }
+
+    private sealed class TestNavigationManager : Microsoft.AspNetCore.Components.NavigationManager
+    {
+        public TestNavigationManager(string baseUri, string uri) => Initialize(baseUri, uri);
     }
 
     [TestMethod]

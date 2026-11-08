@@ -83,6 +83,8 @@ public static class BelemetrySemanticConventions
     public const string UrlFull = "url.full";
     /// <summary><c>url.path</c></summary>
     public const string UrlPath = "url.path";
+    /// <summary><c>url.template</c> - the low-cardinality template of a path: a page view's route (<c>/orders/{id:int}</c>).</summary>
+    public const string UrlTemplate = "url.template";
     /// <summary><c>url.query</c></summary>
     public const string UrlQuery = "url.query";
     /// <summary><c>url.scheme</c></summary>

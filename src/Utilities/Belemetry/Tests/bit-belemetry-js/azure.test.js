@@ -69,7 +69,7 @@ describe('envelopes', () => {
             baseType: 'EventData',
             baseData: { ver: 2, name: 'PageVisitTime', measurements: { PageVisitTime: 1234 }, properties: { extra: 'y', PageName: 'Home page', PageUrl: 'https://x.test/' } },
         });
-        const untitled = logToEnvelope(log({ eventName: 'browser.page_visit_time', attributes: { 'url.full': 'https://x.test/p', 'url.path': '/p', 'page.title': '' } }), resource, ctx);
+        const untitled = logToEnvelope(log({ eventName: 'browser.page_visit_time', body: null, attributes: { 'url.full': 'https://x.test/p', 'url.path': '/p', 'page.title': '' } }), resource, ctx);
         expect(untitled.data.baseData.properties.PageName).toBe('/p');
         expect(untitled.data.baseData.measurements.PageVisitTime).toBe(0);
     });
@@ -127,7 +127,7 @@ describe('envelopes', () => {
 
     it('maps page views to PageView', () => {
         const e = logToEnvelope(log({
-            eventName: 'browser.page_view', body: 'Home',
+            eventName: 'browser.page_view', body: 'Home page',
             attributes: { 'url.full': 'https://x.test/', 'url.path': '/', 'page.title': 'Home page', 'browser.navigation.type': 'push', ...ids },
         }), resource, ctx);
         expect(e.name).toBe('Microsoft.ApplicationInsights.PageView');
@@ -137,8 +137,40 @@ describe('envelopes', () => {
         expect(data).toMatchObject({ ver: 2, name: 'Home page', url: 'https://x.test/', duration: '00:00:00' });
         expect(data.id).toMatch(/^[0-9a-f]{16}$/);
         expect(data.properties).toEqual({ 'url.path': '/', 'browser.navigation.type': 'push' });
-        const untitled = logToEnvelope(log({ eventName: 'browser.page_view', attributes: { 'url.full': 'https://x.test/p', 'url.path': '/p', 'page.title': '' } }), resource, ctx);
+        const untitled = logToEnvelope(log({ eventName: 'browser.page_view', body: null, attributes: { 'url.full': 'https://x.test/p', 'url.path': '/p', 'page.title': '' } }), resource, ctx);
         expect(untitled.data.baseData.name).toBe('/p');
+    });
+
+    it('names a page view after the name given to trackPageView, which is its body', () => {
+        const e = logToEnvelope(log({
+            eventName: 'browser.page_view', body: 'Wizard step 2',
+            attributes: { 'url.full': 'https://x.test/checkout/2', 'url.path': '/checkout/2', 'url.template': '/checkout/{n}', 'page.title': 'Checkout' },
+        }), resource, ctx);
+        expect(e.data.baseData.name).toBe('Wizard step 2');
+        expect(e.tags['ai.operation.name']).toBe('Wizard step 2');
+        expect(e.data.baseData.properties['url.template']).toBe('/checkout/{n}');
+        const visit = logToEnvelope(log({
+            eventName: 'browser.page_visit_time', body: 'Wizard step 2',
+            attributes: { 'url.full': 'https://x.test/checkout/2', 'url.template': '/checkout/{n}', 'page.title': 'Checkout', 'page.visit.duration': 10 },
+        }), resource, ctx);
+        expect(visit.data.baseData.properties.PageName).toBe('Wizard step 2');
+    });
+
+    it('names an untitled page view without a body by its route template, which stays a property', () => {
+        const e = logToEnvelope(log({
+            eventName: 'browser.page_view', body: null,
+            attributes: { 'url.full': 'https://x.test/orders/42', 'url.path': '/orders/42', 'url.template': '/orders/{id:int}', 'page.title': '' },
+        }), resource, ctx);
+        expect(e.data.baseData.name).toBe('/orders/{id:int}');
+        expect(e.tags['ai.operation.name']).toBe('/orders/{id:int}');
+        expect(e.data.baseData.properties['url.template']).toBe('/orders/{id:int}');
+        const titled = logToEnvelope(log({ eventName: 'browser.page_view', body: null, attributes: { 'url.template': '/orders/{id:int}', 'page.title': 'Order' } }), resource, ctx);
+        expect(titled.data.baseData.name).toBe('Order');
+        const visit = logToEnvelope(log({
+            eventName: 'browser.page_visit_time', body: null,
+            attributes: { 'url.full': 'https://x.test/orders/42', 'url.path': '/orders/42', 'url.template': '/orders/{id:int}', 'page.title': '', 'page.visit.duration': 10 },
+        }), resource, ctx);
+        expect(visit.data.baseData.properties).toMatchObject({ PageName: '/orders/{id:int}', 'url.template': '/orders/{id:int}' });
     });
 
     it('maps web vitals to Metric', () => {

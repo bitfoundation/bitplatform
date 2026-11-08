@@ -3,6 +3,7 @@ import { Features } from '../features';
 import { onHidden } from '../lifecycle';
 import { Severity, type Attributes } from '../model';
 import { createLog } from '../records';
+import { pageTemplate } from '../routes';
 import { absoluteUrl, guard, type InstrumentationContext, type Uninstall } from './context';
 
 /** `restore`: the page came back from the back/forward cache - a new visit, though no navigation happened. */
@@ -11,6 +12,7 @@ export type NavigationType = 'initial' | 'push' | 'replace' | 'pop' | 'hash' | '
 export interface PageViewOptions {
     name?: string | null;
     url?: string | null;
+    /** A `url.template` among them is the page's route template; otherwise the path is matched against `pageViews.routes`. */
     attributes?: Attributes | null;
     /** Only emit when the URL differs from the last page view (replaceState, popstate, enhancedload). */
     onlyIfChanged?: boolean;
@@ -24,17 +26,23 @@ export const PAGE_VISIT_TIME_EVENT = 'browser.page_visit_time';
 /** The attribute carrying a page visit's length, in milliseconds. */
 export const PAGE_VISIT_DURATION = 'page.visit.duration';
 
+/** The attribute carrying the page's route template (`/orders/{id:int}`), which groups the views of one page. */
+export const URL_TEMPLATE = 'url.template';
+
 // pushState followed by Blazor's enhancedload (or a router that pushes twice) must count once.
 export const DEDUPE_MS = 100;
 
-const state = { key: '', url: '', path: '', title: '', time: -Infinity, visitStart: -Infinity, initialSent: false };
+// `name` is the page view's: the name given to trackPageView, else the title, else the template.
+const state = { key: '', url: '', path: '', template: '', title: '', name: '', time: -Infinity, visitStart: -Infinity, initialSent: false };
 
 /** Resets the module state (tests only). */
 export function resetPageViewState(): void {
     state.key = '';
     state.url = '';
     state.path = '';
+    state.template = '';
     state.title = '';
+    state.name = '';
     state.time = -Infinity;
     state.visitStart = -Infinity;
     state.initialSent = false;
@@ -57,9 +65,11 @@ export function trackPageVisitTime(ctx: InstrumentationContext, time = now()): b
     const attributes: Attributes = {};
     attributes['url.full'] = state.url;
     attributes['url.path'] = state.path;
+    attributes[URL_TEMPLATE] = state.template;
     attributes['page.title'] = state.title;
     attributes[PAGE_VISIT_DURATION] = Math.round(duration);
-    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, state.title || state.path, PAGE_VISIT_TIME_EVENT, attributes, time));
+    // Named as its page view, so a page tracked as "Wizard step 2" has its visits under that name too.
+    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, state.name, PAGE_VISIT_TIME_EVENT, attributes, time));
     return true;
 }
 
@@ -86,15 +96,23 @@ export function trackPageView(ctx: InstrumentationContext, type: NavigationType,
         // Keep the full URL.
     }
     const title = document.title || '';
-    state.path = path;
-    state.title = title;
     const attributes: Attributes = { ...(options.attributes || {}) };
+    // One name for every view of a page, whatever its ids: the path as a route template, so `/orders/42` and
+    // `/orders/43` are both `/orders/{id:int}` (or `/orders/{n}` when no route of the app matches).
+    const given = attributes[URL_TEMPLATE];
+    const template = typeof given === 'string' && given ? given : pageTemplate(path, ctx.config.pageViews.routes);
+    const name = options.name || title || template;
+    state.path = path;
+    state.template = template;
+    state.title = title;
+    state.name = name;
     attributes['url.full'] = url;
     attributes['url.path'] = path;
+    attributes[URL_TEMPLATE] = template;
     attributes['page.title'] = title;
     if (referrer) attributes['page.referrer'] = referrer;
     attributes['browser.navigation.type'] = type;
-    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, options.name || title || path, 'browser.page_view', attributes, time));
+    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, name, 'browser.page_view', attributes, time));
     return true;
 }
 

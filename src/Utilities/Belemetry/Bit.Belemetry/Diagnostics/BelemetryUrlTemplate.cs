@@ -67,6 +67,41 @@ internal static class BelemetryUrlTemplate
         return builder.ToString();
     }
 
+    /// <summary>
+    /// A route template as the diagnostic timeline keeps it, as the script's <c>templateRoute</c> does: without the query
+    /// or the fragment - a <c>?</c> or <c>#</c> outside a parameter's braces (<c>{id:int?}</c> keeps its own) - and its
+    /// path templated, as a template from a page may hold anything.
+    /// </summary>
+    public static string TemplateRoute(string template)
+    {
+        var end = 0;
+        while (end < template.Length)
+        {
+            var c = template[end];
+            if (c is '?' or '#') break;
+            if (c == '{' && end + 1 < template.Length && template[end + 1] == '{')
+            {
+                end += 2;
+            }
+            else if (c == '{')
+            {
+                // A parameter ends at its first single '}' ('}}' inside it is an escaped brace), within its segment; a
+                // brace without one opens no parameter.
+                var close = end + 1;
+                while (close < template.Length && template[close] != '/' && (template[close] == '}' && (close + 1 >= template.Length || template[close + 1] != '}')) is false)
+                {
+                    close += template[close] == '}' ? 2 : 1;
+                }
+                end = close < template.Length && template[close] == '}' ? close + 1 : end + 1;
+            }
+            else
+            {
+                end++;
+            }
+        }
+        return TemplatePath(template[..end]);
+    }
+
     /// <summary>The path with its instance segments replaced.</summary>
     public static string TemplatePath(string path)
     {
