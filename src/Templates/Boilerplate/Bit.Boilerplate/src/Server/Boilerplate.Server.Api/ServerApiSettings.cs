@@ -76,12 +76,6 @@ public partial class ServerApiSettings : ServerSharedSettings
 
     public AspireDashboardOptions? AspireDashboard { get; set; }
 
-    /// <summary>
-    /// The api's public address, for a deployment whose web app forwards the consent page's calls to the api. Empty, the
-    /// issuer is the address each request arrived at.
-    /// </summary>
-    public string? OAuthIssuer { get; set; }
-
     public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
 
     /// <summary>

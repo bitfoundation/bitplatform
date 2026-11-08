@@ -397,8 +397,6 @@ project up, and fails unless every container is healthy and the public address a
   `http://landingpage:8080`.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`.
-- Set `OAuthIssuer=https://<the api's hostname>` in the `SERVERAPI_SETTINGS` secret. The consent page reaches the api
-  through the web app's forwarder, so without it an MCP client's sign-in to dev-mcp ends in `invalid_target`.
 <!--#endif-->
 - On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
   `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
@@ -409,8 +407,6 @@ project up, and fails unless every container is healthy and the public address a
   `/v1/` paths to the dashboard included.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
-- Set `OAuthIssuer=https://<the api's hostname>` in the `SERVERAPI_SETTINGS` secret. The consent page reaches the api
-  through the web app's forwarder, so without it an MCP client's sign-in to dev-mcp ends in `invalid_target`.
 <!--#endif-->
 <!--#endif-->
 - Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
