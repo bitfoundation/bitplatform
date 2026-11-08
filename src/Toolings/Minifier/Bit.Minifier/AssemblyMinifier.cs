@@ -231,7 +231,6 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var references = ReferenceIndex.Collect(modules, others);
         var types = others.Concat(modules).SelectMany(m => ReferenceIndex.ResolvableTypes(m, modules)).ToList();
 
-        var fully = options.FullyMinified.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var dynamicBinder = File.Exists(Path.Combine(options.Directory, "Microsoft.CSharp.dll"));
 
         // every rename keeps the names string literals mention: nameof(...), GetField("..."), [UnsafeAccessor(Name = "...")]
@@ -249,7 +248,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         // the app's own code: renaming it would only make its own stack traces harder to read. A fully minified
         // library is a package wherever it isn't built from source, and safe for every rule either way.
         var own = options.OwnAssemblies.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        own.ExceptWith(fully);
+        own.RemoveWhere(name => MinifierOptions.Matches(options.FullyMinified, name));
 
         // what the level and the folder say may go, the same for every assembly of the publish
         var removable = new HashSet<string>(CompileTimeAttributes);
