@@ -149,14 +149,16 @@ internal static class BelemetryBrowserConfigFactory
                 // A page cannot speak gRPC: such an exporter reaches the browser only through an OTLP/HTTP BrowserEndpoint.
                 if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
 
+                // Every endpoint without its user info, on any host: a server would publish the credential to every
+                // visitor, as it would its Headers, and the page could not use it anyway (BelemetryUserInfo).
                 var root = otlp.BrowserEndpoint ?? otlp.Endpoint;
                 config.Exporters.Add(new()
                 {
                     Type = "otlp",
-                    Endpoint = root?.ToString(),
+                    Endpoint = BelemetryUserInfo.Remove(root)?.ToString(),
                     // A signal-specific endpoint only applies to the browser when the browser uses the same root.
-                    TracesEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Traces) ? otlp.TracesEndpoint?.ToString() : null,
-                    LogsEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Logs) ? otlp.LogsEndpoint?.ToString() : null,
+                    TracesEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Traces) ? BelemetryUserInfo.Remove(otlp.TracesEndpoint)?.ToString() : null,
+                    LogsEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Logs) ? BelemetryUserInfo.Remove(otlp.LogsEndpoint)?.ToString() : null,
                     Protocol = otlp.Protocol == BelemetryOtlpProtocol.HttpJson ? "http/json" : "http/protobuf",
                     Headers = BrowserHeaders(settings, otlp),
                     Compression = otlp.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
@@ -221,10 +223,12 @@ internal static class BelemetryBrowserConfigFactory
 
         foreach (var otlp in settings.OtlpExporters)
         {
-            Add(BelemetryOtlpExporter.Resolve(otlp.TracesEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Traces));
-            Add(BelemetryOtlpExporter.Resolve(otlp.LogsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Logs));
-            Add(BelemetryOtlpExporter.Resolve(otlp.MetricsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Metrics));
-            Add(otlp.BrowserEndpoint?.ToString());
+            // Without user info, as the exporters: a URL with credentials is never fetched anyway.
+            var endpoint = BelemetryUserInfo.Remove(otlp.Endpoint);
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.TracesEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Traces));
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.LogsEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Logs));
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.MetricsEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Metrics));
+            Add(BelemetryUserInfo.Remove(otlp.BrowserEndpoint)?.ToString());
         }
 
         foreach (var azure in settings.AzureMonitorExporters)

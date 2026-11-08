@@ -258,6 +258,25 @@ public class BelemetrySettingsTests
     }
 
     [TestMethod]
+    public void EnvironmentVariables_EndpointUserInfo_StaysOutOfAServersPage()
+    {
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "https://user:pw-7f3a@collector.example.com");
+
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.UseEnvironmentVariables = true;
+            o.Browser.Transport = BelemetryBrowserTransport.Direct;
+        }, webHost: true);
+
+        var json = BelemetryBrowserConfigFactory.ToJson(BelemetryBrowserConfigFactory.Create(settings));
+        Assert.DoesNotContain("pw-7f3a", json);
+        StringAssert.Contains(json, "\"endpoint\":\"https://collector.example.com/\"");
+        var warning = settings.StartupWarnings.Single();
+        StringAssert.Contains(warning, "user info");
+        Assert.DoesNotContain("pw-7f3a", warning);
+    }
+
+    [TestMethod]
     public void EnvironmentVariables_UnknownProtocolIsReportedAndIgnored()
     {
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector.env:4318");

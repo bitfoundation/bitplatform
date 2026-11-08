@@ -160,6 +160,11 @@
                     <td>Move a key meant to be public to <code>BrowserHeaders</code>; keep a secret one in a collector, or use Relay</td>
                 </tr>
                 <tr>
+                    <td>The endpoint's <code>user:password@@</code> never reaches the collector</td>
+                    <td>No export sends user info (<code>HttpClient</code> leaves it out, the browser refuses such a URL), and the page never gets it; a server's startup warning names the exporter</td>
+                    <td>Put the credential in <code>Headers</code> (an <code>Authorization</code> header); for the browser's exports, a collector in between or Relay</td>
+                </tr>
+                <tr>
                     <td>A 400, 401, 403 - or for OTLP a 408 or 500 - is dropped, not retried</td>
                     <td>Only the statuses the backend's protocol calls transient are retried (<a href="/persistence">Offline persistence</a>)</td>
                     <td>Read the warning in the <code>Bit.Belemetry</code> category: it is the backend's final word on the key, the endpoint or the body</td>

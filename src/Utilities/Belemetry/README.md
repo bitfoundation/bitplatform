@@ -327,6 +327,13 @@ on the device, so the script sends `Headers` too (with `BrowserHeaders` on top):
 exporter. For vendors that need a secret key, use a collector in between, or the
 [Relay transport](#transport-direct-and-relay).
 
+**User info in an endpoint.** The page never gets an endpoint's user info, on any host: `https://user:token@collector.example.com`,
+set in code or through `OTEL_EXPORTER_OTLP_ENDPOINT`, reaches the browser script as `https://collector.example.com/`,
+and a server warns at startup about an exporter whose page now exports without it. Belemetry's own warnings and
+diagnostics name every endpoint without it too.
+User info authenticates no export anyway - neither .NET's `HttpClient` nor the browser sends it - so put the
+credential in `Headers` (an `Authorization` header) instead.
+
 ### Azure Monitor (Application Insights)
 
 ```csharp
@@ -1340,6 +1347,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   Auto, an OTLP exporter's `Headers` (and `OTEL_EXPORTER_OTLP_HEADERS`) stay on the server; the browser script exports
   without them, and a startup warning names the exporter. Move a key that is meant to be public to `BrowserHeaders`,
   or switch to the Relay transport. WebAssembly and Hybrid are unchanged.
+- **The page never gets an OTLP endpoint's user info.** `https://user:token@...` reaches the browser script without
+  `user:token@`, on every host, and a server warns at startup. Neither `HttpClient` nor the browser ever sent it: put
+  the credential in `Headers` (an `Authorization` header).
 - **Every string attribute is scrubbed on the .NET side too**, as the browser script always did: structured log
   values and event attributes lose e-mail addresses, tokens, card numbers and IPv4 addresses. `client.address` becomes
   `[ip]`. Turn pattern scrubbing off with `Privacy.ScrubPatterns = false`.

@@ -69,16 +69,38 @@ internal sealed class BelemetrySettings
             for (var i = 0; i < OtlpExporters.Count; i++)
             {
                 var otlp = OtlpExporters[i];
-                if (otlp.IncludeInBrowser is false || otlp.Headers.Count == 0 || otlp.BrowserHeaders.Count > 0) continue;
+                if (otlp.IncludeInBrowser is false) continue;
 
                 // Never reaches the page (as BelemetryBrowserConfigFactory decides): gRPC without a BrowserEndpoint, or
                 // none of the signals the browser produces.
                 if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
                 if ((otlp.Signals & (BelemetrySignals.Traces | BelemetrySignals.Logs)) == 0) continue;
 
-                StartupWarnings.Add($"The OTLP exporter #{i} to {otlp.BrowserEndpoint ?? otlp.Endpoint} has Headers, which a server does not hand to the browser script " +
-                                    "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +
-                                    "use the Relay transport, or set IncludeInBrowser = false.");
+                // Named as the page gets it, without user info (BelemetryUserInfo).
+                var endpoint = BelemetryUserInfo.Remove(otlp.BrowserEndpoint ?? otlp.Endpoint);
+
+                if (otlp.Headers.Count > 0 && otlp.BrowserHeaders.Count == 0)
+                {
+                    StartupWarnings.Add($"The OTLP exporter #{i} to {endpoint} has Headers, which a server does not hand to the browser script " +
+                                        "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +
+                                        "use the Relay transport, or set IncludeInBrowser = false.");
+                }
+
+                // The endpoints the page gets (BelemetryBrowserConfigFactory.Create): the BrowserEndpoint alone, or the
+                // Endpoint and the signal-specific endpoints of the signals the browser produces.
+                var userInfo = otlp.BrowserEndpoint is not null
+                    ? BelemetryUserInfo.Has(otlp.BrowserEndpoint)
+                    : BelemetryUserInfo.Has(otlp.Endpoint)
+                      || (otlp.Signals.HasFlag(BelemetrySignals.Traces) && BelemetryUserInfo.Has(otlp.TracesEndpoint))
+                      || (otlp.Signals.HasFlag(BelemetrySignals.Logs) && BelemetryUserInfo.Has(otlp.LogsEndpoint));
+
+                if (userInfo)
+                {
+                    StartupWarnings.Add($"The OTLP exporter #{i} to {endpoint} has user info in its endpoint, which a server leaves out of the browser script's configuration " +
+                                        "(the page would publish it to every visitor), so the browser exports to it without it. User info authenticates no export anyway - " +
+                                        "neither HttpClient nor the browser sends it: put the credential in Headers (an Authorization header), and use the Relay transport " +
+                                        "or set IncludeInBrowser = false if the browser's exports need it too.");
+                }
             }
         }
 

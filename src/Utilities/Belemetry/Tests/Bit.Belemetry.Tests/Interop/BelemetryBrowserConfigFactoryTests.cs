@@ -551,4 +551,109 @@ public class BelemetryBrowserConfigFactoryTests
         }, webHost: true);
         Assert.IsEmpty(relay.StartupWarnings, "With the Relay transport the page exports nothing itself.");
     }
+
+    [TestMethod]
+    public void ServerHost_NeverPublishesTheEndpointsUserInfo_AndWarnsWithoutRepeatingIt()
+    {
+        // The user info of an endpoint is a credential, as the exporter's Headers are; every visitor could read it.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("https://user:base-secret@collector.test:4318", e => e.Headers["x-api-key"] = "header-secret");
+            o.AddOtlpExporter("https://plain.test", e =>
+            {
+                e.TracesEndpoint = new Uri("https://u:traces-secret@traces.test/otlp/v1/traces?tenant=a");
+                e.LogsEndpoint = new Uri("https://:logs-secret@logs.test/otlp/v1/logs");
+                e.MetricsEndpoint = new Uri("https://u:metrics-secret@metrics.test/v1/metrics");
+            });
+            o.AddOtlpExporter("http://u:grpc-secret@collector.internal:4317", e =>
+            {
+                e.Protocol = BelemetryOtlpProtocol.Grpc;
+                e.BrowserEndpoint = new Uri("https://browser-secret@public.test/otlp");
+            });
+        }, webHost: true);
+
+        var json = BelemetryBrowserConfigFactory.ToJson(BelemetryBrowserConfigFactory.Create(settings));
+        foreach (var secret in new[] { "base-secret", "header-secret", "traces-secret", "logs-secret", "metrics-secret", "grpc-secret", "browser-secret", "@" })
+        {
+            Assert.DoesNotContain(secret, json);
+        }
+
+        var exporters = BelemetryBrowserConfigFactory.Create(settings).Exporters;
+        Assert.AreEqual("https://collector.test:4318/", exporters[0].Endpoint);
+        Assert.AreEqual("https://plain.test/", exporters[1].Endpoint);
+        Assert.AreEqual("https://traces.test/otlp/v1/traces?tenant=a", exporters[1].TracesEndpoint);
+        Assert.AreEqual("https://logs.test/otlp/v1/logs", exporters[1].LogsEndpoint);
+        Assert.AreEqual("https://public.test/otlp", exporters[2].Endpoint);
+
+        // One for the first exporter's Headers, one per exporter for the user info; none repeats a credential.
+        var warnings = settings.StartupWarnings;
+        Assert.HasCount(4, warnings, string.Join(" | ", warnings));
+        Assert.IsFalse(warnings.Any(w => w.Contains("secret", StringComparison.Ordinal) || w.Contains('@', StringComparison.Ordinal)), string.Join(" | ", warnings));
+        var userInfo = warnings.Where(w => w.Contains("user info", StringComparison.Ordinal)).ToArray();
+        Assert.HasCount(3, userInfo);
+        StringAssert.Contains(userInfo[0], "#0 to https://collector.test:4318/");
+        StringAssert.Contains(userInfo[1], "#1 to https://plain.test/");
+        StringAssert.Contains(userInfo[2], "#2 to https://public.test/otlp");
+        StringAssert.Contains(userInfo[0], "Authorization");
+        StringAssert.Contains(warnings.Single(w => w.Contains("has Headers", StringComparison.Ordinal)), "#0 to https://collector.test:4318/");
+    }
+
+    [TestMethod]
+    public void ServerHost_DoesNotWarn_WhenTheUserInfoNeverReachesThePage()
+    {
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("https://u:pw-7f3a@a.test", e => e.IncludeInBrowser = false);
+            o.AddOtlpExporter("http://u:pw-7f3a@localhost:4317", e => e.Protocol = BelemetryOtlpProtocol.Grpc);
+            o.AddOtlpExporter("https://u:pw-7f3a@metrics.test", e => e.Signals = BelemetrySignals.Metrics);
+            o.AddOtlpExporter("https://plain.test", e =>
+            {
+                // Endpoints the page never uses: metrics, a signal the exporter does not send, and the internal
+                // addresses behind a BrowserEndpoint.
+                e.MetricsEndpoint = new Uri("https://u:pw-7f3a@metrics.test/v1/metrics");
+                e.Signals = BelemetrySignals.Traces | BelemetrySignals.Metrics;
+                e.LogsEndpoint = new Uri("https://u:pw-7f3a@logs.test/v1/logs");
+            });
+            o.AddOtlpExporter("https://u:pw-7f3a@internal.test", e =>
+            {
+                e.TracesEndpoint = new Uri("https://u:pw-7f3a@internal.test/v1/traces");
+                e.BrowserEndpoint = new Uri("/otlp", UriKind.Relative);
+            });
+        }, webHost: true);
+
+        Assert.IsEmpty(settings.StartupWarnings, string.Join(" | ", settings.StartupWarnings));
+        Assert.DoesNotContain("pw-7f3a", BelemetryBrowserConfigFactory.ToJson(BelemetryBrowserConfigFactory.Create(settings)));
+
+        var relay = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.AddOtlpExporter("https://u:pw-7f3a@a.test");
+        }, webHost: true);
+        Assert.IsEmpty(relay.StartupWarnings, "With the Relay transport the page exports nothing itself.");
+    }
+
+    [TestMethod]
+    [DataRow(false, DisplayName = "Hybrid")]
+    [DataRow(true, DisplayName = "WebAssembly")]
+    public void ClientHosts_HandTheScriptTheEndpointsWithoutUserInfo(bool isBrowser)
+    {
+        // The configuration is on the device already, but a page cannot use the user info: fetch refuses a URL with
+        // credentials. The .NET side keeps its own endpoints as configured.
+        var options = new BelemetryOptions();
+        TestHost.ApplyTestDefaults(options);
+        options.Browser.Transport = BelemetryBrowserTransport.Direct;
+        options.AddOtlpExporter("https://user:pw-7f3a@otel.test", e => e.MetricsEndpoint = new Uri("https://user:pw-7f3a@metrics.test/v1/metrics"));
+        var settings = new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser);
+
+        var config = BelemetryBrowserConfigFactory.Create(settings);
+
+        Assert.AreEqual("https://otel.test/", config.Exporters.Single().Endpoint);
+        Assert.DoesNotContain("pw-7f3a", BelemetryBrowserConfigFactory.ToJson(config));
+        CollectionAssert.IsSubsetOf(new[] { Regex.Escape("https://otel.test/v1/traces"), Regex.Escape("https://metrics.test/v1/metrics") }, config.Dependencies.IgnoreUrls);
+        Assert.AreEqual(new Uri("https://user:pw-7f3a@otel.test"), settings.OtlpExporters.Single().Endpoint);
+        Assert.IsEmpty(settings.StartupWarnings);
+    }
 }
