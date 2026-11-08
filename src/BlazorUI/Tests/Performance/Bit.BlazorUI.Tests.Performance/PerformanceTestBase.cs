@@ -539,6 +539,15 @@ public abstract class PerformanceTestBase
     protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
     {
         Record($"{metric}.server", serverMs, "ms", count);
+        RecordBrowserTiming(metric, count, browser);
+    }
+
+    /// <summary>
+    /// Records the browser's half of an interaction alone (<see cref="MeasureInBrowserAsync"/>), for one the page's own
+    /// stopwatch cannot see the end of - rows a virtualized list renders after the page's render.
+    /// </summary>
+    protected void RecordBrowserTiming(string metric, int count, BrowserTiming browser)
+    {
         Record($"{metric}.browser", browser.Duration, "ms", count);
         Record($"{metric}.domNodes", browser.DomNodes, "nodes", count);
         if (browser.LongTasks is { } longTasks) Record($"{metric}.longTasks", longTasks, "tasks", count);
@@ -555,13 +564,13 @@ public abstract class PerformanceTestBase
     public sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
 
     // Arms the page for one interaction: performance.mark "bit-perf:start" as the trigger's click reaches the document,
-    // "bit-perf:end" in the frame after the #status text reads the given end - after an animation frame and the task
-    // after it, so the layout and paint of what was rendered are inside - and performance.measure "bit-perf" between
-    // them, which a trace of the page shows as well. A long task counts for the part of it inside that window, and the
-    // entries the observer holds but has not delivered yet are taken before it stops. The answer is kept on the window for
-    // MeasureInBrowserAsync to await.
+    // "bit-perf:end" in the frame after the end shows - the #status text reading the given status, or an element matching
+    // the given selector being on the page - after an animation frame and the task after it, so the layout and paint of
+    // what was rendered are inside, and performance.measure "bit-perf" between them, which a trace of the page shows as
+    // well. A long task counts for the part of it inside that window, and the entries the observer holds but has not
+    // delivered yet are taken before it stops. The answer is kept on the window for MeasureInBrowserAsync to await.
     private const string ArmInteractionScript = """
-        (done) => {
+        ({ status: doneStatus, selector }) => {
             for (const name of ['bit-perf:start', 'bit-perf:end']) performance.clearMarks(name);
             performance.clearMeasures('bit-perf');
 
@@ -575,8 +584,9 @@ public abstract class PerformanceTestBase
                 document.addEventListener('click', () => performance.mark('bit-perf:start'), { capture: true, once: true });
 
                 const status = document.getElementById('status');
+                const isDone = selector ? () => document.querySelector(selector) !== null : () => status.textContent === doneStatus;
                 const watcher = new MutationObserver(() => {
-                    if (status.textContent !== done || performance.getEntriesByName('bit-perf:start').length === 0) return;
+                    if (isDone() === false || performance.getEntriesByName('bit-perf:start').length === 0) return;
                     watcher.disconnect();
 
                     requestAnimationFrame(() => setTimeout(() => {
@@ -598,7 +608,8 @@ public abstract class PerformanceTestBase
                         });
                     }, 0));
                 });
-                watcher.observe(status, { childList: true, characterData: true, subtree: true });
+                watcher.observe(selector ? document.body : status,
+                                { childList: true, characterData: true, subtree: true, attributes: !!selector, attributeFilter: selector ? ['class'] : undefined });
             });
         }
         """;
@@ -608,24 +619,51 @@ public abstract class PerformanceTestBase
     /// <paramref name="done"/>: from the click reaching the page to the next frame after that text appeared - the round
     /// trip, the render, the DOM it changed and the layout and paint of it - as performance.mark / performance.measure
     /// ("bit-perf"). The page's own #render-time is the .NET half of it alone: the server's, or in wasm mode the browser
-    /// runtime's. Fails once <see cref="DefaultTimeout"/>
-    /// has passed without the status reading <paramref name="done"/>.
+    /// runtime's. Fails once <paramref name="timeout"/> has passed without the status reading <paramref name="done"/>.
     /// </summary>
-    protected async Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done)
+    /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null, longer for an
+    /// interaction known to take more than its 30 seconds in one of the render modes.</param>
+    protected Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done, TimeSpan? timeout = null)
     {
-        await Page.EvaluateAsync(ArmInteractionScript, done);
-        await trigger.ClickAsync();
+        return MeasureAsync(trigger, new { status = done, selector = (string?)null }, $"#status did not read '{done}'", timeout);
+    }
 
-        // An evaluation has no timeout of its own: it would await the page's promise for as long as the status never
-        // reads its end. The one left pending here is rejected when the test's context is closed.
+    /// <summary>
+    /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until an element matching
+    /// <paramref name="selector"/> is on the page, as <see cref="MeasureInBrowserAsync"/> does for a status: for what ends
+    /// after the page's own render - rows a virtualized list renders once the browser has reported where it scrolled to.
+    /// Fails when the selector matches before the click, or not within <paramref name="timeout"/> of it.
+    /// </summary>
+    /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null.</param>
+    protected async Task<BrowserTiming> MeasureInBrowserUntilAsync(ILocator trigger, string selector, TimeSpan? timeout = null)
+    {
+        if (await Page.Locator(selector).CountAsync() > 0)
+        {
+            throw new InvalidOperationException($"'{selector}' is on the page before the click, so it cannot tell when what the click set off ended.");
+        }
+
+        return await MeasureAsync(trigger, new { status = (string?)null, selector }, $"No element matched '{selector}'", timeout);
+    }
+
+    private async Task<BrowserTiming> MeasureAsync(ILocator trigger, object end, string timeoutMessage, TimeSpan? timeout)
+    {
+        var wait = timeout ?? TimeSpan.FromMilliseconds(DefaultTimeout);
+
+        await Page.EvaluateAsync(ArmInteractionScript, end);
+        // The click waits as long as the end does: in wasm mode the page's .NET handler, and the render it sets off, can
+        // run inside the click's own event, which the click does not return before.
+        await trigger.ClickAsync(new() { Timeout = (float)wait.TotalMilliseconds });
+
+        // An evaluation has no timeout of its own: it would await the page's promise for as long as the end never shows.
+        // The one left pending here is rejected when the test's context is closed.
         JsonElement timing;
         try
         {
-            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(TimeSpan.FromMilliseconds(DefaultTimeout));
+            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(wait);
         }
         catch (System.TimeoutException exception)
         {
-            throw new System.TimeoutException($"#status did not read '{done}' within {DefaultTimeout} ms of the click.", exception);
+            throw new System.TimeoutException($"{timeoutMessage} within {wait.TotalMilliseconds} ms of the click.", exception);
         }
 
         return new(timing.GetProperty("duration").GetDouble(),

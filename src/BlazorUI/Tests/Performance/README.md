@@ -18,7 +18,8 @@ Performance/
 ├── Bit.BlazorUI.Tests.Performance.TestHost.Client/         # WebAssembly project holding the performance pages
 │   ├── Components/
 │   │   ├── ClientRoutes.razor                              # Their router in the browser
-│   │   └── Pages/                                          # BitActionButtonPerf.razor, BitDropdownPerf.razor
+│   │   └── Pages/                                          # BitActionButtonPerf.razor, BitDropdownPerf.razor,
+│   │                                                       # BitDataGridPerf.razor, BitFullCalendarPerf.razor
 │   ├── Program.cs
 │   └── Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj
 │
@@ -26,7 +27,8 @@ Performance/
 │   ├── PerformanceTestBase.cs                              # Base class: starts the test host, owns the browser and the page
 │   ├── RequiresBrowserAttribute.cs                         # Makes every class opt-in (RUN_BROWSER_TESTS=1)
 │   ├── Bit*BrowserTests.cs                                 # The performance tests (BitActionButtonBrowserTests,
-│   │                                                       # BitDropdownBrowserTests) and the browser regression tests
+│   │                                                       # BitDropdownBrowserTests, BitDataGridBrowserTests,
+│   │                                                       # BitFullCalendarBrowserTests) and the browser regression tests
 │   └── Bit.BlazorUI.Tests.Performance.csproj
 │
 ├── Bit.BlazorUI.Tests.PdfPerformance/                      # A console benchmark of the PDF engine (see below)
@@ -84,6 +86,8 @@ Then navigate to:
 - http://localhost:5280/perf/action-button - BitActionButton performance test
 - http://localhost:5280/perf/action-button/100 - BitActionButton with 100 components
 - http://localhost:5280/perf/dropdown - BitDropdown performance test
+- http://localhost:5280/perf/data-grid/100000 - BitDataGrid over 100,000 rows
+- http://localhost:5280/perf/full-calendar/5000 - BitFullCalendar over 5,000 events
 
 ### Test Page Controls
 
@@ -91,6 +95,23 @@ Each performance page (`/perf/action-button`, `/perf/dropdown`) exposes:
 - `#btn-render` - Button to trigger initial render
 - `#btn-clear` - Button to clear all components
 - `#btn-rerender` - Button to trigger re-render
+
+`/perf/data-grid/{rows}` renders a virtualized BitDataGrid over that many client-side rows, in 20 categories, made as
+the page starts so they are not timed. After `#btn-render` it exposes:
+- `#btn-sort` - Sort by price, descending ("Sorted")
+- `#btn-filter` - Keep one category of the 20 ("Filtered")
+- `#btn-group` - Group by category ("Grouped"); the grid does not virtualize a grouped view, so every row is rendered
+- `#btn-reveal-last` - Scroll to the last row, which carries the class `perf-last-row` once the grid has rendered it
+
+`/perf/full-calendar/{events}` renders a BitFullCalendar (en-US) on January 2026, with that many events spread over
+2026, 200 of them weekly series at 5,000, and 50 resources. The events are made as the page starts, so they are not
+timed. The page exposes:
+- `#btn-render-month` - Render the month view ("Rendered")
+- `#btn-render-timeline` - Render the timeline's month ("Rendered")
+- `#btn-next` - Go to the next month ("Navigated")
+
+The calendar renders after its state has changed, so the tests end their browser timing on a day it labels: January 31
+for a render, February 16 (which January's grid does not show) for the next month.
 
 Metrics are exposed via DOM elements:
 - `#render-time` - Initial render time in milliseconds
@@ -127,6 +148,9 @@ RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Scalability"
 
 # Stress tests only
 RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Stress"
+
+# Scroll tests only (BitDataGrid's)
+RUN_BROWSER_TESTS=1 dotnet test --filter "TestCategory=Scroll"
 ```
 
 ### Run with Specific Browser
@@ -205,6 +229,12 @@ TRX, or `TestResults` beside the test app otherwise. No threshold reads it: it i
     page's element count at the end. `longTasks` and `longTaskTime` are the main thread's tasks of 50 ms or more in
     between and how much of their time fell in between, which only Chromium-based browsers report. BitActionButton's
     scalability and 2000-component stress tests record their renders the same way.
+  - `sort.*`, `filter.*` and `group.*`: BitDataGrid's, the same way, with the row count as the count.
+  - `scrollToEnd.*`: BitDataGrid's scroll to its last row, timed in the browser alone, up to the frame after that row
+    was rendered (`MeasureInBrowserUntilAsync`); the page's stopwatch does not see the rows its virtualization
+    renders after the scroll.
+  - `renderMonth.*`, `renderTimeline.*`, `nextMonth.*` and `nextTimelineMonth.*`: BitFullCalendar's, with the event
+    count as the count, the browser's time ending on the day the calendar labels (`MeasureInBrowserUntilAsync`).
   - `render.timePerComponentGrowth`: the scalability test's time per component at its largest count, over the cheapest.
   - `rerender.server.mean` and `.max`: BitActionButton's repeated re-renders.
   - `renderClearCycle.mean`: BitActionButton's render and clear cycles, as the test runner timed them.

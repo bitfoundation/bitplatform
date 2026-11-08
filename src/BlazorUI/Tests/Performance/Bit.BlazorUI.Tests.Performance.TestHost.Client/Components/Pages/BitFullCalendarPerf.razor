@@ -1,0 +1,193 @@
+﻿@page "/perf/full-calendar"
+@page "/perf/full-calendar/{Count:int}"
+
+@* Counts the page's renders, for OnAfterRender to tell the render carrying a change from the ones built before it. *@
+@{ _renders++; }
+
+<PageTitle>BitFullCalendar Performance Test</PageTitle>
+
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitFullCalendar Performance Test</h3>
+    <div style="margin-bottom: 10px;">
+        <label>Event Count: </label>
+        <input type="number" @bind="Count" min="1" max="@MaxCount" style="width: 100px;" />
+        <button @onclick="() => Render(BitFullCalendarMode.Event)" id="btn-render-month">Render the month view</button>
+        <button @onclick="() => Render(BitFullCalendarMode.Timeline)" id="btn-render-timeline">Render the timeline month</button>
+        <button @onclick="Next" id="btn-next">Next month</button>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Render Time: <span id="render-time">@_renderTimeMs</span> ms</p>
+        <p>Re-render Time: <span id="rerender-time">@_reRenderTimeMs</span> ms</p>
+        <p>Event Count: <span id="component-count">@_renderedCount</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+        @* Where the page runs (Server or WebAssembly), for the tests to check it runs where PERF_RENDER_MODE asked. *@
+        <p>Renderer: <span id="renderer">@RendererInfo.Name</span></p>
+    </div>
+</div>
+
+@if (_isRendered)
+{
+    <div style="height: 900px;">
+        @* en-US, so the dates the cells are labelled with - which the tests wait for - read the same on every machine.
+           Keyed by the render click, so every click makes a new calendar - DefaultMode is read once, as it starts - and
+           Render Time is always its initial render. *@
+        <BitFullCalendar @ref="_calendar"
+                         @key="_calendarKey"
+                         Id="perf-calendar"
+                         CultureName="en-US"
+                         Events="_events"
+                         Resources="_resources"
+                         DefaultDate="Start"
+                         DefaultView="BitFullCalendarView.Month"
+                         DefaultMode="_mode" />
+    </div>
+}
+
+@code {
+    /// <summary>The day the calendar opens on: its month is January 2026, the next one February.</summary>
+    public static readonly DateTime Start = new(2026, 1, 15);
+
+    // The rows of the timeline: the events go to them in turn.
+    private const int ResourceCount = 50;
+
+    // The events that are weekly series rather than single events, as many as the workload of the baseline has
+    // (performance-baseline.md, section 4) once the count reaches 5,000.
+    private const int MaxSeriesCount = 200;
+
+    // The most events the page makes, as many as its box allows.
+    private const int MaxCount = 20_000;
+
+    /// <summary>The events to make, from the route or the box: below 0 makes none, above <see cref="MaxCount"/> that many.</summary>
+    [Parameter]
+    public int Count { get; set; } = 1000;
+
+    // Count within the events the page can make, so a negative or huge one never reaches Enumerable.Range.
+    private int EventCount => Math.Clamp(Count, 0, MaxCount);
+
+    private BitFullCalendar? _calendar;
+    private int _calendarKey;
+    private List<BitFullCalendarEvent> _events = [];
+    private readonly List<BitFullCalendarResource> _resources =
+        Enumerable.Range(1, ResourceCount).Select(i => new BitFullCalendarResource { Id = $"r{i:D2}", Title = $"Resource {i:D2}" }).ToList();
+    private BitFullCalendarMode _mode;
+    private int _renderedCount;
+    private double _renderTimeMs;
+    private double _reRenderTimeMs;
+    // "Loading" in the prerendered HTML; "Ready" once the page is interactive (OnAfterRender's first run), which is
+    // what the tests wait for.
+    private string _status = "Loading";
+    private bool _isRendered;
+    // The status the next render reports once it is on the screen, with the time since the stopwatch started.
+    private string? _done;
+    // The page's renders built, the ones OnAfterRender has seen (in the same order), and the first that carries _done.
+    private int _renders;
+    private int _completedRenders;
+    private int _doneAt;
+    private readonly System.Diagnostics.Stopwatch _stopwatch = new();
+
+    // The events are made as the page starts, before it is ready: what the tests time from the click is the calendar,
+    // not the data. A count changed in the box makes its events on the click, before the stopwatch starts.
+    protected override void OnInitialized() => MakeEvents();
+
+    // Count events spread over the whole of 2026, about 14 a day at 5,000: every month view is handed all of them and
+    // shows its own. Every tenth is two days long and every twentieth all day; the first ones (200 at 5,000) are weekly
+    // series through the year instead, expanded by the calendar for the range it shows.
+    private void MakeEvents()
+    {
+        var seriesCount = Math.Min(MaxSeriesCount, EventCount / 25);
+        var year = new DateTime(2026, 1, 1);
+
+        _events = Enumerable.Range(0, EventCount).Select(i =>
+        {
+            var day = year.AddDays(i % 365);
+            var start = day.AddHours(8 + i % 10);
+            var ev = new BitFullCalendarEvent
+            {
+                Id = $"e{i}",
+                Title = $"Event {i}",
+                Resource = $"r{i % ResourceCount + 1:D2}",
+                StartDate = start,
+                EndDate = start.AddHours(1),
+            };
+
+            if (i < seriesCount)
+            {
+                ev.Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Weekly, Until = new DateTime(2026, 12, 31) };
+            }
+            else if (i % 20 == 0)
+            {
+                ev.IsAllDay = true;
+                ev.StartDate = day;
+                ev.EndDate = day.AddDays(1);
+            }
+            else if (i % 10 == 0)
+            {
+                ev.EndDate = start.AddDays(2);
+            }
+
+            return ev;
+        }).ToList();
+    }
+
+    private void Render(BitFullCalendarMode mode)
+    {
+        if (_events.Count != EventCount) MakeEvents();
+
+        _stopwatch.Restart();
+        _mode = mode;
+        _isRendered = true;
+        _calendarKey++;
+        _renderedCount = EventCount;
+        _status = "Rendering...";
+        ReportOnNextRender("Rendered");
+    }
+
+    // The calendar renders the next month once its state has told it, after the handler: the tests read the end off the
+    // page (a day of February in it), and the page's stopwatch stops at the render after the handler.
+    private void Next()
+    {
+        if (_calendar is null) return;
+
+        _stopwatch.Restart();
+        _status = "Navigating...";
+        _calendar.NavigateNext();
+        ReportOnNextRender("Navigated");
+    }
+
+    // The next render reports done once it is on the screen. Not an earlier one: a render built before the change (the
+    // "Ready" one, when the click comes before its acknowledgement) can reach OnAfterRender after it.
+    private void ReportOnNextRender(string done)
+    {
+        _done = done;
+        _doneAt = _renders + 1;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _completedRenders++;
+
+        if (firstRender)
+        {
+            // Runs only in interactive mode (never during the prerender): the page is ready to handle events.
+            _status = "Ready";
+            StateHasChanged();
+            return;
+        }
+
+        if (_done is null || _completedRenders < _doneAt || _stopwatch.IsRunning is false) return;
+
+        _stopwatch.Stop();
+        if (_done == "Rendered")
+        {
+            _renderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+        }
+        else
+        {
+            _reRenderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+        }
+
+        _status = _done;
+        _done = null;
+        StateHasChanged();
+    }
+}
