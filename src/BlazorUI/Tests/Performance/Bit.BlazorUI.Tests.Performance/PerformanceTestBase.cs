@@ -20,6 +20,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
 /// <c>TEST_HOST_URL</c> moves the test host off <c>http://localhost:5280</c>, for a machine where another checkout's
 /// host already holds that port - a host found answering there is reused rather than started.
+/// <c>PERF_RENDER_MODE</c> picks where the performance pages run (<see cref="RenderMode"/>).
 /// </remarks>
 public abstract class PerformanceTestBase
 {
@@ -42,6 +43,17 @@ public abstract class PerformanceTestBase
 
     /// <summary>The BROWSER the run asked for (Edge is a channel of Playwright's chromium): <c>chromium</c> when it asked for none.</summary>
     internal static string BrowserName => Environment.GetEnvironmentVariable("BROWSER") is { Length: > 0 } name ? name.ToLowerInvariant() : "chromium";
+
+    /// <summary>
+    /// Where the performance pages run, as <c>PERF_RENDER_MODE</c> names it: <c>server</c> (InteractiveServer, the default)
+    /// or <c>wasm</c> (InteractiveWebAssembly). The host reads it off a cookie every browser context of the run carries; the
+    /// other pages of the host run on the server whatever it says.
+    /// </summary>
+    internal static string RenderMode => (Environment.GetEnvironmentVariable("PERF_RENDER_MODE") ?? "server").ToLowerInvariant() switch
+    {
+        "wasm" or "webassembly" => "wasm",
+        _ => "server"
+    };
 
     protected IPage Page { get; private set; } = null!;
 
@@ -103,6 +115,7 @@ public abstract class PerformanceTestBase
         }
 
         _context = await _browser.NewContextAsync(ContextOptions);
+        await _context.AddCookiesAsync([new Cookie { Name = "perf-render-mode", Value = RenderMode, Url = BaseUrl }]);
         Page = await _context.NewPageAsync();
 
         // Wait for page to be ready.
@@ -419,6 +432,21 @@ public abstract class PerformanceTestBase
     }
 
     /// <summary>
+    /// Opens a performance page (<paramref name="path"/>, one of Bit.BlazorUI.Tests.Performance.TestHost.Client's) and waits
+    /// for it to be interactive - its SignalR circuit up, or its WebAssembly runtime started - failing unless it runs in the
+    /// render mode the run asked for (<see cref="RenderMode"/>), so a run never measures one mode under the other's name.
+    /// </summary>
+    protected async Task OpenPerformancePageAsync(string path)
+    {
+        await Page.GotoAsync($"{BaseUrl}{path}");
+        await WaitForStatus("Ready");
+
+        var expected = RenderMode == "wasm" ? "WebAssembly" : "Server";
+        var renderer = await Page.Locator("#renderer").TextContentAsync();
+        Assert.AreEqual(expected, renderer, $"{path} runs on the {renderer} renderer, where PERF_RENDER_MODE={RenderMode} asks for {expected}.");
+    }
+
+    /// <summary>
     /// Waits for the page status element to show the given text.
     /// </summary>
     protected async Task WaitForStatus(string status)
@@ -497,8 +525,9 @@ public abstract class PerformanceTestBase
     }
 
     /// <summary>
-    /// Records what an interaction cost on both sides: the server's time from the handler to its OnAfterRender (the page's
-    /// own stopwatch), and the browser's (<see cref="MeasureInBrowserAsync"/>).
+    /// Records what an interaction cost on both sides: the page's own stopwatch, from the handler to its OnAfterRender - on
+    /// the server, or in wasm mode in the browser's .NET runtime, recorded as <c>.server</c> in either - and the browser's
+    /// (<see cref="MeasureInBrowserAsync"/>).
     /// </summary>
     protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
     {
@@ -571,7 +600,8 @@ public abstract class PerformanceTestBase
     /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until the #status element reads
     /// <paramref name="done"/>: from the click reaching the page to the next frame after that text appeared - the round
     /// trip, the render, the DOM it changed and the layout and paint of it - as performance.mark / performance.measure
-    /// ("bit-perf"). The page's own #render-time is the server's half of it alone. Fails once <see cref="DefaultTimeout"/>
+    /// ("bit-perf"). The page's own #render-time is the .NET half of it alone: the server's, or in wasm mode the browser
+    /// runtime's. Fails once <see cref="DefaultTimeout"/>
     /// has passed without the status reading <paramref name="done"/>.
     /// </summary>
     protected async Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done)

@@ -48,8 +48,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     private async Task TestInitialRender(int count, double threshold)
     {
         // Navigate to the performance test page
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
         // Click the render button, and time it in the browser until the page says it rendered
         var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
@@ -100,8 +99,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     private async Task TestReRender(int count, double threshold)
     {
         // Navigate to the performance test page
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
         // First, render the components
         await Page.Locator("#btn-render").ClickAsync();
@@ -154,8 +152,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     private async Task TestMemoryUsage(int count, double threshold)
     {
         // Navigate to the performance test page
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
         // Get baseline memory
         var baselineMemory = await GetMemoryUsageMB();
@@ -196,8 +193,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
         foreach (var count in counts)
         {
-            await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-            await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+            await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
             var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
@@ -246,8 +242,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int componentCount = 100;
         const int reRenderCount = 5;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{componentCount}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{componentCount}");
 
         // Initial render
         await Page.Locator("#btn-render").ClickAsync();
@@ -295,8 +290,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int componentCount = 100;
         const int cycleCount = 5;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{componentCount}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{componentCount}");
 
         var cycleTimes = new List<double>();
 
@@ -333,8 +327,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         const int count = 2000;
         const double threshold = 10000; // 10 seconds for 2000 components
 
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync("/perf/action-button");
 
         // Set the count manually
         await Page.Locator("input[type='number']").FillAsync(count.ToString());
@@ -362,8 +355,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     {
         const int count = 10;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();
@@ -383,8 +375,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
     {
         const int count = 10;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/action-button/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/action-button/{count}");
 
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();

@@ -14,20 +14,22 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// The measurements the performance tests take, written once the run is over to
-/// performance-results_{browser}_{framework}_{time}_{run}.json - a file of its own for every run, so runs of two browsers,
-/// or two runs finishing in the same second, sharing a results directory keep both - in the run's results directory (--results-directory, which CI uploads with the TRX;
-/// TestResults beside the test app otherwise), together with what they were measured on: the machine, the
-/// browser, the SDK and runtime, the commit, the configuration the host was built in and its render mode. The tests'
-/// thresholds stay generous, to catch what is catastrophic; a trend is read by comparing these files.
+/// performance-results_{browser}_{renderMode}_{framework}_{time}_{run}.json - a file of its own for every run, so runs of
+/// two browsers or render modes, or two runs finishing in the same second, sharing a results directory keep both - in the
+/// run's results directory (--results-directory, which CI uploads with the TRX; TestResults beside the test app otherwise),
+/// together with what they were measured on: the machine, the browser, the render mode of the performance pages, the SDK
+/// and runtime, the commit and the configuration the host was built in. The tests' thresholds stay generous, to catch what
+/// is catastrophic; a trend is read by comparing these files.
 /// </summary>
 internal static class PerformanceResults
 {
     /// <summary>
-    /// The name of the file a run written at <paramref name="generatedAt"/> writes: the browser, the framework, the time, in
-    /// UTC, and <paramref name="runId"/>, which tells apart two runs of one browser and framework finishing in the same second.
+    /// The name of the file a run written at <paramref name="generatedAt"/> writes: the browser, the render mode, the
+    /// framework, the time, in UTC, and <paramref name="runId"/>, which tells apart two runs of one browser, render mode and
+    /// framework finishing in the same second.
     /// </summary>
     public static string FileName(DateTimeOffset generatedAt, string runId) =>
-        FormattableString.Invariant($"performance-results_{PerformanceTestBase.BrowserName}_net{Environment.Version.Major}.{Environment.Version.Minor}_{generatedAt.UtcDateTime:yyyyMMdd-HHmmss}_{runId}.json");
+        FormattableString.Invariant($"performance-results_{PerformanceTestBase.BrowserName}_{PerformanceTestBase.RenderMode}_net{Environment.Version.Major}.{Environment.Version.Minor}_{generatedAt.UtcDateTime:yyyyMMdd-HHmmss}_{runId}.json");
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -72,6 +74,8 @@ internal static class PerformanceResults
                 Ci = Environment.GetEnvironmentVariable("CI") is { Length: > 0 },
             },
             Browser = _browser,
+            // Where the performance pages ran, which every one of them checked (OpenPerformancePageAsync).
+            RenderMode = PerformanceTestBase.RenderMode == "wasm" ? "InteractiveWebAssembly" : "InteractiveServer",
             Sdk = await Read("dotnet", "--version"),
             Runner = new
             {

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The performance pages of the test host. They live in a WebAssembly project so the host can render them either on
+         the server (InteractiveServer) or in the browser (InteractiveWebAssembly); the host picks the mode per browser
+         context from the perf-render-mode cookie the tests set (PERF_RENDER_MODE, see the host's App.razor). The root
+         namespace is the host's, so the pages keep the namespaces they had when they lived in the host itself. -->
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <!-- Matches the referenced Bit.BlazorUI projects: Debug builds the latest TFM only, CI passes
+             -p:BuildAllTfms=true to cover net10.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Bit.BlazorUI.Tests.Performance.TestHost</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+    </ItemGroup>
+
+</Project>

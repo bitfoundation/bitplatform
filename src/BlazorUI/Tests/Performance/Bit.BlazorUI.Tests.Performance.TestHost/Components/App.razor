@@ -15,11 +15,18 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
-    <HeadOutlet @rendermode="RenderMode.InteractiveServer" />
+    <HeadOutlet @rendermode="_renderMode" />
 </head>
 
 <body>
-    <Routes @rendermode="RenderMode.InteractiveServer" />
+    @if (_renderMode == RenderMode.InteractiveWebAssembly)
+    {
+        <ClientRoutes @rendermode="_renderMode" />
+    }
+    else
+    {
+        <Routes @rendermode="_renderMode" />
+    }
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
     <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
@@ -33,9 +40,20 @@
 
     private BitThemeSsrOptions? _themeOptions;
     private IReadOnlyDictionary<string, object>? _themeAttributes;
+    private IComponentRenderMode _renderMode = RenderMode.InteractiveServer;
 
     protected override void OnInitialized()
     {
+        // A page of the client project (the performance pages) runs in the browser where the perf-render-mode cookie the
+        // tests set on their browser context asks for it (PERF_RENDER_MODE=wasm); every other request runs on the server.
+        // The browser has the client project's pages alone, so a page of the host's own stays on the server whatever the
+        // cookie says.
+        if (string.Equals(HttpContext?.Request.Cookies["perf-render-mode"], "wasm", StringComparison.OrdinalIgnoreCase) &&
+            HttpContext?.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata>()?.Type.Assembly == typeof(ClientRoutes).Assembly)
+        {
+            _renderMode = RenderMode.InteractiveWebAssembly;
+        }
+
         // /regression/theme-switcher states the theme setup of its document in its query, as a host page states
         // its own; every other page keeps the document bare.
         if (HttpContext?.Request.Path.StartsWithSegments("/regression/theme-switcher") is not true) return;
