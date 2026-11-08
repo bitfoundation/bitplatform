@@ -354,6 +354,16 @@ export function start(config?: BelemetryConfig | null): void {
             // fetch, to URLs only it knows.
             const ignore = s.config.dependencies.ignoreUrls;
             for (const url of next.dependencies.ignoreUrls || []) if (ignore.indexOf(url) < 0) ignore.push(url);
+            // Its routes may be its own (configured on the client only). A new list, so the compiled routes are rebuilt.
+            const routes = Array.isArray(s.config.pageViews.routes) ? s.config.pageViews.routes : [];
+            const known = routes.map(r => String(r).toLowerCase());
+            const added: string[] = [];
+            for (const route of Array.isArray(next.pageViews.routes) ? next.pageViews.routes : []) {
+                if (typeof route !== 'string' || known.indexOf(route.toLowerCase()) >= 0) continue;
+                known.push(route.toLowerCase());
+                added.push(route);
+            }
+            if (added.length) s.config.pageViews.routes = routes.concat(added);
             return;
         }
         const s = state = init(config);
@@ -387,7 +397,10 @@ export function start(config?: BelemetryConfig | null): void {
     }
 }
 
-/** Whether the script has started: a repeated `start` only updates consent and transport, so .NET leaves out the rest (the routes). */
+/**
+ * Whether the script has started: a repeated `start` only updates consent and transport and adds to the ignored URLs and
+ * the routes, so .NET leaves out the discovered routes (the page has its own server's).
+ */
 export function isStarted(): boolean {
     return state !== null;
 }

@@ -673,7 +673,9 @@ none. It is, in this order:
 
 .NET runs the same rules, with the framework's own parsers for the constraints; the script approximates those (a
 `datetime` value, for one, is a numeric date, a time, or a date with a month name - as .NET's invariant culture reads
-them).
+them). A `regex` constraint that could take exponential time on a crafted path - a repeated group holding a quantifier
+or an alternation, such as `(a+)+`, or a backreference - is not run in the browser, which cannot stop it (.NET gives
+it a timeout): the parameter takes any value there, as a constraint of the app's own does on both sides.
 
 The app's routes are found once per process: the `@page` (`[Route]`) templates of the components in the entry
 assembly and in the component libraries it references (a server's `.Client` project, a shared page library for MAUI) -
@@ -687,9 +689,11 @@ options.Browser.PageRouteAssemblies.AddRange([typeof(App).Assembly, typeof(Clien
 
 An app without an entry assembly (.NET for Android) is searched from its loaded assemblies instead, and an app whose
 search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. The routes are
-written into the browser config only when page views are recorded, and only into a page that has not started the script
-yet. Add routes discovery cannot see (a lazy-loaded WebAssembly assembly's) to `Browser.PageRoutes`, or switch discovery
-off with `Browser.DiscoverPageRoutes = false` and list them yourself.
+written into the browser config only when page views are recorded. A page whose script was started already - an Auto
+app's WebAssembly client in the page its server rendered - keeps the routes its server found and adds those configured
+in the client (`PageRoutes` and the `PageRouteAssemblies`' routes), without a second search. Add routes discovery
+cannot see (a lazy-loaded WebAssembly assembly's) to `Browser.PageRoutes`, or switch discovery off with
+`Browser.DiscoverPageRoutes = false` and list them yourself.
 
 A page view is named after the name you give `TrackPageView`, else its page's title (`<PageTitle>`), else its template
 (it was its path) - in its log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the

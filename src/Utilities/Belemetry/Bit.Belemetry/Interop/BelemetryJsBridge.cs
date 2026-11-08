@@ -84,11 +84,12 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
             var module = await _js.InvokeAsync<IJSObjectReference>("import", ModulePath);
             // A script started already (a server's <BelemetryScript />, before a circuit or an Auto app's WebAssembly
-            // runtime) keeps the routes it has, as a repeated start ignores them: listing them again would cost their
+            // runtime) has the routes its page was rendered with, which a repeated start adds to: only the configured
+            // ones are listed again (they may be this side's own), not the discovered ones - those would cost their
             // bytes on the wire and, where they are not found yet (WebAssembly), a scan of the app's assemblies.
-            var includeRoutes = await module.InvokeAsync<bool>("isStarted") is false;
-            await module.InvokeVoidAsync("start", BelemetryBrowserConfigFactory.ToElement(BelemetryBrowserConfigFactory.Create(_settings, includeRoutes)));
-            if (includeRoutes) _pipeline.WarnIfNoPageRoutes();
+            var includeDiscoveredRoutes = await module.InvokeAsync<bool>("isStarted") is false;
+            await module.InvokeVoidAsync("start", BelemetryBrowserConfigFactory.ToElement(BelemetryBrowserConfigFactory.Create(_settings, includeDiscoveredRoutes)));
+            if (includeDiscoveredRoutes) _pipeline.WarnIfNoPageRoutes();
 
             _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
             var relay = _settings.BrowserTransport == BelemetryBrowserTransport.Relay;

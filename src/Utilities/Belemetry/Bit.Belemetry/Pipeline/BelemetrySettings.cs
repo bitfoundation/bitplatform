@@ -132,6 +132,7 @@ internal sealed class BelemetrySettings
     public List<string> Meters { get; }
 
     private IReadOnlyList<string>? _pageRoutes;
+    private IReadOnlyList<string>? _configuredPageRoutes;
     private BelemetryPageRouteMatcher? _pageRouteMatcher;
     private volatile bool _noPageRoutesFound;
     private int _noPageRoutesReported;
@@ -143,6 +144,13 @@ internal sealed class BelemetrySettings
     /// </summary>
     public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes();
 
+    /// <summary>
+    /// The route templates the app named itself: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the routes of the
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> (with <see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>),
+    /// once each - <see cref="PageRoutes"/> without the scan of the app's references. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> ConfiguredPageRoutes => _configuredPageRoutes ??= ResolveConfiguredPageRoutes();
+
     /// <summary>The <see cref="PageRoutes"/>, compiled for the page views .NET records itself. Built on first use.</summary>
     public BelemetryPageRouteMatcher PageRouteMatcher => _pageRouteMatcher ??= new(PageRoutes);
 
@@ -153,23 +161,38 @@ internal sealed class BelemetrySettings
     /// </summary>
     public bool TakeNoPageRoutesWarning() => _noPageRoutesFound && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
 
-    private List<string> ResolvePageRoutes()
+    private List<string> ResolveConfiguredPageRoutes()
     {
         var browser = Options.Browser;
-        var routes = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var route in browser.PageRoutes)
+        var routes = AddPageRoutes([], browser.PageRoutes);
+        if (browser.DiscoverPageRoutes && browser.PageRouteAssemblies.Count > 0)
+        {
+            var read = BelemetryPageRoutes.Read(browser.PageRouteAssemblies);
+            _noPageRoutesFound = read.Length == 0;
+            AddPageRoutes(routes, read);
+        }
+        return routes;
+    }
+
+    private IReadOnlyList<string> ResolvePageRoutes()
+    {
+        var browser = Options.Browser;
+        var configured = ConfiguredPageRoutes;
+        // The assemblies' routes are among the configured ones already.
+        if (browser.DiscoverPageRoutes is false || browser.PageRouteAssemblies.Count > 0) return configured;
+
+        var discovered = BelemetryPageRoutes.Discovered;
+        _noPageRoutesFound = discovered.Count == 0;
+        return AddPageRoutes([.. configured], discovered);
+    }
+
+    /// <summary>Appends the <paramref name="templates"/> not listed yet (blank ones skipped, trimmed, compared case-insensitively).</summary>
+    private static List<string> AddPageRoutes(List<string> routes, IEnumerable<string> templates)
+    {
+        var seen = new HashSet<string>(routes, StringComparer.OrdinalIgnoreCase);
+        foreach (var route in templates)
         {
             if (string.IsNullOrWhiteSpace(route) is false && seen.Add(route.Trim())) routes.Add(route.Trim());
-        }
-        if (browser.DiscoverPageRoutes)
-        {
-            IReadOnlyList<string> discovered = browser.PageRouteAssemblies.Count > 0 ? BelemetryPageRoutes.Read(browser.PageRouteAssemblies) : BelemetryPageRoutes.Discovered;
-            _noPageRoutesFound = discovered.Count == 0;
-            foreach (var route in discovered)
-            {
-                if (seen.Add(route)) routes.Add(route);
-            }
         }
         return routes;
     }

@@ -160,7 +160,7 @@ internal static class BelemetryBrowserEvidence
             SpanId = IsHex(spanId, 16) ? spanId : null,
             ParentSpanId = IsHex(parentSpanId, 16) ? parentSpanId : null,
             // The page templated it; templated again here, as the page may be anything.
-            Route = route is null ? null : sanitizer.Text(BelemetryUrlTemplate.TemplatePath(route), 512, ref counters),
+            Route = route is null ? null : sanitizer.Text(BelemetryUrlTemplate.TemplateRoute(route), 512, ref counters),
             RouteSource = route is null ? null : "inferred",
             DurationMilliseconds = BelemetryDiagnosticJson.Double(e, "dur") is { } d && d >= 0 ? d : null,
             Exception = exception,

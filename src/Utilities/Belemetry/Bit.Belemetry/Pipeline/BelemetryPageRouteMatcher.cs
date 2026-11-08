@@ -323,6 +323,7 @@ internal sealed class BelemetryPageRouteMatcher
         };
     }
 
+    /// <summary>The check of a constraint without numeric arguments that is not one of the framework's simple ones: <c>regex</c>, else null (the app's own).</summary>
     private static Func<string, bool>? Other(string name, string argument)
     {
         if (name != "regex") return null;

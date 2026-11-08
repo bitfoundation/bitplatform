@@ -167,11 +167,15 @@ public class BelemetryComponentsTests
     }
 
     [TestMethod]
-    public async Task Initializer_ListsTheRoutes_OnlyToAScriptNotStartedYet()
+    public async Task Initializer_ListsTheDiscoveredRoutes_OnlyToAScriptNotStartedYet()
     {
-        foreach (var started in new[] { false, true })
+        foreach (var (started, configured) in new[] { (false, true), (true, true), (true, false) })
         {
-            await using var context = CreateContext(o => o.Browser.PageRoutes.Add("/orders/{id:int}"));
+            await using var context = CreateContext(o =>
+            {
+                if (configured) o.Browser.PageRoutes.Add("/orders/{id:int}");
+                o.Browser.DiscoverPageRoutes = true;
+            });
             context.JSInterop.Mode = JSRuntimeMode.Loose;
             var module = context.JSInterop.SetupModule(ModulePath);
             module.Setup<bool>("isStarted").SetResult(started);
@@ -179,8 +183,16 @@ public class BelemetryComponentsTests
             context.Render<BelemetryInitializer>();
 
             var pageViews = ((JsonElement)module.Invocations["start"].Single().Arguments[0]!).GetProperty("pageViews");
-            Assert.AreEqual(started is false, pageViews.TryGetProperty("routes", out _),
-                            started ? "A started script ignores a second list (a server rendered it, Auto)." : "A script started here needs the routes.");
+            if (started && configured is false)
+            {
+                Assert.IsFalse(pageViews.TryGetProperty("routes", out _), "Nothing of its own to add to a started script's routes.");
+                continue;
+            }
+
+            var routes = pageViews.GetProperty("routes").EnumerateArray().Select(e => e.GetString()).ToArray();
+            CollectionAssert.AreEqual(started ? new[] { "/orders/{id:int}" } : context.Services.GetRequiredService<BelemetrySettings>().PageRoutes.ToArray(), routes,
+                                      started ? "A started script has its page's discovered routes (a server rendered it, Auto): only the configured ones are added."
+                                              : "A script started here needs the discovered routes too.");
         }
     }
 

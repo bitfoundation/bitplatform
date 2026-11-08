@@ -17,6 +17,17 @@ internal static class BelemetryPageRoutes
     // Belemetry's own assembly uses components but routes none.
     private static readonly string? _ownName = typeof(BelemetryPageRoutes).Assembly.GetName().Name;
 
+    // The public key tokens of the keys Microsoft signs .NET's own assemblies with.
+    private static readonly HashSet<string> _frameworkKeyTokens =
+    [
+        "b77a5c561934e089", // ECMA (System, mscorlib)
+        "b03f5f7f11d50a3a", // Microsoft (System.Runtime, ...)
+        "cc7b13ffcd2ddd51", // netstandard, System.Private.*
+        "7cec85d7bea7798e", // System.Private.CoreLib
+        "adb9793829ddae60", // ASP.NET Core, Microsoft.Extensions.*, Microsoft.JSInterop
+        "31bf3856ad364e35", // Microsoft's shared key (WindowsBase, ...)
+    ];
+
     /// <summary>The routes found from the entry assembly (<see cref="Roots"/>), once per process.</summary>
     public static IReadOnlyList<string> Discovered => _discovered.Value;
 
@@ -29,7 +40,7 @@ internal static class BelemetryPageRoutes
         if (Assembly.GetEntryAssembly() is { } entry) return [entry];
         try
         {
-            return [.. AppDomain.CurrentDomain.GetAssemblies().Where(a => a.IsDynamic is false && a.GetName().Name is { } name && IsSkipped(name) is false && UsesComponents(a) is not false)];
+            return [.. AppDomain.CurrentDomain.GetAssemblies().Where(a => a.IsDynamic is false && a.GetName() is { Name: not null } name && IsSkipped(name) is false && UsesComponents(a) is not false)];
         }
         catch (Exception)
         {
@@ -77,7 +88,7 @@ internal static class BelemetryPageRoutes
 
             foreach (var reference in references)
             {
-                if (reference.Name is not { } name || IsSkipped(name) || visited.Add(name) is false) continue;
+                if (reference.Name is not { } name || IsSkipped(reference) || visited.Add(name) is false) continue;
                 try
                 {
                     pending.Enqueue((Assembly.Load(reference), false));
@@ -116,11 +127,26 @@ internal static class BelemetryPageRoutes
         }
     }
 
-    private static bool IsSkipped(string name) =>
-        name is "System" or "mscorlib" or "netstandard" or "WindowsBase"
-        || name.StartsWith("System.", StringComparison.Ordinal)
-        || name.StartsWith("Microsoft.", StringComparison.Ordinal)
-        || name == _ownName;
+    private static bool IsSkipped(AssemblyName name) => name.Name == _ownName || IsFramework(name);
+
+    /// <summary>
+    /// Whether an assembly is .NET's own (the runtime, ASP.NET Core, the extensions, ...): strong-named with one of the
+    /// keys Microsoft signs them with, which routes no page. Not by its name: an app's library may be called
+    /// <c>Microsoft.Contoso.Pages</c>, and only Microsoft can sign with these keys.
+    /// </summary>
+    internal static bool IsFramework(AssemblyName name)
+    {
+        byte[]? token;
+        try
+        {
+            token = name.GetPublicKeyToken();
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        return token is { Length: 8 } && _frameworkKeyTokens.Contains(Convert.ToHexStringLower(token));
+    }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "As for the Blazor router, which finds its routes the same way: an app's own assemblies are not trimmed, and a component the trimmer removed is a page nobody can visit.")]
     private static void AddRoutes(Assembly assembly, List<string> routes, HashSet<string> seen)

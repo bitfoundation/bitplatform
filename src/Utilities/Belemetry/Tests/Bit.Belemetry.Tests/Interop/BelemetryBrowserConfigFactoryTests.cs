@@ -34,14 +34,33 @@ public class BelemetryBrowserConfigFactoryTests
         var config = Render(o =>
         {
             LibraryDefaults(o);
-            o.Browser.PageRoutes.AddRange(["/orders/{id:int}", " /orders ", "/Orders/{ID:int}", ""]);
+            o.Browser.PageRoutes.AddRange(["/orders/{id:int}", " /orders ", "/Orders/{ID:int}", "", "/Route-Test/Orders"]);
             o.Browser.DiscoverPageRoutes = true;
+            o.Browser.PageRouteAssemblies.Add(typeof(Pipeline.BelemetryPageRoutesTests).Assembly);
         });
         var routes = Strings(config.GetProperty("pageViews").GetProperty("routes"));
-        CollectionAssert.AreEqual(new[] { "/orders/{id:int}", "/orders" }, routes.Take(2).ToArray());
-        Assert.AreEqual(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        CollectionAssert.IsSubsetOf(BelemetryPageRoutes.Discovered.Where(r => routes.Take(2).Contains(r, StringComparer.OrdinalIgnoreCase) is false).ToArray(), routes,
-                                    "The discovered routes follow the configured ones.");
+        CollectionAssert.AreEqual(new[] { "/orders/{id:int}", "/orders", "/Route-Test/Orders" }, routes.Take(3).ToArray());
+        CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/users/{name}" }, routes.Skip(3).ToArray(), "The discovered routes follow the configured ones.");
+        Assert.AreEqual(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase).Count(), "A discovered route configured already is listed once.");
+
+        // A repeated start (a script started already) gets the configured routes and the assemblies' only: no scan of the app's references.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.PageRoutes.Add("/orders/{id:int}");
+            o.Browser.DiscoverPageRoutes = true;
+            o.Browser.PageRouteAssemblies.Add(typeof(Pipeline.BelemetryPageRoutesTests).Assembly);
+        });
+        var repeated = BelemetryBrowserConfigFactory.Create(settings, includeDiscoveredRoutes: false).PageViews.Routes!.ToArray();
+        Assert.AreEqual("/orders/{id:int}", repeated[0]);
+        CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/orders" }, repeated);
+        var withoutAssemblies = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.PageRoutes.Add("/orders/{id:int}");
+            o.Browser.DiscoverPageRoutes = true;
+        });
+        CollectionAssert.AreEqual(new[] { "/orders/{id:int}" }, BelemetryBrowserConfigFactory.Create(withoutAssemblies, includeDiscoveredRoutes: false).PageViews.Routes!.ToArray());
 
         var withoutPageViews = Render(o =>
         {

@@ -18,6 +18,19 @@ public class BelemetryPageRoutesTests
     }
 
     [TestMethod]
+    public void Framework_IsTheAssembliesMicrosoftSigns_NotTheOnesNamedLikeThem()
+    {
+        Assert.IsTrue(BelemetryPageRoutes.IsFramework(typeof(object).Assembly.GetName()));
+        Assert.IsTrue(BelemetryPageRoutes.IsFramework(typeof(ComponentBase).Assembly.GetName()));
+        Assert.IsTrue(BelemetryPageRoutes.IsFramework(typeof(Microsoft.Extensions.DependencyInjection.ServiceCollection).Assembly.GetName()));
+        Assert.IsTrue(BelemetryPageRoutes.IsFramework(typeof(Uri).Assembly.GetName()));
+        Assert.IsTrue(BelemetryPageRoutes.IsFramework(typeof(BelemetryPageRoutesTests).Assembly.GetReferencedAssemblies().First(r => r.Name == "System.Runtime")));
+
+        Assert.IsFalse(BelemetryPageRoutes.IsFramework(new AssemblyName("Microsoft.Contoso.Pages")), "An app's library named like the framework's still routes its pages.");
+        Assert.IsFalse(BelemetryPageRoutes.IsFramework(typeof(BelemetryPageRoutesTests).Assembly.GetName()));
+    }
+
+    [TestMethod]
     public void Discover_FindsNothing_InAnAssemblyWithoutComponents()
     {
         Assert.IsEmpty(BelemetryPageRoutes.Discover(typeof(object).Assembly));

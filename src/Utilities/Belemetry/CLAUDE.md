@@ -150,7 +150,8 @@ named by `exporter`, in the browser from the browser exporter whose URL prefix m
 
 `<BelemetryScript />` writes this into `<script type="application/json" id="bit-belemetry-config">`. The module
 auto-starts from it on load. `<BelemetryInitializer />` passes the same object to `start(config)`. `start` is
-idempotent: a second call only updates the consent defaults and the bridge.
+idempotent: a second call only updates the consent defaults and the bridge, and appends the `ignoreUrls` and
+`pageViews.routes` the first lacks.
 
 ```jsonc
 {
@@ -167,7 +168,7 @@ idempotent: a second call only updates the consent defaults and the bridge.
   ],
   "features": 4095,                                      // instrumentations switched on by configuration
   "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-  "pageViews": { "trackHashChanges": false, "trackVisitTime": false, "routes": ["/", "/orders/{id:int}"] },  // routes: absent when none, or when .NET starts a script already started
+  "pageViews": { "trackHashChanges": false, "trackVisitTime": false, "routes": ["/", "/orders/{id:int}"] },  // routes: absent when none; only the configured ones when .NET starts a script already started
   "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
   "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
   "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
@@ -244,16 +245,22 @@ Notes on the fields:
   only when page views are configured: those of `Browser.PageRouteAssemblies` exactly, or without any, from the entry
   assembly (or, with none - .NET for Android - the loaded assemblies that use components) through the referenced
   assemblies that use `Microsoft.AspNetCore.Components`, transitively; an assembly whose references cannot be read
-  (NativeAOT) still gives its own. Finding none logs one warning (`BelemetryPipeline.WarnIfNoPageRoutes`). The bridge
-  asks `isStarted()` first and leaves `routes` out for a started script (a repeated `start` ignores them).
+  (NativeAOT) still gives its own. Finding none logs one warning (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
+  assemblies are told by their Microsoft public key token (`BelemetryPageRoutes.IsFramework`), not their name. The bridge
+  asks `isStarted()` first and, for a started script, lists only the configured routes
+  (`BelemetrySettings.ConfiguredPageRoutes`: `Browser.PageRoutes` and the `PageRouteAssemblies`' routes, no scan): its
+  page has the routes its server discovered, and a repeated `start` appends the ones it lacks (case-insensitively) as a
+  new list, so the compiled routes are rebuilt.
 - Page route matching is one rule set on both sides (`routes.ts`, `Pipeline/BelemetryPageRouteMatcher.cs`, the same test
   cases in `routes.test.js` and `BelemetryPageRouteMatcherTests`): a path below the base path (`<base href>`,
   `NavigationManager.BaseUri`) against the routes in the Blazor router's order (ASP.NET Core's inbound precedence
   digits: literal 1, constrained parameter or several parts 2, parameter 3, constrained catch-all 4, catch-all 5, then
   the lower-cased template), a segment of several parts matched from the right (`RoutePatternMatcher`), falling back to
   `templatePath` (C# `BelemetryUrlTemplate.TemplatePath`). C# checks the constraints with the framework's parsers, the
-  script approximates them. .NET's own `TrackPageView` (WebAssembly, Hybrid, a server without a page) uses it, on the
-  URL given, else `NavigationManager.Uri`.
+  script approximates them (`decimal` within its range, a `datetime` with a month name checked against its month); a
+  constraint one side cannot check (the app's own; in the script, a `regex` that may backtrack catastrophically,
+  `mayBacktrack`, as a browser has no match timeout - C# gives it 1 s) passes. .NET's own `TrackPageView` (WebAssembly,
+  Hybrid, a server without a page) uses it, on the URL given, else `NavigationManager.Uri`.
 
 ### Browser record model (TS internal, and the relay payload C# `BelemetryRelayBatch`)
 
@@ -286,7 +293,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | Export | Purpose |
 | --- | --- |
 | `start(config)` | Idempotent start. Reads persisted consent, sets up the session, and installs the instrumentations the config and consent allow |
-| `isStarted()` | Whether `start` ran: the bridge asks before building a config, and leaves out what a repeated `start` ignores (`pageViews.routes`) |
+| `isStarted()` | Whether `start` ran: the bridge asks before building a config, and lists only the configured `pageViews.routes` to a started script (a repeated `start` appends those it lacks) |
 | `setConsent(features)` / `getConsent()` / `isConsentDecided()` | Runtime consent. `setConsent` persists the choice (if `consent.persist`), purges revoked data and (un)installs instrumentations. The grant is narrowed to `config.features` (and by Global Privacy Control) |
 | `setUser(id or null)` | Authenticated user id. Only kept and sent with `UserTracking` |
 | `trackEvent(name, attributes?)` | Custom event. A log record with `eventName = name` and feature `Events` |
@@ -395,9 +402,11 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   elapsed (performance.now), cat, name, sev (OTLP number), outcome?, traceId?, spanId?, parentSpanId?, route? (path
   template), dur?, feature, msg?, exc?: {type, message, stack?}, attrs?, prev?}`. The script keeps metadata only:
   HTTP method, status, `server.address`, `error.type` and `url.template` (origin + templated path + allowlisted query);
-  click `event.type` and `target.element`; page view route (`templatePath` of `url.template`, else of the path: a caller's template may hold ids) and navigation type; console messages only with
-  `includeLogMessages`. .NET bounds (2 x `BrowserMaxEvents`, at most 1000), re-sanitizes, re-templates routes, validates
-  ids and fingerprints exceptions itself: the page is untrusted on a server.
+  click `event.type` and `target.element`; page view route (`templateRoute` of `url.template`, else of the path: a
+  caller's template may hold ids or a query - cut at a `?` or `#` outside a parameter's braces, then `templatePath`) and
+  navigation type; console messages only with `includeLogMessages`. .NET bounds (2 x `BrowserMaxEvents`, at most 1000),
+  re-sanitizes, re-templates routes (`BelemetryUrlTemplate.TemplateRoute`), validates ids and fingerprints exceptions
+  itself: the page is untrusted on a server.
 - **The timeline taps the pipeline after privacy and processors** (`BelemetryPipeline.Enqueue`: `export` and `diagnose`
   are decided apart; the error limits apply to both). Relayed records are skipped - the browser timeline is the source
   of browser evidence on every host. The framework's `Navigate`/`HandleEvent`/`StartCircuit` activities come through

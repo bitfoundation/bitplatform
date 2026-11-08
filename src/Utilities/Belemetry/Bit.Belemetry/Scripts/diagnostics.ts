@@ -8,7 +8,7 @@ import type { DiagnosticsConfig } from './config';
 import { Features } from './features';
 import { debug } from './log';
 import { isSpan, type Attributes, type TelemetryRecord } from './model';
-import { templatePath } from './routes';
+import { templatePath, templateRoute } from './routes';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** The category names of C# BelemetryDiagnosticCategories, with their bits (the config's `categories` mask). */
@@ -351,10 +351,10 @@ export class DiagnosticRecorder {
             case 'navigation': {
                 event.name = 'page_view';
                 // The page's route template, else its path's. Templated either way: a caller's `url.template` may hold
-                // ids, and the timeline is kept in sessionStorage (a route's `{...}` segments stay as they are; .NET
-                // templates it again, as the page is untrusted).
+                // ids or a query, and the timeline is kept in sessionStorage (a route's `{...}` segments stay as they
+                // are; .NET templates it again, as the page is untrusted).
                 const route = str(a, 'url.template') || str(a, 'url.path');
-                if (route) event.route = templatePath(route);
+                if (route) event.route = templateRoute(route);
                 const type = str(a, 'browser.navigation.type');
                 if (type) event.attrs = { 'browser.navigation.type': type };
                 break;

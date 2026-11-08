@@ -52,9 +52,11 @@ public class BelemetryPageRouteMatcherTests
             ("{v:long}", ["9223372036854775807", "-9223372036854775808"], ["9223372036854775808", "x"]),
             ("{v:bool}", ["true", "FALSE"], ["yes", "1"]),
             ("{v:guid}", ["3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e", "3f2a8c1e0b6d4f3a9c1e2b6d4f3a9c1e", "{3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e}"], ["3f2a8c1e", "x"]),
-            ("{v:decimal}", ["4.2", "-1", "1,000.5"], ["1e3", "x"]),
+            ("{v:decimal}", ["4.2", "-1", "1,000.5", "79228162514264337593543950335", "-79,228,162,514,264,337,593,543,950,335", "79228162514264337593543950335.4", "0079228162514264337593543950334.9"],
+                ["1e3", "x", "79228162514264337593543950336", "100000000000000000000000000000", "79228162514264337593543950335.5"]),
             ("{v:double}", ["4.2", "1e3", "NaN"], ["x"]),
-            ("{v:datetime}", ["2026-11-08", "2026-11-08T10:30", "01.02.2024", "10:30"], ["not a date", "7", "42", "12345", "abc 5", "2024-13-01"]),
+            ("{v:datetime}", ["2026-11-08", "2026-11-08T10:30", "01.02.2024", "10:30", "Jan 2 2024", "29 Feb 2024", "February 29, 2024 10:30", "Feb 2024"],
+                ["not a date", "7", "42", "12345", "abc 5", "2024-13-01", "Feb 30 2024", "30 Feb 2024", "February 29, 2023", "Apr 31 2024 10:30"]),
             ("{v:alpha}", ["abc"], ["ab1"]),
             ("{v:nonfile}", ["readme"], ["readme.md"]),
             ("{v:file}", ["readme.md", "a.b."], ["readme", "readme."]),
@@ -120,6 +122,19 @@ public class BelemetryPageRouteMatcherTests
         Assert.AreEqual("/shop/", BelemetryPageRouteMatcher.BasePath("https://app.test/shop/"));
         Assert.AreEqual("/shop/", BelemetryPageRouteMatcher.BasePath("https://app.test/shop/index.html"));
         Assert.AreEqual("/", BelemetryPageRouteMatcher.BasePath(null));
+    }
+
+    [TestMethod]
+    public void CutsARouteTemplate_AtItsQueryOrFragment_OutsideItsParametersBraces()
+    {
+        Assert.AreEqual("/orders/{id:int?}", BelemetryUrlTemplate.TemplateRoute("/orders/{id:int?}?token=secret"));
+        Assert.AreEqual("/orders/{id}", BelemetryUrlTemplate.TemplateRoute("/orders/{id}#section"));
+        Assert.AreEqual("/x/{v:regex(^a?#b$)}/{n?}", BelemetryUrlTemplate.TemplateRoute("/x/{v:regex(^a?#b$)}/{n?}?q=1"));
+        Assert.AreEqual("/x/{v:regex(^\\d{{3}}?$)}", BelemetryUrlTemplate.TemplateRoute("/x/{v:regex(^\\d{{3}}?$)}?q=1"));
+        Assert.AreEqual("/a{{b", BelemetryUrlTemplate.TemplateRoute("/a{{b?c=1"));
+        Assert.AreEqual("/orders/{id", BelemetryUrlTemplate.TemplateRoute("/orders/{id?token=1"));
+        Assert.AreEqual("/orders/{id/{n}", BelemetryUrlTemplate.TemplateRoute("/orders/{id/42?x"));
+        Assert.AreEqual("/users/{n}", BelemetryUrlTemplate.TemplateRoute("/users/42?e=a@b.c"));
     }
 
     [TestMethod]

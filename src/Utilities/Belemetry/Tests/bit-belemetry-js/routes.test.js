@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from 'vitest';
-import { compileRoutes, matchRoute, pageTemplate } from '../../Bit.Belemetry/Scripts/routes.ts';
+import { compileRoutes, matchRoute, mayBacktrack, pageTemplate, templateRoute } from '../../Bit.Belemetry/Scripts/routes.ts';
 
 const match = (routes, path) => pageTemplate(path, routes);
 
@@ -40,11 +40,14 @@ describe('page route templates', () => {
             ['{v:long}', ['9223372036854775807', '-9223372036854775808'], ['9223372036854775808', 'x']],
             ['{v:bool}', ['true', 'FALSE'], ['yes', '1']],
             ['{v:guid}', ['3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e', '3f2a8c1e0b6d4f3a9c1e2b6d4f3a9c1e', '{3f2a8c1e-0b6d-4f3a-9c1e-2b6d4f3a9c1e}'], ['3f2a8c1e', 'x']],
-            ['{v:decimal}', ['4.2', '-1', '1,000.5'], ['1e3', 'x']],
+            ['{v:decimal}', ['4.2', '-1', '1,000.5', '79228162514264337593543950335', '-79,228,162,514,264,337,593,543,950,335', '79228162514264337593543950335.4', '0079228162514264337593543950334.9'],
+                ['1e3', 'x', '79228162514264337593543950336', '100000000000000000000000000000', '79228162514264337593543950335.5']],
             ['{v:double}', ['4.2', '1e3', 'NaN'], ['x']],
             // As .NET's invariant DateTime.TryParse: a bare number is no date, though Date.parse takes it.
-            ['{v:datetime}', ['2026-11-08', '2026-11-08T10:30', '2024-01-02T10:30:00Z', '1/2/2024', '1/2/24', '2024/1', '12-2024', '1.5', '10:30', '10:30 PM', 'Jan 2 2024'],
-                ['not a date', '7', '42', '12345', '2024', 'abc 5', '2024-13-01', '2024-02-30', '13/01/2024', '25:00', '24-01-02', '2024-001', '2024-01-02T10']],
+            ['{v:datetime}', ['2026-11-08', '2026-11-08T10:30', '2024-01-02T10:30:00Z', '1/2/2024', '1/2/24', '2024/1', '12-2024', '1.5', '10:30', '10:30 PM', 'Jan 2 2024',
+                '29 Feb 2024', 'February 29, 2024 10:30', 'Feb 2024'],
+                ['not a date', '7', '42', '12345', '2024', 'abc 5', '2024-13-01', '2024-02-30', '13/01/2024', '25:00', '24-01-02', '2024-001', '2024-01-02T10',
+                    'Feb 30 2024', '30 Feb 2024', 'February 29, 2023', 'Apr 31 2024 10:30']],
             ['{v:alpha}', ['abc'], ['ab1']],
             ['{v:nonfile}', ['readme'], ['readme.md']],
             ['{v:file}', ['readme.md', 'a.b.'], ['readme', 'readme.']],
@@ -62,6 +65,18 @@ describe('page route templates', () => {
             for (const value of good) expect(matchRoute(route, ['x', value]), parameter + ' ' + value).toBe(true);
             for (const value of bad) expect(matchRoute(route, ['x', value]), parameter + ' ' + value).toBe(false);
         }
+    });
+
+    it('leaves unchecked a regex that may backtrack without bound, as no browser can stop it (.NET has a timeout)', () => {
+        for (const source of ['(a+)+$', '^(a|aa)*$', '^(.*x){20}$', '^(\\w+)\\1$', '^(?:a+)+$', '^(?<n>a)\\k<n>$', '^((ab)*c)+$'])
+            expect(mayBacktrack(source), source).toBe(true);
+        for (const source of ['^\\d{3}$', '^(en|fr)$', '^[(a+)+]$', '^(ab)?c+$', '^a{2,}b$', '^\\(a+\\)+$', '^(a)+$', '^(?:a+)?b$', '^x{a+}+$'])
+            expect(mayBacktrack(source), source).toBe(false);
+
+        const [route] = compileRoutes(['/x/{v:regex(^(a+)+$)}']);
+        const started = Date.now();
+        expect(matchRoute(route, ['x', 'a'.repeat(40) + '!'])).toBe(true);
+        expect(Date.now() - started).toBeLessThan(1000);
     });
 
     it('does not let a datetime route claim a number', () => {
@@ -91,6 +106,17 @@ describe('page route templates', () => {
         expect(match(routes, '/files/report.pdf')).toBe('/files/{name}.{ext?}');
         expect(match(routes, '/files/report')).toBe('/files/{name}.{ext?}');
         expect(match(routes, '/files/report.')).toBe('/files/report.');
+    });
+
+    it('cuts a route template at its query or fragment, outside its parameters\' braces', () => {
+        expect(templateRoute('/orders/{id:int?}?token=secret')).toBe('/orders/{id:int?}');
+        expect(templateRoute('/orders/{id}#section')).toBe('/orders/{id}');
+        expect(templateRoute('/x/{v:regex(^a?#b$)}/{n?}?q=1')).toBe('/x/{v:regex(^a?#b$)}/{n?}');
+        expect(templateRoute('/x/{v:regex(^\\d{{3}}?$)}?q=1')).toBe('/x/{v:regex(^\\d{{3}}?$)}');
+        expect(templateRoute('/a{{b?c=1')).toBe('/a{{b');
+        expect(templateRoute('/orders/{id?token=1')).toBe('/orders/{id');
+        expect(templateRoute('/orders/{id/42?x')).toBe('/orders/{id/{n}');
+        expect(templateRoute('/users/42?e=a@b.c')).toBe('/users/{n}');
     });
 
     it('lists a template once, however it is written', () => {

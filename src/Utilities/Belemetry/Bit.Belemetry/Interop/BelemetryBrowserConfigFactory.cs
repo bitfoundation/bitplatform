@@ -7,11 +7,13 @@ namespace Bit.Belemetry;
 internal static class BelemetryBrowserConfigFactory
 {
     /// <param name="settings">The resolved settings.</param>
-    /// <param name="includeRoutes">
-    /// Whether <c>pageViews.routes</c> is filled in: not for a script that is started already (a repeated <c>start</c>
-    /// ignores it), as finding the routes may cost a scan of the app's assemblies.
+    /// <param name="includeDiscoveredRoutes">
+    /// Whether <c>pageViews.routes</c> lists the discovered routes besides the configured ones: not for a script that is
+    /// started already, which a repeated <c>start</c> only adds the routes it lacks to. Its page (a server's, Auto) has the
+    /// routes the server discovered - among them its client project's - and finding them again may cost a scan of the
+    /// app's assemblies; the routes configured here may be this side's own.
     /// </param>
-    public static BelemetryBrowserConfig Create(BelemetrySettings settings, bool includeRoutes = true)
+    public static BelemetryBrowserConfig Create(BelemetrySettings settings, bool includeDiscoveredRoutes = true)
     {
         var options = settings.Options;
         var browser = options.Browser;
@@ -44,7 +46,8 @@ internal static class BelemetryBrowserConfigFactory
                 TrackVisitTime = browser.TrackPageVisitTime,
                 // Only for a page that records page views: the list costs its bytes in every page and its discovery a
                 // scan. The settings' own list, resolved once per process, is serialized as it is.
-                Routes = includeRoutes && options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0 && settings.PageRoutes is { Count: > 0 } routes ? routes : null,
+                Routes = options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0
+                         && (includeDiscoveredRoutes ? settings.PageRoutes : settings.ConfiguredPageRoutes) is { Count: > 0 } routes ? routes : null,
             },
             Interactions = new()
             {
