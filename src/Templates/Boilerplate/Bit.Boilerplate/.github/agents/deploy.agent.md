@@ -150,7 +150,8 @@ business, and only what the project doesn't answer by itself.
   first visit, so cache the public pages:
     - **Cloudflare's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`), the recommendation when traffic is large or
       far from the VM, since the app sits behind Cloudflare anyway. It needs the runtime `Cloudflare` token and zone to
-      purge, and the zone rules `.docs/14- Response Caching System.md` lists.
+      purge, and the Cache Rule and `Vary` setting `.docs/14- Response Caching System.md` lists. Without that Cache Rule,
+      Cloudflare caches no page at all, whatever the app sends.
     - **ASP.NET Core's output cache** (`ResponseCaching:EnableOutputCaching`), on the server itself: enough for one
       server and moderate traffic.
     - One of them, never both: a page cached in two places goes stale in two, and a stale page is hard to trace to the
@@ -294,8 +295,9 @@ project up, and fails unless every container is healthy and the public address a
 
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
-  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
-  Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below
+  Groups, Workers R2 Storage, Account Rulesets, Account Filter Lists and Account API Tokens, each with Edit, and on all
+  zones of the account, DNS and Cache Rules with Edit and Cache Purge with Purge, plus Zone with Edit if the domain
+  isn't on the account yet. With it, do everything below
   yourself through Cloudflare's API, for each environment, and mint every token that runs with it. Tell the user
   Account API Tokens lets it mint any token on the account, so it is as strong as the account until they delete it.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
@@ -316,6 +318,9 @@ project up, and fails unless every container is healthy and the public address a
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
 <!--#endif-->
+- If section 4 chose Cloudflare's edge cache, create the Cache Rule for the app's hostname, with its `Vary` setting, as
+  `.docs/14- Response Caching System.md` describes. Once the app is up, check that a public page requested twice comes
+  back from the edge the second time.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the Workbench if the user
   wants it, and for the web routes of section 3 if the user took them.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:

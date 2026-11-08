@@ -261,6 +261,43 @@ Vary: Origin, X-Origin
 > Without that rule the edge keeps a single variant per URL and hands it to callers of every origin. Configure it before
 > turning `EnableCdnEdgeCaching` on.
 
+**The Cloudflare Cache Rule `EnableCdnEdgeCaching` needs:**
+
+Cloudflare doesn't cache HTML or JSON by default, whatever `Cache-Control` the origin sends. Until a Cache Rule makes
+those responses eligible, every page reaches the server and `EnableCdnEdgeCaching` does nothing. In **Caching → Cache
+Rules**, create one rule for the app's hostname, and put the `Vary` setting above in the same rule:
+
+| Setting | Value |
+|---|---|
+| Cache eligibility | Eligible for cache |
+| Edge TTL | Use cache-control header if present, bypass cache if not |
+
+Choose *bypass cache if not*. The other option, *use default Cloudflare caching behavior if not*, would keep any `200`
+without a `Cache-Control` header on the edge for two hours, so responses the app never meant to cache would be shared.
+
+Keep the paths the server handles itself out of the rule:
+
+```
+http.host eq "app.example.com"
+and not starts_with(http.request.uri.path, "/api/")
+and not starts_with(http.request.uri.path, "/odata/")
+and not starts_with(http.request.uri.path, "/core/")
+and not starts_with(http.request.uri.path, "/hangfire")
+and not starts_with(http.request.uri.path, "/healthchecks-ui")
+and not starts_with(http.request.uri.path, "/health")
+and not starts_with(http.request.uri.path, "/alive")
+and not starts_with(http.request.uri.path, "/swagger")
+and not starts_with(http.request.uri.path, "/scalar")
+and not starts_with(http.request.uri.path, "/signin-")
+and not starts_with(http.request.uri.path, "/oauth/")
+```
+
+If API responses that use `AppResponseCache` should be cached on the edge too, such as the product endpoint above, leave
+`/api/` out of that list. The sitemaps and `llms.txt` stay in the rule on purpose, since they use `AppResponseCache`.
+
+To check it, request a public page twice while signed out: the second response should have `cf-cache-status: HIT`.
+`DYNAMIC` means no Cache Rule made the page eligible.
+
 **Important Security Note:**
 
 The `UserAgnostic` property is critical for security. If a response contains user-specific data (e.g., user's name, roles, or tenant information), it **must not** be cached in shared caches (CDN edge or output cache). Setting `UserAgnostic = true` is only safe when the response is identical for all users.
@@ -599,8 +636,8 @@ This prevents accidentally serving User A's data to User B through shared caches
 }
 ```
 
-Both `ResponseCaching` flags default to `false`. Turn `EnableCdnEdgeCaching` on only after reading the `Vary` and
-multi-tenant notes above.
+Both `ResponseCaching` flags default to `false`. Turn `EnableCdnEdgeCaching` on only after creating the Cloudflare Cache
+Rule and reading the `Vary` and multi-tenant notes above.
 
 ---
 
