@@ -746,6 +746,8 @@
                 const ac = new AbortController();
                 this._autoHideAbortController = ac;
 
+                Utils.watchFocusOrigin(); // see keyboardFocus
+
                 // enter and leave rather than over and out: the pane is one region here, and a pointer
                 // crossing from the content onto something inside it is not a pointer that left the pane.
                 this._element.addEventListener('pointerenter', () => { this._hovered = true; this.rest(); }, { passive: true, signal: ac.signal });
@@ -810,22 +812,12 @@
             }, 0);
         }
 
-        // Whether the focus is inside the pane and the keyboard is what put it there - which is what
-        // :focus-visible says of the element holding it. A frame is the one element that cannot say: the
-        // focus is in a document of its own, beyond the reach of this one, so a frame keeps whatever the focus
-        // that moved into it was - a keyboard reader who tabbed into a video in the pane is still one.
+        // Whether the focus is inside the pane and the keyboard is what put it there (Utils.hasKeyboardFocus).
+        // A frame is the one element that cannot say: the focus is in a document of its own, beyond the reach
+        // of this one, so a frame keeps whatever the focus that moved into it was - a keyboard reader who
+        // tabbed into a video in the pane is still one.
         private keyboardFocus(previous: boolean): boolean {
-            const active = document.activeElement;
-
-            if (active === null || this._element.contains(active) === false) return false;
-
-            if (/^(IFRAME|FRAME|OBJECT|EMBED)$/.test(active.tagName)) return previous;
-
-            try {
-                return active.matches(':focus-visible');
-            } catch {
-                return true; // no :focus-visible to ask: keep the bar for every focus rather than for none
-            }
+            return Utils.hasKeyboardFocus(this._element, previous);
         }
 
         // Whether the pointer is over the pane right now, for the one moment nothing was listening to say so.

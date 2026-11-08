@@ -350,6 +350,8 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
         _measurePasses = 0;
         _measureRequested = true;
 
+        // The observer reports from the frame after its callback rather than from inside it (Observers.registerResize),
+        // so the height a collapse changes here is observed like any other rather than looping the observer.
         StateHasChanged();
     }
 

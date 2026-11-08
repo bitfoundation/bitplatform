@@ -715,9 +715,14 @@ span.bit-ctp-txt {
     background-color: var(--bit-ctp-ptr-clr);
 }
 
+// The hand and its thumb are drawn over the numbers, and the hand of an outer-ring hour runs straight across the
+// inner-ring hour at its angle (15 over 03). They are decoration the dial reads no press off - the press is read by
+// its angle and distance - so the pointer goes through them to the number underneath, which keeps its pointer
+// cursor and its hover rather than losing both wherever the hand happens to rest.
 .bit-ctp-ptr {
     bottom: 50%;
     position: absolute;
+    pointer-events: none;
     width: var(--bit-ctp-ptr-w);
     height: var(--bit-ctp-ptr-h);
     left: calc(50% - var(--bit-ctp-ptr-w) / 2);
@@ -815,6 +820,18 @@ span.bit-ctp-txt {
     &:focus-visible {
         @include focus-ring-own(var(--bit-ctp-clr-focus));
     }
+}
+
+// The thumb of the hand takes no pointer events (see .bit-ctp-ptr), and a thumb larger than the gap a number leaves
+// inside the rim - a --bit-CircularTimePicker-thumb-size or -minor-thumb-size on a picker whose Size is left unset -
+// reaches past the rim, where a press would fall through to the surface around the dial. So the face reaches out under
+// the thumb by as much, beneath every number and laid out against the dial like them, and a press on the part of the
+// thumb outside the dial is the face's as it always was. At the sizes that fit the dial it reaches nowhere.
+.bit-ctp-clf::before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    inset: min(0px, calc(var(--bit-ctp-num) / 2 + var(--bit-ctp-num-gap) - max(var(--bit-ctp-thb), var(--bit-ctp-thb-min)) / 2));
 }
 
 .bit-ctp-act {

@@ -9,6 +9,8 @@ export interface SpanEvent {
     name: string;
     time: number;
     attributes: Attributes;
+    /** For an exception event: the error limits dropped it as a record of its own - it stays on the span, but is no Azure Monitor item (C# `Limited`). */
+    limited?: boolean;
 }
 
 export interface SpanStatus {
@@ -54,6 +56,19 @@ export interface RecordBatch {
 
 export function isSpan(record: TelemetryRecord): record is SpanRecord {
     return 'startTime' in record;
+}
+
+/** Whether attributes describe an exception (`exception.type` or `exception.message`), as in C#: an error record of its own. */
+export function hasException(attributes: Attributes): boolean {
+    return attributes['exception.type'] != null || attributes['exception.message'] != null;
+}
+
+/**
+ * Whether a span event records an exception, as in C# (`BelemetrySpanEvent.IsException`): `exception` with
+ * `exception.type`, `exception.message` or `exception.stacktrace` - Errors data, even a stack trace alone.
+ */
+export function isExceptionEvent(event: SpanEvent): boolean {
+    return event.name === 'exception' && (hasException(event.attributes) || event.attributes['exception.stacktrace'] != null);
 }
 
 // OTLP SpanKind numbers.

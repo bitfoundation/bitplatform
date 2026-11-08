@@ -1480,10 +1480,11 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Page.Locator("#btn-unmount").ClickAsync();
         await Expect(Box("msb-mounted")).ToBeVisibleAsync();
 
-        // A service box still open when the page goes away is torn down with it.
+        // A service box still open when the page goes away is torn down with it. The page is left through OpenAsync,
+        // which tells what the page being left raises over its closed connection apart from an error of the test.
         await Page.Locator("#btn-svc-show").ClickAsync();
         await Expect(Dialog).ToBeVisibleAsync();
-        await Page.GotoAsync($"{BaseUrl}/");
+        await OpenAsync("/");
         await Expect(Page.Locator("h1")).ToHaveTextAsync("Bit.BlazorUI E2E Test Host");
 
         Assert.IsFalse(await IsCircuitDeadAsync());

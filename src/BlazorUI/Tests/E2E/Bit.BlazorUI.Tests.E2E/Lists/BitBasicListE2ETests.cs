@@ -217,10 +217,16 @@ public class BitBasicListE2ETests : E2ETestBase
         await Expect(Page.Locator("#provider-last")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex("^0:\\d+$"));
         await Expect(list.Locator(".bsl-placeholder")).ToHaveCountAsync(0);
 
-        // Scrolled far away: the placeholders hold the room until the provider answers for that region.
+        // Scrolled far away: the placeholders hold the room until the provider answers for that region. The page holds
+        // the provider back until they have been seen: on its own it answers within a few hundred milliseconds, which a
+        // loaded runner can let go by between two looks.
         var callsBefore = int.Parse(await Page.Locator("#provider-calls").InnerTextAsync());
+        await Page.ClickAsync("#btn-hold-provider");
+        await Expect(Page.Locator("#provider-held")).ToHaveTextAsync("held");
         await list.EvaluateAsync("el => el.scrollTop = 20000");
         await Expect(list.Locator(".bsl-placeholder").First).ToBeVisibleAsync();
+        await Page.ClickAsync("#btn-release-provider");
+        await Expect(Page.Locator("#provider-held")).ToHaveTextAsync("answering");
         await Expect(list.Locator("[data-id='500']")).ToHaveTextAsync("Product 500");
         await Expect(list.Locator(".bsl-placeholder")).ToHaveCountAsync(0);
         var start = int.Parse((await Page.Locator("#provider-last").InnerTextAsync()).Split(':')[0]);

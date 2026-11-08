@@ -288,14 +288,14 @@ public class BitAiChatE2ETests : E2ETestBase
 
         await transcript.WaitForScrollToRestAsync();
         var before = await transcript.ScrollStateAsync();
-        Assert.IsTrue(before.FromBottom > 48, "The reader is away from the newest message.");
+        Assert.IsTrue(before.FromBottom > 48, $"The reader is away from the newest message: {before.FromBottom}px from the bottom.");
 
         // A reply streams in while the reader is scrolled up: the content grows, the view does not move.
         await SendAsync("cht-scroll", "a long answer");
         var reply = Messages("cht-scroll", "assistant").Last;
         await Expect(reply.GetByText("Paragraph 6:", new() { Exact = false })).ToHaveCountAsync(1);
         var during = await transcript.ScrollStateAsync();
-        Assert.AreEqual(before.Top, during.Top, 1, "The view stays where the reader left it.");
+        Assert.AreEqual(before.Top, during.Top, 1, $"The view stays where the reader left it: at {during.Top}px, left at {before.Top}px ({during.FromBottom}px from the bottom).");
         Assert.IsTrue(during.Height > before.Height, "The reply grew the transcript.");
         await Expect(button).ToBeVisibleAsync();
 

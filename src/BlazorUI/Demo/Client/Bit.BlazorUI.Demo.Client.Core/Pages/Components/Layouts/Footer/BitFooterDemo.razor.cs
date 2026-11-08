@@ -127,7 +127,7 @@ public partial class BitFooterDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, and the footer comes back as soon as anything inside it takes the focus.",
+            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, and the footer comes back as soon as anything inside it takes the focus, and stays while it holds the keyboard focus.",
         },
         new()
         {

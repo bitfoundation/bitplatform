@@ -307,14 +307,28 @@ public class BitTimeZonePickerTests : BunitTestContext
             component.Find("button.bit-tzp-fld").KeyDown(key);
         }
 
+        // The key that opened the list is the term it opens with, and the rest are typed into the box after it, in order.
         Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual("+", component.Find(".bit-tzp-srch").GetAttribute("value"));
+        CollectionAssert.AreEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
+
+        // The box reports what it holds through its binding, which is what searches for it.
+        component.Find(".bit-tzp-srch").Input("+3:30");
+
         Assert.AreEqual("+3:30", component.Find(".bit-tzp-srch").GetAttribute("value"));
         CollectionAssert.AreEqual(new[] { "Tehran" }, ItemNames(component));
 
         // A space on the field stays its native click, and a modified key a shortcut.
         component.Find("button.bit-tzp-fld").KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
 
+        CollectionAssert.AreEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
         Assert.AreEqual("+3:30", component.Find(".bit-tzp-srch").GetAttribute("value"));
+    }
+
+    // The keys a component typed into its search box by script (Extras.typeInto), in order.
+    private string[] TypedIntoTheSearchBox()
+    {
+        return [.. Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!)];
     }
 
     [TestMethod]
@@ -446,7 +460,15 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         keys.SetVoidResult();
 
-        component.WaitForAssertion(() => Assert.AreEqual("teh", component.Find(".bit-tzp-srch").GetAttribute("value")));
+        // The letter the list was opened with is the term it opens with, and the ones typed while it opened are typed
+        // into the box after it, in order - where the browser appends them to whatever the box holds by then.
+        component.WaitForAssertion(() => Assert.AreEqual("t", component.Find(".bit-tzp-srch").GetAttribute("value")));
+        CollectionAssert.AreEqual(new[] { "e", "h" }, TypedIntoTheSearchBox());
+
+        // The box reports what it holds through its binding, which is what searches for it.
+        component.Find(".bit-tzp-srch").Input("teh");
+
+        Assert.AreEqual("teh", component.Find(".bit-tzp-srch").GetAttribute("value"));
     }
 
     [TestMethod]

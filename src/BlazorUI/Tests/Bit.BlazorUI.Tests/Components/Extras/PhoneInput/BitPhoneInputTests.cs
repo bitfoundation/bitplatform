@@ -605,6 +605,93 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPhoneInputShouldKeepShowingTheTypedTextWhileAThrottleHoldsItsNumberBack()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ThrottleTime, 60_000);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        // The first keystroke is let through at once, and the next one waits out the throttle.
+        component.Find("input.bit-phi-inp").Input("2");
+        Assert.AreEqual("2", component.Instance.Number);
+
+        var typing = component.Find("input.bit-phi-inp").InputAsync(new ChangeEventArgs { Value = "20" });
+        Assert.AreEqual("2", component.Instance.Number);
+
+        // The input is rendered with what was typed into it rather than with the Number held back behind it: rendered with
+        // that Number, the reply to a keystroke wrote it back over the keys typed since.
+        Assert.AreEqual("20", component.Find("input.bit-phi-inp").GetAttribute("value"));
+
+        // The change event commits the text and drops the keystroke still waiting, and the input shows the Number again.
+        component.Find("input.bit-phi-inp").Change("20");
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual("20", component.Instance.Number);
+        Assert.AreEqual("20", component.Find("input.bit-phi-inp").GetAttribute("value"));
+    }
+
+    // What the component makes of a typed text - its layout over the mask, the dialing code taken off its front - is
+    // written into the input by a script that leaves an input typed into since alone, never by a render: on a server
+    // circuit the render of a keystroke lands a round trip later, over the keys typed since, with the caret at the end.
+    [TestMethod]
+    public void BitPhoneInputShouldLayATypedTextOutOnlyIntoAnInputThatStillHoldsIt()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Mask, "(###) ###-####");
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        component.Find("input.bit-phi-inp").Input("4155550123");
+
+        Assert.AreEqual("(415) 555-0123", component.Instance.Number);
+
+        // The input goes on being rendered with the text the event carried, which a render leaves alone.
+        Assert.AreEqual("4155550123", component.Find("input.bit-phi-inp").GetAttribute("value"));
+
+        // The layout is written by the script, only into an input that still holds that text.
+        var layout = LastInputValueWrite();
+        Assert.AreEqual("(415) 555-0123", layout.Arguments[1]);
+        Assert.AreEqual("4155550123", layout.Arguments[2]);
+
+        // A Number something else moves is what the input is rendered with from then on.
+        component.Instance.SetNumberAsync("2025550123").GetAwaiter().GetResult();
+
+        Assert.AreEqual("(202) 555-0123", component.Find("input.bit-phi-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldTakeATypedDialingCodeOffOnlyAnInputThatStillHoldsIt()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        component.Find("input.bit-phi-inp").Input("+33155551234");
+
+        Assert.AreEqual("FR", component.Instance.Country?.Iso2);
+        Assert.AreEqual("155551234", component.Instance.Number);
+        Assert.AreEqual("+33155551234", component.Find("input.bit-phi-inp").GetAttribute("value"));
+
+        // The local part the commit left is written over the text it was taken off, and only over that.
+        var local = LastInputValueWrite();
+        Assert.AreEqual("155551234", local.Arguments[1]);
+        Assert.AreEqual("+33155551234", local.Arguments[2]);
+    }
+
+    private JSRuntimeInvocation LastInputValueWrite()
+    {
+        return Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Extras.setInputValue");
+    }
+
+    [TestMethod]
     public void BitPhoneInputClearButtonShouldLeaveTheFocusInTheField()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -1239,12 +1326,16 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(focuses + 1, CountInvocations("Blazor._internal.domWrapper.focus"));
         Assert.IsNull(component.Find("button.bit-phi-drp").GetAttribute("aria-activedescendant"));
 
-        // A letter goes into the search box as if it had been typed there.
+        // A letter goes into the search box as if it had been typed there: typed into the box where it is, which focuses
+        // the box and reports what it holds through its own input event.
         component.Find("button.bit-phi-drp").KeyDown("c");
+
+        CollectionAssert.AreEqual(new[] { "c" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
+
+        component.Find(".bit-phi-srch").Input("c");
 
         Assert.AreEqual("c", component.Find(".bit-phi-srch").GetAttribute("value"));
         Assert.IsTrue(component.FindAll("button.bit-phi-itm").Count < FiveCountries.Count);
-        Assert.AreEqual(focuses + 2, CountInvocations("Blazor._internal.domWrapper.focus"));
 
         // Enter presses the button, which closes the list as a click on it does, and selects nothing.
         var country = component.Instance.Country;

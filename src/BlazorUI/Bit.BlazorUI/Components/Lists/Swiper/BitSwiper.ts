@@ -768,10 +768,9 @@
 
             this.keysOwned = owned;
 
-            try {
-                this.dotnetObj.invokeMethodAsync('OnKeysOwnerChange', owned)
-                    .catch(e => console.error("BitBlazorUI.Swiper.setKeysOwned:", e));
-            } catch (e) { console.error("BitBlazorUI.Swiper.setKeysOwned:", e); }
+            // Not awaited, as the state is not (see notify): the focus leaving the swiper as the page is left is a call
+            // over a circuit that is already gone, which Utils.notifyDotNet lets go of.
+            Utils.notifyDotNet(this.dotnetObj, 'OnKeysOwnerChange', owned);
         }
 
         private onFocusIn = (e: FocusEvent) => {
@@ -851,13 +850,11 @@
 
             this.keepFocus(state);
 
-            try {
-                // The call is not awaited (the swiper has nothing to do with what comes back), so the
-                // rejection of a swiper that went away mid-flight is picked up here rather than being
-                // left unhandled.
-                this.dotnetObj.invokeMethodAsync('OnStateChange', state)
-                    .catch(e => console.error("BitBlazorUI.Swiper.notify:", e));
-            } catch (e) { console.error("BitBlazorUI.Swiper.notify:", e); }
+            // The call is not awaited (the swiper has nothing to do with what comes back). A swiper that
+            // went away mid-flight, or one whose circuit is already gone - Firefox keeps running the frames
+            // and observers of the page it leaves after letting go of its circuit - is let go of, and a
+            // handler that threw is logged (see Utils.notifyDotNet).
+            Utils.notifyDotNet(this.dotnetObj, 'OnStateChange', state);
         }
 
         // A next/prev button hides itself at the end it cannot move any further towards, and a button that

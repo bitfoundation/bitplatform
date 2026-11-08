@@ -345,8 +345,31 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
 Belemetry takes no dependency on Azure.Identity - the token provider is a plain delegate. An exporter with a token
 provider is never handed to the browser script.
 
-> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature. In a Hybrid app it
-> streams only while the user grants `Metrics`, and it follows the service's endpoint redirects over HTTPS only.
+> Live Metrics follows the Application Insights QuickPulse protocol (API version `2024-04-01-preview`); treat it as a
+> preview feature. In a Hybrid app it streams only while the user grants `Metrics`, and it follows the service's
+> endpoint redirects over HTTPS only.
+>
+> Besides the request, dependency and exception rates and the process CPU and memory, it applies what the portal
+> configures:
+>
+> - **Sample telemetry.** Each stream's filters pick the requests, dependencies, exceptions, custom events and traces
+>   (log messages, and the named events of spans) it shows. A stream takes up to 3 samples of a type at once and earns one more every 2 seconds, saving up to 30,
+>   unless the service sets other quotas.
+> - **Custom charts.** A chart's filters, projection (`Count()`, `Duration`, `CustomDimensions.{key}`) and
+>   aggregation are computed for every data point.
+>
+> Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the properties of
+> the Application Insights item it stands for - the record's attributes after privacy and processors, without the user
+> and session ids or the attributes the item's own fields hold, plus what the item adds (a page visit's `PageName`, an
+> event's `message`, ...) - and `CustomDimensions.{key}` filters and charts read the same. Samples and custom charts
+> only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in request,
+> dependency and exception rates count every span and exception the pipeline accepts, whatever these settings. A sample
+> waiting for the next data point is not sent once the user revokes its feature, even if they grant it again first.
+> When the portal changes the configuration, the streams and charts it leaves as they were keep their quotas and the
+> values they gathered. What Belemetry cannot apply (performance counters, custom metrics, an unknown field, filters
+> that are not a list) is left out and reported back to the portal as a configuration error; a configuration it cannot
+> read at all is reported too, and nothing is sampled until the portal sends another. The stream goes through a
+> registered `BelemetryHttpMessageHandlerProvider`, like the rest of the export traffic.
 
 ### Console, in-memory and custom exporters
 
@@ -383,7 +406,7 @@ feature the configuration switched off records nothing - so a feature you enable
 
 | Feature | Covers |
 | --- | --- |
-| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException` |
+| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
 | `PageViews` | Page views (navigation, `TrackPageView`) |
 | `Interactions` | Clicks and other interactions |
 | `Performance` | Web vitals, document load, resource timing, long tasks |
@@ -550,7 +573,7 @@ options.Metrics.Meters.Add("Bit.Belemetry");
 | Instrument | Attributes | Counts |
 | --- | --- | --- |
 | `belemetry.records.dropped` | `belemetry.reason`, `belemetry.signal` (`traces`/`logs`) | records dropped before export: `queue_full`, `pending_full` (the hold before a consent decision), `not_consented`, `consent_revoked`, `error_limit`, `relay_limit`, `filtered` (a processor returned false) |
-| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
+| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter - for Azure Monitor the items it sends, so a span event sent as an item of its own counts and a metric point with nothing new does not: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
 
 In the browser, `BitBelemetry.getStats()` gives the script's counterpart: `{ dropped: { <reason>: n }, requests:
 { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since the page loaded (with `sampled_out` among the
@@ -637,6 +660,9 @@ Hybrid app apply `options.Errors`:
 - `DuplicateWindow` (5 s): an error identical to one just recorded - same scope (logger category), type, message and
   first stack frame - is suppressed for this long, so a loop is recorded once per window.
 - `MaxPerMinute` (100): at most this many error records per minute, with a burst of as many; the excess is dropped.
+
+An exception recorded on a span (`Activity.AddException`) is an error record too. One the rules drop stays on its
+span (an OTLP span still shows it) but is not sent to Azure Monitor as an item of its own.
 
 The server pipeline serves every user at once and is not capped. Zero switches either rule off.
 
@@ -1175,7 +1201,8 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Server/consumer span | `requests` |
 | Other spans | `dependencies` (`Ajax` from the browser, `HTTP`, the database system, `InProc`) |
 | Log with an exception | `exceptions` |
-| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it |
+| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it - but once only when the same exception (type, message and stack trace) is also logged under the span (`LogError(ex)` plus `AddException(ex)`): the log's item stands for both, unless this exporter does not send that log (`Signals`, `MinimumLogLevel`, or the log was dropped before the export) |
+| Any other span event | `traces`, under the span, with the event name as the message - as the Azure Monitor OpenTelemetry exporter writes it |
 | `browser.page_view` | `pageViews` |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
 | `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName`/`PageUrl` properties - the Application Insights JS SDK's shape |
@@ -1186,7 +1213,7 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 Tags: `ai.cloud.role` (`[service.namespace]/service.name`, or `service.name` alone - as the Azure Monitor
 OpenTelemetry exporter writes it), `ai.cloud.roleInstance`, `ai.application.ver` (`service.version`), `ai.user.agent`
 and `ai.device.locale` (browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
-`ai.operation.name` (requests and the exceptions recorded on them: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
+`ai.operation.name` (requests and their events: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
 `ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
 `ai.internal.sdkVersion`.
 
@@ -1292,6 +1319,13 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 - **Errors are deduplicated and capped** on client hosts: an identical error within `Errors.DuplicateWindow` (5 s) is
   suppressed, and at most `Errors.MaxPerMinute` (100) are recorded per minute. `TimeSpan.Zero` / `0` switch them off.
 - **`Script error.` is ignored by default** (`Browser.IgnoreErrorMessages`).
+- **Azure Monitor gets the events of a span:** an exception recorded on it (`Activity.AddException`) as an `exceptions`
+  item, any other event (the document-load span's timings, for one) as a `traces` item - as the Azure Monitor
+  OpenTelemetry exporter sends them; they were dropped. Expect more items. An exception also logged under its span
+  is still one item, and `belemetry.records.exported` counts them for Azure Monitor.
+- **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
+  span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
+  browser as well, to an exception an app processor adds to a span.
 - **Strings longer than `MaxValueLength` (32768) are cut.** `0` keeps them whole.
 - **An aborted fetch/XHR is not an error span** (it keeps `error.type = AbortError`); unknown HTTP methods are
   `_OTHER`.

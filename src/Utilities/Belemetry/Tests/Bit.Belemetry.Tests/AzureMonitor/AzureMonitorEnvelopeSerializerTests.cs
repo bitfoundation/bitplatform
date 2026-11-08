@@ -191,11 +191,12 @@ public class AzureMonitorEnvelopeSerializerTests
 
         var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span]), true, out var count);
 
-        Assert.HasCount(2, envelopes, "The exception is an item of its own; another event, or an exception event without exception.*, is not.");
-        Assert.AreEqual(2, count, "The count is the envelopes', the items a 206 response indexes.");
+        Assert.HasCount(3, envelopes, "The exception and the other event are items of their own; an exception event without exception.* is not.");
+        Assert.AreEqual(3, count, "The count is the envelopes', the items a 206 response indexes.");
         AssertEnvelope(envelopes[0], "Request");
+        Assert.AreEqual("Microsoft.ApplicationInsights.Message", envelopes[1].GetProperty("name").GetString());
 
-        var e = envelopes[1];
+        var e = envelopes[2];
         Assert.AreEqual("Microsoft.ApplicationInsights.Exception", e.GetProperty("name").GetString());
         Assert.AreEqual("2023-11-14T22:13:21.1234567Z", e.GetProperty("time").GetString(), "At the event's time, not the span's.");
         Assert.AreEqual(IKey, e.GetProperty("iKey").GetString());
@@ -253,6 +254,114 @@ public class AzureMonitorEnvelopeSerializerTests
         Assert.AreEqual(activity.TraceId.ToHexString(), Tags(e).GetProperty("ai.operation.id").GetString());
         Assert.AreEqual(activity.SpanId.ToHexString(), Tags(e).GetProperty("ai.operation.parentId").GetString());
         Assert.IsFalse(Tags(e).TryGetProperty("ai.operation.name", out _), "Only a request's exceptions name the operation.");
+    }
+
+    [TestMethod]
+    public void Message_FromAnyOtherSpanEvent()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", "/orders/{id}").Set("session.id", "s-1");
+        span.Events.Add(new BelemetrySpanEvent
+        {
+            Name = "retry",
+            TimeUnixNano = Records.Start + 1_000_000_000,
+            Attributes = new BelemetryAttributes().Set("attempt", 2).Set("session.id", "other"),
+        });
+        var dependency = Records.Span();
+        dependency.Events.Add(new BelemetrySpanEvent { Name = "domInteractive", TimeUnixNano = Records.Start });
+        dependency.Events.Add(new BelemetrySpanEvent { Name = string.Empty, TimeUnixNano = Records.Start });
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span, dependency]), true, out var count);
+
+        Assert.HasCount(4, envelopes, "An event with no name is not an item.");
+        Assert.AreEqual(4, count);
+        var e = envelopes[1];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Message", e.GetProperty("name").GetString());
+        Assert.AreEqual("2023-11-14T22:13:21.1234567Z", e.GetProperty("time").GetString(), "At the event's time, not the span's.");
+        Assert.AreEqual("MessageData", e.GetProperty("data").GetProperty("baseType").GetString());
+        var data = BaseData(e);
+        Assert.AreEqual("retry", data.GetProperty("message").GetString(), "The event's name is the message, as the Azure Monitor exporter writes it.");
+        Assert.IsFalse(data.TryGetProperty("severityLevel", out _), "An event is not a log level.");
+        Assert.AreEqual("2", Prop(e, "attempt"));
+        Assert.IsNull(Prop(e, "http.route"), "The span's attributes stay on the span's envelope.");
+        Assert.AreEqual(Records.SpanId, Tags(e).GetProperty("ai.operation.parentId").GetString());
+        Assert.AreEqual("GET /orders/{id}", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("s-1", Tags(e).GetProperty("ai.session.id").GetString(), "The ids come from the span's attributes.");
+
+        Assert.AreEqual("Microsoft.ApplicationInsights.RemoteDependency", envelopes[2].GetProperty("name").GetString());
+        Assert.AreEqual("domInteractive", BaseData(envelopes[3]).GetProperty("message").GetString());
+        Assert.IsFalse(Tags(envelopes[3]).TryGetProperty("ai.operation.name", out _));
+    }
+
+    [TestMethod]
+    public void SpanException_LoggedUnderTheSpan_IsTheLogsItemAlone()
+    {
+        static BelemetrySpan Span(BelemetrySeverity severity, bool isEvent = false, bool limited = false, bool dropped = false)
+        {
+            var logged = limited ? null : new BelemetryLoggedException("System.TimeoutException", "slow", "at Y()", severity, isEvent);
+            if (dropped) logged!.Drop();
+
+            var span = Records.Span();
+            span.Events.Add(new BelemetrySpanEvent
+            {
+                Name = "exception",
+                TimeUnixNano = Records.Start,
+                Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException").Set("exception.message", "slow"),
+                LoggedAs = logged,
+                Limited = limited,
+            });
+            return span;
+        }
+
+        static int Items(BelemetrySpan span, AzureMonitorEnvelopeSerializer.Context context)
+        {
+            var batch = new BelemetryBatch(Records.Resource(), [span]);
+            AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+            Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context), "Count says what Serialize writes.");
+            return count;
+        }
+
+        var all = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), all), "The log record's Exception stands for it.");
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error, limited: true), all), "The error limits dropped it as an item of its own.");
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error, dropped: true), all), "A log record dropped before the export stands for nothing.");
+
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error), all with { Logs = false }), "An exporter that sends no logs sends it from the span.");
+        var errorsOnly = all with { MinimumSeverity = BelemetrySeverity.Error };
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Warn), errorsOnly), "So does one whose minimum level keeps the log record out.");
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), errorsOnly));
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Info, isEvent: true), all with { MinimumSeverity = BelemetrySeverity.Fatal }), "TrackException passes any level.");
+    }
+
+    [TestMethod]
+    public void Count_IsTheEnvelopesSerializeWrites()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server);
+        span.Events.Add(new BelemetrySpanEvent { Name = "retry" });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.message", "x") });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception" });
+        var counter = new BelemetryMetric { Name = "orders", Type = BelemetryMetricType.Sum, Points = [new() { DeltaLongValue = 2, IsInteger = true }, new()] };
+        var histogram = new BelemetryMetric { Name = "latency", Type = BelemetryMetricType.Histogram, Points = [new() { DeltaCount = 1, DeltaSum = 3 }, new()] };
+        var gauge = new BelemetryMetric { Name = "queue", Type = BelemetryMetricType.Gauge, Points = [new() { Value = 1 }] };
+        var batch = new BelemetryBatch(Records.Resource(), [span, Records.Span()], [Records.Log(), Records.Log()], [counter, histogram, gauge]);
+        var context = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+
+        AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+
+        Assert.AreEqual(9, count, "2 spans and 2 of their events, 2 logs, and the 3 metric points with something new.");
+        Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context));
+    }
+
+    [TestMethod]
+    public void Request_WithAnEmptyRoute_IsNamedAfterTheSpan()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", string.Empty);
+
+        var e = Single(span);
+
+        Assert.AreEqual("GET", BaseData(e).GetProperty("name").GetString(), "As in TS: an empty route is not known.");
+        Assert.AreEqual("GET", Tags(e).GetProperty("ai.operation.name").GetString());
     }
 
     [TestMethod]
@@ -424,6 +533,15 @@ public class AzureMonitorEnvelopeSerializerTests
         Assert.AreEqual("[1,2]", Prop(e, "array"));
         Assert.AreEqual("true", Prop(e, "flag"));
         Assert.AreEqual("0.25", Prop(e, "d"));
+    }
+
+    [TestMethod]
+    public void AProperty_IsNotCutInsideASurrogatePair()
+    {
+        var log = Records.Log();
+        log.Attributes.Set("emoji", new string('v', 8191) + "\U0001F600");
+
+        Assert.AreEqual(new string('v', 8191), Prop(Single(log), "emoji"), "The writer refuses a lone surrogate: the batch would not serialize.");
     }
 
     [TestMethod]

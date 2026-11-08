@@ -164,8 +164,16 @@
     @if (NoSearchBox is false)
     {
         <div style="@Styles?.SearchBox" class="bit-cnp-sbx @Classes?.SearchBox">
+            @* The term is bound rather than written as a value next to an input handler: a binding hands the renderer
+               the text each input event carries, so the render of an older keystroke - a round trip behind the typing
+               on a server circuit - writes nothing over the newer text already in the box. Written by hand, that render
+               put the shorter term back and the keys typed after it were appended to it, searching for a term nobody
+               typed. A term the picker sets itself (the letter a closed field was opened with) differs from what the
+               box last reported, so it is still written into it. *@
             <input @ref="_searchInputRef"
-                   @oninput="HandleOnSearchInput"
+                   @bind:get="_list.SearchText"
+                   @bind:set="ApplySearchText"
+                   @bind:event="oninput"
                    @onkeydown="HandleOnSearchKeyDown"
                    type="text"
                    role="combobox"
@@ -174,7 +182,6 @@
                    spellcheck="false"
                    autocorrect="off"
                    autocapitalize="off"
-                   value="@_list.SearchText"
                    aria-autocomplete="list"
                    aria-haspopup="listbox"
                    aria-expanded="@(IsCalloutShown ? "true" : "false")"

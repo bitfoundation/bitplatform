@@ -62,5 +62,5 @@ public sealed class BelemetryLogRecord
     public BelemetryFeatures Feature { get; set; } = BelemetryFeatures.Logs;
 
     /// <summary>Whether the record carries an exception (<c>exception.type</c> or <c>exception.message</c>).</summary>
-    public bool HasException => Attributes.Contains(BelemetrySemanticConventions.ExceptionType) || Attributes.Contains(BelemetrySemanticConventions.ExceptionMessage);
+    public bool HasException => Attributes.HasException;
 }

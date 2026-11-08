@@ -79,7 +79,7 @@
                 if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
                 lastLeft = left;
                 lastWidth = width;
-                Utils.invokeDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width).catch(() => { });
+                Utils.notifyDotNet(dotNetRef, 'OnHorizontalScrollAsync', left, width);
             };
             const onScroll = () => {
                 if (!ticking) {
@@ -172,11 +172,11 @@
                 activePointerId = null;
                 clearOver();
                 if (to != null && to !== from) {
-                    // Swallow rejections: the circuit may be tearing down mid-drop.
+                    // The circuit may be tearing down mid-drop, which Utils.notifyDotNet lets go of.
                     if (kind === 'row') {
-                        Utils.invokeDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
+                        Utils.notifyDotNet(dotNetRef, 'OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10));
                     } else {
-                        Utils.invokeDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to).catch(() => { });
+                        Utils.notifyDotNet(dotNetRef, 'OnPointerColumnDropAsync', from, to);
                     }
                 }
             };
@@ -351,9 +351,9 @@
             let away: { cell: HTMLElement, version: number } | null = null;
             // The last element pressed: a press on a part of a popup that takes no focus blurs with no relatedTarget.
             let pressed: Node | null = null;
-            // A commit nobody waits for: one that fails is an edit whose grid (or whose page) went away under it, which
-            // the focus moving on cannot do anything about.
-            const commit = (version: number) => { Utils.invokeDotNet(dotNetRef, 'OnCellEditBlurAsync', version).catch(() => { }); };
+            // A commit nobody waits for: one that never reaches the grid is an edit whose grid (or whose page) went away
+            // under it, which the focus moving on cannot do anything about (see Utils.notifyDotNet).
+            const commit = (version: number) => { Utils.notifyDotNet(dotNetRef, 'OnCellEditBlurAsync', version); };
             const onFocusOut = (e: FocusEvent) => {
                 const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-bit-dtg-edit-version]');
                 if (!cell || cell.closest('.bit-dtg') !== root) return;

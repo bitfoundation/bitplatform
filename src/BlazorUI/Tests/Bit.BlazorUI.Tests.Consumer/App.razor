@@ -36,6 +36,15 @@
             <BitCountryPicker @bind-Value="_country" />
             <BitTimeZonePicker @bind-Value="_timeZone" />
 
+            @* A resource timeline over rows and bars of the app, with a template typed over its rows and the selection
+               handed back as the app's own instances. *@
+            <div style="height: 240px;">
+                <BitResourceTimeline Config="_planning" OnSelectionChanged="(BitResourceTimelineAllocation[] bars) => _selectedBars = bars.Length">
+                    <ResourceTemplate Context="row">@row.Resource.Name</ResourceTemplate>
+                </BitResourceTimeline>
+            </div>
+            <BitText id="timeline-selection">@_selectedBars selected</BitText>
+
             @* The AI package: a chat over the transport Program.cs registers, with starter prompts and a model picker
                bound two ways in its header template. The chat takes the height of its container. *@
             <div style="height: 360px;">
@@ -66,6 +75,26 @@
     private string? _theme = BitThemePresets.Light;
     private bool _isModalOpen;
     private string? _modelId = "fast";
+    private int _selectedBars;
+
+    private readonly BitResourceTimelineConfig _planning = new()
+    {
+        // The range starts on the day of the shift, so its bar is in view as the timeline opens.
+        StartDate = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero),
+        EndDate = new DateTimeOffset(2026, 1, 8, 0, 0, 0, TimeSpan.Zero),
+        Resources = [new() { Id = "crew", Name = "Crew" }, new() { Id = "ada", Name = "Ada", ParentId = "crew" }],
+        Allocations =
+        [
+            new()
+            {
+                Id = "shift-1",
+                ResourceId = "ada",
+                StartTime = new DateTimeOffset(2026, 1, 2, 8, 0, 0, TimeSpan.Zero),
+                EndTime = new DateTimeOffset(2026, 1, 2, 16, 0, 0, TimeSpan.Zero),
+                TextAbove = "Early shift",
+            },
+        ],
+    };
 
     private readonly List<string> _suggestions = ["What can you do?", "Say hello"];
     private readonly List<BitAiModel> _models =

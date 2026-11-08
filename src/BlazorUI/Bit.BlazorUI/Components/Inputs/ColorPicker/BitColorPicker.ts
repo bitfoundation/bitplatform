@@ -48,13 +48,11 @@
                 };
             };
 
-            // A .NET handler that throws - or a consumer callback behind it that does - rejects the promise
-            // this returns. Nothing awaits it, so an unhandled rejection is all the page would see of it,
-            // reported without the call that raised it; the .NET side handles the exception either way. A call
-            // over a connection that is already closed fails the same way rather than throwing (Utils.invokeDotNet).
+            // Nothing awaits the call: a .NET handler that throws - or a consumer callback behind it that
+            // does - is logged with the method that raised it, and a call that never reached the picker (a
+            // connection already closed, a picker gone) is let go of (Utils.notifyDotNet).
             const invoke = (method: string, ...args: any[]) => {
-                Utils.invokeDotNet(dotnetObj, method, ...args)
-                     .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
+                Utils.notifyDotNet(dotnetObj, method, ...args);
             };
 
             const flushMove = () => {

@@ -19,7 +19,9 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         _settings = settings;
         _pipeline = pipeline;
-        _sender = new BelemetryHttpSender(services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler, pipeline.LogDiagnostic,
+        // The app's handler sends all the export traffic: Live Metrics' too.
+        var handler = services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler;
+        _sender = new BelemetryHttpSender(handler, pipeline.LogDiagnostic,
                                           (ex, message) => pipeline.LogDiagnostic(ex, message, Microsoft.Extensions.Logging.LogLevel.Warning));
 
         var options = settings.Options;
@@ -39,7 +41,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
 
                 if (azureOptions.EnableLiveMetrics && settings.IsBrowser is false)
                 {
-                    _liveMetrics.Add(new AzureMonitorLiveMetrics(exporter, settings, pipeline.LogDiagnostic));
+                    _liveMetrics.Add(new AzureMonitorLiveMetrics(exporter, settings, pipeline.LogDiagnostic, handler));
                 }
             }
             catch (FormatException ex)
@@ -64,6 +66,9 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
 
     public IBelemetryRequestStore? Store { get; }
 
+    /// <summary>The Live Metrics streams, one per Azure Monitor exporter that enables them.</summary>
+    internal IReadOnlyList<AzureMonitorLiveMetrics> LiveMetrics => _liveMetrics;
+
     public void StartLiveMetrics(CancellationToken stopping)
     {
         foreach (var live in _liveMetrics) live.Start(_pipeline, stopping);
@@ -80,14 +85,17 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         foreach (var exporter in _httpExporters)
         {
-            // Checked before the batch is serialized for it, which would only be thrown away.
+            var exported = WithMinimumSeverity(batch, exporter.MinimumSeverity);
+
+            // Checked before the batch is serialized for it, which would only be thrown away. Counted as its requests
+            // would have counted it, so a batch withdrawn here is in the unit of one delivered or withdrawn later.
             if (mark.IsWithdrawn)
             {
-                _pipeline.Self.Exported(exporter.Name, "withdrawn", Count(batch));
+                _pipeline.Self.Exported(exporter.Name, "withdrawn", exporter.CountItems(exported));
                 continue;
             }
 
-            foreach (var created in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
+            foreach (var created in exporter.CreateRequests(exported))
             {
                 var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, mark, cancellationToken);
                 _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
@@ -179,7 +187,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         for (var i = 0; i < batch.Logs.Count; i++)
         {
             var log = batch.Logs[i];
-            if (log.EventName is not null || log.Severity >= minimum.Value)
+            if (PassesMinimumSeverity(log.EventName is not null, log.Severity, minimum))
             {
                 kept?.Add(log);
             }
@@ -192,6 +200,10 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
 
         return kept is null ? batch : new BelemetryBatch(batch.Resource, batch.Spans, kept, batch.Metrics);
     }
+
+    /// <summary>Whether a log record of <paramref name="severity"/> (an event when <paramref name="isEvent"/>) reaches an exporter with the <paramref name="minimum"/> level.</summary>
+    internal static bool PassesMinimumSeverity(bool isEvent, BelemetrySeverity severity, BelemetrySeverity? minimum) =>
+        minimum is null || isEvent || severity >= minimum.Value;
 
     /// <summary>
     /// Sends what the store holds; delivered and rejected requests leave the store, failed ones stay for the next pass.

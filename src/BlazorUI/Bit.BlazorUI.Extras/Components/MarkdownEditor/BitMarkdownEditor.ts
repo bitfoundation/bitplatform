@@ -1789,14 +1789,13 @@
             try { window.localStorage.setItem(this.config.autoSaveKey, this.textArea.value); } catch { }
         }
 
-        // Fire-and-forget interop: a call landing after the circuit (or the component) is
-        // gone rejects, and an unhandled rejection surfaces as a console error. So does one
-        // over a connection that is already closed (see Utils.invokeDotNet) - a blur or a last
-        // draft save as Firefox leaves or reloads the page.
+        // Fire-and-forget interop, for an editor that still has its reference. A call that never
+        // reached the component - a blur or a last draft save as Firefox leaves or reloads the
+        // page - is let go of, and a handler that threw is logged (see Utils.notifyDotNet).
         private invoke(method: string, ...args: unknown[]) {
             if (!this.dotnetObj) return;
 
-            Utils.invokeDotNet(this.dotnetObj, method, ...args).catch(() => { });
+            Utils.notifyDotNet(this.dotnetObj, method, ...args);
         }
 
         private notifyChange() {

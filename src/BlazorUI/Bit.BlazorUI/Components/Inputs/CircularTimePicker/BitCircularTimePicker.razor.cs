@@ -30,6 +30,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private bool _internalIsOpenChange;
     private bool _cascadeApplied;
     private long _typeAheadAt;
+    private bool _typeAheadShowing;
     private string _typeAhead = string.Empty;
     private BitCircularTimePickerView _typeAheadView;
     private CancellationTokenSource? _autoCloseCts;
@@ -838,6 +839,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The pause the next digit of a type-ahead may take is counted from when the dial shows the digit before it,
+        // not from when that digit's key came in (see TypeAhead): the render in between - of the whole page, where the
+        // value is bound to it - can outlast the pause on a slow device or runtime, and the key the person pressed
+        // right after the first one would wait out that render in the browser's queue and start a number of its own.
+        if (_typeAheadShowing)
+        {
+            _typeAheadShowing = false;
+            _typeAheadAt = Environment.TickCount64;
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
@@ -1864,6 +1875,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _typeAheadAt = now;
         _typeAheadView = _view;
+
+        // Counted again once the render this digit causes is on the screen (see OnAfterRenderAsync).
+        _typeAheadShowing = true;
 
         // Seeded before the number is read, as for a keyboard step: the half of the day a typed hour lands in
         // is the half the starting value is in.

@@ -299,5 +299,100 @@
 
             return null;
         }
+
+        // The pointers of the gesture under way, and the element the focus landed on while one was (see hasKeyboardFocus).
+        const gesturePointers = new Set<number>();
+        let pointerGesture = false;
+        let pointerGestureEnd = 0;
+        let pointerFocused: EventTarget | null = null;
+        let watchingFocusOrigin = false;
+
+        // How long after its last pointer is lifted a gesture can still move the focus when no click comes to end it
+        // sooner: a tap's focus lands on the mouse events that follow the lift, a beat after it.
+        const pointerGestureTail = 1000;
+
+        // Starts telling a focus a pointer press put on an element apart from one the keyboard put there (see
+        // hasKeyboardFocus). Every script that asks calls it as it is set up rather than as the page loads; only the
+        // first call adds the listeners, which stay for the life of the page.
+        // A focus counts as the pointer's when it lands while a pointer gesture is under way: from the press until the
+        // click it ends with has run its own default actions (a label's click focuses its control) - or, where no click
+        // comes, a moment after the last pointer was lifted, and at once where the browser took the gesture over (a
+        // cancel). A focus moved later - by a script, or by assistive technology, which presses no key - is no
+        // pointer's. The control the gesture focused stays the pointer's until the focus moves on, or until a key: one
+        // that only modifies others (or a shortcut made with one) is no use of the keyboard, any more than it is to
+        // :focus-visible; any other key pressed on a control a pointer focused is the keyboard taking it over.
+        export function watchFocusOrigin() {
+            if (watchingFocusOrigin) return;
+
+            watchingFocusOrigin = true;
+
+            const endGesture = () => {
+                clearTimeout(pointerGestureEnd);
+                pointerGestureEnd = 0;
+                pointerGesture = false;
+                gesturePointers.clear();
+            };
+
+            // Ended after the tasks already queued have run, so a focus the gesture still leads to is recorded first.
+            const endGestureAfter = (delay: number) => {
+                clearTimeout(pointerGestureEnd);
+                pointerGestureEnd = setTimeout(endGesture, delay);
+            };
+
+            document.addEventListener('pointerdown', e => {
+                // The primary pointer going down starts a gesture of its own, whatever an earlier one left behind.
+                if (e.isPrimary) gesturePointers.clear();
+
+                clearTimeout(pointerGestureEnd);
+                pointerGestureEnd = 0;
+                gesturePointers.add(e.pointerId);
+                pointerGesture = true;
+            }, { capture: true, passive: true });
+
+            const lift = (e: PointerEvent, delay: number) => {
+                gesturePointers.delete(e.pointerId);
+                if (gesturePointers.size === 0 && pointerGesture) endGestureAfter(delay);
+            };
+
+            document.addEventListener('pointerup', e => lift(e, pointerGestureTail), { capture: true, passive: true });
+            document.addEventListener('pointercancel', e => lift(e, 0), { capture: true, passive: true });
+
+            // The click a gesture ends with is the last of what it can focus, once its default actions have run.
+            document.addEventListener('click', () => {
+                if (pointerGesture && gesturePointers.size === 0) endGestureAfter(0);
+            }, { capture: true, passive: true });
+
+            document.addEventListener('keydown', e => {
+                if (e.ctrlKey || e.metaKey || e.altKey || /^(Control|Shift|Alt|AltGraph|Meta|OS|CapsLock)$/.test(e.key)) return;
+
+                endGesture();
+                pointerFocused = null;
+            }, { capture: true, passive: true });
+
+            document.addEventListener('focusin', e => { pointerFocused = pointerGesture ? e.target : null; }, { capture: true, passive: true });
+        }
+
+        // Whether the focus is inside the container and the keyboard is what put it there - a control a scroll must
+        // not roll out of the view, a bar to keep on the screen. :focus-visible says so of most elements, but the
+        // engines match it on a text field however it was focused (the field shows its caret to a mouse user too), so
+        // a field a pointer press focused is told apart through watchFocusOrigin, which the caller has started. A
+        // frame cannot say either way, its focus being in a document of its own, and answers `frame`: what the caller
+        // knows of the focus that moved into it. An engine that does not know :focus-visible throws on it rather than
+        // answering false, and every focus then counts: a control hidden under an edge is the worse outcome.
+        export function hasKeyboardFocus(container: Element, frame = false): boolean {
+            const active = document.activeElement;
+
+            if (!active || !container.contains(active)) return false;
+
+            if (/^(IFRAME|FRAME|OBJECT|EMBED)$/.test(active.tagName)) return frame;
+
+            if (active === pointerFocused) return false;
+
+            try {
+                return active.matches(':focus-visible');
+            } catch {
+                return true;
+            }
+        }
     }
 }

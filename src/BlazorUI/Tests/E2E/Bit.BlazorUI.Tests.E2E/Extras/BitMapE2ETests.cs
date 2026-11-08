@@ -1345,6 +1345,41 @@ public class BitMapProvidersE2ETests : E2ETestBase
         Assert.AreNotEqual(at, await moved.EvaluateAsync<string>("el => el.style.transform"));
     }
 
+    // The ArcGIS SDK runs on WebGL 2 only, so a browser that has WebGL 1 alone is shown the map's unsupported state up front
+    // rather than handed the whole SDK to fail in. The browser is made one by taking WebGL 2 away from every canvas of the
+    // page, and the SDK's CDN is answered by nothing: a provider that asked for less than WebGL 2 would request the SDK,
+    // and its load fail, where this asserts it was never asked for at all.
+    [TestMethod]
+    public async Task ArcGis_ABrowserWithoutWebGl2_IsShownTheUnsupportedStateWithoutTheSdk()
+    {
+        AllowConsoleErrors = true;
+
+        var sdkRequests = new List<string>();
+        await Page.RouteAsync("https://js.arcgis.com/**", route =>
+        {
+            sdkRequests.Add(route.Request.Url);
+            return route.AbortAsync();
+        });
+        await Page.AddInitScriptAsync(@"(() => {
+            const getContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+                if (type === 'webgl2' || type === 'experimental-webgl2') return null;
+                return getContext.call(this, type, ...args);
+            };
+        })()");
+
+        await OpenAsync(Route);
+
+        // A browser with no WebGL at all is shown the unsupported state whatever WebGL the provider asks for.
+        if (await HasWebGlAsync(1) is false) Assert.Inconclusive($"{BrowserName} has no WebGL 1 to stand a WebGL 1-only browser in with.");
+        Assert.IsFalse(await HasWebGlAsync(2), "WebGL 2 was not taken away from the page.");
+
+        await Page.Locator("#btn-load-arcgis").ClickAsync();
+
+        await Expect(Page.Locator("#ag-state")).ToHaveTextAsync("Unsupported", new() { Timeout = 30000 });
+        Assert.AreEqual(0, sdkRequests.Count, $"The ArcGIS SDK was requested by a browser without WebGL 2: {string.Join(", ", sdkRequests)}");
+    }
+
     [TestMethod]
     public async Task ArcGis_AMarkerDoubleClickIsTheMarkers()
     {
@@ -1353,7 +1388,15 @@ public class BitMapProvidersE2ETests : E2ETestBase
         await OpenAsync(Route);
         await Page.Locator("#btn-load-arcgis").ClickAsync();
         await Expect(Page.Locator("#ag-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 90000 });
-        if (await Page.Locator("#ag-state").InnerTextAsync() != "Ready") Assert.Inconclusive("The ArcGIS SDK could not be loaded from its CDN.");
+        var state = await Page.Locator("#ag-state").InnerTextAsync();
+        if (state == "Unsupported")
+        {
+            // The map is unsupported only where the browser itself has no WebGL 2: one that has it was turned away by
+            // the map, which is a failure rather than a reason to skip what follows.
+            Assert.IsFalse(await HasWebGlAsync(2), "The ArcGIS map reported itself unsupported in a browser that has WebGL 2.");
+            Assert.Inconclusive($"{BrowserName} has no WebGL 2 for the ArcGIS SDK.");
+        }
+        if (state == "Failed") Assert.Inconclusive("The ArcGIS SDK could not be loaded from its CDN.");
 
         // The markers are drawn on the view's canvas, and the double-click is told apart from the map's by the
         // provider's own synchronous hit test, since the view's hitTest answers too late to stop the zoom.
@@ -1442,6 +1485,21 @@ public class BitMapProvidersE2ETests : E2ETestBase
         var mapBox = (await canvas.BoundingBoxAsync())!;
         await Page.Mouse.DblClickAsync(mapBox.X + 300, mapBox.Y + 330);
         await Expect(Page.Locator("#cs-map-double-clicks")).ToHaveTextAsync("1");
+    }
+
+    // Whether the page can get a WebGL context of the version given (1 or 2), asked the way the map asks before it loads a
+    // GL-backed provider (BitMapChrome.hasWebGl), and let go of at once so the probe holds none of the few a page may have.
+    private Task<bool> HasWebGlAsync(int version)
+    {
+        return Page.EvaluateAsync<bool>(@"version => {
+            try {
+                const context = document.createElement('canvas').getContext(version >= 2 ? 'webgl2' : 'webgl');
+                context?.getExtension('WEBGL_lose_context')?.loseContext();
+                return !!context;
+            } catch {
+                return false;
+            }
+        }", version);
     }
 
     // A round trip of the page's own: once it has been rendered, so has every callback a map raised before it.

@@ -14,8 +14,9 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         _options = options;
         Name = name;
         ConnectionString = AzureMonitorConnectionString.Parse(options.ConnectionString!);
-        _context = new AzureMonitorEnvelopeSerializer.Context(ConnectionString.InstrumentationKey, options.MaskIp);
         MinimumSeverity = BelemetryLogger.ToMinimumSeverity(options.MinimumLogLevel);
+        _context = new AzureMonitorEnvelopeSerializer.Context(ConnectionString.InstrumentationKey, options.MaskIp,
+                                                              options.Signals.HasFlag(BelemetrySignals.Logs), MinimumSeverity);
     }
 
     public string Name { get; }
@@ -26,6 +27,9 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     internal BelemetryAzureMonitorExporterOptions Options => _options;
 
+    /// <summary>What its envelopes are written under; Live Metrics samples by the same rules (<see cref="AzureMonitorEnvelopeSerializer.IsItem(BelemetrySpanEvent, AzureMonitorEnvelopeSerializer.Context)"/>).</summary>
+    internal AzureMonitorEnvelopeSerializer.Context Context => _context;
+
     // Authentication is the connection string's key (in the body) or a token from PrepareAsync.
     public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
@@ -33,11 +37,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {
-        var filtered = new BelemetryBatch(batch.Resource,
-            _options.Signals.HasFlag(BelemetrySignals.Traces) ? batch.Spans : [],
-            _options.Signals.HasFlag(BelemetrySignals.Logs) ? batch.Logs : [],
-            _options.Signals.HasFlag(BelemetrySignals.Metrics) ? batch.Metrics : []);
-
+        var filtered = Filter(batch);
         if (filtered.IsEmpty) yield break;
 
         var body = AzureMonitorEnvelopeSerializer.Serialize(filtered, _context, out var count);
@@ -53,6 +53,14 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
             Count = count,
         };
     }
+
+    public int CountItems(BelemetryBatch batch) => AzureMonitorEnvelopeSerializer.Count(Filter(batch), _context);
+
+    /// <summary>The part of <paramref name="batch"/> this exporter sends (<see cref="BelemetryAzureMonitorExporterOptions.Signals"/>).</summary>
+    private BelemetryBatch Filter(BelemetryBatch batch) => new(batch.Resource,
+        _options.Signals.HasFlag(BelemetrySignals.Traces) ? batch.Spans : [],
+        _options.Signals.HasFlag(BelemetrySignals.Logs) ? batch.Logs : [],
+        _options.Signals.HasFlag(BelemetrySignals.Metrics) ? batch.Metrics : []);
 
     public bool PostsTo(string url) => url == ConnectionString.TrackUrl;
 

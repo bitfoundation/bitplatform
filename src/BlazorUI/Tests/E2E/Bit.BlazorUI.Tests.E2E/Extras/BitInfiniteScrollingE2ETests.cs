@@ -364,15 +364,17 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await Expect(ItemsOf("isc-scroller")).ToHaveCountAsync(10);
         var outer = Page.Locator("#isc-outer");
 
-        // Stop 120px short of the sentinel: inside the 150px margin, out of sight.
-        await outer.EvaluateAsync(
+        // Stop 120px short of the sentinel: inside the 150px margin, out of sight. Where the scroll leaves it is read in
+        // the same turn as the scroll: by a later read the next page it starts can already be loading, and while it does
+        // the sentinel is out of the layout (display:none), whose box of zeros reads as far above the end of the scroller.
+        var sentinelBelow = await outer.EvaluateAsync<double>(
             """
             o => {
                 const last = o.querySelector('.bit-isc-lst');
                 o.scrollTop += last.getBoundingClientRect().top - o.getBoundingClientRect().bottom - 120;
+                return last.getBoundingClientRect().top - o.getBoundingClientRect().bottom;
             }
             """);
-        var sentinelBelow = await outer.EvaluateAsync<double>("o => o.querySelector('.bit-isc-lst').getBoundingClientRect().top - o.getBoundingClientRect().bottom");
         Assert.IsTrue(sentinelBelow > 50, $"The sentinel is out of sight ({sentinelBelow}px below).");
         await Expect(ItemsOf("isc-scroller")).ToHaveCountAsync(20);
     }

@@ -572,8 +572,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await PollAsync(() => Page.EvaluateAsync<bool>("() => Object.keys(sessionStorage).some(k => k.includes('e2e-spl-session'))"), stored => stored, "nothing was stored for the session");
         Assert.IsFalse(await Page.EvaluateAsync<bool>("() => Object.keys(localStorage).some(k => k.includes('e2e-spl-session'))"), "The session splitter wrote to local storage.");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await PollAsync(() => WidthAsync(First("spl-persist")), w => Math.Abs(w - 250) < 1.5, "the position was not restored");
         await PollAsync(() => WidthAsync(First("spl-session")), w => Math.Abs(w - 200) < 1.5, "the session position was not restored");
 
@@ -581,8 +580,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Enter");
         await PollAsync(() => WidthAsync(First("spl-persist")), w => Math.Abs(w - 8) < 1, "folded");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(El("spl-persist")).ToHaveClassAsync(HasClass("bit-spl-col"));
         await PollAsync(() => WidthAsync(First("spl-persist")), w => Math.Abs(w - 8) < 1, "the fold was not restored");
         await Expect(El("persist-reason")).ToHaveTextAsync("Restore");

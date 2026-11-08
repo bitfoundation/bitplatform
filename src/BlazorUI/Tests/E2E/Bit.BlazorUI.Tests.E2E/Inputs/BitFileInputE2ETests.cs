@@ -799,15 +799,30 @@ public class BitFileInputE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
+        // The choosers are collected by one handler subscribed before anything is pressed, rather than by a
+        // RunAndWaitForFileChooserAsync around each key. Playwright turns the interception of the chooser on as a handler
+        // subscribes, with a message it does not wait on, and RunAndWaitForFileChooserAsync subscribes right before its
+        // action: a click on the button is several round trips behind that, but a bare key press is not - and under
+        // WebAssembly the key opens the chooser within the keystroke itself, ahead of the interception, so the chooser
+        // opened natively (which a headless browser dismisses at once) and none was reported. Subscribed here, ahead of
+        // the focus whose round trips go out behind it, the interception is in place before either key is pressed.
+        var choosers = System.Threading.Channels.Channel.CreateUnbounded<IFileChooser>();
+        Page.FileChooser += (_, chooser) => choosers.Writer.TryWrite(chooser);
+
         await Browse("fin-multiple").FocusAsync();
-        var chooser = await Page.RunAndWaitForFileChooserAsync(() => Page.Keyboard.PressAsync("Enter"));
-        await chooser.SetFilesAsync(Text("enter.txt"));
+        await Page.Keyboard.PressAsync("Enter");
+        await (await NextFileChooserAsync(choosers.Reader)).SetFilesAsync(Text("enter.txt"));
         await ExpectTextAsync("multiple-files", "enter.txt");
 
         await Browse("fin-multiple").FocusAsync();
-        chooser = await Page.RunAndWaitForFileChooserAsync(() => Page.Keyboard.PressAsync("Space"));
-        await chooser.SetFilesAsync(Text("space.txt"));
+        await Page.Keyboard.PressAsync("Space");
+        await (await NextFileChooserAsync(choosers.Reader)).SetFilesAsync(Text("space.txt"));
         await ExpectTextAsync("multiple-files", "space.txt");
+    }
+
+    private static Task<IFileChooser> NextFileChooserAsync(System.Threading.Channels.ChannelReader<IFileChooser> choosers)
+    {
+        return choosers.ReadAsync().AsTask().WaitAsync(TimeSpan.FromMilliseconds(DefaultTimeout));
     }
 
     // ---------------------------------------------------------------- variants & drop zone

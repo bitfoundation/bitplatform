@@ -3109,12 +3109,12 @@
             RichTextEditor.tellDotNet(editor, 'OnSelectionChanged', RichTextEditor.currentState(editor));
         }
 
-        // Every notification nobody waits for the answer to goes through here. A call landing after the circuit (or the
-        // component) is gone rejects, and one over a connection that is already closed fails as well (see
-        // Utils.invokeDotNet) - a blur or a last edit as Firefox leaves the page - neither of which the editor can act on.
+        // Every notification nobody waits for the answer to goes through here, for an editor that still has its
+        // reference. A call that never reached the component - a blur or a last edit as Firefox leaves the page - is let
+        // go of, and a handler that threw is logged (see Utils.notifyDotNet).
         private static tellDotNet(editor: any, method: string, ...args: any[]) {
             if (!editor?._dotNetRef) return;
-            Utils.invokeDotNet(editor._dotNetRef, method, ...args).catch(() => { });
+            Utils.notifyDotNet(editor._dotNetRef, method, ...args);
         }
 
         private static currentState(editor: any): any {

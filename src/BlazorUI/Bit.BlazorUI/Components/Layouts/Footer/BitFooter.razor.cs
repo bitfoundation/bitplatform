@@ -229,7 +229,8 @@ public partial class BitFooter : BitComponentBase
     /// The footer is always revealed at the very top and at the very end of the page.
     /// <br />
     /// Unlike <see cref="Hidden"/>, a footer slid away by the scroll stays reachable: it comes back as soon as
-    /// anything inside it takes the focus, so a keyboard user is never stranded on a control they cannot see.
+    /// anything inside it takes the focus, and it does not slide away again while it holds the keyboard focus, so a
+    /// keyboard user is never stranded on a control they cannot see.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }

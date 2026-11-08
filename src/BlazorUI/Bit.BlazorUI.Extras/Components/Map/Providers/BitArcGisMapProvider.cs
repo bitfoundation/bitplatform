@@ -32,6 +32,13 @@ public sealed class BitArcGisMapProvider : BitMapProviderBase
     public override bool ScriptsAreModules => true;
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The SDK supports WebGL 2-enabled browsers only: on any other its MapView fails after the whole SDK has been
+    /// downloaded, so the map shows its unsupported state up front instead.
+    /// </remarks>
+    public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl2;
+
+    /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
         // Trim inputs so values like " osm " are treated as "osm" for both

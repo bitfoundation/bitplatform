@@ -840,10 +840,9 @@ public class BitImageE2ETests : E2ETestBase
 
     // OpenAsync waits for the load event, which a held-back image holds back too, so a page with one is waited for by
     // its status alone.
-    private async Task OpenHeldAsync(string path)
+    private Task OpenHeldAsync(string path)
     {
-        await Page.GotoAsync($"{BaseUrl}{path}", new() { WaitUntil = WaitUntilState.Commit });
-        await WaitForStatusAsync("Ready");
+        return OpenAsync(path, waitForLoad: false);
     }
 
     // Holds back the response of one of the page's slow images until the returned gate is opened.

@@ -124,10 +124,15 @@
             </button>
         }
 
+        @* The number is bound rather than written as a value next to an input handler (see HandleOnElementInput and
+           ElementValue): the render of an older keystroke - a round trip behind the typing on a server circuit - would
+           otherwise write that keystroke's text back over the keys typed since. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onchange="HandleOnStringValueChangeAsync"
-               @oninput="HandleOnStringValueInputAsync"
+               @bind:get="ElementValue"
+               @bind:set="HandleOnElementInput"
+               @bind:event="oninput"
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
                @onfocus="HandleOnInputFocus"
@@ -138,7 +143,6 @@
                id="@_inputId"
                readonly="@ReadOnly"
                required="@Required"
-               value="@Number"
                spellcheck="false"
                tabindex="@TabIndex"
                autocorrect="off"
@@ -274,8 +278,13 @@
         @if (NoSearchBox is false)
         {
             <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
+                @* The term is bound rather than written as a value next to an input handler, as in BitCountryPicker: the
+                   render of an older keystroke - a round trip behind the typing on a server circuit - would otherwise put
+                   the shorter term back, and the keys typed after it would be appended to it. *@
                 <input @ref="_searchInputRef"
-                       @oninput="HandleOnSearchInput"
+                       @bind:get="_list.SearchText"
+                       @bind:set="ApplySearchText"
+                       @bind:event="oninput"
                        @onkeydown="HandleOnSearchKeyDown"
                        type="text"
                        role="combobox"
@@ -284,7 +293,6 @@
                        spellcheck="false"
                        autocorrect="off"
                        autocapitalize="off"
-                       value="@_list.SearchText"
                        aria-autocomplete="list"
                        aria-haspopup="listbox"
                        aria-expanded="@(IsCalloutShown ? "true" : "false")"

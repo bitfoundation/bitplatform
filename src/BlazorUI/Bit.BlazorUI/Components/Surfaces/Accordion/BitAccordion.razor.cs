@@ -42,6 +42,19 @@ public partial class BitAccordion : BitComponentBase
     // panel stays shut, so the accordion stops offering itself to find-in-page until its state next changes.
     private bool _revealRefused;
 
+    // Whether the panel is expanded for a find-in-page reveal, which opens it at once (bit-acd-rvl) the way the
+    // stylesheet opens a panel the browser has revealed ahead of the render. The render can land first: WebAssembly
+    // runs the beforematch listener and renders inside the event, before the browser takes the attribute off and
+    // scrolls to the match, so the attribute and bit-acd-huf leave together and the stylesheet's own reveal never
+    // applies - the panel would grow around the match the way a click opens it, moving the match away again. It is set
+    // only as the reveal's own expansion is applied (BeginRevealExpansion), once OnToggling has let it through: an open
+    // the page makes meanwhile - a bound IsExpanded, the ExpandedKey of a list - is an ordinary open, which animates
+    // whatever becomes of the reveal. It is let go of once the panel the reveal opened is collapsed again (TrackReveal),
+    // so the close and every later open play as usual. _revealOpened says the reveal's expansion has happened: a
+    // collapsed state seen before it is the panel still on its way open (a RevealHandler re-rendering the page first).
+    private bool _revealing;
+    private bool _revealOpened;
+
     // The beforematch listener the panel carries while it is searchable, splatted onto the element rather than
     // written as an @onbeforematch attribute: Blazor does not know the event by name, and a delegate handed to the
     // renderer as an attribute value becomes a listener all the same. It is built once, so it survives a re-render.
@@ -611,6 +624,8 @@ public partial class BitAccordion : BitComponentBase
 
         if (IsExpanded) _hasBeenExpanded = true;
 
+        TrackReveal();
+
         // A render the page asks for is never the one the focus bookkeeping below is trying to skip.
         _skipRender = false;
 
@@ -654,6 +669,8 @@ public partial class BitAccordion : BitComponentBase
         }
 
         var closed = _wasExpanded && IsExpanded is false;
+
+        TrackReveal();
 
         _wasExpanded = IsExpanded;
 
@@ -757,9 +774,14 @@ public partial class BitAccordion : BitComponentBase
             }
         }
 
+        // A reveal let through is what opens the panel from here on, so that open - and only that one - is the reveal's.
+        if (reason is BitAccordionToggleReason.Reveal) BeginRevealExpansion();
+
         if (await AssignIsExpanded(value) is false) return false;
 
         if (IsExpanded) _hasBeenExpanded = true;
+
+        TrackReveal();
 
         await OnChange.InvokeAsync(IsExpanded);
 
@@ -813,7 +835,38 @@ public partial class BitAccordion : BitComponentBase
 
         if (revealed || IsExpanded || IsDisposed) return;
 
+        _revealing = false;
         _revealRefused = true;
+    }
+
+    /// <summary>
+    /// Marks the open about to be applied as the one a find-in-page reveal makes, which the panel takes at once
+    /// (bit-acd-rvl, see _revealing). Called by the accordion as it applies a reveal of its own, and by the owner of a
+    /// one-way bound expansion (BitAccordionList) as it applies the reveal its RevealHandler was asked for: once
+    /// OnToggling has let the reveal through, and not before, so an open made while it was awaited stays the ordinary one.
+    /// </summary>
+    internal void BeginRevealExpansion()
+    {
+        _revealing = true;
+        _revealOpened = false;
+    }
+
+    // Follows the panel a reveal opened (see _revealing) through every way its state is learnt: the parameters the page
+    // hands in, a toggle of the accordion's own and a render. A collapse is let go of the reveal wherever it is seen
+    // first - a close whose render the focus bookkeeping skipped included - so no later open inherits it.
+    private void TrackReveal()
+    {
+        if (_revealing is false) return;
+
+        if (IsExpanded)
+        {
+            _revealOpened = true;
+        }
+        else if (_revealOpened)
+        {
+            _revealing = false;
+            _revealOpened = false;
+        }
     }
 
     // The render that started the close has just put the collapsed state on the panel, so the transitions the browser
