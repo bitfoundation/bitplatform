@@ -372,11 +372,12 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
-- The app decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only follows
-  it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for cache, edge
-  TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that has none),
-  browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary with
-  `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its default.
+- The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
+  follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
+  cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
+  has none), browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary,
+  which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
+  default.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
   (section 3), and for the Workbench if the user wants it.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
