@@ -33,6 +33,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     // added to, which is then the one aria-invalid taken off again once the field is valid.
     private bool _hasAddedAriaInvalid;
 
+    // The classes the cascading EditContext gives the field (UpdateFieldCssClass), as last read.
+    private string? _fieldCssClass;
+
     // What an input that arrives at its value on its own (PublishValueAsync) last wrote into the Value or was last
     // handed from outside, which is how a value the app pushed in is told apart from the one the binding hands back.
     private TValue? _knownValue;
@@ -301,6 +304,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     {
         // One class for both kinds of rejection, so an input the app marks invalid never carries it twice.
         ClassBuilder.Register(() => IsInvalid ? "bit-inv" : string.Empty);
+        ClassBuilder.Register(() => _fieldCssClass);
 
         base.OnInitialized();
     }
@@ -552,6 +556,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
         EditContext.NotifyFieldChanged(FieldIdentifier);
+
+        // The field is modified now, which a form validating nothing raises no event for.
+        UpdateFieldCssClass();
     }
 
     /// <summary>
@@ -628,6 +635,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         // the lookup would throw out of the validation of every other field of the form.
         if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
+        UpdateFieldCssClass();
+
         // The dictionary is the app's own, possibly shared by several inputs, so the attribute is added to and taken off
         // a copy of it, never the dictionary itself.
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
@@ -658,6 +667,29 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             InputHtmlAttributes = inputHtmlAttributes.Count == 0 ? null : inputHtmlAttributes;
             _hasAddedAriaInvalid = false;
         }
+    }
+
+    /// <summary>
+    /// Reads the classes the cascading EditContext gives the field onto the root, as every input of the framework
+    /// carries them: <c>valid</c> or <c>invalid</c>, with <c>modified</c> once the field has changed - or whatever the
+    /// app's <see cref="FieldCssClassProvider"/> (<see cref="EditContextFieldClassExtensions.SetFieldCssClassProvider"/>)
+    /// names instead - so a stylesheet written for the framework's inputs styles these too.
+    /// </summary>
+    /// <remarks>
+    /// Read on every parameters pass, every change of the validation state and every change the input reports. An
+    /// <see cref="Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified()"/> raises no event, so it
+    /// shows on the next parameters pass - the re-render of the form around the input, as it shows on a framework
+    /// input's next render.
+    /// </remarks>
+    private void UpdateFieldCssClass()
+    {
+        var fieldCssClass = EditContext.FieldCssClass(FieldIdentifier);
+
+        if (string.Equals(_fieldCssClass, fieldCssClass, StringComparison.Ordinal)) return;
+
+        _fieldCssClass = fieldCssClass;
+
+        ClassBuilder.Reset();
     }
 
 

@@ -99,6 +99,20 @@ indexes, `aria-sort`, `aria-selected` and the accessible name. No C# API changes
 or its cells by role** (`GetByRole(AriaRole.Grid)`, `[role=grid]`, `[role=gridcell]`) looks for `table` and `cell`
 instead, or turns `CellNavigation` on if the grid should be navigable cell by cell.
 
+### An input in an `EditForm` carries the framework's field classes
+
+The framework's inputs (`InputText`, `InputSelect`, ...) carry the classes their `EditContext` gives their field:
+`valid` or `invalid`, and `modified` once the field has changed - or the names of the app's `FieldCssClassProvider`
+(`EditContext.SetFieldCssClassProvider`) instead. The inputs built on `BitInputBase` now carry them too, on their root
+beside `bit-inv`: `BitTextField`, `BitDropdown`, `BitDatePicker` and the rest of the core inputs, and the Extras'
+`BitPhoneInput`, `BitCountryPicker`, `BitTimeZonePicker` and `BitMarkdownEditor`, whenever one is bound to a field of a
+form and not `NoValidate`. No C# API changes. **An app whose stylesheet styles these classes** - the Blazor templates'
+`app.css` has `.invalid { outline: 1px solid red; }` and `.valid.modified:not([type=checkbox]) { outline: 1px solid
+#26b050; }` - now draws that around the whole input, its label and its messages included. Scope such a rule to the
+native controls (`:is(input, select, textarea).invalid`) to keep it on the framework's inputs, which leaves the bit
+inputs to their own invalid look (`bit-inv`), or remove it. **A test that compares the whole `class` attribute** of an
+input's root in a form expects the new classes.
+
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))
