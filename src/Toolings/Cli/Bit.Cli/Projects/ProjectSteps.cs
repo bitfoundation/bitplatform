@@ -309,10 +309,15 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         => BuildAsync(Path.GetFileName(project.WebSolutionFilter), "the web app", progress, cancellationToken);
 
     public Task<StepResult> WorkbenchBuildAsync(Action<string> progress, CancellationToken cancellationToken)
-        => BuildAsync(Templates.Platforms.WorkbenchProject(project.Name), "the Workbench", progress, cancellationToken);
+        => BuildOptionalPartAsync(project.WorkbenchDirectory, Templates.Platforms.WorkbenchProject(project.Name), "Workbench", progress, cancellationToken);
 
     public Task<StepResult> LandingPageBuildAsync(Action<string> progress, CancellationToken cancellationToken)
-        => BuildAsync(Templates.Platforms.LandingPageProject(project.Name), "the landing page", progress, cancellationToken);
+        => BuildOptionalPartAsync(project.LandingPageDirectory, Templates.Platforms.LandingPageProject(project.Name), "landing page", progress, cancellationToken);
+
+    private Task<StepResult> BuildOptionalPartAsync(string directory, string path, string name, Action<string> progress, CancellationToken cancellationToken)
+        => System.IO.Directory.Exists(directory)
+            ? BuildAsync(path, $"the {name}", progress, cancellationToken)
+            : Task.FromResult(StepResult.Skipped($"Didn't build the {name}", $"the project has no {name}"));
 
     public Task<StepResult> BuildProjectAsync(string path, Action<string> progress, CancellationToken cancellationToken)
         => BuildAsync(path, Path.GetFileNameWithoutExtension(path), progress, cancellationToken);
@@ -526,14 +531,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> WorkbenchRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var (result, running) = await RunUntilClosedAsync(project.WorkbenchDirectory, "the Workbench", progress, cancellationToken);
+        var (result, running) = await RunUntilClosedAsync(project.WorkbenchDirectory, "Workbench", progress, cancellationToken);
         Workbench = running;
         return result;
     }
 
     public async Task<StepResult> LandingPageRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var (result, running) = await RunUntilClosedAsync(project.LandingPageDirectory, "the landing page", progress, cancellationToken);
+        var (result, running) = await RunUntilClosedAsync(project.LandingPageDirectory, "landing page", progress, cancellationToken);
         LandingPage = running;
         return result;
     }
@@ -542,8 +547,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     {
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, directory))}";
 
+        if (System.IO.Directory.Exists(directory) is false)
+            return (StepResult.Skipped($"Didn't start the {name}", $"the project has no {name}"), null);
+
         if (ReadLaunchUrl(directory) is not { } url)
-            return (StepResult.Skipped($"Didn't start {name}", "it has no URL in its launchSettings.json"), null);
+            return (StepResult.Skipped($"Didn't start the {name}", "it has no URL in its launchSettings.json"), null);
 
         var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var run = RunUntilStoppedAsync(new ProcessSpec
@@ -564,10 +572,10 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         {
             await StopAsync();
             running.Dispose();
-            return (StepResult.Warning($"Couldn't start {name}", reason, followUp), null);
+            return (StepResult.Warning($"Couldn't start the {name}", reason, followUp), null);
         }
 
-        return (StepResult.Succeeded($"Started {name}", url), new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run });
+        return (StepResult.Succeeded($"Started the {name}", url), new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run });
     }
 
     private async Task<ProcessResult?> RunUntilStoppedAsync(ProcessSpec spec, CancellationToken cancellationToken)
