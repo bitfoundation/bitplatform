@@ -217,14 +217,18 @@ public class AzureMonitorLiveMetricsTests
     }
 
     [TestMethod]
-    public async Task TheDefaultQuota_LetsABurstThrough_NotAFlood()
+    public async Task TheDefaultQuota_LetsABurstThrough_NotAFlood_AndEarnsSamplesBack()
     {
-        await using var live = Create();
+        var time = new ManualTime();
+        await using var live = Create(time: time);
         Apply(live, Streams("""{ "TelemetryType": "Request", "Filters": { "Filters": [] } }"""));
 
         for (var i = 0; i < 50; i++) live.OnRecord(Request(200));
+        Assert.AreEqual((int)AzureMonitorLiveConfiguration.DefaultInitialQuota, Post(live).GetProperty("Documents").GetArrayLength(), "The clock stands still: nothing is earned back.");
 
-        Assert.AreEqual((int)AzureMonitorLiveConfiguration.DefaultInitialQuota, Post(live).GetProperty("Documents").GetArrayLength());
+        time.Advance(TimeSpan.FromSeconds(3));
+        for (var i = 0; i < 50; i++) live.OnRecord(Request(200));
+        Assert.AreEqual(1, Post(live).GetProperty("Documents").GetArrayLength(), "One sample every 2 seconds.");
     }
 
     [TestMethod]
@@ -242,9 +246,9 @@ public class AzureMonitorLiveMetricsTests
               ] }
             """);
 
-        live.OnRecord(Request(200));
-        live.OnRecord(Request(201));
-        live.OnRecord(Request(500));
+        live.OnRecord(Request(200, seconds: 1));
+        live.OnRecord(Request(201, seconds: 3));
+        live.OnRecord(Request(500, seconds: 10));
         for (var i = 0; i < 3; i++) live.OnRecord(Records.Span());
         foreach (var items in new[] { "4", "-2", "9" })
         {
@@ -253,16 +257,22 @@ public class AzureMonitorLiveMetricsTests
             live.OnRecord(checkout);
         }
 
-        var metrics = Metrics(Post(live));
-        Assert.AreEqual(1500, metrics["ok-duration"], "The average duration of the successful requests, in milliseconds.");
+        var point = Post(live);
+        var metrics = Metrics(point);
+        Assert.AreEqual(2000, metrics["ok-duration"], "The average duration of the successful requests, in milliseconds - not of the failed one.");
         Assert.AreEqual(3, metrics["calls"]);
         Assert.AreEqual(9, metrics["max-items"]);
         Assert.AreEqual(-2, metrics["min-items"]);
+        var weights = Weights(point);
+        Assert.AreEqual(2, weights["ok-duration"], "Weighed by the items aggregated.");
+        Assert.AreEqual(3, weights["calls"]);
+        Assert.AreEqual(1, weights[@"\ApplicationInsights\Requests/Sec"], "A built-in metric weighs 1.");
 
-        var next = Metrics(Post(live));
-        Assert.AreEqual(0, next["ok-duration"], "Each data point starts over; nothing is 0.");
-        Assert.AreEqual(0, next["calls"]);
-        Assert.AreEqual(0, next["max-items"]);
+        var next = Post(live);
+        Assert.AreEqual(0, Metrics(next)["ok-duration"], "Each data point starts over; nothing is 0.");
+        Assert.AreEqual(0, Metrics(next)["calls"]);
+        Assert.AreEqual(0, Metrics(next)["max-items"]);
+        Assert.AreEqual(0, Weights(next)["ok-duration"], "A data point without items weighs nothing.");
     }
 
     [TestMethod]
@@ -335,6 +345,139 @@ public class AzureMonitorLiveMetricsTests
         }, errors);
 
         Assert.HasCount(7, Post(live).GetProperty("CollectionConfigurationErrors").EnumerateArray().ToList(), "Reported with every data point while the configuration lasts.");
+    }
+
+    [TestMethod]
+    public async Task FiltersThatAreNotAList_AreReported_NotTakenAsNone()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1",
+              "DocumentStreams": [
+                { "Id": "s", "DocumentFilterGroups": [
+                    { "TelemetryType": "Request", "Filters": { "Filters": "Success == false" } },
+                    { "TelemetryType": "Request", "Filters": [ { "FieldName": "Success", "Predicate": "Equal", "Comparand": "false" } ] },
+                    { "TelemetryType": "Request", "Filters": { "Filters": [ { "FieldName": "Url", "Predicate": "Contains", "Comparand": "cart" } ] } } ] },
+                { "Id": "groups", "DocumentFilterGroups": { "TelemetryType": "Request" } }
+              ],
+              "Metrics": [
+                { "Id": "a", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "FilterGroups": "all" },
+                { "Id": "b", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum",
+                  "FilterGroups": [ { "Filters": [] }, { "Filters": { "FieldName": "Success", "Predicate": "Equal", "Comparand": "false" } } ] },
+                { "Id": "c", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "FilterGroups": [ "Success == false" ] },
+                { "Id": "ok", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "FilterGroups": [ { "Filters": [] }, { "Filters": null } ] }
+              ] }
+            """);
+
+        CollectionAssert.AreEqual(new[] { "s" }, live.Configuration!.StreamIds.ToArray());
+        CollectionAssert.AreEqual(new[] { "ok" }, live.Configuration.MetricIds.ToArray(), "An absent or null list is an empty one.");
+
+        live.OnRecord(Request(200));
+        var point = Post(live);
+        Assert.AreEqual(0, point.GetProperty("Documents").GetArrayLength(), "The groups left out match nothing - not every item.");
+        Assert.AreEqual(1, Metrics(point)["ok"]);
+
+        var errors = point.GetProperty("CollectionConfigurationErrors").EnumerateArray()
+                          .Select(e => (Type: e.GetProperty("CollectionConfigurationErrorType").GetString(), Message: e.GetProperty("Message").GetString()!,
+                                        Id: Data(e).GetValueOrDefault("DocumentStreamInfoId") ?? Data(e)["MetricId"]))
+                          .ToList();
+        CollectionAssert.AreEqual(new[]
+        {
+            "DocumentStreamFailureToCreateFilterUnexpected:s",
+            "DocumentStreamFailureToCreateFilterUnexpected:s",
+            "DocumentStreamFailureToCreate:groups",
+            "MetricFailureToCreateFilterUnexpected:a",
+            "MetricFailureToCreateFilterUnexpected:b",
+            "MetricFailureToCreateFilterUnexpected:c",
+        }, errors.Select(e => $"{e.Type}:{e.Id}").ToArray());
+        Assert.StartsWith("Filter group 0:", errors[0].Message);
+        Assert.StartsWith("Filter group 1:", errors[1].Message);
+        Assert.StartsWith("Filter group 1:", errors[4].Message, "The group of the metric that holds it.");
+    }
+
+    [TestMethod]
+    public async Task ThePropertiesTheEnvelopeAdds_AreDimensionsToo_UnlessAnAttributeHasTheirKey()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1",
+              "DocumentStreams": [ { "Id": "all", "DocumentFilterGroups": [
+                { "TelemetryType": "Event", "Filters": { "Filters": [ { "FieldName": "CustomDimensions.message", "Predicate": "Contains", "Comparand": "paid" } ] } },
+                { "TelemetryType": "Request", "Filters": { "Filters": [ { "FieldName": "CustomDimensions.message", "Predicate": "Equal", "Comparand": "Payment declined" } ] } },
+                { "TelemetryType": "Trace", "Filters": { "Filters": [] } } ] } ],
+              "Metrics": [ { "Id": "orders", "TelemetryType": "Trace", "Projection": "Count()", "Aggregation": "Sum",
+                             "FilterGroups": [ { "Filters": [ { "FieldName": "CustomDimensions.CategoryName", "Predicate": "Equal", "Comparand": "MyApp.Orders" } ] } ] } ] }
+            """);
+
+        live.OnRecord(Records.Log("Order paid", eventName: "checkout"));
+        var explicitMessage = Records.Log("Order paid", eventName: "checkout");
+        explicitMessage.Attributes.Set("message", "kept");
+        live.OnRecord(explicitMessage);
+        var failed = Request(500);
+        failed.Status = BelemetryStatusCode.Error;
+        failed.StatusMessage = "Payment declined";
+        live.OnRecord(failed);
+        live.OnRecord(Records.Log("Cart emptied"));
+        var categorized = Records.Log("Cart restored");
+        categorized.Attributes.Set("CategoryName", "Custom");
+        live.OnRecord(categorized);
+
+        var point = Post(live);
+        var documents = point.GetProperty("Documents").EnumerateArray().ToList();
+        Assert.HasCount(4, documents, "Not the event whose own message attribute the filter does not match.");
+        Assert.AreEqual("Order paid", Properties(documents[0])["message"], "An event's body.");
+        Assert.AreEqual("Payment declined", Properties(documents[1])["message"], "A failed span's status message.");
+        Assert.AreEqual("MyApp.Orders", Properties(documents[2])["CategoryName"], "A trace's category.");
+        Assert.AreEqual("Custom", Properties(documents[3])["CategoryName"]);
+        Assert.HasCount(1, documents[3].GetProperty("Properties").EnumerateArray().ToList(), "The attribute only.");
+        Assert.AreEqual(1, Metrics(point)["orders"]);
+    }
+
+    [TestMethod]
+    public async Task ASpansNamedEvents_AreSampledAsTraces()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1",
+              "DocumentStreams": [ { "Id": "all", "DocumentFilterGroups": [ { "TelemetryType": "Trace", "Filters": { "Filters": [] } } ] } ],
+              "Metrics": [ { "Id": "traces", "TelemetryType": "Trace", "Projection": "Count()", "Aggregation": "Sum", "FilterGroups": [] } ] }
+            """);
+
+        var span = Records.Span(BelemetrySpanKind.Server);
+        span.Events.Add(new BelemetrySpanEvent { Name = "cache.miss", Attributes = new BelemetryAttributes().Set("cache.key", "orders:7") });
+        span.Events.Add(new BelemetrySpanEvent { Name = string.Empty });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.type", "IOException") });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.stacktrace", "at X()") });
+        live.OnRecord(span);
+
+        var point = Post(live);
+        var document = point.GetProperty("Documents").EnumerateArray().Single();
+        Assert.AreEqual("Trace", document.GetProperty("DocumentType").GetString());
+        Assert.AreEqual("cache.miss", document.GetProperty("Message").GetString());
+        Assert.AreEqual("orders:7", Properties(document)["cache.key"]);
+        Assert.AreEqual(1, Metrics(point)["traces"], "Not the unnamed event, nor the exceptions.");
+    }
+
+    [TestMethod]
+    public async Task ASampleOfAFeatureTheUserRevokes_IsNotSent()
+    {
+        await using var host = TestHost.Create();
+        await using var live = Create(settings: host.Settings);
+        live.Start(host.Pipeline, new CancellationToken(canceled: true));
+        Apply(live, Streams("""
+            { "TelemetryType": "Exception", "Filters": { "Filters": [] } },
+            { "TelemetryType": "Trace", "Filters": { "Filters": [] } }
+            """));
+
+        var error = Records.Log("Payment failed", severity: BelemetrySeverity.Error);
+        error.Attributes.Set("exception.type", "System.TimeoutException");
+        error.Feature = BelemetryFeatures.Errors;
+        live.OnRecord(error);
+        live.OnRecord(Records.Log("Cart emptied"));
+
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
+
+        CollectionAssert.AreEqual(new[] { "Trace" }, DocumentTypes(Post(live)), "The exception goes; the trace, whose feature is still granted, stays.");
     }
 
     [TestMethod]
@@ -483,12 +626,13 @@ public class AzureMonitorLiveMetricsTests
         Assert.AreEqual(0, Post(live).GetProperty("Documents").GetArrayLength());
     }
 
-    private static AzureMonitorLiveMetrics Create(Action<BelemetryAzureMonitorExporterOptions>? configure = null, Action<string>? diagnostic = null, HttpMessageHandler? handler = null)
+    private static AzureMonitorLiveMetrics Create(Action<BelemetryAzureMonitorExporterOptions>? configure = null, Action<string>? diagnostic = null, HttpMessageHandler? handler = null,
+                                                  BelemetrySettings? settings = null, TimeProvider? time = null)
     {
         var options = new BelemetryAzureMonitorExporterOptions { ConnectionString = ConnectionString };
         configure?.Invoke(options);
         var exporter = new BelemetryAzureMonitorExporter(options, "azuremonitor");
-        return new AzureMonitorLiveMetrics(exporter, TestHost.CreateSettings(), (_, message) => diagnostic?.Invoke(message), handler);
+        return new AzureMonitorLiveMetrics(exporter, settings ?? TestHost.CreateSettings(), (_, message) => diagnostic?.Invoke(message), handler, time);
     }
 
     private static void Apply(AzureMonitorLiveMetrics live, string configuration)
@@ -506,9 +650,10 @@ public class AzureMonitorLiveMetricsTests
         response.Content = new StringContent(body, Encoding.UTF8, "application/json");
     }
 
-    private static BelemetrySpan Request(int statusCode)
+    private static BelemetrySpan Request(int statusCode, double seconds = 1.5)
     {
         var span = Records.Span(BelemetrySpanKind.Server);
+        span.EndTimeUnixNano = span.StartTimeUnixNano + (long)(seconds * 1_000_000_000);
         span.Attributes.Set(BelemetrySemanticConventions.HttpRequestMethod, "GET").Set(BelemetrySemanticConventions.HttpRoute, "/orders/{id}")
                        .Set(BelemetrySemanticConventions.UrlFull, "https://shop.test/orders/7").Set(BelemetrySemanticConventions.HttpResponseStatusCode, statusCode);
         return span;
@@ -527,6 +672,22 @@ public class AzureMonitorLiveMetricsTests
     private static Dictionary<string, double> Metrics(JsonElement point) =>
         point.GetProperty("Metrics").EnumerateArray().ToDictionary(m => m.GetProperty("Name").GetString()!, m => m.GetProperty("Value").GetDouble());
 
+    private static Dictionary<string, int> Weights(JsonElement point) =>
+        point.GetProperty("Metrics").EnumerateArray().ToDictionary(m => m.GetProperty("Name").GetString()!, m => m.GetProperty("Weight").GetInt32());
+
+    private static Dictionary<string, string?> Properties(JsonElement document) =>
+        document.GetProperty("Properties").EnumerateArray().ToDictionary(p => p.GetProperty("key").GetString()!, p => p.GetProperty("value").GetString());
+
     private static Dictionary<string, string?> Data(JsonElement error) =>
         error.GetProperty("Data").EnumerateArray().ToDictionary(d => d.GetProperty("key").GetString()!, d => d.GetProperty("value").GetString());
+
+    /// <summary>A clock that moves only when told to.</summary>
+    private sealed class ManualTime : TimeProvider
+    {
+        private long _timestamp;
+
+        public override long GetTimestamp() => _timestamp;
+
+        public void Advance(TimeSpan by) => _timestamp += (long)(by.TotalSeconds * TimestampFrequency);
+    }
 }

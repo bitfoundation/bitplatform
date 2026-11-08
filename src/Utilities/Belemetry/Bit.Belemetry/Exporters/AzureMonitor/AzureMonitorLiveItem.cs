@@ -15,15 +15,25 @@ internal sealed class AzureMonitorLiveItem
     private const int MaxKeyLength = 150;
     private const int MaxValueLength = 8192;
     private const int MaxMessageLength = 32768;
+    private const string MessageProperty = "message";
 
     private readonly BelemetryAttributes _dimensions;
 
-    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, BelemetryAttributes dimensions)
+    // The property the envelope adds to the attributes when they have no such key (AzureMonitorEnvelopeSerializer.WriteProperties).
+    private readonly (string Key, string Value)? _property;
+
+    /// <param name="type">Its telemetry type.</param>
+    /// <param name="dimensions">The attributes its custom dimensions are.</param>
+    /// <param name="propertyKey">The key of a property the envelope adds - unless an attribute has that key.</param>
+    /// <param name="propertyValue">That property's value; none when null or empty, as there.</param>
+    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, BelemetryAttributes dimensions, string? propertyKey = null, string? propertyValue = null)
     {
         Type = type;
         _dimensions = dimensions;
+        if (propertyKey is not null && string.IsNullOrEmpty(propertyValue) is false && dimensions.Contains(propertyKey) is false) _property = (propertyKey, propertyValue);
     }
 
+    /// <summary>Its telemetry type.</summary>
     public AzureMonitorLiveTelemetryType Type { get; }
 
     /// <summary>A request's, dependency's or event's name.</summary>
@@ -82,6 +92,7 @@ internal sealed class AzureMonitorLiveItem
         };
     }
 
+    /// <summary>The request or dependency a span is, with a failed span's status message as its <c>message</c>, as in the envelope.</summary>
     public static AzureMonitorLiveItem FromSpan(BelemetrySpan span)
     {
         var attributes = span.Attributes;
@@ -89,10 +100,11 @@ internal sealed class AzureMonitorLiveItem
         var statusCode = attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
         var url = AzureMonitorEnvelopeSerializer.GetUrl(attributes);
         var success = AzureMonitorEnvelopeSerializer.IsSuccess(span, isRequest, statusCode);
+        var message = span.Status == BelemetryStatusCode.Error ? span.StatusMessage : null;
 
         if (isRequest)
         {
-            return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Request, attributes)
+            return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Request, attributes, MessageProperty, message)
             {
                 Name = AzureMonitorEnvelopeSerializer.GetRequestName(span),
                 Url = url ?? string.Empty,
@@ -102,7 +114,7 @@ internal sealed class AzureMonitorLiveItem
             };
         }
 
-        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Dependency, attributes)
+        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Dependency, attributes, MessageProperty, message)
         {
             Name = span.Name,
             Target = AzureMonitorEnvelopeSerializer.GetTarget(attributes, url) ?? string.Empty,
@@ -125,33 +137,58 @@ internal sealed class AzureMonitorLiveItem
         };
     }
 
-    /// <summary>The item of a log record; null when <see cref="TypeOf(BelemetryLogRecord)"/> is.</summary>
+    /// <summary>
+    /// The item of a log record; null when <see cref="TypeOf(BelemetryLogRecord)"/> is. As in the envelope, an event carries
+    /// its body as its <c>message</c> (not a page visit time, whose envelope has a shape of its own), and a trace its
+    /// logger's category as its <c>CategoryName</c> - unless an attribute has that key.
+    /// </summary>
     public static AzureMonitorLiveItem? FromLog(BelemetryLogRecord log)
     {
+        var isVisitTime = log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent;
+
         return TypeOf(log) switch
         {
             AzureMonitorLiveTelemetryType.Exception => FromException(log.Attributes, log.Body),
-            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, log.Attributes)
+            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, log.Attributes, MessageProperty, isVisitTime ? null : log.Body)
             {
                 // As the envelope names it.
-                Name = log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent ? "PageVisitTime" : log.EventName!,
+                Name = isVisitTime ? "PageVisitTime" : log.EventName!,
             },
-            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, log.Attributes) { Message = log.Body ?? string.Empty },
+            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, log.Attributes, "CategoryName", log.Scope.Name)
+            {
+                Message = log.Body ?? string.Empty,
+            },
             _ => null,
         };
     }
 
     /// <summary>
-    /// A custom dimension: an attribute the envelope carries as a property - not the user and session ids (tags there),
-    /// nor an exception's own <c>exception.*</c> attributes.
+    /// The trace a named span event other than an exception is: the envelope's <c>Message</c> of it, with the event's
+    /// name as its message and its attributes as its custom dimensions.
+    /// </summary>
+    public static AzureMonitorLiveItem FromSpanEvent(BelemetrySpanEvent spanEvent) =>
+        new(AzureMonitorLiveTelemetryType.Trace, spanEvent.Attributes) { Message = spanEvent.Name };
+
+    /// <summary>
+    /// A custom dimension: a property the envelope carries - an attribute, but not the user and session ids (tags there),
+    /// nor an exception's own <c>exception.*</c> attributes; or the property it adds itself.
     /// </summary>
     public bool TryGetDimension(string key, [NotNullWhen(true)] out string? value)
     {
         value = null;
-        if (IsDimension(key) is false || _dimensions.TryGetValue(key, out var raw) is false) return false;
+        if (IsDimension(key) is false) return false;
 
-        value = BelemetryAttributes.ToInvariantString(raw);
-        return true;
+        if (_dimensions.TryGetValue(key, out var raw))
+        {
+            value = BelemetryAttributes.ToInvariantString(raw);
+            return true;
+        }
+        if (_property is { } property && property.Key == key)
+        {
+            value = property.Value;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>What a filter on any field (<c>*</c>) looks in: the item's text fields and its custom dimensions.</summary>
@@ -188,6 +225,7 @@ internal sealed class AzureMonitorLiveItem
         {
             if (IsDimension(key)) yield return BelemetryAttributes.ToInvariantString(value);
         }
+        if (_property is { } property) yield return property.Value;
     }
 
     /// <summary>The sample document (<c>DocumentIngress</c>) for the document streams <paramref name="streamIds"/>.</summary>
@@ -243,6 +281,13 @@ internal sealed class AzureMonitorLiveItem
                 w.WriteString("value", Truncate(BelemetryAttributes.ToInvariantString(value), MaxValueLength));
                 w.WriteEndObject();
             }
+            if (_property is { } property)
+            {
+                w.WriteStartObject();
+                w.WriteString("key", property.Key);
+                w.WriteString("value", Truncate(property.Value, MaxValueLength));
+                w.WriteEndObject();
+            }
             w.WriteEndArray();
 
             w.WriteEndObject();
@@ -255,9 +300,13 @@ internal sealed class AzureMonitorLiveItem
     internal static string FormatDuration(TimeSpan duration) =>
         "PT" + Math.Max(0, duration.TotalSeconds).ToString("0.#######", CultureInfo.InvariantCulture) + "S";
 
+    /// <summary>Whether the envelope carries the attribute <paramref name="key"/> as a property.</summary>
     private bool IsDimension(string key) => AzureMonitorEnvelopeSerializer.IsContextAttribute(key) is false
                                             && (Type != AzureMonitorLiveTelemetryType.Exception || key.StartsWith("exception.", StringComparison.Ordinal) is false);
 
-    // Never inside a surrogate pair: the writer refuses a lone surrogate, and the sample would be lost.
+    /// <summary>
+    /// Cuts <paramref name="value"/> to <paramref name="max"/> characters, never inside a surrogate pair: the writer
+    /// refuses a lone surrogate, and the sample would be lost.
+    /// </summary>
     private static string Truncate(string value, int max) => value.Length <= max ? value : value[..(char.IsHighSurrogate(value[max - 1]) ? max - 1 : max)];
 }

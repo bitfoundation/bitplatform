@@ -34,7 +34,13 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     private readonly HttpClient _client;
     private readonly string _streamId = Guid.NewGuid().ToString("N");
     private readonly Action<Exception?, string> _diagnostic;
-    private readonly ConcurrentQueue<byte[]> _documents = new();
+    private readonly TimeProvider _time;
+
+    // The samples waiting for the next data point, with the consent feature of the record each stands for. The lock makes a
+    // configuration's replacement and the enqueueing of a sample taken for it one or the other, never both (Sample).
+    private readonly ConcurrentQueue<(BelemetryFeatures Feature, byte[] Document)> _documents = new();
+    private readonly object _documentsLock = new();
+    private BelemetryPipeline? _pipeline;
     private Uri _endpoint;
     private string? _etag;
     private string? _unreadableEtag;
@@ -51,23 +57,29 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     private TimeSpan _lastCpu;
     private long _lastCpuTimestamp;
 
+    /// <summary>A Live Metrics stream for <paramref name="exporter"/>; it does nothing until <see cref="Start"/>.</summary>
     /// <param name="exporter">The exporter whose resource it streams to, and whose signals and log level the samples follow.</param>
     /// <param name="settings">The settings.</param>
     /// <param name="diagnostic">Where it reports its failures.</param>
     /// <param name="handler">The handler that sends its requests (tests); a new one when null.</param>
-    public AzureMonitorLiveMetrics(BelemetryAzureMonitorExporter exporter, BelemetrySettings settings, Action<Exception?, string> diagnostic, HttpMessageHandler? handler = null)
+    /// <param name="time">The clock the streams' quotas earn samples back by (tests); the system's when null.</param>
+    public AzureMonitorLiveMetrics(BelemetryAzureMonitorExporter exporter, BelemetrySettings settings, Action<Exception?, string> diagnostic, HttpMessageHandler? handler = null,
+                                   TimeProvider? time = null)
     {
         _exporter = exporter;
         _settings = settings;
         _diagnostic = diagnostic;
+        _time = time ?? TimeProvider.System;
         _endpoint = exporter.ConnectionString.LiveEndpoint;
         _client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
         _client.Timeout = TimeSpan.FromSeconds(10);
         _client.MaxResponseContentBufferSize = MaxResponseBytes;
     }
 
+    /// <summary>Counts and samples the records <paramref name="pipeline"/> accepts, and pings and posts until <paramref name="stopping"/>.</summary>
     public void Start(BelemetryPipeline pipeline, CancellationToken stopping)
     {
+        _pipeline = pipeline;
         pipeline.RecordAccepted += OnRecord;
         _loop = RunAsync(pipeline, stopping);
     }
@@ -78,6 +90,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     /// <summary>The configuration applied; null while nobody watches.</summary>
     internal AzureMonitorLiveConfiguration? Configuration => _configuration;
 
+    /// <summary>Counts a record the pipeline accepted into the data point's rates and, while someone watches, samples it.</summary>
     internal void OnRecord(object record)
     {
         switch (record)
@@ -136,49 +149,83 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         switch (record)
         {
             case BelemetrySpan span when options.Signals.HasFlag(BelemetrySignals.Traces):
-                if (configuration.Takes(AzureMonitorLiveItem.TypeOf(span))) Sample(configuration, AzureMonitorLiveItem.FromSpan(span));
+                if (configuration.Takes(AzureMonitorLiveItem.TypeOf(span))) Sample(configuration, AzureMonitorLiveItem.FromSpan(span), span.Feature);
 
-                if (configuration.Takes(AzureMonitorLiveTelemetryType.Exception))
+                // Its events the exporter sends as items of their own (AzureMonitorEnvelopeSerializer.IsItem): an exception as an
+                // Exception, any other named event as a Message - a trace.
+                var exceptions = configuration.Takes(AzureMonitorLiveTelemetryType.Exception);
+                var traces = configuration.Takes(AzureMonitorLiveTelemetryType.Trace);
+                if (exceptions is false && traces is false) break;
+
+                foreach (var spanEvent in span.Events)
                 {
-                    // The exceptions the exporter sends as items of their own (AzureMonitorEnvelopeSerializer.IsItem).
-                    foreach (var spanEvent in span.Events)
+                    if (spanEvent.Name == BelemetrySemanticConventions.ExceptionEvent)
                     {
-                        if (spanEvent.IsException && spanEvent.Attributes.HasException && spanEvent.Limited is false
+                        if (exceptions && spanEvent.Attributes.HasException && spanEvent.Limited is false
                             && (spanEvent.LoggedAs is not { } logged || SendsLog(logged) is false))
                         {
-                            Sample(configuration, AzureMonitorLiveItem.FromException(spanEvent.Attributes, null));
+                            Sample(configuration, AzureMonitorLiveItem.FromException(spanEvent.Attributes, null), BelemetryFeatures.Errors);
                         }
+                    }
+                    else if (traces && string.IsNullOrEmpty(spanEvent.Name) is false)
+                    {
+                        Sample(configuration, AzureMonitorLiveItem.FromSpanEvent(spanEvent), span.Feature);
                     }
                 }
                 break;
 
             case BelemetryLogRecord log when options.Signals.HasFlag(BelemetrySignals.Logs)
                                              && BelemetryExporterSet.PassesMinimumSeverity(log.EventName is not null, log.Severity, _exporter.MinimumSeverity):
-                if (AzureMonitorLiveItem.TypeOf(log) is { } type && configuration.Takes(type)) Sample(configuration, AzureMonitorLiveItem.FromLog(log)!);
+                if (AzureMonitorLiveItem.TypeOf(log) is { } type && configuration.Takes(type)) Sample(configuration, AzureMonitorLiveItem.FromLog(log)!, log.Feature);
                 break;
         }
     }
 
-    private void Sample(AzureMonitorLiveConfiguration configuration, AzureMonitorLiveItem item)
+    /// <summary>
+    /// Offers <paramref name="item"/> to the document streams of <paramref name="configuration"/>, queueing the sample they
+    /// take for the next data point, and to its custom charts.
+    /// </summary>
+    /// <param name="configuration">The configuration applied when the record came.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="feature">The consent feature of the record it stands for: a sample of one the user revokes is not sent.</param>
+    private void Sample(AzureMonitorLiveConfiguration configuration, AzureMonitorLiveItem item, BelemetryFeatures feature)
     {
         if (Volatile.Read(ref _documentCount) < MaxDocuments && configuration.Sample(item) is { } streamIds)
         {
-            if (Interlocked.Increment(ref _documentCount) <= MaxDocuments) _documents.Enqueue(item.ToDocument(streamIds));
-            else Interlocked.Decrement(ref _documentCount);
+            // Written before it takes a place in the queue: a sample that fails to serialize holds none.
+            var document = item.ToDocument(streamIds);
+            lock (_documentsLock)
+            {
+                // Not once the configuration is replaced: the samples taken for it were discarded, and this one goes too.
+                if (_configuration == configuration && Volatile.Read(ref _documentCount) < MaxDocuments)
+                {
+                    _documents.Enqueue((feature, document));
+                    Interlocked.Increment(ref _documentCount);
+                }
+            }
         }
 
         configuration.Project(item);
     }
 
+    /// <summary>
+    /// Whether the user revoked <paramref name="feature"/> since a sample of it was taken: it is not sent. A server answers to
+    /// its operator's configuration, not to a user's consent.
+    /// </summary>
+    private bool IsWithdrawn(BelemetryFeatures feature) => _settings.IsServer is false && _pipeline is { } pipeline && pipeline.CanRecord(feature) is false;
+
+    /// <summary>Whether the exporter sends the log record of <paramref name="logged"/>, which then stands for the exception on the span.</summary>
     private bool SendsLog(BelemetryLoggedException logged) =>
         _exporter.Options.Signals.HasFlag(BelemetrySignals.Logs) && logged.IsDropped is false && logged.Passes(_exporter.MinimumSeverity);
 
+    /// <summary>Whether a span failed: its status is an error, or its HTTP status code is <paramref name="threshold"/> or more.</summary>
     private static bool IsFailure(BelemetrySpan span, int threshold)
     {
         return span.Status == BelemetryStatusCode.Error
                || span.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode) >= threshold;
     }
 
+    /// <summary>Pings every few seconds, and posts a data point every second while someone watches, until <paramref name="stopping"/>.</summary>
     private async Task RunAsync(BelemetryPipeline pipeline, CancellationToken stopping)
     {
         await Task.Yield();
@@ -241,6 +288,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         }
     }
 
+    /// <summary>Asks the service whether someone watches, applying the configuration it answers with.</summary>
     internal async Task<(bool Subscribed, TimeSpan? PollingHint)> PingAsync(CancellationToken cancellationToken)
     {
         using var message = CreateMessage("ping", WriteBody(w => WriteDataPoint(w, metrics: null, configuration: null)));
@@ -272,6 +320,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         });
     }
 
+    /// <summary>A ping or post request, with the stream's identity in the QuickPulse headers.</summary>
     private HttpRequestMessage CreateMessage(string operation, byte[] body)
     {
         var url = AzureMonitorConnectionString.Combine(_endpoint, $"QuickPulseService.svc/{operation}?api-version={ApiVersion}&ikey={Uri.EscapeDataString(_exporter.ConnectionString.InstrumentationKey)}");
@@ -290,6 +339,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         return message;
     }
 
+    /// <summary>Reads whether someone watches, the polling hint, a redirect, and a changed configuration off a response.</summary>
     private async Task<(bool Subscribed, TimeSpan? PollingHint)> ReadResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         var subscribed = Header(response, "x-ms-qps-subscribed") is { } s && bool.TryParse(s, out var b) && b;
@@ -330,42 +380,51 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         AzureMonitorLiveConfiguration configuration;
         try
         {
-            configuration = AzureMonitorLiveConfiguration.Parse(body, etag);
+            configuration = AzureMonitorLiveConfiguration.Parse(body, etag, _time);
         }
         catch (JsonException ex)
         {
             if (_unreadableEtag != etag)
             {
                 _unreadableEtag = etag;
-                _diagnostic(ex, "Live Metrics: the collection configuration the service sent is unreadable; no samples are streamed until it sends one.");
+                _diagnostic(ex, "Live Metrics: the collection configuration the service sent is unreadable; the one applied before, if any, stays until it sends a readable one.");
             }
             return;
         }
 
-        // The samples waiting were taken for the streams of the configuration it replaces.
-        DiscardDocuments();
-        _configuration = configuration;
-        _etag = etag;
+        lock (_documentsLock)
+        {
+            // The samples waiting were taken for the streams of the configuration it replaces.
+            DiscardDocuments();
+            _configuration = configuration;
+            _etag = etag;
+        }
     }
 
     /// <summary>Nobody watches anymore: nothing is sampled until someone does, under the configuration the service sends then.</summary>
     private void StopSampling()
     {
-        _configuration = null;
-        _etag = null;
-        DiscardDocuments();
+        lock (_documentsLock)
+        {
+            _configuration = null;
+            _etag = null;
+            DiscardDocuments();
+        }
     }
 
+    /// <summary>Drops the samples waiting for the next data point.</summary>
     private void DiscardDocuments()
     {
         while (_documents.TryDequeue(out _)) Interlocked.Decrement(ref _documentCount);
     }
 
+    /// <summary>The first value of a response header; null without one.</summary>
     private static string? Header(HttpResponseMessage response, string name)
     {
         return response.Headers.TryGetValues(name, out var values) ? values.FirstOrDefault() : null;
     }
 
+    /// <summary>The data point's built-in metrics, per second of <paramref name="elapsed"/>; the counters start over.</summary>
     private (string Name, double Value)[] CreateDataPoint(TimeSpan elapsed)
     {
         var seconds = Math.Max(elapsed.TotalSeconds, 0.001);
@@ -394,6 +453,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         ];
     }
 
+    /// <summary>The process's share of all processors since the last call, in percent; 0 where process times are unavailable.</summary>
     private double CpuPercent()
     {
         if (OperatingSystem.IsBrowser()) return 0;
@@ -421,6 +481,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         }
     }
 
+    /// <summary>Starts the counters over.</summary>
     private void ResetCounters()
     {
         Interlocked.Exchange(ref _requests, 0);
@@ -466,7 +527,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
             while (_documents.TryDequeue(out var document))
             {
                 Interlocked.Decrement(ref _documentCount);
-                w.WriteRawValue(document, skipInputValidation: true);
+                if (IsWithdrawn(document.Feature) is false) w.WriteRawValue(document.Document, skipInputValidation: true);
             }
             w.WriteEndArray();
 
@@ -481,6 +542,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         w.WriteEndObject();
     }
 
+    /// <summary>The bytes <paramref name="write"/> writes.</summary>
     private static byte[] WriteBody(Action<Utf8JsonWriter> write)
     {
         var buffer = new ArrayBufferWriter<byte>(1024);
@@ -506,6 +568,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         }
     }
 
+    /// <summary>Waits for the loop to stop (its token is the caller's), then releases the HTTP client.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_loop is not null)

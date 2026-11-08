@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace Bit.Belemetry;
@@ -32,6 +31,7 @@ internal sealed class AzureMonitorLiveConfiguration
     // A custom chart that failed on an item (a dimension that is no number): reported once per data point.
     private readonly ConcurrentDictionary<string, string> _failures = new(StringComparer.Ordinal);
 
+    /// <summary>A configuration read by <see cref="Parse"/>: what applies, and what is reported back as left out.</summary>
     private AzureMonitorLiveConfiguration(string etag, DocumentStream[] streams, DerivedMetric[] metrics, Error[] errors)
     {
         ETag = etag;
@@ -53,9 +53,13 @@ internal sealed class AzureMonitorLiveConfiguration
     internal IEnumerable<string> MetricIds => _metrics.Select(m => m.Id);
 
     /// <summary>Reads the body of a ping or post response.</summary>
+    /// <param name="json">The body.</param>
+    /// <param name="etag">The response's configuration etag.</param>
+    /// <param name="time">The clock the streams' quotas earn samples back by; the system's when null.</param>
     /// <exception cref="JsonException">It is no JSON object.</exception>
-    public static AzureMonitorLiveConfiguration Parse(byte[] json, string etag)
+    public static AzureMonitorLiveConfiguration Parse(byte[] json, string etag, TimeProvider? time = null)
     {
+        time ??= TimeProvider.System;
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object) throw new JsonException("The collection configuration is not a JSON object.");
@@ -78,9 +82,18 @@ internal sealed class AzureMonitorLiveConfiguration
                 continue;
             }
 
-            var groups = new List<(AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])>();
-            foreach (var group in Items(Property(info, "DocumentFilterGroups")))
+            var groupList = Property(info, "DocumentFilterGroups");
+            if (IsList(groupList) is false)
             {
+                errors.Add(new("DocumentStreamFailureToCreate", $"The filter groups are not a list ({groupList!.Value.ValueKind}).", "DocumentStreamInfoId", id));
+                continue;
+            }
+
+            var groups = new List<(AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])>();
+            var index = -1;
+            foreach (var group in Items(groupList))
+            {
+                index++;
                 var typeName = EnumName(Property(group, "TelemetryType"), _telemetryTypes);
                 if (ToTelemetryType(typeName) is not { } type)
                 {
@@ -89,18 +102,24 @@ internal sealed class AzureMonitorLiveConfiguration
                 }
 
                 // The group's filters are one object here (FilterConjunctionGroupInfo), not a list of them as in a metric.
-                if (TryCreateFilters(type, Property(Property(group, "Filters"), "Filters"), out var filters, out var error))
+                // Only a group that cannot apply is left out: the stream's others still take what they match.
+                var conjunction = Property(group, "Filters");
+                if (IsObject(conjunction) is false)
+                {
+                    errors.Add(new("DocumentStreamFailureToCreateFilterUnexpected", $"Filter group {index}: the filters are not an object ({conjunction!.Value.ValueKind}).",
+                                   "DocumentStreamInfoId", id));
+                }
+                else if (TryCreateFilters(type, Property(conjunction, "Filters"), out var filters, out var error))
                 {
                     groups.Add((type, filters));
                 }
                 else
                 {
-                    // Only this group is left out: the stream's others still take what they match.
-                    errors.Add(new("DocumentStreamFailureToCreateFilterUnexpected", error, "DocumentStreamInfoId", id));
+                    errors.Add(new("DocumentStreamFailureToCreateFilterUnexpected", $"Filter group {index}: {error}", "DocumentStreamInfoId", id));
                 }
             }
 
-            streams.Add(new DocumentStream(id, [.. groups], initialQuota, maxQuota, accrualRate));
+            streams.Add(new DocumentStream(id, [.. groups], initialQuota, maxQuota, accrualRate, time));
         }
 
         var metrics = new List<DerivedMetric>();
@@ -142,19 +161,18 @@ internal sealed class AzureMonitorLiveConfiguration
 
             // Its filters are a list of groups (OR), each an AND of filters: one that cannot apply would change what the
             // metric counts, so the whole metric is left out.
+            var groupList = Property(info, "FilterGroups");
             var groups = new List<AzureMonitorLiveFilter[]>();
-            string? failure = null;
-            foreach (var group in Items(Property(info, "FilterGroups")))
+            var failure = IsList(groupList) ? null : $"The filter groups are not a list ({groupList!.Value.ValueKind}).";
+            var index = 0;
+            foreach (var group in Items(groupList))
             {
-                if (TryCreateFilters(type, Property(group, "Filters"), out var filters, out var error))
-                {
-                    groups.Add(filters);
-                }
-                else
-                {
-                    failure = error;
-                    break;
-                }
+                if (group.ValueKind != JsonValueKind.Object) failure = $"Filter group {index}: it is not an object ({group.ValueKind}).";
+                else if (TryCreateFilters(type, Property(group, "Filters"), out var filters, out var error)) groups.Add(filters);
+                else failure = $"Filter group {index}: {error}";
+
+                if (failure is not null) break;
+                index++;
             }
             if (failure is not null)
             {
@@ -204,9 +222,11 @@ internal sealed class AzureMonitorLiveConfiguration
         {
             w.WriteStartObject();
             w.WriteString("Name", metric.Id);
-            var value = metric.Take();
+            var (value, count) = metric.Take();
             w.WriteNumber("Value", double.IsFinite(value) ? value : 0);
-            w.WriteNumber("Weight", 1);
+            // Weighed by the items it aggregated, as the Application Insights SDK weighs a derived metric's point: 0 for a
+            // data point without any, which the service's own aggregation across instances then leaves out.
+            w.WriteNumber("Weight", (int)Math.Min(count, int.MaxValue));
             w.WriteEndObject();
         }
     }
@@ -225,6 +245,7 @@ internal sealed class AzureMonitorLiveConfiguration
         }
     }
 
+    /// <summary>Writes one <c>CollectionConfigurationError</c>, with the id of what it left out and the configuration's etag.</summary>
     private void WriteError(Utf8JsonWriter w, Error error)
     {
         w.WriteStartObject();
@@ -244,8 +265,19 @@ internal sealed class AzureMonitorLiveConfiguration
         w.WriteEndObject();
     }
 
+    /// <summary>
+    /// The filters of a group (an AND of them), or false with the reason when one cannot apply - or when they are no list:
+    /// taken as none, they would match every item.
+    /// </summary>
     private static bool TryCreateFilters(AzureMonitorLiveTelemetryType type, JsonElement? list, out AzureMonitorLiveFilter[] filters, out string error)
     {
+        if (IsList(list) is false)
+        {
+            filters = [];
+            error = $"The filters are not a list ({list!.Value.ValueKind}).";
+            return false;
+        }
+
         var created = new List<AzureMonitorLiveFilter>();
         foreach (var filter in Items(list))
         {
@@ -273,6 +305,7 @@ internal sealed class AzureMonitorLiveConfiguration
         || (projection == "Duration" && type is AzureMonitorLiveTelemetryType.Request or AzureMonitorLiveTelemetryType.Dependency)
         || (projection.StartsWith(DerivedMetric.DimensionPrefix, StringComparison.Ordinal) && projection.Length > DerivedMetric.DimensionPrefix.Length);
 
+    /// <summary>The quota of each stream (<c>QuotaInfo</c>), or the Application Insights SDK's when the service sets none it can read.</summary>
     private static (double Initial, double Max, double AccrualRate) ReadQuota(JsonElement? info)
     {
         if (Number(Property(info, "MaxQuota")) is { } max && max >= 0 && Number(Property(info, "QuotaAccrualRatePerSec")) is { } rate && rate >= 0)
@@ -284,6 +317,7 @@ internal sealed class AzureMonitorLiveConfiguration
         return (DefaultInitialQuota, DefaultMaxQuota, DefaultMaxQuota / 60);
     }
 
+    /// <summary>The telemetry type Belemetry has items of, by its name; null for the others (metrics, performance counters).</summary>
     private static AzureMonitorLiveTelemetryType? ToTelemetryType(string? name) => name switch
     {
         "Request" => AzureMonitorLiveTelemetryType.Request,
@@ -306,11 +340,20 @@ internal sealed class AzureMonitorLiveConfiguration
         return null;
     }
 
+    /// <summary>The items of an array; none when <paramref name="element"/> is no array (see <see cref="IsList"/>).</summary>
     private static IEnumerable<JsonElement> Items(JsonElement? element) =>
         element is { ValueKind: JsonValueKind.Array } array ? array.EnumerateArray() : [];
 
+    /// <summary>Whether <paramref name="element"/> reads as a list: an array, or nothing at all (absent or null), an empty one.</summary>
+    private static bool IsList(JsonElement? element) => element is null or { ValueKind: JsonValueKind.Array or JsonValueKind.Null };
+
+    /// <summary>Whether <paramref name="element"/> reads as an object: one, or nothing at all (absent or null), an empty one.</summary>
+    private static bool IsObject(JsonElement? element) => element is null or { ValueKind: JsonValueKind.Object or JsonValueKind.Null };
+
+    /// <summary>A string value; null for anything else.</summary>
     private static string? String(JsonElement? element) => element is { ValueKind: JsonValueKind.String } value ? value.GetString() : null;
 
+    /// <summary>A finite number; null for anything else.</summary>
     private static double? Number(JsonElement? element) =>
         element is { ValueKind: JsonValueKind.Number } value && value.TryGetDouble(out var number) && double.IsFinite(number) ? number : null;
 
@@ -328,6 +371,7 @@ internal sealed class AzureMonitorLiveConfiguration
         return element is { ValueKind: JsonValueKind.Number } value && value.TryGetInt32(out var index) && index >= 0 && index < names.Length ? names[index] : null;
     }
 
+    /// <summary>A <c>CollectionConfigurationError</c>: its type, message, and the key and id of what it is about.</summary>
     private readonly record struct Error(string Type, string Message, string Key, string Id);
 
     private enum Aggregation
@@ -341,12 +385,13 @@ internal sealed class AzureMonitorLiveConfiguration
         private readonly (AzureMonitorLiveTelemetryType Type, AzureMonitorLiveFilter[] Filters)[] _groups;
         private readonly Quota[] _quotas;
 
-        public DocumentStream(string id, (AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])[] groups, double initialQuota, double maxQuota, double accrualRate)
+        /// <summary>A stream with its filter groups, and a quota per telemetry type that earns samples back by <paramref name="time"/>.</summary>
+        public DocumentStream(string id, (AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])[] groups, double initialQuota, double maxQuota, double accrualRate, TimeProvider time)
         {
             Id = id;
             _groups = groups;
             _quotas = new Quota[Enum.GetValues<AzureMonitorLiveTelemetryType>().Length];
-            for (var i = 0; i < _quotas.Length; i++) _quotas[i] = new Quota(initialQuota, maxQuota, accrualRate);
+            for (var i = 0; i < _quotas.Length; i++) _quotas[i] = new Quota(initialQuota, maxQuota, accrualRate, time);
             foreach (var (type, _) in groups) Types |= 1 << (int)type;
         }
 
@@ -355,6 +400,7 @@ internal sealed class AzureMonitorLiveConfiguration
         /// <summary>The telemetry types it has a filter group for, as bits.</summary>
         public int Types { get; }
 
+        /// <summary>Whether it takes <paramref name="item"/> as a sample: a group of its type matches, and it has quota left for it.</summary>
         public bool Takes(AzureMonitorLiveItem item)
         {
             foreach (var (type, filters) in _groups)
@@ -369,18 +415,19 @@ internal sealed class AzureMonitorLiveConfiguration
     /// How many samples a stream may take of one telemetry type: it starts with some, spends one per sample, and earns
     /// them back over time up to a cap - a burst shows at once, a flood does not swamp the portal.
     /// </summary>
-    private sealed class Quota(double initial, double max, double accrualRatePerSecond)
+    private sealed class Quota(double initial, double max, double accrualRatePerSecond, TimeProvider time)
     {
         private readonly object _lock = new();
         private double _available = initial;
-        private long _last = Stopwatch.GetTimestamp();
+        private long _last = time.GetTimestamp();
 
+        /// <summary>Spends one sample, after adding what it earned since the last call; false when none is left.</summary>
         public bool TryTake()
         {
             lock (_lock)
             {
-                var now = Stopwatch.GetTimestamp();
-                _available = Math.Min(max, _available + Stopwatch.GetElapsedTime(_last, now).TotalSeconds * accrualRatePerSecond);
+                var now = time.GetTimestamp();
+                _available = Math.Min(max, _available + time.GetElapsedTime(_last, now).TotalSeconds * accrualRatePerSecond);
                 _last = now;
 
                 if (_available < 1) return false;
@@ -406,6 +453,7 @@ internal sealed class AzureMonitorLiveConfiguration
         /// <summary>Whether it takes <paramref name="item"/>: of its type, and matching a filter group (any, without one).</summary>
         public bool Matches(AzureMonitorLiveItem item) => item.Type == type && (groups.Length == 0 || groups.Any(g => g.All(f => f.Matches(item))));
 
+        /// <summary>The value its projection takes of <paramref name="item"/>, or false with the reason when it has none.</summary>
         public bool TryProject(AzureMonitorLiveItem item, out double value, out string error)
         {
             error = string.Empty;
@@ -432,6 +480,7 @@ internal sealed class AzureMonitorLiveConfiguration
             return true;
         }
 
+        /// <summary>Adds a projected value to the data point's aggregate.</summary>
         public void Add(double value)
         {
             lock (_lock)
@@ -443,22 +492,23 @@ internal sealed class AzureMonitorLiveConfiguration
             }
         }
 
-        /// <summary>The aggregate since the last call (0 without any item), and starts over.</summary>
-        public double Take()
+        /// <summary>The aggregate since the last call (0 without any item) and the number of items in it, and starts over.</summary>
+        public (double Value, long Count) Take()
         {
             lock (_lock)
             {
-                var value = _count == 0 ? 0 : aggregation switch
+                var count = _count;
+                var value = count == 0 ? 0 : aggregation switch
                 {
                     Aggregation.Sum => _sum,
                     Aggregation.Min => _min,
                     Aggregation.Max => _max,
-                    _ => _sum / _count,
+                    _ => _sum / count,
                 };
 
                 _sum = _min = _max = 0;
                 _count = 0;
-                return value;
+                return (value, count);
             }
         }
     }

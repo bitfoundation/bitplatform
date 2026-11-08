@@ -353,16 +353,18 @@ provider is never handed to the browser script.
 > configures:
 >
 > - **Sample telemetry.** Each stream's filters pick the requests, dependencies, exceptions, custom events and traces
->   it shows. A stream takes up to 3 samples of a type at once and earns one more every 2 seconds, saving up to 30,
+>   (log messages, and the named events of spans) it shows. A stream takes up to 3 samples of a type at once and earns one more every 2 seconds, saving up to 30,
 >   unless the service sets other quotas.
 > - **Custom charts.** A chart's filters, projection (`Count()`, `Duration`, `CustomDimensions.{key}`) and
 >   aggregation are computed for every data point.
 >
 > Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the record's
-> attributes as its properties, after privacy and processors, without the user and session ids. Live Metrics only
-> shows what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow. What Belemetry cannot apply
-> (performance counters, custom metrics, an unknown field) is left out and reported back to the portal as a
-> configuration error.
+> attributes as its properties, after privacy and processors, without the user and session ids. Samples and custom
+> charts only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in
+> request, dependency and exception rates count every span and exception the pipeline accepts, whatever these
+> settings. A sample waiting for the next data point is not sent once the user revokes its feature. What Belemetry
+> cannot apply (performance counters, custom metrics, an unknown field, filters that are not a list) is left out and
+> reported back to the portal as a configuration error.
 
 ### Console, in-memory and custom exporters
 
