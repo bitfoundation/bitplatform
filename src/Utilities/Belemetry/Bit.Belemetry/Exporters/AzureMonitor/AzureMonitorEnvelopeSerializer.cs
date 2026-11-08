@@ -108,18 +108,12 @@ internal static class AzureMonitorEnvelopeSerializer
     /// <summary>Writes the span's envelope and one per event of it that is an item of its own; returns how many it wrote.</summary>
     private static int WriteSpan(Utf8JsonWriter w, BelemetrySpan span, ResourceTags resource, Context context)
     {
-        var isRequest = span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer;
+        var isRequest = IsRequest(span);
         var attributes = span.Attributes;
         var statusCode = attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
-        var method = attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod);
-        var url = attributes.GetString(BelemetrySemanticConventions.UrlFull) ?? BuildServerUrl(attributes);
-
-        var success = span.Status != BelemetryStatusCode.Error
-                      && (statusCode is null || statusCode == 0 || statusCode < (isRequest ? 500 : 400));
-
-        // As in TS: an empty method or route is not known.
-        var name = span.Name;
-        if (isRequest && method is { Length: > 0 } && attributes.GetString(BelemetrySemanticConventions.HttpRoute) is { Length: > 0 } route) name = $"{method} {route}";
+        var url = GetUrl(attributes);
+        var success = IsSuccess(span, isRequest, statusCode);
+        var name = isRequest ? GetRequestName(span) : span.Name;
 
         BeginEnvelope(w, isRequest ? "Request" : "RemoteDependency", span.StartTimeUnixNano);
         WriteTags(w, resource, span.TraceId, span.ParentSpanId, isRequest ? name : null, attributes);
@@ -140,15 +134,9 @@ internal static class AzureMonitorEnvelopeSerializer
         }
         else
         {
-            var http = method is not null || url is not null;
-            var dbSystem = attributes.GetString(BelemetrySemanticConventions.DbSystemName) ?? attributes.GetString("db.system");
-            var browser = span.Scope.Name.StartsWith("bit.belemetry", StringComparison.Ordinal);
-            var type = http ? (browser ? "Ajax" : "HTTP")
-                     : dbSystem ?? (span.Kind == BelemetrySpanKind.Internal ? "InProc" : span.Kind.ToString());
-
-            w.WriteString("type", type);
+            w.WriteString("type", GetDependencyType(span, url));
             if (statusCode is not null) w.WriteString("resultCode", statusCode.Value.ToString(CultureInfo.InvariantCulture));
-            var data = url ?? attributes.GetString(BelemetrySemanticConventions.DbQueryText);
+            var data = GetDependencyData(attributes, url);
             if (data is not null) w.WriteString("data", Truncate(data, 8192));
             if (GetTarget(attributes, url) is { } target) w.WriteString("target", Truncate(target, 1024));
         }
@@ -455,6 +443,45 @@ internal static class AzureMonitorEnvelopeSerializer
         };
     }
 
+    /// <summary>Whether a span is a <c>Request</c> (server or consumer) rather than a <c>RemoteDependency</c>.</summary>
+    internal static bool IsRequest(BelemetrySpan span) => span.Kind is BelemetrySpanKind.Server or BelemetrySpanKind.Consumer;
+
+    /// <summary>A request's or dependency's <c>url</c>: <c>url.full</c>, else the one the server attributes describe.</summary>
+    internal static string? GetUrl(BelemetryAttributes attributes) => attributes.GetString(BelemetrySemanticConventions.UrlFull) ?? BuildServerUrl(attributes);
+
+    /// <summary>A request's or dependency's <c>success</c>: no error status, and no HTTP status of 500 (request) or 400 (dependency) and up.</summary>
+    internal static bool IsSuccess(BelemetrySpan span, bool isRequest, long? statusCode) =>
+        span.Status != BelemetryStatusCode.Error && (statusCode is null || statusCode == 0 || statusCode < (isRequest ? 500 : 400));
+
+    /// <summary>A request's <c>name</c> (and <c>ai.operation.name</c>): <c>{method} {route}</c> when both are known, else the span name.</summary>
+    internal static string GetRequestName(BelemetrySpan span)
+    {
+        // As in TS: an empty method or route is not known.
+        var attributes = span.Attributes;
+        return attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod) is { Length: > 0 } method
+               && attributes.GetString(BelemetrySemanticConventions.HttpRoute) is { Length: > 0 } route
+            ? $"{method} {route}"
+            : span.Name;
+    }
+
+    /// <summary>A dependency's <c>type</c>: <c>Ajax</c> (browser) or <c>HTTP</c>, the database system, <c>InProc</c>, or the span kind.</summary>
+    internal static string GetDependencyType(BelemetrySpan span, string? url)
+    {
+        if (url is not null || span.Attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod) is not null)
+        {
+            return span.Scope.Name.StartsWith("bit.belemetry", StringComparison.Ordinal) ? "Ajax" : "HTTP";
+        }
+
+        return span.Attributes.GetString(BelemetrySemanticConventions.DbSystemName) ?? span.Attributes.GetString("db.system")
+               ?? (span.Kind == BelemetrySpanKind.Internal ? "InProc" : span.Kind.ToString());
+    }
+
+    /// <summary>A dependency's <c>data</c>: its URL, else its query text.</summary>
+    internal static string? GetDependencyData(BelemetryAttributes attributes, string? url) => url ?? attributes.GetString(BelemetrySemanticConventions.DbQueryText);
+
+    /// <summary>Whether an attribute is one of the ids the envelope carries as tags (<c>ai.session.id</c>, ...), never as a property.</summary>
+    internal static bool IsContextAttribute(string key) => _contextAttributes.Contains(key);
+
     private static string? BuildServerUrl(BelemetryAttributes attributes)
     {
         var scheme = attributes.GetString(BelemetrySemanticConventions.UrlScheme);
@@ -468,7 +495,7 @@ internal static class AzureMonitorEnvelopeSerializer
         return $"{scheme}://{host}{(port is null || defaultPort ? string.Empty : ":" + port)}{path}{(string.IsNullOrEmpty(query) ? string.Empty : "?" + query.TrimStart('?'))}";
     }
 
-    private static string? GetTarget(BelemetryAttributes attributes, string? url)
+    internal static string? GetTarget(BelemetryAttributes attributes, string? url)
     {
         if (attributes.GetString(BelemetrySemanticConventions.ServerAddress) is { } host)
         {

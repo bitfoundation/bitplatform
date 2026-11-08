@@ -345,8 +345,24 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
 Belemetry takes no dependency on Azure.Identity - the token provider is a plain delegate. An exporter with a token
 provider is never handed to the browser script.
 
-> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature. In a Hybrid app it
-> streams only while the user grants `Metrics`, and it follows the service's endpoint redirects over HTTPS only.
+> Live Metrics follows the Application Insights QuickPulse protocol (API version `2024-04-01-preview`); treat it as a
+> preview feature. In a Hybrid app it streams only while the user grants `Metrics`, and it follows the service's
+> endpoint redirects over HTTPS only.
+>
+> Besides the request, dependency and exception rates and the process CPU and memory, it applies what the portal
+> configures:
+>
+> - **Sample telemetry.** Each stream's filters pick the requests, dependencies, exceptions, custom events and traces
+>   it shows. A stream takes up to 3 samples of a type at once and earns one more every 2 seconds, saving up to 30,
+>   unless the service sets other quotas.
+> - **Custom charts.** A chart's filters, projection (`Count()`, `Duration`, `CustomDimensions.{key}`) and
+>   aggregation are computed for every data point.
+>
+> Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the record's
+> attributes as its properties, after privacy and processors, without the user and session ids. Live Metrics only
+> shows what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow. What Belemetry cannot apply
+> (performance counters, custom metrics, an unknown field) is left out and reported back to the portal as a
+> configuration error.
 
 ### Console, in-memory and custom exporters
 
