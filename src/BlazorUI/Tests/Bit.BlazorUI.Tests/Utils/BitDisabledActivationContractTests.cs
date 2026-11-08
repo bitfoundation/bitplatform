@@ -120,6 +120,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitMessageBox)],
         [typeof(BitMap<BitLeafletMapProvider>)],
         [typeof(BitNavPanel<BitNavItem>)],
+        [typeof(BitResourceTimeline)],
         [typeof(BitAiCollapsible)],
         [typeof(BitAiToolCallView)],
         [typeof(BitAiArtifactView)],

@@ -126,6 +126,23 @@ public sealed class WebAssemblyTrimmingTests
         // The data grid's rows, read through the names of the app's own record.
         await session.WaitForAsync("() => document.querySelector('.bit-dtg')?.textContent.includes('Ada')", "BitDataGrid rendered no rows");
 
+        // The resource timeline (its scripts, of the Extras) selects the app's shift from the keyboard - down to the row
+        // of its bar, Enter on it - and hands the selection back as the app's own instances, which it counts. Only once
+        // its data has loaded: the rows of its ResourceTemplate are there (the engine reported them with the data) and
+        // its root is no longer busy (the component has taken in the bars it resolves the selection to).
+        await session.WaitForAsync("() => { const root = document.querySelector('.bit-rtm'); " +
+                                   "return !!root && root.getAttribute('aria-busy') !== 'true' && " +
+                                   "[...root.querySelectorAll('.bit-rtm-rrw')].some(r => r.textContent.includes('Ada')); }",
+                                   "BitResourceTimeline did not load the app's rows and bars");
+
+        var timeline = page.Locator(".bit-rtm-vpt").First;
+        await timeline.FocusAsync();
+        await timeline.PressAsync("ArrowDown");
+        await timeline.PressAsync("ArrowDown");
+        await timeline.PressAsync("Enter");
+        await session.WaitForAsync("() => document.getElementById('timeline-selection')?.textContent.trim() === '1 selected'",
+                                   "BitResourceTimeline did not select the shift, or did not hand the selection back");
+
         // The AI chat answers a prompt sent from its composer.
         await session.AssertAiChatAnswersAsync();
 
