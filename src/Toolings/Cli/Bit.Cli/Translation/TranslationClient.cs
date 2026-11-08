@@ -77,7 +77,8 @@ public sealed partial class ChatTranslationClient(IChatClient chatClient, ChatOp
     }
 
     private static bool RejectsTemperature(string error)
-        => error.Contains("temperature", StringComparison.OrdinalIgnoreCase) && error.Contains("unsupported", StringComparison.OrdinalIgnoreCase);
+        => error.Contains("temperature", StringComparison.OrdinalIgnoreCase)
+            && (error.Contains("unsupported", StringComparison.OrdinalIgnoreCase) || error.Contains("not support", StringComparison.OrdinalIgnoreCase));
 
     public static string BuildSystemPrompt(TranslationBatch batch)
     {

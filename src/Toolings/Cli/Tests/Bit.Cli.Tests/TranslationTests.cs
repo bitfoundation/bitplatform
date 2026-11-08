@@ -288,7 +288,9 @@ public class TranslationTests
     }
 
     [TestMethod]
-    public async Task AModelThatRejectsTheTemperature_Should_BeAskedAgainWithoutIt()
+    [DataRow("Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported.", "unsupported_value")]
+    [DataRow("temperature is not supported by this model.", "parameter_not_supported")]
+    public async Task AModelThatRejectsTheTemperature_Should_BeAskedAgainWithoutIt(string error, string code)
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
@@ -300,7 +302,7 @@ public class TranslationTests
         server.Start();
         var requests = new List<bool>();
         using var stop = new CancellationTokenSource();
-        var serving = ServeAModelThatRejectsTheTemperature(server, requests, stop.Token);
+        var serving = ServeAModelThatRejectsTheTemperature(server, requests, error, code, stop.Token);
 
         using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("https://api.openai.com/v1", $"http://localhost:{port}/v1", StringComparison.Ordinal));
 
@@ -338,7 +340,7 @@ public class TranslationTests
         Assert.AreEqual("a\tb\r\nc", ResxCatalog.RemoveInvalidXmlCharacters("a\tb\r\u0001\nc"));
     }
 
-    private static async Task ServeAModelThatRejectsTheTemperature(HttpListener server, List<bool> requests, CancellationToken cancellationToken)
+    private static async Task ServeAModelThatRejectsTheTemperature(HttpListener server, List<bool> requests, string error, string code, CancellationToken cancellationToken)
     {
         while (cancellationToken.IsCancellationRequested is false)
         {
@@ -360,7 +362,7 @@ public class TranslationTests
 
             var content = """{ "translations": [ "[Hello]" ] }""";
             var answer = hasTemperature
-                ? """{ "error": { "message": "Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported.", "type": "invalid_request_error", "param": "temperature", "code": "unsupported_value" } }"""
+                ? JsonSerializer.Serialize(new { error = new { message = error, type = "invalid_request_error", param = "temperature", code } })
                 : JsonSerializer.Serialize(new
                 {
                     id = "chatcmpl-1",
