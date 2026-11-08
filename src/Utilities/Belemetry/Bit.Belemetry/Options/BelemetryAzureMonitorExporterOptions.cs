@@ -35,8 +35,9 @@ public sealed class BelemetryAzureMonitorExporterOptions
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Whether to stream Live Metrics (requests, dependencies, exceptions, CPU and memory, once per second while
-    /// someone watches the Live Metrics blade). Not available in the browser. Defaults to <see langword="false"/>.
+    /// Whether to stream Live Metrics (requests, dependencies, exceptions, CPU and memory, plus the sample telemetry
+    /// and custom charts configured in the portal, once per second while someone watches the Live Metrics blade). Not
+    /// available in the browser. Defaults to <see langword="false"/>.
     /// </summary>
     public bool EnableLiveMetrics { get; set; }
 

@@ -79,7 +79,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
 
-    /// <summary>Raised for every record accepted into the queue (used by live metrics).</summary>
+    /// <summary>
+    /// Raised for every record accepted into the queue (Live Metrics). Off a server it is raised under the queue's lock: a
+    /// revoke takes the exceptions and the user ids off the records still queued under that lock, so a handler reads the
+    /// record before any revoke changes it, and a consent mark it takes counts every revoke the record missed. A handler
+    /// is quick, and never enqueues. A server's consent is its operator's - nothing changes a queued record there - so it
+    /// is raised outside the lock.
+    /// </summary>
     internal event Action<object>? RecordAccepted;
 
     /// <summary>Starts the collectors and the export loop. Idempotent.</summary>
@@ -581,9 +587,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
             AddToQueue(entry);
             signal = _queuedSpans + _queuedLogs >= Settings.Options.Batch.MaxBatchSize;
+            if (Settings.IsServer is false) RecordAccepted?.Invoke(entry.Record);
         }
 
-        RecordAccepted?.Invoke(entry.Record);
+        if (Settings.IsServer) RecordAccepted?.Invoke(entry.Record);
         if (signal) Signal();
     }
 
@@ -696,12 +703,12 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                     if (entry.Record is BelemetrySpan span) RemoveExceptionEvents(span);
                 }
             }
-        }
 
-        // Accepted into the queue now, as by Add - outside the lock, like there.
-        if (released is not null && RecordAccepted is { } accepted)
-        {
-            foreach (var entry in released) accepted(entry.Record);
+            // Accepted into the queue now, as by Add - under the lock, like there (never on a server, which returned above).
+            if (released is not null && RecordAccepted is { } accepted)
+            {
+                foreach (var entry in released) accepted(entry.Record);
+            }
         }
 
         if (cleared is not null) _ = ClearStoreAsync(cleared);

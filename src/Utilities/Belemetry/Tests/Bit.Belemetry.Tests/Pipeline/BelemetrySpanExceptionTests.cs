@@ -96,6 +96,28 @@ public class BelemetrySpanExceptionTests
     }
 
     [TestMethod]
+    public async Task ARevoke_WaitsForTheHandlersOfTheRecordAccepted()
+    {
+        await using var host = TestHost.Create();
+        BelemetrySpan? accepted = null;
+        var eventsSeen = -1;
+        Task? revoke = null;
+        host.Pipeline.RecordAccepted += record =>
+        {
+            accepted = (BelemetrySpan)record;
+            revoke = Task.Run(() => host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors));
+            Assert.IsFalse(revoke.Wait(200), "Live Metrics reads the record before a revoke changes it.");
+            eventsSeen = accepted.Events.Count;
+        };
+
+        host.Pipeline.Enqueue(Span());
+        await revoke!;
+
+        Assert.AreEqual(2, eventsSeen);
+        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(accepted!), "Then the revoke takes the exception off the queued span.");
+    }
+
+    [TestMethod]
     public async Task BeforeADecisionOnErrors_ASpanWithExceptions_KeepsThemWhenErrorsIsGranted()
     {
         await using var host = TestHost.Create(consentDefault: BelemetryFeatures.Traces);

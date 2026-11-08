@@ -19,7 +19,9 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         _settings = settings;
         _pipeline = pipeline;
-        _sender = new BelemetryHttpSender(services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler, pipeline.LogDiagnostic,
+        // The app's handler sends all the export traffic: Live Metrics' too.
+        var handler = services.GetService<BelemetryHttpMessageHandlerProvider>()?.Handler;
+        _sender = new BelemetryHttpSender(handler, pipeline.LogDiagnostic,
                                           (ex, message) => pipeline.LogDiagnostic(ex, message, Microsoft.Extensions.Logging.LogLevel.Warning));
 
         var options = settings.Options;
@@ -39,7 +41,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
 
                 if (azureOptions.EnableLiveMetrics && settings.IsBrowser is false)
                 {
-                    _liveMetrics.Add(new AzureMonitorLiveMetrics(exporter, settings, pipeline.LogDiagnostic));
+                    _liveMetrics.Add(new AzureMonitorLiveMetrics(exporter, settings, pipeline.LogDiagnostic, handler));
                 }
             }
             catch (FormatException ex)
@@ -63,6 +65,9 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     public IReadOnlyList<IBelemetryHttpExporter> HttpExporters => _httpExporters;
 
     public IBelemetryRequestStore? Store { get; }
+
+    /// <summary>The Live Metrics streams, one per Azure Monitor exporter that enables them.</summary>
+    internal IReadOnlyList<AzureMonitorLiveMetrics> LiveMetrics => _liveMetrics;
 
     public void StartLiveMetrics(CancellationToken stopping)
     {
