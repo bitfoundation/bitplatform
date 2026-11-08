@@ -536,6 +536,15 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void AProperty_IsNotCutInsideASurrogatePair()
+    {
+        var log = Records.Log();
+        log.Attributes.Set("emoji", new string('v', 8191) + "\U0001F600");
+
+        Assert.AreEqual(new string('v', 8191), Prop(Single(log), "emoji"), "The writer refuses a lone surrogate: the batch would not serialize.");
+    }
+
+    [TestMethod]
     public void DurationFormat()
     {
         Assert.AreEqual("00:00:00.0010000", AzureMonitorEnvelopeSerializer.FormatDuration(TimeSpan.FromMilliseconds(1)));

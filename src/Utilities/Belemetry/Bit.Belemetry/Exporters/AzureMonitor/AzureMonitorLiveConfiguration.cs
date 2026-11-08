@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text.Json;
 
 namespace Bit.Belemetry;
@@ -17,11 +18,6 @@ internal sealed class AzureMonitorLiveConfiguration
 
     /// <summary>The most samples a stream may save up of each telemetry type; it earns them back at a 60th of that per second.</summary>
     internal const double DefaultMaxQuota = 30;
-
-    /// <summary>The telemetry types, in the order of their numbers in the older protocol.</summary>
-    private static readonly string[] _telemetryTypes = ["Request", "Dependency", "Exception", "Event", "Metric", "PerformanceCounter", "Trace"];
-
-    private static readonly string[] _aggregations = ["Avg", "Sum", "Min", "Max"];
 
     private readonly DocumentStream[] _streams;
     private readonly DerivedMetric[] _metrics;
@@ -56,8 +52,14 @@ internal sealed class AzureMonitorLiveConfiguration
     /// <param name="json">The body.</param>
     /// <param name="etag">The response's configuration etag.</param>
     /// <param name="time">The clock the streams' quotas earn samples back by; the system's when null.</param>
+    /// <param name="previous">
+    /// The configuration applied until now: a document stream or custom chart it has unchanged (the same id, definition
+    /// and quotas) is carried over as it is - a stream with the quota it has left, a chart with what it gathered since
+    /// the last data point - so a change elsewhere in the portal neither lets a burst of samples through again nor drops
+    /// a chart's values.
+    /// </param>
     /// <exception cref="JsonException">It is no JSON object.</exception>
-    public static AzureMonitorLiveConfiguration Parse(byte[] json, string etag, TimeProvider? time = null)
+    public static AzureMonitorLiveConfiguration Parse(byte[] json, string etag, TimeProvider? time = null, AzureMonitorLiveConfiguration? previous = null)
     {
         time ??= TimeProvider.System;
         using var document = JsonDocument.Parse(json);
@@ -94,7 +96,7 @@ internal sealed class AzureMonitorLiveConfiguration
             foreach (var group in Items(groupList))
             {
                 index++;
-                var typeName = EnumName(Property(group, "TelemetryType"), _telemetryTypes);
+                var typeName = EnumName<TelemetryType>(Property(group, "TelemetryType"));
                 if (ToTelemetryType(typeName) is not { } type)
                 {
                     errors.Add(new("DocumentStreamFailureToCreate", $"The telemetry type '{typeName}' is not supported: Belemetry streams no samples of it.", "DocumentStreamInfoId", id));
@@ -119,7 +121,10 @@ internal sealed class AzureMonitorLiveConfiguration
                 }
             }
 
-            streams.Add(new DocumentStream(id, [.. groups], initialQuota, maxQuota, accrualRate, time));
+            var definition = string.Create(CultureInfo.InvariantCulture, $"{initialQuota} {maxQuota} {accrualRate} {info.GetRawText()}");
+            streams.Add(previous?.FindStream(id) is { } kept && kept.Definition == definition
+                ? kept
+                : new DocumentStream(id, definition, [.. groups], initialQuota, maxQuota, accrualRate, time));
         }
 
         var metrics = new List<DerivedMetric>();
@@ -137,7 +142,7 @@ internal sealed class AzureMonitorLiveConfiguration
                 continue;
             }
 
-            var typeName = EnumName(Property(info, "TelemetryType"), _telemetryTypes);
+            var typeName = EnumName<TelemetryType>(Property(info, "TelemetryType"));
             if (ToTelemetryType(typeName) is not { } type)
             {
                 errors.Add(new("MetricTelemetryTypeUnsupported", $"The telemetry type '{typeName}' is not supported: Belemetry has no items of it.", "MetricId", id));
@@ -151,9 +156,8 @@ internal sealed class AzureMonitorLiveConfiguration
                 continue;
             }
 
-            var aggregationName = EnumName(Property(info, "Aggregation"), _aggregations);
-            var aggregation = Array.IndexOf(_aggregations, aggregationName);
-            if (aggregation < 0)
+            var aggregationName = EnumName<Aggregation>(Property(info, "Aggregation"));
+            if (Named<Aggregation>(aggregationName) is not { } aggregation)
             {
                 errors.Add(new("MetricFailureToCreate", $"The aggregation '{aggregationName}' is not supported.", "MetricId", id));
                 continue;
@@ -180,27 +184,50 @@ internal sealed class AzureMonitorLiveConfiguration
                 continue;
             }
 
-            metrics.Add(new DerivedMetric(id, type, [.. groups], projection, (Aggregation)aggregation));
+            var definition = info.GetRawText();
+            metrics.Add(previous?.FindMetric(id) is { } kept && kept.Definition == definition
+                ? kept
+                : new DerivedMetric(id, definition, type, [.. groups], projection, aggregation));
         }
 
         return new AzureMonitorLiveConfiguration(etag, [.. streams], [.. metrics], [.. errors]);
     }
 
+    /// <summary>
+    /// The configuration that stands for one the service sent and Belemetry cannot read: nothing to stream or chart, and
+    /// the error reported back with every data point while it lasts. Its etag is the one the requests carry back, so the
+    /// service does not send the same body again with every response.
+    /// </summary>
+    /// <param name="etag">The response's configuration etag.</param>
+    /// <param name="reason">Why it cannot be read.</param>
+    public static AzureMonitorLiveConfiguration Unreadable(string etag, string reason) =>
+        new(etag, [], [], [new("CollectionConfigurationFailureToCreateUnexpected", $"The collection configuration could not be read: {reason}", string.Empty, string.Empty)]);
+
     /// <summary>Whether a stream or a custom chart takes items of <paramref name="type"/>: only then is it worth making one.</summary>
     public bool Takes(AzureMonitorLiveTelemetryType type) => (_types & (1 << (int)type)) != 0;
 
     /// <summary>
-    /// The ids of the document streams that take <paramref name="item"/> as a sample - a group of theirs for its type
-    /// matches, and they have quota left for it - or null for none.
+    /// The document streams that take <paramref name="item"/> as a sample - a group of theirs for its type matches, and
+    /// they have quota left for it, which this spends - or null for none.
     /// </summary>
-    public List<string>? Sample(AzureMonitorLiveItem item)
+    public List<DocumentStream>? Sample(AzureMonitorLiveItem item)
     {
-        List<string>? ids = null;
+        List<DocumentStream>? taken = null;
         foreach (var stream in _streams)
         {
-            if (stream.Takes(item)) (ids ??= []).Add(stream.Id);
+            if (stream.TryTake(item)) (taken ??= []).Add(stream);
         }
-        return ids;
+        return taken;
+    }
+
+    /// <summary>Whether every one of <paramref name="streams"/> is one of its own: a sample they took is one it would have taken.</summary>
+    public bool Has(IReadOnlyList<DocumentStream> streams)
+    {
+        foreach (var stream in streams)
+        {
+            if (Array.IndexOf(_streams, stream) < 0) return false;
+        }
+        return true;
     }
 
     /// <summary>Adds <paramref name="item"/> to the custom charts whose filters it matches.</summary>
@@ -253,10 +280,13 @@ internal sealed class AzureMonitorLiveConfiguration
         w.WriteString("Message", error.Message);
         w.WriteString("FullException", string.Empty);
         w.WriteStartArray("Data");
-        w.WriteStartObject();
-        w.WriteString("key", error.Key);
-        w.WriteString("value", error.Id);
-        w.WriteEndObject();
+        if (error.Key.Length > 0)
+        {
+            w.WriteStartObject();
+            w.WriteString("key", error.Key);
+            w.WriteString("value", error.Id);
+            w.WriteEndObject();
+        }
         w.WriteStartObject();
         w.WriteString("key", "ETag");
         w.WriteString("value", ETag);
@@ -283,8 +313,7 @@ internal sealed class AzureMonitorLiveConfiguration
         {
             try
             {
-                created.Add(AzureMonitorLiveFilter.Create(type, String(Property(filter, "FieldName")),
-                                                          EnumName(Property(filter, "Predicate"), AzureMonitorLiveFilter.Predicates),
+                created.Add(AzureMonitorLiveFilter.Create(type, String(Property(filter, "FieldName")), EnumName<AzureMonitorLiveFilter.Predicate>(Property(filter, "Predicate")),
                                                           String(Property(filter, "Comparand"))));
             }
             catch (FormatException ex)
@@ -303,7 +332,7 @@ internal sealed class AzureMonitorLiveConfiguration
     private static bool IsSupportedProjection(AzureMonitorLiveTelemetryType type, string projection) =>
         projection == "Count()"
         || (projection == "Duration" && type is AzureMonitorLiveTelemetryType.Request or AzureMonitorLiveTelemetryType.Dependency)
-        || (projection.StartsWith(DerivedMetric.DimensionPrefix, StringComparison.Ordinal) && projection.Length > DerivedMetric.DimensionPrefix.Length);
+        || (projection.StartsWith(AzureMonitorLiveFilter.DimensionPrefix, StringComparison.Ordinal) && projection.Length > AzureMonitorLiveFilter.DimensionPrefix.Length);
 
     /// <summary>The quota of each stream (<c>QuotaInfo</c>), or the Application Insights SDK's when the service sets none it can read.</summary>
     private static (double Initial, double Max, double AccrualRate) ReadQuota(JsonElement? info)
@@ -318,15 +347,21 @@ internal sealed class AzureMonitorLiveConfiguration
     }
 
     /// <summary>The telemetry type Belemetry has items of, by its name; null for the others (metrics, performance counters).</summary>
-    private static AzureMonitorLiveTelemetryType? ToTelemetryType(string? name) => name switch
+    private static AzureMonitorLiveTelemetryType? ToTelemetryType(string? name) => Named<TelemetryType>(name) switch
     {
-        "Request" => AzureMonitorLiveTelemetryType.Request,
-        "Dependency" => AzureMonitorLiveTelemetryType.Dependency,
-        "Exception" => AzureMonitorLiveTelemetryType.Exception,
-        "Event" => AzureMonitorLiveTelemetryType.Event,
-        "Trace" => AzureMonitorLiveTelemetryType.Trace,
+        TelemetryType.Request => AzureMonitorLiveTelemetryType.Request,
+        TelemetryType.Dependency => AzureMonitorLiveTelemetryType.Dependency,
+        TelemetryType.Exception => AzureMonitorLiveTelemetryType.Exception,
+        TelemetryType.Event => AzureMonitorLiveTelemetryType.Event,
+        TelemetryType.Trace => AzureMonitorLiveTelemetryType.Trace,
         _ => null,
     };
+
+    /// <summary>The document stream of id <paramref name="id"/>; null for none.</summary>
+    private DocumentStream? FindStream(string id) => Array.Find(_streams, s => s.Id == id);
+
+    /// <summary>The custom chart of id <paramref name="id"/>; null for none.</summary>
+    private DerivedMetric? FindMetric(string id) => Array.Find(_metrics, m => m.Id == id);
 
     /// <summary>A property by name, ignoring its case; null when <paramref name="element"/> is no object or has none.</summary>
     private static JsonElement? Property(JsonElement? element, string name)
@@ -358,37 +393,68 @@ internal sealed class AzureMonitorLiveConfiguration
         element is { ValueKind: JsonValueKind.Number } value && value.TryGetDouble(out var number) && double.IsFinite(number) ? number : null;
 
     /// <summary>
-    /// An enum value: its name, as this API version sends it, or its number, as the older protocol's serializer wrote
-    /// it. The name's case is the API's.
+    /// The name of a value of <typeparamref name="TEnum"/>: by its name, in any case, as this API version sends it, or by
+    /// its number, as the older protocol's serializer wrote it - the enum's own names and numbers, which cannot drift from
+    /// it. Any other string is returned as it is, for the error that reports it; anything else is null.
     /// </summary>
-    private static string? EnumName(JsonElement? element, string[] names)
+    private static string? EnumName<TEnum>(JsonElement? element) where TEnum : struct, Enum
     {
         if (String(element) is { } name)
         {
-            return Array.Find(names, n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase)) ?? name;
+            foreach (var value in Enum.GetValues<TEnum>())
+            {
+                if (string.Equals(value.ToString(), name, StringComparison.OrdinalIgnoreCase)) return value.ToString();
+            }
+            return name;
         }
 
-        return element is { ValueKind: JsonValueKind.Number } value && value.TryGetInt32(out var index) && index >= 0 && index < names.Length ? names[index] : null;
+        if (element is { ValueKind: JsonValueKind.Number } number && number.TryGetInt32(out var n))
+        {
+            foreach (var value in Enum.GetValues<TEnum>())
+            {
+                if (Convert.ToInt32(value, CultureInfo.InvariantCulture) == n) return value.ToString();
+            }
+        }
+        return null;
     }
 
-    /// <summary>A <c>CollectionConfigurationError</c>: its type, message, and the key and id of what it is about.</summary>
+    /// <summary>The value of <typeparamref name="TEnum"/> named <paramref name="name"/>, in its case; null for none - a number included.</summary>
+    internal static TEnum? Named<TEnum>(string? name) where TEnum : struct, Enum
+    {
+        foreach (var value in Enum.GetValues<TEnum>())
+        {
+            if (value.ToString() == name) return value;
+        }
+        return null;
+    }
+
+    /// <summary>A <c>CollectionConfigurationError</c>: its type, message, and the key and id of what it is about (none when the key is empty).</summary>
     private readonly record struct Error(string Type, string Message, string Key, string Id);
 
+    /// <summary>The telemetry types (<c>TelemetryType</c>), by their names and numbers in the protocol.</summary>
+    private enum TelemetryType
+    {
+        Request, Dependency, Exception, Event, Metric, PerformanceCounter, Trace,
+    }
+
+    /// <summary>The aggregations (<c>AggregationType</c>), by their names and numbers in the protocol.</summary>
     private enum Aggregation
     {
         Avg, Sum, Min, Max,
     }
 
     /// <summary>A stream of sample telemetry (<c>DocumentStreamInfo</c>): filter groups (OR) per telemetry type, and a quota per type.</summary>
-    private sealed class DocumentStream
+    internal sealed class DocumentStream
     {
         private readonly (AzureMonitorLiveTelemetryType Type, AzureMonitorLiveFilter[] Filters)[] _groups;
         private readonly Quota[] _quotas;
 
         /// <summary>A stream with its filter groups, and a quota per telemetry type that earns samples back by <paramref name="time"/>.</summary>
-        public DocumentStream(string id, (AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])[] groups, double initialQuota, double maxQuota, double accrualRate, TimeProvider time)
+        public DocumentStream(string id, string definition, (AzureMonitorLiveTelemetryType, AzureMonitorLiveFilter[])[] groups, double initialQuota, double maxQuota,
+                              double accrualRate, TimeProvider time)
         {
             Id = id;
+            Definition = definition;
             _groups = groups;
             _quotas = new Quota[Enum.GetValues<AzureMonitorLiveTelemetryType>().Length];
             for (var i = 0; i < _quotas.Length; i++) _quotas[i] = new Quota(initialQuota, maxQuota, accrualRate, time);
@@ -397,15 +463,18 @@ internal sealed class AzureMonitorLiveConfiguration
 
         public string Id { get; }
 
+        /// <summary>What it was made of - its JSON and the quotas - which a configuration that carries it over has the same.</summary>
+        public string Definition { get; }
+
         /// <summary>The telemetry types it has a filter group for, as bits.</summary>
         public int Types { get; }
 
-        /// <summary>Whether it takes <paramref name="item"/> as a sample: a group of its type matches, and it has quota left for it.</summary>
-        public bool Takes(AzureMonitorLiveItem item)
+        /// <summary>Takes <paramref name="item"/> as a sample when a group of its type matches and it has quota left for it, which this spends.</summary>
+        public bool TryTake(AzureMonitorLiveItem item)
         {
             foreach (var (type, filters) in _groups)
             {
-                if (type == item.Type && filters.All(f => f.Matches(item))) return _quotas[(int)type].TryTake();
+                if (type == item.Type && AzureMonitorLiveFilter.MatchesAll(filters, item)) return _quotas[(int)type].TryTake();
             }
             return false;
         }
@@ -438,20 +507,32 @@ internal sealed class AzureMonitorLiveConfiguration
     }
 
     /// <summary>A custom chart (<c>DerivedMetricInfo</c>): the items of one type its filter groups (OR) match, projected and aggregated per data point.</summary>
-    private sealed class DerivedMetric(string id, AzureMonitorLiveTelemetryType type, AzureMonitorLiveFilter[][] groups, string projection, Aggregation aggregation)
+    private sealed class DerivedMetric(string id, string definition, AzureMonitorLiveTelemetryType type, AzureMonitorLiveFilter[][] groups, string projection,
+                                       Aggregation aggregation)
     {
-        internal const string DimensionPrefix = "CustomDimensions.";
-
         private readonly object _lock = new();
         private double _sum, _min, _max;
         private long _count;
 
         public string Id => id;
 
+        /// <summary>Its JSON, which a configuration that carries it over has the same.</summary>
+        public string Definition => definition;
+
         public AzureMonitorLiveTelemetryType Type => type;
 
         /// <summary>Whether it takes <paramref name="item"/>: of its type, and matching a filter group (any, without one).</summary>
-        public bool Matches(AzureMonitorLiveItem item) => item.Type == type && (groups.Length == 0 || groups.Any(g => g.All(f => f.Matches(item))));
+        public bool Matches(AzureMonitorLiveItem item)
+        {
+            if (item.Type != type) return false;
+            if (groups.Length == 0) return true;
+
+            foreach (var group in groups)
+            {
+                if (AzureMonitorLiveFilter.MatchesAll(group, item)) return true;
+            }
+            return false;
+        }
 
         /// <summary>The value its projection takes of <paramref name="item"/>, or false with the reason when it has none.</summary>
         public bool TryProject(AzureMonitorLiveItem item, out double value, out string error)
@@ -466,13 +547,13 @@ internal sealed class AzureMonitorLiveConfiguration
                 return true;
             }
 
-            var key = projection[DimensionPrefix.Length..];
+            var key = projection[AzureMonitorLiveFilter.DimensionPrefix.Length..];
             if (item.TryGetDimension(key, out var text) is false)
             {
                 error = $"Could not calculate the projection because the custom dimension '{key}' was not found in the telemetry item.";
                 return false;
             }
-            if (double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value) is false || double.IsFinite(value) is false)
+            if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) is false || double.IsFinite(value) is false)
             {
                 error = $"Could not calculate the projection because the custom dimension value '{text}' for the dimension '{key}' is not a valid number.";
                 return false;

@@ -459,11 +459,11 @@ public class AzureMonitorLiveMetricsTests
     }
 
     [TestMethod]
-    public async Task ASampleOfAFeatureTheUserRevokes_IsNotSent()
+    public async Task ASampleOfAFeatureTheUserRevokes_IsNotSent_EvenWhenGrantedAgain()
     {
         await using var host = TestHost.Create();
         await using var live = Create(settings: host.Settings);
-        live.Start(host.Pipeline, new CancellationToken(canceled: true));
+        live.Attach(host.Pipeline);
         Apply(live, Streams("""
             { "TelemetryType": "Exception", "Filters": { "Filters": [] } },
             { "TelemetryType": "Trace", "Filters": { "Filters": [] } }
@@ -476,40 +476,200 @@ public class AzureMonitorLiveMetricsTests
         live.OnRecord(Records.Log("Cart emptied"));
 
         host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
+        host.Consent.Decide(BelemetryFeatures.All);
 
-        CollectionAssert.AreEqual(new[] { "Trace" }, DocumentTypes(Post(live)), "The exception goes; the trace, whose feature is still granted, stays.");
+        CollectionAssert.AreEqual(new[] { "Trace" }, DocumentTypes(Post(live)),
+                                  "The exception goes - the pipeline purged its record at the revoke; the trace, whose feature was not revoked, stays.");
+    }
+
+    [TestMethod]
+    public async Task ASampleWithoutAPlaceInTheQueue_SpendsNoQuota()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1", "Metrics": [], "QuotaInfo": { "InitialQuota": 150, "MaxQuota": 150, "QuotaAccrualRatePerSec": 0 },
+              "DocumentStreams": [ { "Id": "all", "DocumentFilterGroups": [ { "TelemetryType": "Request", "Filters": { "Filters": [] } } ] } ] }
+            """);
+
+        for (var i = 0; i < 90; i++) live.OnRecord(Request(200));
+        Parallel.For(0, 64, new ParallelOptions { MaxDegreeOfParallelism = 16 }, _ => live.OnRecord(Request(200)));
+        Assert.AreEqual(100, Post(live).GetProperty("Documents").GetArrayLength(), "The queue holds 100 samples; the threads racing for its last places took no more.");
+
+        for (var i = 0; i < 80; i++) live.OnRecord(Request(200));
+        Assert.AreEqual(50, Post(live).GetProperty("Documents").GetArrayLength(), "150 - 100: the samples that found no place spent none of the quota.");
+    }
+
+    [TestMethod]
+    public async Task OnceTheStreamStops_ItNeitherSamplesNorCounts()
+    {
+        await using var host = TestHost.Create();
+        using var stopping = new CancellationTokenSource();
+        await using var live = Create(settings: host.Settings, handler: new FakeHttpMessageHandler());
+        live.Start(host.Pipeline, stopping.Token);
+        Apply(live, Streams("""{ "TelemetryType": "Exception", "Filters": { "Filters": [] } }"""));
+
+        stopping.Cancel();
+        await WaitUntil(() => live.Configuration is null);
+        host.Pipeline.Enqueue(Error());
+        Assert.AreEqual(0, live.Exceptions, "The loop's end detaches it from the pipeline.");
+
+        // Disposed without a loop that ran: the same.
+        var attached = Create(settings: host.Settings);
+        attached.Attach(host.Pipeline);
+        Apply(attached, Streams("""{ "TelemetryType": "Exception", "Filters": { "Filters": [] } }"""));
+        await attached.DisposeAsync();
+        host.Pipeline.Enqueue(Error());
+        Assert.IsNull(attached.Configuration);
+        Assert.AreEqual(0, attached.Exceptions);
+
+        static BelemetryLogRecord Error()
+        {
+            var error = Records.Log("Payment failed", severity: BelemetrySeverity.Error);
+            error.Attributes.Set("exception.type", "System.TimeoutException");
+            return error;
+        }
+    }
+
+    [TestMethod]
+    public async Task TheStream_SendsThroughTheAppsHandler()
+    {
+        var handler = new FakeHttpMessageHandler().Enqueue(HttpStatusCode.OK, r => Answer(r, subscribed: false, etag: null, string.Empty));
+        await using var host = TestHost.Create(o => o.AddAzureMonitorExporter(ConnectionString, e => e.EnableLiveMetrics = true),
+                                               configureServices: s => s.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler)));
+
+        await host.Pipeline.Exporters.LiveMetrics.Single().PingAsync(CancellationToken.None);
+
+        Assert.AreEqual("https://live.test/QuickPulseService.svc/ping?api-version=2024-04-01-preview&ikey=11111111-2222-3333-4444-555555555555",
+                        handler.Requests.Single().Message.RequestUri!.ToString(), "As the rest of the export traffic: through a proxy, an in-process server, ...");
+    }
+
+    [TestMethod]
+    public async Task APageVisitTimeSample_HasTheEnvelopesProperties()
+    {
+        await using var live = Create();
+        Apply(live, Streams("""{ "TelemetryType": "Event", "Filters": { "Filters": [ { "FieldName": "CustomDimensions.PageName", "Predicate": "Equal", "Comparand": "Orders" } ] } }"""));
+
+        var visit = Records.Log("/orders", eventName: BelemetrySemanticConventions.PageVisitTimeEvent);
+        visit.Attributes.Set(BelemetrySemanticConventions.UrlFull, "https://shop.test/orders").Set(BelemetrySemanticConventions.UrlPath, "/orders")
+                        .Set(BelemetrySemanticConventions.PageTitle, "Orders").Set(BelemetrySemanticConventions.PageVisitDuration, 1200L)
+                        .Set("PageName", "an attribute").Set("tenant", "contoso");
+        live.OnRecord(visit);
+
+        var document = Post(live).GetProperty("Documents").EnumerateArray().Single();
+        Assert.AreEqual("PageVisitTime", document.GetProperty("Name").GetString());
+        var properties = Properties(document);
+        CollectionAssert.AreEqual(new Dictionary<string, string?> { ["tenant"] = "contoso", ["PageName"] = "Orders", ["PageUrl"] = "https://shop.test/orders" }, properties,
+                                  "Its fields' attributes are no properties, and its PageName takes the place of the attribute's.");
+
+        using var envelope = JsonDocument.Parse(AzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [visit]), new("ikey", MaskIp: false), out _));
+        var written = envelope.RootElement[0].GetProperty("data").GetProperty("baseData").GetProperty("properties").EnumerateObject()
+                              .Select(p => KeyValuePair.Create(p.Name, (string?)p.Value.GetString())).ToList();
+        CollectionAssert.AreEqual(properties.ToList(), written, "The properties of its item in Application Insights, once each.");
+    }
+
+    [TestMethod]
+    public async Task AConfigurationChange_KeepsWhatItsUnchangedStreamsAndChartsHold()
+    {
+        await using var live = Create();
+        const string requests = """{ "Id": "requests", "DocumentFilterGroups": [ { "TelemetryType": "Request", "Filters": { "Filters": [] } } ] }""";
+        const string succeeded = """{ "Id": "requests", "DocumentFilterGroups": [ { "TelemetryType": "Request", "Filters": { "Filters": [ { "FieldName": "Success", "Predicate": "Equal", "Comparand": "true" } ] } } ] }""";
+        const string traces = """{ "Id": "traces", "DocumentFilterGroups": [ { "TelemetryType": "Trace", "Filters": { "Filters": [] } } ] }""";
+        static string Configuration(string streams) => $$"""
+            { "QuotaInfo": { "InitialQuota": 2, "MaxQuota": 2, "QuotaAccrualRatePerSec": 0 }, "DocumentStreams": [ {{streams}} ],
+              "Metrics": [ { "Id": "count", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "FilterGroups": [] } ] }
+            """;
+
+        Apply(live, Configuration(requests), "e1");
+        live.OnRecord(Request(200));
+
+        // Someone opens another stream: the one of requests and the chart are as they were.
+        Apply(live, Configuration($"{requests}, {traces}"), "e2");
+        live.OnRecord(Request(200));
+        live.OnRecord(Request(200));
+
+        var point = Post(live);
+        Assert.AreEqual(2, point.GetProperty("Documents").GetArrayLength(), "The sample taken before the change stays, and the stream had 1 of its 2 samples left.");
+        Assert.AreEqual(3, Metrics(point)["count"], "The chart kept what it counted before the change.");
+
+        // Someone edits the stream's filters: it is a new one, whose quota starts over and whose waiting samples go at the next edit.
+        Apply(live, Configuration(succeeded), "e3");
+        live.OnRecord(Request(200));
+        Apply(live, Configuration(requests), "e4");
+        Assert.AreEqual(0, Post(live).GetProperty("Documents").GetArrayLength(), "The sample the edited filters took went.");
+        live.OnRecord(Request(200));
+        live.OnRecord(Request(200));
+        live.OnRecord(Request(200));
+        Assert.AreEqual(2, Post(live).GetProperty("Documents").GetArrayLength());
     }
 
     [TestMethod]
     public async Task TheOlderProtocolsNumberedEnums_AreRead()
     {
         await using var live = Create();
-        // TelemetryType 0 = Request, Predicate 3 = GreaterThan, Aggregation 1 = Sum.
+        // TelemetryType 0 = Request, 4 = Metric, 6 = Trace; Predicate 3 = GreaterThan, 6 = Contains; Aggregation 1 = Sum, 2 = Min, 3 = Max.
         Apply(live, """
             { "ETag": "e1",
-              "DocumentStreams": [ { "Id": "slow", "DocumentFilterGroups": [ { "TelemetryType": 0, "Filters": { "Filters": [ { "FieldName": "Duration", "Predicate": 3, "Comparand": "0.0:0:1" } ] } } ] } ],
-              "Metrics": [ { "Id": "n", "TelemetryType": 0, "Projection": "Count()", "Aggregation": 1, "BackEndAggregation": 1, "FilterGroups": [] } ] }
+              "DocumentStreams": [
+                { "Id": "slow", "DocumentFilterGroups": [ { "TelemetryType": 0, "Filters": { "Filters": [ { "FieldName": "Duration", "Predicate": 3, "Comparand": "0.0:0:1" } ] } } ] },
+                { "Id": "orders", "DocumentFilterGroups": [ { "TelemetryType": 6, "Filters": { "Filters": [ { "FieldName": "Message", "Predicate": 6, "Comparand": "ORDER" } ] } } ] } ],
+              "Metrics": [
+                { "Id": "n", "TelemetryType": 0, "Projection": "Count()", "Aggregation": 1, "BackEndAggregation": 1, "FilterGroups": [] },
+                { "Id": "fastest", "TelemetryType": 0, "Projection": "Duration", "Aggregation": 2, "FilterGroups": [] },
+                { "Id": "slowest", "TelemetryType": 0, "Projection": "Duration", "Aggregation": 3, "FilterGroups": [] },
+                { "Id": "metric", "TelemetryType": 4, "Projection": "Count()", "Aggregation": 1, "FilterGroups": [] },
+                { "Id": "median", "TelemetryType": 0, "Projection": "Count()", "Aggregation": 9, "FilterGroups": [] } ] }
             """);
 
         live.OnRecord(Request(200));
+        live.OnRecord(Request(200, seconds: 0.5));
+        live.OnRecord(Records.Log("Order 7 placed"));
 
         var point = Post(live);
-        CollectionAssert.AreEqual(new[] { "slow" }, StreamIds(point.GetProperty("Documents")[0]), "1.5 s is over 1 s.");
-        Assert.AreEqual(1, Metrics(point)["n"]);
+        var documents = point.GetProperty("Documents").EnumerateArray().ToList();
+        Assert.HasCount(2, documents);
+        CollectionAssert.AreEqual(new[] { "slow" }, StreamIds(documents[0]), "1.5 s is over 1 s; 0.5 s is not.");
+        CollectionAssert.AreEqual(new[] { "orders" }, StreamIds(documents[1]));
+        Assert.AreEqual(2, Metrics(point)["n"]);
+        Assert.AreEqual(500, Metrics(point)["fastest"]);
+        Assert.AreEqual(1500, Metrics(point)["slowest"]);
+        CollectionAssert.AreEqual(new[] { "The telemetry type 'Metric' is not supported: Belemetry has no items of it.", "The aggregation '' is not supported." },
+                                  point.GetProperty("CollectionConfigurationErrors").EnumerateArray().Select(e => e.GetProperty("Message").GetString()).ToArray());
     }
 
     [TestMethod]
-    public async Task AnUnreadableConfiguration_IsReportedOnce_AndChangesNothing()
+    public async Task AnUnreadableConfiguration_IsReportedToThePortal_UnderItsEtag()
     {
         var diagnostics = new List<string>();
-        await using var live = Create(diagnostic: diagnostics.Add);
+        var handler = new FakeHttpMessageHandler()
+            .Enqueue(HttpStatusCode.OK, r => Answer(r, subscribed: true, etag: "e2", "not json"))
+            .Enqueue(HttpStatusCode.OK, r => Answer(r, subscribed: true, etag: "e2", "not json"));
+        await using var live = Create(diagnostic: diagnostics.Add, handler: handler);
+        Apply(live, Streams("""{ "TelemetryType": "Request", "Filters": { "Filters": [] } }"""));
+        live.OnRecord(Request(200));
 
-        live.ApplyConfiguration(Encoding.UTF8.GetBytes("not json"), "e1");
-        live.ApplyConfiguration(Encoding.UTF8.GetBytes("not json"), "e1");
-        live.ApplyConfiguration([], "e1");
+        await live.PingAsync(CancellationToken.None);
+        live.OnRecord(Request(200));
+        await live.PostAsync(TimeSpan.FromSeconds(1), CancellationToken.None);
+        live.ApplyConfiguration([], "e3");
 
-        Assert.IsNull(live.Configuration);
-        Assert.HasCount(1, diagnostics);
+        Assert.AreEqual("e2", handler.Requests[1].Message.Headers.GetValues("x-ms-qps-configuration-etag").Single(),
+                        "Its etag is carried back: the service does not send the body again with every response.");
+        Assert.AreEqual("e2", live.Configuration!.ETag, "An empty body changes nothing.");
+        Assert.HasCount(1, diagnostics, "Read once.");
+
+        using var post = JsonDocument.Parse(handler.Requests[1].Body);
+        var point = post.RootElement[0];
+        Assert.AreEqual(0, point.GetProperty("Documents").GetArrayLength(), "Nothing is sampled - and what the configuration it replaced took went.");
+        var error = point.GetProperty("CollectionConfigurationErrors").EnumerateArray().Single();
+        Assert.AreEqual("CollectionConfigurationFailureToCreateUnexpected", error.GetProperty("CollectionConfigurationErrorType").GetString());
+        CollectionAssert.AreEqual(new Dictionary<string, string?> { ["ETag"] = "e2" }, Data(error));
+        Assert.HasCount(1, Post(live).GetProperty("CollectionConfigurationErrors").EnumerateArray().ToList(), "Reported with every data point while it lasts.");
+
+        Apply(live, Streams("""{ "TelemetryType": "Request", "Filters": { "Filters": [] } }"""), "e4");
+        live.OnRecord(Request(200));
+        var readable = Post(live);
+        Assert.AreEqual(1, readable.GetProperty("Documents").GetArrayLength(), "The next one the portal makes applies.");
+        Assert.AreEqual(0, readable.GetProperty("CollectionConfigurationErrors").GetArrayLength());
     }
 
     [TestMethod]
@@ -635,10 +795,20 @@ public class AzureMonitorLiveMetricsTests
         return new AzureMonitorLiveMetrics(exporter, settings ?? TestHost.CreateSettings(), (_, message) => diagnostic?.Invoke(message), handler, time);
     }
 
-    private static void Apply(AzureMonitorLiveMetrics live, string configuration)
+    private static void Apply(AzureMonitorLiveMetrics live, string configuration, string etag = "e1")
     {
-        live.ApplyConfiguration(Encoding.UTF8.GetBytes(configuration), "e1");
-        Assert.IsNotNull(live.Configuration);
+        live.ApplyConfiguration(Encoding.UTF8.GetBytes(configuration), etag);
+        Assert.AreEqual(etag, live.Configuration?.ETag);
+    }
+
+    private static async Task WaitUntil(Func<bool> condition)
+    {
+        var started = Environment.TickCount64;
+        while (condition() is false)
+        {
+            if (Environment.TickCount64 - started > 5000) Assert.Fail("The condition was not met in time.");
+            await Task.Delay(10);
+        }
     }
 
     private static string Streams(string groups) => $$"""{ "ETag": "e1", "Metrics": [], "DocumentStreams": [ { "Id": "all", "DocumentFilterGroups": [ {{groups}} ] } ] }""";

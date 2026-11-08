@@ -90,7 +90,7 @@ internal static class AzureMonitorEnvelopeSerializer
     /// this exporter sends is the same exception - and any other named event is a Message. An <c>exception</c> event with
     /// neither <c>exception.type</c> nor <c>exception.message</c> is neither, as there.
     /// </summary>
-    private static bool IsItem(BelemetrySpanEvent spanEvent, Context context)
+    internal static bool IsItem(BelemetrySpanEvent spanEvent, Context context)
     {
         if (spanEvent.Name != BelemetrySemanticConventions.ExceptionEvent) return string.IsNullOrEmpty(spanEvent.Name) is false;
 
@@ -141,7 +141,7 @@ internal static class AzureMonitorEnvelopeSerializer
             if (GetTarget(attributes, url) is { } target) w.WriteString("target", Truncate(target, 1024));
         }
 
-        WriteProperties(w, attributes, null, span.Status == BelemetryStatusCode.Error ? span.StatusMessage : null);
+        WriteProperties(w, AzureMonitorProperties.OfSpan(span));
         w.WriteEndObject();
         w.WriteEndObject();
         w.WriteEndObject();
@@ -167,7 +167,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 w.WriteStartObject("baseData");
                 w.WriteNumber("ver", 2);
                 w.WriteString("message", Truncate(spanEvent.Name, MaxMessageLength));
-                WriteProperties(w, spanEvent.Attributes, null, null);
+                WriteProperties(w, AzureMonitorProperties.Of(spanEvent.Attributes));
                 w.WriteEndObject();
                 w.WriteEndObject();
                 w.WriteEndObject();
@@ -199,7 +199,7 @@ internal static class AzureMonitorEnvelopeSerializer
         w.WriteEndObject();
         w.WriteEndArray();
         w.WriteNumber("severityLevel", ToSeverityLevel(severity == BelemetrySeverity.Unspecified ? BelemetrySeverity.Error : severity));
-        WriteProperties(w, attributes, static key => key.StartsWith("exception.", StringComparison.Ordinal), null);
+        WriteProperties(w, AzureMonitorProperties.OfException(attributes));
         w.WriteEndObject();
         w.WriteEndObject();
         w.WriteEndObject();
@@ -233,7 +233,7 @@ internal static class AzureMonitorEnvelopeSerializer
                     w.WriteString("name", Truncate(name, 1024));
                     if (url is not null) w.WriteString("url", Truncate(url, 2048));
                     w.WriteString("duration", FormatDuration(TimeSpan.Zero));
-                    WriteProperties(w, attributes, static key => key is BelemetrySemanticConventions.UrlFull or BelemetrySemanticConventions.PageTitle, null);
+                    WriteProperties(w, AzureMonitorProperties.OfLog(log));
                     w.WriteEndObject();
                     w.WriteEndObject();
                     w.WriteEndObject();
@@ -259,7 +259,7 @@ internal static class AzureMonitorEnvelopeSerializer
                     w.WriteNumber("count", 1);
                     w.WriteEndObject();
                     w.WriteEndArray();
-                    WriteProperties(w, attributes, static key => key is BelemetrySemanticConventions.WebVitalName or BelemetrySemanticConventions.WebVitalValue, null);
+                    WriteProperties(w, AzureMonitorProperties.OfLog(log));
                     w.WriteEndObject();
                     w.WriteEndObject();
                     w.WriteEndObject();
@@ -268,11 +268,8 @@ internal static class AzureMonitorEnvelopeSerializer
 
             case BelemetrySemanticConventions.PageVisitTimeEvent:
                 {
-                    // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply.
-                    var url = attributes.GetString(BelemetrySemanticConventions.UrlFull);
-                    var name = attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
-                             : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? log.Body ?? "page";
-
+                    // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply:
+                    // its PageName and PageUrl are properties (AzureMonitorProperties.OfLog).
                     BeginEnvelope(w, "Event", log.TimeUnixNano);
                     WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
                     w.WriteStartObject("data");
@@ -280,12 +277,7 @@ internal static class AzureMonitorEnvelopeSerializer
                     w.WriteStartObject("baseData");
                     w.WriteNumber("ver", 2);
                     w.WriteString("name", "PageVisitTime");
-                    w.WriteStartObject("properties");
-                    WritePropertyEntries(w, attributes, static key => key is BelemetrySemanticConventions.UrlFull or BelemetrySemanticConventions.UrlPath
-                                                                           or BelemetrySemanticConventions.PageTitle or BelemetrySemanticConventions.PageVisitDuration);
-                    w.WriteString("PageName", Truncate(name, MaxValueLength));
-                    if (url is not null) w.WriteString("PageUrl", Truncate(url, MaxValueLength));
-                    w.WriteEndObject();
+                    WriteProperties(w, AzureMonitorProperties.OfLog(log));
                     w.WriteStartObject("measurements");
                     WriteDouble(w, "PageVisitTime", attributes.GetDouble(BelemetrySemanticConventions.PageVisitDuration) ?? 0);
                     w.WriteEndObject();
@@ -303,7 +295,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 w.WriteStartObject("baseData");
                 w.WriteNumber("ver", 2);
                 w.WriteString("name", Truncate(eventName, 512));
-                WriteProperties(w, attributes, null, log.Body);
+                WriteProperties(w, AzureMonitorProperties.OfLog(log));
                 w.WriteEndObject();
                 w.WriteEndObject();
                 w.WriteEndObject();
@@ -318,7 +310,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 w.WriteNumber("ver", 2);
                 w.WriteString("message", Truncate(log.Body ?? string.Empty, MaxMessageLength));
                 w.WriteNumber("severityLevel", ToSeverityLevel(log.Severity));
-                WriteProperties(w, attributes, null, null, log.Scope.Name);
+                WriteProperties(w, AzureMonitorProperties.OfLog(log));
                 w.WriteEndObject();
                 w.WriteEndObject();
                 w.WriteEndObject();
@@ -370,7 +362,7 @@ internal static class AzureMonitorEnvelopeSerializer
             if (max is not null) WriteDouble(w, "max", max.Value);
             w.WriteEndObject();
             w.WriteEndArray();
-            WriteProperties(w, p.Attributes, null, null);
+            WriteProperties(w, AzureMonitorProperties.Of(p.Attributes));
             w.WriteEndObject();
             w.WriteEndObject();
             w.WriteEndObject();
@@ -411,22 +403,11 @@ internal static class AzureMonitorEnvelopeSerializer
         w.WriteEndObject();
     }
 
-    private static void WriteProperties(Utf8JsonWriter w, BelemetryAttributes attributes, Func<string, bool>? exclude, string? extraMessage, string? category = null)
+    private static void WriteProperties(Utf8JsonWriter w, AzureMonitorProperties properties)
     {
         w.WriteStartObject("properties");
-        WritePropertyEntries(w, attributes, exclude);
-        if (string.IsNullOrEmpty(extraMessage) is false && attributes.Contains("message") is false) w.WriteString("message", Truncate(extraMessage, MaxValueLength));
-        if (string.IsNullOrEmpty(category) is false && attributes.Contains("CategoryName") is false) w.WriteString("CategoryName", Truncate(category, MaxValueLength));
+        foreach (var (key, value) in properties) w.WriteString(Truncate(key, MaxKeyLength), Truncate(value, MaxValueLength));
         w.WriteEndObject();
-    }
-
-    private static void WritePropertyEntries(Utf8JsonWriter w, BelemetryAttributes attributes, Func<string, bool>? exclude)
-    {
-        foreach (var (key, value) in attributes)
-        {
-            if (_contextAttributes.Contains(key) || (exclude?.Invoke(key) ?? false)) continue;
-            w.WriteString(Truncate(key, MaxKeyLength), Truncate(BelemetryAttributes.ToInvariantString(value), MaxValueLength));
-        }
     }
 
     internal static string FormatDuration(TimeSpan duration) => (duration < TimeSpan.Zero ? TimeSpan.Zero : duration).ToString("c", CultureInfo.InvariantCulture);
@@ -508,7 +489,8 @@ internal static class AzureMonitorEnvelopeSerializer
 
     private static void WriteDouble(Utf8JsonWriter w, string name, double value) => w.WriteNumber(name, double.IsFinite(value) ? value : 0);
 
-    private static string Truncate(string value, int max) => value.Length <= max ? value : value[..max];
+    // Never inside a surrogate pair: the writer refuses a lone surrogate, and the whole batch would fail to serialize.
+    private static string Truncate(string value, int max) => BelemetryValueLimit.Truncate(value, max);
 
     private sealed class ResourceTags
     {

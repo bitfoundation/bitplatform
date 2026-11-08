@@ -10,55 +10,84 @@ namespace Bit.Belemetry;
 /// (<c>DocumentIngress</c>) it streams when a document stream takes it. The values are the Azure Monitor envelope's, so
 /// a sample reads like the item it stands for in Application Insights.
 /// </summary>
+/// <remarks>
+/// A span's fields are worked out the first time something asks for them: most spans are offered to a stream that only
+/// looks at whether they succeeded, or that has no quota left. Read on the thread that recorded the record, and only
+/// while it is offered (<see cref="AzureMonitorLiveMetrics"/>), so they need no lock.
+/// </remarks>
 internal sealed class AzureMonitorLiveItem
 {
     private const int MaxKeyLength = 150;
     private const int MaxValueLength = 8192;
     private const int MaxMessageLength = 32768;
-    private const string MessageProperty = "message";
 
-    private readonly BelemetryAttributes _dimensions;
-
-    // The property the envelope adds to the attributes when they have no such key (AzureMonitorEnvelopeSerializer.WriteProperties).
-    private readonly (string Key, string Value)? _property;
+    private readonly BelemetrySpan? _span;
+    private readonly AzureMonitorProperties _properties;
+    private string? _name, _url, _code, _target, _dependencyType, _data;
+    private long? _statusCode;
+    private bool _statusCodeRead, _urlRead;
+    private bool? _success;
 
     /// <param name="type">Its telemetry type.</param>
-    /// <param name="dimensions">The attributes its custom dimensions are.</param>
-    /// <param name="propertyKey">The key of a property the envelope adds - unless an attribute has that key.</param>
-    /// <param name="propertyValue">That property's value; none when null or empty, as there.</param>
-    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, BelemetryAttributes dimensions, string? propertyKey = null, string? propertyValue = null)
+    /// <param name="properties">Its custom dimensions.</param>
+    /// <param name="span">The request or dependency it is, whose fields it works out.</param>
+    /// <param name="name">An event's name.</param>
+    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, AzureMonitorProperties properties, BelemetrySpan? span = null, string? name = null)
     {
         Type = type;
-        _dimensions = dimensions;
-        if (propertyKey is not null && string.IsNullOrEmpty(propertyValue) is false && dimensions.Contains(propertyKey) is false) _property = (propertyKey, propertyValue);
+        _properties = properties;
+        _span = span;
+        _name = name;
     }
 
     /// <summary>Its telemetry type.</summary>
     public AzureMonitorLiveTelemetryType Type { get; }
 
     /// <summary>A request's, dependency's or event's name.</summary>
-    public string Name { get; private init; } = string.Empty;
+    public string Name => _name ??= Type switch
+    {
+        AzureMonitorLiveTelemetryType.Request => AzureMonitorEnvelopeSerializer.GetRequestName(_span!),
+        AzureMonitorLiveTelemetryType.Dependency => _span!.Name,
+        _ => string.Empty,
+    };
 
     /// <summary>A request's URL.</summary>
-    public string Url { get; private init; } = string.Empty;
+    public string Url => Type == AzureMonitorLiveTelemetryType.Request ? SpanUrl ?? string.Empty : string.Empty;
 
-    /// <summary>A request's response code or a dependency's result code.</summary>
-    public string Code { get; private init; } = string.Empty;
+    /// <summary>A request's response code or a dependency's result code, as the envelope writes it.</summary>
+    public string Code => _code ??= Type switch
+    {
+        AzureMonitorLiveTelemetryType.Request => (StatusCode ?? 0).ToString(CultureInfo.InvariantCulture),
+        AzureMonitorLiveTelemetryType.Dependency => StatusCode?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// <see cref="Code"/> as a number: a request without a status code has 0, as there; a dependency without one, or an
+    /// item of another type, none.
+    /// </summary>
+    public long? CodeNumber => Type == AzureMonitorLiveTelemetryType.Request ? StatusCode ?? 0 : StatusCode;
 
     /// <summary>Whether a request or dependency succeeded.</summary>
-    public bool Success { get; private init; }
+    public bool Success => _success ??= _span is { } span && AzureMonitorEnvelopeSerializer.IsSuccess(span, Type == AzureMonitorLiveTelemetryType.Request, StatusCode);
 
     /// <summary>A request's or dependency's duration.</summary>
-    public TimeSpan Duration { get; private init; }
+    public TimeSpan Duration => _span?.Duration ?? TimeSpan.Zero;
 
     /// <summary>A dependency's target.</summary>
-    public string Target { get; private init; } = string.Empty;
+    public string Target => _target ??= Type == AzureMonitorLiveTelemetryType.Dependency
+        ? AzureMonitorEnvelopeSerializer.GetTarget(_span!.Attributes, SpanUrl) ?? string.Empty
+        : string.Empty;
 
     /// <summary>A dependency's type (<c>HTTP</c>, the database system, ...).</summary>
-    public string DependencyType { get; private init; } = string.Empty;
+    public string DependencyType => _dependencyType ??= Type == AzureMonitorLiveTelemetryType.Dependency
+        ? AzureMonitorEnvelopeSerializer.GetDependencyType(_span!, SpanUrl)
+        : string.Empty;
 
     /// <summary>A dependency's data: its URL or command.</summary>
-    public string Data { get; private init; } = string.Empty;
+    public string Data => _data ??= Type == AzureMonitorLiveTelemetryType.Dependency
+        ? AzureMonitorEnvelopeSerializer.GetDependencyData(_span!.Attributes, SpanUrl) ?? string.Empty
+        : string.Empty;
 
     /// <summary>An exception's type.</summary>
     public string ExceptionType { get; private init; } = string.Empty;
@@ -71,6 +100,34 @@ internal sealed class AzureMonitorLiveItem
 
     /// <summary>A trace's message.</summary>
     public string Message { get; private init; } = string.Empty;
+
+    /// <summary>The span's HTTP status code; null without one.</summary>
+    private long? StatusCode
+    {
+        get
+        {
+            if (_statusCodeRead is false)
+            {
+                _statusCode = _span?.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
+                _statusCodeRead = true;
+            }
+            return _statusCode;
+        }
+    }
+
+    /// <summary>The span's URL, which a request is at and a dependency's target and data come from; null without one.</summary>
+    private string? SpanUrl
+    {
+        get
+        {
+            if (_urlRead is false)
+            {
+                _url = _span is { } span ? AzureMonitorEnvelopeSerializer.GetUrl(span.Attributes) : null;
+                _urlRead = true;
+            }
+            return _url;
+        }
+    }
 
     /// <summary>The type of the item <see cref="FromSpan"/> makes of <paramref name="span"/>.</summary>
     public static AzureMonitorLiveTelemetryType TypeOf(BelemetrySpan span) =>
@@ -92,44 +149,13 @@ internal sealed class AzureMonitorLiveItem
         };
     }
 
-    /// <summary>The request or dependency a span is, with a failed span's status message as its <c>message</c>, as in the envelope.</summary>
-    public static AzureMonitorLiveItem FromSpan(BelemetrySpan span)
-    {
-        var attributes = span.Attributes;
-        var isRequest = AzureMonitorEnvelopeSerializer.IsRequest(span);
-        var statusCode = attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode);
-        var url = AzureMonitorEnvelopeSerializer.GetUrl(attributes);
-        var success = AzureMonitorEnvelopeSerializer.IsSuccess(span, isRequest, statusCode);
-        var message = span.Status == BelemetryStatusCode.Error ? span.StatusMessage : null;
-
-        if (isRequest)
-        {
-            return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Request, attributes, MessageProperty, message)
-            {
-                Name = AzureMonitorEnvelopeSerializer.GetRequestName(span),
-                Url = url ?? string.Empty,
-                Code = (statusCode ?? 0).ToString(CultureInfo.InvariantCulture),
-                Success = success,
-                Duration = span.Duration,
-            };
-        }
-
-        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Dependency, attributes, MessageProperty, message)
-        {
-            Name = span.Name,
-            Target = AzureMonitorEnvelopeSerializer.GetTarget(attributes, url) ?? string.Empty,
-            DependencyType = AzureMonitorEnvelopeSerializer.GetDependencyType(span, url),
-            Data = AzureMonitorEnvelopeSerializer.GetDependencyData(attributes, url) ?? string.Empty,
-            Code = statusCode?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
-            Success = success,
-            Duration = span.Duration,
-        };
-    }
+    /// <summary>The request or dependency a span is.</summary>
+    public static AzureMonitorLiveItem FromSpan(BelemetrySpan span) => new(TypeOf(span), AzureMonitorProperties.OfSpan(span), span);
 
     /// <summary>The exception a log record carries, or one recorded on a span (from the event's attributes).</summary>
     public static AzureMonitorLiveItem FromException(BelemetryAttributes attributes, string? body)
     {
-        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Exception, attributes)
+        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Exception, AzureMonitorProperties.OfException(attributes))
         {
             ExceptionType = attributes.GetString(BelemetrySemanticConventions.ExceptionType) ?? "Error",
             ExceptionMessage = attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? body ?? string.Empty,
@@ -137,24 +163,15 @@ internal sealed class AzureMonitorLiveItem
         };
     }
 
-    /// <summary>
-    /// The item of a log record; null when <see cref="TypeOf(BelemetryLogRecord)"/> is. As in the envelope, an event carries
-    /// its body as its <c>message</c> (not a page visit time, whose envelope has a shape of its own), and a trace its
-    /// logger's category as its <c>CategoryName</c> - unless an attribute has that key.
-    /// </summary>
+    /// <summary>The item of a log record, named as the envelope names it; null when <see cref="TypeOf(BelemetryLogRecord)"/> is.</summary>
     public static AzureMonitorLiveItem? FromLog(BelemetryLogRecord log)
     {
-        var isVisitTime = log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent;
-
         return TypeOf(log) switch
         {
             AzureMonitorLiveTelemetryType.Exception => FromException(log.Attributes, log.Body),
-            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, log.Attributes, MessageProperty, isVisitTime ? null : log.Body)
-            {
-                // As the envelope names it.
-                Name = isVisitTime ? "PageVisitTime" : log.EventName!,
-            },
-            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, log.Attributes, "CategoryName", log.Scope.Name)
+            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, AzureMonitorProperties.OfLog(log),
+                                                                            name: log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent ? "PageVisitTime" : log.EventName),
+            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.OfLog(log))
             {
                 Message = log.Body ?? string.Empty,
             },
@@ -167,69 +184,38 @@ internal sealed class AzureMonitorLiveItem
     /// name as its message and its attributes as its custom dimensions.
     /// </summary>
     public static AzureMonitorLiveItem FromSpanEvent(BelemetrySpanEvent spanEvent) =>
-        new(AzureMonitorLiveTelemetryType.Trace, spanEvent.Attributes) { Message = spanEvent.Name };
+        new(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.Of(spanEvent.Attributes)) { Message = spanEvent.Name };
+
+    /// <summary>A custom dimension: a property of the item the envelope writes (<see cref="AzureMonitorProperties"/>).</summary>
+    public bool TryGetDimension(string key, [NotNullWhen(true)] out string? value) => _properties.TryGetValue(key, out value);
 
     /// <summary>
-    /// A custom dimension: a property the envelope carries - an attribute, but not the user and session ids (tags there),
-    /// nor an exception's own <c>exception.*</c> attributes; or the property it adds itself.
+    /// Whether one of the item's text fields or custom dimensions contains <paramref name="text"/>, ignoring case: what a
+    /// filter on any field (<c>*</c>) looks for.
     /// </summary>
-    public bool TryGetDimension(string key, [NotNullWhen(true)] out string? value)
+    public bool AnyFieldContains(string text)
     {
-        value = null;
-        if (IsDimension(key) is false) return false;
+        var found = Type switch
+        {
+            AzureMonitorLiveTelemetryType.Request => Has(Name) || Has(Url) || Has(Code),
+            AzureMonitorLiveTelemetryType.Dependency => Has(Name) || Has(Target) || Has(DependencyType) || Has(Data) || Has(Code),
+            AzureMonitorLiveTelemetryType.Exception => Has(ExceptionType) || Has(ExceptionMessage) || Has(StackTrace),
+            AzureMonitorLiveTelemetryType.Event => Has(Name),
+            _ => Has(Message),
+        };
+        if (found) return true;
 
-        if (_dimensions.TryGetValue(key, out var raw))
+        foreach (var (_, value) in _properties)
         {
-            value = BelemetryAttributes.ToInvariantString(raw);
-            return true;
-        }
-        if (_property is { } property && property.Key == key)
-        {
-            value = property.Value;
-            return true;
+            if (Has(value)) return true;
         }
         return false;
+
+        bool Has(string value) => value.Contains(text, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>What a filter on any field (<c>*</c>) looks in: the item's text fields and its custom dimensions.</summary>
-    public IEnumerable<string> Values()
-    {
-        switch (Type)
-        {
-            case AzureMonitorLiveTelemetryType.Request:
-                yield return Name;
-                yield return Url;
-                yield return Code;
-                break;
-            case AzureMonitorLiveTelemetryType.Dependency:
-                yield return Name;
-                yield return Target;
-                yield return DependencyType;
-                yield return Data;
-                yield return Code;
-                break;
-            case AzureMonitorLiveTelemetryType.Exception:
-                yield return ExceptionType;
-                yield return ExceptionMessage;
-                yield return StackTrace;
-                break;
-            case AzureMonitorLiveTelemetryType.Event:
-                yield return Name;
-                break;
-            default:
-                yield return Message;
-                break;
-        }
-
-        foreach (var (key, value) in _dimensions)
-        {
-            if (IsDimension(key)) yield return BelemetryAttributes.ToInvariantString(value);
-        }
-        if (_property is { } property) yield return property.Value;
-    }
-
-    /// <summary>The sample document (<c>DocumentIngress</c>) for the document streams <paramref name="streamIds"/>.</summary>
-    public byte[] ToDocument(IReadOnlyList<string> streamIds)
+    /// <summary>The sample document (<c>DocumentIngress</c>) for the document streams <paramref name="streams"/>.</summary>
+    public byte[] ToDocument(IReadOnlyList<AzureMonitorLiveConfiguration.DocumentStream> streams)
     {
         var buffer = new ArrayBufferWriter<byte>(512);
         using (var w = new Utf8JsonWriter(buffer))
@@ -269,23 +255,15 @@ internal sealed class AzureMonitorLiveItem
             }
 
             w.WriteStartArray("DocumentStreamIds");
-            foreach (var id in streamIds) w.WriteStringValue(id);
+            foreach (var stream in streams) w.WriteStringValue(stream.Id);
             w.WriteEndArray();
 
             w.WriteStartArray("Properties");
-            foreach (var (key, value) in _dimensions)
+            foreach (var (key, value) in _properties)
             {
-                if (IsDimension(key) is false) continue;
                 w.WriteStartObject();
                 w.WriteString("key", Truncate(key, MaxKeyLength));
-                w.WriteString("value", Truncate(BelemetryAttributes.ToInvariantString(value), MaxValueLength));
-                w.WriteEndObject();
-            }
-            if (_property is { } property)
-            {
-                w.WriteStartObject();
-                w.WriteString("key", property.Key);
-                w.WriteString("value", Truncate(property.Value, MaxValueLength));
+                w.WriteString("value", Truncate(value, MaxValueLength));
                 w.WriteEndObject();
             }
             w.WriteEndArray();
@@ -300,13 +278,6 @@ internal sealed class AzureMonitorLiveItem
     internal static string FormatDuration(TimeSpan duration) =>
         "PT" + Math.Max(0, duration.TotalSeconds).ToString("0.#######", CultureInfo.InvariantCulture) + "S";
 
-    /// <summary>Whether the envelope carries the attribute <paramref name="key"/> as a property.</summary>
-    private bool IsDimension(string key) => AzureMonitorEnvelopeSerializer.IsContextAttribute(key) is false
-                                            && (Type != AzureMonitorLiveTelemetryType.Exception || key.StartsWith("exception.", StringComparison.Ordinal) is false);
-
-    /// <summary>
-    /// Cuts <paramref name="value"/> to <paramref name="max"/> characters, never inside a surrogate pair: the writer
-    /// refuses a lone surrogate, and the sample would be lost.
-    /// </summary>
-    private static string Truncate(string value, int max) => value.Length <= max ? value : value[..(char.IsHighSurrogate(value[max - 1]) ? max - 1 : max)];
+    // Never inside a surrogate pair: the writer refuses a lone surrogate, and the sample would be lost.
+    private static string Truncate(string value, int max) => BelemetryValueLimit.Truncate(value, max);
 }

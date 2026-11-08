@@ -358,13 +358,18 @@ provider is never handed to the browser script.
 > - **Custom charts.** A chart's filters, projection (`Count()`, `Duration`, `CustomDimensions.{key}`) and
 >   aggregation are computed for every data point.
 >
-> Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the record's
-> attributes as its properties, after privacy and processors, without the user and session ids. Samples and custom
-> charts only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in
-> request, dependency and exception rates count every span and exception the pipeline accepts, whatever these
-> settings. A sample waiting for the next data point is not sent once the user revokes its feature. What Belemetry
-> cannot apply (performance counters, custom metrics, an unknown field, filters that are not a list) is left out and
-> reported back to the portal as a configuration error.
+> Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the properties of
+> the Application Insights item it stands for - the record's attributes after privacy and processors, without the user
+> and session ids or the attributes the item's own fields hold, plus what the item adds (a page visit's `PageName`, an
+> event's `message`, ...) - and `CustomDimensions.{key}` filters and charts read the same. Samples and custom charts
+> only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in request,
+> dependency and exception rates count every span and exception the pipeline accepts, whatever these settings. A sample
+> waiting for the next data point is not sent once the user revokes its feature, even if they grant it again first.
+> When the portal changes the configuration, the streams and charts it leaves as they were keep their quotas and the
+> values they gathered. What Belemetry cannot apply (performance counters, custom metrics, an unknown field, filters
+> that are not a list) is left out and reported back to the portal as a configuration error; a configuration it cannot
+> read at all is reported too, and nothing is sampled until the portal sends another. The stream goes through a
+> registered `BelemetryHttpMessageHandlerProvider`, like the rest of the export traffic.
 
 ### Console, in-memory and custom exporters
 

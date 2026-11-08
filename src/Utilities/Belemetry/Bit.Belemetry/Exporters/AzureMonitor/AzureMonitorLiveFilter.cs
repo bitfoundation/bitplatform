@@ -10,10 +10,8 @@ namespace Bit.Belemetry;
 /// </summary>
 internal sealed class AzureMonitorLiveFilter
 {
-    /// <summary>The predicates, in the order of their numbers in the older protocol.</summary>
-    internal static readonly string[] Predicates = ["Equal", "NotEqual", "LessThan", "GreaterThan", "LessThanOrEqual", "GreaterThanOrEqual", "Contains", "DoesNotContain"];
-
-    private const string DimensionPrefix = "CustomDimensions.";
+    /// <summary>The prefix of a field (or a custom chart's projection) that names a custom dimension: <c>CustomDimensions.{key}</c>.</summary>
+    internal const string DimensionPrefix = "CustomDimensions.";
 
     private readonly Field _field;
     private readonly string? _dimension;
@@ -37,20 +35,23 @@ internal sealed class AzureMonitorLiveFilter
         Any, Dimension, Name, Url, ResponseCode, ResultCode, Success, Duration, Target, Type, Data, Message, ExceptionMessage, ExceptionStackTrace, ExceptionType,
     }
 
-    private enum Predicate
+    /// <summary>The predicates (<c>PredicateType</c>), by their names and numbers in the protocol.</summary>
+    internal enum Predicate
     {
         Equal, NotEqual, LessThan, GreaterThan, LessThanOrEqual, GreaterThanOrEqual, Contains, DoesNotContain,
     }
 
     /// <summary>The filter for items of <paramref name="type"/>.</summary>
+    /// <param name="type">The telemetry type of the items.</param>
+    /// <param name="fieldName">The field.</param>
+    /// <param name="predicateName">The name of a <see cref="Predicate"/>, in its case.</param>
+    /// <param name="comparand">The comparand.</param>
     /// <exception cref="FormatException">The field, the predicate or the comparand is not one this filter can apply; the message says why.</exception>
     public static AzureMonitorLiveFilter Create(AzureMonitorLiveTelemetryType type, string? fieldName, string? predicateName, string? comparand)
     {
         if (string.IsNullOrEmpty(fieldName)) throw new FormatException("A filter must have a field name.");
 
-        var index = Array.IndexOf(Predicates, predicateName);
-        if (index < 0) throw new FormatException($"'{predicateName}' is not a valid predicate.");
-        var predicate = (Predicate)index;
+        if (AzureMonitorLiveConfiguration.Named<Predicate>(predicateName) is not { } predicate) throw new FormatException($"'{predicateName}' is not a valid predicate.");
 
         if (string.IsNullOrEmpty(comparand)) throw new FormatException($"A filter must have a comparand. FieldName: '{fieldName}' Predicate: '{predicateName}'.");
 
@@ -97,22 +98,23 @@ internal sealed class AzureMonitorLiveFilter
         }
     }
 
+    /// <summary>Whether <paramref name="item"/> matches every one of <paramref name="filters"/> (an AND of them; any item, without one).</summary>
+    public static bool MatchesAll(AzureMonitorLiveFilter[] filters, AzureMonitorLiveItem item)
+    {
+        foreach (var filter in filters)
+        {
+            if (filter.Matches(item) is false) return false;
+        }
+        return true;
+    }
+
     public bool Matches(AzureMonitorLiveItem item)
     {
         switch (_field)
         {
             case Field.Any:
-                var found = false;
-                foreach (var value in item.Values())
-                {
-                    if (value.Contains(_comparand, StringComparison.OrdinalIgnoreCase))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
                 // DoesNotContain: in none of them - not merely missing from one.
-                return found == (_predicate == Predicate.Contains);
+                return item.AnyFieldContains(_comparand) == (_predicate == Predicate.Contains);
 
             case Field.Dimension:
                 // A missing dimension matches no predicate, as in the distros.
@@ -125,8 +127,8 @@ internal sealed class AzureMonitorLiveFilter
                 return CompareNumber(item.Duration.TotalMilliseconds);
 
             case Field.ResponseCode or Field.ResultCode:
-                // A code that is no number (none at all, or a database's) equals no number.
-                return TryParseNumber(item.Code, out var code) ? CompareNumber(code) : _predicate == Predicate.NotEqual;
+                // A dependency without a code equals no number.
+                return item.CodeNumber is { } code ? CompareNumber(code) : _predicate == Predicate.NotEqual;
 
             default:
                 return CompareText(_field switch

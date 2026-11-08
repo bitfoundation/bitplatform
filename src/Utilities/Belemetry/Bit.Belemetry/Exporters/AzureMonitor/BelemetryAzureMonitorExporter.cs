@@ -27,6 +27,9 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     internal BelemetryAzureMonitorExporterOptions Options => _options;
 
+    /// <summary>What its envelopes are written under; Live Metrics samples by the same rules (<see cref="AzureMonitorEnvelopeSerializer.IsItem(BelemetrySpanEvent, AzureMonitorEnvelopeSerializer.Context)"/>).</summary>
+    internal AzureMonitorEnvelopeSerializer.Context Context => _context;
+
     // Authentication is the connection string's key (in the body) or a token from PrepareAsync.
     public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
