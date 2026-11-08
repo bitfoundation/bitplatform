@@ -6,13 +6,14 @@ internal sealed class MinifierOptions
 {
     /// <summary>
     /// The bit libraries: packages an app installs, wherever this repository builds them from source. Patterns
-    /// (see <see cref="Matches"/>), so a new package is one without anything to add here: every Bit.* assembly
-    /// but the ones this repository publishes as an app's own code - its demos, samples, tests and websites.
+    /// (see <see cref="Matches"/>), so a new package is one without anything to add here: every Bit.B* assembly -
+    /// bit names each of its products Bit.B-something, which an app of its own named Bit.Acme.Client is not - but
+    /// the ones this repository publishes as an app's own code - its demos, samples, tests and websites.
     /// </summary>
     public static readonly IReadOnlyList<string> BitAssemblies =
     [
-        "Bit.*",
-        "!*.Demo", "!*.Demo.*", "!*Sample*", "!*.Tests", "!*.Tests.*", "!*.TestKit", "!*.Benchmarks", "!Bit.Websites.*"
+        "Bit.B*",
+        "!*.Demo", "!*.Demo.*", "!*Sample", "!*Sample.*", "!*Samples", "!*Samples.*", "!*.Tests", "!*.Tests.*", "!*.TestKit", "!*.Benchmarks", "!Bit.Websites.*"
     ];
 
     /// <summary>
