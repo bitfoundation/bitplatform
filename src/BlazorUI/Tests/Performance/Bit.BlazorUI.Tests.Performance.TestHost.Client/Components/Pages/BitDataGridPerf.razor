@@ -1,13 +1,16 @@
 ﻿@page "/perf/data-grid"
 @page "/perf/data-grid/{Count:int}"
 
+@* Counts the page's renders, for OnAfterRender to tell the render carrying a change from the ones built before it. *@
+@{ _renders++; }
+
 <PageTitle>BitDataGrid Performance Test</PageTitle>
 
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>BitDataGrid Performance Test</h3>
     <div style="margin-bottom: 10px;">
         <label>Row Count: </label>
-        <input type="number" @bind="Count" min="1" max="200000" style="width: 100px;" />
+        <input type="number" @bind="Count" min="1" max="@MaxCount" style="width: 100px;" />
         <button @onclick="Render" id="btn-render">Render</button>
         <button @onclick="SortAsync" id="btn-sort">Sort by price</button>
         <button @onclick="FilterAsync" id="btn-filter">Filter one category</button>
@@ -26,7 +29,9 @@
 
 @if (_isRendered)
 {
+    @* Keyed by the Render click, so every click makes a new grid and Render Time is always an initial render. *@
     <BitDataGrid @ref="_grid"
+                 @key="_gridKey"
                  Id="perf-grid"
                  TItem="PerfRow"
                  Items="_rows"
@@ -55,10 +60,18 @@
     /// <summary>The category FilterAsync keeps.</summary>
     public const string FilteredCategory = "Category 07";
 
+    // The most rows the page makes, as many as its box allows.
+    private const int MaxCount = 200_000;
+
+    /// <summary>The rows to make, from the route or the box: below 0 makes none, above <see cref="MaxCount"/> that many.</summary>
     [Parameter]
     public int Count { get; set; } = 1000;
 
+    // Count within the rows the page can make, so a negative or huge one never reaches Enumerable.Range.
+    private int RowCount => Math.Clamp(Count, 0, MaxCount);
+
     private BitDataGrid<PerfRow>? _grid;
+    private int _gridKey;
     private List<PerfRow> _rows = [];
     private int _lastId;
     private int _renderedCount;
@@ -71,6 +84,10 @@
     // The status the next render reports once it is on the screen, with the time since the stopwatch started: set when
     // the change it times has been made, so a render the change awaits along the way reports nothing.
     private string? _done;
+    // The page's renders built, the ones OnAfterRender has seen (in the same order), and the first that carries _done.
+    private int _renders;
+    private int _completedRenders;
+    private int _doneAt;
     private readonly System.Diagnostics.Stopwatch _stopwatch = new();
 
     // The last row carries a class of its own, for the scroll test to see it rendered (the grid shows it only once
@@ -83,7 +100,7 @@
 
     private void MakeRows()
     {
-        _rows = Enumerable.Range(1, Count)
+        _rows = Enumerable.Range(1, RowCount)
                           .Select(i => new PerfRow(i,
                                                    $"Item {i:D6}",
                                                    $"Category {i % CategoryCount:D2}",
@@ -92,18 +109,19 @@
                                                    i % 500,
                                                    new DateTime(2026, 1, 1).AddDays(i % 365)))
                           .ToList();
-        _lastId = Count;
+        _lastId = RowCount;
     }
 
     private void Render()
     {
-        if (_rows.Count != Count) MakeRows();
+        if (_rows.Count != RowCount) MakeRows();
 
         _stopwatch.Restart();
         _isRendered = true;
-        _renderedCount = Count;
+        _gridKey++;
+        _renderedCount = RowCount;
         _status = "Rendering...";
-        _done = "Rendered";
+        ReportOnNextRender("Rendered");
     }
 
     private Task SortAsync() => TimeAsync("Sorting...", "Sorted", grid => grid.SortByAsync(nameof(PerfRow.Price), BitDataGridSortDirection.Descending));
@@ -114,7 +132,7 @@
 
     // The grid scrolls to the row after its next render and its virtualization renders the rows there once the browser
     // has reported the scroll, so the end of this one is read off the page (.perf-last-row), not off the status.
-    private Task RevealLastAsync() => TimeAsync("Scrolling...", "Scrolled", grid => grid.RevealItemAsync(_rows[^1]));
+    private Task RevealLastAsync() => _rows.Count == 0 ? Task.CompletedTask : TimeAsync("Scrolling...", "Scrolled", grid => grid.RevealItemAsync(_rows[^1]));
 
     private async Task TimeAsync(string status, string done, Func<BitDataGrid<PerfRow>, Task> change)
     {
@@ -123,11 +141,21 @@
         _stopwatch.Restart();
         _status = status;
         await change(_grid);
+        ReportOnNextRender(done);
+    }
+
+    // The next render reports done once it is on the screen. Not an earlier one: a render built before the change (the
+    // one an awaited change makes along the way, or the "Ready" one) can reach OnAfterRender after it.
+    private void ReportOnNextRender(string done)
+    {
         _done = done;
+        _doneAt = _renders + 1;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
+        _completedRenders++;
+
         if (firstRender)
         {
             // Runs only in interactive mode (never during the prerender): the page is ready to handle events.
@@ -136,7 +164,7 @@
             return;
         }
 
-        if (_done is null || _stopwatch.IsRunning is false) return;
+        if (_done is null || _completedRenders < _doneAt || _stopwatch.IsRunning is false) return;
 
         _stopwatch.Stop();
         if (_done == "Rendered")

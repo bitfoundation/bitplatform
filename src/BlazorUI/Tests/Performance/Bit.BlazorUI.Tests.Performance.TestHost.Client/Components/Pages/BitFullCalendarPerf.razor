@@ -1,13 +1,16 @@
 ﻿@page "/perf/full-calendar"
 @page "/perf/full-calendar/{Count:int}"
 
+@* Counts the page's renders, for OnAfterRender to tell the render carrying a change from the ones built before it. *@
+@{ _renders++; }
+
 <PageTitle>BitFullCalendar Performance Test</PageTitle>
 
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>BitFullCalendar Performance Test</h3>
     <div style="margin-bottom: 10px;">
         <label>Event Count: </label>
-        <input type="number" @bind="Count" min="1" max="20000" style="width: 100px;" />
+        <input type="number" @bind="Count" min="1" max="@MaxCount" style="width: 100px;" />
         <button @onclick="() => Render(BitFullCalendarMode.Event)" id="btn-render-month">Render the month view</button>
         <button @onclick="() => Render(BitFullCalendarMode.Timeline)" id="btn-render-timeline">Render the timeline month</button>
         <button @onclick="Next" id="btn-next">Next month</button>
@@ -25,8 +28,11 @@
 @if (_isRendered)
 {
     <div style="height: 900px;">
-        @* en-US, so the dates the cells are labelled with - which the tests wait for - read the same on every machine. *@
+        @* en-US, so the dates the cells are labelled with - which the tests wait for - read the same on every machine.
+           Keyed by the render click, so every click makes a new calendar - DefaultMode is read once, as it starts - and
+           Render Time is always its initial render. *@
         <BitFullCalendar @ref="_calendar"
+                         @key="_calendarKey"
                          Id="perf-calendar"
                          CultureName="en-US"
                          Events="_events"
@@ -48,10 +54,18 @@
     // (performance-baseline.md, section 4) once the count reaches 5,000.
     private const int MaxSeriesCount = 200;
 
+    // The most events the page makes, as many as its box allows.
+    private const int MaxCount = 20_000;
+
+    /// <summary>The events to make, from the route or the box: below 0 makes none, above <see cref="MaxCount"/> that many.</summary>
     [Parameter]
     public int Count { get; set; } = 1000;
 
+    // Count within the events the page can make, so a negative or huge one never reaches Enumerable.Range.
+    private int EventCount => Math.Clamp(Count, 0, MaxCount);
+
     private BitFullCalendar? _calendar;
+    private int _calendarKey;
     private List<BitFullCalendarEvent> _events = [];
     private readonly List<BitFullCalendarResource> _resources =
         Enumerable.Range(1, ResourceCount).Select(i => new BitFullCalendarResource { Id = $"r{i:D2}", Title = $"Resource {i:D2}" }).ToList();
@@ -65,6 +79,10 @@
     private bool _isRendered;
     // The status the next render reports once it is on the screen, with the time since the stopwatch started.
     private string? _done;
+    // The page's renders built, the ones OnAfterRender has seen (in the same order), and the first that carries _done.
+    private int _renders;
+    private int _completedRenders;
+    private int _doneAt;
     private readonly System.Diagnostics.Stopwatch _stopwatch = new();
 
     // The events are made as the page starts, before it is ready: what the tests time from the click is the calendar,
@@ -76,10 +94,10 @@
     // series through the year instead, expanded by the calendar for the range it shows.
     private void MakeEvents()
     {
-        var seriesCount = Math.Min(MaxSeriesCount, Count / 25);
+        var seriesCount = Math.Min(MaxSeriesCount, EventCount / 25);
         var year = new DateTime(2026, 1, 1);
 
-        _events = Enumerable.Range(0, Count).Select(i =>
+        _events = Enumerable.Range(0, EventCount).Select(i =>
         {
             var day = year.AddDays(i % 365);
             var start = day.AddHours(8 + i % 10);
@@ -113,14 +131,15 @@
 
     private void Render(BitFullCalendarMode mode)
     {
-        if (_events.Count != Count) MakeEvents();
+        if (_events.Count != EventCount) MakeEvents();
 
         _stopwatch.Restart();
         _mode = mode;
         _isRendered = true;
-        _renderedCount = Count;
+        _calendarKey++;
+        _renderedCount = EventCount;
         _status = "Rendering...";
-        _done = "Rendered";
+        ReportOnNextRender("Rendered");
     }
 
     // The calendar renders the next month once its state has told it, after the handler: the tests read the end off the
@@ -132,11 +151,21 @@
         _stopwatch.Restart();
         _status = "Navigating...";
         _calendar.NavigateNext();
-        _done = "Navigated";
+        ReportOnNextRender("Navigated");
+    }
+
+    // The next render reports done once it is on the screen. Not an earlier one: a render built before the change (the
+    // "Ready" one, when the click comes before its acknowledgement) can reach OnAfterRender after it.
+    private void ReportOnNextRender(string done)
+    {
+        _done = done;
+        _doneAt = _renders + 1;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
+        _completedRenders++;
+
         if (firstRender)
         {
             // Runs only in interactive mode (never during the prerender): the page is ready to handle events.
@@ -145,7 +174,7 @@
             return;
         }
 
-        if (_done is null || _stopwatch.IsRunning is false) return;
+        if (_done is null || _completedRenders < _doneAt || _stopwatch.IsRunning is false) return;
 
         _stopwatch.Stop();
         if (_done == "Rendered")
