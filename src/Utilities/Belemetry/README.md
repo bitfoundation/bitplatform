@@ -534,8 +534,10 @@ An exception nothing caught reaches no `ILogger`, so the .NET pipeline listens f
   the task's own exception is reported rather than its `AggregateException` when it is the only one. The event is not
   marked observed: that stays the app's choice.
 
-Both carry `exception.type`, `exception.message`, `exception.stacktrace` and the trace context of the thread that
-threw, under the scope `Bit.Belemetry.UnhandledExceptions`. They are `Errors` records: consent and the
+Both carry `exception.type`, `exception.message`, `exception.stacktrace` and the trace context of `Activity.Current`
+where they are reported, under the scope `Bit.Belemetry.UnhandledExceptions`. For `AppDomain.UnhandledException` that
+is the thread that threw, so the span it threw in; an unobserved task exception is reported by the finalizer thread,
+long after the task ran, and carries no trace context of the task's. They are `Errors` records: consent and the
 [error limits](#error-floods-and-runaway-values) apply as to any other, and production diagnostics count them as
 unhandled exceptions (the `UnhandledExceptions` trigger).
 
@@ -546,7 +548,9 @@ and the next launch sends it with the rest of the store (its first resend pass i
 [The server pipeline](#the-server-pipeline)). Without it nothing is written to disk - the user did not allow it - and
 the record is lost with the process. Records held for a consent decision are never written either. In WebAssembly
 the page outlives the .NET runtime, so the queue is handed to the script instead, which sends it as it sends the
-unload flush. Only the HTTP exporters (OTLP, Azure Monitor) are saved, as only their requests can be stored; custom
+unload flush. The queue is saved in requests of at most `Batch.MaxBatchSize` records each, newest first: when the
+store's `Persistence.MaxBytes` cannot hold them all, older files make room, then the oldest of these, never the crash
+record. Only the HTTP exporters (OTLP, Azure Monitor) are saved, as only their requests can be stored; custom
 exporters and the console exporter get the records only if the process goes on. Nothing waits on the network as the
 process goes down: a crash never takes longer because of telemetry.
 

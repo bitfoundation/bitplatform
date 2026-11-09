@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Bunit;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Proto.Collector.Logs.V1;
 
@@ -32,7 +33,7 @@ public class BelemetryUnhandledExceptionTests
     }
 
     /// <summary>A pipeline with an OTLP exporter and a file store, as a MAUI or desktop app has, started as a host starts it.</summary>
-    private ServiceProvider CreateProvider(FakeHttpMessageHandler handler, BelemetryFeatures consent = BelemetryFeatures.All)
+    private ServiceProvider CreateProvider(FakeHttpMessageHandler handler, BelemetryFeatures consent = BelemetryFeatures.All, Action<BelemetryOptions>? configure = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -49,6 +50,7 @@ public class BelemetryUnhandledExceptionTests
                 e.Signals = BelemetrySignals.Logs;
                 e.Headers["x-api-key"] = "pw-7f3a";
             });
+            configure?.Invoke(o);
         });
 
         var provider = services.BuildServiceProvider();
@@ -240,6 +242,124 @@ public class BelemetryUnhandledExceptionTests
     }
 
     [TestMethod]
+    public async Task ATerminatingException_IsNeverTakenByAnExport_TheEndingProcessWouldNotComplete()
+    {
+        var handler = new FakeHttpMessageHandler();
+        await using var provider = CreateProvider(handler);
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+
+        // The export loop waking just as the crash is queued.
+        var flushes = new List<Task>();
+        pipeline.RecordAccepted += record =>
+        {
+            if (record is BelemetryLogRecord { Severity: BelemetrySeverity.Fatal }) flushes.Add(pipeline.FlushAsync(includeMetrics: false, CancellationToken.None));
+        };
+
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("The order book is closed."), terminating: true);
+        await Task.WhenAll(flushes);
+
+        Assert.HasCount(1, flushes);
+        Assert.IsEmpty(handler.Requests, "No export took it into a request the process would never complete.");
+        Assert.HasCount(1, StoredFiles(), "It was saved for the next launch.");
+    }
+
+    [TestMethod]
+    public async Task ATerminatingException_SavesALongQueueInBoundedRequests_AndAFullStoreKeepsTheCrash()
+    {
+        const int maxBytes = 64 * 1024; // The store's floor.
+        var handler = new FakeHttpMessageHandler();
+        await using var provider = CreateProvider(handler, configure: o =>
+        {
+            o.Batch.MaxBatchSize = 10;
+            o.Persistence.MaxBytes = maxBytes;
+        });
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        var filler = new string('x', 1024);
+
+        // A backlog, as a backend that is down leaves behind while the export loop waits to retry: no export takes any of it.
+        pipeline.BeginExitHold();
+        for (var i = 0; i < 200; i++) pipeline.Enqueue(Records.Log($"{i:D3} {filler}"));
+
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("The order book is closed."), terminating: true);
+        pipeline.EndExitHold();
+
+        var stored = await new BelemetryFileRequestStore(_directory, maxBytes, TimeSpan.FromDays(1)).LoadAsync(int.MaxValue, CancellationToken.None);
+        var requests = stored.Select(r => ExportLogsServiceRequest.Parser.ParseFrom(r.Body).ResourceLogs.SelectMany(l => l.ScopeLogs).SelectMany(s => s.LogRecords)
+                                                                                  .Select(l => l.Body.StringValue).ToList()).ToList();
+        Assert.IsTrue(requests.All(r => r.Count <= 10), "Each request holds a batch, as the export loop's do.");
+        Assert.IsLessThanOrEqualTo(maxBytes, StoredFiles().Sum(f => new FileInfo(f).Length));
+        Assert.IsTrue(requests.Any(r => r.Contains("An unhandled exception ended the process.")), "The crash is kept.");
+
+        // The newest records are kept, and the oldest give way.
+        var kept = requests.SelectMany(r => r).Where(b => b.EndsWith(filler, StringComparison.Ordinal)).Select(b => int.Parse(b[..3])).Order().ToList();
+        Assert.IsGreaterThan(0, kept.Count);
+        Assert.IsLessThan(200, kept.Count, "The store could not hold them all.");
+        CollectionAssert.AreEqual(Enumerable.Range(200 - kept.Count, kept.Count).ToList(), kept);
+    }
+
+    // Set for the process ARealCrash_SavesTheQueueAsTheProcessEnds_AndTheNextLaunchSendsIt starts: its store's directory.
+    private const string CrashDirectoryVariable = "BIT_BELEMETRY_TESTS_CRASH_DIRECTORY";
+
+    [TestMethod]
+    public async Task ARealCrash_SavesTheQueueAsTheProcessEnds_AndTheNextLaunchSendsIt()
+    {
+        // This test app again, running CrashTheProcess alone - as its apphost, or under dotnet exec (dotnet test, by hand).
+        var host = Environment.ProcessPath!;
+        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        if (Path.GetFileNameWithoutExtension(host) == "dotnet")
+        {
+            start.ArgumentList.Add("exec");
+            start.ArgumentList.Add(typeof(BelemetryUnhandledExceptionTests).Assembly.Location);
+        }
+        start.ArgumentList.Add("--filter");
+        start.ArgumentList.Add($"FullyQualifiedName={typeof(BelemetryUnhandledExceptionTests).FullName}.{nameof(CrashTheProcess)}");
+        start.ArgumentList.Add("--results-directory");
+        start.ArgumentList.Add(Path.Combine(_directory, "results"));
+        start.Environment[CrashDirectoryVariable] = _directory;
+
+        using (var process = Process.Start(start)!)
+        {
+            var output = process.StandardOutput.ReadToEndAsync();
+            var error = process.StandardError.ReadToEndAsync();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            await process.WaitForExitAsync(timeout.Token);
+
+            var said = await output + await error;
+            Assert.AreNotEqual(0, process.ExitCode, said);
+            StringAssert.Contains(said, "The order book is closed.", "The runtime reported the crash.");
+            Assert.HasCount(1, StoredFiles(), said);
+        }
+
+        // The next launch.
+        var handler = new FakeHttpMessageHandler();
+        await using (var provider = CreateProvider(handler))
+        {
+            await provider.GetRequiredService<BelemetryPipeline>().Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+        }
+
+        var logs = ExportLogsServiceRequest.Parser.ParseFrom(handler.Requests.Single().Body).ResourceLogs.SelectMany(r => r.ScopeLogs).SelectMany(s => s.LogRecords).ToList();
+        CollectionAssert.AreEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
+        Assert.AreEqual("The order book is closed.", logs[1].Attributes.Single(a => a.Key == BelemetrySemanticConventions.ExceptionMessage).Value.StringValue);
+        Assert.IsEmpty(StoredFiles());
+    }
+
+    /// <summary>Crashes the process it runs in, in the one ARealCrash_SavesTheQueueAsTheProcessEnds_AndTheNextLaunchSendsIt starts; does nothing in any other.</summary>
+    [TestMethod]
+    public void CrashTheProcess()
+    {
+        if (Environment.GetEnvironmentVariable(CrashDirectoryVariable) is not { Length: > 0 } directory) return;
+
+        _directory = directory;
+        var provider = CreateProvider(new FakeHttpMessageHandler());
+        provider.GetRequiredService<BelemetryPipeline>().Enqueue(Records.Log("placing the order"));
+
+        // Nothing catches it: AppDomain.UnhandledException is raised, and the process ends.
+        var thread = new Thread(() => throw new InvalidOperationException("The order book is closed."));
+        thread.Start();
+        thread.Join();
+    }
+
+    [TestMethod]
     public async Task InWebAssembly_ATerminatingException_HandsTheQueueToThePage()
     {
         var services = new ServiceCollection();
@@ -268,6 +388,35 @@ public class BelemetryUnhandledExceptionTests
         Assert.AreEqual("pw-7f3a", request.Headers!["x-api-key"], "The page sends it itself, as it sends the unload drain's.");
         Assert.IsTrue(request.Features!.Value.HasFlag(BelemetryFeatures.Errors));
         var log = ExportLogsServiceRequest.Parser.ParseFrom(request.Body).ResourceLogs[0].ScopeLogs[0].LogRecords.Single();
+        Assert.AreEqual("An unhandled exception ended the process.", log.Body.StringValue);
+    }
+
+    [TestMethod]
+    public async Task InWebAssembly_TheBridgeHasTheScriptsCallStarted_BeforeTheCrashHandlerReturns()
+    {
+        await using var context = new BunitContext();
+        context.Services.AddLogging();
+        var options = new BelemetryOptions();
+        TestHost.ApplyTestDefaults(options);
+        options.Consent.Default = BelemetryFeatures.All;
+        options.AddOtlpExporter("http://collector.test:4318", e => e.Headers["x-api-key"] = "pw-7f3a");
+        context.Services.AddSingleton(new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser: true));
+        context.Services.AddBitBelemetryServices();
+        var module = context.JSInterop.SetupModule(BelemetryJsBridge.ModulePath);
+        module.Mode = JSRuntimeMode.Loose;
+        // Never completed: the runtime stops before the script's promise settles.
+        var sendRequests = module.SetupVoid("sendRequests", _ => true);
+        var pipeline = context.Services.GetRequiredService<BelemetryPipeline>();
+        pipeline.Start();
+        Assert.IsTrue(await context.Services.GetRequiredService<BelemetryJsBridge>().StartAsync());
+
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
+
+        // With the script as the handler returns, its call still going: nothing waited on it.
+        var request = ((JsonElement)sendRequests.Invocations.Single().Arguments[0]!).EnumerateArray().Single();
+        Assert.AreEqual("http://collector.test:4318/v1/logs", request.GetProperty("url").GetString());
+        Assert.AreEqual("pw-7f3a", request.GetProperty("headers").GetProperty("x-api-key").GetString());
+        var log = ExportLogsServiceRequest.Parser.ParseFrom(request.GetProperty("body").GetBytesFromBase64()).ResourceLogs[0].ScopeLogs[0].LogRecords.Single();
         Assert.AreEqual("An unhandled exception ended the process.", log.Body.StringValue);
     }
 

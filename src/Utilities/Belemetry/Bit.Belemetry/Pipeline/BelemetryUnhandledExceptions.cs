@@ -47,12 +47,14 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
         && (settings.ConfiguredFeatures & BelemetryFeatures.Errors) != 0
         && ((settings.CollectDotnet && settings.HasExporters) || diagnostics);
 
+    /// <summary>Handles <see cref="AppDomain.UnhandledException"/>.</summary>
     private void OnUnhandledException(object? sender, UnhandledExceptionEventArgs e)
     {
         // Anything that is not an Exception arrives wrapped in a RuntimeWrappedException.
         if (e.ExceptionObject is Exception exception) OnUnhandled(exception, e.IsTerminating);
     }
 
+    /// <summary>Handles <see cref="TaskScheduler.UnobservedTaskException"/>.</summary>
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e) => OnUnobserved(e.Exception);
 
     /// <summary>
@@ -65,22 +67,26 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
     {
         if (Volatile.Read(ref _disposed) == 1) return;
 
-        if (ReferenceEquals(Interlocked.Exchange(ref _lastUnhandled, exception), exception) is false)
-        {
-            Record(exception, terminating ? BelemetrySeverity.Fatal : BelemetrySeverity.Error, terminating ? "Critical" : "Error",
-                   terminating ? "An unhandled exception ended the process." : "An unhandled exception was thrown.");
-        }
-
-        if (terminating is false) return;
-
+        // Before the record is queued: an export taking it from there would never complete as the process ends.
+        if (terminating) pipeline.BeginExitHold();
         try
         {
+            if (ReferenceEquals(Interlocked.Exchange(ref _lastUnhandled, exception), exception) is false)
+            {
+                Record(exception, terminating ? BelemetrySeverity.Fatal : BelemetrySeverity.Error, terminating ? "Critical" : "Error",
+                       terminating ? "An unhandled exception ended the process." : "An unhandled exception was thrown.");
+            }
+
             // Again for a crash reported twice: the queue is empty by then, unless the first report did not end the process.
-            pipeline.PersistForExit();
+            if (terminating) pipeline.PersistForExit();
         }
         catch
         {
             // The process is ending: nothing is left to tell.
+        }
+        finally
+        {
+            if (terminating) pipeline.EndExitHold();
         }
     }
 
@@ -98,6 +104,10 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
                "A faulted task's exception was never observed.");
     }
 
+    /// <summary>
+    /// Queues the <see cref="BelemetryFeatures.Errors"/> event of <paramref name="exception"/>, under the span current
+    /// where it is reported (<see cref="Activity.Current"/>), if any.
+    /// </summary>
     private void Record(Exception exception, BelemetrySeverity severity, string severityText, string body)
     {
         try
@@ -121,7 +131,8 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
             record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
             record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
 
-            // Raised on the thread that threw: the span it threw in, if any.
+            // AppDomain.UnhandledException is raised on the thread that threw: the span it threw in, if any. A task's
+            // exception is reported by the finalizer thread, which carries none of the task's context.
             if (Activity.Current is { IdFormat: ActivityIdFormat.W3C } activity)
             {
                 record.TraceId = activity.TraceId.ToHexString();
@@ -137,6 +148,7 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
         }
     }
 
+    /// <summary>Stops listening to the process-wide events and recording; idempotent.</summary>
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _disposed, 1) == 1 || Volatile.Read(ref _subscribed) == 0) return;

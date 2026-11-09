@@ -58,9 +58,12 @@ core because every host may need them and they add no dependency.
   `new Thread`, blocking waits and `.Result` are forbidden. A process ending on an unhandled exception runs nothing
   async to completion, so `BelemetryPipeline.PersistForExit` saves the queue synchronously (`BelemetryFileRequestStore.SaveNow`,
   without the store's lock; in WebAssembly the script gets it, as from the unload drain) - still without waiting on anything,
-  the network included: a crash never takes longer because of telemetry. Platforms that report a crash elsewhere (.NET for
-  Android, WinUI, WinForms' UI thread) reach the same path through `Belemetry.TrackBitBelemetryUnhandledException`; the core
-  cannot subscribe to their events itself (no platform target frameworks).
+  the network included: a crash never takes longer because of telemetry. The exports take nothing off the queue from
+  before the crash record is queued until it is saved (`BeginExitHold`), and the saved requests are bounded by
+  `Batch.MaxBatchSize` and saved newest first, so a full store drops the oldest records, never the crash. Platforms that
+  report a crash elsewhere (.NET for Android, WinUI, WinForms' UI thread) reach the same path through
+  `Belemetry.TrackBitBelemetryUnhandledException`; the core cannot subscribe to their events itself (no platform target
+  frameworks).
 - **`BelemetryOptions` stays bindable** by the configuration binder's source generator, which runs in the consuming
   app (`Tests/Bit.Belemetry.Tests/BelemetryOptionsBindingTests.cs` binds every option): collections are get-only
   `List<T>` or `Dictionary<,>`, nested options are get-only instances, an array default is empty (a binder appends
