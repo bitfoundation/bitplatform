@@ -1,0 +1,348 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly CultureInfo En = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+
+    [TestMethod]
+    public void Input_is_a_spinbutton_with_its_range_and_text()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="decimal" DefaultValue="1234.5m" Min="0" Max="10000" Format="N2" Culture="En">
+                <BitBhNumberFieldDecrement>-</BitBhNumberFieldDecrement>
+                <BitBhNumberFieldInput aria-label="Amount" />
+                <BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement>
+            </BitBhNumberField>);
+
+        var input = cut.Find("input");
+        Assert.AreEqual("spinbutton", input.GetAttribute("role"));
+        Assert.AreEqual("1,234.50", input.GetAttribute("value"));
+        Assert.AreEqual("1234.5", input.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("1,234.50", input.GetAttribute("aria-valuetext"));
+        Assert.AreEqual("0", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("10000", input.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("decimal", input.GetAttribute("inputmode"));
+
+        var increment = cut.Find("button[aria-label=Increase]");
+        Assert.AreEqual("-1", increment.GetAttribute("tabindex"));
+        Assert.AreEqual(input.Id, increment.GetAttribute("aria-controls"));
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Arrow_keys_step_and_modifiers_change_the_step()
+    {
+        var values = new List<int>();
+        var cut = Render(
+            @<BitBhNumberField TValue="int" DefaultValue="50" Step="2" LargeStep="20" OnValueChange="v => values.Add(v)">
+                <BitBhNumberFieldInput aria-label="Count" />
+            </BitBhNumberField>);
+
+        string Now() => cut.Find("input").GetAttribute("aria-valuenow")!;
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual("52", Now());
+        cut.Find("input").Press("ArrowDown", shift: true);
+        Assert.AreEqual("32", Now());
+        cut.Find("input").Press("PageUp");
+        Assert.AreEqual("52", Now());
+        // A small step of an integral type is one step: 2.
+        cut.Find("input").Press("ArrowUp", alt: true);
+        Assert.AreEqual("54", Now());
+        CollectionAssert.AreEqual(new[] { 52, 32, 52, 54 }, values);
+    }
+
+    [TestMethod]
+    public void Home_and_End_go_to_the_bounds_and_values_are_clamped()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="double" DefaultValue="5" Min="1" Max="9">
+                <BitBhNumberFieldInput aria-label="Rating" />
+            </BitBhNumberField>);
+
+        cut.Find("input").Press("End");
+        Assert.AreEqual("9", cut.Find("input").GetAttribute("aria-valuenow"));
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual("9", cut.Find("input").GetAttribute("aria-valuenow"));
+        cut.Find("input").Press("Home");
+        Assert.AreEqual("1", cut.Find("input").GetAttribute("aria-valuenow"));
+        Assert.Contains("Home", cut.Find("input").GetAttribute("data-bit-bh-keys")!);
+    }
+
+    [TestMethod]
+    public void Stepping_decimals_is_exact()
+    {
+        double? value = null;
+        var cut = Render(
+            @<BitBhNumberField TValue="double?" Step="0.1" ValueChanged="v => value = v">
+                <BitBhNumberFieldInput aria-label="Ratio" />
+            </BitBhNumberField>);
+
+        // An empty field's first step lands on 0 (the minimum, when there is one).
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual(0, value);
+        cut.Find("input").Press("ArrowUp");
+        cut.Find("input").Press("ArrowUp");
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual(0.3, value);
+    }
+
+    [TestMethod]
+    public void Typed_text_is_kept_until_committed_then_parsed_clamped_and_formatted()
+    {
+        decimal? value = null;
+        var commits = 0;
+        var cut = Render(
+            @<BitBhNumberField TValue="decimal?" Max="5000" Format="N2" Culture="En" ValueChanged="v => value = v" OnValueCommit="_ => commits++">
+                <BitBhNumberFieldInput aria-label="Price" />
+            </BitBhNumberField>);
+
+        var input = cut.Find("input");
+        input.Input("1,2");
+        Assert.AreEqual("1,2", cut.Find("input").GetAttribute("value"));
+        Assert.IsNull(value);
+
+        cut.Find("input").Blur();
+        Assert.AreEqual(12m, value);
+        Assert.AreEqual("12.00", cut.Find("input").GetAttribute("value"));
+        Assert.AreEqual(1, commits);
+
+        cut.Find("input").Input("12,345.6");
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual(5000m, value); // clamped
+        Assert.AreEqual("5,000.00", cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Text_that_is_not_a_number_reverts()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="int" DefaultValue="7">
+                <BitBhNumberFieldInput aria-label="Seats" />
+            </BitBhNumberField>);
+
+        cut.Find("input").Input("abc");
+        cut.Find("input").Blur();
+        Assert.AreEqual("7", cut.Find("input").GetAttribute("value"));
+
+        // A non-nullable value can't be emptied either.
+        cut.Find("input").Input("");
+        cut.Find("input").Blur();
+        Assert.AreEqual("7", cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Nullable_value_can_be_cleared()
+    {
+        int? value = 3;
+        var cut = Render(
+            @<BitBhNumberField TValue="int?" Value="value" ValueChanged="v => value = v">
+                <BitBhNumberFieldInput aria-label="Guests" />
+            </BitBhNumberField>);
+
+        cut.Find("input").Input(" ");
+        cut.Find("input").Blur();
+        Assert.IsNull(value);
+    }
+
+    [TestMethod]
+    public void Culture_controls_formatting_and_parsing()
+    {
+        decimal value = 0;
+        var cut = Render(
+            @<BitBhNumberField TValue="decimal" Format="C" Culture="De" ValueChanged="v => value = v">
+                <BitBhNumberFieldInput aria-label="Betrag" />
+            </BitBhNumberField>);
+
+        cut.Find("input").Input("1.234,5 €");
+        cut.Find("input").Blur();
+        Assert.AreEqual(1234.5m, value);
+        Assert.AreEqual(1234.5m.ToString("C", De), cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Percent_format_reads_and_steps_hundredths()
+    {
+        double value = 0;
+        var cut = Render(
+            @<BitBhNumberField TValue="double" DefaultValue="0.25" Format="P0" Culture="En" ValueChanged="v => value = v">
+                <BitBhNumberFieldInput aria-label="Discount" />
+            </BitBhNumberField>);
+
+        Assert.AreEqual(0.25.ToString("P0", En), cut.Find("input").GetAttribute("value"));
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual(0.26, value);
+        cut.Find("input").Input("50%");
+        cut.Find("input").Blur();
+        Assert.AreEqual(0.5, value);
+    }
+
+    [TestMethod]
+    public void Snap_on_step_moves_onto_the_step_grid()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="double" DefaultValue="1.3" Step="1" SnapOnStep="true">
+                <BitBhNumberFieldInput aria-label="Level" />
+            </BitBhNumberField>);
+
+        cut.Find("input").Press("ArrowUp");
+        Assert.AreEqual("2", cut.Find("input").GetAttribute("aria-valuenow"));
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("1", cut.Find("input").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void Buttons_step_and_disable_at_the_bounds()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="int" DefaultValue="9" Max="10">
+                <BitBhNumberFieldDecrement>-</BitBhNumberFieldDecrement>
+                <BitBhNumberFieldInput aria-label="Quantity" />
+                <BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement>
+            </BitBhNumberField>);
+
+        // An activation without a pointer press (keyboard, assistive technology) steps on click.
+        cut.Find("button[aria-label=Increase]").Click();
+        Assert.AreEqual("10", cut.Find("input").GetAttribute("aria-valuenow"));
+        Assert.IsTrue(cut.Find("button[aria-label=Increase]").HasAttribute("disabled"));
+        Assert.IsFalse(cut.Find("button[aria-label=Decrease]").HasAttribute("disabled"));
+
+        // A pointer press steps on the press, and the click that follows doesn't step again.
+        cut.Find("button[aria-label=Decrease]").PointerDown(new PointerEventArgs { Button = 0, PointerType = "mouse" });
+        cut.Find("button[aria-label=Decrease]").PointerUp(new PointerEventArgs { Button = 0, PointerType = "mouse" });
+        cut.Find("button[aria-label=Decrease]").Click();
+        Assert.AreEqual("9", cut.Find("input").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void Held_button_commits_once_on_release()
+    {
+        var commits = new List<int>();
+        var cut = Render(
+            @<BitBhNumberField TValue="int" DefaultValue="0" OnValueCommit="v => commits.Add(v)">
+                <BitBhNumberFieldInput aria-label="Count" />
+                <BitBhNumberFieldIncrement RepeatDelay="10000">+</BitBhNumberFieldIncrement>
+            </BitBhNumberField>);
+
+        var button = cut.Find("button");
+        button.PointerDown(new PointerEventArgs { Button = 0, PointerType = "mouse" });
+        Assert.IsTrue(cut.Find("button").HasAttribute("data-pressed"));
+        Assert.IsEmpty(commits);
+        cut.Find("button").PointerUp(new PointerEventArgs { Button = 0, PointerType = "mouse" });
+        CollectionAssert.AreEqual(new[] { 1 }, commits);
+        Assert.IsFalse(cut.Find("button").HasAttribute("data-pressed"));
+    }
+
+    [TestMethod]
+    public void Disabled_and_readonly_fields_do_not_change()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhNumberField TValue="int" DefaultValue="1" Disabled="true">
+                    <BitBhNumberFieldInput aria-label="A" />
+                    <BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement>
+                </BitBhNumberField>
+                <BitBhNumberField TValue="int" DefaultValue="1" ReadOnly="true">
+                    <BitBhNumberFieldInput aria-label="B" />
+                    <BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement>
+                </BitBhNumberField>
+            </div>);
+
+        var inputs = cut.FindAll("input");
+        Assert.IsTrue(inputs[0].HasAttribute("disabled"));
+        Assert.IsTrue(inputs[1].HasAttribute("readonly"));
+        cut.FindAll("input")[1].Press("ArrowUp");
+        Assert.AreEqual("1", cut.FindAll("input")[1].GetAttribute("aria-valuenow"));
+        Assert.IsTrue(cut.FindAll("button")[0].HasAttribute("disabled"));
+        Assert.IsTrue(cut.FindAll("button")[1].HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void Field_labels_the_input_and_validation_flows_in()
+    {
+        var model = new Order();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Quantity</BitBhLabel>
+                    <BitBhNumberField @bind-Value="model.Quantity" Name="qty">
+                        <BitBhNumberFieldInput />
+                    </BitBhNumberField>
+                    <BitBhErrorMessage />
+                </BitBhField>
+                <button type="submit">Save</button>
+            </EditForm>);
+
+        Assert.AreEqual("Quantity", cut.Find("input[role=spinbutton]").AccessibleName());
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", cut.Find("input[role=spinbutton]").GetAttribute("aria-invalid"));
+        Assert.Contains("between 1 and 10", cut.Find("[role=spinbutton]").AccessibleDescription());
+
+        cut.Find("input[role=spinbutton]").Press("ArrowUp");
+        Assert.AreEqual(1, model.Quantity);
+        Assert.IsFalse(cut.Find("input[role=spinbutton]").HasAttribute("aria-invalid"));
+        Assert.AreEqual("1", cut.Find("input[type=hidden][name=qty]").GetAttribute("value"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Input_lists_the_characters_a_number_can_be_typed_with()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="double" Culture="En" AllowWheelScrub="true">
+                <BitBhNumberFieldInput aria-label="Zoom" />
+            </BitBhNumberField>);
+
+        var chars = cut.Find("input").GetAttribute("data-bit-bh-chars")!;
+        StringAssert.Contains(chars, "0123456789");
+        Assert.DoesNotContain("x", chars);
+        Assert.IsTrue(cut.Find("input").HasAttribute("data-bit-bh-wheel"));
+    }
+
+    [TestMethod]
+    public void Parser_understands_culture_variants()
+    {
+        Assert.IsTrue(BitBhNumberParser.TryParse("−3.5", null, En, out var minus));
+        Assert.AreEqual(-3.5m, minus);
+        Assert.IsTrue(BitBhNumberParser.TryParse("(1,000)", null, En, out var accounting));
+        Assert.AreEqual(-1000m, accounting);
+        Assert.IsTrue(BitBhNumberParser.TryParse("1.234,5", null, De, out var german));
+        Assert.AreEqual(1234.5m, german);
+        Assert.IsTrue(BitBhNumberParser.TryParse("2.5", null, De, out var dotted));
+        Assert.AreEqual(25m, dotted); // "." is the German group separator
+        Assert.IsTrue(BitBhNumberParser.TryParse("۱۲۳", null, CultureInfo.GetCultureInfo("fa-IR"), out var persian));
+        Assert.AreEqual(123m, persian);
+        Assert.IsFalse(BitBhNumberParser.TryParse("1.2.3", null, En, out _));
+        Assert.IsFalse(BitBhNumberParser.TryParse("12a", null, En, out _));
+        Assert.IsTrue(BitBhNumberParser.IsPartial("-", null, En));
+        Assert.IsTrue(BitBhNumberParser.IsPartial("12.", null, En));
+    }
+
+    [TestMethod]
+    public void An_id_on_the_input_is_followed_by_the_buttons_and_a_label()
+    {
+        var cut = Render(
+            @<div>
+                <label for="qty">Quantity</label>
+                <BitBhNumberField TValue="int">
+                    <BitBhNumberFieldInput Id="qty" />
+                    <BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement>
+                </BitBhNumberField>
+            </div>);
+
+        Assert.AreEqual("qty", cut.Find("input").Id);
+        Assert.AreEqual("qty", cut.Find("button").GetAttribute("aria-controls"));
+        Assert.AreEqual("Quantity", cut.Find("input").AccessibleName());
+    }
+
+    private sealed class Order
+    {
+        [Range(1, 10, ErrorMessage = "Pick between 1 and 10")]
+        public int Quantity { get; set; }
+    }
+}

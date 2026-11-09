@@ -1,0 +1,106 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@* Regressions for edge cases found in review: off-grid angle steps, re-created picks, integral number fields,
+   wildcard accept lists, a promise toast's dismiss handler. *@
+@code {
+    [TestMethod]
+    public void An_angle_step_that_does_not_divide_360_ends_on_its_last_step_and_wraps_to_0()
+    {
+        var cut = Render(
+            @<BitBhAngleSlider Step="7">
+                <BitBhAngleSliderMarker Value="360" />
+                <BitBhAngleSliderThumb aria-label="Angle" />
+            </BitBhAngleSlider>);
+
+        string Now() => cut.Find("[role=slider]").GetAttribute("aria-valuenow")!;
+        Assert.AreEqual("357", cut.Find("[role=slider]").GetAttribute("aria-valuemax"));
+        // A marker at 360 stands where 0 does.
+        Assert.AreEqual("at-value", cut.Find("[data-value]").GetAttribute("data-state"));
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual("357", Now());
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("0", Now());
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual("357", Now());
+    }
+
+    [TestMethod]
+    public void Creating_a_value_that_is_already_picked_keeps_it_picked()
+    {
+        IReadOnlyCollection<string> values = ["Kiwi"];
+        var created = 0;
+        var query = "";
+        var options = new[] { "Apple", "Banana" };
+        var cut = Render(
+            @<BitBhCombobox TValue="string" Multiple="true" @bind-Values="values" CreateValue="@(t => t)" OnCreate="_ => created++" OnQueryChange="q => query = q">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string">
+                    @foreach (var o in options.Where(o => BitBhFilter.Contains(o, query)))
+                    {
+                        <BitBhComboboxOption TValue="string" Value="@o">@o</BitBhComboboxOption>
+                    }
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("input").Input("Kiwi");
+        cut.Render();
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual(0, created);
+        CollectionAssert.AreEqual(new[] { "Kiwi" }, values.ToArray());
+        Assert.AreEqual("", cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void An_integral_number_field_keeps_whole_bounds_and_steps()
+    {
+        var cut = Render(
+            @<BitBhNumberField TValue="int" DefaultValue="3" Min="1.4" Max="9.6" Step="0.5">
+                <BitBhNumberFieldInput aria-label="Count" />
+            </BitBhNumberField>);
+
+        var input = cut.Find("input");
+        Assert.AreEqual("2", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("9", input.GetAttribute("aria-valuemax"));
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("2", cut.Find("input").GetAttribute("aria-valuenow"));
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("2", cut.Find("input").GetAttribute("aria-valuenow"));
+        cut.Find("input").Press("End");
+        Assert.AreEqual("9", cut.Find("input").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void A_wildcard_accept_list_accepts_any_file()
+    {
+        var file = new TestFile("notes.bin", "application/octet-stream");
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(file, "*/*"));
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(file, "image/*, */*"));
+        Assert.IsFalse(BitBhFileUpload.IsAccepted(file, "image/*"));
+    }
+
+    [TestMethod]
+    public async Task A_promise_toast_keeps_its_dismiss_handler_after_it_settles()
+    {
+        var toaster = new BitBhToaster();
+        var dismissed = 0;
+        await toaster.PromiseAsync(Task.CompletedTask,
+            new BitBhToastOptions { Title = "Saving", OnDismiss = () => { dismissed++; return Task.CompletedTask; } },
+            new BitBhToastOptions { Title = "Saved" },
+            _ => new BitBhToastOptions { Title = "Failed" });
+
+        var toast = toaster.Toasts.Single();
+        Assert.AreEqual("Saved", toast.Options.Title);
+        toaster.Dismiss(toast.Id);
+        Assert.AreEqual(1, dismissed);
+    }
+
+    private sealed class TestFile(string name, string type) : Microsoft.AspNetCore.Components.Forms.IBrowserFile
+    {
+        public string Name => name;
+        public DateTimeOffset LastModified => DateTimeOffset.UnixEpoch;
+        public long Size => 1;
+        public string ContentType => type;
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default) => Stream.Null;
+    }
+}

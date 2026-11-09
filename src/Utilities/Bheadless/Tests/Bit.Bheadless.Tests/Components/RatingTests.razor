@@ -1,0 +1,114 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment Stars(int count) => builder =>
+    {
+        for (var i = 0; i < count; i++)
+        {
+            builder.OpenComponent<BitBhRatingItem>(0);
+            builder.AddComponentParameter(1, "Index", i);
+            builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(b => b.AddContent(0, "★")));
+            builder.CloseComponent();
+        }
+    };
+
+    [TestMethod]
+    public void Rating_is_one_slider_over_decorative_items()
+    {
+        var cut = Render(@<BitBhRating DefaultValue="3" aria-label="Rating">@Stars(5)</BitBhRating>);
+
+        var slider = cut.Find("[role=slider]");
+        Assert.AreEqual("3", slider.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("5", slider.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("3 stars", slider.GetAttribute("aria-valuetext"));
+        var items = cut.FindAll("[data-index]");
+        Assert.HasCount(5, items);
+        Assert.AreEqual("full", items[2].GetAttribute("data-state"));
+        Assert.AreEqual("empty", items[3].GetAttribute("data-state"));
+        Assert.AreEqual("true", items[0].GetAttribute("aria-hidden"));
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Keyboard_steps_jumps_and_types_digits_with_halves()
+    {
+        double value = 0;
+        var cut = Render(@<BitBhRating AllowHalf="true" ValueChanged="v => value = v" aria-label="Rating">@Stars(5)</BitBhRating>);
+
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual(0.5, value);
+        cut.Find("[role=slider]").Press("ArrowUp");
+        Assert.AreEqual(1, value);
+        Assert.AreEqual("full", cut.FindAll("[data-index]")[0].GetAttribute("data-state"));
+        cut.Find("[role=slider]").Press("4");
+        Assert.AreEqual(4, value);
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual(3.5, value);
+        Assert.AreEqual("half", cut.FindAll("[data-index]")[3].GetAttribute("data-state"));
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual(5, value);
+        cut.Find("[role=slider]").Press("Home");
+        Assert.AreEqual(0, value);
+    }
+
+    [TestMethod]
+    public void Rtl_mirrors_the_arrows()
+    {
+        double value = 2;
+        var cut = Render(@<BitBhRating Value="value" ValueChanged="v => value = v" Dir="BitBhDirection.Rtl" aria-label="Rating">@Stars(5)</BitBhRating>);
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual(3, value);
+    }
+
+    [TestMethod]
+    public void Read_only_and_disabled_ratings_do_not_change()
+    {
+        double? value = null;
+        var cut = Render(
+            @<div>
+                <BitBhRating DefaultValue="2" ReadOnly="true" ValueChanged="v => value = v" aria-label="A">@Stars(5)</BitBhRating>
+                <BitBhRating DefaultValue="2" Disabled="true" ValueChanged="v => value = v" aria-label="B">@Stars(5)</BitBhRating>
+            </div>);
+
+        cut.FindAll("[role=slider]")[0].Press("ArrowRight");
+        cut.FindAll("[role=slider]")[1].Press("ArrowRight");
+        Assert.IsNull(value);
+        Assert.AreEqual("true", cut.FindAll("[role=slider]")[0].GetAttribute("aria-readonly"));
+        Assert.AreEqual("-1", cut.FindAll("[role=slider]")[1].GetAttribute("tabindex"));
+        Assert.AreEqual("off", cut.FindAll("[role=slider]")[0].GetAttribute("data-bit-bh-rating"));
+    }
+
+    [TestMethod]
+    public void Field_and_form_integration()
+    {
+        var model = new Review();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Your rating</BitBhLabel>
+                    <BitBhRating @bind-Value="model.Stars" Name="stars">@Stars(5)</BitBhRating>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        Assert.AreEqual("Your rating", cut.Find("[role=slider]").AccessibleName());
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", cut.Find("[role=slider]").GetAttribute("aria-invalid"));
+        cut.Find("[role=slider]").Press("3");
+        Assert.AreEqual(3, model.Stars);
+        Assert.AreEqual("3", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find("[role=slider]").HasAttribute("aria-invalid"));
+        cut.ShouldBeAccessible();
+    }
+
+    private sealed class Review
+    {
+        [Range(1, 5)]
+        public double Stars { get; set; }
+    }
+}

@@ -1,0 +1,75 @@
+﻿/* number-field demo styles — plain CSS section. The library ships zero CSS. */
+
+.nf-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.nf {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+/* data-focused on the root while the input has focus */
+.nf[data-focused] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.nf[data-invalid] { border-color: var(--color-danger); }
+.nf[data-disabled] { opacity: 0.55; }
+
+.nf-input {
+    width: 7rem;
+    padding: 0.45rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    outline: none;
+}
+
+.nf-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    background: var(--color-fill);
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.nf-btn:hover:enabled { background: var(--color-fill-strong); }
+/* data-pressed while held (it repeats) */
+.nf-btn[data-pressed] { background: var(--color-accent-muted); color: var(--color-accent-text); }
+.nf-btn:disabled { color: var(--color-disabled); cursor: not-allowed; }
+
+/* ---- Scrub area ---- */
+.nf-scrub {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.6rem;
+    background: var(--color-fill);
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: ew-resize;
+}
+
+.nf-scrub[data-scrubbing] { background: var(--color-accent-subtle); color: var(--color-accent-text); }
+
+.nf-error {
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--color-danger-text);
+}

@@ -1,0 +1,149 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Listbox_sections_are_named_groups_navigated_as_one_list()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string">
+                <BitBhListboxButton TValue="string" aria-label="Food">Pick</BitBhListboxButton>
+                <BitBhListboxOptions TValue="string">
+                    <BitBhOptionGroup>
+                        <BitBhOptionGroupLabel>Fruits</BitBhOptionGroupLabel>
+                        <BitBhListboxOption TValue="string" Value="@("apple")">Apple</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("pear")">Pear</BitBhListboxOption>
+                    </BitBhOptionGroup>
+                    <BitBhOptionGroup>
+                        <BitBhOptionGroupLabel>Vegetables</BitBhOptionGroupLabel>
+                        <BitBhListboxOption TValue="string" Value="@("leek")">Leek</BitBhListboxOption>
+                    </BitBhOptionGroup>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        var groups = cut.FindAll("[role=group]");
+        Assert.HasCount(2, groups);
+        Assert.AreEqual("Fruits", groups[0].AccessibleName());
+        Assert.AreEqual("Vegetables", groups[1].AccessibleName());
+
+        var button = cut.Find("[role=combobox]");
+        button.Press("ArrowDown");
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.AreEqual("Leek", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Combobox_sections_work_too()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>City</BitBhLabel>
+                <BitBhCombobox TValue="string">
+                <BitBhComboboxInput TValue="string" />
+                <BitBhComboboxOptions TValue="string">
+                    <BitBhOptionGroup>
+                        <BitBhOptionGroupLabel>Europe</BitBhOptionGroupLabel>
+                        <BitBhComboboxOption TValue="string" Value="@("paris")">Paris</BitBhComboboxOption>
+                    </BitBhOptionGroup>
+                </BitBhComboboxOptions>
+                </BitBhCombobox>
+            </BitBhField>);
+
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Europe", cut.Find("[role=group]").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Selection_indicator_is_decorative_and_uses_the_aria_selection_states()
+    {
+        var cut = Render(
+            @<BitBhTabGroup>
+                <BitBhTabList>
+                    <BitBhTab>One</BitBhTab>
+                    <BitBhTab>Two</BitBhTab>
+                    <BitBhSelectionIndicator class="indicator" />
+                </BitBhTabList>
+                <BitBhTabPanels>
+                    <BitBhTabPanel>1</BitBhTabPanel>
+                    <BitBhTabPanel>2</BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>);
+
+        var indicator = cut.Find(".indicator");
+        Assert.AreEqual("true", indicator.GetAttribute("aria-hidden"));
+        var attach = JSInterop.Invocations.Single(i => i.Identifier == "indicator.attach");
+        Assert.AreEqual(indicator.Id, attach.Arguments[0]);
+        Assert.AreEqual(BitBhSelectionIndicator.DefaultSelector, attach.Arguments[1]);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Combobox_options_take_the_input_aria_label_not_its_value()
+    {
+        var cut = Render(
+            @<BitBhCombobox TValue="string">
+                <BitBhComboboxInput TValue="string" aria-label="Country" />
+                <BitBhComboboxOptions TValue="string">
+                    <BitBhComboboxOption TValue="string" Value="@("fr")">France</BitBhComboboxOption>
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("input").Input("Fr");
+        Assert.AreEqual("Country", cut.Find("[role=listbox]").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Combobox_clear_button_empties_the_value_and_the_text()
+    {
+        string? value = "fr";
+        var cut = Render(
+            @<BitBhCombobox TValue="string" DefaultValue="@("fr")" ValueChanged="v => value = v" Nullable="true">
+                <BitBhComboboxInput TValue="string" aria-label="Country" />
+                <BitBhComboboxClear TValue="string">×</BitBhComboboxClear>
+                <BitBhComboboxOptions TValue="string">
+                    <BitBhComboboxOption TValue="string" Value="@("fr")">France</BitBhComboboxOption>
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        var clear = cut.Find("button[aria-label=Clear]");
+        Assert.AreEqual("-1", clear.GetAttribute("tabindex"));
+        Assert.IsFalse(clear.HasAttribute("disabled"));
+        clear.Click();
+        Assert.IsNull(value);
+        Assert.AreEqual(cut.Find("input").Id, this.LastFocusRequest());
+        Assert.IsTrue(cut.Find("button[aria-label=Clear]").HasAttribute("disabled"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Combobox_creates_a_value_from_the_typed_text()
+    {
+        var options = new List<string> { "Apple", "Banana" };
+        IReadOnlyCollection<string>? values = null;
+        string? created = null;
+        var query = "";
+        // As in an app: the options are filtered by the query, so a new name highlights nothing.
+        var cut = Render(
+            @<BitBhCombobox TValue="string" Multiple="true" CreateValue="@(t => t)" OnCreate="v => { created = v; options.Add(v); }" ValuesChanged="v => values = v" OnQueryChange="q => query = q">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string">
+                    @foreach (var o in options.Where(o => BitBhFilter.Contains(o, query)))
+                    {
+                        <BitBhComboboxOption TValue="string" Value="@o">@o</BitBhComboboxOption>
+                    }
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("input").Input("Cherry");
+        cut.Render();
+        Assert.Contains("Enter", cut.Find("input").GetAttribute("data-bit-bh-keys")!);
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("Cherry", created);
+        CollectionAssert.AreEqual(new[] { "Cherry" }, values!.ToArray());
+        Assert.AreEqual("", cut.Find("input").GetAttribute("value"));
+    }
+}

@@ -287,4 +287,25 @@
         Cell(cut, "alpha.txt").Press(" ", repeat: true);
         Assert.AreSequenceEqual(new[] { "a" }, selected!);
     }
+
+    [TestMethod]
+    public void Column_resizer_is_a_separator_resized_from_the_keyboard()
+    {
+        var widths = new List<double>();
+        var cut = Render(@<BitBhColumnResizer DefaultWidth="120" Min="80" Max="300" WidthChanged="w => widths.Add(w)" aria-label="Resize Name column" />);
+
+        var handle = cut.Find("[role=separator]");
+        Assert.AreEqual("vertical", handle.GetAttribute("aria-orientation"));
+        Assert.AreEqual("120", handle.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("0", handle.GetAttribute("tabindex"));
+
+        handle.Press("ArrowRight");
+        handle.Press("ArrowRight", shift: true);
+        cut.Find("[role=separator]").Press("End");
+        cut.Find("[role=separator]").Press("Enter");
+        CollectionAssert.AreEqual(new double[] { 130, 180, 300, 120 }, widths);
+        cut.Find("[role=separator]").Press("Home");
+        Assert.AreEqual("80", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
+        cut.ShouldBeAccessible();
+    }
 }

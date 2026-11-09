@@ -1,0 +1,496 @@
+﻿@page "/calendar"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Calendar · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Calendar</h1>
+    <p class="bb-subtitle">Month grids to pick a date, a range or several dates from — the WAI-ARIA date grid with one tab stop, full keyboard support, limits, unavailable dates and the reader's own calendar.</p>
+</div>
+
+<SectionSwitcher Slug="calendar" />
+
+<DemoBlock Title="Single date" Code="@_singleCode" Css="@_css">
+    <Description>
+        <code>BitBhCalendarGrid</code> is a <code>&lt;table role="grid"&gt;</code> named by the heading; each date is a
+        <code>gridcell</code> named by the full date, with <code>aria-selected</code> and <code>aria-current="date"</code>
+        on today. The grid is one tab stop: ← / → move a day, ↑ / ↓ a week, <kbd>PageUp</kbd> / <kbd>PageDown</kbd> a month
+        (<kbd>Shift</kbd>: a year), <kbd>Home</kbd> / <kbd>End</kbd> to the ends of the week, <kbd>Enter</kbd> or
+        <kbd>Space</kbd> select. Moving past the month shows the next one. The previous / next buttons keep the focus and
+        announce the month they show.
+    </Description>
+    <LiveContent>
+        <div class="calendar-demo">
+            <BitBhCalendar @bind-Value="date" Culture="DemoDateCultures.EnUs" aria-label="Appointment" class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="calendar-value">Selected: <strong>@(date?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="A range across two months" Code="@_rangeCode" Css="@_css">
+    <Description>
+        <code>@@bind-Range</code> makes it a range calendar: the first press sets one end, the range follows the pointer
+        and the focus (<code>data-highlighted</code>) until the second press, and <kbd>Escape</kbd> drops a half-picked
+        range. <code>VisibleMonths="2"</code> with a grid per <code>Offset</code> shows two months; the buttons page by two.
+        Booked nights are <code>IsDateUnavailable</code>: focusable and announced, not selectable — and a range can't span
+        them (<code>AllowsNonContiguousRanges</code> lifts that).
+    </Description>
+    <LiveContent>
+        <div class="calendar-demo">
+            <BitBhCalendar @bind-Range="stay" VisibleMonths="2" IsDateUnavailable="IsBooked" Min="today"
+                           Culture="DemoDateCultures.EnUs" aria-label="Stay" class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <div class="calendar-months">
+                    @for (var i = 0; i < 2; i++)
+                    {
+                        var offset = i;
+                        <div>
+                            <BitBhCalendarHeading Offset="offset" As="h4" class="calendar-month-title" aria-hidden="true" />
+                            <BitBhCalendarGrid Offset="offset" class="calendar-grid">
+                                <BitBhCalendarCell Day="context" class="calendar-cell" />
+                            </BitBhCalendarGrid>
+                        </div>
+                    }
+                </div>
+            </BitBhCalendar>
+            <p class="calendar-value">
+                Stay: <strong>@(stay is null ? "none" : $"{stay.Start.ToString("MMM d", DemoDateCultures.EnUs)} – {stay.End.ToString("MMM d", DemoDateCultures.EnUs)} ({stay.Days - 1} nights)")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Limits, weekends and outside days" Code="@_limitsCode" Css="@_css">
+    <Description>
+        <code>Min</code> / <code>Max</code> disable the dates outside them (<code>aria-disabled</code>, <code>data-disabled</code>,
+        not focusable): the arrow keys stop at the limits and the buttons are <code>aria-disabled</code> at the last month.
+        Weekends are unavailable here (<code>data-unavailable</code>). <code>ShowOutsideDays</code> fills the first and last
+        weeks with the neighbouring months' dates (<code>data-outside-month</code>), hidden from assistive technology.
+    </Description>
+    <LiveContent>
+        <div class="calendar-demo">
+            <BitBhCalendar @bind-Value="delivery" Min="today.AddDays(1)" Max="today.AddMonths(2)" ShowOutsideDays="true"
+                           IsDateUnavailable="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday"
+                           Culture="DemoDateCultures.EnUs" aria-label="Delivery date" class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid WeekdayFormat="BitBhCalendarWeekdayFormat.Abbreviated" class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="calendar-value">Delivery: <strong>@(delivery?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Cultures, calendars and right to left" Code="@_cultureCode" Css="@_css">
+    <Description>
+        <code>Culture</code> sets the month and day names, the first day of the week and the calendar itself: the German
+        week starts on Monday; the Persian culture shows the Persian calendar's months (its year starts in March) and, in a
+        right-to-left page, ← / → are mirrored. The value is a <code>DateOnly</code> either way. (This WebAssembly demo
+        runs without ICU, where the Persian calendar isn't available.)
+    </Description>
+    <LiveContent>
+        <div class="calendar-demo">
+            <BitBhCalendar @bind-Value="cultureDate" Culture="DemoDateCultures.DeDe" aria-label="Datum" class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious aria-label="Vorheriger Monat" class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext aria-label="Nächster Monat" class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            @if (DemoDateCultures.FaIr is { } persian)
+            {
+                <div dir="rtl" lang="fa">
+                    <BitBhCalendar @bind-Value="cultureDate" Culture="persian" Dir="BitBhDirection.Rtl" aria-label="تاریخ" class="calendar">
+                        <div class="calendar-header">
+                            <BitBhCalendarPrevious aria-label="ماه قبل" class="calendar-nav">›</BitBhCalendarPrevious>
+                            <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                            <BitBhCalendarNext aria-label="ماه بعد" class="calendar-nav">‹</BitBhCalendarNext>
+                        </div>
+                        <BitBhCalendarGrid class="calendar-grid">
+                            <BitBhCalendarCell Day="context" class="calendar-cell" />
+                        </BitBhCalendarGrid>
+                    </BitBhCalendar>
+                </div>
+            }
+            <p class="calendar-value">Value: <strong>@(cultureDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Several dates" Code="@_multipleCode" Css="@_css">
+    <Description>
+        <code>@@bind-Values</code> selects any number of dates; each press toggles one. The grid is
+        <code>aria-multiselectable</code>. A cell's <code>Template</code> receives the day's state — used here to mark
+        the dates that already have a shift.
+    </Description>
+    <LiveContent>
+        <div class="calendar-demo">
+            <BitBhCalendar @bind-Values="shifts" Culture="DemoDateCultures.EnUs" aria-label="Shifts" class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell">
+                        <Template Context="day">@day.Text@(day.IsSelected ? "•" : "")</Template>
+                    </BitBhCalendarCell>
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="calendar-value">Shifts: <strong>@(shifts.Count == 0 ? "none" : string.Join(", ", shifts.Select(d => d.ToString("MMM d", DemoDateCultures.EnUs))))</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="In a form" Code="@_formCode" Css="@_css">
+    <Description>
+        In a <code>BitBhField</code> the calendar's group is labelled by <code>BitBhLabel</code> and described by
+        <code>BitBhDescription</code> and, once invalid, <code>BitBhErrorMessage</code>; clicking the label focuses the
+        focused date. <code>@@bind-Value</code> takes part in <code>EditForm</code> validation, and <code>Name</code> posts a
+        hidden <code>yyyy-MM-dd</code> input.
+    </Description>
+    <LiveContent>
+        <EditForm Model="booking" OnValidSubmit="() => submitted = booking.CheckIn">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="calendar-label">Check-in</BitBhLabel>
+                <BitBhCalendar @bind-Value="booking.CheckIn" Min="today" Name="checkin" Culture="DemoDateCultures.EnUs" class="calendar">
+                    <div class="calendar-header">
+                        <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                        <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                        <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                    </div>
+                    <BitBhCalendarGrid Context="day" class="calendar-grid">
+                        <BitBhCalendarCell Day="day" class="calendar-cell" />
+                    </BitBhCalendarGrid>
+                </BitBhCalendar>
+                <BitBhDescription class="calendar-description">Check-in is from 3 pm.</BitBhDescription>
+                <BitBhErrorMessage class="calendar-error" />
+            </BitBhField>
+            <button type="submit" class="calendar-submit">Book</button>
+            @if (submitted is { } checkIn)
+            {
+                <p class="calendar-value">Booked from <strong>@checkIn.ToString("D", DemoDateCultures.EnUs)</strong>.</p>
+            }
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? date = today;
+    private BitBhDateRange? stay;
+    private DateOnly? delivery;
+    private DateOnly? cultureDate = today;
+    private IReadOnlyList<DateOnly> shifts = [];
+    private readonly Booking booking = new();
+    private DateOnly? submitted;
+
+    private static bool IsBooked(DateOnly d) => d.DayNumber % 9 is 4 or 5;
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "Pick a check-in date.")]
+        public DateOnly? CheckIn { get; set; }
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _header = """
+    <div class="calendar-header">
+        <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+        <BitBhCalendarHeading As="h3" class="calendar-heading" />
+        <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+    </div>
+""";
+
+    private const string _singleCode = """
+<BitBhCalendar @bind-Value="date" aria-label="Appointment" class="calendar">
+""" + _header + """
+    <BitBhCalendarGrid class="calendar-grid">
+        <BitBhCalendarCell Day="context" class="calendar-cell" />
+    </BitBhCalendarGrid>
+</BitBhCalendar>
+
+<p class="calendar-value">Selected: <strong>@(date?.ToString("D") ?? "none")</strong></p>
+
+@code {
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Today);
+}
+""";
+
+    private const string _rangeCode = """
+<BitBhCalendar @bind-Range="stay" VisibleMonths="2" IsDateUnavailable="IsBooked" Min="today"
+               aria-label="Stay" class="calendar">
+""" + _header + """
+    <div class="calendar-months">
+        @for (var i = 0; i < 2; i++)
+        {
+            var offset = i;
+            <div>
+                @* A visible title per month; the grids are named by their month already. *@
+                <BitBhCalendarHeading Offset="offset" As="h4" class="calendar-month-title" aria-hidden="true" />
+                <BitBhCalendarGrid Offset="offset" class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell" />
+                </BitBhCalendarGrid>
+            </div>
+        }
+    </div>
+</BitBhCalendar>
+
+<p class="calendar-value">
+    Stay: <strong>@(stay is null ? "none" : $"{stay.Start:MMM d} – {stay.End:MMM d} ({stay.Days - 1} nights)")</strong>
+</p>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private BitBhDateRange? stay;
+
+    private static bool IsBooked(DateOnly d) => d.DayNumber % 9 is 4 or 5;
+}
+""";
+
+    private const string _limitsCode = """
+<BitBhCalendar @bind-Value="delivery" Min="today.AddDays(1)" Max="today.AddMonths(2)" ShowOutsideDays="true"
+               IsDateUnavailable="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday"
+               aria-label="Delivery date" class="calendar">
+""" + _header + """
+    <BitBhCalendarGrid WeekdayFormat="BitBhCalendarWeekdayFormat.Abbreviated" class="calendar-grid">
+        <BitBhCalendarCell Day="context" class="calendar-cell" />
+    </BitBhCalendarGrid>
+</BitBhCalendar>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? delivery;
+}
+""";
+
+    private const string _cultureCode = """
+<BitBhCalendar @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" aria-label="Datum" class="calendar">
+    <div class="calendar-header">
+        <BitBhCalendarPrevious aria-label="Vorheriger Monat" class="calendar-nav">‹</BitBhCalendarPrevious>
+        <BitBhCalendarHeading As="h3" class="calendar-heading" />
+        <BitBhCalendarNext aria-label="Nächster Monat" class="calendar-nav">›</BitBhCalendarNext>
+    </div>
+    <BitBhCalendarGrid class="calendar-grid">
+        <BitBhCalendarCell Day="context" class="calendar-cell" />
+    </BitBhCalendarGrid>
+</BitBhCalendar>
+
+<div dir="rtl" lang="fa">
+    <BitBhCalendar @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("fa-IR"))" Dir="BitBhDirection.Rtl"
+                   aria-label="تاریخ" class="calendar">
+        <div class="calendar-header">
+            <BitBhCalendarPrevious aria-label="ماه قبل" class="calendar-nav">›</BitBhCalendarPrevious>
+            <BitBhCalendarHeading As="h3" class="calendar-heading" />
+            <BitBhCalendarNext aria-label="ماه بعد" class="calendar-nav">‹</BitBhCalendarNext>
+        </div>
+        <BitBhCalendarGrid class="calendar-grid">
+            <BitBhCalendarCell Day="context" class="calendar-cell" />
+        </BitBhCalendarGrid>
+    </BitBhCalendar>
+</div>
+
+@code {
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Today);
+}
+""";
+
+    private const string _multipleCode = """
+<BitBhCalendar @bind-Values="shifts" aria-label="Shifts" class="calendar">
+""" + _header + """
+    <BitBhCalendarGrid class="calendar-grid">
+        <BitBhCalendarCell Day="context" class="calendar-cell">
+            <Template Context="day">@day.Text@(day.IsSelected ? "•" : "")</Template>
+        </BitBhCalendarCell>
+    </BitBhCalendarGrid>
+</BitBhCalendar>
+
+@code {
+    private IReadOnlyList<DateOnly> shifts = [];
+}
+""";
+
+    private const string _formCode = """
+<EditForm Model="booking" OnValidSubmit="() => submitted = booking.CheckIn">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="calendar-label">Check-in</BitBhLabel>
+        <BitBhCalendar @bind-Value="booking.CheckIn" Min="today" Name="checkin" class="calendar">
+            <div class="calendar-header">
+                <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+            </div>
+            <BitBhCalendarGrid Context="day" class="calendar-grid">
+                <BitBhCalendarCell Day="day" class="calendar-cell" />
+            </BitBhCalendarGrid>
+        </BitBhCalendar>
+        <BitBhDescription class="calendar-description">Check-in is from 3 pm.</BitBhDescription>
+        <BitBhErrorMessage class="calendar-error" />
+    </BitBhField>
+    <button type="submit" class="calendar-submit">Book</button>
+</EditForm>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly Booking booking = new();
+    private DateOnly? submitted;
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "Pick a check-in date.")]
+        public DateOnly? CheckIn { get; set; }
+    }
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/calendar.css) ───────────────────────────────
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+
+.calendar {
+    display: inline-grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.calendar-header { display: flex; align-items: center; gap: 0.5rem; }
+.calendar-heading { flex: 1; margin: 0; font-size: 0.95rem; font-weight: 600; text-align: center; }
+
+.calendar-nav {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    color: var(--color-text-secondary);
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+.calendar-nav:hover:not([aria-disabled="true"]):enabled { background: var(--color-fill); }
+.calendar-nav:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* At Min / Max the buttons stay focusable (aria-disabled), so the focus isn't lost there. */
+.calendar-nav[data-disabled] { color: var(--color-disabled); cursor: not-allowed; }
+
+/* Months side by side */
+.calendar-months { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.calendar-month-title { margin: 0 0 0.25rem; font-size: 0.85rem; font-weight: 600; text-align: center; }
+
+/* Grid: style the week-day headers through it */
+.calendar-grid { border-collapse: collapse; }
+
+.calendar-grid th {
+    width: 2.25rem;
+    padding-bottom: 0.25rem;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.calendar-grid td { padding: 1px; }
+
+/* Cells: the td is the focusable gridcell */
+.calendar-cell {
+    box-sizing: border-box;
+    width: 2.25rem;
+    height: 2.25rem;   /* at least 24px: a comfortable pointer target */
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+}
+
+.calendar-cell[data-hover]:not([data-selected]):not([data-disabled]) { background: var(--color-fill); }
+.calendar-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* Today: bold, with a dot under the number */
+.calendar-cell[data-today] { font-weight: 700; box-shadow: inset 0 -3px 0 -1px var(--color-primary-text); }
+
+.calendar-cell[data-selected] { background: var(--color-primary); color: #fff; }
+.calendar-cell[data-selected][data-today] { box-shadow: inset 0 -3px 0 -1px #fff; }
+
+/* Range: the ends are solid, the days between them tinted */
+.calendar-cell[data-range-middle] {
+    border-radius: 0;
+    background: var(--color-accent-muted);
+    color: var(--color-accent-text);
+}
+
+.calendar-cell[data-selection-start]:not([data-selection-end]) { border-start-end-radius: 0; border-end-end-radius: 0; }
+.calendar-cell[data-selection-end]:not([data-selection-start]) { border-start-start-radius: 0; border-end-start-radius: 0; }
+
+/* While the second end is being picked, the range follows the pointer and the focus */
+.calendar-cell[data-highlighted][data-range-middle] { background: var(--color-accent-subtle); }
+
+/* Booked / unavailable: focusable and announced, not selectable */
+.calendar-cell[data-unavailable] { color: var(--color-muted); text-decoration: line-through; cursor: not-allowed; }
+
+/* Outside Min / Max: not focusable */
+.calendar-cell[data-disabled] { color: var(--color-muted); cursor: not-allowed; }
+
+.calendar-cell[data-invalid][data-selected] { background: var(--color-danger); }
+
+/* Fillers of the first and last weeks (rendered only with ShowOutsideDays) */
+.calendar-cell[data-outside-month] { color: var(--color-muted); cursor: default; }
+
+/* Demo layout */
+.calendar-demo { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.5rem; }
+.calendar-value { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.calendar-value strong { color: var(--color-text); font-weight: 600; }
+.calendar-label { display: block; margin-bottom: 0.4rem; font-size: 0.875rem; font-weight: 600; color: var(--color-text); }
+.calendar-description { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--color-muted); }
+.calendar-error { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--color-danger-text); }
+
+.calendar-submit {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.calendar-submit:hover { background: var(--color-primary-hover); }
+.calendar-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+""";
+}

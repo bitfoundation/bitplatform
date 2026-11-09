@@ -73,6 +73,11 @@ public class BitBhPopoverButton : BitBhComponentBase, IDisposable
         if (IsInsidePanel is false)
             builder.AddAttribute(31, "onkeydown",
                 On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
+        if (IsInsidePanel is false && PopoverContext is { OpenOnHover: true } hover)
+        {
+            builder.AddAttribute(32, "onpointerenter", On<PointerEventArgs>("onpointerenter", e => { if (e.PointerType != "touch" && !Disabled) hover.Owner?.HoverEnter(); }));
+            builder.AddAttribute(33, "onpointerleave", On<PointerEventArgs>("onpointerleave", () => hover.Owner?.HoverLeave()));
+        }
         builder.AddElementReferenceCapture(40, CaptureElement);
         if (Template is not null || ChildContent is not null)
             builder.AddContent(50, BitBhContent.Pick(Template, ChildContent, RenderContext));

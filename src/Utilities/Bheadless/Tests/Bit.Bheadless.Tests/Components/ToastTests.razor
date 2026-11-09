@@ -146,4 +146,83 @@
         Assert.ContainsSingle(shown);
         Assert.IsEmpty(toaster.Toasts);
     }
+
+    [TestMethod]
+    public async Task Updating_a_toast_replaces_its_content_and_announces_it_again()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        var id = await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "Uploading", Variant = "loading" }));
+        await Announcer.WaitForAsync("Uploading");
+        Assert.AreEqual("loading", cut.Find("li").GetAttribute("data-variant"));
+        Assert.AreEqual(id, cut.Find("li").GetAttribute("data-bit-bh-toast"));
+
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Id = id, Title = "Uploaded", Variant = "success" }));
+        Assert.ContainsSingle(cut.FindAll("li"));
+        Assert.Contains("Uploaded", cut.Markup);
+        Assert.AreEqual("success", cut.Find("li").GetAttribute("data-variant"));
+        await Announcer.WaitForAsync("Uploaded");
+
+        Assert.IsTrue(await cut.InvokeAsync(() => toaster.Update(id, o => o.Description = "3 files")));
+        Assert.Contains("3 files", cut.Markup);
+        Assert.IsFalse(toaster.Update("missing", o => o.Title = "x"));
+    }
+
+    [TestMethod]
+    public async Task Promise_toasts_follow_the_task()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        var work = new TaskCompletionSource<int>();
+        Task<int>? running = null;
+        await cut.InvokeAsync(() => { running = toaster.PromiseAsync(work.Task,
+            new BitBhToastOptions { Title = "Saving" },
+            n => new BitBhToastOptions { Title = $"Saved {n} rows" },
+            e => new BitBhToastOptions { Title = e.Message }); });
+
+        Assert.AreEqual("loading", cut.Find("li").GetAttribute("data-variant"));
+        await cut.InvokeAsync(() => work.SetResult(3));
+        Assert.AreEqual(3, await running!);
+        cut.WaitForAssertion(() => Assert.AreEqual("success", cut.Find("li").GetAttribute("data-variant")));
+        Assert.Contains("Saved 3 rows", cut.Markup);
+        Assert.ContainsSingle(cut.FindAll("li"));
+
+        var failing = new TaskCompletionSource<int>();
+        Task<int>? failed = null;
+        await cut.InvokeAsync(() => { failed = toaster.PromiseAsync(failing.Task,
+            new BitBhToastOptions { Title = "Deleting" },
+            _ => new BitBhToastOptions { Title = "Deleted" },
+            e => new BitBhToastOptions { Title = e.Message }); });
+        await cut.InvokeAsync(() => failing.SetException(new InvalidOperationException("Access denied")));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => failed!);
+        cut.WaitForAssertion(() => Assert.Contains("Access denied", cut.Markup));
+    }
+
+    [TestMethod]
+    public async Task OnDismiss_runs_however_the_toast_goes()
+    {
+        var toaster = new BitBhToaster { Limit = 1 };
+        var dismissed = new List<string>();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "A", OnDismiss = () => { dismissed.Add("A"); return Task.CompletedTask; } }));
+        // Pushed out by the limit.
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "B", OnDismiss = () => { dismissed.Add("B"); return Task.CompletedTask; } }));
+        CollectionAssert.AreEqual(new[] { "A" }, dismissed);
+        await cut.InvokeAsync(toaster.Clear);
+        CollectionAssert.AreEqual(new[] { "A", "B" }, dismissed);
+    }
+
+    [TestMethod]
+    public void Swipe_direction_is_exposed_and_can_be_turned_off()
+    {
+        var toaster = new BitBhToaster();
+        toaster.Show("Hello");
+        var cut = Render(
+            @<div>
+                <BitBhToastViewport Toaster="toaster" Duration="0" SwipeDirection="BitBhToastSwipeDirection.Down" Context="toast">
+                    <BitBhToast Item="toast">@toast.Title</BitBhToast>
+                </BitBhToastViewport>
+            </div>);
+        Assert.AreEqual("down", cut.Find("li").GetAttribute("data-swipe-direction"));
+    }
 }

@@ -1,0 +1,62 @@
+﻿@page "/tw/tags-input"
+
+<PageTitle>Tags Input (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Tags Input</h1>
+    <p class="bb-subtitle">Turns what is typed into removable tags, with the keyboard model of React Aria's TagGroup and announcements of removals.</p>
+</div>
+
+<SectionSwitcher Slug="tags-input" />
+
+<TwDemoBlock Title="Keywords" Code="@_basicCode">
+    <Description>
+        Enter or a comma adds a tag; ← or Backspace in the empty input reaches the tags, Backspace / Delete remove them. The
+        root gets <code>data-focused</code> while anything inside has focus (<code>data-[focused]:</code>).
+    </Description>
+    <LiveContent>
+        <BitBhTagsInput @bind-Values="keywords"
+                        class="flex w-full max-w-md flex-wrap items-center gap-1.5 rounded-lg border border-zinc-300 bg-white p-1.5 data-[focused]:outline-2 data-[focused]:outline-offset-2 data-[focused]:outline-blue-600">
+            <Template Context="t">
+                <BitBhTagsInputList aria-label="Keywords" class="inline-flex flex-wrap gap-1.5">
+                    @for (var i = 0; i < t.Values.Count; i++)
+                    {
+                        var index = i;
+                        <BitBhTagsInputTag Index="index" class="inline-flex items-center gap-1 rounded-full bg-blue-50 py-0.5 pl-2.5 pr-1 text-xs font-medium text-blue-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+                            @t.Values[index]
+                            <BitBhTagsInputTagRemove class="flex h-4 w-4 cursor-pointer items-center justify-center rounded-full hover:bg-blue-200">×</BitBhTagsInputTagRemove>
+                        </BitBhTagsInputTag>
+                    }
+                </BitBhTagsInputList>
+                <BitBhTagsInputInput aria-label="Add a keyword" placeholder="Add a keyword…" class="min-w-24 flex-1 bg-transparent px-1 py-1 text-sm text-zinc-900 outline-none placeholder:text-zinc-500" />
+            </Template>
+        </BitBhTagsInput>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private IReadOnlyList<string> keywords = ["blazor", "headless"];
+
+    private const string _basicCode = """
+<BitBhTagsInput @bind-Values="keywords"
+                class="flex flex-wrap items-center gap-1.5 rounded-lg border border-zinc-300 bg-white p-1.5
+                       data-[focused]:outline-2 data-[focused]:outline-blue-600">
+    <Template Context="t">
+        <BitBhTagsInputList aria-label="Keywords" class="inline-flex flex-wrap gap-1.5">
+            @for (var i = 0; i < t.Values.Count; i++)
+            {
+                var index = i;
+                <BitBhTagsInputTag Index="index"
+                                   class="inline-flex items-center gap-1 rounded-full bg-blue-50 py-0.5 pl-2.5 pr-1 text-xs
+                                          text-blue-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+                    @t.Values[index]
+                    <BitBhTagsInputTagRemove class="h-4 w-4 rounded-full hover:bg-blue-200">×</BitBhTagsInputTagRemove>
+                </BitBhTagsInputTag>
+            }
+        </BitBhTagsInputList>
+        <BitBhTagsInputInput aria-label="Add a keyword" placeholder="Add a keyword…"
+                             class="min-w-24 flex-1 bg-transparent px-1 py-1 text-sm outline-none" />
+    </Template>
+</BitBhTagsInput>
+""";
+}

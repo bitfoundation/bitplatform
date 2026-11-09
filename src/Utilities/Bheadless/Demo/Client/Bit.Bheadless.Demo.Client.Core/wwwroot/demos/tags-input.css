@@ -1,0 +1,69 @@
+﻿/* tags-input demo styles — plain CSS section. The library ships zero CSS. */
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    width: min(26rem, 100%);
+    padding: 0.4rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+}
+
+/* data-focused while anything inside has focus */
+.tags[data-focused] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tags[data-invalid] { border-color: var(--color-danger); }
+
+.tags-list { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.25rem 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--color-accent-subtle);
+    color: var(--color-accent-text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    outline: none;
+}
+
+/* The focused tag (← / Backspace from the empty input) */
+.tag:focus-visible { box-shadow: 0 0 0 2px var(--color-focus); }
+
+.tag-remove {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.tag-remove:hover { background: var(--color-accent-muted); }
+
+.tags-input {
+    flex: 1;
+    min-width: 6rem;
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    outline: none;
+}
+
+.tags-clear {
+    all: unset;
+    padding: 0 0.4rem;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.tags-clear:disabled { display: none; }

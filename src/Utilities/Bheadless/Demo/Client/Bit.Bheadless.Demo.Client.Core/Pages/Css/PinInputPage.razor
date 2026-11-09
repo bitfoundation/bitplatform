@@ -1,0 +1,132 @@
+﻿@page "/pin-input"
+
+<PageTitle>PIN Input · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>PIN Input</h1>
+    <p class="bb-subtitle">One input per character for PINs and one-time codes: typing moves on, paste and SMS autofill spread over the positions.</p>
+</div>
+
+<SectionSwitcher Slug="pin-input" />
+
+<DemoBlock Title="One-time code" Code="@_otpCode" Css="@_css">
+    <Description>
+        <code>Otp</code> puts <code>autocomplete="one-time-code"</code> on the first position, so phones offer the code from a
+        text message; a pasted code spreads over the positions. The group is one tab stop - the first empty position - and
+        ← / →, Home / End and Backspace move between positions. <code>OnComplete</code> fires once every position is filled.
+    </Description>
+    <LiveContent>
+        <div>
+            <BitBhPinInput @bind-Value="pinCode" Otp="true" OnComplete="v => completed = v" aria-label="Verification code" class="pin">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <BitBhPinInputSlot class="pin-slot" />
+                    @if (i == 2)
+                    {
+                        <span class="pin-separator" aria-hidden="true">–</span>
+                    }
+                }
+            </BitBhPinInput>
+            <p class="demo-output">Value: <strong>@pinCode</strong> @(completed is null ? "" : $"· completed with {completed}")</p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Masked PIN with placeholders" Code="@_maskCode" Css="@_css">
+    <Description>
+        <code>Mask</code> renders password inputs and <code>Placeholder</code> marks the empty positions. Characters the
+        <code>Type</code> doesn't allow (here: anything but digits) are refused as they are typed.
+    </Description>
+    <LiveContent>
+        <BitBhPinInput Mask="true" Placeholder="○" aria-label="PIN" class="pin">
+            @for (var i = 0; i < 4; i++)
+            {
+                <BitBhPinInputSlot class="pin-slot" />
+            }
+        </BitBhPinInput>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Alphanumeric, upper case, in a field" Code="@_fieldCode" Css="@_css">
+    <Description>
+        <code>Type="BitBhPinInputType.Alphanumeric"</code> with <code>UpperCase</code> takes ticket or licence codes; a
+        <code>Pattern</code> (one character's regular expression) takes anything else. Inside a <code>BitBhField</code> the
+        label names the group and focuses its first empty position.
+    </Description>
+    <LiveContent>
+        <BitBhField>
+            <BitBhLabel class="pin-label">Ticket code</BitBhLabel>
+            <BitBhPinInput Type="BitBhPinInputType.Alphanumeric" UpperCase="true" Name="ticket" class="pin">
+                @for (var i = 0; i < 5; i++)
+                {
+                    <BitBhPinInputSlot class="pin-slot" />
+                }
+            </BitBhPinInput>
+        </BitBhField>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private string pinCode = string.Empty;
+    private string? completed;
+
+    private const string _otpCode = """
+<BitBhPinInput @bind-Value="pinCode" Otp="true" OnComplete="VerifyAsync" aria-label="Verification code" class="pin">
+    @for (var i = 0; i < 6; i++)
+    {
+        <BitBhPinInputSlot class="pin-slot" />
+        @if (i == 2)
+        {
+            <span class="pin-separator" aria-hidden="true">–</span>
+        }
+    }
+</BitBhPinInput>
+""";
+
+    private const string _maskCode = """
+<BitBhPinInput Mask="true" Placeholder="○" aria-label="PIN" class="pin">
+    @for (var i = 0; i < 4; i++)
+    {
+        <BitBhPinInputSlot class="pin-slot" />
+    }
+</BitBhPinInput>
+""";
+
+    private const string _fieldCode = """
+<BitBhField>
+    <BitBhLabel class="pin-label">Ticket code</BitBhLabel>
+    <BitBhPinInput Type="BitBhPinInputType.Alphanumeric" UpperCase="true" Name="ticket" class="pin">
+        @for (var i = 0; i < 5; i++)
+        {
+            <BitBhPinInputSlot class="pin-slot" />
+        }
+    </BitBhPinInput>
+</BitBhField>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.pin { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+.pin-slot {
+    width: 2.5rem;
+    height: 2.9rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.pin-slot:focus { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* data-filled on a position with a character */
+.pin-slot[data-filled] { border-color: var(--color-primary-text); }
+
+/* data-complete on the root once every position is filled */
+.pin[data-complete] .pin-slot { background: var(--color-success-subtle); border-color: var(--color-success-border); }
+.pin[data-invalid] .pin-slot { border-color: var(--color-danger); }
+""";
+}

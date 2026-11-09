@@ -42,9 +42,15 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
     private Func<ElementReference>? _initialFocus;
     private bool _panelDismissOnEscape = true;
     private BitBhFloatingScope? _scope;
+    private readonly HashSet<BitBhDialog> _openChildren = new();
+    private bool _reportedOpen;
 
     [CascadingParameter]
     private BitBhFloatingScope? ParentScope { get; set; }
+
+    // The dialog this one is nested in (it renders inside that dialog's content).
+    [CascadingParameter]
+    private BitBhDialogContext? ParentDialog { get; set; }
 
     private BitBhFloatingScope Scope => _scope ??= new BitBhFloatingScope(() => _floating?.Handle ?? 0);
 
@@ -130,7 +136,23 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => Floating.SyncAsync(() => IsOpen, CreateRequest);
+    {
+        // The dialog this one is nested in learns when it opens and closes: it is then "behind" (data-nested-dialog-open).
+        if (_reportedOpen != IsOpen)
+        {
+            _reportedOpen = IsOpen;
+            ParentDialog?.Owner?.ReportNested(this, IsOpen);
+        }
+        return Floating.SyncAsync(() => IsOpen, CreateRequest);
+    }
+
+    private void ReportNested(BitBhDialog child, bool open)
+    {
+        if (open ? _openChildren.Add(child) : _openChildren.Remove(child)) StateHasChanged();
+    }
+
+    /// <summary>The number of dialogs open inside this one.</summary>
+    internal int NestedDialogs => _openChildren.Count;
 
     private BitBhFloatingRequest CreateRequest() => new()
     {
@@ -203,7 +225,22 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
         // would take every press on the page (and turn each into an outside dismissal).
         if (Modal && GetAdditionalAttribute("style") is null && GetAdditionalAttribute("class") is null)
             attrs["style"] = "position:fixed;inset:0;z-index:50;";
+        AddNestingAttributes(attrs, ParentDialog is not null, NestedDialogs);
         return attrs;
+    }
+
+    /// <summary>
+    /// <c>data-nested</c> on a dialog opened from another one; <c>data-nested-dialog-open</c> and
+    /// <c>--bit-bh-nested-dialogs</c> (how many) on one that has dialogs open in front of it - to scale it back, dim it …
+    /// </summary>
+    internal static void AddNestingAttributes(Dictionary<string, object> attrs, bool nested, int nestedOpen)
+    {
+        if (nested) attrs["data-nested"] = "";
+        if (nestedOpen <= 0) return;
+        // Only while there are any: read it as var(--bit-bh-nested-dialogs, 0).
+        attrs["data-nested-dialog-open"] = "";
+        var variable = $"--bit-bh-nested-dialogs:{nestedOpen.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+        attrs["style"] = attrs.TryGetValue("style", out var style) ? BitBhAttributeUtilities.JoinStyles(style?.ToString(), variable) : variable;
     }
 
     // ── Context plumbing ─────────────────────────────────────────────────────
@@ -219,7 +256,12 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
         dismissAsync: DismissAsync,
         registerTitle: present => SetFlag(ref _hasTitle, present),
         registerDescription: present => SetFlag(ref _hasDescription, present),
-        registerPanel: RegisterPanel);
+        registerPanel: RegisterPanel)
+    {
+        Owner = this,
+        IsNested = ParentDialog is not null,
+        NestedDialogs = NestedDialogs,
+    };
 
     private void SetFlag(ref bool field, bool value)
     {
@@ -274,6 +316,7 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_reportedOpen) ParentDialog?.Owner?.ReportNested(this, false);
         if (_floating is not null)
             await _floating.DisposeAsync();
         GC.SuppressFinalize(this);

@@ -101,6 +101,12 @@ public sealed class BitBhComboboxContext<TValue> : IBitBhCloseContext
     /// <summary>Closes the options panel.</summary>
     public Task CloseAsync() => Combobox.CloseAsync();
 
+    /// <summary>Clears the value(s) and the typed text.</summary>
+    public Task ClearAsync() => Combobox.ClearAsync();
+
+    /// <summary>Whether there is a value or typed text to clear.</summary>
+    public bool CanClear => Combobox.CanClear;
+
     internal Task SelectAsync(TValue value) => Combobox.SelectAsync(value);
 }
 

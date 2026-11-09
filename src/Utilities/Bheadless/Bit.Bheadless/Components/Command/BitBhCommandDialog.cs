@@ -21,6 +21,11 @@ public class BitBhCommandDialog : ComponentBase
 {
     private bool _open;
 
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private BitBhStrings Strings => (BitBhStrings?)Services.GetService(typeof(BitBhStrings)) ?? BitBhStrings.Default;
+
     /// <summary>Whether the palette is open. Supplying it makes it controlled (use <c>@bind-Open</c>).</summary>
     [Parameter]
     public bool Open { get; set; }
@@ -35,7 +40,7 @@ public class BitBhCommandDialog : ComponentBase
 
     /// <summary>Accessible label of the palette.</summary>
     [Parameter]
-    public string Label { get; set; } = "Command palette";
+    public string? Label { get; set; }
 
     /// <summary>Class of the overlay behind the palette.</summary>
     [Parameter]
@@ -144,11 +149,11 @@ public class BitBhCommandDialog : ComponentBase
 
             dialog.OpenComponent<BitBhDialogPanel>(2);
             if (ContentClass is not null) dialog.AddComponentParameter(3, "class", ContentClass);
-            dialog.AddComponentParameter(4, "aria-label", Label);
+            dialog.AddComponentParameter(4, "aria-label", Label ?? Strings.CommandPalette);
             dialog.AddComponentParameter(5, nameof(BitBhDialogPanel.ChildContent), (RenderFragment)(panel =>
             {
                 panel.OpenComponent<BitBhCommand>(0);
-                panel.AddComponentParameter(1, nameof(BitBhCommand.Label), Label);
+                panel.AddComponentParameter(1, nameof(BitBhCommand.Label), Label ?? Strings.CommandPalette);
                 panel.AddComponentParameter(2, nameof(BitBhCommand.ShouldFilter), ShouldFilter);
                 panel.AddComponentParameter(3, nameof(BitBhCommand.Sort), Sort);
                 panel.AddComponentParameter(4, nameof(BitBhCommand.Loop), Loop);

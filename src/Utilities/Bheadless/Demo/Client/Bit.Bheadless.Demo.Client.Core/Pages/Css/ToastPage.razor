@@ -130,13 +130,30 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Promise toasts, updates and swiping"
+           Code="@_promiseCode">
+    <Description>
+        <code>PromiseAsync</code> shows a "loading" toast while a task runs and turns the same toast into "success" or "error"
+        (<code>data-variant</code>) when it completes; <code>Show</code> with the <code>Id</code> of a toast still shown, or
+        <code>Update</code>, changes a toast in place - it restarts its timer and is announced again. Swipe a toast to the
+        right to dismiss it (<code>SwipeDirection</code>; <code>data-swipe</code> and <code>--bit-bh-toast-swipe-move-x</code>
+        while dragged). Timers pause while the toasts are hovered or focused and while the page is hidden.
+    </Description>
+    <LiveContent>
+        <div class="toast-demo-row">
+            <BitBhButton OnClick="SaveAsync" class="btn">Save (succeeds)</BitBhButton>
+            <BitBhButton OnClick="DeleteAsync" class="btn">Delete (fails)</BitBhButton>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
 @* One viewport renders every toast shown through the injected BitBhToaster.
    In a real app it lives in MainLayout.razor. *@
 <BitBhToastViewport Context="t" Duration="5000" class="toast-viewport">
-    <BitBhToast Item="t" data-variant="@(t.Data ?? "info")" class="toast">
-        @if (t.Data is "success" or "error")
+    <BitBhToast Item="t" data-variant="@(t.Variant ?? t.Data ?? "info")" class="toast">
+        @if ((t.Variant ?? t.Data) is "success" or "error" or "loading")
         {
-            <span class="toast-icon" aria-hidden="true">@(t.Data is "error" ? "!" : "✓")</span>
+            <span class="toast-icon" aria-hidden="true">@((t.Variant ?? t.Data) switch { "error" => "!", "loading" => "…", _ => "✓" })</span>
         }
         <div class="toast-body">
             <BitBhToastTitle class="toast-title">@t.Title</BitBhToastTitle>
@@ -178,6 +195,42 @@
     public void Dispose() => stackToaster.Changed -= OnStackChanged;
 
     private void ShowSimple() => Toaster.Show("Event created");
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Toaster.PromiseAsync(SlowSaveAsync(),
+                new BitBhToastOptions { Title = "Saving…" },
+                n => new BitBhToastOptions { Title = $"Saved {n} changes" },
+                e => new BitBhToastOptions { Title = "Couldn't save", Description = e.Message });
+        }
+        catch (InvalidOperationException) { }
+    }
+
+    private async Task DeleteAsync()
+    {
+        try
+        {
+            await Toaster.PromiseAsync(SlowDeleteAsync(),
+                new BitBhToastOptions { Title = "Deleting…" },
+                _ => new BitBhToastOptions { Title = "Deleted" },
+                e => new BitBhToastOptions { Title = "Couldn't delete", Description = e.Message, Foreground = true });
+        }
+        catch (InvalidOperationException) { }
+    }
+
+    private static async Task<int> SlowSaveAsync()
+    {
+        await Task.Delay(1500);
+        return 3;
+    }
+
+    private static async Task<int> SlowDeleteAsync()
+    {
+        await Task.Delay(1500);
+        throw new InvalidOperationException("You don't have permission to delete it.");
+    }
 
     private void ShowWithDescription() => Toaster.Show(new BitBhToastOptions
     {
@@ -242,6 +295,28 @@
     }
 
     // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _promiseCode = """
+@inject BitBhToaster Toaster
+
+<BitBhButton OnClick="SaveAsync">Save</BitBhButton>
+
+@code {
+    private Task<int> SaveAsync() => Toaster.PromiseAsync(SaveChangesAsync(),
+        new BitBhToastOptions { Title = "Saving…" },                                    // data-variant="loading"
+        n => new BitBhToastOptions { Title = $"Saved {n} changes" },                    // data-variant="success"
+        e => new BitBhToastOptions { Title = "Couldn't save", Description = e.Message }); // data-variant="error"
+}
+
+@* Change a toast in place: *@
+var id = Toaster.Show(new BitBhToastOptions { Title = "Uploading 3 files…", Duration = 0 });
+Toaster.Update(id, o => { o.Title = "Uploaded"; o.Duration = null; });
+
+@* The viewport (once, in MainLayout): swipe right to dismiss *@
+<BitBhToastViewport Context="t" SwipeDirection="BitBhToastSwipeDirection.Right" class="toast-viewport">
+    <BitBhToast Item="t" class="toast">…</BitBhToast>
+</BitBhToastViewport>
+""";
 
     private const string _simpleCode = """
 @inject BitBhToaster Toaster

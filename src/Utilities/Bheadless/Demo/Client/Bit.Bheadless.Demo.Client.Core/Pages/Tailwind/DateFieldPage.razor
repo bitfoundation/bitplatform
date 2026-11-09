@@ -1,0 +1,190 @@
+﻿@page "/tw/date-field"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Date Field / Time Field (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Date Field / Time Field</h1>
+    <p class="bb-subtitle">Segmented date and time inputs: each part is a spinbutton, in the order and with the separators the reader's culture writes them.</p>
+</div>
+
+<SectionSwitcher Slug="date-field" />
+
+<TwDemoBlock Title="Date field" Code="@_dateCode">
+    <Description>
+        Each part is a <code>role="spinbutton"</code> in a <code>role="group"</code> named by the field's label. Type digits
+        (a segment moves on once full), step with ↑ / ↓, move with ← / →. The segments are styled through the field:
+        <code>[&amp;_[role=spinbutton]]:</code> for the editable ones, <code>[&amp;_[data-placeholder]]:</code> for the empty
+        ones; the field gets <code>data-[focused]:</code> while a segment has focus.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-end gap-6">
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Birth date</BitBhLabel>
+                <BitBhDateField @bind-Value="birthDate" Culture="DemoDateCultures.EnUs" class="@Field" />
+                <BitBhDescription class="mt-1.5 text-xs text-zinc-500">As on your passport.</BitBhDescription>
+            </BitBhField>
+            <p class="m-0 text-sm text-zinc-500">Value: <strong class="font-semibold tabular-nums text-zinc-900">@(birthDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "null")</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Time field" Code="@_timeCode">
+    <Description>
+        <code>BitBhTimeField</code> edits a <code>TimeOnly?</code>: an AM / PM segment on a 12-hour clock (<kbd>A</kbd> /
+        <kbd>P</kbd> set it), <code>HourCycle</code> and <code>Granularity</code> to change the clock and the parts.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-end gap-6">
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Meeting starts</BitBhLabel>
+                <BitBhTimeField @bind-Value="start" Culture="DemoDateCultures.EnUs" class="@Field" />
+            </BitBhField>
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Lap time (24-hour, seconds)</BitBhLabel>
+                <BitBhTimeField @bind-Value="lap" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                                Culture="DemoDateCultures.EnUs" class="@Field" />
+            </BitBhField>
+            <p class="m-0 text-sm text-zinc-500">
+                Start: <strong class="font-semibold tabular-nums text-zinc-900">@(start?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? "null")</strong> ·
+                Lap: <strong class="font-semibold tabular-nums text-zinc-900">@(lap?.ToString("HH:mm:ss", CultureInfo.InvariantCulture) ?? "null")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Cultures" Code="@_cultureCode">
+    <Description>
+        German orders the segments <code>dd.MM.yyyy</code> and uses a 24-hour clock; a Persian culture edits the Persian
+        calendar's parts, right to left. (This WebAssembly demo runs without ICU, where the Persian calendar isn't
+        available.)
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-end gap-6">
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Datum</BitBhLabel>
+                <BitBhDateField @bind-Value="cultureDate" Culture="DemoDateCultures.DeDe" class="@Field" />
+            </BitBhField>
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Uhrzeit</BitBhLabel>
+                <BitBhTimeField @bind-Value="cultureTime" Culture="DemoDateCultures.DeDe" class="@Field" />
+            </BitBhField>
+            @if (DemoDateCultures.FaIr is { } persian)
+            {
+                <div dir="rtl" lang="fa">
+                    <BitBhField>
+                        <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">تاریخ</BitBhLabel>
+                        <BitBhDateField @bind-Value="cultureDate" Culture="persian" Dir="BitBhDirection.Rtl" class="@Field" />
+                    </BitBhField>
+                </div>
+            }
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Limits and validation" Code="@_formCode">
+    <Description>
+        A value outside <code>Min</code> / <code>Max</code> marks the field invalid (<code>data-[invalid]:</code>); in an
+        <code>EditForm</code> it joins validation and <code>BitBhErrorMessage</code> describes it.
+    </Description>
+    <LiveContent>
+        <EditForm Model="trip" OnValidSubmit="() => saved = true">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Departure (this year)</BitBhLabel>
+                <BitBhDateField @bind-Value="trip.Departure" Min="firstDay" Max="lastDay" Name="departure"
+                                Culture="DemoDateCultures.EnUs" class="@Field" />
+                <BitBhErrorMessage class="mt-1.5 text-xs text-red-700" />
+            </BitBhField>
+            <button type="submit" class="mt-3 cursor-pointer rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-blue-700">Save</button>
+            @if (saved)
+            {
+                <p class="m-0 mt-2 text-sm text-zinc-500">Saved: <strong class="text-zinc-900">@trip.Departure?.ToString("D", DemoDateCultures.EnUs)</strong></p>
+            }
+        </EditForm>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private static readonly DateOnly firstDay = new(DateTime.Today.Year, 1, 1);
+    private static readonly DateOnly lastDay = new(DateTime.Today.Year, 12, 31);
+    private DateOnly? birthDate;
+    private TimeOnly? start = new(9, 30);
+    private TimeOnly? lap;
+    private DateOnly? cultureDate = DateOnly.FromDateTime(DateTime.Today);
+    private TimeOnly? cultureTime = new(14, 5);
+    private readonly Trip trip = new();
+    private bool saved;
+
+    private sealed class Trip
+    {
+        [Required(ErrorMessage = "Enter a departure date.")]
+        public DateOnly? Departure { get; set; }
+    }
+
+    // The utilities the live samples share (the Razor tabs show them inline).
+    private const string Field = "inline-flex min-w-40 cursor-text items-center rounded-lg border border-zinc-500 bg-white px-2.5 py-1.5 tabular-nums text-zinc-900 hover:border-zinc-600 data-[focused]:outline-2 data-[focused]:outline-offset-2 data-[focused]:outline-blue-600 data-[invalid]:border-red-600 [&_[data-type]]:rounded [&_[data-type]]:px-0.5 [&_[data-type=literal]]:px-0 [&_[data-type=literal]]:text-zinc-500 [&_[role=spinbutton]]:inline-block [&_[role=spinbutton]]:min-h-6 [&_[role=spinbutton]]:min-w-6 [&_[role=spinbutton]]:text-center [&_[role=spinbutton]]:leading-6 [&_[role=spinbutton]]:outline-none [&_[role=spinbutton]:focus]:bg-blue-600 [&_[role=spinbutton]:focus]:text-white [&_[data-placeholder]]:text-zinc-500";
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _dateCode = """
+<BitBhField>
+    <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Birth date</BitBhLabel>
+    <BitBhDateField @bind-Value="birthDate"
+                    class="inline-flex min-w-40 cursor-text items-center rounded-lg border border-zinc-500 bg-white px-2.5 py-1.5 tabular-nums text-zinc-900 hover:border-zinc-600 data-[focused]:outline-2 data-[focused]:outline-offset-2 data-[focused]:outline-blue-600 data-[invalid]:border-red-600 [&_[data-type]]:rounded [&_[data-type]]:px-0.5 [&_[data-type=literal]]:px-0 [&_[data-type=literal]]:text-zinc-500 [&_[role=spinbutton]]:inline-block [&_[role=spinbutton]]:min-h-6 [&_[role=spinbutton]]:min-w-6 [&_[role=spinbutton]]:text-center [&_[role=spinbutton]]:leading-6 [&_[role=spinbutton]]:outline-none [&_[role=spinbutton]:focus]:bg-blue-600 [&_[role=spinbutton]:focus]:text-white [&_[data-placeholder]]:text-zinc-500" />
+    <BitBhDescription class="mt-1.5 text-xs text-zinc-500">As on your passport.</BitBhDescription>
+</BitBhField>
+
+@code {
+    private DateOnly? birthDate;
+}
+""";
+
+    private const string _timeCode = """
+<BitBhTimeField @bind-Value="start" class="… the field's utilities, as above …" />
+
+<BitBhTimeField @bind-Value="lap" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                class="… the field's utilities, as above …" />
+
+@code {
+    private TimeOnly? start = new(9, 30);
+    private TimeOnly? lap;
+}
+""";
+
+    private const string _cultureCode = """
+<BitBhDateField @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" class="…" />
+<BitBhTimeField @bind-Value="time" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" class="…" />
+
+<div dir="rtl" lang="fa">
+    <BitBhDateField @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("fa-IR"))" Dir="BitBhDirection.Rtl" class="…" />
+</div>
+""";
+
+    private const string _formCode = """
+<EditForm Model="trip" OnValidSubmit="() => saved = true">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Departure (this year)</BitBhLabel>
+        <BitBhDateField @bind-Value="trip.Departure" Min="firstDay" Max="lastDay" Name="departure"
+                        class="… the field's utilities, as above …" />
+        <BitBhErrorMessage class="mt-1.5 text-xs text-red-700" />
+    </BitBhField>
+    <button type="submit" class="mt-3 cursor-pointer rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-blue-700">Save</button>
+</EditForm>
+
+@code {
+    private static readonly DateOnly firstDay = new(DateTime.Today.Year, 1, 1);
+    private static readonly DateOnly lastDay = new(DateTime.Today.Year, 12, 31);
+    private readonly Trip trip = new();
+    private bool saved;
+
+    private sealed class Trip
+    {
+        [Required(ErrorMessage = "Enter a departure date.")]
+        public DateOnly? Departure { get; set; }
+    }
+}
+""";
+}

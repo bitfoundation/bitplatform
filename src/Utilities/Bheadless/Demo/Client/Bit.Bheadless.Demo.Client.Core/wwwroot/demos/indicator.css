@@ -1,0 +1,63 @@
+﻿/* Selection indicator demo styles (tabs page) — plain CSS section. The library ships zero CSS. */
+
+/* ---- Sliding tab underline ---- */
+.tab-list-sliding {
+    position: relative;
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tab-list-sliding .tab { border-bottom-color: transparent; }
+
+/* BitBhSelectionIndicator: --bit-bh-indicator-left / -width follow the selected tab */
+.tab-underline {
+    position: absolute;
+    bottom: -1px;
+    left: var(--bit-bh-indicator-left);
+    width: var(--bit-bh-indicator-width);
+    height: 2px;
+    background: var(--color-primary);
+}
+
+/* data-measured once placed: animate from then on, never from 0 */
+.tab-underline[data-measured] { transition: left 220ms ease, width 220ms ease; }
+.tab-underline[data-hidden] { display: none; }
+
+/* ---- Segmented control (a radio group with a sliding pill) ---- */
+.segmented {
+    position: relative;
+    display: inline-flex;
+    padding: 0.25rem;
+    border-radius: 0.6rem;
+    background: var(--color-fill);
+}
+
+.segment {
+    all: unset;
+    position: relative;
+    z-index: 1;
+    padding: 0.35rem 0.9rem;
+    border-radius: 0.45rem;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.segment:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.segment[data-state="checked"] { color: var(--color-text); }
+
+.segment-pill {
+    position: absolute;
+    top: var(--bit-bh-indicator-top);
+    left: var(--bit-bh-indicator-left);
+    width: var(--bit-bh-indicator-width);
+    height: var(--bit-bh-indicator-height);
+    border-radius: 0.45rem;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+
+.segment-pill[data-measured] { transition: left 220ms ease, width 220ms ease; }
+.segment-pill[data-hidden] { display: none; }

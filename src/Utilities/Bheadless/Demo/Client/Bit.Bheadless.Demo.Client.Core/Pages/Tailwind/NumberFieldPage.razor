@@ -1,0 +1,131 @@
+﻿@page "/tw/number-field"
+@using System.Globalization
+
+<PageTitle>Number Field (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Number Field</h1>
+    <p class="bb-subtitle">A spinbutton for numbers of any type: culture-aware formatting and parsing, steppers that repeat while held, keyboard, wheel and scrub.</p>
+</div>
+
+<SectionSwitcher Slug="number-field" />
+
+<TwDemoBlock Title="Quantity with steppers" Code="@_basicCode">
+    <Description>
+        ↑ / ↓ step, Shift steps by <code>LargeStep</code>, Home / End jump to the bounds. The buttons repeat while held
+        (<code>data-pressed:</code>) and disable themselves at the bounds; the root gets <code>data-focused</code> while the
+        input has focus, styled here with a custom <code>data-[focused]:</code> variant.
+    </Description>
+    <LiveContent>
+        <div>
+            <label class="mb-1 block text-sm font-medium text-zinc-900" for="tw-nf-quantity">Quantity</label>
+            <BitBhNumberField @bind-Value="quantity" Min="1" Max="20"
+                              class="inline-flex overflow-hidden rounded-lg border border-zinc-300 bg-white data-[focused]:outline-2 data-[focused]:outline-offset-2 data-[focused]:outline-blue-600">
+                <BitBhNumberFieldDecrement class="w-9 cursor-pointer select-none bg-zinc-100 text-lg text-zinc-700 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-400 data-[pressed]:bg-blue-100">−</BitBhNumberFieldDecrement>
+                <BitBhNumberFieldInput Id="tw-nf-quantity" class="w-28 bg-transparent px-2 py-1.5 text-center tabular-nums text-zinc-900 outline-none" />
+                <BitBhNumberFieldIncrement class="w-9 cursor-pointer select-none bg-zinc-100 text-lg text-zinc-700 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-400 data-[pressed]:bg-blue-100">+</BitBhNumberFieldIncrement>
+            </BitBhNumberField>
+        </div>
+        <span class="text-sm text-zinc-500">Value: <strong class="text-zinc-900">@quantity</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Currency, percent and culture" Code="@_formatCode">
+    <Description>
+        <code>Format</code> is a .NET numeric format string and <code>Culture</code> the culture numbers are written and read
+        in: <code>1.234,5</code> parses in German, <code>1,234.5</code> in American English.
+    </Description>
+    <LiveContent>
+        <BitBhNumberField @bind-Value="price" Format="C" Culture="@_enUs" Min="0" Step="0.5"
+                          class="inline-flex rounded-lg border border-zinc-300 bg-white data-[focused]:outline-2 data-[focused]:outline-blue-600">
+            <BitBhNumberFieldInput aria-label="Price" class="w-32 bg-transparent px-2 py-1.5 text-center tabular-nums text-zinc-900 outline-none" />
+        </BitBhNumberField>
+        <BitBhNumberField @bind-Value="price" Format="C" Culture="@_deDe" Min="0" Step="0.5"
+                          class="inline-flex rounded-lg border border-zinc-300 bg-white data-[focused]:outline-2 data-[focused]:outline-blue-600">
+            <BitBhNumberFieldInput aria-label="Preis" class="w-32 bg-transparent px-2 py-1.5 text-center tabular-nums text-zinc-900 outline-none" />
+        </BitBhNumberField>
+        <BitBhNumberField @bind-Value="discount" Format="P0" Culture="@_enUs" Min="0" Max="1"
+                          class="inline-flex rounded-lg border border-zinc-300 bg-white data-[focused]:outline-2 data-[focused]:outline-blue-600">
+            <BitBhNumberFieldInput aria-label="Discount" class="w-24 bg-transparent px-2 py-1.5 text-center tabular-nums text-zinc-900 outline-none" />
+        </BitBhNumberField>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Scrub area and wheel" Code="@_scrubCode">
+    <Description>
+        Drag the <code>W</code> handle sideways to change the value (<code>data-[scrubbing]:</code> while dragging); with
+        <code>AllowWheelScrub</code> the wheel steps the focused input.
+    </Description>
+    <LiveContent>
+        <BitBhNumberField @bind-Value="width" Min="0" Max="2000" AllowWheelScrub="true"
+                          class="inline-flex overflow-hidden rounded-lg border border-zinc-300 bg-white data-[focused]:outline-2 data-[focused]:outline-blue-600">
+            <BitBhNumberFieldScrubArea class="flex cursor-ew-resize items-center bg-zinc-100 px-2.5 text-xs font-semibold text-zinc-600 data-[scrubbing]:bg-blue-100 data-[scrubbing]:text-blue-700">W</BitBhNumberFieldScrubArea>
+            <BitBhNumberFieldInput aria-label="Width" class="w-24 bg-transparent px-2 py-1.5 text-center tabular-nums text-zinc-900 outline-none" />
+        </BitBhNumberField>
+        <span class="text-sm text-zinc-500">Width: <strong class="text-zinc-900">@width</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private static readonly CultureInfo _enUs = Culture("en-US", ".", ",", "$", 0);
+    private static readonly CultureInfo _deDe = Culture("de-DE", ",", ".", "€", 3);
+    // The WebAssembly demo runs with InvariantGlobalization, where only the invariant culture exists: the cultures are
+    // built from their number formats there (an app with ICU loaded just uses CultureInfo.GetCultureInfo).
+    private static CultureInfo Culture(string name, string decimalSeparator, string groupSeparator, string currency, int currencyPattern)
+    {
+        try { return CultureInfo.GetCultureInfo(name); }
+        catch (CultureNotFoundException)
+        {
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            var nf = culture.NumberFormat;
+            nf.NumberDecimalSeparator = nf.CurrencyDecimalSeparator = nf.PercentDecimalSeparator = decimalSeparator;
+            nf.NumberGroupSeparator = nf.CurrencyGroupSeparator = nf.PercentGroupSeparator = groupSeparator;
+            nf.CurrencySymbol = currency;
+            nf.CurrencyPositivePattern = currencyPattern;
+            nf.CurrencyNegativePattern = currencyPattern == 0 ? 1 : 8;
+            return CultureInfo.ReadOnly(culture);
+        }
+    }
+
+
+    private int quantity = 1;
+    private decimal price = 1234.5m;
+    private double discount = 0.15;
+    private double width = 320;
+
+    private const string _basicCode = """
+<label class="mb-1 block text-sm font-medium text-zinc-900" for="quantity">Quantity</label>
+<BitBhNumberField @bind-Value="quantity" Min="1" Max="20"
+                  class="inline-flex overflow-hidden rounded-lg border border-zinc-300 bg-white
+                         data-[focused]:outline-2 data-[focused]:outline-offset-2 data-[focused]:outline-blue-600">
+    <BitBhNumberFieldDecrement class="w-9 bg-zinc-100 hover:bg-zinc-200 disabled:text-zinc-400 data-[pressed]:bg-blue-100">−</BitBhNumberFieldDecrement>
+    <BitBhNumberFieldInput Id="quantity" class="w-28 bg-transparent px-2 py-1.5 text-center tabular-nums outline-none" />
+    <BitBhNumberFieldIncrement class="w-9 bg-zinc-100 hover:bg-zinc-200 disabled:text-zinc-400 data-[pressed]:bg-blue-100">+</BitBhNumberFieldIncrement>
+</BitBhNumberField>
+""";
+
+    private const string _formatCode = """
+<BitBhNumberField @bind-Value="price" Format="C" Culture="@(CultureInfo.GetCultureInfo("en-US"))" Min="0" Step="0.5"
+                  class="inline-flex rounded-lg border border-zinc-300 bg-white">
+    <BitBhNumberFieldInput aria-label="Price" class="w-32 bg-transparent px-2 py-1.5 text-center tabular-nums outline-none" />
+</BitBhNumberField>
+
+<BitBhNumberField @bind-Value="price" Format="C" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" Min="0" Step="0.5"
+                  class="inline-flex rounded-lg border border-zinc-300 bg-white">
+    <BitBhNumberFieldInput aria-label="Preis" class="w-32 bg-transparent px-2 py-1.5 text-center tabular-nums outline-none" />
+</BitBhNumberField>
+
+<BitBhNumberField @bind-Value="discount" Format="P0" Min="0" Max="1" class="inline-flex rounded-lg border border-zinc-300 bg-white">
+    <BitBhNumberFieldInput aria-label="Discount" class="w-24 bg-transparent px-2 py-1.5 text-center outline-none" />
+</BitBhNumberField>
+""";
+
+    private const string _scrubCode = """
+<BitBhNumberField @bind-Value="width" Min="0" Max="2000" AllowWheelScrub="true"
+                  class="inline-flex overflow-hidden rounded-lg border border-zinc-300 bg-white">
+    <BitBhNumberFieldScrubArea class="flex cursor-ew-resize items-center bg-zinc-100 px-2.5 text-xs font-semibold
+                                      data-[scrubbing]:bg-blue-100 data-[scrubbing]:text-blue-700">W</BitBhNumberFieldScrubArea>
+    <BitBhNumberFieldInput aria-label="Width" class="w-24 bg-transparent px-2 py-1.5 text-center tabular-nums outline-none" />
+</BitBhNumberField>
+""";
+}

@@ -1,0 +1,61 @@
+﻿@page "/search-field"
+
+<PageTitle>Search Field · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Search Field</h1>
+    <p class="bb-subtitle">A search box: Escape clears it, Enter submits, a clear button out of the tab order puts the focus back.</p>
+</div>
+
+<SectionSwitcher Slug="search-field" />
+
+<DemoBlock Title="Search the docs" Code="@_code" Css="@_css">
+    <Description>
+        The input is a <code>type="search"</code> box (<code>role="searchbox"</code>). Escape clears the text and goes no
+        further - a dialog around it stays open; pressed on the empty field it does what Escape does there. Enter raises
+        <code>OnSubmit</code>. The clear button is named "Clear search", disabled while empty (<code>data-empty</code>) and
+        returns the focus to the input.
+    </Description>
+    <LiveContent>
+        <div>
+            <BitBhSearchField @bind-Value="query" OnSubmit="q => submitted = q" class="search">
+                <span aria-hidden="true">⌕</span>
+                <BitBhSearchFieldInput aria-label="Search docs" placeholder="Search…" class="ix-input" />
+                <BitBhSearchFieldClear class="ix-icon-btn">✕</BitBhSearchFieldClear>
+            </BitBhSearchField>
+            <p class="demo-output">Submitted: <strong>@submitted</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private string query = string.Empty;
+    private string? submitted;
+
+    private const string _code = """
+<BitBhSearchField @bind-Value="query" OnSubmit="SearchAsync" class="search">
+    <span aria-hidden="true">⌕</span>
+    <BitBhSearchFieldInput aria-label="Search docs" placeholder="Search…" class="ix-input" />
+    <BitBhSearchFieldClear class="ix-icon-btn">✕</BitBhSearchFieldClear>
+</BitBhSearchField>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.search {
+    display: inline-flex;
+    align-items: center;
+    padding-inline-start: 0.5rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    background: var(--color-surface);
+}
+
+.search:focus-within { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.search .ix-input { border: none; outline: none; background: transparent; }
+.search .ix-input::-webkit-search-cancel-button { display: none; }
+
+/* data-empty while there is nothing to clear */
+.search[data-empty] .ix-icon-btn { visibility: hidden; }
+""";
+}

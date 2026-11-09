@@ -88,6 +88,8 @@ public class BitBhField : BitBhComponentBase
         SetDataFlag(attrs, "disabled", Context.Disabled);
         SetDataFlag(attrs, "invalid", Context.Invalid);
         SetDataFlag(attrs, "required", Required);
+        SetDataFlag(attrs, "touched", Context.Touched);
+        SetDataFlag(attrs, "dirty", Context.Dirty);
         return attrs;
     }
 }

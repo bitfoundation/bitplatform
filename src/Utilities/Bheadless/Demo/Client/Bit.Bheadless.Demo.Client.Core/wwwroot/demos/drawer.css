@@ -1,0 +1,150 @@
+﻿/* drawer demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Backdrop: fades with the swipe ----------------------------------- */
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: calc(1 - var(--bit-bh-drawer-swipe-progress, 0));
+    transition: opacity 300ms ease;
+}
+
+.drawer-backdrop[data-state="open"]   { animation: drawer-fade-in 300ms ease; }
+.drawer-backdrop[data-state="closed"] { opacity: 0; }
+.drawer-backdrop[data-swiping]        { transition: none; }
+
+/* ---- Panel: follows the swipe, slides in and out from its side ---------- */
+.drawer-panel {
+    position: fixed;
+    z-index: 51;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 -12px 40px -12px rgba(0, 0, 0, 0.35);
+    outline: none;
+    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1), filter 300ms ease;
+}
+
+/* While the finger drags it, the panel follows without easing. */
+.drawer-panel[data-swiping] { transition: none; user-select: none; }
+
+.drawer-panel[data-side="bottom"] {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0;
+    transform: translateY(var(--bit-bh-drawer-swipe-movement-y, 0px));
+}
+
+.drawer-panel[data-side="top"] {
+    left: 0;
+    right: 0;
+    top: 0;
+    max-height: 85vh;
+    border-radius: 0 0 1rem 1rem;
+    transform: translateY(var(--bit-bh-drawer-swipe-movement-y, 0px));
+}
+
+.drawer-panel[data-side="left"],
+.drawer-panel[data-side="right"] {
+    top: 0;
+    bottom: 0;
+    width: min(20rem, 85vw);
+    transform: translateX(var(--bit-bh-drawer-swipe-movement-x, 0px));
+}
+
+.drawer-panel[data-side="left"]  { left: 0;  border-radius: 0 1rem 1rem 0; }
+.drawer-panel[data-side="right"] { right: 0; border-radius: 1rem 0 0 1rem; }
+
+/* Enter: a keyframe animation. Exit: a transition to the closed position, so a
+   swiped panel leaves from where the finger let it go. */
+.drawer-panel[data-side="bottom"][data-state="open"] { animation: drawer-in-bottom 300ms cubic-bezier(0.32, 0.72, 0, 1); }
+.drawer-panel[data-side="top"][data-state="open"]    { animation: drawer-in-top 300ms cubic-bezier(0.32, 0.72, 0, 1); }
+.drawer-panel[data-side="left"][data-state="open"]   { animation: drawer-in-left 300ms cubic-bezier(0.32, 0.72, 0, 1); }
+.drawer-panel[data-side="right"][data-state="open"]  { animation: drawer-in-right 300ms cubic-bezier(0.32, 0.72, 0, 1); }
+
+.drawer-panel[data-side="bottom"][data-state="closed"] { transform: translateY(100%); }
+.drawer-panel[data-side="top"][data-state="closed"]    { transform: translateY(-100%); }
+.drawer-panel[data-side="left"][data-state="closed"]   { transform: translateX(-100%); }
+.drawer-panel[data-side="right"][data-state="closed"]  { transform: translateX(100%); }
+
+/* ---- Nested drawers: the one behind steps back ------------------------- */
+.drawer-panel[data-nested-drawer-open] {
+    filter: brightness(0.85);
+    transform: translateY(calc(-0.75rem * var(--bit-bh-nested-drawers, 0))) scale(calc(1 - 0.04 * var(--bit-bh-nested-drawers, 0)));
+}
+
+.drawer-backdrop[data-nested] { z-index: 52; }
+.drawer-panel[data-nested]    { z-index: 53; }
+
+/* ---- Parts --------------------------------------------------------------- */
+.drawer-handle {
+    flex: none;
+    align-self: center;
+    width: 3rem;
+    height: 0.35rem;
+    margin: -0.35rem 0 0.25rem;
+    border-radius: 999px;
+    background: var(--color-fill-strong);
+    cursor: grab;
+}
+
+.drawer-title { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--color-text); }
+.drawer-description { margin: 0; font-size: 0.9rem; color: var(--color-muted); }
+
+/* Scrolled away from its top, the list scrolls back first; at the top a drag down closes the sheet. */
+.drawer-body {
+    display: grid;
+    gap: 0.25rem;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+    overscroll-behavior: contain;
+}
+
+.drawer-body li {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--color-fill);
+    font-size: 0.9rem;
+}
+
+.drawer-nav { display: grid; gap: 0.25rem; }
+
+.drawer-nav a {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.drawer-nav a:hover { background: var(--color-fill); }
+.drawer-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+/* ---- Motion -------------------------------------------------------------- */
+@keyframes drawer-fade-in   { from { opacity: 0; } }
+@keyframes drawer-in-bottom { from { transform: translateY(100%); } }
+@keyframes drawer-in-top    { from { transform: translateY(-100%); } }
+@keyframes drawer-in-left   { from { transform: translateX(-100%); } }
+@keyframes drawer-in-right  { from { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .drawer-panel,
+    .drawer-backdrop { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}

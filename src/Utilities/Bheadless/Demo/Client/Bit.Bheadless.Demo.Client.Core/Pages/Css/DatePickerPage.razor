@@ -1,0 +1,344 @@
+﻿@page "/date-picker"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Date Picker · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Date Picker</h1>
+    <p class="bb-subtitle">A segmented date input with a button that opens a calendar in a popover: type the date, or pick it.</p>
+</div>
+
+<SectionSwitcher Slug="date-picker" />
+
+<DemoBlock Title="Date picker" Code="@_basicCode" Css="@_css">
+    <Description>
+        <code>BitBhDatePicker</code> is a date field — the segments type and step like <code>BitBhDateField</code> — whose
+        <code>BitBhDatePickerTrigger</code> ("Choose date", <code>aria-haspopup="dialog"</code>) opens
+        <code>BitBhDatePickerContent</code>: a non-modal dialog anchored under the group, named by the field's label. Opening
+        moves the focus to the selected date (or today) in the calendar; picking a date closes it and returns the focus to the
+        button, as do <kbd>Escape</kbd>, a click outside and tabbing away. <kbd>Alt</kbd>+↓ in the segments opens it too.
+    </Description>
+    <LiveContent>
+        <div class="date-picker-demo">
+            <BitBhField>
+                <BitBhLabel class="date-picker-label">Departure</BitBhLabel>
+                <BitBhDatePicker @bind-Value="departure" Culture="DemoDateCultures.EnUs">
+                    <BitBhDatePickerGroup class="date-picker-group">
+                        <BitBhDateFieldSegments />
+                        <BitBhDatePickerTrigger class="date-picker-trigger">@CalendarIcon</BitBhDatePickerTrigger>
+                    </BitBhDatePickerGroup>
+                    <BitBhDatePickerContent class="date-picker-popover">
+                        <BitBhCalendar class="calendar">
+                            <div class="calendar-header">
+                                <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                                <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                                <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                            </div>
+                            <BitBhCalendarGrid class="calendar-grid">
+                                <BitBhCalendarCell Day="context" class="calendar-cell" />
+                            </BitBhCalendarGrid>
+                        </BitBhCalendar>
+                    </BitBhDatePickerContent>
+                </BitBhDatePicker>
+            </BitBhField>
+            <p class="date-picker-value">Value: <strong>@(departure?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Limits and unavailable dates" Code="@_limitsCode" Css="@_css">
+    <Description>
+        <code>Min</code>, <code>Max</code> and <code>IsDateUnavailable</code> go to the calendar (unless it is given its own):
+        weekends here are unavailable and only the next three months can be picked. A typed date that breaks them is kept and
+        marks the picker invalid (<code>data-invalid</code>, <code>aria-invalid</code>) — type a Saturday to see it.
+    </Description>
+    <LiveContent>
+        <div class="date-picker-demo">
+            <BitBhField>
+                <BitBhLabel class="date-picker-label">Delivery</BitBhLabel>
+                <BitBhDatePicker @bind-Value="delivery" Min="today" Max="today.AddMonths(3)" IsDateUnavailable="IsWeekend"
+                                 Culture="DemoDateCultures.EnUs">
+                    <BitBhDatePickerGroup class="date-picker-group">
+                        <BitBhDateFieldSegments />
+                        <BitBhDatePickerTrigger class="date-picker-trigger">@CalendarIcon</BitBhDatePickerTrigger>
+                    </BitBhDatePickerGroup>
+                    <BitBhDatePickerContent class="date-picker-popover">
+                        <BitBhCalendar class="calendar">
+                            <div class="calendar-header">
+                                <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                                <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                                <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                            </div>
+                            <BitBhCalendarGrid class="calendar-grid">
+                                <BitBhCalendarCell Day="context" class="calendar-cell" />
+                            </BitBhCalendarGrid>
+                        </BitBhCalendar>
+                    </BitBhDatePickerContent>
+                </BitBhDatePicker>
+                <BitBhDescription class="date-picker-description">Weekdays in the next three months.</BitBhDescription>
+            </BitBhField>
+            <p class="date-picker-value">Value: <strong>@(delivery?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="In a German form" Code="@_formCode" Css="@_css">
+    <Description>
+        The picker joins <code>EditForm</code> validation through <code>@@bind-Value</code>; <code>BitBhErrorMessage</code>
+        describes the group once invalid, and <code>Name</code> posts a hidden <code>yyyy-MM-dd</code> input. With a German
+        <code>Culture</code> the segments read <code>dd.MM.yyyy</code> and the calendar starts its weeks on Monday.
+    </Description>
+    <LiveContent>
+        <EditForm Model="form" OnValidSubmit="() => sent = form.Birthday">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="date-picker-label">Geburtstag</BitBhLabel>
+                <BitBhDatePicker @bind-Value="form.Birthday" Max="today" Name="birthday" Culture="DemoDateCultures.DeDe">
+                    <BitBhDatePickerGroup class="date-picker-group">
+                        <BitBhDateFieldSegments />
+                        <BitBhDatePickerTrigger aria-label="Datum wählen" class="date-picker-trigger">@CalendarIcon</BitBhDatePickerTrigger>
+                    </BitBhDatePickerGroup>
+                    <BitBhDatePickerContent class="date-picker-popover">
+                        <BitBhCalendar class="calendar">
+                            <div class="calendar-header">
+                                <BitBhCalendarPrevious aria-label="Vorheriger Monat" class="calendar-nav">‹</BitBhCalendarPrevious>
+                                <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                                <BitBhCalendarNext aria-label="Nächster Monat" class="calendar-nav">›</BitBhCalendarNext>
+                            </div>
+                            <BitBhCalendarGrid Context="day" class="calendar-grid">
+                                <BitBhCalendarCell Day="day" class="calendar-cell" />
+                            </BitBhCalendarGrid>
+                        </BitBhCalendar>
+                    </BitBhDatePickerContent>
+                </BitBhDatePicker>
+                <BitBhErrorMessage class="date-picker-error" />
+            </BitBhField>
+            <button type="submit" class="date-picker-submit">Senden</button>
+            @if (sent is { } birthday)
+            {
+                <p class="date-picker-value">Gesendet: <strong>@birthday.ToString("D", DemoDateCultures.DeDe)</strong></p>
+            }
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? departure;
+    private DateOnly? delivery;
+    private readonly BirthdayForm form = new();
+    private DateOnly? sent;
+
+    private static bool IsWeekend(DateOnly d) => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+    private sealed class BirthdayForm
+    {
+        [Required(ErrorMessage = "Bitte ein Datum eingeben.")]
+        public DateOnly? Birthday { get; set; }
+    }
+
+    private static readonly RenderFragment CalendarIcon =
+        @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+        </svg>;
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _calendar = """
+        <BitBhDatePickerContent class="date-picker-popover">
+            <BitBhCalendar class="calendar">
+                <div class="calendar-header">
+                    <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                    <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="calendar-grid">
+                    <BitBhCalendarCell Day="context" class="calendar-cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+        </BitBhDatePickerContent>
+""";
+
+    private const string _basicCode = """
+<BitBhField>
+    <BitBhLabel class="date-picker-label">Departure</BitBhLabel>
+    <BitBhDatePicker @bind-Value="departure">
+        <BitBhDatePickerGroup class="date-picker-group">
+            <BitBhDateFieldSegments />
+            <BitBhDatePickerTrigger class="date-picker-trigger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+            </BitBhDatePickerTrigger>
+        </BitBhDatePickerGroup>
+""" + _calendar + """
+    </BitBhDatePicker>
+</BitBhField>
+
+@code {
+    private DateOnly? departure;
+}
+""";
+
+    private const string _limitsCode = """
+<BitBhField>
+    <BitBhLabel class="date-picker-label">Delivery</BitBhLabel>
+    <BitBhDatePicker @bind-Value="delivery" Min="today" Max="today.AddMonths(3)" IsDateUnavailable="IsWeekend">
+        <BitBhDatePickerGroup class="date-picker-group">
+            <BitBhDateFieldSegments />
+            <BitBhDatePickerTrigger class="date-picker-trigger">@* the icon *@</BitBhDatePickerTrigger>
+        </BitBhDatePickerGroup>
+""" + _calendar + """
+    </BitBhDatePicker>
+    <BitBhDescription class="date-picker-description">Weekdays in the next three months.</BitBhDescription>
+</BitBhField>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? delivery;
+
+    private static bool IsWeekend(DateOnly d) => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+}
+""";
+
+    private const string _formCode = """
+<EditForm Model="form" OnValidSubmit="() => sent = form.Birthday">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="date-picker-label">Geburtstag</BitBhLabel>
+        <BitBhDatePicker @bind-Value="form.Birthday" Max="today" Name="birthday"
+                         Culture="@(CultureInfo.GetCultureInfo("de-DE"))">
+            <BitBhDatePickerGroup class="date-picker-group">
+                <BitBhDateFieldSegments />
+                <BitBhDatePickerTrigger aria-label="Datum wählen" class="date-picker-trigger">@* the icon *@</BitBhDatePickerTrigger>
+            </BitBhDatePickerGroup>
+            @* The popover and calendar as above, with German names for the previous / next buttons. *@
+        </BitBhDatePicker>
+        <BitBhErrorMessage class="date-picker-error" />
+    </BitBhField>
+    <button type="submit" class="date-picker-submit">Senden</button>
+</EditForm>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly BirthdayForm form = new();
+    private DateOnly? sent;
+
+    private sealed class BirthdayForm
+    {
+        [Required(ErrorMessage = "Bitte ein Datum eingeben.")]
+        public DateOnly? Birthday { get; set; }
+    }
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/date-picker.css; the calendar uses calendar.css) ──
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS.
+   The calendar inside the popover uses the .calendar-* classes of the Calendar page. */
+
+/* The group: segments + trigger (role="group") */
+.date-picker-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.6rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.date-picker-group:hover { border-color: var(--color-border-control-hover); }
+/* data-focused while a segment has focus; data-state="open" while the calendar is open */
+.date-picker-group[data-focused],
+.date-picker-group[data-state="open"] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.date-picker-group[data-invalid] { border-color: var(--color-danger); }
+.date-picker-group[data-disabled] { opacity: 0.55; }
+
+/* Segments (data-type, data-placeholder), at least 24 x 24 px each */
+.date-picker-group [data-type] { padding: 0.1rem 0.15rem; border-radius: 0.25rem; }
+
+.date-picker-group [role="spinbutton"] {
+    display: inline-block;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    outline: none;
+}
+
+.date-picker-group [role="spinbutton"]:focus { background: var(--color-primary); color: #fff; }
+.date-picker-group [data-placeholder] { color: var(--color-muted); }
+.date-picker-group [data-placeholder]:focus { color: #fff; }
+.date-picker-group [data-type="literal"] { padding: 0; color: var(--color-muted); }
+.date-picker-group[data-invalid] [role="spinbutton"]:not(:focus) { color: var(--color-danger-text); }
+
+/* Trigger */
+.date-picker-trigger {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    margin-inline-start: auto;
+    border-radius: 0.375rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.date-picker-trigger:hover:enabled,
+.date-picker-trigger[data-state="open"] { background: var(--color-fill); }
+.date-picker-trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.date-picker-trigger:disabled { cursor: not-allowed; }
+.date-picker-trigger svg { width: 1.1rem; height: 1.1rem; }
+
+/* Popover (role="dialog", positioned by the runtime) */
+.date-picker-popover {
+    z-index: 30;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    outline: none;
+}
+
+.date-picker-popover[data-state="open"] { animation: date-picker-in 120ms ease-out; }
+
+@keyframes date-picker-in {
+    from { opacity: 0; transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .date-picker-popover[data-state="open"] { animation: none; }
+}
+
+/* Field parts and demo layout */
+.date-picker-label { display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 600; color: var(--color-text); }
+.date-picker-description { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-muted); }
+.date-picker-error { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-danger-text); }
+.date-picker-demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.5rem; }
+.date-picker-value { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.date-picker-value strong { color: var(--color-text); font-weight: 600; }
+
+.date-picker-submit {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.date-picker-submit:hover { background: var(--color-primary-hover); }
+.date-picker-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+""";
+}

@@ -1,0 +1,38 @@
+﻿@page "/tw/clipboard"
+
+<PageTitle>Clipboard (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Clipboard</h1>
+    <p class="bb-subtitle">Copy to the clipboard with a "copied" state that lasts a moment and an announcement for screen readers.</p>
+</div>
+
+<SectionSwitcher Slug="clipboard" />
+
+<TwDemoBlock Title="Icon button" Code="@_code">
+    <Description>
+        A trigger without content is named "Copy"; <code>data-copied:</code> styles the confirmation and
+        <code>BitBhClipboardIndicator</code> swaps the icon.
+    </Description>
+    <LiveContent>
+        <BitBhClipboard Value="dotnet add package Bit.Bheadless" class="inline-flex items-center gap-2 rounded-lg bg-zinc-100 py-1 pl-3 pr-1 font-mono text-sm text-zinc-800">
+            <span>dotnet add package Bit.Bheadless</span>
+            <BitBhClipboardTrigger UseDefaultLabel="true" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-zinc-700 hover:bg-zinc-200 data-copied:text-green-700">
+                <BitBhClipboardIndicator WhenCopied="false">⧉</BitBhClipboardIndicator>
+                <BitBhClipboardIndicator>✓</BitBhClipboardIndicator>
+            </BitBhClipboardTrigger>
+        </BitBhClipboard>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private const string _code = """
+<BitBhClipboard Value="dotnet add package Bit.Bheadless" class="inline-flex items-center gap-2 rounded-lg bg-zinc-100 pl-3 font-mono">
+    <span>dotnet add package Bit.Bheadless</span>
+    <BitBhClipboardTrigger UseDefaultLabel="true" class="h-8 w-8 rounded-md hover:bg-zinc-200 data-copied:text-green-700">
+        <BitBhClipboardIndicator WhenCopied="false">⧉</BitBhClipboardIndicator>
+        <BitBhClipboardIndicator>✓</BitBhClipboardIndicator>
+    </BitBhClipboardTrigger>
+</BitBhClipboard>
+""";
+}

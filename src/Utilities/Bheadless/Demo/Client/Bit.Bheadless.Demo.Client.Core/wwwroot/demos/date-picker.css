@@ -1,0 +1,109 @@
+﻿/* date-picker demo styles — plain CSS section. The library ships zero CSS.
+   The calendar inside the popover uses the .calendar-* classes of calendar.css. */
+
+/* ---- The group: segments + trigger (role="group") ------------------------- */
+.date-picker-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.6rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.date-picker-group:hover { border-color: var(--color-border-control-hover); }
+/* data-focused while a segment has focus; data-state="open" while the calendar is open */
+.date-picker-group[data-focused],
+.date-picker-group[data-state="open"] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.date-picker-group[data-invalid] { border-color: var(--color-danger); }
+.date-picker-group[data-disabled] { opacity: 0.55; }
+
+/* Segments (data-type, data-placeholder), at least 24 x 24 px each */
+.date-picker-group [data-type] { padding: 0.1rem 0.15rem; border-radius: 0.25rem; }
+
+.date-picker-group [role="spinbutton"] {
+    display: inline-block;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    outline: none;
+}
+
+.date-picker-group [role="spinbutton"]:focus { background: var(--color-primary); color: #fff; }
+.date-picker-group [data-placeholder] { color: var(--color-muted); }
+.date-picker-group [data-placeholder]:focus { color: #fff; }
+.date-picker-group [data-type="literal"] { padding: 0; color: var(--color-muted); }
+.date-picker-group[data-invalid] [role="spinbutton"]:not(:focus) { color: var(--color-danger-text); }
+
+/* ---- Trigger --------------------------------------------------------------- */
+.date-picker-trigger {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    margin-inline-start: auto;
+    border-radius: 0.375rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.date-picker-trigger:hover:enabled,
+.date-picker-trigger[data-state="open"] { background: var(--color-fill); }
+.date-picker-trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.date-picker-trigger:disabled { cursor: not-allowed; }
+.date-picker-trigger svg { width: 1.1rem; height: 1.1rem; }
+
+/* ---- Popover (role="dialog", positioned by the runtime) -------------------- */
+.date-picker-popover {
+    z-index: 30;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    outline: none;
+}
+
+.date-picker-popover[data-state="open"] { animation: date-picker-in 120ms ease-out; }
+
+@keyframes date-picker-in {
+    from { opacity: 0; transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .date-picker-popover[data-state="open"] { animation: none; }
+}
+
+/* ---- Field parts and demo layout ------------------------------------------- */
+.date-picker-label { display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 600; color: var(--color-text); }
+.date-picker-description { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-muted); }
+.date-picker-error { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-danger-text); }
+
+.date-picker-demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.date-picker-value { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.date-picker-value strong { color: var(--color-text); font-weight: 600; }
+
+.date-picker-submit {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.date-picker-submit:hover { background: var(--color-primary-hover); }
+.date-picker-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

@@ -186,8 +186,16 @@ public class BitBhComboboxOptions<TValue> : BitBhFloatingContentBase
         else
         {
             attrs["role"] = "listbox";
-            if (ComboboxContext is not null)
-                attrs["aria-labelledby"] = ComboboxContext.Field?.LabelledBy ?? ComboboxContext.InputId;
+            if (ComboboxContext is not null && GetAdditionalAttribute("aria-label") is null && GetAdditionalAttribute("aria-labelledby") is null)
+            {
+                // The input's own name, not the input: a text box referenced by aria-labelledby gives its value
+                // (what was typed), which would name the list after the query.
+                var input = ComboboxContext.Combobox.Input;
+                if (ComboboxContext.Field?.LabelledBy is { } fieldLabel) attrs["aria-labelledby"] = fieldLabel;
+                else if (input?.OwnAriaLabelledBy is { Length: > 0 } labelledBy) attrs["aria-labelledby"] = labelledBy;
+                else if (input?.OwnAriaLabel is { Length: > 0 } label) attrs["aria-label"] = label;
+                else attrs["aria-labelledby"] = ComboboxContext.InputId;
+            }
             if (ComboboxContext?.Multiple == true)
                 attrs["aria-multiselectable"] = "true";
         }

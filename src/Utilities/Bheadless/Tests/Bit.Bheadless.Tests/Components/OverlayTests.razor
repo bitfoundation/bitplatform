@@ -70,4 +70,30 @@
         Assert.AreEqual("closed", cut.Find("button").GetAttribute("data-state"));
         foreach (var t in cut.FindAll("[role=tooltip]")) Assert.IsTrue(t.HasAttribute("hidden"));
     }
+
+    [TestMethod]
+    public void Popover_opens_on_hover_without_taking_focus_and_a_click_pins_it()
+    {
+        var cut = Render(
+            @<BitBhPopover OpenOnHover="true" HoverOpenDelay="0" HoverCloseDelay="0">
+                <BitBhPopoverButton>Profile</BitBhPopoverButton>
+                <BitBhPopoverPanel><a href="#me">View profile</a></BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        cut.Find("button").PointerEnter(new PointerEventArgs { PointerType = "mouse" });
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded")));
+        var open = JSInterop.Invocations.Last(i => i.Identifier == "floating.open");
+        var options = (IDictionary<string, object?>)open.Arguments[2]!;
+        var focus = (IDictionary<string, object?>)options["focus"]!;
+        Assert.AreEqual("none", focus["autoFocus"]);
+
+        cut.Find("button").PointerLeave(new PointerEventArgs { PointerType = "mouse" });
+        cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("button").GetAttribute("aria-expanded")));
+
+        cut.Find("button").PointerEnter(new PointerEventArgs { PointerType = "mouse" });
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded")));
+        cut.Find("button").Click();
+        cut.Find("button").PointerLeave(new PointerEventArgs { PointerType = "mouse" });
+        Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded"));
+    }
 }

@@ -1,0 +1,45 @@
+﻿@page "/tw/file-upload"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>File Upload (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>File Upload</h1>
+    <p class="bb-subtitle">A drop zone that is also a button, picker triggers, validation and a list of the chosen files - on top of Blazor's InputFile.</p>
+</div>
+
+<SectionSwitcher Slug="file-upload" />
+
+<TwDemoBlock Title="Avatar picker" Code="@_code">
+    <Description>
+        A single-file upload replaces its file; a <code>BitBhFileUploadTrigger</code> opens the picker from a plain button and a
+        non-clickable drop zone (<code>Clickable="false"</code>) still takes drops (<code>data-dragging:</code>).
+    </Description>
+    <LiveContent>
+        <BitBhFileUpload @bind-Files="files" Accept="image/*" class="w-full max-w-md">
+            <Template Context="u">
+                <BitBhFileUploadDropzone Clickable="false" class="flex items-center gap-3 rounded-xl border-2 border-dashed border-zinc-300 p-4 data-dragging:border-blue-600 data-dragging:bg-blue-50">
+                    <span class="flex-1 truncate text-sm text-zinc-700">@(u.Files.Count == 0 ? "No image chosen - drop one here" : u.Files[0].Name)</span>
+                    <BitBhFileUploadTrigger class="cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">Choose image</BitBhFileUploadTrigger>
+                </BitBhFileUploadDropzone>
+            </Template>
+        </BitBhFileUpload>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private IReadOnlyList<IBrowserFile> files = [];
+
+    private const string _code = """
+<BitBhFileUpload @bind-Files="files" Accept="image/*" class="w-full max-w-md">
+    <Template Context="u">
+        <BitBhFileUploadDropzone Clickable="false"
+                                 class="flex items-center gap-3 rounded-xl border-2 border-dashed border-zinc-300 p-4
+                                        data-dragging:border-blue-600 data-dragging:bg-blue-50">
+            <span class="flex-1 truncate text-sm">@(u.Files.Count == 0 ? "No image chosen - drop one here" : u.Files[0].Name)</span>
+            <BitBhFileUploadTrigger class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white">Choose image</BitBhFileUploadTrigger>
+        </BitBhFileUploadDropzone>
+    </Template>
+</BitBhFileUpload>
+""";
+}

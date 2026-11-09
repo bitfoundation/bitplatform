@@ -1,0 +1,186 @@
+﻿@page "/tw/navigation-menu"
+
+<PageTitle>Navigation Menu (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Navigation Menu</h1>
+    <p class="bb-subtitle">Site navigation made of links and disclosure buttons that open panels of links - on hover with intent, on click and from the keyboard - with an optional shared viewport, an indicator and directional motion.</p>
+</div>
+
+<SectionSwitcher Slug="navigation-menu" />
+
+<TwDemoBlock Title="Basic with an indicator" Code="@_basicCode">
+    <Description>
+        Disclosure buttons and links in a <code>&lt;nav&gt;</code>: hover opens after <code>DelayDuration</code>, click / Enter / Space
+        toggle, <kbd>↓</kbd> moves into the content, <kbd>Escape</kbd> returns to the trigger. Open states are styled with
+        <code>data-[state=open]:</code>; the <code>BitBhNavigationMenuIndicator</code> follows the open trigger through
+        <code>left-[var(--bit-bh-indicator-left)]</code> and fades with <code>data-[state=hidden]:</code>.
+    </Description>
+    <LiveContent>
+        <div class="flex min-h-72 w-full justify-center">
+            <BitBhNavigationMenu aria-label="Products (Tailwind example)" class="relative">
+                <BitBhNavigationMenuList class="relative m-0 flex list-none gap-1 rounded-xl border border-zinc-200 bg-white p-1">
+                    @foreach (var (section, links) in sections)
+                    {
+                        <BitBhNavigationMenuItem Value="@section" class="relative">
+                            <BitBhNavigationMenuTrigger class="group inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100 data-[state=open]:bg-blue-50 data-[state=open]:text-blue-700">
+                                @section
+                                <svg class="transition-transform duration-200 group-data-[state=open]:rotate-180" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                            </BitBhNavigationMenuTrigger>
+                            <BitBhNavigationMenuContent class="absolute left-0 top-[calc(100%+0.75rem)] z-10 w-max max-w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-zinc-200 bg-white p-2 shadow-xl transition duration-150 starting:-translate-y-1 starting:opacity-0 data-[state=closed]:opacity-0">
+                                <ul class="m-0 grid list-none grid-cols-2 gap-1 p-0">
+                                    @foreach (var (title, text) in links)
+                                    {
+                                        <li>
+                                            <BitBhNavigationMenuLink href="@($"tw/navigation-menu#{title.ToLowerInvariant()}")" class="block rounded-lg px-3 py-2.5 text-zinc-900 no-underline hover:bg-zinc-100">
+                                                <span class="block text-sm font-semibold">@title</span>
+                                                <span class="mt-0.5 block text-xs leading-snug text-zinc-600">@text</span>
+                                            </BitBhNavigationMenuLink>
+                                        </li>
+                                    }
+                                </ul>
+                            </BitBhNavigationMenuContent>
+                        </BitBhNavigationMenuItem>
+                    }
+                    <BitBhNavigationMenuItem>
+                        <BitBhNavigationMenuLink href="tw/navigation-menu#pricing" Active="true" class="inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium text-blue-700 underline underline-offset-4 hover:bg-zinc-100">Pricing</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuIndicator class="absolute top-full z-20 flex h-2.5 w-[var(--bit-bh-indicator-width,0)] items-end justify-center overflow-hidden left-[var(--bit-bh-indicator-left,0)] transition-[left,width,opacity] duration-200 not-data-[measured]:transition-none data-[state=hidden]:opacity-0">
+                        <span class="-mb-1.5 size-3 rotate-45 border border-zinc-200 bg-white"></span>
+                    </BitBhNavigationMenuIndicator>
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Viewport and motion" Code="@_viewportCode">
+    <Description>
+        The contents move into a <code>BitBhNavigationMenuViewport</code> that takes the open one's size
+        (<code>w-[var(--bit-bh-navigation-menu-viewport-width)]</code>) and animates between sizes. Contents slide in from the side
+        of the previously open item and out to the other with <code>data-[motion=from-end]:</code> /
+        <code>data-[motion=to-start]:</code> and <code>starting:</code> - plain transitions, no keyframes.
+    </Description>
+    <LiveContent>
+        <div class="flex min-h-72 w-full justify-center">
+            <BitBhNavigationMenu aria-label="Site (Tailwind viewport example)" class="relative">
+                <BitBhNavigationMenuList class="m-0 flex list-none gap-1 rounded-xl border border-zinc-200 bg-white p-1">
+                    @foreach (var (section, links) in sections)
+                    {
+                        <BitBhNavigationMenuItem Value="@section">
+                            <BitBhNavigationMenuTrigger class="inline-flex h-9 cursor-pointer items-center rounded-lg px-3.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100 data-[state=open]:bg-blue-50 data-[state=open]:text-blue-700">@section</BitBhNavigationMenuTrigger>
+                            <BitBhNavigationMenuContent class="@_panelClass">
+                                <ul class="m-0 grid list-none grid-cols-2 gap-1 p-0">
+                                    @foreach (var (title, text) in links)
+                                    {
+                                        <li>
+                                            <BitBhNavigationMenuLink href="@($"tw/navigation-menu#{title.ToLowerInvariant()}")" class="block rounded-lg px-3 py-2.5 text-zinc-900 no-underline hover:bg-zinc-100">
+                                                <span class="block text-sm font-semibold">@title</span>
+                                                <span class="mt-0.5 block text-xs leading-snug text-zinc-600">@text</span>
+                                            </BitBhNavigationMenuLink>
+                                        </li>
+                                    }
+                                </ul>
+                            </BitBhNavigationMenuContent>
+                        </BitBhNavigationMenuItem>
+                    }
+                </BitBhNavigationMenuList>
+                <div class="absolute inset-x-0 top-[calc(100%+0.75rem)] z-10 flex justify-center">
+                    <BitBhNavigationMenuViewport class="relative h-[var(--bit-bh-navigation-menu-viewport-height)] w-[var(--bit-bh-navigation-menu-viewport-width)] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl transition-[width,height,opacity,scale] duration-200 starting:scale-95 starting:opacity-0 data-[state=closed]:scale-95 data-[state=closed]:opacity-0" />
+                </div>
+            </BitBhNavigationMenu>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private const string _panelClass =
+        "absolute left-0 top-0 w-max max-w-[calc(100vw-2rem)] p-2 transition duration-200 " +
+        "data-[motion=from-end]:starting:translate-x-48 data-[motion=from-start]:starting:-translate-x-48 starting:opacity-0 " +
+        "data-[motion=to-end]:translate-x-48 data-[motion=to-start]:-translate-x-48 data-[state=closed]:opacity-0";
+
+    private readonly (string Section, (string Title, string Text)[] Links)[] sections =
+    [
+        ("Products",
+        [
+            ("Analytics", "See how visitors find and use your site."),
+            ("Automation", "Run the busywork on a schedule."),
+            ("Security", "Keep accounts and data safe."),
+            ("Integrations", "Connect the tools you already use."),
+        ]),
+        ("Learn",
+        [
+            ("Introduction", "Unstyled, accessible components for Blazor."),
+            ("Styling", "Style every state with data attributes."),
+        ]),
+    ];
+
+    private const string _basicCode = """
+<BitBhNavigationMenu aria-label="Main" class="relative">
+    <BitBhNavigationMenuList class="relative m-0 flex list-none gap-1 rounded-xl border border-zinc-200 bg-white p-1">
+        @foreach (var (section, links) in sections)
+        {
+            <BitBhNavigationMenuItem Value="@section" class="relative">
+                <BitBhNavigationMenuTrigger class="group inline-flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium
+                                                   hover:bg-zinc-100 data-[state=open]:bg-blue-50 data-[state=open]:text-blue-700">
+                    @section
+                    <svg class="transition-transform group-data-[state=open]:rotate-180" aria-hidden="true">…</svg>
+                </BitBhNavigationMenuTrigger>
+                <BitBhNavigationMenuContent class="absolute left-0 top-[calc(100%+0.75rem)] z-10 w-max rounded-xl border border-zinc-200
+                                                   bg-white p-2 shadow-xl transition starting:-translate-y-1 starting:opacity-0
+                                                   data-[state=closed]:opacity-0">
+                    <ul class="m-0 grid list-none grid-cols-2 gap-1 p-0">
+                        @foreach (var (title, text) in links)
+                        {
+                            <li>
+                                <BitBhNavigationMenuLink href="@Href(title)" class="block rounded-lg px-3 py-2.5 hover:bg-zinc-100">
+                                    <span class="block text-sm font-semibold">@title</span>
+                                    <span class="block text-xs text-zinc-600">@text</span>
+                                </BitBhNavigationMenuLink>
+                            </li>
+                        }
+                    </ul>
+                </BitBhNavigationMenuContent>
+            </BitBhNavigationMenuItem>
+        }
+        <BitBhNavigationMenuItem>
+            <BitBhNavigationMenuLink href="/pricing" Active="true" class="inline-flex h-9 items-center rounded-lg px-3.5 text-sm
+                                                                         aria-[current=page]:text-blue-700">Pricing</BitBhNavigationMenuLink>
+        </BitBhNavigationMenuItem>
+        @* An <li> in the list: --bit-bh-indicator-left / -width follow the open trigger. *@
+        <BitBhNavigationMenuIndicator class="absolute top-full flex h-2.5 w-[var(--bit-bh-indicator-width,0)] items-end justify-center
+                                             overflow-hidden left-[var(--bit-bh-indicator-left,0)] transition-[left,width,opacity]
+                                             not-data-[measured]:transition-none data-[state=hidden]:opacity-0">
+            <span class="-mb-1.5 size-3 rotate-45 border border-zinc-200 bg-white"></span>
+        </BitBhNavigationMenuIndicator>
+    </BitBhNavigationMenuList>
+</BitBhNavigationMenu>
+""";
+
+    private const string _viewportCode = """
+<BitBhNavigationMenu aria-label="Site" class="relative">
+    <BitBhNavigationMenuList class="m-0 flex list-none gap-1 rounded-xl border border-zinc-200 bg-white p-1">
+        @foreach (var (section, links) in sections)
+        {
+            <BitBhNavigationMenuItem Value="@section">
+                <BitBhNavigationMenuTrigger class="h-9 rounded-lg px-3.5 text-sm font-medium hover:bg-zinc-100
+                                                   data-[state=open]:bg-blue-50">@section</BitBhNavigationMenuTrigger>
+                @* Lies over the others in the viewport; slides by data-motion. *@
+                <BitBhNavigationMenuContent class="absolute left-0 top-0 w-max p-2 transition duration-200
+                                                   data-[motion=from-end]:starting:translate-x-48 data-[motion=from-start]:starting:-translate-x-48
+                                                   starting:opacity-0 data-[motion=to-end]:translate-x-48 data-[motion=to-start]:-translate-x-48
+                                                   data-[state=closed]:opacity-0">
+                    …
+                </BitBhNavigationMenuContent>
+            </BitBhNavigationMenuItem>
+        }
+    </BitBhNavigationMenuList>
+    <div class="absolute inset-x-0 top-[calc(100%+0.75rem)] flex justify-center">
+        <BitBhNavigationMenuViewport class="relative h-[var(--bit-bh-navigation-menu-viewport-height)] w-[var(--bit-bh-navigation-menu-viewport-width)]
+                                            overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl
+                                            transition-[width,height,opacity,scale] starting:scale-95 starting:opacity-0
+                                            data-[state=closed]:scale-95 data-[state=closed]:opacity-0" />
+    </div>
+</BitBhNavigationMenu>
+""";
+}

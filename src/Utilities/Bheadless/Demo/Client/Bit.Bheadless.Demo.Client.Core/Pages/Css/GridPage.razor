@@ -63,6 +63,48 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Resizable columns"
+           Code="@_resizeCode"
+           Css="@_resizeCss">
+    <Description>
+        A <code>BitBhColumnResizer</code> in a header cell resizes its column (React Aria's ColumnResizer): a focusable
+        <code>role="separator"</code> with the width in <code>aria-valuenow</code>. Inside the grid it is interactive content, so
+        the grid leaves its keys alone: Tab to it from the header cell, then ← / → resize by 10px (Shift: 50px), Home / End go to
+        the bounds and Enter restores the default; or drag it.
+    </Description>
+    <LiveContent>
+        <div class="datagrid-demo">
+            <div class="datagrid-frame">
+                <BitBhGrid As="table" aria-label="Planets (resizable)" class="datagrid datagrid-fixed">
+                    <BitBhGridRowGroup As="thead">
+                        <BitBhGridRow As="tr" IsHeaderRow="true">
+                            <BitBhGridCell As="th" Header="true" class="datagrid-resizable" style="@($"width:{nameWidth}px")">
+                                Planet
+                                <BitBhColumnResizer @bind-Width="nameWidth" DefaultWidth="160" Min="80" Max="320" aria-label="Resize Planet column" class="column-resizer" />
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="datagrid-resizable" style="@($"width:{typeWidth}px")">
+                                Type
+                                <BitBhColumnResizer @bind-Width="typeWidth" DefaultWidth="160" Min="80" Max="320" aria-label="Resize Type column" class="column-resizer" />
+                            </BitBhGridCell>
+                            <BitBhGridCell As="th" Header="true" class="num">Moons</BitBhGridCell>
+                        </BitBhGridRow>
+                    </BitBhGridRowGroup>
+                    <BitBhGridRowGroup As="tbody">
+                        @foreach (var planet in SortedPlanets.Take(4))
+                        {
+                            <BitBhGridRow As="tr" @key="planet.Name" Key="@planet.Name">
+                                <BitBhGridCell As="th" RowHeader="true">@planet.Name</BitBhGridCell>
+                                <BitBhGridCell As="td">@planet.Type</BitBhGridCell>
+                                <BitBhGridCell As="td" class="num">@planet.Moons</BitBhGridCell>
+                            </BitBhGridRow>
+                        }
+                    </BitBhGridRowGroup>
+                </BitBhGrid>
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Multi-row selection"
            Code="@_selectionCode"
            Css="@_selectionCss">
@@ -287,6 +329,46 @@
 </DemoBlock>
 
 @code {
+    private double nameWidth = 160;
+    private double typeWidth = 160;
+
+    private const string _resizeCode = """
+<BitBhGridCell As="th" Header="true" class="datagrid-resizable" style="@($"width:{nameWidth}px")">
+    Planet
+    <BitBhColumnResizer @bind-Width="nameWidth" DefaultWidth="160" Min="80" Max="320"
+                        aria-label="Resize Planet column" class="column-resizer" />
+</BitBhGridCell>
+""";
+
+    private const string _resizeCss = """
+/* A fixed table layout makes the columns take the widths they are given */
+.datagrid-fixed { table-layout: fixed; }
+.datagrid-resizable { position: relative; }
+
+/* BitBhColumnResizer: role="separator", data-resizing while dragged */
+.column-resizer {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    z-index: 1;
+}
+
+.column-resizer::after {
+    content: "";
+    position: absolute;
+    inset: 20% 3px;
+    border-radius: 1px;
+    background: var(--color-border-strong);
+}
+
+.column-resizer:hover::after,
+.column-resizer[data-resizing]::after,
+.column-resizer:focus-visible::after { background: var(--color-primary); }
+.column-resizer:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+""";
+
     // ── Sortable data grid ───────────────────────────────────────────────────
     private sealed record Planet(string Name, string Type, int DiameterKm, int Moons);
 

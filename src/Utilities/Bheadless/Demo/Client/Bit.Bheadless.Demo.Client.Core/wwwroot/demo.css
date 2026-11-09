@@ -982,6 +982,16 @@
 
 /* ---- Option ---- */
 
+/* BitBhOptionGroupLabel: the heading of a section of options */
+.listbox-group-label {
+    padding: 0.5rem 0.65rem 0.25rem;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
 .listbox-option {
     display: flex;
     align-items: center;

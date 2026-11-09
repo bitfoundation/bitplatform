@@ -1,0 +1,138 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    // ── SearchField ──────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Search_field_is_a_searchbox_cleared_by_Escape_and_its_button()
+    {
+        string? value = null;
+        string? submitted = null;
+        var clears = 0;
+        var cut = Render(
+            @<BitBhSearchField ValueChanged="v => value = v" OnSubmit="v => submitted = v" OnClear="() => clears++">
+                <BitBhSearchFieldInput aria-label="Search docs" />
+                <BitBhSearchFieldClear>×</BitBhSearchFieldClear>
+            </BitBhSearchField>);
+
+        var input = cut.Find("input");
+        Assert.AreEqual("search", input.GetAttribute("type"));
+        Assert.AreEqual("searchbox", input.Role());
+        Assert.IsTrue(cut.Find("button").HasAttribute("disabled"));
+        Assert.AreEqual("Clear search", cut.Find("button").AccessibleName());
+        Assert.AreEqual("-1", cut.Find("button").GetAttribute("tabindex"));
+
+        cut.Find("input").Input("grid");
+        Assert.AreEqual("grid", value);
+        Assert.AreEqual("Escape Enter", cut.Find("input").GetAttribute("data-bit-bh-keys"));
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("grid", submitted);
+
+        cut.Find("input").Press("Escape");
+        Assert.AreEqual("", value);
+        Assert.AreEqual(1, clears);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-empty"));
+
+        cut.Find("input").Input("menu");
+        cut.Find("button").Click();
+        Assert.AreEqual("", value);
+        Assert.AreEqual(cut.Find("input").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+
+    // ── FileUpload ───────────────────────────────────────────────────────────
+
+    private static RenderFragment<BitBhFileUploadContext> Parts => u => @<text>
+        <BitBhFileUploadDropzone>Drop files here</BitBhFileUploadDropzone>
+        <ul>
+            @foreach (var file in u.Files)
+            {
+                <BitBhFileUploadItem File="file">@file.Name<BitBhFileUploadItemRemove>×</BitBhFileUploadItemRemove></BitBhFileUploadItem>
+            }
+        </ul>
+    </text>;
+
+    [TestMethod]
+    public void Dropzone_is_a_button_wired_to_the_hidden_input()
+    {
+        var cut = Render(@<BitBhFileUpload Accept="image/*" Multiple="true" Template="Parts" />);
+
+        var zone = cut.Find("[role=button]");
+        var input = cut.Find("input[type=file]");
+        Assert.AreEqual(input.Id, zone.GetAttribute("data-bit-bh-file-trigger"));
+        Assert.AreEqual(input.Id, zone.GetAttribute("data-bit-bh-file-drop"));
+        Assert.AreEqual("0", zone.GetAttribute("tabindex"));
+        Assert.AreEqual("image/*", input.GetAttribute("accept"));
+        Assert.IsTrue(input.HasAttribute("multiple"));
+        Assert.IsTrue(input.HasAttribute("hidden"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Picked_files_are_validated_listed_and_removed()
+    {
+        IReadOnlyList<IBrowserFile>? files = null;
+        IReadOnlyList<BitBhFileRejection>? rejected = null;
+        var cut = Render(
+            @<BitBhFileUpload Accept=".txt,image/*" Multiple="true" MaxFiles="2" MaxFileSize="10"
+                              FilesChanged="f => files = f" OnFilesRejected="r => rejected = r" Template="Parts" />);
+
+        cut.FindComponent<InputFile>().UploadFiles(
+            InputFileContent.CreateFromText("hello", "a.txt"),
+            InputFileContent.CreateFromText("way too long for the limit", "b.txt"),
+            InputFileContent.CreateFromText("x", "c.exe", contentType: "application/octet-stream"));
+
+        Assert.AreEqual("a.txt", files!.Single().Name);
+        Assert.HasCount(2, rejected!);
+        Assert.AreEqual(BitBhFileRejectionReason.TooLarge, rejected![0].Reasons);
+        Assert.AreEqual(BitBhFileRejectionReason.Type, rejected[1].Reasons);
+        Assert.AreEqual("Remove a.txt", cut.Find("li button").AccessibleName());
+
+        // The next selection goes into a new input; the first keeps its file.
+        var inputs = cut.FindAll("input[type=file]");
+        Assert.HasCount(2, inputs);
+        cut.FindComponents<InputFile>()[^1].UploadFiles(
+            InputFileContent.CreateFromText("1", "d.txt"),
+            InputFileContent.CreateFromText("2", "e.txt"));
+        CollectionAssert.AreEqual(new[] { "a.txt", "d.txt" }, files!.Select(f => f.Name).ToArray());
+        Assert.AreEqual(BitBhFileRejectionReason.TooMany, rejected![0].Reasons);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-max-reached"));
+
+        cut.Find("li button").Click();
+        CollectionAssert.AreEqual(new[] { "d.txt" }, files!.Select(f => f.Name).ToArray());
+    }
+
+    [TestMethod]
+    public void Single_file_upload_replaces_the_file()
+    {
+        IReadOnlyList<IBrowserFile>? files = null;
+        var cut = Render(@<BitBhFileUpload FilesChanged="f => files = f" Template="Parts" />);
+
+        cut.FindComponents<InputFile>()[^1].UploadFiles(InputFileContent.CreateFromText("1", "one.txt"));
+        cut.FindComponents<InputFile>()[^1].UploadFiles(InputFileContent.CreateFromText("2", "two.txt"));
+        Assert.AreEqual("two.txt", files!.Single().Name);
+        Assert.IsFalse(cut.Find("input[type=file]").HasAttribute("multiple"));
+    }
+
+    [TestMethod]
+    public void Accept_matches_extensions_types_and_wildcards()
+    {
+        var png = new FakeFile("photo.PNG", "image/png");
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(png, "image/*"));
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(png, ".pdf, .png"));
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(png, "image/png"));
+        Assert.IsFalse(BitBhFileUpload.IsAccepted(png, "video/*,.pdf"));
+        Assert.IsTrue(BitBhFileUpload.IsAccepted(png, null));
+    }
+
+    private sealed class FakeFile(string name, string type) : IBrowserFile
+    {
+        public string Name => name;
+        public DateTimeOffset LastModified => DateTimeOffset.UnixEpoch;
+        public long Size => 1;
+        public string ContentType => type;
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default) => Stream.Null;
+    }
+}

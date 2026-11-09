@@ -1,0 +1,426 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly CultureInfo En = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly CultureInfo Fa = CultureInfo.GetCultureInfo("fa-IR");
+    private static readonly DateOnly Nov8 = new(2026, 11, 8);
+
+    private static AngleSharp.Dom.IElement Segment(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
+        => cut.Find($"[role=spinbutton][aria-label='{name}']");
+
+    private static string Shown(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent));
+
+    // Keys come from the segment that has the focus, as in a browser: a segment is focused before it is typed into.
+    private static AngleSharp.Dom.IElement Focused(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
+    {
+        Segment(cut, name).Focus();
+        return Segment(cut, name);
+    }
+
+    private static void Type(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name, string keys)
+    {
+        Segment(cut, name).Focus();
+        foreach (var key in keys) Segment(cut, name).Press(key.ToString());
+    }
+
+    [TestMethod]
+    public void Segments_follow_the_culture_pattern_and_are_spinbuttons()
+    {
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Birth date" />);
+
+        var root = cut.Find("div");
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.IsTrue(root.HasAttribute("data-empty"));
+        var segments = cut.FindAll("[role=spinbutton]");
+        CollectionAssert.AreEqual(new[] { "month", "day", "year" }, segments.Select(s => s.AccessibleName()).ToArray());
+        Assert.AreEqual("mm/dd/yyyy", Shown(cut));
+        Assert.IsTrue(segments.All(s => s.HasAttribute("data-placeholder")));
+        Assert.AreEqual("Empty", segments[0].GetAttribute("aria-valuetext"));
+        Assert.IsFalse(segments[0].HasAttribute("aria-valuenow"));
+        Assert.AreEqual("1", segments[0].GetAttribute("aria-valuemin"));
+        Assert.AreEqual("12", segments[0].GetAttribute("aria-valuemax"));
+        Assert.AreEqual("true", cut.Find("[data-type=literal]").GetAttribute("aria-hidden"));
+        // Every segment is a tab stop.
+        Assert.HasCount(3, cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Typing_fills_segments_moves_on_and_commits_when_complete()
+    {
+        DateOnly? value = null;
+        var changes = 0;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" ValueChanged="v => value = v" OnValueChange="_ => changes++" Name="date" />);
+        var id = cut.Find("div").Id;
+
+        // "1" could still become 10, 11 or 12: the month waits for another digit.
+        Type(cut, "month", "1");
+        Assert.AreEqual("1/dd/yyyy", Shown(cut));
+        Assert.AreNotEqual($"{id}-day", this.LastFocusRequest());
+        Type(cut, "month", "1");
+        Assert.AreEqual($"{id}-day", this.LastFocusRequest());
+
+        // No two-digit day starts with 8: on to the year.
+        Type(cut, "day", "8");
+        Assert.AreEqual($"{id}-year", this.LastFocusRequest());
+        Assert.IsNull(value);
+
+        Type(cut, "year", "202");
+        Assert.IsNull(value);
+        Type(cut, "year", "6");
+        Assert.AreEqual(Nov8, value);
+        Assert.AreEqual(1, changes);
+        Assert.AreEqual("11/8/2026", Shown(cut));
+        Assert.AreEqual("2026-11-08", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.AreEqual("11 – November", Segment(cut, "month").GetAttribute("aria-valuetext"));
+        Assert.AreEqual("11", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Assert.IsFalse(Segment(cut, "month").HasAttribute("data-placeholder"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_separator_ends_a_segment_and_leaving_it_commits_what_was_typed()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" ValueChanged="v => value = v" />);
+        var id = cut.Find("div").Id;
+
+        Type(cut, "month", "1/");
+        Assert.AreEqual($"{id}-day", this.LastFocusRequest());
+        Assert.AreEqual("1", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Type(cut, "day", "5/");
+        Type(cut, "year", "26");
+        Assert.IsNull(value);
+        Segment(cut, "year").Blur();
+        Assert.AreEqual(new DateOnly(26, 1, 5), value);
+    }
+
+    [TestMethod]
+    public void Arrow_keys_step_with_wrapping_from_the_placeholder_value()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" PlaceholderValue="Nov8" ValueChanged="v => value = v" />);
+
+        Focused(cut, "month").Press("ArrowUp");
+        Assert.AreEqual("11", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Focused(cut, "month").Press("ArrowUp");
+        Focused(cut, "month").Press("ArrowUp");
+        Assert.AreEqual("1", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Focused(cut, "month").Press("ArrowDown");
+        Assert.AreEqual("12", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Focused(cut, "month").Press("PageDown");
+        Assert.AreEqual("10", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Focused(cut, "month").Press("Home");
+        Assert.AreEqual("1", Segment(cut, "month").GetAttribute("aria-valuenow"));
+
+        Focused(cut, "day").Press("ArrowDown");
+        Assert.AreEqual("8", Segment(cut, "day").GetAttribute("aria-valuenow"));
+        Focused(cut, "year").Press("ArrowUp");
+        Assert.AreEqual(new DateOnly(2026, 1, 8), value);
+        Focused(cut, "year").Press("ArrowUp");
+        Assert.AreEqual(new DateOnly(2027, 1, 8), value);
+    }
+
+    [TestMethod]
+    public void The_day_follows_the_month_and_a_day_past_its_end_becomes_the_last()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" PlaceholderValue="Nov8" ValueChanged="v => value = v" />);
+
+        Type(cut, "month", "2");
+        // No year yet: February may have 29 days.
+        Assert.AreEqual("29", Segment(cut, "day").GetAttribute("aria-valuemax"));
+        Focused(cut, "day").Press("End");
+        Assert.AreEqual("29", Segment(cut, "day").GetAttribute("aria-valuenow"));
+        Type(cut, "year", "2026");
+        Assert.AreEqual(new DateOnly(2026, 2, 28), value);
+        Assert.AreEqual("28", Segment(cut, "day").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("28", Segment(cut, "day").GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void Backspace_deletes_digits_then_moves_back_and_an_emptied_field_has_no_value()
+    {
+        DateOnly? value = Nov8;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" DefaultValue="Nov8" ValueChanged="v => value = v" />);
+        var id = cut.Find("div").Id;
+        Assert.AreEqual("11/8/2026", Shown(cut));
+
+        Focused(cut, "year").Press("Backspace");
+        Assert.AreEqual("11/8/202", Shown(cut));
+        Focused(cut, "year").Press("Backspace");
+        Focused(cut, "year").Press("Backspace");
+        Focused(cut, "year").Press("Backspace");
+        Assert.AreEqual("11/8/yyyy", Shown(cut));
+        Assert.IsNull(value);
+
+        Focused(cut, "year").Press("Backspace");
+        Assert.AreEqual($"{id}-day", this.LastFocusRequest());
+        Focused(cut, "day").Press("Delete");
+        Assert.AreEqual("11/dd/yyyy", Shown(cut));
+    }
+
+    [TestMethod]
+    public void Left_and_right_move_between_segments_mirrored_right_to_left()
+    {
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" />);
+        var id = cut.Find("div").Id;
+        Focused(cut, "day").Press("ArrowRight");
+        Assert.AreEqual($"{id}-year", this.LastFocusRequest());
+        Segment(cut, "year").Focus(); // where the browser puts the focus
+        Focused(cut, "day").Press("ArrowLeft");
+        Assert.AreEqual($"{id}-month", this.LastFocusRequest());
+
+        var rtl = Render(@<BitBhDateField Culture="En" Dir="BitBhDirection.Rtl" aria-label="Date" />);
+        var rtlId = rtl.Find("div").Id;
+        Focused(rtl, "day").Press("ArrowLeft");
+        Assert.AreEqual($"{rtlId}-year", this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void German_order_and_separators()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="De" aria-label="Datum" ValueChanged="v => value = v" />);
+        CollectionAssert.AreEqual(new[] { "day", "month", "year" }, cut.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+        Assert.AreEqual("dd.mm.yyyy", Shown(cut));
+
+        Type(cut, "day", "08");
+        Type(cut, "month", "11");
+        Type(cut, "year", "2026");
+        Assert.AreEqual(Nov8, value);
+        Assert.AreEqual("08.11.2026", Shown(cut));
+        Assert.AreEqual("11 – November", Segment(cut, "month").GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void Persian_culture_edits_persian_year_month_and_day()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="Fa" aria-label="تاریخ" ValueChanged="v => value = v" />);
+        CollectionAssert.AreEqual(new[] { "year", "month", "day" }, cut.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+
+        Type(cut, "year", "1405");
+        Type(cut, "month", "8");
+        // Aban has 30 days.
+        Assert.AreEqual("30", Segment(cut, "day").GetAttribute("aria-valuemax"));
+        Type(cut, "day", "17");
+        Assert.AreEqual(Nov8, value);
+        Assert.AreEqual("1405/8/17", Shown(cut));
+    }
+
+    [TestMethod]
+    public void The_invariant_culture_pads_month_and_day()
+    {
+        var cut = Render(@<BitBhDateField Culture="CultureInfo.InvariantCulture" DefaultValue="new DateOnly(2026, 3, 4)" aria-label="Date" />);
+        Assert.AreEqual("03/04/2026", Shown(cut));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_value_set_from_outside_fills_the_segments()
+    {
+        var cut = Render(
+            @<Stateful T="DateOnly?" Initial="Nov8">
+                <BitBhDateField Culture="En" Value="context.Value" ValueChanged="context.Set" aria-label="Date" />
+                <button id="next" @onclick="() => context.Set(new DateOnly(2027, 1, 2))">Next</button>
+                <button id="clear" @onclick="() => context.Set(null)">Clear</button>
+            </Stateful>);
+
+        Assert.AreEqual("11/8/2026", Shown(cut));
+        cut.Find("#next").Click();
+        Assert.AreEqual("1/2/2027", Shown(cut));
+        cut.Find("#clear").Click();
+        Assert.AreEqual("mm/dd/yyyy", Shown(cut));
+    }
+
+    [TestMethod]
+    public void Min_and_max_mark_a_value_out_of_range_invalid()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" Min="new DateOnly(2026, 1, 1)" Max="new DateOnly(2026, 12, 31)" ValueChanged="v => value = v" />);
+
+        Type(cut, "month", "11");
+        Type(cut, "day", "8");
+        Type(cut, "year", "2027");
+        Assert.AreEqual(new DateOnly(2027, 11, 8), value);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-invalid"));
+        Assert.AreEqual("true", Segment(cut, "year").GetAttribute("aria-invalid"));
+
+        Focused(cut, "year").Press("ArrowDown");
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-invalid"));
+        Assert.IsFalse(Segment(cut, "year").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void Disabled_and_read_only_fields()
+    {
+        DateOnly? value = null;
+        var disabled = Render(@<BitBhDateField Culture="En" aria-label="Date" Disabled="true" ValueChanged="v => value = v" />);
+        Assert.IsEmpty(disabled.TabSequence());
+        Assert.AreEqual("true", disabled.Find("[role=spinbutton]").GetAttribute("aria-disabled"));
+        disabled.Find("[role=spinbutton]").Press("ArrowUp");
+        Assert.IsNull(value);
+        disabled.ShouldBeAccessible();
+
+        var readOnly = Render(@<BitBhDateField Culture="En" aria-label="Date" ReadOnly="true" DefaultValue="Nov8" ValueChanged="v => value = v" />);
+        Assert.HasCount(3, readOnly.TabSequence());
+        Assert.AreEqual("true", Segment(readOnly, "month").GetAttribute("aria-readonly"));
+        Focused(readOnly, "month").Press("ArrowUp");
+        Focused(readOnly, "month").Press("5");
+        Assert.AreEqual("11/8/2026", Shown(readOnly));
+        Assert.IsNull(value);
+        readOnly.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Field_labels_the_group_and_validation_flows_in()
+    {
+        var model = new Person();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Birth date</BitBhLabel>
+                    <BitBhDescription>As on your passport.</BitBhDescription>
+                    <BitBhDateField Culture="En" @bind-Value="model.BirthDate" Name="birth" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        var group = cut.Find("[role=group]");
+        Assert.AreEqual("Birth date", group.AccessibleName());
+        Assert.AreEqual("As on your passport.", Segment(cut, "month").AccessibleDescription());
+
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", Segment(cut, "month").GetAttribute("aria-invalid"));
+        Assert.Contains("required", cut.Find("[role=group]").AccessibleDescription());
+
+        Type(cut, "month", "11");
+        Type(cut, "day", "8");
+        Type(cut, "year", "2026");
+        Assert.AreEqual(Nov8, model.BirthDate);
+        Assert.AreEqual("2026-11-08", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(Segment(cut, "month").HasAttribute("aria-invalid"));
+
+        // The label focuses the first segment.
+        cut.Find("label").Click();
+        Assert.AreEqual(Segment(cut, "month").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Segments_can_be_rendered_by_hand()
+    {
+        var cut = Render(
+            @<BitBhDateField Culture="En" aria-label="Date" DefaultValue="Nov8">
+                <BitBhDateFieldSegments>
+                    <BitBhDateFieldSegment Segment="context" class="@(context.IsEditable ? "seg" : "sep")" />
+                </BitBhDateFieldSegments>
+            </BitBhDateField>);
+
+        Assert.HasCount(3, cut.FindAll(".seg"));
+        Assert.HasCount(2, cut.FindAll(".sep"));
+        cut.ShouldBeAccessible();
+    }
+
+    // ── Time ─────────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Time_field_uses_a_twelve_hour_clock_in_english()
+    {
+        TimeOnly? value = null;
+        var cut = Render(@<BitBhTimeField Culture="En" aria-label="Start" ValueChanged="v => value = v" Name="start" />);
+        var id = cut.Find("div").Id;
+
+        CollectionAssert.AreEqual(new[] { "hour", "minute", "AM/PM" }, cut.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+        Assert.AreEqual("––:–– AM", Shown(cut));
+        Assert.AreEqual("12", Segment(cut, "hour").GetAttribute("aria-valuemax"));
+
+        Type(cut, "hour", "9");
+        Assert.AreEqual($"{id}-minute", this.LastFocusRequest());
+        Type(cut, "minute", "30");
+        Assert.AreEqual($"{id}-dayperiod", this.LastFocusRequest());
+        Assert.IsNull(value);
+        Type(cut, "AM/PM", "p");
+        Assert.AreEqual(new TimeOnly(21, 30), value);
+        Assert.AreEqual("9:30 PM", Shown(cut));
+        Assert.AreEqual("9 PM", Segment(cut, "hour").GetAttribute("aria-valuetext"));
+        Assert.AreEqual("21:30", cut.Find("input[type=hidden]").GetAttribute("value"));
+
+        Focused(cut, "AM/PM").Press("ArrowUp");
+        Assert.AreEqual(new TimeOnly(9, 30), value);
+        Type(cut, "AM/PM", "p");
+        Focused(cut, "hour").Press("ArrowUp");
+        Focused(cut, "hour").Press("ArrowUp");
+        Focused(cut, "hour").Press("ArrowUp");
+        Focused(cut, "hour").Press("ArrowUp");
+        // 12 wraps to 1.
+        Assert.AreEqual(new TimeOnly(13, 30), value);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Time_field_in_german_and_with_an_hour_cycle_and_granularity_of_its_own()
+    {
+        TimeOnly? value = null;
+        var de = Render(@<BitBhTimeField Culture="De" aria-label="Beginn" ValueChanged="v => value = v" />);
+        CollectionAssert.AreEqual(new[] { "hour", "minute" }, de.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+        Type(de, "hour", "21");
+        Type(de, "minute", "05");
+        Assert.AreEqual(new TimeOnly(21, 5), value);
+        Assert.AreEqual("21:05", Shown(de));
+
+        var h24 = Render(@<BitBhTimeField Culture="En" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                                      DefaultValue="new TimeOnly(14, 3, 9)" aria-label="At" Name="at" />);
+        CollectionAssert.AreEqual(new[] { "hour", "minute", "second" }, h24.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+        Assert.AreEqual("14:03:09", Shown(h24));
+        Assert.AreEqual("14:03:09", h24.Find("input[type=hidden]").GetAttribute("value"));
+
+        var h12 = Render(@<BitBhTimeField Culture="De" HourCycle="BitBhHourCycle.H12" Granularity="BitBhTimeGranularity.Hour"
+                                      DefaultValue="new TimeOnly(14, 0)" aria-label="Um" />);
+        CollectionAssert.AreEqual(new[] { "hour", "AM/PM" }, h12.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray());
+        Assert.AreEqual("02 PM", Shown(h12));
+        h12.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Time_field_steps_minutes_by_fifteen_with_page_keys()
+    {
+        TimeOnly? value = null;
+        var cut = Render(@<BitBhTimeField Culture="De" DefaultValue="new TimeOnly(8, 50)" aria-label="Beginn" ValueChanged="v => value = v" />);
+        Focused(cut, "minute").Press("PageUp");
+        // 65 wraps to 05: minutes cycle without carrying into the hour.
+        Assert.AreEqual(new TimeOnly(8, 5), value);
+        Focused(cut, "minute").Press("End");
+        Assert.AreEqual(new TimeOnly(8, 59), value);
+    }
+
+    private sealed class Person
+    {
+        [Required(ErrorMessage = "A birth date is required.")]
+        public DateOnly? BirthDate { get; set; }
+    }
+
+    [TestMethod]
+    public void Keys_that_outrun_the_focus_move_go_to_the_segment_it_is_moving_to()
+    {
+        // Blazor Server: the focus moves only after a round trip, so fast typing keeps arriving from the segment left behind.
+        DateOnly? value = null;
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" ValueChanged="v => value = v" />);
+        Segment(cut, "month").Focus();
+        foreach (var key in "1182026") Segment(cut, "month").Press(key.ToString());
+        Assert.AreEqual(Nov8, value);
+        Assert.AreEqual("2026", Segment(cut, "year").GetAttribute("aria-valuenow"));
+
+        // The late focus event of the day, overtaken by the move to the year, does not end the typing.
+        Segment(cut, "day").Focus();
+        Segment(cut, "year").Focus();
+        Assert.AreEqual(Nov8, value);
+    }
+}

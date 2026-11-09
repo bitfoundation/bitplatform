@@ -1,0 +1,152 @@
+﻿/* calendar demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Root and header ------------------------------------------------------ */
+.calendar {
+    display: inline-grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-heading {
+    flex: 1;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.calendar-nav {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    color: var(--color-text-secondary);
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+.calendar-nav:hover:not([aria-disabled="true"]):enabled { background: var(--color-fill); }
+.calendar-nav:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* At Min / Max the buttons stay focusable (aria-disabled), so the focus isn't lost there. */
+.calendar-nav[data-disabled] { color: var(--color-disabled); cursor: not-allowed; }
+
+/* ---- Months side by side ---------------------------------------------------- */
+.calendar-months {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.calendar-month-title {
+    margin: 0 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ---- Grid ------------------------------------------------------------------- */
+.calendar-grid {
+    border-collapse: collapse;
+}
+
+.calendar-grid th {
+    width: 2.25rem;
+    padding-bottom: 0.25rem;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.calendar-grid td { padding: 1px; }
+
+/* ---- Cells (the td is the focusable gridcell) ------------------------------- */
+.calendar-cell {
+    box-sizing: border-box;
+    width: 2.25rem;
+    height: 2.25rem;   /* at least 24px: a comfortable pointer target */
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+}
+
+.calendar-cell[data-hover]:not([data-selected]):not([data-disabled]) { background: var(--color-fill); }
+.calendar-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* Today: bold, with a dot under the number */
+.calendar-cell[data-today] { font-weight: 700; box-shadow: inset 0 -3px 0 -1px var(--color-primary-text); }
+
+.calendar-cell[data-selected] { background: var(--color-primary); color: #fff; }
+.calendar-cell[data-selected][data-today] { box-shadow: inset 0 -3px 0 -1px #fff; }
+
+/* Range: the ends are solid, the days between them tinted */
+.calendar-cell[data-range-middle] {
+    border-radius: 0;
+    background: var(--color-accent-muted);
+    color: var(--color-accent-text);
+}
+
+.calendar-cell[data-selection-start]:not([data-selection-end]) { border-start-end-radius: 0; border-end-end-radius: 0; }
+.calendar-cell[data-selection-end]:not([data-selection-start]) { border-start-start-radius: 0; border-end-start-radius: 0; }
+
+/* While the second end is being picked, the range follows the pointer and the focus */
+.calendar-cell[data-highlighted][data-range-middle] { background: var(--color-accent-subtle); }
+
+/* Booked / unavailable: focusable and announced, not selectable */
+.calendar-cell[data-unavailable] { color: var(--color-muted); text-decoration: line-through; cursor: not-allowed; }
+
+/* Outside Min / Max: not focusable */
+.calendar-cell[data-disabled] { color: var(--color-muted); cursor: not-allowed; }
+
+.calendar-cell[data-invalid][data-selected] { background: var(--color-danger); }
+
+/* Fillers of the first and last weeks (rendered only with ShowOutsideDays) */
+.calendar-cell[data-outside-month] { color: var(--color-muted); cursor: default; }
+
+/* ---- Demo layout -------------------------------------------------------------- */
+.calendar-demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.calendar-value { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.calendar-value strong { color: var(--color-text); font-weight: 600; }
+
+.calendar-label { display: block; margin-bottom: 0.4rem; font-size: 0.875rem; font-weight: 600; color: var(--color-text); }
+.calendar-description { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--color-muted); }
+.calendar-error { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--color-danger-text); }
+
+.calendar-submit {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.calendar-submit:hover { background: var(--color-primary-hover); }
+.calendar-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

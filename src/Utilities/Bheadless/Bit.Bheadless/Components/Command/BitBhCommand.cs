@@ -204,7 +204,7 @@ public class BitBhCommand : BitBhComponentBase, IDisposable
         _announce.Schedule(600, async () =>
         {
             var count = Context.VisibleCount;
-            var text = ResultsAnnouncement?.Invoke(count) ?? (count == 1 ? "1 result" : $"{count} results");
+            var text = ResultsAnnouncement?.Invoke(count) ?? Strings.Results(count);
             var announcer = GetService<IBitBhAnnouncer>() ?? new BitBhAnnouncer(Interop);
             await announcer.AnnounceAsync(text);
         });

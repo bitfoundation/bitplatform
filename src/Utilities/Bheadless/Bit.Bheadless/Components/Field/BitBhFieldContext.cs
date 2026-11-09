@@ -53,6 +53,21 @@ public sealed class BitBhFieldContext
     /// <summary>Whether the field is required.</summary>
     public bool Required { get; internal set; }
 
+    /// <summary>Whether the field's control has been left at least once.</summary>
+    public bool Touched { get; private set; }
+
+    /// <summary>Whether the field's value was changed by the user.</summary>
+    public bool Dirty { get; private set; }
+
+    /// <summary>Called by text controls as they are left and changed (the field's <c>data-touched</c> / <c>data-dirty</c>).</summary>
+    internal void ReportInteraction(bool touched, bool dirty)
+    {
+        if (Touched == touched && Dirty == dirty) return;
+        Touched = touched;
+        Dirty = dirty;
+        _changed();
+    }
+
     internal bool ExplicitInvalid { get; set; }
 
     /// <summary>Whether a label is rendered.</summary>

@@ -106,6 +106,64 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Sections"
+           Code="@_sectionsCode"
+           Css="@_listboxCss">
+    <Description>
+        <code>BitBhOptionGroup</code> makes a section of options (<code>role="group"</code>) named by its
+        <code>BitBhOptionGroupLabel</code>; the arrow keys and typeahead run across sections as one list, and screen readers
+        announce the section of the highlighted option. The same parts work in a <code>BitBhCombobox</code>.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" @bind-Value="food" class="listbox">
+            <BitBhListboxButton aria-label="Food" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>@(string.IsNullOrEmpty(b.Value) ? "Pick a food…" : b.Value)</span>
+                    <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" class="listbox-options">
+                <BitBhOptionGroup>
+                    <BitBhOptionGroupLabel class="listbox-group-label">Fruit</BitBhOptionGroupLabel>
+                    <BitBhListboxOption TValue="string" Value="@("Apple")" class="listbox-option">Apple</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("Banana")" class="listbox-option">Banana</BitBhListboxOption>
+                </BitBhOptionGroup>
+                <BitBhOptionGroup>
+                    <BitBhOptionGroupLabel class="listbox-group-label">Vegetables</BitBhOptionGroupLabel>
+                    <BitBhListboxOption TValue="string" Value="@("Carrot")" class="listbox-option">Carrot</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("Leek")" class="listbox-option">Leek</BitBhListboxOption>
+                </BitBhOptionGroup>
+            </BitBhListboxOptions>
+        </BitBhListbox>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Aligned with the selection"
+           Code="@_selectionCode"
+           Css="@_listboxCss">
+    <Description>
+        <code>Anchor="@@("selection")"</code> lines the selected option up over the button instead of placing the list below
+        it - the macOS select, Radix's item-aligned Select, Headless UI's <code>anchor="selection"</code>. The list gets
+        <code>data-side="none"</code>; with nothing selected it opens below the button.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" @bind-Value="size" class="listbox">
+            <BitBhListboxButton aria-label="Size" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>@(b.Value ?? "Pick a size…")</span>
+                    <span class="listbox-chevron">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" Anchor="@("selection")" class="listbox-options">
+                @foreach (var s in Sizes)
+                {
+                    <BitBhListboxOption TValue="string" Value="@s" class="listbox-option">@s</BitBhListboxOption>
+                }
+            </BitBhListboxOptions>
+        </BitBhListbox>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Custom Option Content"
            Code="@_customCode"
            Css="@_customCss">
@@ -275,6 +333,41 @@
 </DemoBlock>
 
 @code {
+    private static readonly string[] Sizes = ["Extra small", "Small", "Medium", "Large", "Extra large"];
+    private string? size = "Large";
+
+    private const string _selectionCode = """
+<BitBhListbox TValue="string" @bind-Value="size" class="listbox">
+    <BitBhListboxButton aria-label="Size" TValue="string" class="listbox-button">…</BitBhListboxButton>
+    <BitBhListboxOptions TValue="string" Anchor="@("selection")" class="listbox-options">
+        @foreach (var s in sizes)
+        {
+            <BitBhListboxOption TValue="string" Value="@s" class="listbox-option">@s</BitBhListboxOption>
+        }
+    </BitBhListboxOptions>
+</BitBhListbox>
+""";
+
+    private string? food;
+
+    private const string _sectionsCode = """
+<BitBhListbox TValue="string" @bind-Value="food" class="listbox">
+    <BitBhListboxButton aria-label="Food" TValue="string" class="listbox-button">…</BitBhListboxButton>
+    <BitBhListboxOptions TValue="string" class="listbox-options">
+        <BitBhOptionGroup>
+            <BitBhOptionGroupLabel class="listbox-group-label">Fruit</BitBhOptionGroupLabel>
+            <BitBhListboxOption TValue="string" Value="@("Apple")" class="listbox-option">Apple</BitBhListboxOption>
+            <BitBhListboxOption TValue="string" Value="@("Banana")" class="listbox-option">Banana</BitBhListboxOption>
+        </BitBhOptionGroup>
+        <BitBhOptionGroup>
+            <BitBhOptionGroupLabel class="listbox-group-label">Vegetables</BitBhOptionGroupLabel>
+            <BitBhListboxOption TValue="string" Value="@("Carrot")" class="listbox-option">Carrot</BitBhListboxOption>
+            <BitBhListboxOption TValue="string" Value="@("Leek")" class="listbox-option">Leek</BitBhListboxOption>
+        </BitBhOptionGroup>
+    </BitBhListboxOptions>
+</BitBhListbox>
+""";
+
     // 10 adjectives × 10 animals × 100 = 10,000 options.
     private static readonly string[] VirtualItems = BuildVirtualItems();
     private string? virtualPick;

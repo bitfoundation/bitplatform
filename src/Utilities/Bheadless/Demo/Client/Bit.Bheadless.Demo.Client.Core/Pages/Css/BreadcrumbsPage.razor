@@ -1,0 +1,50 @@
+﻿@page "/breadcrumbs"
+
+<PageTitle>Breadcrumbs · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Breadcrumbs</h1>
+    <p class="bb-subtitle">Where the current page sits: a navigation landmark with an ordered list of links and the current page marked.</p>
+</div>
+
+<SectionSwitcher Slug="breadcrumbs" />
+
+<DemoBlock Title="Trail" Code="@_code" Css="@_css">
+    <Description>
+        The landmark is named "Breadcrumbs" (rename it through <code>BitBhStrings</code> or an <code>aria-label</code>); the
+        current page's link has <code>aria-current="page"</code> and renders as text when it has no <code>Href</code>;
+        separators are hidden from assistive technology.
+    </Description>
+    <LiveContent>
+        <BitBhBreadcrumbs class="crumbs">
+            <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="./">Home</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+            <BitBhBreadcrumbSeparator class="crumb-sep">/</BitBhBreadcrumbSeparator>
+            <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="getting-started">Docs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+            <BitBhBreadcrumbSeparator class="crumb-sep">/</BitBhBreadcrumbSeparator>
+            <BitBhBreadcrumbItem><BitBhBreadcrumbLink Current="true">Breadcrumbs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+        </BitBhBreadcrumbs>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private const string _code = """
+<BitBhBreadcrumbs class="crumbs">
+    <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="/">Home</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+    <BitBhBreadcrumbSeparator class="crumb-sep">/</BitBhBreadcrumbSeparator>
+    <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="/docs">Docs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+    <BitBhBreadcrumbSeparator class="crumb-sep">/</BitBhBreadcrumbSeparator>
+    <BitBhBreadcrumbItem><BitBhBreadcrumbLink Current="true">Breadcrumbs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+</BitBhBreadcrumbs>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+.crumbs a { color: var(--color-primary-text); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* aria-current="page" / data-current on the current page */
+.crumbs [aria-current="page"] { color: var(--color-text); font-weight: 600; }
+.crumb-sep { color: var(--color-muted); }
+""";
+}
