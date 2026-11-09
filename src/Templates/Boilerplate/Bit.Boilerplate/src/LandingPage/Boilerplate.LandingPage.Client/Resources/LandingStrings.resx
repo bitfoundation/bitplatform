@@ -723,6 +723,9 @@
     <data name="GalleryScoreSource" xml:space="preserve">
         <value>Source:</value>
     </data>
+    <data name="GalleryScoreTestYourself" xml:space="preserve">
+        <value>Test it yourself</value>
+    </data>
     <data name="GalleryScoreTested" xml:space="preserve">
         <value>, mobile, tested on {0}</value>
     </data>

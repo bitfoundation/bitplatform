@@ -3,7 +3,7 @@ namespace Boilerplate.LandingPage.Client.Components.Pages.Gallery;
 public partial class GalleryScores
 {
     private const string TestedAddress = "landingpage.bitplatform.dev";
-    private const string RunItYourself = "https://pagespeed.web.dev/analysis?url=https%3A%2F%2Flandingpage.bitplatform.dev%2F&form_factor=mobile";
+    private const string RunItYourself = "https://pagespeed.web.dev/report?url=landingpage.bitplatform.dev&utm_source=search_console&form_factor=mobile&hl=en";
 
     private static readonly DateOnly testedOn = new(2026, 11, 4);
 
