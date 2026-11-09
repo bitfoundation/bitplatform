@@ -110,6 +110,49 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AFieldMarkedUnmodifiedShouldLoseTheClassOnARenderOfTheInputAlone()
+    {
+        var model = new BitTextFieldTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        var component = RenderBoundTextField(editContext, model);
+
+        component.Find("input").Change("ada@bit.com");
+
+        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+
+        // No parameters pass: the input re-renders on an event of its own, and reads the field as it is then.
+        editContext.MarkAsUnmodified();
+        component.Find("input").FocusIn();
+
+        CollectionAssert.AreEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
+    }
+
+    [TestMethod]
+    public void TurningNoValidateOnShouldTakeTheClassesOff()
+    {
+        var model = new BitTextFieldTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        var component = RenderBoundTextField(editContext, model);
+
+        component.Find("input").Change("ada@bit.com");
+
+        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+
+        component.Render(parameters => parameters.Add(p => p.NoValidate, true));
+
+        Assert.AreEqual(0, FieldClasses(component.Find(".bit-tfl")).Length);
+
+        // And they come back with the validation.
+        component.Render(parameters => parameters.Add(p => p.NoValidate, false));
+
+        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+    }
+
+    [TestMethod]
     public void TheRootShouldCarryTheClassesOfTheAppsFieldCssClassProvider()
     {
         var model = new BitTextFieldTestModel();
