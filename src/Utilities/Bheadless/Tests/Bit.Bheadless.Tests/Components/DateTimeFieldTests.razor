@@ -1,0 +1,303 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly CultureInfo En = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly DateTime Nov8At930Pm = new(2026, 11, 8, 21, 30, 0);
+
+    private static AngleSharp.Dom.IElement Segment(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
+        => cut.Find($"[role=spinbutton][aria-label='{name}']");
+
+    // The literals come from the culture's patterns, and the ICU data each OS ships tells en-US's space before AM / PM:
+    // a plain one on Windows, a narrow no-break one (U+202F, CLDR 42+) on Linux.
+    private static string Shown(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent)).Replace(' ', ' ');
+
+    private static string[] Names(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray();
+
+    private static AngleSharp.Dom.IElement Focused(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
+    {
+        Segment(cut, name).Focus();
+        return Segment(cut, name);
+    }
+
+    private static void Type(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name, string keys)
+    {
+        Segment(cut, name).Focus();
+        foreach (var key in keys) Segment(cut, name).Press(key.ToString());
+    }
+
+    private static RenderFragment PickerParts() =>
+        @<text>
+            <BitBhDatePickerGroup class="group">
+                <BitBhDateFieldSegments />
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+            </BitBhDatePickerGroup>
+            <BitBhDatePickerContent class="popover">
+                <BitBhCalendar>
+                    <BitBhCalendarPrevious>‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading />
+                    <BitBhCalendarNext>›</BitBhCalendarNext>
+                    <BitBhCalendarGrid />
+                </BitBhCalendar>
+            </BitBhDatePickerContent>
+        </text>;
+
+    private static AngleSharp.Dom.IElement Cell(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string date)
+        => cut.Find($"td[data-date='{date}']:not([data-outside-month])");
+
+    // ── Field ────────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Date_and_time_segments_follow_the_culture_and_are_spinbuttons()
+    {
+        var cut = Render(@<BitBhDateTimeField Culture="En" aria-label="Meeting" />);
+
+        var root = cut.Find("div");
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("Meeting", root.AccessibleName());
+        Assert.IsTrue(root.HasAttribute("data-empty"));
+        CollectionAssert.AreEqual(new[] { "month", "day", "year", "hour", "minute", "AM/PM" }, Names(cut));
+        Assert.AreEqual("mm/dd/yyyy ––:–– AM", Shown(cut));
+        // Every segment is a tab stop.
+        Assert.HasCount(6, cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Typing_runs_from_the_date_into_the_time_and_commits_when_complete()
+    {
+        DateTime? value = null;
+        var cut = Render(@<BitBhDateTimeField Culture="En" aria-label="Meeting" ValueChanged="v => value = v" Name="meeting" />);
+        var id = cut.Find("div").Id;
+
+        Type(cut, "month", "11");
+        Type(cut, "day", "8");
+        Type(cut, "year", "2026");
+        // The year is full: on to the hour.
+        Assert.AreEqual($"{id}-hour", this.LastFocusRequest());
+        Assert.IsNull(value);
+
+        Type(cut, "hour", "9");
+        Assert.AreEqual($"{id}-minute", this.LastFocusRequest());
+        Type(cut, "minute", "30");
+        Assert.AreEqual($"{id}-dayperiod", this.LastFocusRequest());
+        Assert.IsNull(value);
+        Type(cut, "AM/PM", "p");
+
+        Assert.AreEqual(Nov8At930Pm, value);
+        Assert.AreEqual(DateTimeKind.Unspecified, value!.Value.Kind);
+        Assert.AreEqual("11/8/2026 9:30 PM", Shown(cut));
+        Assert.AreEqual("2026-11-08T21:30", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.AreEqual("9 PM", Segment(cut, "hour").GetAttribute("aria-valuetext"));
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-empty"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Keys_that_outrun_the_focus_move_go_to_the_segment_it_is_moving_to()
+    {
+        // Blazor Server: the focus moves after a round trip, so fast typing arrives from the segment left behind.
+        DateTime? value = null;
+        var cut = Render(@<BitBhDateTimeField Culture="En" HourCycle="BitBhHourCycle.H24" aria-label="Meeting" ValueChanged="v => value = v" />);
+        Segment(cut, "month").Focus();
+        foreach (var key in "11820262130") Segment(cut, "month").Press(key.ToString());
+        Assert.AreEqual(Nov8At930Pm, value);
+    }
+
+    [TestMethod]
+    public void Left_and_right_cross_between_the_date_and_the_time()
+    {
+        var cut = Render(@<BitBhDateTimeField Culture="En" aria-label="Meeting" />);
+        var id = cut.Find("div").Id;
+        Focused(cut, "year").Press("ArrowRight");
+        Assert.AreEqual($"{id}-hour", this.LastFocusRequest());
+        Focused(cut, "hour").Press("ArrowLeft");
+        Assert.AreEqual($"{id}-year", this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void German_order_a_24_hour_clock_and_seconds()
+    {
+        var de = Render(@<BitBhDateTimeField Culture="De" DefaultValue="new DateTime(2026, 11, 8, 21, 5, 0)" aria-label="Termin" />);
+        CollectionAssert.AreEqual(new[] { "day", "month", "year", "hour", "minute" }, Names(de));
+        Assert.AreEqual("08.11.2026 21:05", Shown(de));
+
+        var seconds = Render(@<BitBhDateTimeField Culture="En" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                                              DefaultValue="new DateTime(2026, 11, 8, 14, 3, 9)" aria-label="At" Name="at" />);
+        CollectionAssert.AreEqual(new[] { "month", "day", "year", "hour", "minute", "second" }, Names(seconds));
+        Assert.AreEqual("11/8/2026 14:03:09", Shown(seconds));
+        Assert.AreEqual("2026-11-08T14:03:09", seconds.Find("input[type=hidden]").GetAttribute("value"));
+        seconds.ShouldBeAccessible();
+
+        var hours = Render(@<BitBhDateTimeField Culture="De" HourCycle="BitBhHourCycle.H12" Granularity="BitBhTimeGranularity.Hour"
+                                            DefaultValue="new DateTime(2026, 11, 8, 14, 45, 0)" aria-label="Um" />);
+        CollectionAssert.AreEqual(new[] { "day", "month", "year", "hour", "AM/PM" }, Names(hours));
+        Assert.AreEqual("08.11.2026 02 PM", Shown(hours));
+    }
+
+    [TestMethod]
+    public void Empty_segments_step_from_the_placeholder_value()
+    {
+        DateTime? value = null;
+        var cut = Render(@<BitBhDateTimeField Culture="De" PlaceholderValue="new DateTime(2026, 11, 8, 9, 15, 0)" aria-label="Termin"
+                                          ValueChanged="v => value = v" />);
+        Focused(cut, "day").Press("ArrowUp");
+        Focused(cut, "month").Press("ArrowUp");
+        Focused(cut, "year").Press("ArrowUp");
+        Focused(cut, "hour").Press("ArrowUp");
+        Assert.IsNull(value);
+        Focused(cut, "minute").Press("ArrowUp");
+        Assert.AreEqual(new DateTime(2026, 11, 8, 9, 15, 0), value);
+        Focused(cut, "minute").Press("PageUp");
+        Assert.AreEqual(new DateTime(2026, 11, 8, 9, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void Min_and_max_compare_the_date_and_the_time()
+    {
+        var cut = Render(@<BitBhDateTimeField Culture="De" aria-label="Termin" DefaultValue="new DateTime(2026, 11, 8, 8, 0, 0)"
+                                          Min="new DateTime(2026, 11, 8, 9, 0, 0)" Max="new DateTime(2026, 11, 8, 17, 0, 0)" />);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-invalid"));
+        Assert.AreEqual("true", Segment(cut, "hour").GetAttribute("aria-invalid"));
+
+        Focused(cut, "hour").Press("ArrowUp");
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-invalid"));
+    }
+
+    [TestMethod]
+    public void A_value_set_from_outside_fills_and_empties_the_segments()
+    {
+        var cut = Render(
+            @<Stateful T="DateTime?" Initial="Nov8At930Pm">
+                <BitBhDateTimeField Culture="En" Value="context.Value" ValueChanged="context.Set" aria-label="Meeting" />
+                <button id="next" @onclick="() => context.Set(new DateTime(2027, 1, 2, 8, 5, 0))">Next</button>
+                <button id="clear" @onclick="() => context.Set(null)">Clear</button>
+            </Stateful>);
+
+        Assert.AreEqual("11/8/2026 9:30 PM", Shown(cut));
+        cut.Find("#next").Click();
+        Assert.AreEqual("1/2/2027 8:05 AM", Shown(cut));
+        cut.Find("#clear").Click();
+        Assert.AreEqual("mm/dd/yyyy ––:–– AM", Shown(cut));
+    }
+
+    [TestMethod]
+    public void Field_labels_the_group_and_validation_flows_in()
+    {
+        var model = new Meeting();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Starts</BitBhLabel>
+                    <BitBhDateTimeField Culture="De" @bind-Value="model.Start" Name="start" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        Assert.AreEqual("Starts", cut.Find("[role=group]").AccessibleName());
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", Segment(cut, "day").GetAttribute("aria-invalid"));
+        Assert.Contains("required", cut.Find("[role=group]").AccessibleDescription());
+
+        Type(cut, "day", "08");
+        Type(cut, "month", "11");
+        Type(cut, "year", "2026");
+        Type(cut, "hour", "21");
+        Type(cut, "minute", "30");
+        Assert.AreEqual(Nov8At930Pm, model.Start);
+        Assert.IsFalse(Segment(cut, "day").HasAttribute("aria-invalid"));
+
+        // The label focuses the first segment.
+        cut.Find("label").Click();
+        Assert.AreEqual(Segment(cut, "day").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+
+    // ── Picker ───────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Date_time_picker_is_a_labelled_group_with_date_and_time_segments_and_a_button()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Appointment</BitBhLabel>
+                <BitBhDateTimePicker Culture="En" DefaultValue="Nov8At930Pm">@PickerParts()</BitBhDateTimePicker>
+            </BitBhField>);
+
+        var group = cut.Find(".group");
+        Assert.AreEqual("group", group.GetAttribute("role"));
+        Assert.AreEqual("Appointment", group.AccessibleName());
+        Assert.AreEqual("11/8/2026 9:30 PM", Shown(cut));
+        Assert.AreEqual("Choose date Appointment", cut.Find(".trigger").AccessibleName());
+        cut.ShouldBeAccessible();
+
+        cut.Find(".trigger").Click();
+        Assert.AreEqual("Appointment", cut.Find("[role=dialog]").AccessibleName());
+        Assert.AreEqual("true", Cell(cut, "2026-11-08").GetAttribute("aria-selected"));
+        Assert.IsTrue(Cell(cut, "2026-11-08").HasAttribute("data-bit-bh-autofocus"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Picking_a_date_keeps_the_time()
+    {
+        var cut = Render(
+            @<Stateful T="DateTime?" Initial="Nov8At930Pm">
+                <BitBhDateTimePicker Culture="En" Value="context.Value" ValueChanged="context.Set" aria-label="Appointment">@PickerParts()</BitBhDateTimePicker>
+                <output>@context.Value?.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)</output>
+            </Stateful>);
+
+        cut.Find(".trigger").Click();
+        Cell(cut, "2026-11-20").Click();
+        Assert.AreEqual("2026-11-20T21:30", Text(cut.Find("output")));
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+        Assert.AreEqual("11/20/2026 9:30 PM", Shown(cut));
+    }
+
+    [TestMethod]
+    public void Picking_a_date_with_no_time_takes_the_typed_time_or_midnight()
+    {
+        DateTime? value = null;
+        var cut = Render(@<BitBhDateTimePicker Culture="De" ValueChanged="v => value = v" aria-label="Termin">@PickerParts()</BitBhDateTimePicker>);
+
+        cut.Find(".trigger").Click();
+        cut.Find("td[tabindex='0']").Click();
+        Assert.IsNotNull(value);
+        Assert.AreEqual(TimeOnly.MinValue, TimeOnly.FromDateTime(value!.Value));
+
+        var typed = Render(@<BitBhDateTimePicker Culture="De" ValueChanged="v => value = v" aria-label="Termin">@PickerParts()</BitBhDateTimePicker>);
+        Type(typed, "hour", "14");
+        Type(typed, "minute", "45");
+        typed.Find(".trigger").Click();
+        typed.Find("td[tabindex='0']").Click();
+        Assert.AreEqual(new TimeOnly(14, 45), TimeOnly.FromDateTime(value!.Value));
+    }
+
+    [TestMethod]
+    public void The_calendar_takes_the_dates_of_the_limits_and_unavailable_dates()
+    {
+        var cut = Render(@<BitBhDateTimePicker Culture="En" DefaultValue="Nov8At930Pm" Min="new DateTime(2026, 11, 5, 12, 0, 0)"
+                                          IsDateUnavailable="d => d.DayOfWeek == DayOfWeek.Sunday" aria-label="Appointment">@PickerParts()</BitBhDateTimePicker>);
+        // The 8th is a Sunday.
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-invalid"));
+
+        cut.Find(".trigger").Click();
+        Assert.IsTrue(Cell(cut, "2026-11-04").HasAttribute("data-disabled"));
+        Assert.IsFalse(Cell(cut, "2026-11-05").HasAttribute("data-disabled"));
+        Assert.IsTrue(Cell(cut, "2026-11-15").HasAttribute("data-unavailable"));
+        Cell(cut, "2026-11-16").Click();
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-invalid"));
+    }
+
+    private sealed class Meeting
+    {
+        [Required(ErrorMessage = "A start is required.")]
+        public DateTime? Start { get; set; }
+    }
+}

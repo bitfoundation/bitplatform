@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Bheadless;
 
 /// <summary>
-/// The calendar popover of a <see cref="BitBhDatePicker"/>: a non-modal <c>role="dialog"</c> named by the field's label
-/// (else "Choose date"), anchored below the <see cref="BitBhDatePickerGroup"/> (<c>"bottom start"</c> unless
+/// The calendar popover of a <see cref="BitBhDatePicker"/>, <see cref="BitBhDateTimePicker"/> or
+/// <see cref="BitBhDateRangePicker"/>: a non-modal <c>role="dialog"</c> named by the field's label (else "Choose date",
+/// or "Choose date range"), anchored below the <see cref="BitBhDatePickerGroup"/> (<c>"bottom start"</c> unless
 /// <see cref="BitBhFloatingContentBase.Anchor"/> says otherwise). Put a <see cref="BitBhCalendar"/> in it.
 ///
 /// <para><b>Behaviour:</b> on open the focus moves to the calendar's focused date; Escape, a press outside and the focus
@@ -100,7 +101,7 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
         if (!named)
         {
             if (Picker?.Owner.LabelledBy is { } label) attrs["aria-labelledby"] = label;
-            else attrs["aria-label"] = Strings.ChooseDate;
+            else attrs["aria-label"] = Picker?.ChooseLabel(Strings) ?? Strings.ChooseDate;
         }
         SetDataState(attrs, IsOpen);
         return attrs;

@@ -22,7 +22,13 @@ namespace Bit.Bheadless;
 /// <para><b>Styling hooks:</b> <c>data-state="open|closed"</c>, <c>data-side="top|right|bottom|left"</c>,
 /// <c>data-swiping</c>, <c>--bit-bh-drawer-swipe-movement-x</c> / <c>-y</c> (px, towards the edge) and
 /// <c>--bit-bh-drawer-swipe-progress</c> (0-1), <c>data-nested</c>, <c>data-nested-drawer-open</c> and
-/// <c>--bit-bh-nested-drawers</c>.</para>
+/// <c>--bit-bh-nested-drawers</c>. With snap points also <c>data-snap-point</c> (the active one: <c>0.5</c>,
+/// <c>160px</c>), <c>--bit-bh-drawer-snap-point-offset-x</c> / <c>-y</c> (px towards the edge, where that snap point
+/// rests it - add the swipe movement to it, which a drag that opens the drawer further makes negative) and
+/// <c>--bit-bh-drawer-fade</c> (0-1, see <see cref="BitBhDrawer.FadeFromIndex"/>):</para>
+/// <code>
+/// .sheet { transform: translateY(calc(var(--bit-bh-drawer-snap-point-offset-y, 0px) + var(--bit-bh-drawer-swipe-movement-y, 0px))); }
+/// </code>
 /// </summary>
 public class BitBhDrawerPanel : BitBhComponentBase
 {
@@ -108,6 +114,7 @@ public class BitBhDrawerPanel : BitBhComponentBase
             };
         }
         BitBhDrawer.AddNestingAttributes(attrs, DrawerContext);
+        BitBhDrawer.AddSnapPointAttribute(attrs, DrawerContext);
         return attrs;
     }
 

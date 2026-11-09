@@ -72,7 +72,10 @@ public class BitBhColorSlider : BitBhComponentBase
         var (min, max, step) = BitBhColor.RangeOf(Channel);
         var attributes = new Dictionary<string, object>(AdditionalAttributes ?? new(), StringComparer.OrdinalIgnoreCase);
         var style = $"--bit-bh-color-slider-gradient:{Gradient(color, Channel)};--bit-bh-color:{color.ToHex()}";
-        attributes["style"] = attributes.TryGetValue("style", out var own) ? BitBhAttributeUtilities.JoinStyles(style, own?.ToString()) : style;
+        // Handed to the slider as its consumer's: a style attribute of its own in strict CSP mode, else joined
+        // ahead of the consumer's style so theirs wins.
+        var styleAttribute = StyleAttribute;
+        attributes[styleAttribute] = attributes.TryGetValue(styleAttribute, out var own) ? BitBhAttributeUtilities.JoinStyles(style, own?.ToString()) : style;
         attributes["data-channel"] = Channel.ToString().ToLowerInvariant();
 
         builder.OpenComponent<BitBhSlider>(0);

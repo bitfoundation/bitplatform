@@ -134,8 +134,56 @@ public class BitBhStrings
     /// <summary>The handle that resizes split panels.</summary>
     public string ResizePanels { get; set; } = "Resize panels";
 
+    /// <summary>The handle of a drawer with snap points - the slider that sets how far the drawer is open.</summary>
+    public string DrawerSize { get; set; } = "Drawer size";
+
+    /// <summary>The snap point a drawer rests at, from its index (0-based, smallest first) and the count: "2 of 3".</summary>
+    public Func<int, int, string> DrawerSnapPoint { get; set; } =
+        (index, count) => string.Create(CultureInfo.CurrentCulture, $"{index + 1} of {count}");
+
+    /// <summary>
+    /// The instructions a sortable list's drag handles are described by when the list exchanges items with the other
+    /// lists of its <c>Group</c>, from the list's orientation (which arrow keys move between the lists).
+    /// </summary>
+    public Func<BitBhOrientation, string> SortableGroupInstructions { get; set; } = orientation => orientation == BitBhOrientation.Vertical
+        ? "To pick up an item, press Space or Enter. While dragging, use the up and down arrow keys to move it within the list and the left and right arrow keys to move it to another list. Press Space or Enter again to drop it, or Escape to cancel."
+        : "To pick up an item, press Space or Enter. While dragging, use the left and right arrow keys to move it within the list and the up and down arrow keys to move it to another list. Press Space or Enter again to drop it, or Escape to cancel.";
+
+    /// <summary>A sortable list without a label of its own, from its position (1-based) in its group: "list 2".</summary>
+    public Func<int, string> SortableList { get; set; } = position => string.Create(CultureInfo.CurrentCulture, $"list {position}");
+
+    /// <summary>
+    /// Announced when a picked-up item moves to another list, from the item's label, the list's name, the position
+    /// (1-based) and the list's count: "Fix login moved to Done, position 1 of 3.".
+    /// </summary>
+    public Func<string, string, int, int, string> SortableMovedToList { get; set; } =
+        (label, list, position, count) => string.Create(CultureInfo.CurrentCulture, $"{label} moved to {list}, position {position} of {count}.");
+
+    /// <summary>
+    /// Announced when an item is dropped in another list, from the item's label, the list's name, the position
+    /// (1-based) and the list's count: "Dropped Fix login in Done at position 1 of 3.".
+    /// </summary>
+    public Func<string, string, int, int, string> SortableDroppedInList { get; set; } =
+        (label, list, position, count) => string.Create(CultureInfo.CurrentCulture, $"Dropped {label} in {list} at position {position} of {count}.");
+
+    /// <summary>
+    /// Announced when a move that had taken an item to another list is cancelled, from the item's label, the name of
+    /// the list it came from and its position (1-based) there: "Moving cancelled. Fix login returned to To do, position 2.".
+    /// </summary>
+    public Func<string, string, int, string> SortableReturnedToList { get; set; } =
+        (label, list, position) => string.Create(CultureInfo.CurrentCulture, $"Moving cancelled. {label} returned to {list}, position {position}.");
+
     /// <summary>The button that opens a date picker's calendar.</summary>
     public string ChooseDate { get; set; } = "Choose date";
+
+    /// <summary>The button that opens a date range picker's calendar.</summary>
+    public string ChooseDateRange { get; set; } = "Choose date range";
+
+    /// <summary>The segments of the first date of a date range picker.</summary>
+    public string StartDate { get; set; } = "Start date";
+
+    /// <summary>The segments of the last date of a date range picker.</summary>
+    public string EndDate { get; set; } = "End date";
 
     /// <summary>The button that shows the previous month of a calendar.</summary>
     public string PreviousMonth { get; set; } = "Previous month";

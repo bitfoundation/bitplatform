@@ -1,5 +1,6 @@
 ﻿using Bit.Bheadless.Demo.Client.Core;
 using Bit.Bheadless.Demo.Client.Core.Services;
+using Bit.Bheadless.Demo.Server;
 using Bit.Bheadless.Demo.Server.Services;
 using Bit.Bheadless.Demo.Server.Components;
 
@@ -59,6 +60,14 @@ if (app.Environment.IsDevelopment() is false)
 // (Routes.razor's NotFoundPage) - keeping the status code at 404.
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+// The page that proves the components work under a policy that refuses inline styles (StrictCspRoutes.razor).
+app.Use((context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments(StrictCspPolicy.Path))
+        context.Response.Headers.ContentSecurityPolicy = StrictCspPolicy.Value;
+    return next(context);
+});
 
 app.UseAntiforgery();
 

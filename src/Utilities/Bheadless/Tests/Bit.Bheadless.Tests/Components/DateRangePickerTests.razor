@@ -1,0 +1,377 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly CultureInfo En = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly BitBhDateRange Nov8To12 = new(new DateOnly(2026, 11, 8), new DateOnly(2026, 11, 12));
+
+    private static RenderFragment Parts() =>
+        @<text>
+            <BitBhDatePickerGroup class="group">
+                <BitBhDateRangePickerInput Part="BitBhDateRangePart.Start" class="start" />
+                <span aria-hidden="true">–</span>
+                <BitBhDateRangePickerInput Part="BitBhDateRangePart.End" class="end" />
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+            </BitBhDatePickerGroup>
+            <BitBhDatePickerContent class="popover">
+                <BitBhCalendar VisibleMonths="2">
+                    <BitBhCalendarPrevious>‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading />
+                    <BitBhCalendarNext>›</BitBhCalendarNext>
+                    <BitBhCalendarGrid Offset="0" />
+                    <BitBhCalendarGrid Offset="1" />
+                </BitBhCalendar>
+            </BitBhDatePickerContent>
+        </text>;
+
+    private IRenderedComponent<Bunit.Rendering.ContainerFragment> Labelled(RenderFragment picker)
+        => Render(
+            @<BitBhField>
+                <BitBhLabel>Stay</BitBhLabel>
+                @picker
+            </BitBhField>);
+
+    private static AngleSharp.Dom.IElement Input(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string part)
+        => cut.Find($"[data-part={part}]");
+
+    private static AngleSharp.Dom.IElement Segment(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string part, string name)
+        => cut.Find($"[data-part={part}] [role=spinbutton][aria-label='{name}']");
+
+    private static string Shown(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string part)
+        => string.Concat(cut.FindAll($"[data-part={part}] [data-type]").Select(s => s.TextContent));
+
+    private static void Type(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string part, string name, string keys)
+    {
+        Segment(cut, part, name).Focus();
+        foreach (var key in keys) Segment(cut, part, name).Press(key.ToString());
+    }
+
+    private static AngleSharp.Dom.IElement Cell(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string date)
+        => cut.Find($"td[data-date='{date}']:not([data-outside-month])");
+
+    [TestMethod]
+    public void Closed_picker_is_a_labelled_group_with_a_start_an_end_and_a_button()
+    {
+        var cut = Labelled(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12">@Parts()</BitBhDateRangePicker>);
+
+        var group = cut.Find(".group");
+        Assert.AreEqual("group", group.GetAttribute("role"));
+        Assert.AreEqual("Stay", group.AccessibleName());
+        Assert.AreEqual("closed", group.GetAttribute("data-state"));
+
+        var start = Input(cut, "start");
+        var end = Input(cut, "end");
+        Assert.AreEqual("group", start.GetAttribute("role"));
+        Assert.AreEqual("Start date Stay", start.AccessibleName());
+        Assert.AreEqual("End date Stay", end.AccessibleName());
+        Assert.IsTrue(start.ClassList.Contains("start"));
+        Assert.AreEqual("11/8/2026", Shown(cut, "start"));
+        Assert.AreEqual("11/12/2026", Shown(cut, "end"));
+
+        var trigger = cut.Find(".trigger");
+        Assert.AreEqual("Choose date range Stay", trigger.AccessibleName());
+        Assert.AreEqual("dialog", trigger.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("false", trigger.GetAttribute("aria-expanded"));
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+        // Three segments each, and the button.
+        Assert.HasCount(7, cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_whole_range_types_in_one_go_from_the_start_into_the_end()
+    {
+        BitBhDateRange? value = null;
+        var changes = 0;
+        var cut = Render(@<BitBhDateRangePicker Culture="En" ValueChanged="v => value = v" OnValueChange="_ => changes++" Name="stay"
+                                          aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-empty"));
+        Assert.AreEqual(string.Empty, cut.Find("input[type=hidden]").GetAttribute("value"));
+
+        Type(cut, "start", "month", "11");
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-empty"));
+        Type(cut, "start", "day", "8");
+        Type(cut, "start", "year", "2026");
+        // The start is full: on to the end's first segment.
+        Assert.AreEqual(Segment(cut, "end", "month").Id, this.LastFocusRequest());
+        Assert.IsNull(value);
+
+        Type(cut, "end", "month", "11");
+        Type(cut, "end", "day", "12");
+        Type(cut, "end", "year", "2026");
+        Assert.AreEqual(Nov8To12, value);
+        Assert.AreEqual(1, changes);
+        Assert.AreEqual("2026-11-08/2026-11-12", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-invalid"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Keys_that_outrun_the_focus_move_into_the_end_go_there()
+    {
+        // Blazor Server: the focus moves after a round trip, so keys keep arriving from the start's segments.
+        BitBhDateRange? value = null;
+        var cut = Render(@<BitBhDateRangePicker Culture="En" ValueChanged="v => value = v" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Segment(cut, "start", "month").Focus();
+        foreach (var key in "1182026111220") Segment(cut, "start", "month").Press(key.ToString());
+        // The year of the start, then the late focus event of the end's month: typing goes on in the end's year.
+        Segment(cut, "end", "month").Focus();
+        foreach (var key in "26") Segment(cut, "start", "year").Press(key.ToString());
+
+        Assert.AreEqual(Nov8To12, value);
+        Assert.AreEqual("11/8/2026", Shown(cut, "start"));
+        Assert.AreEqual("11/12/2026", Shown(cut, "end"));
+    }
+
+    [TestMethod]
+    public void Arrows_and_backspace_cross_between_the_start_and_the_end()
+    {
+        var cut = Render(@<BitBhDateRangePicker Culture="En" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+
+        Segment(cut, "start", "year").Focus();
+        Segment(cut, "start", "year").Press("ArrowRight");
+        Assert.AreEqual(Segment(cut, "end", "month").Id, this.LastFocusRequest());
+        Segment(cut, "end", "month").Focus();
+
+        Segment(cut, "end", "month").Press("ArrowLeft");
+        Assert.AreEqual(Segment(cut, "start", "year").Id, this.LastFocusRequest());
+        Segment(cut, "start", "year").Focus();
+
+        Segment(cut, "end", "month").Focus();
+        // Backspace on an empty first segment of the end goes back to the start.
+        Segment(cut, "end", "month").Press("Backspace");
+        Assert.AreEqual(Segment(cut, "start", "year").Id, this.LastFocusRequest());
+
+        // Nothing before the start and nothing after the end.
+        var before = this.LastFocusRequest();
+        Segment(cut, "start", "month").Focus();
+        Segment(cut, "start", "month").Press("ArrowLeft");
+        Segment(cut, "end", "year").Focus();
+        Segment(cut, "end", "year").Press("ArrowRight");
+        Assert.AreEqual(before, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void An_end_before_the_start_marks_the_picker_invalid_and_has_no_value()
+    {
+        var values = new List<BitBhDateRange?>();
+        var cut = Render(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" ValueChanged="v => values.Add(v)" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+
+        Segment(cut, "end", "day").Focus();
+        Segment(cut, "end", "day").Press("Home");
+        Assert.AreEqual("11/1/2026", Shown(cut, "end"));
+        CollectionAssert.AreEqual(new BitBhDateRange?[] { null }, values);
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-invalid"));
+        Assert.AreEqual("true", Segment(cut, "start", "day").GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", Segment(cut, "end", "day").GetAttribute("aria-invalid"));
+
+        Segment(cut, "end", "day").Press("End");
+        Assert.AreEqual(new BitBhDateRange(new DateOnly(2026, 11, 8), new DateOnly(2026, 11, 30)), values[^1]);
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-invalid"));
+    }
+
+    [TestMethod]
+    public void The_calendar_opens_in_range_mode_on_the_start()
+    {
+        var cut = Labelled(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12">@Parts()</BitBhDateRangePicker>);
+
+        cut.Find(".trigger").Click();
+        var dialog = cut.Find("[role=dialog]");
+        Assert.AreEqual("Stay", dialog.AccessibleName());
+        Assert.AreEqual("open", cut.Find(".group").GetAttribute("data-state"));
+        Assert.AreEqual(dialog.Id, cut.Find(".trigger").GetAttribute("aria-controls"));
+
+        Assert.AreEqual("range", cut.Find("[data-selection-mode]").GetAttribute("data-selection-mode"));
+        Assert.AreEqual("true", cut.Find("[role=grid]").GetAttribute("aria-multiselectable"));
+        Assert.IsTrue(Cell(cut, "2026-11-08").HasAttribute("data-selection-start"));
+        Assert.IsTrue(Cell(cut, "2026-11-10").HasAttribute("data-range-middle"));
+        Assert.IsTrue(Cell(cut, "2026-11-12").HasAttribute("data-selection-end"));
+        Assert.IsTrue(Cell(cut, "2026-11-08").HasAttribute("data-bit-bh-autofocus"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Picking_two_dates_sets_the_range_closes_the_popover_and_fills_both_inputs()
+    {
+        var cut = Render(
+            @<Stateful T="BitBhDateRange" Initial="Nov8To12">
+                <BitBhDateRangePicker Culture="En" Value="context.Value" ValueChanged="context.Set" aria-label="Stay">@Parts()</BitBhDateRangePicker>
+                <output>@context.Value</output>
+            </Stateful>);
+
+        cut.Find(".trigger").Click();
+        Cell(cut, "2026-11-20").Click();
+        // The first press sets one end: still open, nothing changed.
+        Assert.HasCount(1, cut.FindAll("[role=dialog]"));
+        Assert.AreEqual("2026-11-08/2026-11-12", Text(cut.Find("output")));
+
+        Cell(cut, "2026-11-16").Click();
+        Assert.AreEqual("2026-11-16/2026-11-20", Text(cut.Find("output")));
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+        Assert.AreEqual("11/16/2026", Shown(cut, "start"));
+        Assert.AreEqual("11/20/2026", Shown(cut, "end"));
+        Assert.IsTrue(Announcer.Messages.Contains("Selected range: Monday, November 16, 2026 to Friday, November 20, 2026"));
+    }
+
+    [TestMethod]
+    public void Escape_drops_a_half_picked_range_then_closes()
+    {
+        var cut = Render(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+
+        Segment(cut, "start", "day").Press("ArrowDown", alt: true);
+        Assert.HasCount(1, cut.FindAll("[role=dialog]"));
+        Cell(cut, "2026-11-20").Click();
+        Assert.IsTrue(cut.Find("[data-selection-mode]").HasAttribute("data-picking"));
+        Cell(cut, "2026-11-20").Press("Escape");
+        Assert.IsFalse(cut.Find("[data-selection-mode]").HasAttribute("data-picking"));
+        Assert.HasCount(1, cut.FindAll("[role=dialog]"));
+
+        cut.Find("[role=dialog]").Press("Escape");
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+        Assert.AreEqual("11/8/2026", Shown(cut, "start"));
+    }
+
+    [TestMethod]
+    public void Limits_and_unavailable_dates_reach_the_calendar_and_mark_a_typed_range_invalid()
+    {
+        var cut = Render(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" Min="new DateOnly(2026, 11, 5)"
+                                          IsDateUnavailable="d => d.Day == 10" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        // The 10th is in the range.
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-invalid"));
+
+        cut.Find(".trigger").Click();
+        Assert.IsTrue(Cell(cut, "2026-11-04").HasAttribute("data-disabled"));
+        Assert.IsTrue(Cell(cut, "2026-11-10").HasAttribute("data-unavailable"));
+        Cell(cut, "2026-11-11").Click();
+        // A range can't span the 10th: the dates before it are out of reach.
+        Assert.IsTrue(Cell(cut, "2026-11-09").HasAttribute("data-disabled"));
+        Cell(cut, "2026-11-14").Click();
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-invalid"));
+
+        var nonContiguous = Render(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" AllowsNonContiguousRanges="true"
+                                                    IsDateUnavailable="d => d.Day == 10" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.IsFalse(nonContiguous.Find(".group").HasAttribute("data-invalid"));
+    }
+
+    [TestMethod]
+    public void A_range_set_from_outside_fills_and_empties_both_inputs()
+    {
+        var cut = Render(
+            @<Stateful T="BitBhDateRange" Initial="Nov8To12">
+                <BitBhDateRangePicker Culture="De" Value="context.Value" ValueChanged="context.Set" aria-label="Aufenthalt">@Parts()</BitBhDateRangePicker>
+                <button id="next" @onclick="() => context.Set(new BitBhDateRange(new DateOnly(2027, 1, 2), new DateOnly(2027, 1, 9)))">Next</button>
+                <button id="clear" @onclick="() => context.Set(null)">Clear</button>
+            </Stateful>);
+
+        Assert.AreEqual("08.11.2026", Shown(cut, "start"));
+        cut.Find("#next").Click();
+        Assert.AreEqual("02.01.2027", Shown(cut, "start"));
+        Assert.AreEqual("09.01.2027", Shown(cut, "end"));
+        cut.Find("#clear").Click();
+        Assert.AreEqual("dd.mm.yyyy", Shown(cut, "start"));
+        Assert.AreEqual("dd.mm.yyyy", Shown(cut, "end"));
+
+        // A half-typed range has no value yet: the start keeps what was typed.
+        Segment(cut, "start", "day").Focus();
+        Segment(cut, "start", "day").Press("ArrowUp");
+        Assert.AreNotEqual("dd.mm.yyyy", Shown(cut, "start"));
+    }
+
+    [TestMethod]
+    public void Focus_within_either_input_marks_the_group_focused()
+    {
+        var cut = Render(@<BitBhDateRangePicker Culture="En" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-focused"));
+        Segment(cut, "end", "day").Focus();
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-focused"));
+        Assert.IsTrue(Input(cut, "end").HasAttribute("data-focused"));
+        Assert.IsFalse(Input(cut, "start").HasAttribute("data-focused"));
+        Segment(cut, "end", "day").Blur();
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-focused"));
+    }
+
+    [TestMethod]
+    public void Disabled_and_read_only_pickers()
+    {
+        BitBhDateRange? value = null;
+        var disabled = Render(@<BitBhDateRangePicker Culture="En" Disabled="true" ValueChanged="v => value = v" Name="stay" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.IsEmpty(disabled.TabSequence());
+        Assert.IsTrue(disabled.Find(".trigger").HasAttribute("disabled"));
+        Assert.IsEmpty(disabled.FindAll("input[type=hidden]"));
+        disabled.Find(".trigger").Click();
+        Assert.IsEmpty(disabled.FindAll("[role=dialog]"));
+        disabled.ShouldBeAccessible();
+
+        var readOnly = Render(@<BitBhDateRangePicker Culture="En" ReadOnly="true" DefaultValue="Nov8To12" ValueChanged="v => value = v" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.HasCount(7, readOnly.TabSequence());
+        Segment(readOnly, "start", "day").Focus();
+        Segment(readOnly, "start", "day").Press("ArrowUp");
+        readOnly.Find(".trigger").Click();
+        Cell(readOnly, "2026-11-20").Click();
+        Cell(readOnly, "2026-11-24").Click();
+        Assert.IsNull(value);
+        Assert.AreEqual("11/8/2026", Shown(readOnly, "start"));
+        readOnly.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Edit_form_validation_hidden_input_and_the_label_focusing_the_start()
+    {
+        var model = new Booking();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Stay</BitBhLabel>
+                    <BitBhDateRangePicker Culture="En" @bind-Value="model.Stay" Name="stay">@Parts()</BitBhDateRangePicker>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        cut.Find("form").Submit();
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-invalid"));
+        Assert.Contains("required", cut.Find(".group").AccessibleDescription());
+        Assert.AreEqual("true", Segment(cut, "end", "year").GetAttribute("aria-invalid"));
+
+        cut.Find("label").Click();
+        Assert.AreEqual(Segment(cut, "start", "month").Id, this.LastFocusRequest());
+
+        cut.Find(".trigger").Click();
+        Cell(cut, cut.Find("td[tabindex='0']").GetAttribute("data-date")!).Click();
+        Cell(cut, cut.Find("td[tabindex='0']").GetAttribute("data-date")!).Click();
+        Assert.IsNotNull(model.Stay);
+        Assert.AreEqual(model.Stay!.ToString(), cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find(".group").HasAttribute("data-invalid"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Inputs_render_their_segments_by_hand_and_take_their_own_name()
+    {
+        var cut = Render(
+            @<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" aria-label="Stay">
+                <BitBhDatePickerGroup class="group">
+                    <BitBhDateRangePickerInput Part="BitBhDateRangePart.Start" aria-label="Check-in">
+                        <BitBhDateFieldSegments>
+                            <BitBhDateFieldSegment Segment="context" class="@(context.IsEditable ? "seg" : "sep")" />
+                        </BitBhDateFieldSegments>
+                    </BitBhDateRangePickerInput>
+                    <BitBhDateRangePickerInput Part="BitBhDateRangePart.End" aria-label="Check-out" />
+                </BitBhDatePickerGroup>
+            </BitBhDateRangePicker>);
+
+        Assert.HasCount(3, cut.FindAll(".seg"));
+        Assert.AreEqual("Check-in", Input(cut, "start").AccessibleName());
+        Assert.AreEqual("Check-out", Input(cut, "end").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "A stay is required.")]
+        public BitBhDateRange? Stay { get; set; }
+    }
+}

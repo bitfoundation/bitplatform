@@ -1,0 +1,216 @@
+﻿@using Microsoft.Extensions.DependencyInjection
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    // A Content-Security-Policy without 'unsafe-inline' in style-src refuses every style attribute. With
+    // BitBhOptions.StrictCsp on, the components render none of their own: their styles go in data-bit-bh-style,
+    // which the runtime applies through the CSSOM (bit-bheadless-csp.js).
+
+    private const string Strict = BitBhAttributeUtilities.StrictStyleAttribute;
+
+    private void UseStrictCsp() => Services.AddSingleton(new BitBhOptions { StrictCsp = true });
+
+    /// <summary>Every component that sets a style of its own, open where it only renders its parts while open.</summary>
+    private static RenderFragment Styled() =>
+        @<div>
+            <BitBhVisuallyHidden>Hidden</BitBhVisuallyHidden>
+            <BitBhVisuallyHidden Focusable="true"><a href="#main">Skip to content</a></BitBhVisuallyHidden>
+            <BitBhLiveRegion VisuallyHidden="true">Saved</BitBhLiveRegion>
+            <BitBhProgress Value="30" aria-label="Upload"><BitBhProgressIndicator /></BitBhProgress>
+            <BitBhMeter Value="0.5" aria-label="Disk" />
+            <BitBhSlider DefaultValues="@(new double[] { 20, 60 })">
+                <BitBhSliderTrack><BitBhSliderRange /></BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="From" />
+                <BitBhSliderThumb aria-label="To" />
+                <BitBhSliderMarker Value="50">50</BitBhSliderMarker>
+            </BitBhSlider>
+            <BitBhAngleSlider DefaultValue="90">
+                <BitBhAngleSliderMarker Value="0" />
+                <BitBhAngleSliderThumb aria-label="Rotation" />
+            </BitBhAngleSlider>
+            <BitBhColorArea DefaultValue="@BitBhColor.FromRgb(255, 0, 0)"><BitBhColorAreaThumb aria-label="Color" /></BitBhColorArea>
+            <BitBhColorSlider DefaultValue="@BitBhColor.FromRgb(255, 0, 0)" Channel="BitBhColorChannel.Hue">
+                <BitBhSliderTrack />
+                <BitBhSliderThumb aria-label="Hue" />
+            </BitBhColorSlider>
+            <BitBhColorSwatch Color="@BitBhColor.FromRgb(0, 128, 0)" />
+            <BitBhSplitter>
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize" />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>
+            <BitBhScrollArea>
+                <BitBhScrollAreaViewport><p>Long text</p></BitBhScrollAreaViewport>
+                <BitBhScrollAreaScrollbar><BitBhScrollAreaThumb /></BitBhScrollAreaScrollbar>
+                <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal"><BitBhScrollAreaThumb /></BitBhScrollAreaScrollbar>
+                <BitBhScrollAreaCorner />
+            </BitBhScrollArea>
+            <BitBhAspectRatio Ratio="2"><span>Wide</span></BitBhAspectRatio>
+            <BitBhTree TValue="string" aria-label="Files">
+                <BitBhTreeItem TValue="string" Value="@("readme")" Label="readme.md">readme.md</BitBhTreeItem>
+            </BitBhTree>
+            <BitBhGrid aria-label="Files" TreeGrid="true">
+                <BitBhGridRow Key="src" Level="1"><BitBhGridCell>src</BitBhGridCell></BitBhGridRow>
+            </BitBhGrid>
+            <BitBhColumnResizer DefaultWidth="120" aria-label="Resize Name column" />
+            <BitBhTooltip>
+                <BitBhTooltipTrigger aria-label="Save">S</BitBhTooltipTrigger>
+                <BitBhTooltipContent>Save</BitBhTooltipContent>
+            </BitBhTooltip>
+            <BitBhCommand Label="Commands">
+                <BitBhCommandInput />
+                <BitBhCommandList>
+                    <BitBhCommandItem>Open</BitBhCommandItem>
+                </BitBhCommandList>
+            </BitBhCommand>
+            <BitBhDialog DefaultOpen="true">
+                <BitBhDialogBackdrop />
+                <BitBhDialogPanel aria-label="Settings">Settings</BitBhDialogPanel>
+            </BitBhDialog>
+            <BitBhDrawer DefaultOpen="true">
+                <BitBhDrawerBackdrop />
+                <BitBhDrawerPanel aria-label="Filters"><BitBhDrawerHandle /></BitBhDrawerPanel>
+            </BitBhDrawer>
+        </div>;
+
+    [TestMethod]
+    public void Strict_CSP_mode_renders_no_style_attribute_and_puts_the_styles_in_data_bit_bh_style()
+    {
+        UseStrictCsp();
+        var cut = Render(Styled());
+
+        Assert.IsEmpty(cut.FindAll("[style]"), "A component rendered a style attribute in strict CSP mode.");
+
+        var styled = cut.FindAll($"[{Strict}]");
+        Assert.IsTrue(styled.Count > 20, $"Only {styled.Count} elements have a {Strict}.");
+
+        Assert.Contains("clip:rect(0,0,0,0)", cut.Find("span").GetAttribute(Strict)!);
+        Assert.AreEqual("--bit-bh-progress:30", cut.Find("[role=progressbar]").GetAttribute(Strict));
+        Assert.Contains("rotate(90deg)", cut.Find("[aria-label=Rotation]").GetAttribute(Strict)!);
+        Assert.Contains("left:100%", cut.Find("[aria-label=Color]").GetAttribute(Strict)!);
+        Assert.Contains("padding-bottom:50%", cut.Find("[data-radix-aspect-ratio-wrapper]").GetAttribute(Strict)!);
+        Assert.Contains("--bit-bh-tree-level:1", cut.Find("[role=treeitem]").GetAttribute(Strict)!);
+        Assert.AreEqual("position:fixed;inset:0;z-index:50;", cut.Find("[role=dialog]").ParentElement!.GetAttribute(Strict));
+    }
+
+    [TestMethod]
+    public void Strict_CSP_mode_leaves_the_markup_of_the_default_mode_alone()
+    {
+        var cut = Render(Styled());
+
+        Assert.IsEmpty(cut.FindAll($"[{Strict}]"));
+        Assert.Contains("clip:rect(0,0,0,0)", cut.Find("span").GetAttribute("style")!);
+        Assert.IsEmpty(JSInterop.Invocations.Where(i => i.Identifier == "styles.enable"));
+    }
+
+    [TestMethod]
+    public void The_consumer_style_stays_a_style_attribute_of_its_own()
+    {
+        UseStrictCsp();
+        var cut = Render(@<BitBhVisuallyHidden style="color:red" class="sr">Hidden</BitBhVisuallyHidden>);
+
+        var span = cut.Find("span");
+        Assert.AreEqual("color:red", span.GetAttribute("style"));
+        Assert.AreEqual("sr", span.GetAttribute("class"));
+        Assert.Contains("position:absolute", span.GetAttribute(Strict)!);
+        Assert.DoesNotContain("color", span.GetAttribute(Strict)!);
+    }
+
+    [TestMethod]
+    public void A_component_that_renders_another_hands_its_styles_down_in_data_bit_bh_style()
+    {
+        UseStrictCsp();
+        var cut = Render(
+            @<BitBhColorSlider DefaultValue="@BitBhColor.FromRgb(255, 0, 0)" Channel="BitBhColorChannel.Hue" style="width:10rem">
+                <BitBhSliderTrack />
+                <BitBhSliderThumb aria-label="Hue" />
+            </BitBhColorSlider>);
+
+        var root = cut.Find("[data-channel]");
+        Assert.AreEqual("width:10rem", root.GetAttribute("style"));
+        Assert.StartsWith("--bit-bh-color-slider-gradient:linear-gradient(to right, #ff0000", root.GetAttribute(Strict)!);
+        // Handed down styles leave the slider's defaults out, as a handed down style attribute does.
+        Assert.DoesNotContain("display:flex", root.GetAttribute(Strict)!);
+    }
+
+    [TestMethod]
+    public void Updated_styles_follow_the_state_in_data_bit_bh_style()
+    {
+        UseStrictCsp();
+        var cut = Render(
+            @<BitBhSlider DefaultValue="40">
+                <BitBhSliderTrack><BitBhSliderRange /></BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Volume" />
+            </BitBhSlider>);
+
+        Assert.Contains("40%", cut.Find("[role=slider]").GetAttribute(Strict)!);
+        cut.Find("[role=slider]").Press("End");
+        Assert.Contains("100%", cut.Find("[role=slider]").GetAttribute(Strict)!);
+        Assert.IsFalse(cut.Find("[role=slider]").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void Virtualized_options_of_one_height_render_no_style_attribute_either()
+    {
+        UseStrictCsp();
+        var items = Enumerable.Range(1, 1000).Select(i => $"Item {i}").ToArray();
+        var cut = Render(
+            @<BitBhListbox TValue="string">
+                <BitBhListboxButton TValue="string" aria-label="Item" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Items="items" Virtualize="true" ItemSize="36" Context="o">
+                    <ItemTemplate>@o.Value</ItemTemplate>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+        cut.Find("[role=combobox]").Press("ArrowDown");
+
+        // Blazor's Virtualize sizes its spacers with style attributes: strict mode uses the runtime-sized virtualizer.
+        Assert.AreEqual(BitBhVirtualizer<string>.InitialCount, cut.FindAll("[role=option]").Count);
+        Assert.IsEmpty(cut.FindAll("[style]"));
+    }
+
+    [TestMethod]
+    public void The_runtime_is_asked_once_to_apply_the_styles()
+    {
+        UseStrictCsp();
+        var cut = Render(Styled());
+        cut.Find("[aria-label=Volume], [aria-label=To]").Press("ArrowLeft");
+
+        Assert.HasCount(1, JSInterop.Invocations.Where(i => i.Identifier == "styles.enable"));
+    }
+
+    [TestMethod]
+    public void Cascaded_options_take_precedence_over_the_registered_ones()
+    {
+        UseStrictCsp();
+        var relaxed = new BitBhOptions();
+        var strict = new BitBhOptions { StrictCsp = true };
+        var cut = Render(
+            @<div>
+                <CascadingValue Value="relaxed" IsFixed="true">
+                    <BitBhVisuallyHidden data-testid="relaxed">Default mode</BitBhVisuallyHidden>
+                </CascadingValue>
+                <BitBhVisuallyHidden data-testid="registered">Registered</BitBhVisuallyHidden>
+                <CascadingValue Value="strict" IsFixed="true">
+                    <BitBhVisuallyHidden data-testid="cascaded">Strict</BitBhVisuallyHidden>
+                </CascadingValue>
+            </div>);
+
+        Assert.IsTrue(cut.Find("[data-testid=relaxed]").HasAttribute("style"));
+        Assert.IsFalse(cut.Find("[data-testid=relaxed]").HasAttribute(Strict));
+        Assert.IsTrue(cut.Find("[data-testid=registered]").HasAttribute(Strict));
+        Assert.IsTrue(cut.Find("[data-testid=cascaded]").HasAttribute(Strict));
+        Assert.IsFalse(cut.Find("[data-testid=cascaded]").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void AddBitBheadlessServices_registers_the_options()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBheadlessServices(options => options.StrictCsp = true);
+
+        using var provider = services.BuildServiceProvider();
+        Assert.IsTrue(provider.GetRequiredService<BitBhOptions>().StrictCsp);
+        Assert.IsTrue(services.Any(d => d.ServiceType == typeof(BitBhInterop)), "The other services are registered too.");
+    }
+}

@@ -8,6 +8,9 @@
     // A page excluded from interactive routing (the error page) is rendered statically, so the HttpContext
     // of the request that failed is there for it to read.
     if (HttpContext.AcceptsInteractiveRouting() is false) renderMode = null;
+    // /strict-csp runs under a policy that refuses inline styles (Program.cs), with a root of its own that renders
+    // its components in strict CSP mode (StrictCspRoutes.razor).
+    var strictCsp = HttpContext.Request.Path.StartsWithSegments(StrictCspPolicy.Path);
 }
 
 <!DOCTYPE html>
@@ -17,6 +20,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    @if (strictCsp)
+    {
+        @* Applies the components' data-bit-bh-style through the CSSOM as the page is parsed, before its first paint. *@
+        <script src="@Assets["_content/Bit.Bheadless/bit-bheadless-csp.js"]"></script>
+    }
     @* No static <title> here: every page supplies its own through <PageTitle> (Routes.razor the fallback),
        and with prerendering the HeadOutlet emits a real <title> element into this head. *@
     <meta name="description" content="bit Bheadless - accessible, unstyled UI primitives for Blazor: keyboard interaction, focus management, positioning, dismissal and WAI-ARIA semantics, styled with plain CSS or Tailwind." />
@@ -35,6 +43,7 @@
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/command.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/date-field.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/date-picker.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/date-range-picker.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/drawer.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/file-upload.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/grid.css"]" />
@@ -51,6 +60,7 @@
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/slider.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/sortable.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/splitter.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/strict-csp.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/stepper.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/tags-input.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/toast.css"]" />
@@ -114,7 +124,14 @@
    it read before the merge - the URL says /getting-started and the page is the landing page. Once the
    app is interactive its router handles every link itself and this attribute is not consulted. *@
 <body data-enhance-nav="false">
-    <Routes @rendermode="renderMode" />
+    @if (strictCsp)
+    {
+        <Bit.Bheadless.Demo.Client.Core.StrictCsp.StrictCspRoutes @rendermode="renderMode" />
+    }
+    else
+    {
+        <Routes @rendermode="renderMode" />
+    }
     @if (renderMode is InteractiveServerRenderMode)
     {
         @* The reconnect UI only means something while a circuit is alive: Blazor Server mode. *@

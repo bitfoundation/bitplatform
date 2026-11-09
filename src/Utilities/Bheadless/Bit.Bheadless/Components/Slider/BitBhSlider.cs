@@ -312,7 +312,10 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         SetDataFlag(attrs, "invalid", IsInvalid);
         SetDataFlag(attrs, "required", IsRequired);
         SetDataFlag(attrs, "dragging", _activeThumb >= 0);
-        if (GetAdditionalAttribute("style") is null && GetAdditionalAttribute("class") is null)
+        // A component built on the slider (BitBhColorSlider) hands its styles down as data-bit-bh-style in strict CSP
+        // mode, where it would hand them down as style otherwise: either way the defaults are left out.
+        if (GetAdditionalAttribute("style") is null && GetAdditionalAttribute("class") is null
+            && GetAdditionalAttribute(BitBhAttributeUtilities.StrictStyleAttribute) is null)
             attrs["style"] = Orientation == BitBhOrientation.Vertical
                 ? "position:relative;display:inline-flex;flex-direction:column;touch-action:none;user-select:none;"
                 : "position:relative;display:flex;align-items:center;touch-action:none;user-select:none;";

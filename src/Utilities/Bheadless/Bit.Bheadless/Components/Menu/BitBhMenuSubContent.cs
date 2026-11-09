@@ -49,8 +49,13 @@ public class BitBhMenuSubContent : BitBhMenuContentBase
 
     protected override BitBhFloatingRequest CreateFloatingRequest()
     {
-        var layer = new BitBhLayerOptions { Escape = false, ParentHandle = ParentLayerHandle };
+        // In a menu the pointer opened nothing has the focus: a hover layer is closed by Escape from anywhere, and
+        // closing gives the focus to the parent menu only if it went into this one - else it would take the menu over.
+        var hover = Sub?.Parent?.Root.OpenedByHover ?? false;
+        var layer = new BitBhLayerOptions { Escape = false, Hover = hover, ParentHandle = ParentLayerHandle };
         layer.BranchIds.Add(Sub?.TriggerId);
+        var focus = CreateFocusOptions(Sub?.Parent?.ContentId);
+        focus.RestoreFocusIfEntered = hover;
         return new BitBhFloatingRequest
         {
             ContentId = ContentId,
@@ -60,7 +65,7 @@ public class BitBhMenuSubContent : BitBhMenuContentBase
             Portal = EffectivePortal,
             PortalTarget = PortalTarget,
             Layer = layer,
-            Focus = CreateFocusOptions(Sub?.Parent?.ContentId),
+            Focus = focus,
         };
     }
 
@@ -74,14 +79,6 @@ public class BitBhMenuSubContent : BitBhMenuContentBase
     }
 
     internal void Refresh() => StateHasChanged();
-
-    /// <summary>Moves keyboard focus into an already-open submenu.</summary>
-    internal async Task EnterAsync(BitBhMenuFocus focus)
-    {
-        await Level.FocusAsync();
-        await Level.Items.EnsureOrderAsync(Interop);
-        Level.SetActive(focus == BitBhMenuFocus.Last ? Level.Items.Last() : Level.Items.First());
-    }
 
     public override ValueTask DisposeAsync()
     {

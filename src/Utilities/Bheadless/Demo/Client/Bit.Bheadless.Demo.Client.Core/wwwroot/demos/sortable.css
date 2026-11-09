@@ -203,3 +203,68 @@
 .sortable-lock:hover               { background: var(--color-fill); }
 .sortable-lock:focus-visible       { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sortable-lock[data-state="on"]    { background: var(--color-inverse); border-color: var(--color-inverse); color: #fff; }
+
+/* ---- Board: lists of one Group exchange items ------------------------------------ */
+
+.sortable-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    width: 100%;
+    align-items: start;
+}
+
+/* No overflow clipping on a column: the dragged card leaves it. */
+.sortable-column {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    background: var(--color-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+}
+
+.sortable-column-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.sortable-count {
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: var(--color-fill-strong);
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Room to drop into, even when the column is empty */
+.sortable-cards {
+    min-height: 5rem;
+    border-radius: 0.5rem;
+    outline: 2px dashed transparent;
+    outline-offset: 4px;
+    transition: outline-color 150ms ease, background-color 150ms ease;
+}
+
+/* data-drop-target: the columns that take the dragged card; data-drag-over: the one under the pointer. */
+.sortable-cards[data-drop-target] { outline-color: var(--color-border-strong); }
+.sortable-cards[data-drag-over]   { outline-color: var(--color-primary); background: var(--color-accent-subtle); }
+
+/* data-empty: no cards */
+.sortable-cards[data-empty] {
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed var(--color-border-strong);
+}
+
+.sortable-cards[data-empty]::before {
+    content: "No cards";
+    color: var(--color-muted);
+    font-size: 0.8rem;
+}

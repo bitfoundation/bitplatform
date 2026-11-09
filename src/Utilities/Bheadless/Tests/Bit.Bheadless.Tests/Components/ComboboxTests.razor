@@ -523,4 +523,37 @@
         cut.Find("input").Input("ch");
         await Announcer.WaitForAsync("1 option available");
     }
+
+    [TestMethod]
+    public void Options_of_different_heights_start_over_for_a_new_query_only()
+    {
+        // The runtime's measurements belong to the list they were made on: another list (a new query) gets a new
+        // epoch, the same items in a list rebuilt by every render keep theirs.
+        var h = new Harness();
+        var cut = Render(
+            @<BitBhCombobox TValue="string" @bind-Value="h.Selected" OnQueryChange="q => h.Query = q">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string" Items="h.Filtered.ToList()" Virtualize="true" VariableItemSize="true" Context="o">
+                    <ItemTemplate>@o.Value</ItemTemplate>
+                    <ChildContent><BitBhComboboxEmpty TValue="string">No fruit.</BitBhComboboxEmpty></ChildContent>
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+        string Range() => cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range")!;
+
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual(5, cut.FindAll("[role=option]").Count);
+        var epoch = Range().Split(' ')[3];
+        Assert.AreEqual($"0 5 5 {epoch}", Range());
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual($"0 5 5 {epoch}", Range());
+
+        cut.Find("input").Input("b");
+        Assert.AreEqual(2, cut.FindAll("[role=option]").Count);
+        Assert.AreEqual($"0 2 2 {int.Parse(epoch) + 1}", Range());
+        Assert.AreEqual("Banana", Text(ActiveOf(cut.Find("input"))));
+
+        cut.Find("input").Input("zz");
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.Contains("No fruit.", cut.Markup);
+    }
 }

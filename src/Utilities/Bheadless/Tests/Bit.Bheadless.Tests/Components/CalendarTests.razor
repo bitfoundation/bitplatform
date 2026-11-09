@@ -147,6 +147,31 @@
     }
 
     [TestMethod]
+    public void Keys_pressed_before_a_focus_move_lands_go_to_the_date_it_is_moving_to()
+    {
+        // On Blazor Server the focus move an arrow key asks for is a round trip: the keys pressed meanwhile still
+        // come from the cell left behind.
+        DateOnly? value = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date" ValueChanged="v => value = v">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Press("ArrowDown");
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-16", Focused(cut));
+
+        // The overtaken move landing late does not pull the focused date back.
+        Cell(cut, "2026-11-15").Focus();
+        Assert.AreEqual("2026-11-16", Focused(cut));
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Assert.AreEqual(new DateOnly(2026, 11, 16), value);
+
+        // Once the focus has landed, a cell the reader moves to is theirs again.
+        Cell(cut, "2026-11-16").Focus();
+        Cell(cut, "2026-11-20").Focus();
+        Assert.AreEqual("2026-11-20", Focused(cut));
+    }
+
+    [TestMethod]
     public void Enter_space_and_click_select_a_date_and_announce_it()
     {
         DateOnly? value = null;

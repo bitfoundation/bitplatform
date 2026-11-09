@@ -41,4 +41,18 @@ public static class BitBhServiceCollectionExtensions
         services.TryAddScoped<BitBhToaster>();
         return services;
     }
+
+    /// <summary>
+    /// Registers the services used by Bheadless components (see <see cref="AddBitBheadlessServices(IServiceCollection)"/>)
+    /// and the library-wide settings <paramref name="configure"/> sets (<see cref="BitBhOptions"/>), for example
+    /// <code>builder.Services.AddBitBheadlessServices(options =&gt; options.StrictCsp = true);</code>
+    /// </summary>
+    public static IServiceCollection AddBitBheadlessServices(this IServiceCollection services, Action<BitBhOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var options = new BitBhOptions();
+        configure(options);
+        services.AddSingleton(options);
+        return services.AddBitBheadlessServices(configureStrings: null);
+    }
 }

@@ -3427,6 +3427,75 @@
 }
 
 /* ============================================================
+   Virtualized options of different heights — purely consumer-defined
+   (Listbox and Combobox pages → "Options of different heights (virtualized)")
+   ============================================================ */
+
+/* Scroll containers positioned by Anchor (position: fixed) */
+.listbox-variable,
+.combobox-variable {
+    z-index: 9999;
+    width: 20rem;
+    max-width: calc(100vw - 2rem);
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.listbox-variable {
+    height: 18rem;
+}
+
+.combobox-variable {
+    max-height: 18rem;
+}
+
+.listbox-variable[hidden],
+.combobox-variable[hidden] {
+    display: none;
+}
+
+/* No height: every option is as tall as its content (VariableItemSize measures them). */
+.listbox-variable > [role="option"],
+.combobox-variable > [role="option"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.listbox-variable > [role="option"][data-active],
+.combobox-variable > [role="option"][data-active] {
+    background: var(--color-accent-subtle);
+}
+
+.listbox-variable > [role="option"][data-selected] .listbox-variable-title,
+.combobox-variable > [role="option"][data-selected] .combobox-variable-title {
+    color: var(--color-accent-text);
+}
+
+.listbox-variable-title,
+.combobox-variable-title {
+    font-weight: 600;
+}
+
+.listbox-variable-details,
+.combobox-variable-excerpt {
+    color: var(--color-text-tertiary);
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+/* ============================================================
    EditForm validation — purely consumer-defined
    (Field page → "EditForm validation")
    ============================================================ */

@@ -1,0 +1,104 @@
+﻿@page "/strict-csp"
+
+@* A sample of every kind of style the components set themselves - static ones (a visually hidden
+   label, a splitter's flex layout, a scroll area's viewport, a modal dialog's positioning container)
+   and ones that follow the state (a slider thumb's position, a progress value, a tree level) - for
+   the E2E suite to check under a strict policy. Styled with demos/strict-csp.css only: a style
+   attribute of the page's own would be refused like any other. Rendered by StrictCspRoutes, not by the
+   site's router (see there). *@
+
+<PageTitle>Strict Content-Security-Policy | Bheadless</PageTitle>
+
+<BitBhVisuallyHidden Focusable="true" data-testid="skip">
+    <a href="#csp-samples" class="csp-skip">Skip to the samples</a>
+</BitBhVisuallyHidden>
+
+<h1>Strict Content-Security-Policy</h1>
+<p>
+    This page is served with <code>style-src 'self'</code> and renders its components with
+    <code>BitBhOptions.StrictCsp</code>: none of them renders a <code>style</code> attribute.
+</p>
+
+<div id="csp-samples" class="csp-samples">
+    <section aria-labelledby="csp-slider">
+        <h2 id="csp-slider">Slider</h2>
+        <BitBhSlider DefaultValue="40" data-testid="slider">
+            <BitBhSliderTrack data-testid="slider-track"><BitBhSliderRange data-testid="slider-range" /></BitBhSliderTrack>
+            <BitBhSliderThumb aria-label="Volume" data-testid="slider-thumb" />
+        </BitBhSlider>
+    </section>
+
+    <section aria-labelledby="csp-progress">
+        <h2 id="csp-progress">Progress</h2>
+        <BitBhProgress Value="40" aria-label="Upload" data-testid="progress">
+            <BitBhProgressIndicator data-testid="progress-indicator" />
+        </BitBhProgress>
+    </section>
+
+    <section aria-labelledby="csp-splitter">
+        <h2 id="csp-splitter">Splitter</h2>
+        <BitBhSplitter data-testid="splitter">
+            <BitBhSplitterPanel data-testid="splitter-first">Navigation</BitBhSplitterPanel>
+            <BitBhSplitterHandle aria-label="Resize the navigation" data-testid="splitter-handle" />
+            <BitBhSplitterPanel>Content</BitBhSplitterPanel>
+        </BitBhSplitter>
+    </section>
+
+    <section aria-labelledby="csp-scroll-area">
+        <h2 id="csp-scroll-area">Scroll area</h2>
+        <BitBhScrollArea data-testid="scroll-area">
+            <BitBhScrollAreaViewport Focusable="true" aria-label="Release notes" data-testid="scroll-viewport">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <p>Release note @i</p>
+                }
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar><BitBhScrollAreaThumb /></BitBhScrollAreaScrollbar>
+        </BitBhScrollArea>
+    </section>
+
+    <section aria-labelledby="csp-aspect-ratio">
+        <h2 id="csp-aspect-ratio">Aspect ratio</h2>
+        <div class="csp-ratio-frame">
+            <BitBhAspectRatio Ratio="2" data-testid="aspect-ratio">
+                <span class="csp-ratio-content">2:1</span>
+            </BitBhAspectRatio>
+        </div>
+    </section>
+
+    <section aria-labelledby="csp-tree">
+        <h2 id="csp-tree">Tree</h2>
+        <BitBhTree TValue="string" aria-labelledby="csp-tree" DefaultExpandedValues="@(["src"])">
+            <BitBhTreeItem TValue="string" Value="@("src")" Label="src" data-testid="tree-root">
+                <span>src</span>
+                <BitBhTreeGroup TValue="string">
+                    <BitBhTreeItem TValue="string" Value="@("app")" Label="app.cs" data-testid="tree-child">app.cs</BitBhTreeItem>
+                </BitBhTreeGroup>
+            </BitBhTreeItem>
+        </BitBhTree>
+    </section>
+
+    <section aria-labelledby="csp-dialog">
+        <h2 id="csp-dialog">Dialog</h2>
+        <BitBhButton class="csp-button" OnClick="() => _dialogOpen = true" data-testid="dialog-open">Open the dialog</BitBhButton>
+        <BitBhDialog Open="_dialogOpen" OnClose="() => _dialogOpen = false" data-testid="dialog">
+            <BitBhDialogBackdrop data-testid="dialog-backdrop" />
+            <BitBhDialogPanel data-testid="dialog-panel">
+                <BitBhDialogTitle>Settings</BitBhDialogTitle>
+                <BitBhButton class="csp-button" OnClick="() => _dialogOpen = false">Close</BitBhButton>
+            </BitBhDialogPanel>
+        </BitBhDialog>
+    </section>
+
+    <section aria-labelledby="csp-tooltip">
+        <h2 id="csp-tooltip">Tooltip</h2>
+        <BitBhTooltip DelayDuration="0" data-testid="tooltip">
+            <BitBhTooltipTrigger class="csp-button" data-testid="tooltip-trigger">Save</BitBhTooltipTrigger>
+            <BitBhTooltipContent class="csp-tooltip">Save (Ctrl+S)</BitBhTooltipContent>
+        </BitBhTooltip>
+    </section>
+</div>
+
+@code {
+    private bool _dialogOpen;
+}

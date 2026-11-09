@@ -1,6 +1,9 @@
 ﻿namespace Bit.Bheadless;
 
-/// <summary>The part of a date or time a segment of a <see cref="BitBhDateField"/> / <see cref="BitBhTimeField"/> edits.</summary>
+/// <summary>
+/// The part of a date or time a segment of a <see cref="BitBhDateField"/> / <see cref="BitBhTimeField"/> /
+/// <see cref="BitBhDateTimeField"/> edits.
+/// </summary>
 public enum BitBhDateSegmentType
 {
     /// <summary>Text between the editable segments (a separator such as "/", "." or ":"). Not editable.</summary>
@@ -28,7 +31,7 @@ public enum BitBhDateSegmentType
     DayPeriod,
 }
 
-/// <summary>Whether a <see cref="BitBhTimeField"/> shows a 12-hour clock (with AM / PM) or a 24-hour clock.</summary>
+/// <summary>Whether a <see cref="BitBhTimeField"/> or <see cref="BitBhDateTimeField"/> shows a 12-hour clock (with AM / PM) or a 24-hour clock.</summary>
 public enum BitBhHourCycle
 {
     /// <summary>1–12 with an AM / PM segment.</summary>
@@ -38,7 +41,7 @@ public enum BitBhHourCycle
     H24,
 }
 
-/// <summary>The smallest unit a <see cref="BitBhTimeField"/> edits.</summary>
+/// <summary>The smallest unit a <see cref="BitBhTimeField"/> or <see cref="BitBhDateTimeField"/> edits.</summary>
 public enum BitBhTimeGranularity
 {
     /// <summary>Hours only (minutes and seconds are 0).</summary>

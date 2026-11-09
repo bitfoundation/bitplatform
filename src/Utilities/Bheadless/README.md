@@ -63,12 +63,12 @@ Targets .NET 10 and 11.
 
 | Area | Components |
 | --- | --- |
-| **Overlays** | `BitBhDialog` (nested-dialog hooks), `BitBhAlertDialog`, `BitBhPopover` (opens on click or hover), `BitBhTooltip` (+ `BitBhTooltipProvider`), `BitBhHoverCard`, `BitBhDrawer` (bottom sheets and side panels, swipe to dismiss, nesting), `BitBhPortal` |
-| **Menus & navigation** | `BitBhMenu` (submenus, checkbox / radio items, groups, labels), `BitBhMenubar`, `BitBhContextMenu`, `BitBhPagination` (page range with gaps, buttons or links), `BitBhBreadcrumbs`, `BitBhStepper` (linear or free, validation per step), `BitBhTableOfContents` (scroll spy), `BitBhNavigationMenu` (site navigation: hover intent, shared viewport, indicator, submenus) |
-| **Selection** | `BitBhListbox` (single / multi, sections, typeahead, virtualized), `BitBhCombobox` (autocomplete, multi, sections, creatable values, clear button, result-count announcements, virtualized), `BitBhCommand` / `BitBhCommandDialog` (command palette with fuzzy ranking and nested pages) |
-| **Hierarchies & data** | `BitBhTree` (single / multi / tri-state checkboxes, lazy loading), `BitBhGrid` (data grid and treegrid with cell navigation, row selection and resizable columns - `BitBhColumnResizer`), `BitBhSortable` (pointer and keyboard reordering with announcements) |
+| **Overlays** | `BitBhDialog` (nested-dialog hooks), `BitBhAlertDialog`, `BitBhPopover` (opens on click or hover), `BitBhTooltip` (+ `BitBhTooltipProvider`), `BitBhHoverCard`, `BitBhDrawer` (bottom sheets and side panels, swipe to dismiss, snap points, nesting), `BitBhPortal` |
+| **Menus & navigation** | `BitBhMenu` (submenus, checkbox / radio items, groups, labels, opens on click or hover), `BitBhMenubar` (application bars and hover-driven site navigation), `BitBhContextMenu`, `BitBhPagination` (page range with gaps, buttons or links), `BitBhBreadcrumbs`, `BitBhStepper` (linear or free, validation per step), `BitBhTableOfContents` (scroll spy), `BitBhNavigationMenu` (site navigation: hover intent, shared viewport, indicator, submenus) |
+| **Selection** | `BitBhListbox` (single / multi, sections, typeahead, virtualized - options of one height or of different heights), `BitBhCombobox` (autocomplete, multi, sections, creatable values, clear button, result-count announcements, virtualized - options of one height or of different heights), `BitBhCommand` / `BitBhCommandDialog` (command palette with fuzzy ranking and nested pages) |
+| **Hierarchies & data** | `BitBhTree` (single / multi / tri-state checkboxes, lazy loading), `BitBhGrid` (data grid and treegrid with cell navigation, row selection and resizable columns - `BitBhColumnResizer`), `BitBhSortable` (pointer and keyboard reordering with announcements; drag and drop between the lists of a `Group` - kanban boards, accept-only / give-only lists, empty drop zones - by pointer or keyboard) |
 | **Disclosure** | `BitBhTabGroup` (+ `BitBhSelectionIndicator`), `BitBhAccordion`, `BitBhDisclosure`, `BitBhCollapsible`, `BitBhCarousel` (APG carousel: swipe, indicators, autoplay with rotation control) |
-| **Form controls** | `BitBhField` (`BitBhLabel`, `BitBhDescription`, `BitBhErrorMessage`, `BitBhInput`, `BitBhSelect`, `BitBhTextarea`; touched / dirty / filled hooks), `BitBhFieldset`, `BitBhCheckbox` (+ `BitBhCheckboxGroup`, select-all), `BitBhSwitch`, `BitBhRadioGroup`, `BitBhSlider` (range, vertical, push / swap thumbs, tick marks), `BitBhAngleSlider` (dial), `BitBhToggle`, `BitBhToggleGroup`, `BitBhNumberField` (any numeric type, culture-aware format and parsing, steppers, scrub area), `BitBhPinInput` (one-time codes, paste and SMS autofill), `BitBhTagsInput`, `BitBhRating` (half values), `BitBhEditable` (inline editing), `BitBhPasswordField` (show / hide toggle), `BitBhSearchField`, `BitBhFileUpload` (drop zone, picker triggers, validation), `BitBhColorArea` / `BitBhColorSlider` / `BitBhColorSwatch` / `BitBhColorField` (around `BitBhColor`), `BitBhCalendar` (single / range / multiple dates, several months, min / max / unavailable dates, the culture's own calendar), `BitBhDateField` / `BitBhTimeField` (segmented, culture-ordered), `BitBhDatePicker` (date field + calendar popover) |
+| **Form controls** | `BitBhField` (`BitBhLabel`, `BitBhDescription`, `BitBhErrorMessage`, `BitBhInput`, `BitBhSelect`, `BitBhTextarea`; touched / dirty / filled hooks), `BitBhFieldset`, `BitBhCheckbox` (+ `BitBhCheckboxGroup`, select-all), `BitBhSwitch`, `BitBhRadioGroup`, `BitBhSlider` (range, vertical, push / swap thumbs, tick marks), `BitBhAngleSlider` (dial), `BitBhToggle`, `BitBhToggleGroup`, `BitBhNumberField` (any numeric type, culture-aware format and parsing, steppers, scrub area), `BitBhPinInput` (one-time codes, paste and SMS autofill), `BitBhTagsInput`, `BitBhRating` (half values), `BitBhEditable` (inline editing), `BitBhPasswordField` (show / hide toggle), `BitBhSearchField`, `BitBhFileUpload` (drop zone, picker triggers, validation), `BitBhColorArea` / `BitBhColorSlider` / `BitBhColorSwatch` / `BitBhColorField` (around `BitBhColor`), `BitBhCalendar` (single / range / multiple dates, several months, min / max / unavailable dates, the culture's own calendar), `BitBhDateField` / `BitBhTimeField` / `BitBhDateTimeField` (segmented, culture-ordered, 12- / 24-hour), `BitBhDatePicker` / `BitBhDateTimePicker` (date or date-time field + calendar popover), `BitBhDateRangePicker` (start and end inputs typed in one go + range calendar popover) |
 | **Layout & feedback** | `BitBhToolbar`, `BitBhSeparator`, `BitBhProgress`, `BitBhMeter`, `BitBhToaster` / `BitBhToastViewport` (update, promise toasts, stacking, swipe to dismiss), `BitBhAvatar`, `BitBhAspectRatio`, `BitBhButton`, `BitBhCloseButton`, `BitBhClipboard`, `BitBhScrollArea` (custom scrollbars over native scrolling), `BitBhSplitter` (resizable, collapsible, nestable panels) |
 | **Accessibility utilities** | `BitBhFocusScope` / `BitBhFocusTrap`, `BitBhRovingFocusGroup`, `BitBhVisuallyHidden`, `BitBhLiveRegion`, `IBitBhAnnouncer`, `BitBhHotkey`, `BitBhDirectionProvider`, `BitBhDataInteractive`, `BitBhTransition`, `BitBhSelectionIndicator`, `BitBhAccessibleIcon`, `BitBhLandmarkNavigation` (F6 between landmarks), `BitBhStrings` (localizable built-in text) |
 
@@ -178,12 +178,13 @@ Placements: `top | right | bottom | left`, optionally with `start` / `end` - or 
 - Escape and outside interaction dismiss the **topmost** layer only; `OnDismissRequest` lets you cancel (`r.Cancel = true`). A cancelled request leaves the layer dismissable by the next press.
 - A surface closes with the surface it was opened from (a submenu with its menu, a popover with the dialog it is in); its `OnDismissRequest` sees `BitBhDismissReason.ParentClosed`, which cannot be cancelled.
 - Modals (`BitBhDialog`, `BitBhAlertDialog`, `Modal` popovers) trap focus, make the rest of the page `inert`, lock scrolling and restore focus on close.
+- Menus and popovers that open on hover (`OpenOnHover`, with `HoverOpenDelay` / `HoverCloseDelay`) leave the focus where it is and close once the pointer has left the trigger and the surface, after a grace period that lets it cross the gap. A click on the trigger keeps the surface open; on a menu, the first key press - on the trigger, or with nothing focused - moves the focus into it, and a menu the focus never entered gives none back when it closes. A touch press never counts as a hover (a pen's does not on a menu either): it is a click.
 - `BitBhPortal` moves the DOM node but keeps the component tree, so cascading values and events keep working.
 - Exit animations: closing parts stay mounted until their CSS animations / transitions finish (`data-state="closed"`).
 
 ### Announcements
 
-`IBitBhAnnouncer` speaks through a shared polite / assertive live region. Components use it for result counts (command palette), toasts and drag-and-drop steps; you can inject it too:
+`IBitBhAnnouncer` speaks through a shared polite / assertive live region. Components use it for result counts (command palette), toasts and drag-and-drop steps ("Fix login moved to Done, position 1 of 3."); you can inject it too:
 
 ```razor
 @inject IBitBhAnnouncer Announcer
@@ -213,6 +214,30 @@ say): `services.AddScoped(sp => new BitBhStrings { … })`. An `aria-label` or a
 always wins. Numbers (`BitBhNumberField`) are formatted and parsed with a `CultureInfo` - grouping, decimal separators,
 currency and percent signs, native digits.
 
+### Dates and times
+
+The date components edit .NET values - `DateOnly?` (`BitBhDateField`, `BitBhDatePicker`, `BitBhCalendar`), `TimeOnly?`
+(`BitBhTimeField`), `DateTime?` (`BitBhDateTimeField`, `BitBhDateTimePicker`) and `BitBhDateRange?` (`BitBhDateRangePicker`,
+a range `BitBhCalendar`) - in the culture's own order, separators and calendar (`Culture`: `dd.MM.yyyy` in German, Persian
+months in `fa-IR`). Every part of a date or a time is a segment you type, step (↑ / ↓) and move between (← / →); the time
+fields take a `Granularity` (hours, minutes, seconds) and an `HourCycle` (12 / 24). The pickers share their parts - a
+`BitBhDatePickerGroup`, a `BitBhDatePickerTrigger` and a `BitBhDatePickerContent` popover holding a `BitBhCalendar`, which
+takes the picker's value, `Min` / `Max` and `IsDateUnavailable`:
+
+```razor
+<BitBhDateRangePicker @bind-Value="stay" Min="today">
+    <BitBhDatePickerGroup>
+        <BitBhDateRangePickerInput Part="BitBhDateRangePart.Start" />
+        <span aria-hidden="true">–</span>
+        <BitBhDateRangePickerInput Part="BitBhDateRangePart.End" />
+        <BitBhDatePickerTrigger>📅</BitBhDatePickerTrigger>
+    </BitBhDatePickerGroup>
+    <BitBhDatePickerContent>
+        <BitBhCalendar VisibleMonths="2">…</BitBhCalendar>
+    </BitBhDatePickerContent>
+</BitBhDateRangePicker>
+```
+
 ### Toasts
 
 `BitBhToaster` shows, updates (`Show` with an existing `Id`, or `Update`) and dismisses toasts from anywhere, and
@@ -227,6 +252,39 @@ and their timers pause while the stack is expanded or the page is hidden, then r
 `<BitBhSelectionIndicator />` placed in a tab list, a radio group or a toggle group follows the selected item:
 `--bit-bh-indicator-left` / `-top` / `-width` / `-height` and `data-activation-direction` - the sliding underline and the
 segmented-control pill, measured in the browser with no .NET round trip.
+
+### Drawer snap points
+
+`BitBhDrawer` rests part open at its `SnapPoints` - fractions of the viewport or pixels, Vaul-style - and settles on
+the nearest one when dragged, moves on to the next when flicked (`SnapToSequentialPoint` stops a fast flick from
+skipping any) and closes when dragged past the smallest. The active one is two-way bound (`@bind-ActiveSnapPoint`)
+and shows as `data-snap-point`; the runtime places the panel through `--bit-bh-drawer-snap-point-offset-x` / `-y` and
+fades the backdrop through `--bit-bh-drawer-fade` (`FadeFromIndex`), so the CSS stays yours and no inline style is
+written. Without a pointer, the `BitBhDrawerHandle` is a slider - arrow keys, Home / End, Enter to cycle - and keyboard
+focus moving to content the panel hides opens it far enough to show it.
+
+```razor
+<BitBhDrawer SnapPoints="@(["160px", 0.5, 1])" @bind-ActiveSnapPoint="snap">…</BitBhDrawer>
+```
+```css
+.sheet { transform: translateY(calc(var(--bit-bh-drawer-snap-point-offset-y, 0px) + var(--bit-bh-drawer-swipe-movement-y, 0px))); }
+```
+
+### Virtualized option lists
+
+`BitBhListboxOptions` and `BitBhComboboxOptions` render thousands of data-driven options (`Items` + `ItemTemplate`) with
+`Virtualize="true"`: only the options in view are in the page, each with `aria-setsize` / `aria-posinset`, and the keys
+reach all of them. Give the panel a bounded height and `overflow-y: auto`. By default every option is exactly `ItemSize`
+pixels tall. Options that differ in height - wrapping text, a line of details - take `VariableItemSize="true"`: the
+runtime measures every option as it renders and whenever it resizes, `ItemSize` becomes the estimate for the ones not
+rendered yet, the scroll position holds still as measurements replace estimates, and an option the keys move to (Home,
+End, Page Up, Page Down) scrolls fully into view. The spacers are sized through the CSSOM - no inline `style` attribute.
+
+```razor
+<BitBhListboxOptions TValue="Issue" Items="@issues" Virtualize="true" VariableItemSize="true" ItemSize="56" class="panel">
+    <ItemTemplate Context="o"><strong>@o.Value.Title</strong> <span>@o.Value.Details</span></ItemTemplate>
+</BitBhListboxOptions>
+```
 
 ## Styling
 
@@ -275,6 +333,26 @@ Every component exposes state as attributes. The most common hooks:
 ```
 
 > If you give a hideable part an explicit `display` (e.g. `display: flex`), keep `[hidden] { display: none }` working: `.panel[hidden] { display: none; }`, or in Tailwind `@layer base { [hidden] { display: none !important; } }`.
+
+### Content Security Policy
+
+A few components set styles of their own: the clipping of `BitBhVisuallyHidden`, a slider thumb's position, a splitter's flex layout, `--bit-bh-progress` … By default they render them as `style` attributes, which a Content-Security-Policy whose `style-src` has no `'unsafe-inline'` refuses - in the markup and set from script alike. Turn on strict CSP mode for such a policy:
+
+```csharp
+// Program.cs (server and, for WebAssembly / Auto, the client project too)
+builder.Services.AddBitBheadlessServices(options => options.StrictCsp = true);
+```
+
+```razor
+@* App.razor, in <head>: applies the styles as the prerendered page is parsed, before its first paint *@
+<script src="@Assets["_content/Bit.Bheadless/bit-bheadless-csp.js"]"></script>
+```
+
+The components then render no `style` attribute of their own. Their styles go in `data-bit-bh-style`, and the runtime applies them through the CSSOM (`element.style.setProperty`), which such a policy allows. Without the `<head>` script the runtime still applies them, once it has loaded (a prerendered page shows them unstyled until then). A `style` you put on a component is still rendered as a `style` attribute - it is yours, and your policy decides about it; use classes instead.
+
+- To turn strict mode on for a part of the page only, cascade the options: `<CascadingValue Value="@(new BitBhOptions { StrictCsp = true })" IsFixed="true">…</CascadingValue>`.
+- In a browser without constructed stylesheets (Safari before 16.4) the scroll area adds one `<style>` element; it carries the nonce of `<meta property="csp-nonce" nonce="…">` (or of the page's first `script[nonce]`).
+- The demo serves [`/strict-csp`](https://bheadless.bitplatform.dev/strict-csp) under `style-src 'self'`, and the E2E suite fails on any violation it reports.
 
 ## Testing accessibility
 

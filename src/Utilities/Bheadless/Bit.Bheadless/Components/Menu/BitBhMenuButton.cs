@@ -8,7 +8,8 @@ namespace Bit.Bheadless;
 /// The trigger button that opens the menu. Renders as <c>&lt;button&gt;</c> with
 /// <c>aria-haspopup="menu"</c>, <c>aria-expanded</c> and <c>aria-controls</c>.
 /// Inside a <see cref="BitBhMenubar"/> it becomes a <c>role="menuitem"</c> that takes
-/// part in the bar's roving focus.
+/// part in the bar's roving focus. With <see cref="BitBhMenu.OpenOnHover"/> the pointer resting on it
+/// opens the menu without moving the focus; a click or a key press on it then takes the menu over.
 /// </summary>
 public class BitBhMenuButton : BitBhComponentBase
 {
@@ -32,6 +33,7 @@ public class BitBhMenuButton : BitBhComponentBase
     private bool IsOpen => MenuContext?.IsOpen ?? false;
     private bool IsDisabled => MenuContext?.Disabled ?? false;
     private BitBhMenubarContext? Menubar => MenuContext?.Menubar;
+    private bool OpenOnHover => MenuContext?.OpenOnHover ?? false;
 
     private BitBhMenuButtonRenderContext RenderContext => new()
     {
@@ -48,13 +50,15 @@ public class BitBhMenuButton : BitBhComponentBase
             On<MouseEventArgs>("onclick", HandleClick));
         builder.AddAttribute(31, "onkeydown",
             On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
-        if (Menubar is not null)
-        {
+        if (Menubar is not null || OpenOnHover)
             builder.AddAttribute(32, "onpointerenter",
                 On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
+        if (Menubar is not null)
             builder.AddAttribute(33, "onfocus",
                 On<FocusEventArgs>("onfocus", HandleFocus));
-        }
+        if (OpenOnHover)
+            builder.AddAttribute(34, "onpointerleave",
+                On<PointerEventArgs>("onpointerleave", HandlePointerLeave));
         builder.AddElementReferenceCapture(40, CaptureElement);
         if (Template is not null || ChildContent is not null)
             builder.AddContent(50, BitBhContent.Pick(Template, ChildContent, RenderContext));
@@ -111,7 +115,8 @@ public class BitBhMenuButton : BitBhComponentBase
     {
         if (IsDisabled || MenuContext is null) return Task.CompletedTask;
         // Enter / Space are handled on keydown (their default click is suppressed
-        // through data-bit-bh-keys), so a click here comes from a pointer.
+        // through data-bit-bh-keys), so a click here comes from a pointer. On a
+        // hover-opened menu it keeps the menu open rather than closing it.
         return MenuContext.ToggleAsync(BitBhMenuFocus.Container);
     }
 
@@ -132,7 +137,8 @@ public class BitBhMenuButton : BitBhComponentBase
                 break;
             case "Enter":
             case " ":
-                if (MenuContext.IsOpen) await MenuContext.CloseAsync();
+                // A hover-opened menu is entered (the focus moves to its first item), not closed.
+                if (MenuContext.IsOpen && !MenuContext.OpenedByHover) await MenuContext.CloseAsync();
                 else await MenuContext.OpenAsync(BitBhMenuFocus.First);
                 break;
             case "ArrowDown":
@@ -148,10 +154,21 @@ public class BitBhMenuButton : BitBhComponentBase
         }
     }
 
-    private Task HandlePointerEnter(PointerEventArgs args)
-        => Menubar is not null && MenuContext is not null
-            ? Menubar.OnTriggerPointerEnterAsync(MenuContext.Menu)
-            : Task.CompletedTask;
+    private async Task HandlePointerEnter(PointerEventArgs args)
+    {
+        // Only a mouse hovers: a touch or pen press enters the button right before its click, which would
+        // open the menu and then toggle it shut.
+        if (MenuContext is null || !BitBhMenu.IsHoverPointer(args)) return;
+        if (Menubar is not null)
+            await Menubar.OnTriggerPointerEnterAsync(MenuContext.Menu);
+        MenuContext.Menu.HoverEnter(MenuContext.ButtonId, canOpen: true);
+    }
+
+    private void HandlePointerLeave(PointerEventArgs args)
+    {
+        if (MenuContext is not null && BitBhMenu.IsHoverPointer(args))
+            MenuContext.Menu.HoverLeave(MenuContext.ButtonId);
+    }
 
     private void HandleFocus(FocusEventArgs args)
     {

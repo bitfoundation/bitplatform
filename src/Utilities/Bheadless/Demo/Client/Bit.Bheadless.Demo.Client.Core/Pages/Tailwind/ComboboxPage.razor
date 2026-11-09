@@ -309,6 +309,54 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Options of different heights (virtualized)" Code="@_variableCode">
+    <Description>
+        With <code>VariableItemSize="true"</code> the options of a virtualized panel can differ in height - here
+        each article shows an excerpt of one to three lines. Every option is measured as it renders and again when
+        it resizes; <code>ItemSize</code> (60px here) is only the estimate for the options not rendered yet, and a
+        new query starts over with the matches it found. The scroll position holds still as measurements arrive,
+        and the arrow keys and Page Up / Page Down keep the highlighted option fully in view.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="Article"
+                    @bind-Value="article"
+                    OnQueryChange="HandleArticleQuery"
+                    DisplayValue="a => a?.Title ?? string.Empty"
+                    class="inline-block min-w-72">
+            <div class="flex items-center rounded-lg border border-zinc-300 bg-white transition-colors focus-within:border-blue-600">
+                <BitBhComboboxInput TValue="Article" aria-label="Article" Placeholder="Search 3,000 articles…"
+                                 class="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2 text-sm text-zinc-900 outline-none" />
+                <BitBhComboboxButton TValue="Article"
+                                  class="inline-flex items-center justify-center border-0 bg-transparent px-2.5 text-zinc-500 cursor-pointer">
+                    <Template Context="b">
+                        <span class="@($"transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="Article"
+                               Items="@articleMatches"
+                               Virtualize="true"
+                               VariableItemSize="true"
+                               ItemSize="60"
+                               Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                               class="z-9999 m-0 max-h-72 w-80 max-w-[calc(100vw-2rem)] list-none overflow-y-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                <ItemTemplate Context="o">
+                    <span class="@($"flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-2 text-sm {(o.IsActive ? "bg-blue-50" : "")}")">
+                        <span class="@($"font-semibold {(o.IsSelected ? "text-blue-700" : "text-zinc-900")}")">@o.Value.Title</span>
+                        <span class="text-xs leading-snug text-zinc-600">@o.Value.Excerpt</span>
+                    </span>
+                </ItemTemplate>
+                <ChildContent>
+                    <BitBhComboboxEmpty TValue="Article" class="px-2.5 py-2.5 text-sm italic text-zinc-500">No articles match.</BitBhComboboxEmpty>
+                </ChildContent>
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
+        <span class="text-sm text-zinc-500">
+            @articleMatches.Count.ToString("N0") matches · Selected: <strong class="text-zinc-900">@(article?.Title ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</TwDemoBlock>
+
 @code {
     // ── Large lists (virtualized) ───────────────────────────────────────────
 
@@ -328,6 +376,80 @@
 
     private void HandleVirtualQuery(string query) =>
         virtualMatches = VirtualItems.Where(item => BitBhFilter.Contains(item, query)).ToArray();
+
+    // ── Options of different heights (virtualized) ──────────────────────────
+
+    // 3,000 articles whose excerpts run from one line to three.
+    private sealed record Article(int Number, string Title, string Excerpt);
+    private static readonly Article[] Articles = BuildArticles();
+    private IReadOnlyList<Article> articleMatches = Articles;
+    private Article? article;
+
+    private static Article[] BuildArticles()
+    {
+        string[] topics = ["Accessibility", "Animations", "Caching", "Forms", "Keyboard", "Layout", "Routing", "Testing", "Theming", "Virtualization"];
+        string[] kinds = ["basics", "deep dive", "checklist", "pitfalls", "recipes", "FAQ"];
+        string[] excerpts =
+        [
+            "A short read.",
+            "What changes between versions, and what to update first in an existing app.",
+            "A complete example, from the first render to the last test, with the trade-offs of every step and the mistakes that are easy to make along the way.",
+        ];
+        return Enumerable.Range(0, 3_000)
+            .Select(n => new Article(n, $"{topics[n % 10]} {kinds[n / 10 % 6]} {n / 60 + 1}", excerpts[n * 5 % 3]))
+            .ToArray();
+    }
+
+    private void HandleArticleQuery(string query) =>
+        articleMatches = Articles.Where(a => BitBhFilter.Contains(a.Title, query)).ToArray();
+
+    private const string _variableCode = """
+<BitBhCombobox TValue="Article"
+            @bind-Value="article"
+            OnQueryChange="HandleArticleQuery"
+            DisplayValue="a => a?.Title ?? string.Empty"
+            class="inline-block min-w-72">
+    <div class="flex items-center rounded-lg border border-zinc-300 bg-white transition-colors focus-within:border-blue-600">
+        <BitBhComboboxInput TValue="Article" aria-label="Article" Placeholder="Search 3,000 articles…"
+                         class="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2 text-sm text-zinc-900 outline-none" />
+        <BitBhComboboxButton TValue="Article"
+                          class="inline-flex items-center justify-center border-0 bg-transparent px-2.5 text-zinc-500 cursor-pointer">
+            <Template Context="b">
+                <span class="@($"transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhComboboxButton>
+    </div>
+
+    @* Measured as they render: ItemSize is the estimate for the rest *@
+    <BitBhComboboxOptions TValue="Article"
+                       Items="@articleMatches"
+                       Virtualize="true"
+                       VariableItemSize="true"
+                       ItemSize="60"
+                       Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                       class="z-9999 m-0 max-h-72 w-80 max-w-[calc(100vw-2rem)] list-none overflow-y-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+        <ItemTemplate Context="o">
+            <span class="@($"flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-2 text-sm {(o.IsActive ? "bg-blue-50" : "")}")">
+                <span class="@($"font-semibold {(o.IsSelected ? "text-blue-700" : "text-zinc-900")}")">@o.Value.Title</span>
+                <span class="text-xs leading-snug text-zinc-600">@o.Value.Excerpt</span>
+            </span>
+        </ItemTemplate>
+        <ChildContent>
+            <BitBhComboboxEmpty TValue="Article" class="px-2.5 py-2.5 text-sm italic text-zinc-500">No articles match.</BitBhComboboxEmpty>
+        </ChildContent>
+    </BitBhComboboxOptions>
+</BitBhCombobox>
+
+@code {
+    private sealed record Article(int Number, string Title, string Excerpt);
+    private static readonly Article[] Articles = …; // 3,000 articles, excerpts of one to three lines
+    private IReadOnlyList<Article> articleMatches = Articles;
+    private Article? article;
+
+    private void HandleArticleQuery(string query) =>
+        articleMatches = Articles.Where(a => BitBhFilter.Contains(a.Title, query)).ToArray();
+}
+""";
 
     private const string _virtualCode = """
 <BitBhCombobox TValue="string"

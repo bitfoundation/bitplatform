@@ -270,4 +270,294 @@
         Assert.IsTrue(cut.Find("[aria-label='Advanced settings']").HasAttribute("data-nested"));
         cut.ShouldBeAccessible();
     }
+
+    // ── Snap points ──────────────────────────────────────────────────────────
+
+    private static readonly BitBhDrawerSnapPoint[] Points = ["160px", 0.5, 1];
+
+    private static AngleSharp.Dom.IElement HandleOf(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.Find("[data-bit-bh-drawer-handle]");
+
+    private static async Task<int> SnapPointChangeAsync(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, JSRuntimeInvocation attach, int index)
+    {
+        var reference = attach.Arguments[0]!;
+        var callbacks = reference.GetType().GetProperty("Value")!.GetValue(reference)!;
+        var method = callbacks.GetType().GetMethod("OnSnapPointChange")!;
+        return await cut.InvokeAsync(() => (Task<int>)method.Invoke(callbacks, [index])!);
+    }
+
+    [TestMethod]
+    public void Snap_point_values_parse_compare_and_print_invariantly()
+    {
+        Assert.AreEqual(BitBhDrawerSnapPoint.Fraction(0.5), BitBhDrawerSnapPoint.Parse("50%"));
+        BitBhDrawerSnapPoint fromNumber = 0.5, fromText = "0.5", fromPixels = "160px";
+        Assert.AreEqual(fromNumber, fromText);
+        Assert.AreEqual(BitBhDrawerSnapPoint.Pixels(160), fromPixels);
+        Assert.AreNotEqual(BitBhDrawerSnapPoint.Pixels(1), BitBhDrawerSnapPoint.Fraction(1));
+        Assert.AreEqual("160px", ((BitBhDrawerSnapPoint)" 160 PX ").ToString());
+        Assert.AreEqual("0.25", ((BitBhDrawerSnapPoint)0.25).ToString());
+        Assert.IsTrue(((BitBhDrawerSnapPoint)"12.5px").IsPixels);
+        Assert.AreEqual(12.5, ((BitBhDrawerSnapPoint)"12.5px").Value);
+        Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("half"));
+        Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("1rem"));
+    }
+
+    [TestMethod]
+    public void A_drawer_with_snap_points_rests_at_the_first_and_its_handle_is_a_slider()
+    {
+        Module().Setup<int>("drawer.attach", _ => true).SetResult(4);
+        var cut = Render(
+            @<BitBhDrawer SnapPoints="Points">
+                <BitBhDrawerTrigger>Filters</BitBhDrawerTrigger>
+                <BitBhDrawerBackdrop />
+                <BitBhDrawerPanel class="sheet">
+                    <BitBhDrawerHandle />
+                    <BitBhDrawerTitle>Filters</BitBhDrawerTitle>
+                    <BitBhDrawerClose>Done</BitBhDrawerClose>
+                </BitBhDrawerPanel>
+            </BitBhDrawer>);
+        TriggerOf(cut).Click();
+
+        var panel = cut.Find("[role=dialog]");
+        Assert.AreEqual("160px", panel.GetAttribute("data-snap-point"));
+        Assert.AreEqual("160px", cut.Find("[data-bit-bh-dismiss-ignore]").GetAttribute("data-snap-point"));
+        // Never a style attribute: the runtime places the panel (CSP-safe).
+        Assert.IsNull(panel.GetAttribute("style"));
+
+        var handle = HandleOf(cut);
+        Assert.AreEqual("slider", handle.GetAttribute("role"));
+        Assert.IsNull(handle.GetAttribute("aria-hidden"));
+        Assert.AreEqual("0", handle.GetAttribute("tabindex"));
+        Assert.AreEqual("Drawer size", handle.AccessibleName());
+        Assert.AreEqual("vertical", handle.GetAttribute("aria-orientation"));
+        Assert.AreEqual("1", handle.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("3", handle.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("1", handle.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("1 of 3", handle.GetAttribute("aria-valuetext"));
+        Assert.AreEqual(panel.Id, handle.GetAttribute("aria-controls"));
+        Assert.AreEqual("160px", handle.GetAttribute("data-snap-point"));
+        Assert.AreEqual("ArrowUp ArrowDown Home End Enter Space", handle.GetAttribute(BitBhKeyboard.KeysAttribute));
+        cut.ShouldBeAccessible();
+
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["drawer.attach"]));
+        var options = (IDictionary<string, object?>)JSInterop.Invocations["drawer.attach"].Last().Arguments[2]!;
+        CollectionAssert.AreEqual(new[] { "160px", "0.5", "1" }, (string[])options["snapPoints"]!);
+        Assert.AreEqual(0, options["activeSnapPoint"]);
+        Assert.AreEqual(0, options["fadeFromIndex"]);
+        Assert.IsFalse((bool)options["sequential"]!);
+    }
+
+    [TestMethod]
+    public void The_handle_steps_through_the_snap_points_with_the_keyboard()
+    {
+        var changes = new List<BitBhDrawerSnapPoint?>();
+        var cut = Render(
+            @<Stateful T="BitBhDrawerSnapPoint?" Context="s">
+                <BitBhDrawer DefaultOpen="true" SnapPoints="Points" ActiveSnapPoint="s.Value" ActiveSnapPointChanged="s.Set"
+                             OnActiveSnapPointChange="p => changes.Add(p)">
+                    <BitBhDrawerPanel aria-label="Filters"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </Stateful>);
+        var host = cut.FindComponent<Stateful<BitBhDrawerSnapPoint?>>().Instance;
+
+        HandleOf(cut).Press("ArrowUp");
+        Assert.AreEqual((BitBhDrawerSnapPoint)0.5, host.Value);
+        Assert.AreEqual("0.5", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+        Assert.AreEqual("2", HandleOf(cut).GetAttribute("aria-valuenow"));
+        Assert.AreEqual("2 of 3", HandleOf(cut).GetAttribute("aria-valuetext"));
+
+        HandleOf(cut).Press("ArrowUp");
+        HandleOf(cut).Press("ArrowUp");      // already the largest
+        Assert.AreEqual((BitBhDrawerSnapPoint)1, host.Value);
+        HandleOf(cut).Press("ArrowDown");
+        Assert.AreEqual((BitBhDrawerSnapPoint)0.5, host.Value);
+        HandleOf(cut).Press("Home");
+        Assert.AreEqual((BitBhDrawerSnapPoint)"160px", host.Value);
+        HandleOf(cut).Press("End");
+        Assert.AreEqual((BitBhDrawerSnapPoint)1, host.Value);
+        // Activation cycles: from the largest back to the smallest.
+        HandleOf(cut).Press("Enter");
+        Assert.AreEqual((BitBhDrawerSnapPoint)"160px", host.Value);
+        HandleOf(cut).Press(" ");
+        Assert.AreEqual((BitBhDrawerSnapPoint)0.5, host.Value);
+        // Keys across a vertical drawer's axis are left alone.
+        HandleOf(cut).Press("ArrowRight");
+        Assert.AreEqual((BitBhDrawerSnapPoint)0.5, host.Value);
+
+        CollectionAssert.AreEqual(new BitBhDrawerSnapPoint?[] { 0.5, 1, 0.5, "160px", 1, "160px", 0.5 }, changes);
+        Assert.AreEqual(7, host.Changes);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void The_arrow_pointing_away_from_the_edge_opens_the_drawer_further()
+    {
+        var cut = Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.Top" SnapPoints="Points">
+                    <BitBhDrawerPanel aria-label="Search"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.Left" SnapPoints="Points">
+                    <BitBhDrawerPanel aria-label="Navigation"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+                @* Start is the right edge in right-to-left. *@
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.Start" SnapPoints="Points">
+                    <BitBhDrawerPanel aria-label="Details"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </BitBhDirectionProvider>);
+
+        AngleSharp.Dom.IElement Handle(int i) => cut.FindAll("[data-bit-bh-drawer-handle]")[i];
+        string? Now(int i) => Handle(i).GetAttribute("aria-valuenow");
+
+        Handle(0).Press("ArrowUp");                 // towards a top drawer's edge
+        Assert.AreEqual("1", Now(0));
+        Handle(0).Press("ArrowDown");
+        Assert.AreEqual("2", Now(0));
+
+        Assert.AreEqual("horizontal", Handle(1).GetAttribute("aria-orientation"));
+        Assert.AreEqual("ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space", Handle(1).GetAttribute(BitBhKeyboard.KeysAttribute));
+        Handle(1).Press("ArrowRight");
+        Assert.AreEqual("2", Now(1));
+        Handle(1).Press("ArrowLeft");
+        Assert.AreEqual("1", Now(1));
+        Handle(1).Press("ArrowUp");                 // a horizontal slider's Up still steps it up
+        Assert.AreEqual("2", Now(1));
+
+        Assert.AreEqual("right", cut.FindAll("[role=dialog]")[2].GetAttribute("data-side"));
+        Handle(2).Press("ArrowLeft");
+        Assert.AreEqual("2", Now(2));
+        Handle(2).Press("ArrowRight");
+        Assert.AreEqual("1", Now(2));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_press_on_the_handle_cycles_unless_PreventCycle()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhDrawer DefaultOpen="true" SnapPoints="Points">
+                    <BitBhDrawerPanel aria-label="Cycling"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+                <BitBhDrawer DefaultOpen="true" SnapPoints="Points" DefaultActiveSnapPoint="1">
+                    <BitBhDrawerPanel aria-label="Fixed"><BitBhDrawerHandle PreventCycle="true" aria-label="Sheet height" /></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </div>);
+        var cycling = () => cut.FindAll("[data-bit-bh-drawer-handle]")[0];
+        var fixedHandle = () => cut.FindAll("[data-bit-bh-drawer-handle]")[1];
+
+        cycling().Click();
+        Assert.AreEqual("0.5", cycling().GetAttribute("data-snap-point"));
+        cycling().Click();
+        cycling().Click();
+        Assert.AreEqual("160px", cycling().GetAttribute("data-snap-point"));
+
+        Assert.AreEqual("Sheet height", fixedHandle().AccessibleName());
+        Assert.AreEqual("3", fixedHandle().GetAttribute("aria-valuenow"));
+        Assert.AreEqual("ArrowUp ArrowDown Home End", fixedHandle().GetAttribute(BitBhKeyboard.KeysAttribute));
+        fixedHandle().Click();
+        fixedHandle().Press("Enter");
+        Assert.AreEqual("3", fixedHandle().GetAttribute("aria-valuenow"));
+        fixedHandle().Press("ArrowDown");
+        Assert.AreEqual("2", fixedHandle().GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void An_uncontrolled_drawer_reopens_at_its_default_snap_point()
+    {
+        var cut = Render(
+            @<BitBhDrawer SnapPoints="Points" DefaultActiveSnapPoint="0.5">
+                <BitBhDrawerTrigger>Filters</BitBhDrawerTrigger>
+                <BitBhDrawerPanel aria-label="Filters">
+                    <BitBhDrawerHandle />
+                    <BitBhDrawerClose>Done</BitBhDrawerClose>
+                </BitBhDrawerPanel>
+            </BitBhDrawer>);
+        TriggerOf(cut).Click();
+        Assert.AreEqual("0.5", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+        HandleOf(cut).Press("End");
+        Assert.AreEqual("1", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+
+        cut.Find("[role=dialog] button").Click();
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[role=dialog]")));
+        TriggerOf(cut).Click();
+        Assert.AreEqual("0.5", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+    }
+
+    [TestMethod]
+    public async Task The_runtime_reports_where_a_drag_settled_and_shows_the_owners_answer()
+    {
+        var module = Module();
+        module.Setup<int>("drawer.attach", _ => true).SetResult(7);
+        var cut = Render(
+            @<Stateful T="BitBhDrawerSnapPoint?" Initial="0.5" Context="s">
+                <BitBhDrawer DefaultOpen="true" SnapPoints="Points" ActiveSnapPoint="s.Value"
+                             ActiveSnapPointChanged="@(p => { if (p != (BitBhDrawerSnapPoint)1) s.Set(p); })"
+                             FadeFromIndex="1" SnapToSequentialPoint="true" DismissOnSwipe="false">
+                    <BitBhDrawerPanel aria-label="Filters"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </Stateful>);
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["drawer.attach"]));
+        var attach = JSInterop.Invocations["drawer.attach"].Last();
+        var options = (IDictionary<string, object?>)attach.Arguments[2]!;
+        Assert.AreEqual(1, options["activeSnapPoint"]);
+        Assert.AreEqual(1, options["fadeFromIndex"]);
+        Assert.IsTrue((bool)options["sequential"]!);
+        // A swipe may not close it, but it still moves between the snap points.
+        Assert.IsFalse((bool)options["enabled"]!);
+
+        Assert.AreEqual(0, await SnapPointChangeAsync(cut, attach, 0));
+        Assert.AreEqual("160px", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+        cut.WaitForAssertion(() => Assert.AreEqual(0, ((IDictionary<string, object?>)JSInterop.Invocations["drawer.update"].Last().Arguments[1]!)["activeSnapPoint"]));
+        Assert.AreEqual(7, JSInterop.Invocations["drawer.update"].Last().Arguments[0]);
+
+        // The owner keeps the drawer off the largest snap point: the runtime is told it stays where it was.
+        Assert.AreEqual(0, await SnapPointChangeAsync(cut, attach, 2));
+        Assert.AreEqual("160px", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+        Assert.AreEqual(0, await SnapPointChangeAsync(cut, attach, 9));
+    }
+
+    [TestMethod]
+    public void Without_two_snap_points_the_handle_stays_decorative()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhDrawer DefaultOpen="true">
+                    <BitBhDrawerPanel aria-label="Plain"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+                <BitBhDrawer DefaultOpen="true" SnapPoints="@(["240px"])">
+                    <BitBhDrawerPanel aria-label="Peek"><BitBhDrawerHandle /></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </div>);
+
+        var panels = cut.FindAll("[role=dialog]");
+        var handles = cut.FindAll("[data-bit-bh-drawer-handle]");
+        Assert.IsNull(panels[0].GetAttribute("data-snap-point"));
+        Assert.AreEqual("240px", panels[1].GetAttribute("data-snap-point"));
+        foreach (var handle in handles)
+        {
+            Assert.AreEqual("true", handle.GetAttribute("aria-hidden"));
+            Assert.IsNull(handle.GetAttribute("role"));
+            Assert.IsNull(handle.GetAttribute("tabindex"));
+        }
+        handles[1].Press("ArrowUp");
+        Assert.AreEqual("240px", cut.FindAll("[role=dialog]")[1].GetAttribute("data-snap-point"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void The_handle_speaks_the_registered_strings()
+    {
+        Services.AddBitBheadlessServices(strings =>
+        {
+            strings.DrawerSize = "Höhe";
+            strings.DrawerSnapPoint = (i, n) => $"Stufe {i + 1}/{n}";
+        });
+        var cut = Render(
+            @<BitBhDrawer DefaultOpen="true" SnapPoints="Points">
+                <BitBhDrawerPanel aria-label="Filter"><BitBhDrawerHandle /></BitBhDrawerPanel>
+            </BitBhDrawer>);
+        Assert.AreEqual("Höhe", HandleOf(cut).AccessibleName());
+        Assert.AreEqual("Stufe 1/3", HandleOf(cut).GetAttribute("aria-valuetext"));
+    }
 }

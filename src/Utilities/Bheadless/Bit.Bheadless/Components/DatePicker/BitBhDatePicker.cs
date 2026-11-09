@@ -36,7 +36,7 @@ namespace Bit.Bheadless;
 /// <para><b>Styling hooks:</b> <c>data-state="open|closed"</c>, <c>data-disabled</c>, <c>data-readonly</c>,
 /// <c>data-invalid</c>, <c>data-required</c>, <c>data-focused</c> on the root and the group.</para>
 /// </summary>
-public class BitBhDatePicker : BitBhDateField
+public class BitBhDatePicker : BitBhDateField, IBitBhDatePickerOwner
 {
     private BitBhDatePickerContext? _picker;
     private bool _open;
@@ -147,4 +147,24 @@ public class BitBhDatePicker : BitBhDateField
         await SetValueAsync(date);
         if (CloseOnSelect) await CloseAsync();
     }
+
+    // ── What the parts and the calendar read ─────────────────────────────────
+
+    bool IBitBhDatePickerOwner.IsRange => false;
+    string IBitBhDatePickerOwner.GroupId => GroupId;
+    string IBitBhDatePickerOwner.TriggerId => TriggerId;
+    string IBitBhDatePickerOwner.ContentId => ContentId;
+    bool IBitBhDatePickerOwner.HasGroup => HasGroup;
+    string? IBitBhDatePickerOwner.LabelledBy => LabelledBy;
+    DateOnly? IBitBhDatePickerOwner.SelectedDate => CurrentValue;
+    BitBhDateRange? IBitBhDatePickerOwner.SelectedRange => null;
+    DateOnly? IBitBhDatePickerOwner.MinDate => Min;
+    DateOnly? IBitBhDatePickerOwner.MaxDate => Max;
+    bool IBitBhDatePickerOwner.AllowsNonContiguousRanges => false;
+    BitBhDirection IBitBhDatePickerOwner.EffectiveDir => EffectiveDir;
+    Task IBitBhDatePickerOwner.ToggleAsync() => ToggleAsync();
+    void IBitBhDatePickerOwner.RegisterGroup(bool present) => RegisterGroup(present);
+    void IBitBhDatePickerOwner.AddGroupState(Dictionary<string, object> attrs, Dictionary<string, object>? own) => AddGroupState(attrs, own);
+    Task IBitBhDatePickerOwner.SelectDateAsync(DateOnly date) => SelectDateAsync(date);
+    Task IBitBhDatePickerOwner.SelectRangeAsync(BitBhDateRange range) => Task.CompletedTask;
 }

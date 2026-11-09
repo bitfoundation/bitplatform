@@ -291,20 +291,23 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!_open) return;
+        await ApplyPendingHighlightAsync();
+    }
 
-        if (_pendingHighlight is { } highlight)
+    // The highlight the panel opens with, once its options are there.
+    private async Task ApplyPendingHighlightAsync()
+    {
+        if (_pendingHighlight is not { } highlight) return;
+        _pendingHighlight = null;
+        await State.EnsureOrderAsync();
+        var selected = State.FirstSelected();
+        var index = highlight switch
         {
-            _pendingHighlight = null;
-            await State.EnsureOrderAsync();
-            var selected = State.FirstSelected();
-            var index = highlight switch
-            {
-                BitBhMenuFocus.First => selected >= 0 ? selected : State.FirstEnabled(),
-                BitBhMenuFocus.Last => selected >= 0 ? selected : State.LastEnabled(),
-                _ => -1,
-            };
-            if (index >= 0) State.SetActiveIndex(index);
-        }
+            BitBhMenuFocus.First => selected >= 0 ? selected : State.FirstEnabled(),
+            BitBhMenuFocus.Last => selected >= 0 ? selected : State.LastEnabled(),
+            _ => -1,
+        };
+        if (index >= 0) State.SetActiveIndex(index);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -541,6 +544,11 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     internal async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
         if (IsDisabled) return;
+
+        // A key pressed before the panel's first render was done - right after the key that opened it, over a Blazor
+        // Server connection - moves from the highlight the panel opens with: applied after it, that highlight would
+        // undo the key.
+        if (_open && _pendingHighlight is not null && State.Count > 0) await ApplyPendingHighlightAsync();
 
         switch (e.Key)
         {

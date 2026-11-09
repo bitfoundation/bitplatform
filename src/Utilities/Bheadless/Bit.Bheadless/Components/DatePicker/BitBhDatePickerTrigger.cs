@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Bheadless;
 
 /// <summary>
-/// The button of a <see cref="BitBhDatePicker"/> that opens (and closes) its calendar popover: named "Choose date"
-/// (<see cref="BitBhStrings.ChooseDate"/>; your <c>aria-label</c> wins), with <c>aria-haspopup="dialog"</c>,
+/// The button of a <see cref="BitBhDatePicker"/>, <see cref="BitBhDateTimePicker"/> or <see cref="BitBhDateRangePicker"/>
+/// that opens (and closes) its calendar popover: named "Choose date" (<see cref="BitBhStrings.ChooseDate"/>; "Choose date
+/// range" in a range picker, <see cref="BitBhStrings.ChooseDateRange"/>; your <c>aria-label</c> wins), with <c>aria-haspopup="dialog"</c>,
 /// <c>aria-expanded</c> and, while open, <c>aria-controls</c>. The focus comes back to it when the popover closes.
 ///
 /// <para><b>Styling hooks:</b> <c>data-state="open|closed"</c>, <c>data-disabled</c>.</para>
@@ -51,7 +52,7 @@ public class BitBhDatePickerTrigger : BitBhComponentBase
             attrs["role"] = "button";
             if (!disabled) attrs["tabindex"] = "0";
         }
-        attrs["aria-label"] = Strings.ChooseDate;
+        attrs["aria-label"] = Picker?.ChooseLabel(Strings) ?? Strings.ChooseDate;
         attrs["aria-haspopup"] = "dialog";
         SetAriaBool(attrs, "aria-expanded", open);
         if (Picker is { } picker)

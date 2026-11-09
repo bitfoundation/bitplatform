@@ -35,6 +35,7 @@
 //   scrollArea  - custom scrollbars over a natively scrolling viewport
 //   splitter    - resizable panel handles (pointer drags, saved layouts)
 //   dom         - misc helpers (scrollIntoView, scroll to index, element rects)
+//   styles      - strict Content-Security-Policy mode: loads the bridge that applies [data-bit-bh-style]
 //
 // All of it lives in one runtime object kept on globalThis: the module can be
 // evaluated twice (the initializer's import and the interop's import resolve the
@@ -102,6 +103,7 @@ interface ScopeOptions {
     restore?: boolean;
     returnFocusId?: string | Element | null;
     layer?: number;
+    restoreIfEntered?: boolean;
 }
 
 interface Scope {
@@ -113,6 +115,7 @@ interface Scope {
     returnFocusId: string | Element | null;
     previous: Element | null;
     layer: number;
+    entered: boolean;
     lastFocused: Element | null;
 }
 
@@ -418,6 +421,7 @@ function createRuntime() {
         document.addEventListener('focusin', onSelectOnFocus, true);
         document.addEventListener('focusin', onWheelFocusIn, true);
         document.addEventListener('keydown', onLayerKeyDownCapture, true);
+        document.addEventListener('keydown', onKeyEntry, true);
         document.addEventListener('keydown', onLayerKeyDown, false);
         document.addEventListener('pointerdown', onLayerPointerDown, true);
         document.addEventListener('pointerup', onLayerPressEnd, true);
@@ -426,6 +430,7 @@ function createRuntime() {
         document.addEventListener('click', onLayerClick, true);
         document.addEventListener('focusin', onLayerFocusIn, true);
         document.addEventListener('keydown', onTabBetween, false);
+        document.addEventListener('keydown', onGridKeyDown, true);
 
         document.addEventListener('pointerover', onPointerOverInteractive, true);
         document.addEventListener('pointerout', onPointerOutInteractive, true);
@@ -443,10 +448,14 @@ function createRuntime() {
         if (document.body) liveRegion('polite');
         else document.addEventListener('DOMContentLoaded', () => liveRegion('polite'), { once: true });
 
-        // <BitBhVisuallyHidden Focusable>: reveal while keyboard focus is inside (skip links).
+        // <BitBhVisuallyHidden Focusable>: reveal while keyboard focus is inside (skip links). In strict CSP mode the
+        // clipping is the style bridge's to take off and put back: a policy refuses setAttribute('style', …).
         document.addEventListener('focusin', (e) => {
             const el = isElement(e.target) ? e.target.closest('[data-bit-bh-visually-hidden="focusable"]') : null;
-            if (el && el.hasAttribute('style')) {
+            if (!el) return;
+            if (el.hasAttribute(STRICT_STYLE)) {
+                styleBridge()?.reveal(el, true);
+            } else if (el.hasAttribute('style')) {
                 el.setAttribute('data-bit-bh-clip', el.getAttribute('style'));
                 el.removeAttribute('style');
             }
@@ -454,12 +463,20 @@ function createRuntime() {
         document.addEventListener('focusout', (e) => {
             const el = isElement(e.target) ? e.target.closest('[data-bit-bh-visually-hidden="focusable"]') : null;
             if (!el || (e.relatedTarget && el.contains(e.relatedTarget as Node))) return;
+            if (el.hasAttribute(STRICT_STYLE)) {
+                styleBridge()?.reveal(el, false);
+                return;
+            }
             const clip = el.getAttribute('data-bit-bh-clip');
             if (clip !== null) {
                 el.setAttribute('style', clip);
                 el.removeAttribute('data-bit-bh-clip');
             }
         }, true);
+
+        // A prerendered page rendered in strict CSP mode: apply its styles now rather than at the first interactive
+        // render (a <script> of the bridge in the page's <head> has applied them already).
+        if (document.querySelector(`[${STRICT_STYLE}]`)) styles.enable();
 
         // hidden="until-found" panels: open them (by clicking their trigger) when
         // the browser's find-in-page reveals a match inside.
@@ -477,6 +494,54 @@ function createRuntime() {
      */
     function onEnhancedLoad() {
         liveRegion('polite');
+        if (document.querySelector(`[${STRICT_STYLE}]`)) styles.enable();
+    }
+
+    // ─── styles (strict CSP) ─────────────────────────────────────────────────────
+    //
+    // With BitBhOptions.StrictCsp on, components render the styles they need as data-bit-bh-style, and the bridge in
+    // bit-bheadless-csp.js applies them through the CSSOM (see that file). The bridge is loaded from the page's
+    // <head>, or imported here the first time a page needs it: a prerendered page that has the attribute, or a
+    // component of an interactive one asking (BitBhInterop.RequestStrictStyles).
+
+    const STRICT_STYLE = 'data-bit-bh-style';
+    let styleBridgeLoad: Promise<boolean> | null = null;
+
+    function styleBridge() {
+        return (globalThis as { __bitBheadlessStyles?: BitBhStyleBridge }).__bitBheadlessStyles;
+    }
+
+    /**
+     * Applies the style changes the bridge has seen but not handled yet. A render batch and an interop call can land
+     * in the same task (WebAssembly), so an element just rendered may not have its styles yet when a call measures it.
+     */
+    function flushStyles() {
+        styleBridge()?.flush();
+    }
+
+    const styles = {
+        enable(): Promise<boolean> {
+            if (styleBridge()) return Promise.resolve(true);
+            // A computed specifier: the bridge is a classic script, not a module TypeScript could resolve.
+            const url = new URL('./bit-bheadless-csp.js', import.meta.url).href;
+            styleBridgeLoad ??= import(url).then(
+                () => !!styleBridge(),
+                (error) => {
+                    styleBridgeLoad = null;
+                    console.error('[Bit.Bheadless] failed to load the strict CSP style bridge.', error);
+                    return false;
+                });
+            return styleBridgeLoad;
+        },
+    };
+
+    /** The nonce of the page's policy, for a <style> element the runtime has to add (see addScrollAreaSheet). */
+    function cspNonce() {
+        const meta = document.querySelector<HTMLMetaElement>('meta[property="csp-nonce"], meta[name="csp-nonce"]');
+        // Browsers hide a nonce attribute's value once the page has loaded; the nonce property keeps it.
+        const fromMeta = meta && (meta.nonce || meta.content);
+        if (fromMeta) return fromMeta;
+        return document.querySelector<HTMLElement>('script[nonce], style[nonce]')?.nonce || '';
     }
 
     // ─── anchor ──────────────────────────────────────────────────────────────────
@@ -960,6 +1025,25 @@ function createRuntime() {
         }
     }
 
+    // A surface opened without taking the focus - a menu opened by hovering its button - is marked
+    // [data-bit-bh-key-entry]. The first of its keys ([data-bit-bh-keys], Tab aside) pressed while nothing has the
+    // focus moves the focus into it and is replayed there, so the keyboard picks up where the pointer left off.
+    // A key pressed in a focused element (a field the user is typing in) stays that element's.
+    function onKeyEntry(e: KeyboardEvent) {
+        if (e.defaultPrevented || isComposing(e) || (e.target !== document.body && e.target !== document.documentElement)) return;
+        const surface = document.querySelector<HTMLElement>('[data-bit-bh-key-entry]:not([hidden])');
+        const keys = surface && surface.getAttribute('data-bit-bh-keys');
+        if (!surface || !keys || !keys.split(/\s+/).some((t) => t && t !== 'Tab' && matchesKeyToken(e, t))) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (!focusElement(surface)) return;
+        surface.dispatchEvent(new KeyboardEvent('keydown', {
+            key: e.key, code: e.code, location: e.location, repeat: e.repeat,
+            shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey,
+            bubbles: true, cancelable: true,
+        }));
+    }
+
     const layers = {
         /**
          * Pushes a layer. ids: element ids that belong to the layer's branch.
@@ -1096,6 +1180,7 @@ function createRuntime() {
     }
 
     function onScopeFocusIn(e: FocusEvent) {
+        for (const s of scopeStack) if (!s.entered && scopeContains(s, e.target)) s.entered = true;
         const scope = topTrap();
         if (!scope) return;
         if (scopeContains(scope, e.target)) {
@@ -1141,8 +1226,14 @@ function createRuntime() {
         tabbables,
         isTabbable,
 
-        /** Focuses the element with the given id. */
-        focus(id: ElementLike, preventScroll?: boolean, select?: boolean) {
+        /**
+         * Focuses the element with the given id. With `from`, only while the focus is still on that element (or on
+         * nothing): a key the runtime handled as it was pressed may have moved it on already (grid), and a move asked for
+         * a round trip later (Blazor Server) would take it back.
+         */
+        focus(id: ElementLike, preventScroll?: boolean, select?: boolean, from?: string) {
+            const active = document.activeElement;
+            if (from && active && active !== document.body && active.id !== from) return false;
             return focusElement(byId(id), { preventScroll, select });
         },
 
@@ -1188,7 +1279,9 @@ function createRuntime() {
 
         /**
          * Creates a focus scope. options: { trap, loop, autoFocus: 'first' | 'container' | 'none' | <id>,
-         * restore, returnFocusId, layer }. Returns a handle for destroyScope.
+         * restore, returnFocusId, layer, restoreIfEntered }. Returns a handle for destroyScope.
+         * restoreIfEntered: restore only if the focus went into the scope (or its layer) - a surface opened
+         * without taking the focus (a menu the pointer opened) never pulls it to returnFocusId.
          */
         createScope(containerId: ElementLike, options: ScopeOptions) {
             ensureScopeListeners();
@@ -1206,6 +1299,7 @@ function createRuntime() {
                 previous: focusOrigin(),
                 layer: options.layer || 0,
                 lastFocused: null,
+                entered: !options.restoreIfEntered,
             };
             scopeStack.push(scope);
 
@@ -1218,6 +1312,7 @@ function createRuntime() {
                 else target = document.getElementById(autoFocus as string) || tabbables(container)[0] || container;
                 focusElement(target, { select: target?.tagName === 'INPUT' });
             }
+            if (!scope.entered) scope.entered = scopeContains(scope, document.activeElement);
             return id;
         },
 
@@ -1234,7 +1329,7 @@ function createRuntime() {
             const index = scopeStack.findIndex((s) => s.id === handle);
             if (index < 0) return;
             const [scope] = scopeStack.splice(index, 1);
-            if (restore === false || !scope.restore) return;
+            if (restore === false || !scope.restore || !scope.entered) return;
             const container = byId(scope.containerId);
             const active = document.activeElement;
             // Only restore when focus would otherwise be lost (inside the closing
@@ -1768,6 +1863,259 @@ function createRuntime() {
         },
     };
 
+    // ─── virtual lists ───────────────────────────────────────────────────────────
+    //
+    // Virtualized lists whose items differ in height (BitBhVirtualizer - an options panel's VariableItemSize). The
+    // component renders a window of the items between two spacers,
+    //
+    //     <li data-bit-bh-spacer="before" data-bit-bh-range="start end count epoch">  …items…  <li data-bit-bh-spacer="after">
+    //
+    // and the runtime keeps a height per item - the estimate until the item has rendered and been measured - from which
+    // it sizes the spacers (through the CSSOM: no style attribute, so a strict style-src holds). Every render, and every
+    // resize of a rendered item, measures what is rendered, and the item at the top of the view stays where it was when
+    // that moves the offsets above it. The scroll position decides the window, which the component is asked for
+    // (SetRange) one request at a time. dom.scrollToIndex reveals an item: it scrolls to where the heights put it, then -
+    // once the item has rendered - fully into view where it really is.
+
+    interface VirtualList {
+        id: number;
+        dotnet: DotNetRef;
+        list: HTMLElement;
+        before: HTMLElement;
+        after: HTMLElement;
+        scroller: HTMLElement | null | undefined;
+        estimate: number;
+        overscan: number;
+        epoch: number;
+        count: number;
+        start: number;
+        end: number;
+        sizes: Float64Array;
+        deltas: Float64Array;
+        requesting: boolean;
+        reveal: number;
+        items: Set<Element>;
+        mutations: MutationObserver;
+        resizes: ResizeObserver;
+        onScroll: () => void;
+        onUserScroll: () => void;
+    }
+
+    const virtualLists = new Map<number, VirtualList>();
+    // Reveals asked for before the list attached (its first render is on the page, the runtime has not seen it yet).
+    const pendingReveals = new WeakMap<Element, number>();
+    let virtualSeq = 0;
+
+    // The heights live in a Fenwick tree of their differences from the estimate: an item's offset is a log-time sum.
+    function vlOffset(vl: VirtualList, index: number) {
+        let sum = index * vl.estimate;
+        for (let i = index; i > 0; i -= i & -i) sum += vl.deltas[i];
+        return sum;
+    }
+
+    function vlSize(vl: VirtualList, index: number) {
+        const size = vl.sizes[index];
+        return isNaN(size) ? vl.estimate : size;
+    }
+
+    function vlSetSize(vl: VirtualList, index: number, size: number) {
+        const delta = size - vlSize(vl, index);
+        vl.sizes[index] = size;
+        for (let i = index + 1; i < vl.deltas.length; i += i & -i) vl.deltas[i] += delta;
+    }
+
+    /** Heights for `count` items, keeping the measured ones among the first `keep`. */
+    function vlResetSizes(vl: VirtualList, count: number, keep: number) {
+        const old = vl.sizes;
+        vl.count = count;
+        vl.sizes = new Float64Array(count).fill(NaN);
+        vl.deltas = new Float64Array(count + 1);
+        for (let i = 0; i < Math.min(keep, count, old.length); i++) if (!isNaN(old[i])) vlSetSize(vl, i, old[i]);
+    }
+
+    /** The item at `y`, in list coordinates (0: the top of the first item). */
+    function vlIndexAt(vl: VirtualList, y: number) {
+        let lo = 0;
+        let hi = Math.max(0, vl.count - 1);
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (vlOffset(vl, mid + 1) > y) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+
+    function vlScroller(el: Element): HTMLElement | null {
+        for (let node = el.parentElement; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
+            if (/(auto|scroll|overlay)/.test(getComputedStyle(node).overflowY)) return node;
+        }
+        return null;
+    }
+
+    const vlShown = (vl: VirtualList) =>
+        vl.before.isConnected && vl.before.getClientRects().length > 0 && (!vl.scroller || vl.scroller.clientHeight > 0);
+
+    /** What the view shows, in list coordinates and CSS pixels (a scale transform - an opening animation - divided out). */
+    function vlView(vl: VirtualList) {
+        const listTop = vl.before.getBoundingClientRect().top;
+        const s = vl.scroller;
+        if (!s) return { top: -listTop, height: document.documentElement.clientHeight, scale: 1, insetTop: 0, insetBottom: 0 };
+        const r = s.getBoundingClientRect();
+        const scale = s.offsetHeight > 0 && r.height > 0 ? r.height / s.offsetHeight : 1;
+        const insets = scrollInsets(s);
+        return { top: (r.top - listTop) / scale + s.clientTop, height: s.clientHeight, scale, insetTop: insets.top, insetBottom: insets.bottom };
+    }
+
+    /** Scrolls the view by `delta`; `round` rounds the new position (the browser snaps it to whole pixels anyway). */
+    function vlScrollBy(vl: VirtualList, delta: number, round?: (y: number) => number) {
+        const from = vl.scroller ? vl.scroller.scrollTop : window.scrollY;
+        const to = round ? round(from + delta) : from + delta;
+        if (Math.abs(to - from) < (round ? 0.01 : 0.5)) return;
+        if (vl.scroller) vl.scroller.scrollTop = to;
+        else window.scrollTo(window.scrollX, to);
+    }
+
+    function vlItems(vl: VirtualList) {
+        const items: HTMLElement[] = [];
+        for (let el = vl.before.nextElementSibling; el && el !== vl.after; el = el.nextElementSibling) items.push(el as HTMLElement);
+        return items;
+    }
+
+    function vlHeight(el: HTMLElement, px: number) {
+        const value = `${Math.max(0, px)}px`;
+        if (el.style.height !== value) el.style.height = value;
+    }
+
+    function vlListen(vl: VirtualList, scroller: HTMLElement | null | undefined) {
+        const off: EventTarget | null = vl.scroller === undefined ? null : vl.scroller ?? window;
+        if (off) {
+            off.removeEventListener('scroll', vl.onScroll);
+            for (const type of ['wheel', 'touchstart', 'pointerdown']) off.removeEventListener(type, vl.onUserScroll);
+        }
+        if (vl.scroller) {
+            vl.resizes.unobserve(vl.scroller);
+            if (vl.scroller.style.overflowAnchor === 'none') vl.scroller.style.overflowAnchor = '';
+        } else if (vl.scroller === null) {
+            vl.resizes.unobserve(vl.list);
+        }
+        vl.scroller = scroller;
+        if (scroller === undefined) return;
+        const on: EventTarget = scroller ?? window;
+        on.addEventListener('scroll', vl.onScroll, { passive: true });
+        // A user scrolling the list decides where the view goes: an item still being revealed stops pulling it back.
+        for (const type of ['wheel', 'touchstart', 'pointerdown']) on.addEventListener(type, vl.onUserScroll, { passive: true });
+        // The view's size decides the window (an options panel has none while it is hidden).
+        vl.resizes.observe(scroller ?? vl.list);
+    }
+
+    function vlSync(vl: VirtualList) {
+        if (!virtualLists.has(vl.id) || !vl.before.isConnected) return;
+        const [start, end, count, epoch] = (vl.before.getAttribute('data-bit-bh-range') || '').split(' ').map(Number);
+        // Another list (a new filter): none of the heights are its items'.
+        const replaced = epoch !== vl.epoch;
+        if (replaced) {
+            vl.epoch = epoch;
+            vl.reveal = -1;
+            vlResetSizes(vl, count || 0, 0);
+        } else if ((count || 0) !== vl.count) {
+            vlResetSizes(vl, count || 0, count || 0);
+        }
+        vl.start = Math.min(start || 0, vl.count);
+        vl.end = Math.min(Math.max(end || 0, vl.start), vl.count);
+
+        const scroller = vlScroller(vl.before);
+        if (scroller !== vl.scroller) vlListen(vl, scroller);
+        // The browser's own scroll anchoring would move the view a second time.
+        if (scroller && scroller.style.overflowAnchor !== 'none') scroller.style.overflowAnchor = 'none';
+
+        const items = vlItems(vl);
+        const current = new Set<Element>(items);
+        for (const el of vl.items) if (!current.has(el)) vl.resizes.unobserve(el);
+        for (const el of items) if (!vl.items.has(el)) vl.resizes.observe(el);
+        vl.items = current;
+
+        if (!vlShown(vl)) {
+            vlHeight(vl.before, vlOffset(vl, vl.start));
+            vlHeight(vl.after, vlOffset(vl, vl.count) - vlOffset(vl, vl.end));
+            return;
+        }
+
+        const view = vlView(vl);
+        // The item at the top of the view, and how far into it the view starts: it stays there.
+        const anchor = replaced ? -1 : vlIndexAt(vl, Math.max(0, view.top));
+        const anchorOffset = anchor >= 0 ? vlOffset(vl, anchor) : 0;
+
+        // An item's height is the distance to the next one's top: margins and gaps between them included.
+        if (items.length > 0 && items.length === vl.end - vl.start) {
+            const tops = items.map((el) => el.getBoundingClientRect().top);
+            tops.push(vl.after.getBoundingClientRect().top);
+            for (let k = 0; k < items.length; k++) {
+                const size = Math.max(0, (tops[k + 1] - tops[k]) / view.scale);
+                const i = vl.start + k;
+                if (isNaN(vl.sizes[i]) || Math.abs(vl.sizes[i] - size) > 0.25) vlSetSize(vl, i, size);
+            }
+        }
+        vlHeight(vl.before, vlOffset(vl, vl.start));
+        vlHeight(vl.after, vlOffset(vl, vl.count) - vlOffset(vl, vl.end));
+        if (anchor >= 0) vlScrollBy(vl, vlOffset(vl, anchor) - anchorOffset);
+        if (vl.reveal >= 0) vlRevealStep(vl);
+        vlRequest(vl);
+    }
+
+    /** Asks the component for the window the view needs, unless the rendered one still covers it (with half the overscan to spare). */
+    function vlRequest(vl: VirtualList) {
+        if (vl.requesting || vl.count === 0 || !virtualLists.has(vl.id) || !vlShown(vl)) return;
+        const view = vlView(vl);
+        const first = vlIndexAt(vl, Math.max(0, view.top));
+        const last = vlIndexAt(vl, Math.max(0, view.top + view.height));
+        const spare = Math.floor(vl.overscan / 2);
+        if (vl.start <= Math.max(0, first - spare) && vl.end >= Math.min(vl.count, last + 1 + spare)) return;
+        const start = Math.max(0, first - vl.overscan);
+        const end = Math.min(vl.count, last + 1 + vl.overscan);
+        if (start === vl.start && end === vl.end) return;
+        vl.requesting = true;
+        // The render it brings is on the page (and synced) by the time the call returns: then look again.
+        const done = () => { vl.requesting = false; vlRequest(vl); };
+        vl.dotnet.invokeMethodAsync('SetRange', start, end, vl.epoch).then(done, done);
+    }
+
+    function vlReveal(vl: VirtualList, index: number) {
+        vl.reveal = index >= 0 && index < vl.count ? index : -1;
+        if (vl.reveal >= 0) vlRevealStep(vl);
+        vlRequest(vl);
+    }
+
+    /** Scrolls the item being revealed into view: where it is once it has rendered (which ends the reveal), else where the heights put it. */
+    function vlRevealStep(vl: VirtualList) {
+        const index = vl.reveal;
+        if (index < 0 || index >= vl.count) { vl.reveal = -1; return; }
+        if (!vlShown(vl)) return;
+        const view = vlView(vl);
+        const items = index >= vl.start && index < vl.end ? vlItems(vl) : [];
+        const el = items.length === vl.end - vl.start ? items[index - vl.start] : undefined;
+        let top: number;
+        let bottom: number;
+        if (el) {
+            const listTop = vl.before.getBoundingClientRect().top;
+            const r = el.getBoundingClientRect();
+            top = (r.top - listTop) / view.scale;
+            bottom = (r.bottom - listTop) / view.scale;
+            vl.reveal = -1;
+        } else {
+            top = vlOffset(vl, index);
+            bottom = top + vlSize(vl, index);
+        }
+        const visibleTop = view.top + view.insetTop;
+        const visibleBottom = view.top + view.height - view.insetBottom;
+        // An item taller than the view shows its top. The position is rounded toward the item: the browser snaps it to
+        // whole pixels, which must not leave a fraction of the item out of view.
+        if (top < visibleTop) vlScrollBy(vl, top - visibleTop, Math.floor);
+        else if (bottom > visibleBottom) {
+            if (bottom - top > visibleBottom - visibleTop) vlScrollBy(vl, top - visibleTop, Math.floor);
+            else vlScrollBy(vl, bottom - visibleBottom, Math.ceil);
+        }
+    }
+
     // ─── dom ─────────────────────────────────────────────────────────────────────
 
     function scrollParent(el: Element) {
@@ -1813,6 +2161,9 @@ function createRuntime() {
         scrollToIndex(containerId: ElementLike, index: number, itemSize: number, itemId?: string) {
             const container = byId(containerId);
             if (!container) return;
+            // Items that differ in height: the list reveals it - or will, once it has attached.
+            for (const vl of virtualLists.values()) if (vl.list === container) { vlReveal(vl, index); return; }
+            if (container.querySelector(':scope > [data-bit-bh-spacer]')) { pendingReveals.set(container, index); return; }
             const el = itemId ? document.getElementById(itemId) : null;
             if (el) { dom.scrollIntoView(itemId); return; }
             const insets = scrollInsets(container);
@@ -1820,6 +2171,50 @@ function createRuntime() {
             if (top - insets.top < container.scrollTop) container.scrollTop = top - insets.top;
             else if (top + itemSize + insets.bottom > container.scrollTop + container.clientHeight)
                 container.scrollTop = top + itemSize + insets.bottom - container.clientHeight;
+        },
+        /** Starts measuring a BitBhVirtualizer's items (see virtual lists). Returns a handle for updateVirtualList / detachVirtualList. */
+        attachVirtualList(dotnet: DotNetRef, before: HTMLElement, after: HTMLElement, itemSize: number, overscan: number) {
+            if (!before || !after || !before.isConnected || !before.parentElement) return 0;
+            const vl = {
+                id: ++virtualSeq, dotnet, list: before.parentElement, before, after, scroller: undefined,
+                estimate: itemSize > 0 ? itemSize : 36, overscan: Math.max(0, overscan | 0),
+                epoch: NaN, count: 0, start: 0, end: 0, sizes: new Float64Array(0), deltas: new Float64Array(1),
+                requesting: false, reveal: -1, items: new Set<Element>(),
+            } as VirtualList;
+            vl.onScroll = () => vlRequest(vl);
+            vl.onUserScroll = () => { vl.reveal = -1; };
+            before.style.flexShrink = '0';
+            after.style.flexShrink = '0';
+            vl.mutations = new MutationObserver(() => vlSync(vl));
+            vl.mutations.observe(vl.list, { childList: true });
+            vl.mutations.observe(before, { attributes: true, attributeFilter: ['data-bit-bh-range'] });
+            vl.resizes = new ResizeObserver(() => vlSync(vl));
+            virtualLists.set(vl.id, vl);
+            vlSync(vl);
+            const pending = pendingReveals.get(vl.list);
+            if (pending !== undefined) {
+                pendingReveals.delete(vl.list);
+                vlReveal(vl, pending);
+            }
+            return vl.id;
+        },
+        updateVirtualList(id: number, itemSize: number, overscan: number) {
+            const vl = virtualLists.get(id);
+            if (!vl) return;
+            vl.overscan = Math.max(0, overscan | 0);
+            if (itemSize > 0 && itemSize !== vl.estimate) {
+                vl.estimate = itemSize;
+                vlResetSizes(vl, vl.count, vl.count);
+            }
+            vlSync(vl);
+        },
+        detachVirtualList(id: number) {
+            const vl = virtualLists.get(id);
+            if (!vl) return;
+            virtualLists.delete(id);
+            vl.mutations.disconnect();
+            vlListen(vl, undefined);
+            vl.resizes.disconnect();
         },
         click(id: ElementLike) {
             byId(id)?.click();
@@ -1857,7 +2252,8 @@ function createRuntime() {
                 const area = document.createElement('textarea');
                 area.value = text;
                 area.setAttribute('readonly', '');
-                area.setAttribute('style', 'position:fixed;top:0;left:0;opacity:0;pointer-events:none');
+                // Through the CSSOM, which a strict Content-Security-Policy allows where it refuses a style attribute.
+                area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
                 document.body.appendChild(area);
                 const previous = document.activeElement as HTMLElement | null;
                 area.select();
@@ -1993,23 +2389,69 @@ function createRuntime() {
     // Pointer-driven reordering. While dragging, siblings are shifted with CSS
     // transforms (no .NET round-trips); on drop the final indexes are reported to
     // .NET, which reorders its data and re-renders.
+    //
+    // Lists of a group exchange items: the dragged item then follows the pointer
+    // freely, and over another list of the group that takes it (.NET names them
+    // when the drag starts) the items there make room where it would land while
+    // the ones of its own list close the gap it left. Nothing is moved in the DOM -
+    // Blazor owns it - so the drop is reported to .NET with the target list's id.
 
     interface SortableState {
         id: number;
         dotnet: DotNetRef | null;
         containerId: string;
-        options: { orientation?: string; threshold?: number };
+        options: { orientation?: string; threshold?: number; grouped?: boolean };
         drag: unknown;
         onPointerDown?: (e: PointerEvent) => void;
+    }
+
+    // Another list a grouped drag can drop into, measured when .NET named it.
+    interface SortableTarget {
+        el: HTMLElement;
+        vertical: boolean;
+        items: HTMLElement[];
+        rects: DOMRect[];
+        gap: number;
     }
 
     const sortables = new Map<number, SortableState>();
     let sortableSeq = 0;
 
+    function sortableItemsOf(container: HTMLElement) {
+        return Array.from(container.querySelectorAll<HTMLElement>(`[data-bit-bh-sortable-item="${CSS.escape(container.id)}"]`));
+    }
+
     function sortableItems(state: SortableState) {
         const container = byId(state.containerId);
         if (!container) return [];
-        return Array.from(container.querySelectorAll<HTMLElement>(`[data-bit-bh-sortable-item="${CSS.escape(state.containerId)}"]`));
+        return sortableItemsOf(container);
+    }
+
+    // The space between two items: measured, or the list's CSS gap when it has fewer than two.
+    function sortableGap(rects: DOMRect[], vertical: boolean, container: HTMLElement) {
+        if (rects.length > 1) return Math.abs(vertical ? rects[1].top - rects[0].bottom : rects[1].left - rects[0].right);
+        const style = getComputedStyle(container);
+        return parseFloat(vertical ? style.rowGap : style.columnGap) || 0;
+    }
+
+    function sortableTarget(id: string): SortableTarget | null {
+        const el = byId(id);
+        if (!el) return null;
+        const vertical = el.getAttribute('data-orientation') !== 'horizontal';
+        const items = sortableItemsOf(el);
+        const rects = items.map((i) => i.getBoundingClientRect());
+        return { el, vertical, items, rects, gap: sortableGap(rects, vertical, el) };
+    }
+
+    // The target under the point - the innermost, should lists nest.
+    function sortableTargetAt(targets: SortableTarget[], x: number, y: number) {
+        let found: SortableTarget | null = null;
+        for (const t of targets) {
+            const r = t.el.getBoundingClientRect();
+            if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+            if (!found || found.el.contains(t.el)) found = t;
+        }
+        return found;
     }
 
     function startSortDrag(state: SortableState, item: HTMLElement, e: PointerEvent) {
@@ -2017,12 +2459,21 @@ function createRuntime() {
         const from = items.indexOf(item);
         if (from < 0) return;
         const vertical = state.options.orientation !== 'horizontal';
+        const grouped = !!state.options.grouped;
         const rects = items.map((el) => el.getBoundingClientRect());
-        const drag = { item, from, to: from, items, rects, vertical, startX: e.clientX, startY: e.clientY, pointerId: e.pointerId, started: false };
+        const drag = {
+            item, from, to: from, items, rects, vertical, startX: e.clientX, startY: e.clientY, pointerId: e.pointerId, started: false,
+            targets: [] as SortableTarget[], over: null as SortableTarget | null,
+        };
         state.drag = drag;
         // The inline values the drag writes on the item are the consumer's again once it ends.
         const savedPosition = item.style.position;
         const savedZIndex = item.style.zIndex;
+
+        const leave = (target: SortableTarget) => {
+            target.el.removeAttribute('data-drag-over');
+            for (const el of target.items) el.style.transform = '';
+        };
 
         const move = (ev: PointerEvent) => {
             if (ev.pointerId !== drag.pointerId) return;
@@ -2037,12 +2488,51 @@ function createRuntime() {
                 item.style.position = item.style.position || 'relative';
                 for (const el of items) if (el !== item) el.style.transition = 'transform 150ms ease';
                 try { item.setPointerCapture(drag.pointerId); } catch { /* ignore */ }
-                state.dotnet?.invokeMethodAsync('OnPointerDragStart', from).catch(() => { });
+                state.dotnet?.invokeMethodAsync<string[] | null>('OnPointerDragStart', from).then((ids) => {
+                    // The other lists that take the item. A drag that ended meanwhile has none.
+                    if (state.drag !== drag || !grouped || !ids?.length) return;
+                    drag.targets = ids.map(sortableTarget).filter((t): t is SortableTarget => !!t);
+                    for (const t of drag.targets) {
+                        t.el.setAttribute('data-drop-target', '');
+                        for (const el of t.items) el.style.transition = 'transform 150ms ease';
+                    }
+                }).catch(() => { });
             }
             ev.preventDefault();
-            item.style.transform = vertical ? `translateY(${dy}px)` : `translateX(${dx}px)`;
+            item.style.transform = grouped ? `translate(${dx}px, ${dy}px)` : vertical ? `translateY(${dy}px)` : `translateX(${dx}px)`;
 
             const r = drag.rects[from];
+            const size = vertical ? r.height : r.width;
+            const gapSize = items.length > 1 ? (vertical
+                ? Math.abs((drag.rects[1].top - drag.rects[0].bottom))
+                : Math.abs((drag.rects[1].left - drag.rects[0].right))) : 0;
+
+            const over = grouped ? sortableTargetAt(drag.targets, ev.clientX, ev.clientY) : null;
+            if (over !== drag.over) {
+                if (drag.over) leave(drag.over);
+                drag.over = over;
+                over?.el.setAttribute('data-drag-over', '');
+            }
+            if (over) {
+                // Out of its list: the items after it close the gap ...
+                items.forEach((el, i) => {
+                    if (el !== item) el.style.transform = i > from ? (vertical ? `translateY(${-(size + gapSize)}px)` : `translateX(${-(size + gapSize)}px)`) : '';
+                });
+                // ... and the target's make room where its center would land.
+                const c = over.vertical ? r.top + r.height / 2 + dy : r.left + r.width / 2 + dx;
+                let to = over.rects.length;
+                for (let i = 0; i < over.rects.length; i++) {
+                    const ri = over.rects[i];
+                    if (c < (over.vertical ? ri.top + ri.height / 2 : ri.left + ri.width / 2)) { to = i; break; }
+                }
+                drag.to = to;
+                const room = (over.vertical ? r.height : r.width) + over.gap;
+                over.items.forEach((el, i) => {
+                    el.style.transform = i >= to ? (over.vertical ? `translateY(${room}px)` : `translateX(${room}px)`) : '';
+                });
+                return;
+            }
+
             const center = vertical ? r.top + r.height / 2 + dy : r.left + r.width / 2 + dx;
             let to = from;
             for (let i = 0; i < drag.rects.length; i++) {
@@ -2052,10 +2542,6 @@ function createRuntime() {
                 if (i > from && center > mid) to = i;
             }
             drag.to = to;
-            const size = vertical ? r.height : r.width;
-            const gapSize = items.length > 1 ? (vertical
-                ? Math.abs((drag.rects[1].top - drag.rects[0].bottom))
-                : Math.abs((drag.rects[1].left - drag.rects[0].right))) : 0;
             items.forEach((el, i) => {
                 if (el === item) return;
                 let shift = 0;
@@ -2072,6 +2558,11 @@ function createRuntime() {
             document.removeEventListener('pointercancel', cancel, true);
             document.removeEventListener('keydown', esc, true);
             for (const el of items) { el.style.transform = ''; el.style.transition = ''; }
+            for (const t of drag.targets) {
+                leave(t);
+                t.el.removeAttribute('data-drop-target');
+                for (const el of t.items) el.style.transition = '';
+            }
             item.style.zIndex = savedZIndex;
             item.style.position = savedPosition;
             item.removeAttribute('data-dragging');
@@ -2082,7 +2573,8 @@ function createRuntime() {
             const swallow = (ce: Event) => { ce.stopPropagation(); ce.preventDefault(); };
             document.addEventListener('click', swallow, { capture: true, once: true });
             setTimeout(() => document.removeEventListener('click', swallow, true), 0);
-            state.dotnet?.invokeMethodAsync('OnPointerDragEnd', drag.from, cancelled ? drag.from : drag.to, !!cancelled).catch(() => { });
+            const target = !cancelled && drag.over ? drag.over.el.id : null;
+            state.dotnet?.invokeMethodAsync('OnPointerDragEnd', drag.from, cancelled ? drag.from : drag.to, !!cancelled, target).catch(() => { });
         };
         const up = (ev: PointerEvent) => end(ev, false);
         const cancel = (ev: PointerEvent) => end(ev, true);
@@ -2095,7 +2587,7 @@ function createRuntime() {
     }
 
     const sortable = {
-        /** options: { orientation, handleSelector, threshold } */
+        /** options: { orientation, threshold, grouped } */
         attach(dotnet: DotNetRef, containerId: ElementLike, options: SortableState['options']) {
             const container = byId(containerId);
             if (!container) return 0;
@@ -2124,6 +2616,18 @@ function createRuntime() {
             if (!state) return;
             sortables.delete(handle);
             byId(state.containerId)?.removeEventListener('pointerdown', state.onPointerDown);
+        },
+        /**
+         * The lists `ids` in the order the arrow keys across the list `current` walk them (keyboard moves between
+         * lists): document order, reversed for horizontal keys in a right-to-left layout. Null when `current` is gone.
+         */
+        order(current: string, ids: string[], horizontal: boolean) {
+            const self = byId(current);
+            if (!self) return null;
+            const lists = (ids || []).map((i) => byId(i)).filter(isElement);
+            lists.sort((a, b) => (a === b ? 0 : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+            if (horizontal && getComputedStyle(self).direction === 'rtl') lists.reverse();
+            return lists.map((el) => el.id);
         },
     };
 
@@ -3028,7 +3532,10 @@ function createRuntime() {
             sheet.replaceSync(css);
             document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
         } catch {
+            // Browsers without constructed sheets: a <style> element, which a strict policy only runs with its nonce.
             const style = document.createElement('style');
+            const nonce = cspNonce();
+            if (nonce) style.nonce = nonce;
             style.setAttribute('data-bit-bh-scroll-area-sheet', '');
             style.textContent = css;
             document.head.appendChild(style);
@@ -3593,6 +4100,69 @@ function createRuntime() {
         },
     };
 
+    // ─── grid navigation ─────────────────────────────────────────────────────────
+    //
+    // The arrow keys of a BitBhGrid move the focus between its cells here, as they are pressed. Over a Blazor Server
+    // connection a move made by the component lands a round trip later, and keys pressed in the meantime still come
+    // from the cell left behind: they would walk from there again, and a test of the focus right after a key would find
+    // it where it was. The component handles the same keys too - selection, expansion and the tab stop follow - and
+    // asks for its own move only while the focus is still on the cell the key was pressed on (focus.focus `from`).
+    //
+    //     <table data-bit-bh-grid="rows-key" data-bit-bh-page-size="10" [data-bit-bh-dir="rtl"]>
+    //       <tr data-bit-bh-item="rows-key" data-bit-bh-cells="cells-key">
+    //         <td data-bit-bh-item="cells-key" data-bit-bh-event-owner>
+    //
+    // Keys that change more than the focus stay with the component: a treegrid's ArrowRight on the first cell of a
+    // collapsed row (expands it) and ArrowLeft on a first cell (collapses the row, or goes to its parent row).
+
+    function gridCells(row: Element) {
+        const key = row.getAttribute('data-bit-bh-cells');
+        return key ? Array.from(row.querySelectorAll<HTMLElement>(`[data-bit-bh-item="${CSS.escape(key)}"]`)) : [];
+    }
+
+    function onGridKeyDown(e: KeyboardEvent) {
+        const cell = e.target;
+        if (!isElement(cell) || e.altKey || e.metaKey || isComposing(e) || !cell.hasAttribute('data-bit-bh-event-owner')) return;
+        const cellsKey = cell.getAttribute('data-bit-bh-item');
+        const row = cellsKey ? cell.parentElement?.closest(`[data-bit-bh-cells="${CSS.escape(cellsKey)}"]`) : null;
+        const rowsKey = row?.getAttribute('data-bit-bh-item');
+        const grid = rowsKey ? row.closest<HTMLElement>(`[data-bit-bh-grid="${CSS.escape(rowsKey)}"]`) : null;
+        if (!grid) return;
+
+        const ctrl = e.ctrlKey;
+        if (ctrl && e.key !== 'Home' && e.key !== 'End') return;
+        const rows = Array.from(grid.querySelectorAll(`[data-bit-bh-item="${CSS.escape(rowsKey)}"]`)).filter((r) => !r.hasAttribute('hidden'));
+        const rowIndex = rows.indexOf(row);
+        const col = gridCells(row).indexOf(cell);
+        if (rowIndex < 0 || col < 0) return;
+        const rtl = grid.getAttribute('data-bit-bh-dir') === 'rtl';
+        const tree = grid.getAttribute('role') === 'treegrid';
+        const page = parseInt(grid.getAttribute('data-bit-bh-page-size') ?? '', 10) || 10;
+
+        let to: [Element | undefined, number] | null = null;
+        switch (e.key) {
+            case 'ArrowRight':
+            case 'ArrowLeft': {
+                const forward = (e.key === 'ArrowRight') !== rtl;
+                if (tree && col === 0 && (!forward || row.getAttribute('aria-expanded') === 'false')) return;
+                to = [row, col + (forward ? 1 : -1)];
+                break;
+            }
+            case 'ArrowDown': to = [rows[rowIndex + 1], col]; break;
+            case 'ArrowUp': to = [rows[rowIndex - 1], col]; break;
+            case 'PageDown': to = [rows[Math.min(rows.length - 1, rowIndex + page)], col]; break;
+            case 'PageUp': to = [rows[Math.max(0, rowIndex - page)], col]; break;
+            case 'Home': to = [ctrl ? rows[0] : row, 0]; break;
+            case 'End': to = [ctrl ? rows[rows.length - 1] : row, Number.MAX_SAFE_INTEGER]; break;
+            default: return;
+        }
+        const [targetRow, targetCol] = to;
+        const cells = targetRow ? gridCells(targetRow) : [];
+        const target = cells[Math.max(0, Math.min(targetCol, cells.length - 1))];
+        e.preventDefault();
+        if (target && target !== cell) focusElement(target);
+    }
+
     // ─── tab between ─────────────────────────────────────────────────────────────
     //
     // A disclosure whose panel is rendered elsewhere (a navigation menu's content in a shared viewport) keeps
@@ -3710,23 +4280,63 @@ function createRuntime() {
     //
     // A drag is not a swipe when it starts in a text field, in [data-bit-bh-swipe-ignore], or in content that
     // can still scroll the way the finger moves (a list scrolled away from its top in a bottom drawer).
+    //
+    // Snap points (options.snapPoints: "0.5" a fraction of the viewport along the drawer's axis, "160px" pixels)
+    // let the drawer rest part open. Each one leaves the panel moved towards its edge by its size less the part
+    // the snap point shows; the active one's is written as --bit-bh-drawer-snap-point-offset-x / -y, with
+    // --bit-bh-drawer-fade (0..1, from options.fadeFromIndex), on the panel and its backdrop - measured again
+    // whenever the panel or the viewport changes size. A drag then also opens the drawer further, up to the
+    // largest snap point; its movement stays relative to the snap point it started at (negative while opening),
+    // and the progress counts from the smallest one. Let go, the drawer settles on the nearest snap point, a
+    // flick moves it on to the next one (all the way when fast, unless options.sequential), and a drag past the
+    // smallest one by the threshold closes it. The new snap point shows at once and .NET is told
+    // (OnSnapPointChange); its answer - a controlled owner may keep the old one - is what then shows. Keyboard
+    // focus landing in the part of the panel a snap point hides moves the drawer to one that shows it.
 
-    interface DrawerOptions { side?: string; threshold?: number; backdropId?: string | null; enabled?: boolean }
+    interface DrawerOptions {
+        side?: string; threshold?: number; backdropId?: string | null; enabled?: boolean;
+        snapPoints?: string[] | null; activeSnapPoint?: number; fadeFromIndex?: number; sequential?: boolean;
+    }
+
+    interface DrawerSnap {
+        points: { value: number; px: boolean }[];
+        active: number;
+        /** The panel's size along the drawer's axis (untransformed). */
+        size: number;
+        /** How far (px, towards the edge) each snap point leaves the panel moved. */
+        offsets: number[];
+        /** The snap points' indexes from the smallest to the largest. */
+        order: number[];
+    }
 
     interface DrawerState {
         dotnet: DotNetRef;
         panelId: string;
         options: DrawerOptions;
         swiping: boolean;
+        detached?: boolean;
+        snap?: DrawerSnap | null;
+        /** Snap point changes sent to .NET and not answered yet, and the latest one's number. */
+        snapRequests: number;
+        snapSeq: number;
         onPointerDown?: (e: PointerEvent) => void;
         onTouchMove?: (e: TouchEvent) => void;
+        onFocusIn?: (e: FocusEvent) => void;
+        onResize?: () => void;
+        resizeObserver?: ResizeObserver;
     }
 
     const drawers = new Map<number, DrawerState>();
     let drawerSeq = 0;
 
     const SWIPE_VARS = ['--bit-bh-drawer-swipe-movement-x', '--bit-bh-drawer-swipe-movement-y', '--bit-bh-drawer-swipe-progress'];
+    const SNAP_VARS = ['--bit-bh-drawer-snap-point-offset-x', '--bit-bh-drawer-snap-point-offset-y', '--bit-bh-drawer-fade'];
     const SWIPE_IGNORE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-bit-bh-swipe-ignore]';
+
+    const drawerVertical = (side: string) => side === 'top' || side === 'bottom';
+    // +1 when the closing direction is the axis' positive direction (down / right).
+    const drawerSign = (side: string) => (side === 'bottom' || side === 'right' ? 1 : -1);
+    const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
     function drawerSurfaces(state: DrawerState) {
         return [byId(state.panelId), byId(state.options.backdropId)].filter(Boolean);
@@ -3737,6 +4347,121 @@ function createRuntime() {
             for (const v of SWIPE_VARS) el.style.removeProperty(v);
             el.removeAttribute('data-swiping');
         }
+    }
+
+    /** Measures where each snap point leaves the panel (its size less what the snap point shows). */
+    function measureSnap(state: DrawerState) {
+        const snap = state.snap;
+        const panel = byId(state.panelId);
+        if (!snap || !panel) return;
+        const vertical = drawerVertical(state.options.side || 'bottom');
+        // The height a fixed panel lives in follows a mobile browser's toolbars; the width leaves out a scrollbar.
+        const viewport = vertical ? window.innerHeight : document.documentElement.clientWidth || window.innerWidth;
+        const size = vertical ? panel.offsetHeight : panel.offsetWidth;
+        snap.size = size;
+        snap.offsets = snap.points.map((p) => {
+            const shown = Math.max(0, p.px ? p.value : Math.min(1, p.value) * viewport);
+            return Math.max(0, size - shown);
+        });
+        snap.order = snap.points.map((_, i) => i).sort((a, b) => snap.offsets[b] - snap.offsets[a] || a - b);
+    }
+
+    /** --bit-bh-drawer-fade at an offset: 1 at the fadeFromIndex snap point and beyond, 0 at the one before it (or closed). */
+    function snapFade(state: DrawerState, offset: number) {
+        const snap = state.snap;
+        const from = Math.min(Math.max(0, state.options.fadeFromIndex || 0), snap.points.length - 1);
+        const rank = snap.order.indexOf(from);
+        const full = snap.offsets[from];
+        const none = rank > 0 ? snap.offsets[snap.order[rank - 1]] : snap.size;
+        if (offset <= full) return 1;
+        if (offset >= none) return 0;
+        return (none - offset) / (none - full);
+    }
+
+    /** Rests the panel at the active snap point (a drag writes its own values until it ends). */
+    function writeSnap(state: DrawerState) {
+        const snap = state.snap;
+        if (!snap || state.swiping) return;
+        const side = state.options.side || 'bottom';
+        const vertical = drawerVertical(side);
+        const at = snap.offsets[snap.active] || 0;
+        const offset = `${drawerSign(side) * at}px`;
+        const fade = String(round3(snapFade(state, at)));
+        for (const el of drawerSurfaces(state)) {
+            el.style.setProperty('--bit-bh-drawer-snap-point-offset-x', vertical ? '0px' : offset);
+            el.style.setProperty('--bit-bh-drawer-snap-point-offset-y', vertical ? offset : '0px');
+            el.style.setProperty('--bit-bh-drawer-fade', fade);
+        }
+    }
+
+    /** Applies options.snapPoints and options.activeSnapPoint. */
+    function applySnap(state: DrawerState) {
+        const list = state.options.snapPoints || [];
+        if (!list.length) {
+            state.snap = null;
+            for (const el of drawerSurfaces(state)) for (const v of SNAP_VARS) el.style.removeProperty(v);
+            return;
+        }
+        // One entry per snap point, an unreadable one included: the indexes are .NET's.
+        const points = list.map((raw) => {
+            const text = String(raw).trim();
+            const value = parseFloat(text);
+            return { value: isFinite(value) ? value : 0, px: /px$/i.test(text) };
+        });
+        const active = Math.min(Math.max(0, state.options.activeSnapPoint || 0), points.length - 1);
+        state.snap = { points, active, size: 0, offsets: [], order: [] };
+        measureSnap(state);
+        writeSnap(state);
+    }
+
+    /** Shows the snap point at `index` at once and tells .NET; its answer is what then shows. */
+    function requestSnap(state: DrawerState, index: number) {
+        const snap = state.snap;
+        if (!snap || index < 0 || index >= snap.points.length) return;
+        const changed = index !== snap.active;
+        snap.active = index;
+        writeSnap(state);
+        if (!changed) return;
+        const seq = ++state.snapSeq;
+        state.snapRequests++;
+        const answered = (answer: unknown) => {
+            state.snapRequests--;
+            // Only the latest request's answer counts: an earlier one is already out of date.
+            if (seq !== state.snapSeq || state.detached || !state.snap || typeof answer !== 'number' || answer < 0) return;
+            const shown = Math.min(answer, state.snap.points.length - 1);
+            if (shown === state.snap.active) return;
+            state.snap.active = shown;
+            writeSnap(state);
+        };
+        state.dotnet.invokeMethodAsync<number>('OnSnapPointChange', index).then(answered, () => answered(null));
+    }
+
+    /** The snap point a drag let go at `position` (px towards the edge) settles on, or -1 to close the drawer. */
+    function snapTarget(state: DrawerState, position: number, moved: number, velocity: number, threshold: number) {
+        const { offsets, order, size } = state.snap;
+        const dismissible = state.options.enabled !== false;
+        const smallest = order[0];
+        const largest = order[order.length - 1];
+        if (Math.abs(velocity) > 0.5 && Math.abs(moved) > 10) {
+            const closing = velocity > 0;
+            const end = closing ? (dismissible ? -1 : smallest) : largest;
+            // A fast flick carries the drawer all the way, unless it is to stop at every snap point.
+            if (!state.options.sequential && Math.abs(velocity) > 2) return end;
+            // Else on to the next snap point past where it was let go.
+            let next = -1;
+            for (const i of order) {
+                const past = closing ? offsets[i] > position + 1 : offsets[i] < position - 1;
+                if (past && (next < 0 || (closing ? offsets[i] < offsets[next] : offsets[i] > offsets[next]))) next = i;
+            }
+            return next >= 0 ? next : end;
+        }
+        // Past the smallest snap point by the threshold (a fraction of what it shows): closed.
+        const lowest = offsets[smallest];
+        const room = size - lowest;
+        if (dismissible && room > 0 && position > lowest + 1 && (position - lowest) / room >= threshold) return -1;
+        let best = smallest;
+        for (const i of order) if (Math.abs(offsets[i] - position) < Math.abs(offsets[best] - position)) best = i;
+        return best;
     }
 
     /** Whether `el` scrolls, and can still scroll the way a finger moving towards `side` scrolls it. */
@@ -3756,26 +4481,38 @@ function createRuntime() {
         return side === 'right' ? fromLeft > 1 : max - fromLeft > 1;
     }
 
-    function startSwipe(state: DrawerState, panel: HTMLElement, e: PointerEvent) {
+    /** `contentScrolls`: the drag started in content that can still scroll the way a finger closing the drawer moves. */
+    function startSwipe(state: DrawerState, panel: HTMLElement, e: PointerEvent, contentScrolls: boolean) {
         const side = state.options.side || 'bottom';
-        const vertical = side === 'top' || side === 'bottom';
-        // +1 when the closing direction is the axis' positive direction (down / right).
-        const sign = side === 'bottom' || side === 'right' ? 1 : -1;
+        const vertical = drawerVertical(side);
+        const sign = drawerSign(side);
+        const dismissible = state.options.enabled !== false;
         const pointerId = e.pointerId;
         const startX = e.clientX;
         const startY = e.clientY;
         let started = false;
+        // Px towards the edge: where the drag started (the active snap point) and where the panel is now.
+        let rest = 0;
+        let position = 0;
         let movement = 0;
         const samples: { t: number; d: number }[] = [];
 
         const size = () => Math.max(1, vertical ? panel.offsetHeight : panel.offsetWidth);
 
         const write = () => {
-            const progress = Math.min(1, movement / size());
+            const snap = state.snap;
+            let progress = Math.min(1, movement / size());
+            if (snap) {
+                // Towards closed from the smallest snap point.
+                const lowest = snap.offsets[snap.order[0]];
+                const room = snap.size - lowest;
+                progress = room > 0 ? Math.min(1, Math.max(0, (position - lowest) / room)) : 0;
+            }
             for (const el of drawerSurfaces(state)) {
                 el.style.setProperty('--bit-bh-drawer-swipe-movement-x', vertical ? '0px' : `${sign * movement}px`);
                 el.style.setProperty('--bit-bh-drawer-swipe-movement-y', vertical ? `${sign * movement}px` : '0px');
-                el.style.setProperty('--bit-bh-drawer-swipe-progress', String(Math.round(progress * 1000) / 1000));
+                el.style.setProperty('--bit-bh-drawer-swipe-progress', String(round3(progress)));
+                if (snap) el.style.setProperty('--bit-bh-drawer-fade', String(round3(snapFade(state, position))));
             }
         };
 
@@ -3787,24 +4524,43 @@ function createRuntime() {
             try { panel.releasePointerCapture(pointerId); } catch { /* ignore */ }
         };
 
+        const settle = () => {
+            clearSwipe(state);
+            writeSnap(state);
+        };
+
         const move = (ev: PointerEvent) => {
             if (ev.pointerId !== pointerId) return;
             const along = sign * (vertical ? ev.clientY - startY : ev.clientX - startX);
             const across = vertical ? ev.clientX - startX : ev.clientY - startY;
+            const snap = state.snap;
             if (!started) {
                 if (Math.abs(along) < 4 && Math.abs(across) < 4) return;
-                // A drag across the axis, or away from the edge, is the content's (scrolling, selecting).
-                if (along <= 0 || Math.abs(along) < Math.abs(across)) { stop(); return; }
+                // A drag across the axis is the content's (scrolling, selecting); so is one towards the edge in content
+                // that can scroll that way, or with nowhere to go, and one away from it unless a larger snap point is left.
+                const canClose = !contentScrolls && (!snap || dismissible || snap.active !== snap.order[0]);
+                const canOpen = !!snap && snap.active !== snap.order[snap.order.length - 1];
+                if (Math.abs(along) < Math.abs(across) || (along > 0 ? !canClose : !canOpen)) { stop(); return; }
                 started = true;
                 state.swiping = true;
+                rest = snap ? snap.offsets[snap.active] || 0 : 0;
                 try { panel.setPointerCapture(pointerId); } catch { /* ignore */ }
                 for (const el of drawerSurfaces(state)) el.setAttribute('data-swiping', '');
             }
             ev.preventDefault();
             window.getSelection?.()?.removeAllRanges();
-            movement = Math.max(0, along);
+            if (snap) {
+                // Between the largest snap point and closed (the smallest one when a swipe may not close it).
+                const most = snap.offsets[snap.order[snap.order.length - 1]];
+                const least = snap.offsets[snap.order[0]];
+                position = Math.min(dismissible ? Math.max(least, snap.size) : least, Math.max(most, rest + along));
+                movement = position - rest;
+            } else {
+                movement = Math.max(0, along);
+                position = movement;
+            }
             const now = performance.now();
-            samples.push({ t: now, d: movement });
+            samples.push({ t: now, d: position });
             while (samples.length > 2 && now - samples[0].t > 100) samples.shift();
             write();
         };
@@ -3819,15 +4575,27 @@ function createRuntime() {
             document.addEventListener('click', swallow, { capture: true, once: true });
             setTimeout(() => document.removeEventListener('click', swallow, true), 0);
 
+            // The speed over the last 100ms before the release: a drag held still before it is let go is no flick.
+            const now = performance.now();
+            while (samples.length && now - samples[0].t > 100) samples.shift();
             const first = samples[0];
             const last = samples[samples.length - 1];
             const velocity = first && last && last.t > first.t ? (last.d - first.d) / (last.t - first.t) : 0;
             const threshold = state.options.threshold ?? 0.25;
-            const dismiss = !cancelled && movement > 0 && (movement / size() >= threshold || (velocity > 0.5 && movement > 10));
-            if (!dismiss) { clearSwipe(state); return; }
+            if (state.snap) {
+                const target = cancelled ? state.snap.active : snapTarget(state, position, movement, velocity, threshold);
+                if (target >= 0) {
+                    clearSwipe(state);
+                    requestSnap(state, target);
+                    return;
+                }
+            } else {
+                const dismiss = !cancelled && movement > 0 && (movement / size() >= threshold || (velocity > 0.5 && movement > 10));
+                if (!dismiss) { clearSwipe(state); return; }
+            }
             // Kept while .NET closes the drawer: its exit animation starts from here.
             state.dotnet.invokeMethodAsync<boolean>('OnSwipeDismiss')
-                .then((closing) => { if (closing !== true) clearSwipe(state); }, () => clearSwipe(state));
+                .then((closing) => { if (closing !== true) settle(); }, settle);
         };
         const up = (ev: PointerEvent) => finish(ev, false);
         const cancel = (ev: PointerEvent) => finish(ev, true);
@@ -3838,56 +4606,119 @@ function createRuntime() {
     }
 
     const drawer = {
-        /** options: { side: 'top' | 'right' | 'bottom' | 'left', threshold (0..1), backdropId, enabled }. */
+        /**
+         * options: { side: 'top' | 'right' | 'bottom' | 'left', threshold (0..1), backdropId, enabled (a swipe may close it),
+         *            snapPoints (["0.5", "160px"] or null), activeSnapPoint (index), fadeFromIndex, sequential }.
+         */
         attach(dotnet: DotNetRef, panelId: string, options: DrawerOptions) {
             const panel = byId(panelId);
             if (!panel) return 0;
             const handle = ++drawerSeq;
-            const state: DrawerState = { dotnet, panelId, options: options || {}, swiping: false };
+            const state: DrawerState = { dotnet, panelId, options: options || {}, swiping: false, snapRequests: 0, snapSeq: 0 };
             clearSwipe(state);
+            applySnap(state);
             state.onPointerDown = (e: PointerEvent) => {
-                if (state.options.enabled === false || state.swiping) return;
+                // Without snap points to move between, a drag can only close the drawer.
+                if (state.swiping || (state.options.enabled === false && !(state.snap?.points.length > 1))) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 const target = e.target as Element;
                 if (!isElement(target) || !panel.contains(target) || target.closest(SWIPE_IGNORE)) return;
                 const side = state.options.side || 'bottom';
                 // A drag on the handle is always the drawer's; elsewhere, content that can scroll that way keeps it.
+                let scrolls = false;
                 if (!target.closest('[data-bit-bh-drawer-handle]')) {
                     for (let el: HTMLElement | null = target as HTMLElement; el; el = el.parentElement) {
-                        if (scrollsTowards(el, side)) return;
+                        if (scrollsTowards(el, side)) { scrolls = true; break; }
                         if (el === panel) break;
                     }
                 }
-                startSwipe(state, panel, e);
+                // Such content keeps a drag towards the edge; with snap points, one away from it can still open the drawer.
+                if (scrolls && !state.snap) return;
+                startSwipe(state, panel, e, scrolls);
             };
             // Touch: once the drag is a swipe, the browser must not also pan / scroll with it.
             state.onTouchMove = (e: TouchEvent) => { if (state.swiping && e.cancelable) e.preventDefault(); };
+            // Keyboard focus in what a snap point hides: open the drawer far enough to show it.
+            state.onFocusIn = (e: FocusEvent) => {
+                const snap = state.snap;
+                const target = e.target as Element;
+                if (!snap || state.swiping || !isElement(target) || target === panel) return;
+                let keyboard = false;
+                try { keyboard = target.matches(':focus-visible'); } catch { /* old browsers */ }
+                if (!keyboard) return;
+                // Measured again: the initial focus of a drawer that just opened lands before its size is observed.
+                state.onResize();
+                const side = state.options.side || 'bottom';
+                const p = panel.getBoundingClientRect();
+                const t = target.getBoundingClientRect();
+                // How much of the panel, from its far end, has to show for all of the target to.
+                const needed = side === 'bottom' ? t.bottom - p.top : side === 'top' ? p.bottom - t.top : side === 'right' ? t.right - p.left : p.right - t.left;
+                const shown = (i: number) => snap.size - snap.offsets[i];
+                if (needed <= shown(snap.active) + 1) return;
+                let fit = snap.order[snap.order.length - 1];
+                for (const i of snap.order) if (shown(i) >= needed) { fit = i; break; }
+                requestSnap(state, fit);
+            };
+            // The snap points follow the panel's size (0 while it is still hidden) and the viewport's.
+            state.onResize = () => {
+                if (!state.snap) return;
+                measureSnap(state);
+                writeSnap(state);
+            };
             panel.addEventListener('pointerdown', state.onPointerDown);
             panel.addEventListener('touchmove', state.onTouchMove, { passive: false });
+            panel.addEventListener('focusin', state.onFocusIn);
+            window.addEventListener('resize', state.onResize);
+            if (typeof ResizeObserver !== 'undefined') {
+                state.resizeObserver = new ResizeObserver(state.onResize);
+                state.resizeObserver.observe(panel);
+            }
             drawers.set(handle, state);
             return handle;
         },
         update(handle: number, options: DrawerOptions) {
             const state = drawers.get(handle);
-            if (state) state.options = options || {};
+            if (!state) return;
+            state.options = options || {};
+            // A snap point .NET has not answered for yet stays: the answer settles it.
+            if (state.snapRequests > 0 && state.snap) state.options.activeSnapPoint = state.snap.active;
+            applySnap(state);
         },
         detach(handle: number) {
             const state = drawers.get(handle);
             if (!state) return;
             drawers.delete(handle);
+            state.detached = true;
+            // The values stay: a closing drawer's exit animation starts where they leave the panel.
             const panel = byId(state.panelId);
             panel?.removeEventListener('pointerdown', state.onPointerDown);
             panel?.removeEventListener('touchmove', state.onTouchMove);
+            panel?.removeEventListener('focusin', state.onFocusIn);
+            window.removeEventListener('resize', state.onResize);
+            state.resizeObserver?.disconnect();
         },
     };
 
-    return {
-        install, onEnhancedLoad,
+    // Every call from .NET first applies the styles of what was just rendered (see flushStyles). The namespaces are
+    // wrapped in place, so their calls to one another go through it too - a no-op once nothing is pending.
+    const namespaces = {
         keys, interaction, anchor, layers, focus, modal, portal, presence, floating,
         hotkeys, collection, dom, announcer, transition, sortable, slider, scrub, rating, toasts, indicator, carousel,
         landmarks, scrollSpy, area, resizer, scrollArea, splitter,
         navigationMenu, drawer,
     };
+    for (const ns of Object.values(namespaces) as unknown as Record<string, unknown>[]) {
+        for (const [name, member] of Object.entries(ns)) {
+            if (typeof member !== 'function') continue;
+            const call = member as (...args: unknown[]) => unknown;
+            ns[name] = function (this: unknown, ...args: unknown[]) {
+                flushStyles();
+                return call.apply(this, args);
+            };
+        }
+    }
+
+    return { install, onEnhancedLoad, styles, ...namespaces };
 }
 
 type Runtime = ReturnType<typeof createRuntime>;
@@ -3895,7 +4726,7 @@ type Runtime = ReturnType<typeof createRuntime>;
 const runtime: Runtime = ((globalThis as { __bitBheadless?: Runtime }).__bitBheadless ??= createRuntime());
 
 export const {
-    install, onEnhancedLoad,
+    install, onEnhancedLoad, styles,
     keys, interaction, anchor, layers, focus, modal, portal, presence, floating,
     hotkeys, collection, dom, announcer, transition, sortable, slider, scrub, rating, toasts, indicator, carousel,
     landmarks, scrollSpy, area, resizer, scrollArea, splitter,

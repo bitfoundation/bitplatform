@@ -47,6 +47,40 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Date and time" Code="@_dateTimeCode" Css="@_css">
+    <Description>
+        <code>BitBhDateTimePicker</code> takes the same parts around a <code>BitBhDateTimeField</code>: the segments edit the
+        date and the time (<code>Granularity</code>, <code>HourCycle</code>), and <code>@@bind-Value</code> is a
+        <code>DateTime?</code>. The calendar picks the date and keeps the time — the time typed, or midnight.
+    </Description>
+    <LiveContent>
+        <div class="date-picker-demo">
+            <BitBhField>
+                <BitBhLabel class="date-picker-label">Appointment</BitBhLabel>
+                <BitBhDateTimePicker @bind-Value="appointment" Culture="DemoDateCultures.EnUs">
+                    <BitBhDatePickerGroup class="date-picker-group">
+                        <BitBhDateFieldSegments />
+                        <BitBhDatePickerTrigger class="date-picker-trigger">@CalendarIcon</BitBhDatePickerTrigger>
+                    </BitBhDatePickerGroup>
+                    <BitBhDatePickerContent class="date-picker-popover">
+                        <BitBhCalendar class="calendar">
+                            <div class="calendar-header">
+                                <BitBhCalendarPrevious class="calendar-nav">‹</BitBhCalendarPrevious>
+                                <BitBhCalendarHeading As="h3" class="calendar-heading" />
+                                <BitBhCalendarNext class="calendar-nav">›</BitBhCalendarNext>
+                            </div>
+                            <BitBhCalendarGrid class="calendar-grid">
+                                <BitBhCalendarCell Day="context" class="calendar-cell" />
+                            </BitBhCalendarGrid>
+                        </BitBhCalendar>
+                    </BitBhDatePickerContent>
+                </BitBhDateTimePicker>
+            </BitBhField>
+            <p class="date-picker-value date-time-picker-value">Value: <strong>@(appointment?.ToString("f", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Limits and unavailable dates" Code="@_limitsCode" Css="@_css">
     <Description>
         <code>Min</code>, <code>Max</code> and <code>IsDateUnavailable</code> go to the calendar (unless it is given its own):
@@ -126,6 +160,7 @@
 @code {
     private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
     private DateOnly? departure;
+    private DateTime? appointment;
     private DateOnly? delivery;
     private readonly BirthdayForm form = new();
     private DateOnly? sent;
@@ -180,6 +215,23 @@
 
 @code {
     private DateOnly? departure;
+}
+""";
+
+    private const string _dateTimeCode = """
+<BitBhField>
+    <BitBhLabel class="date-picker-label">Appointment</BitBhLabel>
+    <BitBhDateTimePicker @bind-Value="appointment">
+        <BitBhDatePickerGroup class="date-picker-group">
+            <BitBhDateFieldSegments />
+            <BitBhDatePickerTrigger class="date-picker-trigger">@* the icon *@</BitBhDatePickerTrigger>
+        </BitBhDatePickerGroup>
+""" + _calendar + """
+    </BitBhDateTimePicker>
+</BitBhField>
+
+@code {
+    private DateTime? appointment;
 }
 """;
 

@@ -102,11 +102,15 @@ public abstract class BitBhMenuContentBase : BitBhFloatingContentBase
         // handler too and close or move it as well. The panel only exists while open (or animating out).
         builder.AddEventStopPropagationAttribute(41, "onkeydown", true);
         builder.AddAttribute(42, "onfocus",
-            On<FocusEventArgs>("onfocus", () => Level.HasFocus = true));
+            On<FocusEventArgs>("onfocus", HandleFocus));
         builder.AddAttribute(43, "onblur",
             On<FocusEventArgs>("onblur", () => Level.HasFocus = false));
         builder.AddAttribute(44, "onpointerenter",
-            On<PointerEventArgs>("onpointerenter", OnPointerEnterContentAsync));
+            On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
+        // A menu that opens on hover follows the pointer over every one of its panels.
+        if (Level.Root.TracksHover)
+            builder.AddAttribute(45, "onpointerleave",
+                On<PointerEventArgs>("onpointerleave", HandlePointerLeave));
 
         builder.AddElementReferenceCapture(50, CaptureElement);
 
@@ -139,4 +143,36 @@ public abstract class BitBhMenuContentBase : BitBhFloatingContentBase
 
     /// <summary>Hook: pointer entered the panel (submenus cancel their pending close).</summary>
     protected virtual Task OnPointerEnterContentAsync(PointerEventArgs args) => Task.CompletedTask;
+
+    private void HandleFocus()
+    {
+        Level.HasFocus = true;
+        // The focus moving in takes over a menu the pointer opened: it stays open until it is dismissed.
+        Level.Root.FocusEntered();
+    }
+
+    private Task HandlePointerEnter(PointerEventArgs args)
+    {
+        if (Level.Root.TracksHover && BitBhMenu.IsHoverPointer(args))
+            Level.Root.PanelHoverChanged(ContentId, inside: true);
+        return OnPointerEnterContentAsync(args);
+    }
+
+    private void HandlePointerLeave(PointerEventArgs args)
+    {
+        if (BitBhMenu.IsHoverPointer(args))
+            Level.Root.PanelHoverChanged(ContentId, inside: false);
+    }
+
+    /// <summary>
+    /// Moves the focus into the open panel - the keyboard taking over a panel the pointer opened - and highlights the
+    /// first or the last item for <see cref="BitBhMenuFocus.First"/> / <see cref="BitBhMenuFocus.Last"/>.
+    /// </summary>
+    internal async Task EnterAsync(BitBhMenuFocus focus)
+    {
+        await Level.FocusAsync();
+        if (focus is not (BitBhMenuFocus.First or BitBhMenuFocus.Last)) return;
+        await Level.Items.EnsureOrderAsync(Interop);
+        Level.SetActive(focus == BitBhMenuFocus.Last ? Level.Items.Last() : Level.Items.First());
+    }
 }

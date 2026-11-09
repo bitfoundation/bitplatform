@@ -8,9 +8,16 @@
 public static class BitBhAttributeUtilities
 {
     /// <summary>
+    /// The attribute the styles a component sets itself go in when <see cref="BitBhOptions.StrictCsp"/> is on: the JS
+    /// runtime applies its declarations through the CSSOM, which a Content-Security-Policy without
+    /// <c>'unsafe-inline'</c> in <c>style-src</c> allows, where it refuses a <c>style</c> attribute.
+    /// </summary>
+    public const string StrictStyleAttribute = "data-bit-bh-style";
+
+    /// <summary>
     /// Merges <paramref name="additionalAttributes"/> over <paramref name="baseAttributes"/>.
-    /// <c>class</c> values are space-joined, <c>style</c> values are semicolon-joined
-    /// (consumer declarations last so they win), all other consumer values replace
+    /// <c>class</c> values are space-joined, <c>style</c> values (and <c>data-bit-bh-style</c> ones) are
+    /// semicolon-joined (consumer declarations last so they win), all other consumer values replace
     /// internal ones.
     /// </summary>
     public static Dictionary<string, object> Merge(
@@ -33,6 +40,12 @@ public static class BitBhAttributeUtilities
                      && merged.TryGetValue("style", out var existingStyle))
             {
                 merged["style"] = JoinStyles(existingStyle?.ToString(), value?.ToString());
+            }
+            else if (key.Equals(StrictStyleAttribute, StringComparison.OrdinalIgnoreCase)
+                     && merged.TryGetValue(StrictStyleAttribute, out var existingStrictStyle))
+            {
+                // A component that renders another one hands its own styles down this way in strict CSP mode.
+                merged[StrictStyleAttribute] = JoinStyles(existingStrictStyle?.ToString(), value?.ToString());
             }
             else if (key.Equals("aria-describedby", StringComparison.OrdinalIgnoreCase)
                      && merged.TryGetValue("aria-describedby", out var existingDescription))

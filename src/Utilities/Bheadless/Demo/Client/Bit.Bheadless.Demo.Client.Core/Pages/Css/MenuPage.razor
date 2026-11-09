@@ -256,6 +256,36 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Open on hover"
+           Code="@_hoverCode"
+           Css="@_hoverCss">
+    <Description>
+        <code>OpenOnHover</code> opens the menu when the pointer rests on the button for <code>HoverOpenDelay</code>
+        (here 200 ms) and closes it <code>HoverCloseDelay</code> (here 400 ms) after the pointer has left the button
+        and the menu. The hover leaves the focus where it is - type in the field, hover the button, keep typing - and
+        the first key press on the button (or with nothing focused) moves it into the menu. A click on the button
+        keeps the menu open; Escape closes it from anywhere. See the menubar page for site navigation.
+    </Description>
+    <LiveContent>
+        <input class="field-input" aria-label="Notes" placeholder="Type here, then hover Account" />
+        <BitBhMenu class="menu" OpenOnHover="true" HoverOpenDelay="200" HoverCloseDelay="400">
+            <BitBhMenuButton class="menu-button">
+                <Template Context="b">
+                    Account
+                    <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhMenuButton>
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
+                <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="menu-item" Label="Profile">Profile</BitBhMenuItem>
+                <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="menu-item" Label="Settings">Settings</BitBhMenuItem>
+                <BitBhMenuItem OnClick='@(() => Log("Sign out"))' class="menu-item" Label="Sign out">Sign out</BitBhMenuItem>
+            </BitBhMenuItems>
+        </BitBhMenu>
+
+        <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     private string? lastAction;
 
@@ -400,6 +430,31 @@
         <BitBhMenuItem As="a" href="/accordion"  class="menu-item" Label="Accordion">Accordion</BitBhMenuItem>
     </BitBhMenuItems>
 </BitBhMenu>
+""";
+
+    private const string _hoverCode = """
+<input class="field-input" aria-label="Notes" placeholder="Type here, then hover Account" />
+<BitBhMenu class="menu" OpenOnHover="true" HoverOpenDelay="200" HoverCloseDelay="400">
+    <BitBhMenuButton class="menu-button">
+        <Template Context="b">
+            Account
+            <span class="menu-chevron @(b.IsOpen ? "open" : "")">▾</span>
+        </Template>
+    </BitBhMenuButton>
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="menu-items-anchored">
+        <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="menu-item" Label="Profile">Profile</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="menu-item" Label="Settings">Settings</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Sign out"))' class="menu-item" Label="Sign out">Sign out</BitBhMenuItem>
+    </BitBhMenuItems>
+</BitBhMenu>
+
+<span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
 """;
 
     private const string _anchorCode = """
@@ -865,5 +920,21 @@
 /* Hooks emitted by BitBhMenuItem */
 .menu-item[data-active]   { background: #eff6ff; color: #1d4ed8; }
 .menu-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+""";
+
+    private const string _hoverCss = _menuCss + """
+
+
+/* The field the hover leaves the focus in */
+.field-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.field-input:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
 """;
 }

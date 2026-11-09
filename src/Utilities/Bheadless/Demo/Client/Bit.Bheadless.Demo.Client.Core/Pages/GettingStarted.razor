@@ -134,6 +134,18 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A strict Content-Security-Policy</h3>
+    <p class="bb-card-desc">
+        A few components set styles of their own (a visually hidden label's clipping, a slider thumb's position).
+        Under a policy whose <code>style-src</code> has no <code>'unsafe-inline'</code>, turn on strict CSP mode: the
+        components then render no <code>style</code> attribute and the runtime applies their styles through the CSSOM,
+        which such a policy allows. The script in <code>&lt;head&gt;</code> applies them before the prerendered page is
+        first painted.
+    </p>
+    <CodeBlock Code="@StrictCspCode" />
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to go next</h3>
     <div class="bb-try">
         <a href="menu" class="btn btn-outline">Build a dropdown menu →</a>
@@ -156,6 +168,14 @@
         """;
 
     private const string ImportsCode = "@using Bit.Bheadless";
+
+    private const string StrictCspCode = """
+        // Program.cs
+        builder.Services.AddBitBheadlessServices(options => options.StrictCsp = true);
+
+        <!-- App.razor, in <head> -->
+        <script src="_content/Bit.Bheadless/bit-bheadless-csp.js"></script>
+        """;
 
     private const string FirstComponentCode = """
         <BitBhDisclosure class="disclosure">

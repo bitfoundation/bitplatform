@@ -6,7 +6,7 @@
 
 <div class="bb-intro">
     <h1>Date Field / Time Field</h1>
-    <p class="bb-subtitle">Segmented date and time inputs: each part is a spinbutton, in the order and with the separators the reader's culture writes them.</p>
+    <p class="bb-subtitle">Segmented date, time and date-time inputs: each part is a spinbutton, in the order and with the separators the reader's culture writes them.</p>
 </div>
 
 <SectionSwitcher Slug="date-field" />
@@ -50,6 +50,27 @@
                 Start: <strong class="font-semibold tabular-nums text-zinc-900">@(start?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? "null")</strong> ·
                 Lap: <strong class="font-semibold tabular-nums text-zinc-900">@(lap?.ToString("HH:mm:ss", CultureInfo.InvariantCulture) ?? "null")</strong>
             </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Date and time" Code="@_dateTimeCode">
+    <Description>
+        <code>BitBhDateTimeField</code> edits a <code>DateTime?</code>: the date segments and the time segments as one field,
+        the focus running on from the year into the hour, with the time field's <code>Granularity</code> and
+        <code>HourCycle</code>. The same utilities style it.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-end gap-6">
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Meeting</BitBhLabel>
+                <BitBhDateTimeField @bind-Value="meeting" Culture="DemoDateCultures.EnUs" class="@Field" />
+            </BitBhField>
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Termin (24 Stunden)</BitBhLabel>
+                <BitBhDateTimeField @bind-Value="meeting" Culture="DemoDateCultures.DeDe" class="@Field" />
+            </BitBhField>
+            <p class="m-0 text-sm text-zinc-500">Value: <strong class="font-semibold tabular-nums text-zinc-900">@(meeting?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "null")</strong></p>
         </div>
     </LiveContent>
 </TwDemoBlock>
@@ -112,6 +133,7 @@
     private DateOnly? birthDate;
     private TimeOnly? start = new(9, 30);
     private TimeOnly? lap;
+    private DateTime? meeting = DateTime.Today.AddHours(9.5);
     private DateOnly? cultureDate = DateOnly.FromDateTime(DateTime.Today);
     private TimeOnly? cultureTime = new(14, 5);
     private readonly Trip trip = new();
@@ -150,6 +172,16 @@
 @code {
     private TimeOnly? start = new(9, 30);
     private TimeOnly? lap;
+}
+""";
+
+    private const string _dateTimeCode = """
+<BitBhDateTimeField @bind-Value="meeting" class="… the field's utilities, as above …" />
+
+<BitBhDateTimeField @bind-Value="meeting" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" class="…" />
+
+@code {
+    private DateTime? meeting = DateTime.Today.AddHours(9.5);
 }
 """;
 

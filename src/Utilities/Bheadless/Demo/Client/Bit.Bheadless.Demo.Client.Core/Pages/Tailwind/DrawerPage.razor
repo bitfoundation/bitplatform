@@ -63,7 +63,46 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Snap points" Code="@_snapCode">
+    <Description>
+        <code>SnapPoints</code> on a sheet as tall as the screen: it opens at a 160px peek, a drag settles it on the nearest snap
+        point, a flick moves it on, and <code>@@bind-ActiveSnapPoint</code> follows. The panel adds the runtime's
+        <code>translate-y-[calc(var(--bit-bh-drawer-snap-point-offset-y,0px)_+_var(--bit-bh-drawer-swipe-movement-y,0px))]</code>,
+        the backdrop fades with <code>opacity-[var(--bit-bh-drawer-fade,1)]</code>, and the handle - a slider once there are snap
+        points (arrow keys, Home / End, Enter) - gets a padded hit area and <code>focus-visible:outline-2</code>.
+        <code>data-[snap-point=1]:</code> styles the fully open sheet: its corners square off.
+    </Description>
+    <LiveContent>
+        <BitBhDrawer SnapPoints="_snapPoints" @bind-ActiveSnapPoint="snapPoint">
+            <BitBhDrawerTrigger class="inline-flex cursor-pointer items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100">Open trip</BitBhDrawerTrigger>
+            <BitBhDrawerBackdrop class="@_snapBackdropClass" />
+            <BitBhDrawerPanel class="fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh_-_2rem)] flex-col gap-3 rounded-t-2xl bg-white p-5 text-zinc-900 shadow-2xl outline-none translate-y-[calc(var(--bit-bh-drawer-snap-point-offset-y,0px)_+_var(--bit-bh-drawer-swipe-movement-y,0px))] transition-[translate,border-radius] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:translate-y-full data-[state=closed]:translate-y-full data-[swiping]:transition-none data-[swiping]:select-none data-[snap-point=1]:rounded-t-none">
+                <BitBhDrawerHandle class="-mt-3.5 -mb-1 box-content h-1.5 w-12 flex-none cursor-grab self-center rounded-full bg-zinc-300 bg-clip-content px-4 py-2.5 focus-visible:outline-2 focus-visible:outline-blue-600" />
+                <BitBhDrawerTitle class="m-0 text-lg font-semibold">Trip details</BitBhDrawerTitle>
+                <BitBhDrawerDescription class="m-0 text-sm text-zinc-600">Drag or flick the handle, or focus it and use the arrow keys.</BitBhDrawerDescription>
+                <ul class="m-0 grid min-h-0 list-none gap-1 overflow-y-auto overscroll-contain p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" tabindex="0" aria-label="Stops">
+                    @for (var i = 1; i <= 12; i++)
+                    {
+                        <li class="rounded-lg bg-zinc-100 px-3 py-2.5 text-sm">Stop @i</li>
+                    }
+                </ul>
+                <div class="mt-auto flex justify-end">
+                    <BitBhDrawerClose class="inline-flex cursor-pointer items-center rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Done</BitBhDrawerClose>
+                </div>
+            </BitBhDrawerPanel>
+        </BitBhDrawer>
+        <span class="text-sm text-zinc-600">Snap point: <strong class="text-zinc-900">@(snapPoint?.ToString() ?? "none")</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
 @code {
+    private static readonly BitBhDrawerSnapPoint[] _snapPoints = ["160px", 0.5, 1];
+    private BitBhDrawerSnapPoint? snapPoint;
+
+    private const string _snapBackdropClass =
+        "fixed inset-0 z-50 bg-black/50 opacity-[var(--bit-bh-drawer-fade,1)] transition-opacity duration-300 " +
+        "starting:opacity-0 data-[state=closed]:opacity-0 data-[swiping]:transition-none";
+
     private const string _backdropClass =
         "fixed inset-0 z-50 bg-black/50 opacity-[calc(1_-_var(--bit-bh-drawer-swipe-progress,0))] transition-opacity duration-300 " +
         "starting:opacity-0 data-[state=closed]:opacity-0 data-[swiping]:transition-none";
@@ -111,5 +150,36 @@
         <BitBhDrawerClose class="mt-auto self-end rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-100">Close</BitBhDrawerClose>
     </BitBhDrawerPanel>
 </BitBhDrawer>
+""";
+
+    private const string _snapCode = """
+<BitBhDrawer SnapPoints="_snapPoints" @bind-ActiveSnapPoint="snapPoint">
+    <BitBhDrawerTrigger class="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-100">Open trip</BitBhDrawerTrigger>
+    <BitBhDrawerBackdrop class="fixed inset-0 z-50 bg-black/50 opacity-[var(--bit-bh-drawer-fade,1)] transition-opacity duration-300
+                                starting:opacity-0 data-[state=closed]:opacity-0 data-[swiping]:transition-none" />
+    <BitBhDrawerPanel class="fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh_-_2rem)] flex-col gap-3 rounded-t-2xl bg-white p-5 shadow-2xl
+                             translate-y-[calc(var(--bit-bh-drawer-snap-point-offset-y,0px)_+_var(--bit-bh-drawer-swipe-movement-y,0px))]
+                             transition-[translate,border-radius] duration-300 starting:translate-y-full data-[state=closed]:translate-y-full
+                             data-[swiping]:transition-none data-[swiping]:select-none data-[snap-point=1]:rounded-t-none">
+        <BitBhDrawerHandle class="box-content h-1.5 w-12 self-center rounded-full bg-zinc-300 bg-clip-content px-4 py-2.5
+                                  focus-visible:outline-2 focus-visible:outline-blue-600" />
+        <BitBhDrawerTitle class="text-lg font-semibold">Trip details</BitBhDrawerTitle>
+        <BitBhDrawerDescription class="text-sm text-zinc-600">Drag or flick the handle, or focus it and use the arrow keys.</BitBhDrawerDescription>
+        <ul class="grid min-h-0 gap-1 overflow-y-auto focus-visible:outline-2 focus-visible:outline-blue-600" tabindex="0" aria-label="Stops">
+            @for (var i = 1; i <= 12; i++)
+            {
+                <li class="rounded-lg bg-zinc-100 px-3 py-2.5 text-sm">Stop @i</li>
+            }
+        </ul>
+        <BitBhDrawerClose class="mt-auto self-end rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Done</BitBhDrawerClose>
+    </BitBhDrawerPanel>
+</BitBhDrawer>
+
+<span>Snap point: @(snapPoint?.ToString() ?? "none")</span>
+
+@code {
+    private static readonly BitBhDrawerSnapPoint[] _snapPoints = ["160px", 0.5, 1];
+    private BitBhDrawerSnapPoint? snapPoint;
+}
 """;
 }

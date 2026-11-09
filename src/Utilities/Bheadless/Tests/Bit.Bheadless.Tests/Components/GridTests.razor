@@ -308,4 +308,29 @@
         Assert.AreEqual("80", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
         cut.ShouldBeAccessible();
     }
+
+    [TestMethod]
+    public void A_cell_asks_for_the_focus_only_while_it_is_still_on_the_cell_the_key_was_pressed_on()
+    {
+        // The runtime moves the focus as an arrow key is pressed (grid navigation in bit-bheadless.ts). The grid's own
+        // move lands a round trip later over Blazor Server - after the next keys, maybe - so it names the cell the key
+        // came from, and the runtime makes it only while the focus is still there.
+        var cut = Render(Grid(Flat));
+        var alpha = Cell(cut, "alpha.txt");
+        alpha.Press("ArrowDown");
+        var request = JSInterop.Invocations.Last(i => i.Identifier == "focus.focus");
+        Assert.AreEqual(Cell(cut, "beta.txt").Id, request.Arguments[0]);
+        Assert.AreEqual(alpha.Id, request.Arguments[3]);
+
+        // What the runtime reads: the rows' collection, each row's cells' collection, the page size, the direction.
+        var grid = cut.Find("table");
+        var row = cut.FindAll("tbody [role=row]")[0];
+        Assert.AreEqual(row.GetAttribute("data-bit-bh-item"), grid.GetAttribute("data-bit-bh-grid"));
+        Assert.AreEqual(Cell(cut, "alpha.txt").GetAttribute("data-bit-bh-item"), row.GetAttribute("data-bit-bh-cells"));
+        Assert.AreEqual("10", grid.GetAttribute("data-bit-bh-page-size"));
+        Assert.IsNull(grid.GetAttribute("data-bit-bh-dir"));
+
+        var rtl = Render(@<BitBhDirectionProvider Dir="BitBhDirection.Rtl">@Grid(Flat)</BitBhDirectionProvider>);
+        Assert.AreEqual("rtl", rtl.Find("table").GetAttribute("data-bit-bh-dir"));
+    }
 }

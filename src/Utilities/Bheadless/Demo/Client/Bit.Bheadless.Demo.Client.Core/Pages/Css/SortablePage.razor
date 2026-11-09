@@ -95,6 +95,50 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Drag between lists (kanban)"
+           Code="@_boardCode"
+           Css="@_boardCss">
+    <Description>
+        Lists with the same <code>Group</code> exchange items. Drag a card into another column - an empty
+        one too - or pick it up with the keyboard and press <kbd>←</kbd> / <kbd>→</kbd> to move it to the
+        previous or next column, <kbd>↑</kbd> / <kbd>↓</kbd> to place it, <kbd>Space</kbd> /
+        <kbd>Enter</kbd> to drop it and <kbd>Escape</kbd> to put it back where it was; each step names the
+        column and the position. Every column binds its own list with <code>@@bind-Items</code>;
+        <code>OnTransfer</code>, raised by the column that receives a card, reports the item, both
+        columns' <code>ListKey</code> and both indexes - enough to move it in a model the lists aren't
+        bound to. "Done" refuses blocked cards (<code>CanAccept</code>; <code>AllowDragOut</code> and
+        <code>AllowDropIn</code> make a list accept-only or give-only). While a pointer drags a card the
+        columns that take it carry <code>data-drop-target</code> and the one under the pointer
+        <code>data-drag-over</code>; an empty column has <code>data-empty</code>.
+    </Description>
+    <LiveContent>
+        <div class="sortable-demo">
+            <div class="sortable-board">
+                @foreach (var column in board)
+                {
+                    <div class="sortable-column">
+                        <h3 class="sortable-column-title">
+                            @column.Name <span class="sortable-count">@column.Cards.Count</span>
+                        </h3>
+                        <BitBhSortable TItem="Card" Group="board" @bind-Items="column.Cards"
+                                    ListKey="column.Key" CanAccept="column.Accepts" OnTransfer="LogTransfer"
+                                    ItemKey="c => c.Id" ItemLabel="c => c.Title"
+                                    aria-label="@column.Name" class="sortable-list sortable-cards" Context="s">
+                            <BitBhSortableHandle TItem="Card" class="sortable-handle"
+                                              aria-label="@($"Move {s.Item.Title}")">⠿</BitBhSortableHandle>
+                            <span class="sortable-title">@s.Item.Title</span>
+                            <span class="sortable-tag">@s.Item.Tag</span>
+                        </BitBhSortable>
+                    </div>
+                }
+            </div>
+            <p class="sortable-output">
+                Last move: <strong>@(lastTransfer ?? "none yet")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Custom announcements"
            Code="@_announcementsCode"
            Css="@_announcementsCss">
@@ -153,6 +197,28 @@
     private readonly List<string> reorderLog = [];
 
     private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+
+    public sealed record Card(int Id, string Title, string Tag);
+
+    public sealed class Column(string key, string name, IList<Card> cards, Func<Card, object, bool>? accepts = null)
+    {
+        public string Key { get; } = key;
+        public string Name { get; } = name;
+        public IList<Card> Cards { get; set; } = cards;
+        public Func<Card, object, bool>? Accepts { get; } = accepts;
+    }
+
+    private readonly List<Column> board =
+    [
+        new("todo", "To do", [new(1, "Write release notes", "Docs"), new(2, "Fix flaky login test", "Blocked"), new(3, "Review pull requests", "Team")]),
+        new("doing", "In progress", [new(4, "Update dependencies", "Chore")]),
+        new("done", "Done", [], accepts: (card, _) => card.Tag != "Blocked"),
+    ];
+
+    private string? lastTransfer;
+
+    private void LogTransfer(BitBhTransferEventArgs<Card> e)
+        => lastTransfer = $"“{e.Item.Title}” from {e.SourceList}[{e.OldIndex}] to {e.TargetList}[{e.NewIndex}]";
 
     private IList<string> queue = ["Blue in Green", "So What", "Naima", "Take Five"];
 
@@ -251,6 +317,59 @@
 
 @code {
     private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+}
+""";
+
+    private const string _boardCode = """
+<div class="sortable-board">
+    @foreach (var column in board)
+    {
+        <div class="sortable-column">
+            <h3 class="sortable-column-title">
+                @column.Name <span class="sortable-count">@column.Cards.Count</span>
+            </h3>
+            @* One Group: the columns exchange cards. *@
+            <BitBhSortable TItem="Card" Group="board" @bind-Items="column.Cards"
+                        ListKey="column.Key" CanAccept="column.Accepts" OnTransfer="LogTransfer"
+                        ItemKey="c => c.Id" ItemLabel="c => c.Title"
+                        aria-label="@column.Name" class="sortable-list sortable-cards" Context="s">
+                <BitBhSortableHandle TItem="Card" class="sortable-handle"
+                                  aria-label="@($"Move {s.Item.Title}")">⠿</BitBhSortableHandle>
+                <span class="sortable-title">@s.Item.Title</span>
+                <span class="sortable-tag">@s.Item.Tag</span>
+            </BitBhSortable>
+        </div>
+    }
+</div>
+
+<p class="sortable-output">
+    Last move: <strong>@(lastTransfer ?? "none yet")</strong>
+</p>
+
+@code {
+    public sealed record Card(int Id, string Title, string Tag);
+
+    public sealed class Column(string key, string name, IList<Card> cards, Func<Card, object, bool>? accepts = null)
+    {
+        public string Key { get; } = key;
+        public string Name { get; } = name;
+        public IList<Card> Cards { get; set; } = cards;
+        public Func<Card, object, bool>? Accepts { get; } = accepts;
+    }
+
+    private readonly List<Column> board =
+    [
+        new("todo", "To do", [new(1, "Write release notes", "Docs"), new(2, "Fix flaky login test", "Blocked"), new(3, "Review pull requests", "Team")]),
+        new("doing", "In progress", [new(4, "Update dependencies", "Chore")]),
+        // (card, source list's ListKey) → whether the column takes it.
+        new("done", "Done", [], accepts: (card, _) => card.Tag != "Blocked"),
+    ];
+
+    private string? lastTransfer;
+
+    // Raised by the column that receives the card, after @bind-Items moved it.
+    private void LogTransfer(BitBhTransferEventArgs<Card> e)
+        => lastTransfer = $"“{e.Item.Title}” from {e.SourceList}[{e.OldIndex}] to {e.TargetList}[{e.NewIndex}]";
 }
 """;
 
@@ -455,6 +574,90 @@
 .sortable-chip:focus-visible        { outline: 2px solid #2563eb; outline-offset: 2px; }
 .sortable-chip[aria-pressed="true"] { color: #1d4ed8; cursor: grabbing; }
 .sortable-chip-grip                 { color: #a1a1aa; }
+
+/* Demo layout */
+.sortable-demo { display: grid; gap: 1rem; width: 100%; }
+
+.sortable-output { margin: 0; font-size: 0.85rem; color: #71717a; }
+.sortable-output strong { color: #18181b; font-weight: 600; }
+""";
+
+    private const string _boardCss = _listCss + """
+
+
+.sortable-tag {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #f4f4f5;
+    color: #52525b;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Columns side by side */
+.sortable-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    width: 100%;
+    align-items: start;
+}
+
+/* No overflow clipping on a column: the dragged card leaves it. */
+.sortable-column {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    background: #fafafa;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+}
+
+.sortable-column-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #18181b;
+}
+
+.sortable-count {
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: #e4e4e7;
+    color: #3f3f46;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Room to drop into, even when the column is empty */
+.sortable-cards {
+    min-height: 5rem;
+    border-radius: 0.5rem;
+    outline: 2px dashed transparent;
+    outline-offset: 4px;
+    transition: outline-color 150ms ease, background-color 150ms ease;
+}
+
+/* data-drop-target: the columns that take the dragged card;
+   data-drag-over: the one under the pointer. */
+.sortable-cards[data-drop-target] { outline-color: #d4d4d8; }
+.sortable-cards[data-drag-over]   { outline-color: #2563eb; background: #eff6ff; }
+
+/* data-empty: no cards */
+.sortable-cards[data-empty] {
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed #d4d4d8;
+}
+
+.sortable-cards[data-empty]::before {
+    content: "No cards";
+    color: #71717a;
+    font-size: 0.8rem;
+}
 
 /* Demo layout */
 .sortable-demo { display: grid; gap: 1rem; width: 100%; }

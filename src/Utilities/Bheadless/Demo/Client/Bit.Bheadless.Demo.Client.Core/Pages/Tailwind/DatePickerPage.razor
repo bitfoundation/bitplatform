@@ -45,6 +45,39 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Date and time" Code="@_dateTimeCode">
+    <Description>
+        <code>BitBhDateTimePicker</code> takes the same parts around date and time segments; <code>@@bind-Value</code> is a
+        <code>DateTime?</code>, and the calendar picks the date and keeps the time.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-end gap-6">
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Appointment</BitBhLabel>
+                <BitBhDateTimePicker @bind-Value="appointment" Culture="DemoDateCultures.EnUs">
+                    <BitBhDatePickerGroup class="@Group">
+                        <BitBhDateFieldSegments />
+                        <BitBhDatePickerTrigger class="@Trigger">@CalendarIcon</BitBhDatePickerTrigger>
+                    </BitBhDatePickerGroup>
+                    <BitBhDatePickerContent class="@Popover">
+                        <BitBhCalendar class="@Root">
+                            <div class="flex items-center gap-2">
+                                <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                                <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                                <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                            </div>
+                            <BitBhCalendarGrid class="@Grid">
+                                <BitBhCalendarCell Day="context" class="@Cell" />
+                            </BitBhCalendarGrid>
+                        </BitBhCalendar>
+                    </BitBhDatePickerContent>
+                </BitBhDateTimePicker>
+            </BitBhField>
+            <p class="m-0 text-sm text-zinc-500">Value: <strong class="font-semibold text-zinc-900">@(appointment?.ToString("f", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
 <TwDemoBlock Title="Limits and unavailable dates" Code="@_limitsCode">
     <Description>
         <code>Min</code>, <code>Max</code> and <code>IsDateUnavailable</code> reach the calendar; a typed date that breaks them
@@ -122,6 +155,7 @@
 @code {
     private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
     private DateOnly? departure;
+    private DateTime? appointment;
     private DateOnly? delivery;
     private readonly BirthdayForm form = new();
     private DateOnly? sent;
@@ -174,6 +208,16 @@
 
 @code {
     private DateOnly? departure;
+}
+""";
+
+    private const string _dateTimeCode = """
+<BitBhDateTimePicker @bind-Value="appointment">
+    @* the group, the segments, the trigger and the popover as above *@
+</BitBhDateTimePicker>
+
+@code {
+    private DateTime? appointment;
 }
 """;
 

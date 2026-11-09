@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Bheadless;
 
 /// <summary>
-/// The group of a <see cref="BitBhDatePicker"/> around its <see cref="BitBhDateFieldSegments"/> and
-/// <see cref="BitBhDatePickerTrigger"/>: <c>role="group"</c>, labelled by the field's label (or your <c>aria-label</c>)
+/// The group of a <see cref="BitBhDatePicker"/> or <see cref="BitBhDateTimePicker"/> around its
+/// <see cref="BitBhDateFieldSegments"/> and <see cref="BitBhDatePickerTrigger"/> - of a <see cref="BitBhDateRangePicker"/>
+/// around its two <see cref="BitBhDateRangePickerInput"/>s and the trigger: <c>role="group"</c>, labelled by the field's label (or your <c>aria-label</c>)
 /// and described by its descriptions. The calendar popover is anchored to it, and Alt+↓ inside it opens the popover.
 ///
 /// <para><b>Styling hooks:</b> as the picker's root: <c>data-state</c>, <c>data-disabled</c>, <c>data-readonly</c>,
