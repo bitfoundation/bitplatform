@@ -314,6 +314,50 @@ public class BelemetryBrowserConfigFactoryTests
     }
 
     [TestMethod]
+    public void SentryExporters_ReachTheBrowser_WithThePublicDsnOnly()
+    {
+        var config = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.AddSentryExporter("https://abc123:s3cr3t@o1.ingest.sentry.io/42");
+            o.AddSentryExporter("https://def456@o1.ingest.sentry.io/43", s =>
+            {
+                s.Release = " web@9 ";
+                s.MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Trace;
+                s.MaskIp = false;
+                s.Compression = BelemetryCompression.Gzip;
+            });
+            o.AddSentryExporter("https://ghi789@o1.ingest.sentry.io/44", s => s.IncludeInBrowser = false);
+            o.AddSentryExporter("not a dsn");
+        }, webHost: true);
+
+        var exporters = config.GetProperty("exporters").EnumerateArray().ToList();
+        Assert.HasCount(2, exporters, "One stays on the server, and an invalid DSN has no exporter.");
+
+        var first = exporters[0];
+        AssertKeys(first, "type", "compression", "maskIp", "dsn", "minimumSeverity");
+        Assert.AreEqual("sentry", first.GetProperty("type").GetString());
+        Assert.AreEqual("https://abc123@o1.ingest.sentry.io/42", first.GetProperty("dsn").GetString(), "A legacy secret key never reaches the page.");
+        Assert.AreEqual(17, first.GetProperty("minimumSeverity").GetInt32());
+        Assert.IsTrue(first.GetProperty("maskIp").GetBoolean());
+        Assert.AreEqual("none", first.GetProperty("compression").GetString());
+        Assert.DoesNotContain("s3cr3t", config.GetRawText());
+
+        var second = exporters[1];
+        Assert.AreEqual("web@9", second.GetProperty("release").GetString());
+        Assert.AreEqual(0, second.GetProperty("minimumSeverity").GetInt32(), "Everything: absent would mean the script's default (errors).");
+        Assert.IsFalse(second.GetProperty("maskIp").GetBoolean());
+        Assert.AreEqual("gzip", second.GetProperty("compression").GetString());
+
+        // A WebAssembly app's .NET pipeline posts through fetch too: the script does not trace its exports.
+        var options = new BelemetryOptions();
+        TestHost.ApplyTestDefaults(options);
+        options.AddSentryExporter("https://abc123@o1.ingest.sentry.io/42");
+        var wasm = BelemetryBrowserConfigFactory.Create(new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser: true));
+        CollectionAssert.Contains(wasm.Dependencies.IgnoreUrls, Regex.Escape("https://o1.ingest.sentry.io/api/42/envelope/"));
+    }
+
+    [TestMethod]
     public void BoundLists_AreDeduplicated_WhereADuplicateWouldChangeBehavior()
     {
         // A configuration binder appends to a list's defaults: "InteractionEvents": ["click", "submit"] yields click twice.

@@ -3,6 +3,9 @@ import { compilePatterns, guard, matchesAny, type InstrumentationContext, type U
 
 export const ERRORS_SCOPE = 'bit.belemetry.errors';
 
+/** The scope of `trackException`: an exception the app caught and reported itself. */
+export const EXCEPTIONS_SCOPE = 'bit.belemetry.exceptions';
+
 interface ErrorLike {
     name?: string;
     message?: string;

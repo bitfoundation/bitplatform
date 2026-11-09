@@ -1,0 +1,142 @@
+﻿@page "/sentry"
+
+<PageTitle>Sentry · Belemetry</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sentry</h1>
+    <p class="bb-subtitle">
+        Sentry takes OTLP traces and logs, but nothing it receives over OTLP becomes an Issue. The Sentry exporter
+        posts each error as a Sentry event to the project's envelope endpoint, so one pipeline carries traces, logs and
+        metrics over OTLP and errors as Sentry Issues - grouped by their stack traces, symbolicated, and linked to
+        their traces - without a Sentry SDK in the app.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> DSN</h3>
+    <p>
+        The exporter needs the project's DSN (<em>Settings - Client Keys</em>). Outside the browser, with
+        <code>options.UseEnvironmentVariables</code> on, an unset DSN is read from <code>SENTRY_DSN</code> - and that
+        variable alone adds the exporter when none is configured. For traces and logs in Sentry as well, add an OTLP
+        exporter to the project's OTLP endpoint next to it.
+    </p>
+    <CodeSnippet Code="@BasicCode" Language="C#" Expanded="true" />
+    <p>
+        The DSN's public key is public by design - Sentry's browser SDK puts it in every page - so the browser script
+        sends its JS errors to Sentry too (<code>IncludeInBrowser</code>, on by default), with the key in the URL. A
+        legacy secret key in the DSN is never used, nor handed to the page. With the <a href="/transport">Relay
+        transport</a> the browser's errors reach Sentry through .NET, as the same events.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What becomes an event</h3>
+    <ul class="bb-detail-list">
+        <li>
+            A record carrying an exception - an <code>ILogger</code> entry with one, <code>TrackException</code>, an
+            unhandled .NET exception, a JS error, an exception recorded on a span - becomes an error event with its
+            exception chain and its stack trace.
+        </li>
+        <li>
+            A plain log record becomes a message event. Both only at or above <code>MinimumEventLevel</code>
+            (<code>Error</code> by default, as with Sentry's own logging integration). Page views, custom events and
+            web vitals never do.
+        </li>
+        <li>
+            An exception logged under a span and recorded on that span too is one event, and the error limits apply
+            as to every other exporter.
+        </li>
+        <li>
+            Each event carries its record's trace and span ids, so the Issue links to the trace Sentry received over
+            OTLP, and the user (<code>user.id</code>, else <code>enduser.pseudo.id</code>), the session, the release,
+            the environment and the record's other attributes - all as the privacy rules and processors left them.
+        </li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Symbolication</h3>
+    <p>
+        Neither Relay nor Sentry parses a stack string, so Belemetry sends the frames. A .NET frame carries the
+        method's metadata token and its IL offset, and the event lists the assembly's <code>pe_dotnet</code> debug
+        image: upload the PDBs, and Sentry's symbolicator adds the file and the line. That needs the assembly as a
+        file - servers, desktop apps, MAUI on Windows. In WebAssembly, on Android and iOS, and in single-file or
+        NativeAOT apps, the frames carry what the stack trace's text tells. JavaScript stacks are parsed for V8,
+        SpiderMonkey and JavaScriptCore; upload the source maps for the release.
+    </p>
+    <CodeSnippet Code="@UploadCode" Language="Shell" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Crashes on Android, iOS and Mac Catalyst</h3>
+    <p>
+        Native crashes on mobile are out of Belemetry's reach. Keep a Sentry SDK there as the crash reporter only - the
+        core <code>Sentry</code> package rather than <code>Sentry.Maui</code>, with tracing off - and turn
+        <code>IncludeUnhandledExceptions</code> off, as that SDK reports the .NET crashes too. Belemetry sends the rest.
+    </p>
+    <CodeSnippet Code="@MobileCode" Language="C#" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Release, IP address and delivery</h3>
+    <p>
+        <code>Release</code> defaults to <code>{service.name}@@{service.version}</code>. With <code>MaskIp</code> (on by
+        default) Sentry is told not to infer the user's IP address. A rate limit (429, with <code>Retry-After</code>)
+        and an unavailable Relay (502, 503, 504) are retried, and kept by the <a href="/persistence">offline
+        persistence</a> while the network is down; an event keeps its id across retries, so Sentry drops a duplicate.
+    </p>
+    <CodeSnippet Code="@MoreCode" Language="C#" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> API</h3>
+    <ApiTable TypeName="BelemetrySentryExporterOptions" />
+</div>
+
+@code {
+    private const string BasicCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "shop";
+            options.Environment = builder.Environment.EnvironmentName;
+
+            // Errors as Sentry Issues.
+            options.AddSentryExporter(builder.Configuration["Sentry:Dsn"]!);
+
+            // Traces and logs in Sentry too, over OTLP: the endpoints and the header from the project's Client Keys page.
+            options.AddOtlpExporter(o =>
+            {
+                o.TracesEndpoint = new Uri(builder.Configuration["Sentry:OtlpTracesEndpoint"]!);
+                o.LogsEndpoint = new Uri(builder.Configuration["Sentry:OtlpLogsEndpoint"]!);
+                o.Signals = BelemetrySignals.Traces | BelemetrySignals.Logs;
+                o.BrowserHeaders["x-sentry-auth"] = "sentry sentry_key=<public key>";   // public, like the DSN's key
+            });
+        });
+        """;
+
+    private const string UploadCode = """
+        dotnet publish -c Release
+        sentry-cli debug-files upload --org <org> --project <project> --include-sources bin/Release/net10.0/publish
+        """;
+
+    private const string MobileCode = """
+        options.AddSentryExporter(dsn, sentry =>
+        {
+        #if ANDROID || IOS || MACCATALYST
+            // The Sentry SDK, as the crash reporter, reports the .NET crashes too.
+            sentry.IncludeUnhandledExceptions = false;
+        #endif
+        });
+        """;
+
+    private const string MoreCode = """
+        options.AddSentryExporter(dsn, sentry =>
+        {
+            sentry.MinimumEventLevel = LogLevel.Warning;   // warnings become events too
+            sentry.Release = "shop@2.0.0+4f1c2e9";
+            sentry.MaskIp = true;                          // the default
+            sentry.Compression = BelemetryCompression.Gzip;
+            sentry.IncludeInBrowser = false;               // only .NET's errors
+        });
+        """;
+}

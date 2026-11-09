@@ -63,6 +63,12 @@ internal sealed class BelemetryBrowserConfig
         public int? Signals { get; set; }
         public string? ConnectionString { get; set; }
         public bool? MaskIp { get; set; }
+        /// <summary>A Sentry exporter's DSN, without a legacy secret key.</summary>
+        public string? Dsn { get; set; }
+        /// <summary>A Sentry exporter's configured release; null takes <c>{service.name}@{service.version}</c>.</summary>
+        public string? Release { get; set; }
+        /// <summary>A Sentry exporter's least severe event (an OTLP severity number; 0 for all).</summary>
+        public int? MinimumSeverity { get; set; }
     }
 
     internal sealed class ConsentConfig

@@ -68,6 +68,92 @@ public sealed class HarnessCollector
         return items;
     }
 
+    /// <summary>
+    /// Decodes and keeps one Sentry envelope (<c>{header}\n{item header}\n{event}\n</c>). Returns false when it is not
+    /// one: the answer is then a 400, as Relay's.
+    /// </summary>
+    public bool AddSentry(string path, string? key, string? contentType, string? contentEncoding, string? userAgent, byte[] body)
+    {
+        if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase)) body = Gunzip(body);
+
+        var request = new CollectedRequest
+        {
+            Signal = "sentry",
+            Path = path,
+            ContentType = contentType,
+            ContentEncoding = contentEncoding,
+            Length = body.Length,
+            Time = DateTimeOffset.UtcNow,
+            UserAgent = userAgent,
+        };
+
+        CollectedSentryEvent? collected = null;
+        try
+        {
+            var lines = System.Text.Encoding.UTF8.GetString(body).Split('\n');
+            using var header = JsonDocument.Parse(lines[0]);
+            using var itemHeader = JsonDocument.Parse(lines[1]);
+            using var sentryEvent = JsonDocument.Parse(lines[2]);
+            var e = sentryEvent.RootElement;
+            if (String(itemHeader.RootElement, "type") == "event"
+                && Int(itemHeader.RootElement, "length") == System.Text.Encoding.UTF8.GetByteCount(lines[2]))
+            {
+                collected = new CollectedSentryEvent
+                {
+                    EnvelopeEventId = String(header.RootElement, "event_id"),
+                    EventId = String(e, "event_id"),
+                    Key = key,
+                    Platform = String(e, "platform"),
+                    Level = String(e, "level"),
+                    Logger = String(e, "logger"),
+                    Message = e.TryGetProperty("message", out var message) ? String(message, "formatted") : null,
+                    TraceId = e.TryGetProperty("contexts", out var contexts) && contexts.TryGetProperty("trace", out var trace) ? String(trace, "trace_id") : null,
+                    SdkName = e.TryGetProperty("sdk", out var sdk) ? String(sdk, "name") : null,
+                    Json = e.GetRawText(),
+                };
+
+                if (e.TryGetProperty("exception", out var exception))
+                {
+                    var values = Array(exception, "values").ToList();
+                    values.Reverse();
+                    foreach (var value in values) collected.Exceptions.Add($"{String(value, "type")}: {String(value, "value")}");
+                    if (values.Count > 0)
+                    {
+                        collected.Handled = values[0].TryGetProperty("mechanism", out var mechanism) && mechanism.TryGetProperty("handled", out var handled)
+                            ? handled.GetBoolean()
+                            : null;
+                        if (values[0].TryGetProperty("stacktrace", out var stacktrace))
+                        {
+                            foreach (var frame in Array(stacktrace, "frames").Reverse())
+                            {
+                                collected.Frames.Add(String(frame, "module") is { } module ? module + "." + String(frame, "function") : String(frame, "function") + "@" + String(frame, "filename"));
+                            }
+                        }
+                    }
+                }
+
+                foreach (var name in new[] { "tags", "extra" })
+                {
+                    if (e.TryGetProperty(name, out var map) is false || map.ValueKind != JsonValueKind.Object) continue;
+                    foreach (var property in map.EnumerateObject()) (name == "tags" ? collected.Tags : collected.Extra)[property.Name] = ValueToString(property.Value);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or IndexOutOfRangeException or InvalidOperationException)
+        {
+            collected = null;
+        }
+
+        request.Decoded = collected is not null;
+        lock (_lock)
+        {
+            _all.Requests.Add(request);
+            if (collected is not null) _all.SentryEvents.Add(collected);
+        }
+
+        return collected is not null;
+    }
+
     public void AddEcho(CollectedEcho echo)
     {
         lock (_lock) _all.Echoes.Add(echo);
@@ -95,6 +181,8 @@ public sealed class HarnessCollector
                 Metrics = [.. _all.Metrics.Where(m => marker is null && session is null || m.Points.Any(p => Matches(p, "session.id")))],
                 Envelopes = [.. _all.Envelopes.Where(e => (session is null || (e.Tags.TryGetValue("ai.session.id", out var s) && s == session)) &&
                                                           (marker is null || (e.Properties.TryGetValue(HarnessTelemetry.MarkerAttribute, out var m) && m == marker)))],
+                SentryEvents = [.. _all.SentryEvents.Where(e => (session is null || (e.Tags.TryGetValue("session.id", out var s) && s == session)) &&
+                                                              (marker is null || (e.Extra.TryGetValue(HarnessTelemetry.MarkerAttribute, out var m) && m == marker)))],
             };
         }
     }
@@ -108,6 +196,7 @@ public sealed class HarnessCollector
             _all.Logs.Clear();
             _all.Metrics.Clear();
             _all.Envelopes.Clear();
+            _all.SentryEvents.Clear();
             _all.Echoes.Clear();
         }
     }

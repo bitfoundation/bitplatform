@@ -28,7 +28,7 @@ public static class McpPrompts
                (standalone), or a BlazorWebView (hybrid). The host decides which projects register the services.
             2. Call `GetBelemetrySetupGuide` with the host and follow it - it shows the real files of a working project.
             3. Call `GenerateBelemetryConfiguration` with the host, the exporters the destination needs (otlp, azure,
-               console) and consent 'opt-in' unless told otherwise. Adapt the generated files to the project.
+               sentry, console) and consent 'opt-in' unless told otherwise. Adapt the generated files to the project.
             4. For the destination, call `SearchBelemetry` (e.g. "Aspire dashboard", "Honeycomb") - CORS and credential
                rules differ per backend - and `GetBelemetryApiDetails` for every options class you set.
             5. Call `ReviewBelemetryConfiguration` on everything you changed and fix every error and warning.

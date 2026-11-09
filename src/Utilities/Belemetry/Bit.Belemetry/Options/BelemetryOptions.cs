@@ -39,7 +39,7 @@ public sealed class BelemetryOptions
     /// <summary>
     /// Whether the standard <c>OTEL_*</c> environment variables (<c>OTEL_SERVICE_NAME</c>, <c>OTEL_RESOURCE_ATTRIBUTES</c>,
     /// <c>OTEL_EXPORTER_OTLP_ENDPOINT</c>, <c>OTEL_EXPORTER_OTLP_HEADERS</c>, <c>OTEL_EXPORTER_OTLP_PROTOCOL</c>) and
-    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> fill in unset values, and whether <c>OTEL_SDK_DISABLED=true</c> - an
+    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> and <c>SENTRY_DSN</c> fill in unset values, and whether <c>OTEL_SDK_DISABLED=true</c> - an
     /// operator's kill switch, which wins over code - turns Belemetry off. Ignored in the browser. Defaults to <see langword="true"/>.
     /// </summary>
     public bool UseEnvironmentVariables { get; set; } = true;
@@ -95,6 +95,9 @@ public sealed class BelemetryOptions
     /// <summary>The Azure Monitor exporters.</summary>
     public List<BelemetryAzureMonitorExporterOptions> AzureMonitorExporters { get; } = [];
 
+    /// <summary>The Sentry exporters, which send errors as Sentry events (Issues).</summary>
+    public List<BelemetrySentryExporterOptions> SentryExporters { get; } = [];
+
     /// <summary>The console exporter, when added.</summary>
     public BelemetryConsoleExporterOptions? ConsoleExporter { get; set; }
 
@@ -143,6 +146,26 @@ public sealed class BelemetryOptions
         return AddAzureMonitorExporter(o =>
         {
             o.ConnectionString = connectionString;
+            configure?.Invoke(o);
+        });
+    }
+
+    /// <summary>Adds a Sentry exporter, which sends errors as Sentry events (Issues).</summary>
+    public BelemetryOptions AddSentryExporter(Action<BelemetrySentryExporterOptions>? configure = null)
+    {
+        var exporter = new BelemetrySentryExporterOptions();
+        configure?.Invoke(exporter);
+        SentryExporters.Add(exporter);
+        return this;
+    }
+
+    /// <summary>Adds a Sentry exporter for the project of <paramref name="dsn"/>, which sends errors as Sentry events (Issues).</summary>
+    public BelemetryOptions AddSentryExporter(string dsn, Action<BelemetrySentryExporterOptions>? configure = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dsn);
+        return AddSentryExporter(o =>
+        {
+            o.Dsn = dsn;
             configure?.Invoke(o);
         });
     }

@@ -74,7 +74,7 @@ public class McpController : ControllerBase
     [Description("Writes the Belemetry wiring for a host, a set of exporters and a consent model: a shared BelemetrySetup.Configure method, each project's AddBitBelemetryServices call, the App.razor and Routes.razor lines, a consent banner when needed, and notes on CORS, credentials and consent. Use it instead of writing the setup from memory.")]
     public BelemetryGeneratedConfigDto GenerateBelemetryConfiguration(
         [Description("The host: web-app, server, webassembly, auto, static-ssr, standalone-wasm or hybrid.")] string host,
-        [Description("Comma-separated exporters: otlp, azure, console.")] string exporters = "otlp",
+        [Description("Comma-separated exporters: otlp, azure, sentry, console.")] string exporters = "otlp",
         [Description("The consent model: opt-in (nothing sent before the user decides; the GDPR default), opt-out, or none (no consent UI).")] string consent = "opt-in",
         [Description("Optional comma-separated BelemetryFeatures to enable at all (e.g. 'Errors,Performance,PageViews' or 'Diagnostics'); empty keeps All.")] string? features = null,
         [Description("Optional browser transport: Auto, Direct or Relay.")] string? transport = null)

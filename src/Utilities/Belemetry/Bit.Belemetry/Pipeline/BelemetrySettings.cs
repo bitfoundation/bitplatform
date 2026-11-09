@@ -63,6 +63,7 @@ internal sealed class BelemetrySettings
 
         OtlpExporters = ResolveOtlp(options, useEnv);
         AzureMonitorExporters = ResolveAzure(options, useEnv);
+        SentryExporters = ResolveSentry(options, useEnv);
 
         if (Host is BelemetryHostKind.Server && options.Browser.Enabled && BrowserTransport == BelemetryBrowserTransport.Direct)
         {
@@ -138,6 +139,8 @@ internal sealed class BelemetrySettings
     public IReadOnlyList<BelemetryOtlpExporterOptions> OtlpExporters { get; }
 
     public IReadOnlyList<BelemetryAzureMonitorExporterOptions> AzureMonitorExporters { get; }
+
+    public IReadOnlyList<BelemetrySentryExporterOptions> SentryExporters { get; }
 
     public List<string> TraceSources { get; }
 
@@ -219,7 +222,7 @@ internal sealed class BelemetrySettings
         return routes;
     }
 
-    public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
+    public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || SentryExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
 
     /// <summary>The runtime feature switch behind the <c>MetricsSupport</c> MSBuild property.</summary>
     public const string MetricsSupportSwitch = "System.Diagnostics.Metrics.Meter.IsSupported";
@@ -414,6 +417,25 @@ internal sealed class BelemetrySettings
         }
 
         return list.Where(e => string.IsNullOrWhiteSpace(e.ConnectionString) is false).ToList();
+    }
+
+    private static List<BelemetrySentryExporterOptions> ResolveSentry(BelemetryOptions options, bool useEnv)
+    {
+        var list = options.SentryExporters.ToList();
+        var envDsn = useEnv ? GetEnv("SENTRY_DSN") : null;
+
+        // As with Application Insights: the variable alone turns the exporter on, and fills in a DSN the code left unset.
+        if (list.Count == 0 && envDsn is not null)
+        {
+            list.Add(new BelemetrySentryExporterOptions { Dsn = envDsn });
+        }
+
+        foreach (var exporter in list)
+        {
+            exporter.Dsn ??= envDsn;
+        }
+
+        return list.Where(e => string.IsNullOrWhiteSpace(e.Dsn) is false).ToList();
     }
 
     private static string? GetEnv(string name)

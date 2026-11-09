@@ -12,6 +12,7 @@ conventions, and exports through:
 - OTLP, over HTTP as protobuf or JSON, or over gRPC (hand-framed HTTP/2, .NET side only): OTel Collector, Aspire
   dashboard, Grafana, Jaeger, Honeycomb, ...
 - The native Azure Monitor ingestion endpoint (`/v2.1/track`).
+- Sentry's envelope endpoint (`/api/{project}/envelope/`): errors only, as Sentry events (Issues).
 - The console.
 - Any custom `IBelemetryExporter`.
 
@@ -29,7 +30,7 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | `Bit.Belemetry/Consent/` | `BelemetryFeatures`, `IBelemetryConsent`, the consent state machine |
 | `Bit.Belemetry/Model/` | Public, OTel-shaped data model: spans, log records, metrics, resource, scope, attributes |
 | `Bit.Belemetry/Pipeline/` | Collectors (ActivityListener, MeterListener, ILoggerProvider), processors, batching, sampling |
-| `Bit.Belemetry/Exporters/` | OTLP (protobuf + JSON serializers), Azure Monitor (envelopes, live metrics), console, in-memory, HTTP sender + retry + persistence |
+| `Bit.Belemetry/Exporters/` | OTLP (protobuf + JSON serializers), Azure Monitor (envelopes, live metrics), Sentry (DSN, events, stack frames, PE debug images), console, in-memory, HTTP sender + retry + persistence |
 | `Bit.Belemetry/Interop/` | The JS bridge (module import, config, relay, unload drain, context sync) |
 | `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag), `<BelemetryInitializer />` (interactive bridge) and `<BelemetryCapturePreview />` (the unstyled support-bundle preview) |
 | `Bit.Belemetry/Diagnostics/` | Production diagnostics: the diagnostic timeline (`BelemetryDiagnosticRecorder`, one per process on client hosts, one per circuit on a server, routed by `BelemetryDiagnosticHub`), the event model, the sanitizer, exception fingerprints, captures, issue reports and the support bundle format. See "Production diagnostics" below |
@@ -172,6 +173,8 @@ idempotent: a second call only updates the consent defaults and the bridge, and 
       "protocol": "http/protobuf", "headers": { "x-api-key": "..." }, "compression": "none", "signals": 3 },   // protocol: http/protobuf | http/json ; compression: none | gzip
     { "type": "azureMonitor", "connectionString": "InstrumentationKey=...;IngestionEndpoint=https://...", "maskIp": true,
       "compression": "none", "signals": 3 },
+    { "type": "sentry", "dsn": "https://<public key>@<host>/<project>", "release": "shop@2.0.0", "minimumSeverity": 17,
+      "maskIp": true, "compression": "none" },                                   // release: absent unless configured
     { "type": "console" }
   ],
   "features": 4095,                                      // instrumentations switched on by configuration
@@ -242,7 +245,12 @@ Notes on the fields:
   without `?`, `#`, `@` or any pattern candidate is returned as is.
 - Retries differ per backend, on both sides (`IBelemetryHttpExporter.IsRetryable`, `transport.ts isRetryableFor`):
   OTLP 429/502/503/504 only (the specification forbids the rest); Azure Monitor 408/429/439/500/502/503/504. A request
-  is Azure's when its exporter is `azureMonitor` (script) or `azuremonitor`, `azuremonitor1`, ... (.NET).
+  is Azure's when its exporter is `azureMonitor` (script) or `azuremonitor`, `azuremonitor1`, ... (.NET). Sentry's
+  (`sentry`; .NET `sentry`, `sentry1`, ...) retry as OTLP's.
+- A Sentry exporter's `dsn` is the public DSN (`SentryDsn.PublicDsn`): a legacy secret key is never handed over, on any
+  host. The public key is public by design (Sentry's browser SDK publishes it in every page), so a server renders it.
+  `minimumSeverity` is always a number (0 for all, from `LogLevel.Trace`): the script reads an absent one as 17 (ERROR),
+  the C# default. An invalid DSN is left out (no exporter on the .NET side either).
 - `retryIntervalMs` is `Persistence.RetryInterval` (non-positive falls back to 60000, floor 1000): how often the page
   resends its stored requests, besides on start and on the `online` event.
 - A resend pass is the same on both sides (`transport.ts resendPersisted`, `BelemetryExporterSet.RetryStoredAsync`):
@@ -312,7 +320,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `setUser(id or null)` | Authenticated user id. Only kept and sent with `UserTracking` |
 | `trackEvent(name, attributes?)` | Custom event. A log record with `eventName = name` and feature `Events` |
 | `trackPageView(name?, url?, attributes?)` | Manual page view |
-| `trackException(type, message, stack?, attributes?)` | Manual exception, feature `Errors` |
+| `trackException(type, message, stack?, attributes?)` | Manual exception, feature `Errors`, scope `bit.belemetry.exceptions` (a caught exception; the errors instrumentation's are `bit.belemetry.errors`). A Blazor Server circuit's `IBelemetry.TrackException` comes through it, with a .NET stack |
 | `addProcessor(fn)` | `fn(record)` runs on every record at export (in `Pipeline.flush`, so one added after start still sees the first page view), after consent and privacy; `false` drops it, a throw skips it for that record. Returns the remover. Module-level: may be called before `start` |
 | `setAttributes(attributes or null)` | Global attributes merged into every record at `emit`, before privacy; a record's own win; a null value removes a key, `null` clears all; `session.id`, `enduser.pseudo.id`, `user.id` are refused (consent governs them) |
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
@@ -355,7 +363,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | Resource timing | Internal span `resourceFetch` with `url.full`, `http.response.body.size`, `network.protocol.name` |
 | Long task | Internal span `longtask`, feature `Performance` |
 | fetch/XHR | Client span `{METHOD}` (`HTTP` for a method outside the conventions' list, with `http.request.method = _OTHER` and `http.request.method_original`). Attributes: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type` (`AbortError` keeps the status unset; `TimeoutError`, `NetworkError` and 4xx/5xx are errors). Adds `traceparent` only for targets matched by `propagateTraceContextTo` |
-| JS error | Log record, severity 17 (ERROR), `eventName = "exception"`. Attributes: `exception.type`, `exception.message`, `exception.stacktrace` |
+| JS error | Log record, severity 17 (ERROR), `eventName = "exception"`, scope `bit.belemetry.errors` (`trackException`: `bit.belemetry.exceptions`). Attributes: `exception.type`, `exception.message`, `exception.stacktrace` |
 | Common (every record) | `session.id`. `enduser.pseudo.id` and `user.id` only with `UserTracking` |
 | Resource | `service.name`, `service.version`, `service.namespace`, `service.instance.id`, `deployment.environment.name`, `telemetry.sdk.name = "bit-belemetry"`, `telemetry.sdk.language = "webjs"`, `telemetry.sdk.version`, `browser.language`, `browser.mobile`, `browser.platform`, `browser.brands`, `user_agent.original` (if `collectUserAgent`) |
 
@@ -406,6 +414,57 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   only the items the response lists with those codes.
 - **Compression:** `compression: "gzip"` sends `Content-Encoding: gzip`, from the browser too (the ingestion
   endpoint's CORS preflight allows that header). Unload batches go uncompressed (compression is async).
+
+### Sentry mapping (C# `Exporters/Sentry/`, TS `exporters/sentry.ts`; identical for a browser record)
+
+- **Endpoint:** `{scheme}://{host}{path}/api/{project}/envelope/?sentry_key={key}&sentry_version=7` from the DSN
+  `{scheme}://{key}[:{secret}]@{host}{path}/{project}` (`SentryDsn`, `parseDsn`). The key is in the URL, not a header:
+  no header to keep out of storage, and a stored request needs none. `Content-Type: application/x-sentry-envelope`;
+  `compression: gzip` sends `Content-Encoding: gzip` (not during unload).
+- **Envelope:** one event each (Sentry takes one per envelope): `{"event_id","dsn":<public DSN>,"sdk":{"name","version"}}`
+  `\n{"type":"event","length":<UTF-8 bytes>}\n<event>\n`. No `sent_at`: a stored request is sent later, and Relay would
+  shift the event's time by the gap. The event id is made once, with the request, so a retry is deduplicated.
+- **Which records:** at or above the minimum severity, (1) a log record with `exception.type` or `exception.message`
+  (.NET: not under `Bit.Belemetry.UnhandledExceptions` without `IncludeUnhandledExceptions`), (2) a plain log record (no
+  `eventName`) with a body, (3) an `exception` span event with a type or message, as ERROR, unless `Limited`/`limited` or
+  (.NET) a log record this exporter sends is the same exception (`LoggedAs`, not dropped, at the minimum severity).
+- **Event:** `event_id`, `timestamp` (seconds, millisecond precision: `floor(ms) / 1000`), `platform` (`javascript` when
+  the resource's `telemetry.sdk.language` is `webjs`, else `csharp`), `level` (21+ fatal, 17+ error, 13+ warning, 9+ info,
+  else debug), `logger` (the scope), `transaction` (span events: the span name), `release` (configured, else
+  `{service.name}@{service.version}`, else `{service.version}`; none without a version), `environment`
+  (`deployment.environment.name`), `server_name` (`host.name`), `message.formatted` (the body, unless it equals
+  `exception.message`), `exception.values` (innermost first; the outermost carries `mechanism {type: generic, handled}`),
+  `contexts` (`trace` {trace_id, span_id, parent_span_id for span events, type} when both ids are valid hex; `runtime`
+  from `process.runtime.*`; `os` {name: `os.type`, raw_description: `os.description`}; `culture` {locale:
+  `browser.language`}; `otel` {resource: every resource attribute}), `tags` {`session.id`}, `user` {id: `user.id`, else
+  `enduser.pseudo.id`}, `request.headers.User-Agent` (`user_agent.original`), `extra` (the record's attributes but
+  `exception.*`, and - when they are the record's own - `session.id`, `user.id` when set, `enduser.pseudo.id` when it is
+  the user), `sdk` {`bit.belemetry.javascript` | `bit.belemetry.dotnet`, `telemetry.sdk.version`, settings {infer_ip:
+  `never` with `maskIp`, else `auto`}}, and (.NET) `debug_meta.images`.
+- **handled:** false under `bit.belemetry.errors` (the script's `error`/`unhandledrejection`; its `trackException` is
+  `bit.belemetry.exceptions`) and where `BelemetryDiagnosticEventFactory.OriginOf` says `unhandled`; true otherwise.
+- **A .NET stack in a browser record** (a Blazor Server circuit's `TrackException`, forwarded to the script): a stack is
+  .NET's when a line is a .NET frame (`IsDotnet`, `isDotnetStack`: `at` and a method with no whitespace before its `(`,
+  which no JavaScript frame is). It is parsed as .NET text on both sides (`ParseDotnet`, `parseDotnetStack`), and the
+  event's `platform` is `csharp`; `sdk.name` stays the recorder's.
+- **Frames** (oldest first, the newest 100 per exception, at most 16 exceptions): JavaScript (`SentryStackTrace.ParseJavaScript`,
+  `parseStack`; the same cases in `SentryStackTraceTests` and `sentry.test.js`): V8 `at fn (url:l:c)` / `at url:l:c` /
+  `async` / `new` / `eval at fn (url:l:c), ...` (the inner location); SpiderMonkey and JavaScriptCore `fn@url:l:c`
+  (the first `@`; `async*` dropped; `url line N > eval` is the url at line N; `[native code]`); a line with neither, or
+  an `@` line without a line number, `://` or `[native code]`, is not a frame. `function` `?` when anonymous;
+  `filename` = `abs_path` = the URL; `in_app` unless no `://`, a browser extension's scheme, `/_framework/` or
+  `/_content/Bit.Belemetry/`. .NET from the exception object (`log.Exception`, only when the record still has
+  `exception.stacktrace`): the frames `StackTrace.ToString()` shows, `function`/`module` as the text names them (an
+  async or iterator `MoveNext` is the method it was written as, on its declaring type; `+` is `.`; no generic arguments),
+  file and line when the runtime has them, and with a debug image `instruction_addr` (IL offset), `function_id` (the MethodDef
+  row: the metadata token without its table byte, as Sentry's .NET SDK sends it), `addr_mode` `rel:{image}`; the outer exception's type and message are the attributes', an inner one's message
+  only when the stack text holds it as it is. Without frames from the object (none, NativeAOT) the text is parsed
+  (`ParseDotnet`): the header's ` ---> ` parts against the frame sets the end-of-inner markers close, else the outermost
+  only; an `AggregateException`'s other inner exceptions (`---> (Inner Exception #n)`) are not the chain's.
+- **Debug image** (`SentryDebugImage`, read by hand from the PE file: System.Reflection.Metadata would weigh on every
+  WebAssembly app, which has no file): `pe_dotnet`, `code_file` (the path), `code_id` (`{COFF stamp:X8}{SizeOfImage:x}`),
+  `debug_id` (CodeView GUID + `-{entry stamp:x8}` for a portable PDB, `-{age:x}` otherwise), `debug_file`,
+  `debug_checksum` (`{algorithm}:{hex}`) - Sentry's .NET SDK's values. None in WebAssembly or without a file.
 
 ### Production diagnostics
 

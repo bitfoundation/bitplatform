@@ -8,9 +8,13 @@ public static class HarnessServiceCollectionExtensions
     /// <summary>The instrumentation key of the fake Application Insights resource the harness exports to.</summary>
     public const string InstrumentationKey = "11111111-2222-3333-4444-555555555555";
 
+    /// <summary>The public key of the fake Sentry project the harness exports to.</summary>
+    public const string SentryKey = "harnesssentrykey";
+
     /// <summary>
     /// Registers Belemetry the way every harness host uses it: exporting to the capturing receiver at
-    /// <paramref name="collectorOrigin"/> over OTLP/JSON and the Azure Monitor envelope format both, with flush
+    /// <paramref name="collectorOrigin"/> over OTLP/JSON and the Azure Monitor envelope format both - and its errors as
+    /// Sentry envelopes - with flush
     /// intervals short enough for a test to wait on. Every host calls this, so the options under test are identical
     /// wherever the harness runs.
     /// </summary>
@@ -34,6 +38,10 @@ public static class HarnessServiceCollectionExtensions
 
             o.AddOtlpExporter(collector, otlp => otlp.Protocol = BelemetryOtlpProtocol.HttpJson);
             o.AddAzureMonitorExporter($"InstrumentationKey={InstrumentationKey};IngestionEndpoint={collector}/");
+
+            // Errors to a Sentry project the receiver plays: {origin}/test-collector/api/1/envelope/.
+            var origin = new Uri(collectorOrigin.TrimEnd('/'));
+            o.AddSentryExporter($"{origin.Scheme}://{SentryKey}@{origin.Authority}{HarnessCollectorFilter.CollectorPath}/1");
 
             o.Browser.FlushInterval = TimeSpan.FromMilliseconds(500);
             o.Batch.FlushInterval = TimeSpan.FromMilliseconds(500);

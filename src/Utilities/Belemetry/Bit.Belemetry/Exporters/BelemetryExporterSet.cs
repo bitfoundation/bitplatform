@@ -50,6 +50,18 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
             }
         }
 
+        for (var i = 0; i < settings.SentryExporters.Count; i++)
+        {
+            try
+            {
+                _httpExporters.Add(new BelemetrySentryExporter(settings.SentryExporters[i], $"sentry{(i == 0 ? string.Empty : i.ToString(System.Globalization.CultureInfo.InvariantCulture))}"));
+            }
+            catch (FormatException ex)
+            {
+                pipeline.LogDiagnostic(ex, "The Sentry exporter is skipped: its DSN is invalid.");
+            }
+        }
+
         if (options.ConsoleExporter is { } console) _exporters.Add(new BelemetryConsoleExporter(console));
         _exporters.AddRange(options.Exporters);
 

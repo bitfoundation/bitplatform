@@ -181,6 +181,32 @@ internal static class BelemetryBrowserConfigFactory
                 });
             }
 
+            foreach (var sentry in settings.SentryExporters.Where(s => s.IncludeInBrowser))
+            {
+                SentryDsn dsn;
+                try
+                {
+                    dsn = SentryDsn.Parse(sentry.Dsn!);
+                }
+                catch (FormatException)
+                {
+                    // An invalid DSN has no exporter on the .NET side either.
+                    continue;
+                }
+
+                config.Exporters.Add(new()
+                {
+                    Type = "sentry",
+                    // The public key is public by design; a legacy secret key in the DSN is not handed over.
+                    Dsn = dsn.PublicDsn,
+                    Release = string.IsNullOrWhiteSpace(sentry.Release) ? null : sentry.Release.Trim(),
+                    // Always a number: absent means the default level (Error) to the script, and 0 lets everything through.
+                    MinimumSeverity = (int)(BelemetryLogger.ToMinimumSeverity(sentry.MinimumEventLevel) ?? BelemetrySeverity.Unspecified),
+                    MaskIp = sentry.MaskIp,
+                    Compression = sentry.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
+                });
+            }
+
             if (options.ConsoleExporter is { IncludeInBrowser: true })
             {
                 config.Exporters.Add(new() { Type = "console" });
@@ -244,6 +270,18 @@ internal static class BelemetryBrowserConfigFactory
             catch (Exception ex) when (ex is FormatException or ArgumentException)
             {
                 // An invalid connection string has no exporter (and so no traffic) to ignore.
+            }
+        }
+
+        foreach (var sentry in settings.SentryExporters)
+        {
+            try
+            {
+                Add(SentryDsn.Parse(sentry.Dsn!).EnvelopeEndpoint);
+            }
+            catch (FormatException)
+            {
+                // An invalid DSN has no exporter (and so no traffic) to ignore.
             }
         }
     }

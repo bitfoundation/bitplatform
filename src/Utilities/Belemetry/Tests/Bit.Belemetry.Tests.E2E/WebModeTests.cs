@@ -201,6 +201,17 @@ public abstract partial class WebModeTests : HarnessTest
         // And the Azure Monitor exporter turned it into an Exception envelope.
         await Collector.WaitForAsync(t => t.Envelopes.FirstOrDefault(e => e.Name == "Microsoft.ApplicationInsights.Exception" && e.BaseData?.Contains("Harness JS error") is true),
             "the Exception envelope", session);
+
+        // And the Sentry exporter into an unhandled error event, the stack parsed into frames.
+        var sentry = await Collector.WaitForAsync(t => t.SentryEvents.FirstOrDefault(e => e.Exceptions.Any(x => x.Contains("Harness JS error"))), "the Sentry event", session);
+        Assert.AreEqual("javascript", sentry.Platform);
+        Assert.AreEqual("error", sentry.Level);
+        Assert.AreEqual("bit.belemetry.errors", sentry.Logger);
+        Assert.AreEqual("bit.belemetry.javascript", sentry.SdkName);
+        Assert.AreEqual(sentry.EnvelopeEventId, sentry.EventId);
+        Assert.AreEqual("harnesssentrykey", sentry.Key);
+        Assert.IsFalse(sentry.Handled);
+        Assert.IsTrue(sentry.Frames.Any(f => f.Contains("harness.js", StringComparison.Ordinal)), string.Join(" | ", sentry.Frames));
     }
 
     [TestMethod]
@@ -417,6 +428,26 @@ public abstract class InteractiveWebModeTests : WebModeTests
 
         // Either way it belongs to the browser session.
         Assert.AreEqual(await SessionIdAsync(), record.Attributes.GetValueOrDefault("session.id"));
+    }
+
+    [TestMethod]
+    public async Task IBelemetry_TrackException_from_CSharp_is_a_handled_Sentry_event_with_its_dotnet_frames()
+    {
+        var marker = NewMarker();
+        await OpenAsync($"/?consent=all&marker={marker}");
+
+        await Page.Locator("#track-exception").ClickAsync();
+        await Expect(Page.Locator("#consent-state")).ToHaveAttributeAsync("data-actions", "1");
+
+        // Exported by the WebAssembly pipeline from the exception object, or - on a server circuit - by the script,
+        // from the .NET stack text it was handed: the same frames either way.
+        var sentry = await Collector.WaitForAsync(t => t.SentryEvents.FirstOrDefault(), "the Sentry event of the C# TrackException", marker: marker);
+        Assert.AreEqual("csharp", sentry.Platform);
+        Assert.AreEqual($"System.InvalidOperationException: Harness exception {marker}", sentry.Exceptions.Single());
+        Assert.IsTrue(sentry.Handled);
+        Assert.IsTrue(sentry.Frames.Any(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal)), string.Join(" | ", sentry.Frames));
+        Assert.AreEqual(await SessionIdAsync(), sentry.Tags.GetValueOrDefault("session.id"));
+        Assert.AreEqual("track-exception", sentry.Extra.GetValueOrDefault("harness.action"));
     }
 }
 

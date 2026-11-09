@@ -10,6 +10,7 @@ public class BelemetrySettingsTests
         "OTEL_SERVICE_NAME", "OTEL_RESOURCE_ATTRIBUTES", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS",
         "OTEL_EXPORTER_OTLP_PROTOCOL", "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
         "OTEL_EXPORTER_OTLP_TIMEOUT", "OTEL_EXPORTER_OTLP_COMPRESSION", "APPLICATIONINSIGHTS_CONNECTION_STRING", "OTEL_SDK_DISABLED",
+        "SENTRY_DSN",
     ];
 
     private const string ConnectionString = "InstrumentationKey=11111111-2222-3333-4444-555555555555;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/";
@@ -163,6 +164,29 @@ public class BelemetrySettingsTests
 
         Assert.AreEqual(ConnectionString, settings.AzureMonitorExporters.Single().ConnectionString);
         Assert.IsTrue(settings.HasExporters);
+    }
+
+    [TestMethod]
+    public void SentryDsn_TurnsTheSentryExporterOn_AndFillsUnsetDsns()
+    {
+        const string envDsn = "https://env@o1.ingest.sentry.io/1";
+        Environment.SetEnvironmentVariable("SENTRY_DSN", envDsn);
+
+        var alone = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
+        Assert.AreEqual(envDsn, alone.SentryExporters.Single().Dsn);
+        Assert.IsTrue(alone.HasExporters);
+
+        var configured = TestHost.CreateSettings(o =>
+        {
+            o.UseEnvironmentVariables = true;
+            o.AddSentryExporter("https://explicit@o1.ingest.sentry.io/2");
+            o.AddSentryExporter(s => s.Release = "web@1");
+        });
+        CollectionAssert.AreEqual(new[] { "https://explicit@o1.ingest.sentry.io/2", envDsn }, configured.SentryExporters.Select(s => s.Dsn).ToArray());
+
+        Assert.IsEmpty(TestHost.CreateSettings(o => o.UseEnvironmentVariables = false).SentryExporters);
+        Environment.SetEnvironmentVariable("SENTRY_DSN", null);
+        Assert.IsEmpty(TestHost.CreateSettings(o => o.AddSentryExporter()).SentryExporters, "Without a DSN there is nothing to export to.");
     }
 
     [TestMethod]
