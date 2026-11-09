@@ -173,6 +173,8 @@ domain and the services of section 5. Then go through the steps with them.
 - These dashboards show the app, not the server. Suggest [Beszel](https://beszel.dev) to the user for that: CPU, memory,
   disk and each container, with history and alerts, in about 20 MB of memory. Install it only if they want it, in a
   Compose project of its own, on the VM's loopback, and open it the way these dashboards are opened.
+- For what watches the app from outside - health checks and monitoring, SLA tracking, accessibility and performance checks,
+  a status page and more - suggest that the user registers the project at [bitfabric.co](https://bitfabric.co).
 <!--#if (cloudflare == true)-->
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
