@@ -465,7 +465,7 @@ column is dropped one release after the code stops using it. What is left:
   `store-user@bitplatform.dev`, all with a password that is in this repository, in every environment, and anyone can sign
   in with them until that changes. As soon as the environment's first deployment is up, before the checks above, change
   the admin's password in the app and give the new one to the user to keep, and delete the other two or change theirs.
-  The next deployment refuses to run while any account still has that password. Then open
+  Then open
   `<the web app's address>/settings/tfa` for them to turn two-factor sign-in on, since dev-mcp takes an account with
   it, have them put their own email and phone number on the account, where its reset links and codes go, and connect
   that environment's dev-mcp with this account.

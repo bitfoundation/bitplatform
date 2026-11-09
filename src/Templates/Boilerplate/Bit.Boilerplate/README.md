@@ -17,7 +17,7 @@ pre-confirmed accounts whose password is **`12345678`**:
 <!--#endif-->
 
 These passwords are for development and are not for Production: the first deployment still creates the accounts, so
-change the passwords right after it, and every later deployment stops while an account still has this one.
+change the passwords right after it.
 
 
 ## Documentation
