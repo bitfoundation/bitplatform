@@ -6,7 +6,7 @@ namespace Boilerplate.Server.Api.Features.Identity.Configurations;
 
 public partial class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public static readonly string SeedPasswordHash = HashSeedPassword("12345678", Guid.Parse("AC87AA5B-4B37-4E52-8468-2D5DF24AF256"));
+    private static readonly string seedPasswordHash = HashSeedPassword("12345678", Guid.Parse("AC87AA5B-4B37-4E52-8468-2D5DF24AF256"));
 
     /// <summary>Identity's V3 format, salted with the project's own GUID, so the model stays the same on every run.</summary>
     private static string HashSeedPassword(string password, Guid projectId)
@@ -63,7 +63,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
             PhoneNumberConfirmed = true,
             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
-            PasswordHash = SeedPasswordHash,
+            PasswordHash = seedPasswordHash,
         }]);
 
         //#if (multitenant == true)
@@ -86,7 +86,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
             EmailTokenRequestedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
             SecurityStamp = "869ff4a9-4b07-4cc1-8141-c5fc033daf82",
             ConcurrencyStamp = "425e1a26-5b3a-4544-8e91-2760cd28e230",
-            PasswordHash = SeedPasswordHash,
+            PasswordHash = seedPasswordHash,
         }]);
 
         const string storeUserUserName = "store-user";
@@ -109,7 +109,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
             EmailTokenRequestedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
             SecurityStamp = "469ff4a9-4b07-4cc1-8141-c5fc033daf84",
             ConcurrencyStamp = "435e1a26-5b3a-4544-8e91-2760cd28e229",
-            PasswordHash = SeedPasswordHash,
+            PasswordHash = seedPasswordHash,
         }]);
         //#endif
 
