@@ -98,7 +98,7 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
             && Enum.IsDefined(appPlatformType)) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
         {
             // A minimum set for the platform wins. Without one, a client is supported unless its major version is behind the server's.
-            var minVersion = settings.SupportedAppVersions?.GetMinimumSupportedAppVersion(appPlatformType) ?? new Version(serverVersion.Major, 0);
+            var minVersion = settings.SupportedAppVersions?.GetMinimumSupportedAppVersion(appPlatformType) ?? MinimumForMajorOf(serverVersion);
 
             if (appVersion < minVersion)
             {
@@ -108,6 +108,8 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
 
         await next(context);
     }
+
+    public static Version MinimumForMajorOf(Version serverVersion) => new(serverVersion.Major, 0);
 }
 ```
 

@@ -161,7 +161,7 @@ csharp_new_line_before_open_brace = all
 
 #### Versioning
 ```xml
-<Version>1.0.0</Version>
+<Version>0.0.1</Version>
 <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
 ```
 
