@@ -191,10 +191,13 @@ public class BitRatingParamsTests : BunitTestContext
             Classes = new BitRatingClassStyles { Root = "cascaded-root" },
             Color = BitColor.Warning,
             Description = "Cascaded description",
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             GetAriaLabel = getAriaLabel,
             GetSelectedIcon = getSelectedIcon,
             GetUnselectedIcon = getUnselectedIcon,
             HighlightSelectedOnly = true,
+            Invalid = true,
             ItemTitles = titles,
             Label = "Cascaded label",
             LabelPlacement = BitPlacement.Start,
@@ -225,10 +228,13 @@ public class BitRatingParamsTests : BunitTestContext
         Assert.AreSame(@params.Classes, instance.Classes);
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.AreEqual("Cascaded description", instance.Description);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
         Assert.AreSame(getAriaLabel, instance.GetAriaLabel);
         Assert.AreSame(getSelectedIcon, instance.GetSelectedIcon);
         Assert.AreSame(getUnselectedIcon, instance.GetUnselectedIcon);
         Assert.IsTrue(instance.HighlightSelectedOnly);
+        Assert.IsTrue(instance.Invalid);
         Assert.AreSame(titles, instance.ItemTitles);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
@@ -259,6 +265,37 @@ public class BitRatingParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-sm"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-vrt"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-rdl"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var component = RenderWithParams(new BitRatingParams { ErrorMessage = "Not available on the free plan." });
+
+        Assert.AreEqual("Not available on the free plan.", component.Find(".bit-rtg-erm").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
+        Assert.AreEqual("Not available on the free plan.", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitRatingShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderWithParams(new BitRatingParams { ErrorMessageAriaLabel = "Refused by the server." },
+                                         builder => builder.AddAttribute(1, nameof(BitRating.Invalid), invalid));
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        Assert.AreEqual("Refused by the server.", component.Find("[role=status]").TextContent.Trim());
     }
 
     [TestMethod]

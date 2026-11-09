@@ -73,6 +73,27 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the items, ahead of the description, saying why the value was rejected - by a server, a rule spanning two fields - which marks the rating invalid in the same way Invalid does. The rating is described by it, and a live region announces it the moment it shows up. A rating inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage.",
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection with no text of its own: an ErrorMessageTemplate, in place of the default \"Invalid input\", or the forced Invalid state, which is only announced when this is set. The rating references it through its aria-describedby as well. A plain ErrorMessage is its own text and never uses it.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the rating invalid in the same way. It is announced through ErrorMessageAriaLabel, or as \"Invalid input\" when that is not set.",
+        },
+        new()
+        {
             Name = "GetAriaLabel",
             Type = "Func<double, double, string>?",
             DefaultValue = "null",
@@ -102,6 +123,13 @@ public partial class BitRatingDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Highlights only the item matching the current value instead of every item up to it, turning the rating into a scale of standalone choices rather than a cumulative one. A fractional value still fills its own item by the fraction it covers.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the value as invalid, giving a value rejected by something other than the cascading EditContext the same look and the same aria-invalid that a failing data annotation gives it. Pair it with ErrorMessage to say what is wrong; a message on its own already implies this state. A read-only rating shows the look without the attribute, which its img role does not support.",
         },
         new()
         {
@@ -210,7 +238,7 @@ public partial class BitRatingDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Size of the rating, which scales the item glyphs, the label and the description together. An explicit value wins over --bit-Rating-size, --bit-Rating-label-font-size and --bit-Rating-description-font-size; left unset, the rating is medium unless they say otherwise.",
+            Description = "Size of the rating, which scales the item glyphs, the label, the description and the error message together. An explicit value wins over --bit-Rating-size, --bit-Rating-label-font-size and --bit-Rating-description-font-size; left unset, the rating is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -291,6 +319,20 @@ public partial class BitRatingDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the description of the rating.",
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message container of the rating.",
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message text of the rating.",
                 },
                 new()
                 {
@@ -495,7 +537,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-invalid-color",
             DefaultValue = "--bit-clr-err (items), --bit-clr-err-focus (ring)",
-            Description = "Color of both parts of the items, and of the focus ring, while the value is invalid.",
+            Description = "Color of both parts of the items, of the focus ring and of the error message while the value is invalid.",
         },
         new()
         {
@@ -561,7 +603,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-label-gap",
             DefaultValue = "spacing(1)",
-            Description = "Room between the label and the items, and between the items and the description.",
+            Description = "Room between the label and the items, and between the items and the lines under them (the error message and the description).",
         },
         new()
         {
@@ -573,7 +615,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-description-font-size",
             DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Text size of the description. The Size parameter wins over it.",
+            Description = "Text size of the description and of the error message. The Size parameter wins over it.",
         }
     ];
 
@@ -649,6 +691,7 @@ public partial class BitRatingDemo
 
     public BitRatingDemoFormModel ValidationModel = new();
     public string? SuccessMessage;
+    private double reviewRating = 5;
 
 
 

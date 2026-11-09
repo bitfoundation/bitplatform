@@ -23,6 +23,16 @@ public class BitRatingClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the error message container of the rating.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message text of the rating.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the rating items.
     /// </summary>
     public string? Container { get; set; }
