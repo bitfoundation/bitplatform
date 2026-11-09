@@ -262,6 +262,60 @@ public class BelemetryHttpSenderTests
     }
 
     [TestMethod]
+    public async Task Messages_NameTheUrlWithoutItsUserInfo()
+    {
+        // The endpoint's user info is a credential, and the warnings and diagnostics go to every log sink.
+        var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.BadRequest }.Enqueue(HttpStatusCode.ServiceUnavailable);
+        var warnings = new List<string>();
+        using var sender = new BelemetryHttpSender(handler, (_, m) => _diagnostics.Add(m), (_, m) => warnings.Add(m)) { Backoff = [TimeSpan.Zero, TimeSpan.Zero] };
+        var exporter = Otlp(o => o.Endpoint = new Uri("http://user:pw-7f3a@collector.test:4318"));
+
+        Assert.AreEqual(BelemetrySendOutcome.Rejected, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
+
+        StringAssert.Contains(_diagnostics.Single(), "otlp: http://collector.test:4318/v1/logs answered 503; will retry.");
+        StringAssert.Contains(warnings.Single(), "otlp: http://collector.test:4318/v1/logs rejected the request with 400");
+        Assert.IsFalse(_diagnostics.Concat(warnings).Any(m => m.Contains("pw-7f3a", StringComparison.Ordinal)), string.Join(" | ", _diagnostics.Concat(warnings)));
+    }
+
+    [TestMethod]
+    [DataRow("https://user:pw-7f3a@collector.test:4318/v1/logs?a=b", "https://collector.test:4318/v1/logs?a=b")]
+    [DataRow("https://:pw-7f3a@collector.test/", "https://collector.test/")]
+    [DataRow("https://pw-7f3a@[::1]:443/otlp", "https://[::1]/otlp")]
+    [DataRow("https://collector.test/v1/logs?email=a@b.test", "https://collector.test/v1/logs?email=a@b.test")]
+    [DataRow("/otlp/v1/logs", "/otlp/v1/logs")]
+    [DataRow("not a url @ all", "not a url @ all")]
+    public void UserInfo_IsRemoved_AndAnythingElseKept(string url, string expected)
+    {
+        Assert.AreEqual(expected, BelemetryUserInfo.Remove(url));
+
+        var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+        Assert.AreEqual(url.Contains("pw-7f3a", StringComparison.Ordinal), BelemetryUserInfo.Has(uri));
+        Assert.AreEqual(expected, BelemetryUserInfo.Remove(uri)!.ToString());
+    }
+
+    [TestMethod]
+    [DataRow("https://user:pw-7f3a@collector.test:99999/v1/logs", "https://collector.test:99999/v1/logs")]
+    [DataRow("https://user:pw-7f3a@collector test/v1/logs?a=b@c", "https://collector test/v1/logs?a=b@c")]
+    [DataRow("https://a@b:pw-7f3a@collector test#x", "https://collector test#x")]
+    [DataRow("//user:pw-7f3a@collector test/v1/logs", "//collector test/v1/logs")]
+    public void UserInfo_IsRemoved_FromAUrlNoUriParses(string url, string expected)
+    {
+        // A malformed URL can hold a credential as well: a message never repeats it verbatim.
+        Assert.IsFalse(Uri.TryCreate(url, UriKind.Absolute, out _), url);
+        Assert.AreEqual(expected, BelemetryUserInfo.Remove(url));
+    }
+
+    [TestMethod]
+    [DataRow(@"^https://user:pw-7f3a@collector\.test(:\d+)?/", @"^https://collector\.test(:\d+)?/")]
+    [DataRow(@"https?://pw-7f3a@a\.test/|https?://u:pw-7f3a@b\.test/x\?mail=a@b", @"https?://a\.test/|https?://b\.test/x\?mail=a@b")]
+    [DataRow(@"/api/users/\w+@example\.com", @"/api/users/\w+@example\.com")]
+    [DataRow("/_framework/", "/_framework/")]
+    public void UserInfo_IsRemovedAsText_KeepingTheRestOfAPattern(string pattern, string expected)
+    {
+        Assert.AreEqual(expected, BelemetryUserInfo.RemoveFromText(pattern));
+    }
+
+    [TestMethod]
     public async Task AzurePartialSuccess_OnTheLastAttempt_LeavesOnlyTheRejectedItemsToStore()
     {
         // A stored request is replayed with a single attempt. Storing the original after a 206 would resend the items
