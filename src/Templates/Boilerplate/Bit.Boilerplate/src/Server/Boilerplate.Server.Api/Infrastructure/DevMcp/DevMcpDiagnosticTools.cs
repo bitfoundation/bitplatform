@@ -95,11 +95,11 @@ public partial class DevMcpDiagnosticTools
             Capabilities = ReadCapabilities(),
             ForceUpdate = new
             {
-                settings.SupportedAppVersions?.MinimumSupportedAndroidAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedIosAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedMacOSAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedWindowsAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedWebAppVersion
+                MinimumSupportedAndroidAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Android),
+                MinimumSupportedIosAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Ios),
+                MinimumSupportedMacOSAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.MacOS),
+                MinimumSupportedWindowsAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Windows),
+                MinimumSupportedWebAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Web)
             }
         });
     }

@@ -352,8 +352,9 @@ them to GHCR, and `deploy_server` runs on the environment's own runner, migrates
 project up, and fails unless every container is healthy and the public addresses answer. It replaces the apps with no
 downtime: a new container starts next to the running one, and the old ones stop only once every new one is healthy. The
 old version keeps serving while the migrations run, so a migration has to leave the database working for it, and a
-column is dropped one release after the code stops using it. A deployment that fails before the old version stops runs
-the Down of the migrations it applied, so a migration's Down has to really undo it. What is left:
+column is dropped one release after the code stops using it. A deployment that fails before any new container starts
+runs the Down of the migrations it applied, so a migration's Down has to really undo it. Once one has started it may
+have taken requests, so a failure from then on leaves the database ahead and undoing it to a person. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
   the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.

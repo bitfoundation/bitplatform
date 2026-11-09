@@ -59,7 +59,11 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
+#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+#else
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+#endif
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
@@ -190,11 +194,14 @@ jobs:
           umask 077
           mkdir -p "$deploy_dir"
           cp compose/docker-compose.yaml "$deploy_dir/docker-compose.yaml"
+
+          # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries and Caddy's sites are matched.
+          origin() { printf '%s' "$1" | grep -oE '^https?://[^/]+' || true; }
           #if (api == "Standalone")
 
           # A standalone api is reached at its own address: the apps were built with it as ServerAddress. Given the web app's
           # address instead, the SignalR hub, the discovery document and everything else only the api serves are missing.
-          api_origin="$(printf '%s' "$SERVER_API_ADDRESS" | grep -oE '^https?://[^/]+' || true)"
+          api_origin="$(origin "$SERVER_API_ADDRESS")"
           if [[ -z "$api_origin" ]]; then
             echo "::error::Set SERVER_API_ADDRESS, the api's public address. The clients call the api there."
             exit 1
@@ -241,8 +248,7 @@ jobs:
             if [[ "$file" == "landingpage.env" ]]; then
               address="$LANDING_PAGE_ADDRESS"
             fi
-            # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries are matched.
-            origin="$(printf '%s' "$address" | grep -oE '^https?://[^/]+' || true)"
+            origin="$(origin "$address")"
             # Without it the app would refuse its own address, so stop here rather than deploy one that answers 400.
             if [[ -z "$origin" ]]; then
               echo "::error::$file has no public address to trust: set SERVER_ADDRESS, and LANDING_PAGE_ADDRESS for the landing page."
@@ -280,19 +286,14 @@ jobs:
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
           #if (cloudflare != true)
 
-          origin() { printf '%s' "$1" | grep -oE '^https?://[^/]+' || true; }
-          #if (api == "Standalone")
-          if [[ -z "$(origin "$SERVER_API_ADDRESS")" ]]; then
-            echo "::error::Set SERVER_API_ADDRESS, the api's public address, for the reverse proxy."
-            exit 1
-          fi
-          #endif
+          # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
+          # build with a plugin, so without Cloudflare nothing limits how often.
           {
             printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
           #if (api == "Standalone")
             printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
           #endif
-            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
+            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
           } > "$deploy_dir/Caddyfile"
           #endif
 
@@ -345,10 +346,11 @@ jobs:
             echo "undo_to=$(printed LastAppliedMigration)" >> "$GITHUB_OUTPUT"
           else
             # An older commit is being deployed: only the image running now has the Down of the migrations it doesn't know.
+            #if (api == "Standalone")
+            api=serverapi
+            #else
             api=serverweb
-            if grep -qE '^  serverapi:' "$COMPOSE_FILE"; then
-              api=serverapi
-            fi
+            #endif
             image="$(docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$api" --format '{{.Image}}' | tail -n 1)"
             { echo "rollback_to=$older_target"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
           fi
@@ -356,10 +358,12 @@ jobs:
 
       - name: Start everything but the apps
         run: |
+          # migrations and container-volume-init are one-shot: the migrate step has run them, and --wait fails on a container
+          # that exited.
           others=()
           while IFS= read -r service; do
             case "$service" in
-              serverapi | serverweb | landingpage | migrations) ;;
+              serverapi | serverweb | landingpage | migrations | container-volume-init) ;;
               *) others+=("$service") ;;
             esac
           done < <(docker compose config --services)
@@ -382,8 +386,22 @@ jobs:
           old=()
           new=()
           replaced=false
-          # Whatever goes wrong before the old containers stop, the new ones go and the old ones keep serving.
-          trap '[[ "$replaced" == true ]] || (( ${#new[@]} == 0 )) || docker rm --force "${new[@]}" > /dev/null' EXIT
+          # Whatever goes wrong before the old containers stop, the new ones go and the old ones keep serving. Anything that
+          # wasn't running before this step counts as new, so a container that a failed `up` started goes too.
+          before=()
+          for service in "${apps[@]}"; do
+            mapfile -t -O "${#before[@]}" before < <(containers)
+          done
+          remove_new() {
+            [[ "$replaced" != true ]] || return 0
+            for service in "${apps[@]}"; do
+              mapfile -t current < <(containers --all)
+              for id in "${current[@]}"; do
+                [[ " ${before[*]} " == *" $id "* ]] || docker rm --force "$id" > /dev/null || true
+              done
+            done
+          }
+          trap remove_new EXIT
 
           for service in "${apps[@]}"; do
             mapfile -t stale < <(containers --all --filter status=created --filter status=exited --filter status=dead)
@@ -411,7 +429,7 @@ jobs:
               fi
               if [[ "$health" == unhealthy ]] || (( SECONDS > deadline )); then
                 docker logs --tail 200 "$container" || true
-                echo "::error::A new container never got healthy ($health). The running version keeps serving."
+                echo "::error::A new container never got healthy ($health). The running version keeps serving, on the new database schema. Undoing the migrations is left to a person, as the new containers may have taken requests."
                 exit 1
               fi
               sleep 5
@@ -428,10 +446,12 @@ jobs:
           docker compose exec -T reverse-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
           #endif
 
-      # The deployment failed with the old version still serving, so the database goes back to where it stood for it. It
-      # doesn't run on the first deployment, which has nothing to go back to, or once the old version has stopped.
+      # The deployment failed before any new container started, so nobody has used the new schema and the database goes
+      # back to where it stood. Once one has started it may have taken requests, and a Down would delete what they wrote:
+      # the database then stays ahead, which the running version works on. It doesn't run on the first deployment, which
+      # has nothing to go back to.
       - name: Undo this deployment's migrations
-        if: failure() && steps.migrate.outputs.undo_to != '' && steps.apps.outputs.replaced != 'true'
+        if: failure() && steps.migrate.outputs.undo_to != '' && steps.apps.outcome == 'skipped'
         env:
           UNDO_TO: ${{ steps.migrate.outputs.undo_to }}
         run: docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations || echo "::error::The migrations could not be undone. The database stays ahead of the running version."
@@ -560,7 +580,11 @@ jobs:
         with:
           files: 'src\**\appsettings*json'
         env:
+#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+#else
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+#endif
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
@@ -644,7 +668,11 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
+#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+#else
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+#endif
 
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
@@ -710,7 +738,11 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
+#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
+#else
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+#endif
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0

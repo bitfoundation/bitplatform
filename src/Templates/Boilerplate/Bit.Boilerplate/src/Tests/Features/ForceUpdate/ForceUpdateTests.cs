@@ -1,6 +1,4 @@
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
-
-namespace Boilerplate.Tests.Features.Configuration;
+namespace Boilerplate.Tests.Features.ForceUpdate;
 
 [TestClass, TestCategory("IntegrationTest")]
 public partial class ForceUpdateTests
@@ -8,13 +6,16 @@ public partial class ForceUpdateTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    public void AClientWhoseMajorVersionIsBehindTheServers_Should_BeRefused()
+    public async Task AClientWhoseMajorVersionIsBehindTheServers_Should_BeRefused()
     {
-        // The app starts at 0.0.1, where no client can be behind, so the rule is checked on a version with a major.
-        var minimum = ForceUpdateMiddleware.MinimumForMajorOf(new Version(2, 5, 1));
+        await using var server = new AppTestServer();
 
-        Assert.IsLessThan(minimum, new Version(1, 9, 9));
-        Assert.IsGreaterThanOrEqualTo(minimum, new Version(2, 0, 0));
+        // The app starts at 0.0.1, where no client can be behind, so the server is given a version with a major.
+        await server.Build(configureTestConfiguration: configuration => configuration["ServerVersion"] = "2.5.1")
+            .Start(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, await CallAs(server, "1.9.9"));
+        Assert.AreEqual(HttpStatusCode.OK, await CallAs(server, "2.0.0"));
     }
 
     [TestMethod]

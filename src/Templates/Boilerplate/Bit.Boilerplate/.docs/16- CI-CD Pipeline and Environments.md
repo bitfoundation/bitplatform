@@ -81,8 +81,9 @@ Worth knowing:
 
 - **Migrations run while the old version still serves**, so each one has to keep that version working: add a column
   in one release and drop the old one in a later release, instead of renaming it in one go. A deployment that fails before
-  the old version stops leaves that version running and runs the `Down` of the migrations it applied, so a migration's
-  `Down` has to really undo it.
+  any new container starts runs the `Down` of the migrations it applied, so a migration's `Down` has to really undo it.
+  Once one has started it may have taken requests, so a failure from then on leaves the old version running on the
+  newer database, and undoing the migrations is left to a person.
 - **The switch takes a few seconds**, while the new containers start.
 - **To roll back**, deploy an earlier commit again; its images are still in the registry. Once it is up, the deployment runs the
   `Down` of the migrations that commit doesn't have, with the image that was running.
@@ -129,7 +130,9 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | Name | Kind | Holds |
 | --- | --- | --- |
 | `SERVER_ADDRESS` | variable | The web app's public address, which the deployment adds to the app's `TrustedOrigins` |
-| `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if a standalone api has none |
+<!--#if (api == "Standalone")-->
+| `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if it is missing |
+<!--#endif-->
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
@@ -141,8 +144,6 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
-<!--#endif-->
-<!--#if (api == "Standalone" && cloudflare != true)-->
 <!--#endif-->
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
 | `DATABASE_PASSWORD` | secret | The database server's password |
