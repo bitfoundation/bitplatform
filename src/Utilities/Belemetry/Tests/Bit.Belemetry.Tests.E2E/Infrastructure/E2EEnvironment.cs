@@ -24,12 +24,12 @@ public static class E2EEnvironment
 #endif
 
     /// <summary>
-    /// <c>BELEMETRY_E2E_HOSTS</c>: a comma-separated subset of <c>ssr</c>, <c>server</c>, <c>wasm</c>, <c>auto</c> and
-    /// <c>hybrid</c> to run; the suites of the other hosts report Inconclusive. Defaults to all of them (hybrid on
-    /// Windows only).
+    /// <c>BELEMETRY_E2E_HOSTS</c>: a comma-separated subset of <c>ssr</c>, <c>server</c>, <c>wasm</c>, <c>auto</c>,
+    /// <c>hybrid</c> and <c>maui</c> to run; the suites of the other hosts report Inconclusive. Defaults to all of them
+    /// (hybrid and maui on Windows only).
     /// </summary>
     public static IReadOnlySet<string> Hosts { get; } =
-        (Read("BELEMETRY_E2E_HOSTS") ?? "ssr,server,wasm,auto,hybrid")
+        (Read("BELEMETRY_E2E_HOSTS") ?? "ssr,server,wasm,auto,hybrid,maui")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -42,6 +42,13 @@ public static class E2EEnvironment
 
     /// <summary><c>BELEMETRY_E2E_SKIP_BUILD=1</c>: the hosts were built beforehand (as CI does); do not rebuild them.</summary>
     public static bool SkipBuild { get; } = Read("BELEMETRY_E2E_SKIP_BUILD") == "1";
+
+    /// <summary>
+    /// <c>BELEMETRY_E2E_MAUI_DEBUGGING_PORT</c>: the WebView2 debugging port the MAUI sample was given from outside - by
+    /// the machine-wide <c>AdditionalBrowserArguments</c> policy, as <c>bit.ci.Belemetry.e2e.yml</c> sets it. Unset, the
+    /// suite opens a free port itself through <c>WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS</c>, which an elevated process ignores.
+    /// </summary>
+    public static int? MauiDebuggingPort { get; } = int.TryParse(Read("BELEMETRY_E2E_MAUI_DEBUGGING_PORT"), out var port) ? port : null;
 
     /// <summary>
     /// <c>BELEMETRY_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Defaults to chromium,

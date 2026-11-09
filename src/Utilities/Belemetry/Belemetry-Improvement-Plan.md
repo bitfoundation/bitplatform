@@ -33,8 +33,9 @@ packages:
 - This workstation has only the .NET 10 runtime (10.0.13). **The net8.0 and net9.0 test legs cannot run here**
   (`You must install or update .NET to run this application`); they build, and CI (`bit.ci.Belemetry.yml`) runs
   all three. Every test result below is net10.0 unless stated otherwise.
-- The Playwright E2E suite (`Tests.E2E`) and the publish gate are on-demand (`bit.ci.Belemetry.e2e.yml`) and need a
-  Chromium install; they are not part of the per-round verification here.
+- The Playwright E2E suite (`Tests.E2E`) and the publish gate (`bit.ci.Belemetry.e2e.yml`) need a Chromium install;
+  they are not part of the per-round verification here, and CI runs them on demand only. Since #14702 that run also
+  drives the MAUI sample on Windows, and the pull request pipeline builds the sample for Android, iOS and Mac Catalyst.
 
 ### 1.3 Baseline results
 
