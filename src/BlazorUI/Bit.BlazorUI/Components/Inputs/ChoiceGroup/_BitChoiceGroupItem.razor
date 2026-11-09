@@ -79,6 +79,7 @@
            required="@(ChoiceGroup.IsRequired && ChoiceGroup.ReadOnly is false)"
            aria-label="@ariaLabel"
            aria-describedby="@ariaDescribedBy"
+           aria-invalid="@ChoiceGroup.GetInputAriaInvalid()"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
            disabled="@isDisabled"
            aria-disabled="@ChoiceGroup.GetInputAriaDisabled(isDisabled)" />

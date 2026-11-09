@@ -10,7 +10,9 @@
     // disabled group writes no aria-required at all, the page's included, for the reason IsRequired drops it.
     var ariaLabel = ResolveAriaLabel();
     var ariaRequired = Disabled ? null : (IsRequired ? "true" : GetSplattedAttribute("aria-required"));
-    var ariaInvalid = ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid");
+    // A rejection by the cascading EditContext or by the app (Invalid, an error message) says "true"; otherwise the
+    // attribute is left to what the page wrote.
+    var ariaInvalid = IsInvalid ? "true" : GetSplattedAttribute("aria-invalid");
     var ariaReadOnly = ReadOnly ? "true" : GetSplattedAttribute("aria-readonly");
     var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");
 }
@@ -82,4 +84,39 @@
         }
     </div>
 
+    @* The error line sits right under the items, the way it sits right under the control of every other input; the
+       description stays where it is, under the label. It carries no live role of its own - the region at the end of
+       the component is what announces it, so it is never read out twice. *@
+    @if (HasErrorMessage)
+    {
+        <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-chg-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by, which the template itself may not have at all.
+           It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-chg-vhd">@ErrorMessageAriaLabel</span>
+    }
+
+    @* A status rather than an alert: a rejected choice must not steal the focus or interrupt what is being read,
+       only be announced once the reader is done with the current sentence. Once a group is wired for an error
+       message it is rendered whether or not it has anything to say, because a live region that arrives with its
+       text already in it is the one thing screen readers are known to miss.
+       Only a new message is announced, not the same one again after another pick: the arrow keys pick an item at
+       every step, and a reason that holds for each of them would be read out at each of them. The radios carry
+       aria-invalid, so every step still says the choice is rejected. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status" aria-live="polite" aria-atomic="true" class="bit-chg-vhd">@LiveText</span>
+    }
 </div>

@@ -180,10 +180,13 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             AutoReorderOptions = true,
             Color = BitColor.Warning,
             Description = "Cascaded description",
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             FullWidth = true,
             Gap = "1rem",
             Horizontal = true,
             Inline = true,
+            Invalid = true,
             Label = "Cascaded label",
             LabelPlacement = BitPlacement.Start,
             NoCircle = true,
@@ -207,10 +210,13 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.IsTrue(instance.AutoReorderOptions);
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.AreEqual("Cascaded description", instance.Description);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual("1rem", instance.Gap);
         Assert.IsTrue(instance.Horizontal);
         Assert.IsTrue(instance.Inline);
+        Assert.IsTrue(instance.Invalid);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
         Assert.IsTrue(instance.NoCircle);
@@ -220,6 +226,60 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded aria label", instance.AriaLabel);
         Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitChoiceGroupParams { ErrorMessage = "Not available on the free plan." } });
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        Assert.AreEqual("Not available on the free plan.", component.Find(".bit-chg-erm").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-invalid") == "true"));
+        Assert.AreEqual("Not available on the free plan.", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderACascadedErrorMessageTemplate()
+    {
+        RenderFragment template = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-error\">Refused</span>");
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitChoiceGroupParams { ErrorMessageTemplate = template } });
+            parameters.AddChildContent(RenderChoiceGroup());
+        });
+
+        Assert.AreEqual("Refused", component.Find(".bit-chg-erm .cascaded-error").TextContent);
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitChoiceGroupParams { ErrorMessageAriaLabel = "Refused by the server." } });
+            parameters.AddChildContent(RenderChoiceGroup(builder => builder.AddAttribute(2, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Invalid), invalid)));
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        Assert.AreEqual("Refused by the server.", component.Find("[role=status]").TextContent.Trim());
     }
 
     [TestMethod]

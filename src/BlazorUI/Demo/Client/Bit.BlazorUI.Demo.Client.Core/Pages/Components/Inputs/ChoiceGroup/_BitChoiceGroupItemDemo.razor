@@ -176,6 +176,35 @@
     }
     <br />
     <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
+    <br /><br /><br />
+    <div>
+        Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error styling and <b>aria-invalid</b>,
+        on the group and on each of its radios, on a choice something else refused - a server, a rule spanning two fields -
+        and <b>ErrorMessage</b> adds the line that says why, right under the items. A message implies <b>Invalid</b>, so
+        the flag on its own is for marking a group whose explanation lives somewhere else. The group is described by the
+        line, and a live region announces it the moment it appears, rather than waiting for the group to be entered again.
+        <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no text a screen reader can be
+        handed, so it is announced as a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b> says what it shows.
+    </div>
+    <br />
+    <div>
+        <BitChoiceGroup Label="Shipping"
+                        Items="shippingItems"
+                        @bind-Value="shippingValue"
+                        ErrorMessage="@(shippingValue == "Express" ? "Express shipping is not available to your address." : null)" />
+        <br />
+        <BitChoiceGroup Label="Marked invalid, explained elsewhere" Items="basicItems" DefaultValue="basicItems[0].Value" Invalid />
+        <br />
+        <BitChoiceGroup Label="Plan"
+                        Items="basicItems"
+                        DefaultValue="basicItems[2].Value"
+                        ErrorMessageAriaLabel="This plan is not available in your region.">
+            <ErrorMessageTemplate>
+                This plan is not available in your
+                <BitLink Href="https://bitplatform.dev" Target="_blank">region</BitLink>.
+            </ErrorMessageTemplate>
+        </BitChoiceGroup>
+    </div>
 </DemoExample>
 
 <DemoExample Title="Item descriptions" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">

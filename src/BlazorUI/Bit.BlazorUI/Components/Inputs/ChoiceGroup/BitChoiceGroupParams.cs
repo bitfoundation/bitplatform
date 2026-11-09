@@ -79,6 +79,29 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
     public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// A line under the items of the ChoiceGroup saying why its choice was rejected, which marks the group invalid
+    /// in the same way <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every choice group the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// choice groups announce it too. A reason that fits one choice group alone belongs on that choice group.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking the
+    /// group invalid in the same way.
+    /// </summary>
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Expands the ChoiceGroup to the full width of its container instead of hugging its widest item.
     /// In the horizontal layout the items also share that width equally.
     /// </summary>
@@ -98,6 +121,12 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
     /// Renders the icons and images in a single line with the items in the ChoiceGroup.
     /// </summary>
     public bool? Inline { get; set; }
+
+    /// <summary>
+    /// Marks the choice of the ChoiceGroup as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// The label for the ChoiceGroup.
@@ -197,6 +226,21 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.TakeFromCascade(nameof(DescriptionTemplate), DescriptionTemplate, static c => c.DescriptionTemplate, static (c, v) => c.DescriptionTemplate = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static c => c.ErrorMessage, static (c, v) => c.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static c => c.ErrorMessageAriaLabel, static (c, v) => c.ErrorMessageAriaLabel = v);
+        }
+
+        if (ErrorMessageTemplate is not null)
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(ErrorMessageTemplate), ErrorMessageTemplate, static c => c.ErrorMessageTemplate, static (c, v) => c.ErrorMessageTemplate = v);
+        }
+
         if (FullWidth.HasValue)
         {
             bitChoiceGroup.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
@@ -215,6 +259,11 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
         if (Inline.HasValue)
         {
             bitChoiceGroup.TakeFromCascade(nameof(Inline), Inline.Value, static c => c.Inline, static (c, v) => c.Inline = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(Invalid), Invalid.Value, static c => c.Invalid, static (c, v) => c.Invalid = v);
         }
 
         if (Label.HasValue())
