@@ -398,8 +398,7 @@ column is dropped one release after the code stops using it. What is left:
 - Turn Speed Brain and Early Hints off on the zone before the first deployment (`PATCH
   zones/<zone id>/settings/speed_brain` and `.../early_hints` with `{"value":"off"}`), and read them back. The app is a
   PWA whose pages render on the client, so Speed Brain's prefetches only send the server fetches that don't help
-  performance. Its header is stored in the pages the service worker keeps, so turned off later, it goes away with the next
-  deployment and not before.
+  performance.
 - The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
   follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
