@@ -15,11 +15,13 @@
     var ariaPositionInSet = AriaPositionInSet?.ToString() ?? GetSplattedInputAttribute("aria-posinset");
 
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than
-    // replaced by them. The visible description comes before the screen-reader-only one, in the order the
-    // two are read on the page.
+    // replaced by them. The error line comes before the description, and the visible description before the
+    // screen-reader-only one, in the order they are read on the page. A label stands in for an error template
+    // on focus as well, which may well be a bare icon with no text to describe the checkbox with at all.
     var describedBy = string.Join(' ', new[]
     {
         GetSplattedInputAttribute("aria-describedby"),
+        HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
         HasDescription ? _descriptionId : null,
         AriaDescription.HasValue() ? _ariaDescriptionId : null,
         AriaDescribedby
@@ -40,6 +42,10 @@
     var nativeDisabled = Disabled && AllowDisabledFocus is false;
     var ariaBusy = IsLoading ? "true" : GetSplattedInputAttribute("aria-busy");
     var ariaReadOnly = ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
+
+    // A rejection by the app (Invalid, an error message) says "true"; otherwise the attribute is left to what
+    // reached the input already - the one the cascading EditContext adds, or the page's own.
+    var ariaInvalid = HasError ? "true" : GetSplattedInputAttribute("aria-invalid");
 
     // A disabled checkbox kept in the tab order carries no native disabled attribute, so the two things that
     // attribute would otherwise do have to be done by hand: a disabled control is not serialized into its
@@ -110,6 +116,7 @@
            aria-controls="@ariaControls"
            aria-disabled="@ariaDisabled"
            aria-readonly="@ariaReadOnly"
+           aria-invalid="@ariaInvalid"
            aria-labelledby="@ariaLabelledby"
            aria-posinset="@ariaPositionInSet"
            aria-describedby="@(describedBy.HasValue() ? describedBy : null)" />
@@ -159,6 +166,32 @@
         }
     </label>
 
+    @* The error line sits under the checkbox, above the description: what is wrong with the state is the first
+       thing to read under the box, while the description only says what checking it means. Like the
+       description it is rendered outside the label, so it neither leaks into the accessible name nor toggles
+       the box when its text is selected. It carries no live role of its own - the region at the end of the
+       component is what announces it, so it is never read out twice. *@
+    @if (HasErrorMessage)
+    {
+        <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-chb-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-chb-dsc">@ErrorMessageAriaLabel</span>
+    }
+
     @* A line of its own under the checkbox: rendered outside the label, so it describes the checkbox through
        aria-describedby instead of leaking into the accessible name the way content inside it would - and so
        that selecting the sentence does not toggle the box it explains. *@
@@ -180,5 +213,19 @@
     @if (AriaDescription.HasValue())
     {
         <span id="@_ariaDescriptionId" class="bit-chb-dsc">@AriaDescription</span>
+    }
+
+    @* A status rather than an alert: a rejected state must not steal the focus or interrupt what is being
+       read, only be announced once the reader is done with the current sentence. Once a checkbox is wired for
+       an error message it is rendered whether or not it has anything to say, because a live region that
+       arrives with its text already in it is the one thing screen readers are known to miss.
+       The message sits in a keyed element so that every announcement replaces the element rather than only
+       rewriting its text: the same message said twice in a row would otherwise change nothing in the DOM. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              class="bit-chb-dsc"><span @key="_liveTextId">@_liveText</span></span>
     }
 </div>

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -1675,6 +1676,333 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public void BitCheckboxErrorMessageShouldRenderItsOwnLineAndMarkTheCheckboxInvalid()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Send paper invoices");
+            parameters.Add(p => p.ErrorMessage, "Not available on the free plan.");
+        });
+
+        Assert.AreEqual("Not available on the free plan.", component.Find(".bit-chb-erm").TextContent.Trim());
+
+        // a message saying what is wrong with the state is a rejection of it, so it marks the checkbox the same
+        // way the flag does instead of leaving a red line under a box that still looks accepted
+        var root = component.Find(".bit-chb");
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chb-her"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+
+        // the line sits outside the label, so it is no part of the accessible name or the click target
+        Assert.AreEqual(0, component.FindAll(".bit-chb-lbl .bit-chb-erm").Count);
+    }
+
+    [TestMethod]
+    public void BitCheckboxWithoutAnErrorMessageShouldRenderNoneOfIt()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Label, "No error"));
+
+        var root = component.Find(".bit-chb");
+
+        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-chb-her"));
+        Assert.IsFalse(root.ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-describedby"));
+
+        // a list of plain checkboxes does not carry an empty live region per row
+        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+    }
+
+    [TestMethod]
+    public void BitCheckboxInvalidShouldMarkTheCheckboxWithoutRenderingAMessage()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Marked invalid");
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        var root = component.Find(".bit-chb");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+
+        // the flag says the state was rejected; it does not invent a line saying why
+        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-chb-her"));
+
+        component.Render(parameters => parameters.Add(p => p.Invalid, false));
+
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxErrorMessageTemplateShouldReplaceThePlainMessage()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Plain message");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-error");
+                builder.AddContent(2, "Templated message");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Templated message", component.Find(".bit-chb-erm .custom-error").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-chb-erm").TextContent.Contains("Plain message"));
+
+        // the plain text is not on screen, so it is not what the live region announces either
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-chb-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Share my activity");
+            parameters.Add(p => p.ErrorMessageAriaLabel, "با تنظیمات حریم خصوصی شما در تضاد است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "warning-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        var label = component.Find($"#{component.Find("input").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("با تنظیمات حریم خصوصی شما در تضاد است", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("با تنظیمات حریم خصوصی شما در تضاد است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-chb-dsc"));
+
+        // once the template goes, the plain text is on screen, and it is its own accessible text
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-chb-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitCheckboxBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Share my activity");
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-chb-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxInvalidShouldOnlyBeAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Share my activity");
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        // the flag on its own has nothing to say, and so no live region to say it in
+        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-describedby"));
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
+
+        Assert.AreEqual("مقدار نامعتبر", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("مقدار نامعتبر", component.Find($"#{component.Find("input").GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCheckboxLiveRegionShouldBeRenderedEmptyUntilThereIsAMessage()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Live region");
+            parameters.Add(p => p.ErrorMessage, null);
+        });
+
+        // a live region that arrives with its text already in it is the one thing screen readers are known to
+        // miss, so a checkbox wired for a message has the region in the markup and only its text comes and goes
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Rejected by the server."));
+
+        Assert.AreEqual("Rejected by the server.", component.Find("[role=status]").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, null));
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldAnnounceTheSameErrorMessageAgainAfterAnotherAttempt()
+    {
+        const string message = "Rejected by the server.";
+
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, message);
+            parameters.Add(p => p.OnChanging, (BitCheckboxChangeArgs args) => args.Cancel = true);
+        });
+
+        var liveTextId = typeof(BitCheckbox).GetField("_liveTextId", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        var before = (int)liveTextId.GetValue(component.Instance)!;
+
+        component.Find("input").Click();
+
+        // the message sits in a keyed element, so a rejection with the very same message re-keys it and the
+        // element is replaced, rather than leaving a live region in which nothing changed and nothing is read out
+        Assert.AreEqual(message, component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(before + 1, (int)liveTextId.GetValue(component.Instance)!);
+
+        // a re-render with nothing new to say says nothing again
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, message));
+
+        Assert.AreEqual(before + 1, (int)liveTextId.GetValue(component.Instance)!);
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldAnnounceAnErrorMessageTheChangeBroughtOnlyOnceTheChangeIsOver()
+    {
+        IRenderedComponent<BitCheckbox> component = default!;
+
+        // the app answers the change with a message of its own, while the change is still running
+        component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, null);
+            parameters.Add(p => p.OnChange, (bool value) =>
+            {
+                component.Render(ps => ps.Add(p => p.ErrorMessage, value ? "Not available on the free plan." : null));
+
+                // nothing is announced while the change is in flight
+                Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+            });
+        });
+
+        component.Find("input").Click();
+
+        Assert.AreEqual("Not available on the free plan.", component.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxErrorMessageShouldBeDescribedBeforeTheDescription()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Send paper invoices");
+            parameters.Add(p => p.Description, "A printed copy of every invoice.");
+            parameters.Add(p => p.AriaDescription, "Posted to the billing address.");
+            parameters.Add(p => p.AriaDescribedby, "billing-hint");
+            parameters.Add(p => p.ErrorMessage, "Not available on the free plan.");
+        });
+
+        var describedBy = component.Find("input").GetAttribute("aria-describedby")!.Split(' ');
+
+        var errorId = component.Find(".bit-chb-erm").Id;
+        var descriptionId = component.Find(".bit-chb-des").Id;
+        var ariaDescriptionId = component.Find("span.bit-chb-dsc:not([role])").Id;
+
+        // what is wrong with the state is read before what checking the box means, which is the order the two
+        // lines are rendered in as well
+        CollectionAssert.AreEqual(new[] { errorId, descriptionId, ariaDescriptionId, "billing-hint" }, describedBy);
+
+        var lines = component.FindAll(".bit-chb-erm, .bit-chb-des").Select(e => e.ClassList.Contains("bit-chb-erm") ? "error" : "description").ToArray();
+
+        CollectionAssert.AreEqual(new[] { "error", "description" }, lines);
+    }
+
+    [TestMethod]
+    public void BitCheckboxErrorMessageStyleAndClassTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Rejected.");
+            parameters.Add(p => p.Styles, new BitCheckboxClassStyles
+            {
+                ErrorMessage = "font-style: italic",
+                ErrorMessageContainer = "margin-top: 1rem"
+            });
+            parameters.Add(p => p.Classes, new BitCheckboxClassStyles
+            {
+                ErrorMessage = "custom-error",
+                ErrorMessageContainer = "custom-error-container"
+            });
+        });
+
+        var container = component.Find(".bit-chb-erm");
+
+        Assert.IsTrue(container.ClassList.Contains("custom-error-container"));
+        Assert.AreEqual("margin-top: 1rem", container.GetAttribute("style"));
+
+        Assert.AreEqual("font-style: italic", component.Find(".bit-chb-erm .custom-error").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitCheckboxAStateTheEditContextRejectsShouldNotBeMarkedInvalidTwice()
+    {
+        var model = new BitCheckboxTestModel { Value = true };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.AddCascadingValue(editContext);
+            parameters.Add(p => p.Value, model.Value);
+            parameters.Add(p => p.ValueChanged, (bool v) => model.Value = v);
+            parameters.Add(p => p.ValueExpression, () => model.Value);
+            parameters.Add(p => p.Invalid, true);
+            parameters.Add(p => p.ErrorMessage, "Rejected by the server.");
+        });
+
+        await component.InvokeAsync(() => editContext.Validate());
+
+        // the base class already registers the class for a state the EditContext rejected, so the checkbox only
+        // adds it for a rejection of its own - two identical classes say nothing the one does not
+        Assert.AreEqual(1, component.Find(".bit-chb").ClassList.Count(c => c == "bit-inv"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+
+        // and once the app drops its own rejection, the form's still stands
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Invalid, false);
+            parameters.Add(p => p.ErrorMessage, null);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldKeepAnAriaInvalidThePageWroteWhileTheAppRejectsNothing()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-invalid", "grammar" } });
+        });
+
+        Assert.AreEqual("grammar", component.Find("input").GetAttribute("aria-invalid"));
+
+        // a rejection by the app says "true", whatever the page wrote
+        component.Render(parameters => parameters.Add(p => p.Invalid, true));
+
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
     }
 
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;
