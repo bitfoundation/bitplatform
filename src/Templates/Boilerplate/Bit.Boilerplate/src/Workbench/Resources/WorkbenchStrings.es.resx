@@ -4734,4 +4734,7 @@
     <data name="ThemeTokensLimits" xml:space="preserve">
         <value>Límites</value>
     </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>No todos los textos de los componentes de esta página están traducidos a todos los idiomas. No es que falte la función: todos los componentes de aquí se pueden localizar, pero traducir todos sus textos aportaba poco a lo que hace esta página. Pide a tu agente de IA que complete las traducciones cuando las necesites.</value>
+    </data>
 </root>

@@ -9,6 +9,9 @@
             <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeStatesNote)]</BitText>
         </header>
 
+        @* The components' own texts are translated only where this page needed them; every one of them can be. *@
+        <BitMessage Color="BitColor.Info" Variant="BitVariant.Outline" Tinted Multiline>@Localizer[nameof(WorkbenchStrings.ThemeLocalizationNote)]</BitMessage>
+
         @* One section at a time: only the selected tab is rendered, and the Section switch picks the tab the page opens on. *@
         <BitPivot @bind-SelectedKey="selectedSection"
                   @bind-SelectedKey:after="ReportSection"

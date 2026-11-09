@@ -4734,4 +4734,7 @@
     <data name="ThemeTokensLimits" xml:space="preserve">
         <value>上限</value>
     </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>本页组件的文本并未全部翻译成每种语言。这并不代表不支持本地化：这里的每个组件都可以本地化，只是把它们的文本全部翻译出来，对本页的用途帮助不大。需要时，请让您的 AI 智能体补全翻译。</value>
+    </data>
 </root>

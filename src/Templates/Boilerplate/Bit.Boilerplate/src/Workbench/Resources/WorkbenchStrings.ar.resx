@@ -4734,4 +4734,7 @@
     <data name="ThemeTokensLimits" xml:space="preserve">
         <value>الحدود القصوى</value>
     </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>لم تُترجَم كل نصوص المكونات في هذه الصفحة إلى كل اللغات. وهذا لا يعني غياب هذه الميزة: فكل مكوّن هنا قابل للتعريب، لكن ترجمة كل نصوصه لم تكن تضيف الكثير إلى الغرض من هذه الصفحة. اطلب من وكيل الذكاء الاصطناعي لديك إكمال الترجمات متى احتجت إليها.</value>
+    </data>
 </root>
