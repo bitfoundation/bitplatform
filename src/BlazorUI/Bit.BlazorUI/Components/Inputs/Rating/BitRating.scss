@@ -10,8 +10,8 @@
 //                                   being pressed                                 (default: $clr-pri-active)
 //   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: $clr-pri-focus)
 //   --bit-Rating-disabled-color     color of both parts when Disabled is true    (default: $clr-fg-dis)
-//   --bit-Rating-invalid-color      color of both parts, and of the focus ring,
-//                                   while the value is invalid                    (default: $clr-err / $clr-err-focus)
+//   --bit-Rating-invalid-color      color of both parts, of the focus ring and of
+//                                   the error message while the value is invalid  (default: $clr-err / $clr-err-focus)
 //   --bit-Rating-size               size of the item glyphs                        (default: $siz-icon-md)
 //   --bit-Rating-target-size        smallest pointer target of an item, which the
 //                                   glyph is centred in; 0 shrinks the items to
@@ -25,9 +25,10 @@
 //   --bit-Rating-label-font-size    text size of the label                         (default: $tg-fs-sm)
 //   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-field-label-font-weight)
 //   --bit-Rating-label-gap          room between the label and the items, and
-//                                   between the items and the description         (default: spacing(1))
+//                                   between the items and the lines under them    (default: spacing(1))
 //   --bit-Rating-description-color  text color of the description                  (default: $clr-fg-sec)
-//   --bit-Rating-description-font-size  text size of the description               (default: $tg-fs-xs)
+//   --bit-Rating-description-font-size  text size of the description and of the
+//                                   error message                                  (default: $tg-fs-xs)
 //
 // A parameter written on the rating wins over the variable that restyles what it sets: an explicit Color over the
 // fill and its hover, press and focus colors, and an explicit Size over the glyph size and the two font sizes. The
@@ -182,6 +183,19 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     max-width: 100%;
     overflow-wrap: break-word;
     color: var(--bit-Rating-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));
+}
+
+// The error line shares the description's place under the items and comes ahead of it, which the markup order
+// settles between the two boxes of the same order. It is set like the description and painted with the one variable
+// that already carries the whole invalid look, and keeps that color on a disabled rating: it still says what is
+// wrong with the value.
+.bit-rtg-erm {
+    order: 3;
+    display: block;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    color: var(--bit-Rating-invalid-color, #{$clr-err});
     font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));
 }
 
@@ -369,6 +383,7 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     align-items: center;
     flex-direction: row;
 
+    .bit-rtg-erm,
     .bit-rtg-dsc {
         flex: 1 0 100%;
     }

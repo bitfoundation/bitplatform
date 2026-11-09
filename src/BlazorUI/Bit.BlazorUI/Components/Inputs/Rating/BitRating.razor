@@ -20,7 +20,8 @@
     // what the page wrote by hand (see BitComponentBase.GetSplattedAttribute). A read-only one writes none of them,
     // the page's included: the img role it takes supports none of them. Nor does a disabled one write the page's
     // aria-required: a disabled field asks for nothing, which is why _IsRequired drops it in the first place.
-    var ariaInvalid = ReadOnly ? null : (ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid"));
+    // A rejection by the cascading EditContext or by the app (Invalid, an error message) says "true".
+    var ariaInvalid = ReadOnly ? null : (IsInvalid ? "true" : GetSplattedAttribute("aria-invalid"));
     var ariaRequired = ReadOnly || Disabled ? null : (_IsRequired ? "true" : GetSplattedAttribute("aria-required"));
     var ariaDisabled = ReadOnly ? null : (Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
     var ariaOrientation = ReadOnly ? null : (Vertical ? "vertical" : GetSplattedAttribute("aria-orientation"));
@@ -168,6 +169,30 @@
         }
     </div>
 
+    @* The error line sits right under the items, ahead of the description, the way it sits right under the control
+       of every other input. It carries no live role of its own - the region below is what announces it, so it is
+       never read out twice. *@
+    @if (HasErrorMessage)
+    {
+        <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-rtg-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by, which the template itself may not have at all.
+           It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-rtg-alb">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription)
     {
         <div id="@_descriptionId"
@@ -191,6 +216,17 @@
         @* Atomic, so the value is announced as the one string it is - "4 of 5" and not the "4" that changed
            about it - which is also what the library's other announcement regions do. *@
         <span class="bit-rtg-alb" aria-live="polite" aria-atomic="true">@_LiveValueText</span>
+    }
+
+    @* A region of its own rather than the value's: the two say different things and change at different times, and
+       a status rather than an alert, since a rejected value must not steal the focus or interrupt what is being
+       read. Once a rating is wired for an error message it is rendered whether or not it has anything to say,
+       because a live region that arrives with its text already in it is the one thing screen readers are known to
+       miss. Only a new message is announced, not the same one again after another pick: the arrow keys pick a
+       value at every step, and a reason that holds for each of them would be read out at each of them. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status" aria-live="polite" aria-atomic="true" class="bit-rtg-alb">@_LiveErrorText</span>
     }
 
     @* A read-only rating named by reference - its own visible label or an element elsewhere on the page -
