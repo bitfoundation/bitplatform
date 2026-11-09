@@ -217,6 +217,58 @@ public class DevMcpQueryTests
         Assert.AreEqual(email, returned);
     }
 
+    [TestMethod]
+    public async Task AggregateEntity_Should_CountEachGroup_AndRefuseCredentials()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+
+        var all = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new() { ["entity"] = "User" }, TestContext.CancellationToken))!;
+        Assert.IsGreaterThan(0, all["matchingRows"]!.GetValue<int>());
+
+        var grouped = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new()
+        {
+            ["entity"] = "User",
+            ["groupBy"] = new[] { "EmailConfirmed" },
+            ["aggregates"] = new[] { "CountDistinct(Id)", "Max(AccessFailedCount)" }
+        }, TestContext.CancellationToken))!;
+        var rows = grouped["rows"]!.AsArray();
+        Assert.AreEqual(all["matchingRows"]!.GetValue<int>(), rows.Sum(row => row!["count"]!.GetValue<int>()),
+            "Every user belongs to exactly one group.");
+        foreach (var row in rows)
+            Assert.AreEqual(row!["count"]!.GetValue<int>(), row["countDistinctOfId"]!.GetValue<int>());
+
+        var filtered = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new()
+        {
+            ["entity"] = "User",
+            ["filter"] = $"Email == \"{email}\""
+        }, TestContext.CancellationToken))!;
+        Assert.AreEqual(1, filtered["matchingRows"]!.GetValue<int>());
+
+        var refused = new Dictionary<string, object?>[]
+        {
+            new() { ["entity"] = "User", ["groupBy"] = new[] { "PasswordHash" } },
+            new() { ["entity"] = "User", ["aggregates"] = new[] { "Max(PasswordHash)" } },
+            new() { ["entity"] = "User", ["filter"] = "PasswordHash != null" }
+        };
+        foreach (var arguments in refused)
+        {
+            var result = await DevMcpTestUtils.CallText(mcp, "AggregateEntity", arguments, TestContext.CancellationToken);
+            Assert.Contains("forbidden", result, StringComparison.OrdinalIgnoreCase, $"A hash must not be readable through a group or an aggregate. Result: {result}");
+        }
+
+        var notAnAggregate = await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new()
+        {
+            ["entity"] = "User",
+            ["aggregates"] = new[] { "Max(it.PasswordHash)" }
+        }, TestContext.CancellationToken);
+        Assert.Contains("not an aggregate", notAnAggregate, StringComparison.OrdinalIgnoreCase);
+    }
+
     //#if (multitenant == true)
     /// <summary>
     /// A global admin has no tenant selected, so a tenant-filtered read would answer for the fallback tenant or for

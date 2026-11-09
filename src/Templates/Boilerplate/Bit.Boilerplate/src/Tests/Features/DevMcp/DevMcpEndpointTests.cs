@@ -88,6 +88,7 @@ public class DevMcpEndpointTests
         Assert.Contains("GetDeploymentInfo", devTools);
         Assert.Contains("GetDiagnosticReport", devTools);
         Assert.Contains("QueryEntity", devTools);
+        Assert.Contains("AggregateEntity", devTools);
         Assert.Contains("ListHangfireJobs", devTools);
         Assert.Contains("ListLogs", devTools);
         Assert.DoesNotContain("GetCurrentDateTime", devTools,

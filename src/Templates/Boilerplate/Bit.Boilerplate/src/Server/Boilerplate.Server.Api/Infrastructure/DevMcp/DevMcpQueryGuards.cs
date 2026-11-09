@@ -48,17 +48,38 @@ public static partial class DevMcpQueryGuards
             }
         }
 
-        if (string.IsNullOrWhiteSpace(filter) is false)
-        {
-            if (filter.Length > DevMcpLimits.MaxFilterLength)
-                return $"A filter may be at most {DevMcpLimits.MaxFilterLength} characters long.";
+        return ValidateFilter(entityType, filter);
+    }
 
-            foreach (var path in ExtractPaths(filter))
-            {
-                var error = DevMcpForbiddenColumns.RejectProperty(entityType, path);
-                if (error is not null)
-                    return error;
-            }
+    public static string? ValidateAggregate(IEntityType entityType, IEnumerable<string> columns, string? filter)
+    {
+        var entityError = DevMcpForbiddenColumns.RejectEntity(entityType);
+        if (entityError is not null)
+            return entityError;
+
+        foreach (var column in columns)
+        {
+            var error = DevMcpForbiddenColumns.RejectProperty(entityType, column);
+            if (error is not null)
+                return error;
+        }
+
+        return ValidateFilter(entityType, filter);
+    }
+
+    private static string? ValidateFilter(IEntityType entityType, string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+            return null;
+
+        if (filter.Length > DevMcpLimits.MaxFilterLength)
+            return $"A filter may be at most {DevMcpLimits.MaxFilterLength} characters long.";
+
+        foreach (var path in ExtractPaths(filter))
+        {
+            var error = DevMcpForbiddenColumns.RejectProperty(entityType, path);
+            if (error is not null)
+                return error;
         }
 
         return null;

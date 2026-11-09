@@ -332,7 +332,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 <!--#endif-->
 - Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before a release raise its
   patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
-  the web and the api.
+  the web and the api. Before raising it, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's
+  `AggregateEntity`, and report to the user roughly what share of the Android, iOS and macOS sessions a new major would
+  force to update. It needs no date filter: a job already deletes the sessions that have gone 14 days unused.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
