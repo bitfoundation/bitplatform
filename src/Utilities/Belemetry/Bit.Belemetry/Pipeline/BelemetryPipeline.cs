@@ -41,6 +41,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private int _disposed;
     private int _queuedSpans;
     private int _queuedLogs;
+    private int _exitHolds;
     private Task _storeCleared = Task.CompletedTask;
 
     public BelemetryPipeline(BelemetrySettings settings, BelemetryConsentState consent, IServiceProvider services)
@@ -55,6 +56,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         _errors = settings.IsServer ? null : new BelemetryErrorLimiter(settings.Options.Errors);
         _consent.Changed += OnConsentChanged;
         Diagnostics = new BelemetryDiagnosticHub(settings, consent, services);
+        UnhandledExceptions = new BelemetryUnhandledExceptions(this);
     }
 
     public BelemetrySettings Settings { get; }
@@ -76,6 +78,12 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// </summary>
     internal Task StoreCleared => Volatile.Read(ref _storeCleared);
 
+    /// <summary>
+    /// Records the exceptions nothing caught: from the process-wide events once <see cref="Start"/> subscribed it
+    /// (<see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/>), and from the app (<see cref="Belemetry.TrackBitBelemetryUnhandledException"/>).
+    /// </summary>
+    internal BelemetryUnhandledExceptions UnhandledExceptions { get; }
+
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
 
@@ -96,6 +104,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         // Diagnostics work without any exporter: the timeline is local until a capture is exported on purpose.
         Diagnostics.Start();
+
+        // Before the exporters are checked: the diagnostic timeline alone wants the unhandled exceptions too.
+        if (BelemetryUnhandledExceptions.AppliesTo(Settings, Diagnostics.Enabled)) UnhandledExceptions.Subscribe();
         if (Settings.HasExporters is false) return;
 
         if (Settings.CollectDotnet)
@@ -473,6 +484,103 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     }
 
     /// <summary>
+    /// Saves what is queued for later, synchronously, as the process ends (<see cref="BelemetryUnhandledExceptions"/>):
+    /// nothing async completes then. Off the browser it goes to the file store - only with
+    /// <see cref="BelemetryFeatures.Persistence"/>, as any undelivered request - and the next launch sends it with the
+    /// rest of the store. In WebAssembly the page outlives the .NET runtime, so it goes to the script as the unload drain
+    /// sends it (fetch, retry and the page's own persistence). Records held for a consent decision stay in memory: they
+    /// never go on the wire or on disk.
+    /// </summary>
+    internal void PersistForExit()
+    {
+        if (Settings.HasExporters is false) return;
+
+        if (Settings.IsBrowser)
+        {
+            // JS interop starts the script's call synchronously in WebAssembly: its requests are on their way before
+            // the runtime stops.
+            if (_services.GetService<BelemetryBrowserBridgeRegistry>()?.SendRequests is { } send && DrainForUnload() is { Count: > 0 } requests)
+            {
+                _ = send(requests);
+            }
+            return;
+        }
+
+        if (Exporters.Store is not BelemetryFileRequestStore store || CanRecord(BelemetryFeatures.Persistence) is false) return;
+
+        List<Entry> entries;
+        BelemetryConsentMark mark;
+        lock (_lock)
+        {
+            entries = TakeReady(int.MaxValue);
+
+            // Under the lock, with the take, as for an export: a revoke from here on withdraws what is saved.
+            mark = Revocations.Mark(FeaturesOf(entries));
+        }
+
+        // Bounded as the export loop's batches are: one request of a long queue could outgrow the store, which would then
+        // evict it whole, the crash with it. Built oldest first, so the requests' times keep the records' order.
+        var size = Math.Max(1, Settings.Options.Batch.MaxBatchSize);
+        var created = new List<(IBelemetryHttpExporter Exporter, BelemetryHttpRequest Request, bool Newest)>();
+        for (var start = 0; start < entries.Count; start += size)
+        {
+            var count = Math.Min(size, entries.Count - start);
+            var newest = start + count == entries.Count;
+            foreach (var batch in BuildBatches(entries.GetRange(start, count), []))
+            {
+                foreach (var exporter in Exporters.HttpExporters)
+                {
+                    foreach (var request in exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)))
+                    {
+                        created.Add((exporter, request, newest));
+                    }
+                }
+            }
+        }
+
+        // Saved newest first: a store too full for them all makes room by evicting its older files and, past those, by
+        // dropping the oldest of these - never the newest, which hold the crash's own record, queued last.
+        var saved = new List<BelemetryHttpRequest>();
+        for (var i = created.Count - 1; i >= 0 && mark.IsWithdrawn is false; i--)
+        {
+            var (exporter, request, newest) = created[i];
+            try
+            {
+                if (store.SaveNow(request, keep: saved) is false && newest is false)
+                {
+                    store.DeleteNow(request);
+                    Self.Exported(exporter.Name, "failed", request.Count);
+                    continue;
+                }
+
+                saved.Add(request);
+                Self.Exported(exporter.Name, "stored", request.Count);
+            }
+            catch (Exception ex)
+            {
+                LogDiagnostic(ex, "Persisting a request as the process ends failed; it is dropped.");
+            }
+        }
+
+        // A revoke meanwhile clears the store, maybe before these landed.
+        if (mark.IsWithdrawn || CanRecord(BelemetryFeatures.Persistence) is false)
+        {
+            foreach (var request in saved) store.DeleteNow(request);
+        }
+    }
+
+    /// <summary>
+    /// Keeps the exports from taking anything off the queue until <see cref="EndExitHold"/>, so the record of a crash
+    /// queued meanwhile is there for <see cref="PersistForExit"/>: taken by an export, it would be in a request the ending
+    /// process never completes - neither delivered nor saved. Nothing waits on it; a process that goes on after all
+    /// exports what is left once it is released.
+    /// </summary>
+    internal void BeginExitHold() => Interlocked.Increment(ref _exitHolds);
+
+    /// <summary>Releases <see cref="BeginExitHold"/>.</summary>
+    internal void EndExitHold() => Interlocked.Decrement(ref _exitHolds);
+
+    /// <summary>
     /// The features of queued records (and of metrics), with <see cref="BelemetryFeatures.UserTracking"/>: any of them
     /// may carry the user ids, so a revoke of it withdraws them too. And with <see cref="BelemetryFeatures.Errors"/> for
     /// a span that carries exceptions, which are records of that feature.
@@ -802,6 +910,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         BelemetryConsentMark mark;
         lock (_lock)
         {
+            // Read under the lock: a crash's record, queued after the hold began, is never taken here (BeginExitHold).
+            if (Volatile.Read(ref _exitHolds) > 0) return false;
+
             entries = TakeReady(Math.Max(1, Settings.Options.Batch.MaxBatchSize));
             more = _queue.Count > 0;
 
@@ -944,6 +1055,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // Idempotent: a host may dispose the container while the app disposes the pipeline it resolved itself.
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
+        UnhandledExceptions.Dispose();
         _consent.Changed -= OnConsentChanged;
         Diagnostics.Dispose();
         _activities?.Dispose();

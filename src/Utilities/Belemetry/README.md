@@ -413,7 +413,7 @@ feature the configuration switched off records nothing - so a feature you enable
 
 | Feature | Covers |
 | --- | --- |
-| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
+| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; unhandled .NET exceptions and unobserved task exceptions; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
 | `PageViews` | Page views (navigation, `TrackPageView`) |
 | `Interactions` | Clicks and other interactions |
 | `Performance` | Web vitals, document load, resource timing, long tasks |
@@ -520,6 +520,75 @@ attributes, the active scopes (`Logs.IncludeScopes`), the exception (`exception.
 Belemetry's own diagnostics are logged under the category `Bit.Belemetry`, which is never exported (an export failure
 would otherwise be exported by the pipeline it describes). Every other category is collected, including your own
 types in `Bit.Belemetry.*` namespaces; `Logs.ExcludedCategories` drops more by prefix.
+
+### Unhandled exceptions
+
+An exception nothing caught reaches no `ILogger`, so the .NET pipeline listens for them itself
+(`Errors.CaptureUnhandledExceptions`, on by default):
+
+- `AppDomain.UnhandledException` - the crash of a MAUI, WPF or WinForms app, or a background thread of a server that
+  threw. The record is a FATAL `exception` event (`Critical` in Application Insights) with the body `An unhandled
+  exception ended the process.`.
+- `TaskScheduler.UnobservedTaskException` - a faulted task that was never awaited, raised when the garbage collector
+  finds it. The record is an ERROR `exception` event with the body `A faulted task's exception was never observed.`;
+  the task's own exception is reported rather than its `AggregateException` when it is the only one. The event is not
+  marked observed: that stays the app's choice.
+
+Both carry `exception.type`, `exception.message`, `exception.stacktrace` and the trace context of `Activity.Current`
+where they are reported, under the scope `Bit.Belemetry.UnhandledExceptions`. For `AppDomain.UnhandledException` that
+is the thread that threw, so the span it threw in; an unobserved task exception is reported by the finalizer thread,
+long after the task ran, and carries no trace context of the task's. They are `Errors` records: consent and the
+[error limits](#error-floods-and-runaway-values) apply as to any other, and production diagnostics count them as
+unhandled exceptions (the `UnhandledExceptions` trigger).
+
+The process ends right after `AppDomain.UnhandledException`, before anything async completes. So Belemetry writes the
+crash record, with everything still queued before it, to the [offline store](#offline-persistence) synchronously,
+and the next launch sends it with the rest of the store (its first resend pass is 10 s after start). That needs
+`Persistence`: granted by the user on a client, in `Server.Features` on a server (off by default there; see
+[The server pipeline](#the-server-pipeline)). Without it nothing is written to disk - the user did not allow it - and
+the record is lost with the process. Records held for a consent decision are never written either. In WebAssembly
+the page outlives the .NET runtime, so the queue is handed to the script instead, which sends it as it sends the
+unload flush. The queue is saved in requests of at most `Batch.MaxBatchSize` records each, newest first: when the
+store's `Persistence.MaxBytes` cannot hold them all, older files make room, then the oldest of these, never the crash
+record. Only the HTTP exporters (OTLP, Azure Monitor) are saved, as only their requests can be stored; custom
+exporters and the console exporter get the records only if the process goes on. Nothing waits on the network as the
+process goes down: a crash never takes longer because of telemetry.
+
+#### Crashes reported elsewhere
+
+Some platforms report a crash through an event of their own rather than `AppDomain.UnhandledException`. Forward it
+with `TrackBitBelemetryUnhandledException`, on the app's root service provider, and it is recorded and saved for the
+next launch the same way. An exception object it already recorded is not recorded again, so forwarding a crash that
+also reaches `AppDomain.UnhandledException` is one record. It records even with `CaptureUnhandledExceptions` off.
+
+```csharp
+// MauiProgram.cs
+var app = builder.Build();
+#if ANDROID
+// .NET for Android may not raise AppDomain.UnhandledException for a crash (dotnet/runtime#44526).
+Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#elif WINDOWS
+// WinUI reports an exception on its UI thread here; it ends the app unless a handler sets e.Handled.
+Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#endif
+return app;
+```
+
+iOS and Mac Catalyst raise `AppDomain.UnhandledException` for a crash; nothing to forward. On Windows desktop:
+
+- **WinForms** shows its own dialog for an exception on the UI thread (`Application.ThreadException`) and goes on.
+  Either let such exceptions crash the app, so they reach `AppDomain.UnhandledException`, or forward them from your
+  handler as handled:
+
+  ```csharp
+  // Program.cs, before Application.Run
+  Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+  // or
+  Application.ThreadException += (_, e) => provider.TrackBitBelemetryUnhandledException(e.Exception, terminating: false);
+  ```
+
+- **WPF** crashes on an exception `Dispatcher.UnhandledException` leaves unhandled, through
+  `AppDomain.UnhandledException`. A handler that sets `e.Handled = true` forwards it with `terminating: false`.
 
 ### Traces
 
@@ -1142,6 +1211,9 @@ headers are added when a stored request is sent, so a rotated key applies to the
 request stored by the browser is resent with the headers of the browser exporter posting to the same URL.) A request
 stored for an endpoint the exporter no longer posts to is dropped, so the current key never goes to an old address.
 
+A .NET process that ends with an unhandled exception saves its queue to the store as it goes down, and the next
+launch sends it - see [Unhandled exceptions](#unhandled-exceptions).
+
 ---
 
 ## The server pipeline
@@ -1161,6 +1233,19 @@ had - the database check behind `/health` - is still exported, with a parent tha
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
 any one user's consent. User consent keeps governing the browser script and the `IBelemetry` calls of each circuit.
+
+`Persistence` is not in the default `Server.Features`, so a server keeps nothing on disk: neither the exports that
+failed nor the queue of a process that crashed ([Unhandled exceptions](#unhandled-exceptions)). Add it to keep both
+for the next start:
+
+```csharp
+options.Server.Features |= BelemetryFeatures.Persistence;
+```
+
+The store is `{LocalApplicationData}/bit-belemetry/{service.name}` by default. Instances of one service on one machine
+(several worker processes, replicas sharing a volume) share it and would resend each other's requests, so give each
+its own `Persistence.Directory` - a stable one, which its next start finds again (a container's local disk does not
+outlive the container).
 A host without Blazor at all - an API, a worker - works the same way: it has no JS runtime, so `IBelemetry` goes
 straight to the server pipeline.
 
@@ -1389,6 +1474,11 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   `_OTHER`.
 - **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new
   web-vitals generation after a back/forward-cache restore.
+- **Unhandled .NET exceptions are recorded** (`AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`)
+  as `Errors` events, and a crashing process saves its queue for the next launch (with `Persistence`). Switch it off
+  with `Errors.CaptureUnhandledExceptions = false`, e.g. when the app records them itself. Forward the crashes Android,
+  WinUI and WinForms report elsewhere with `TrackBitBelemetryUnhandledException`. See
+  [Unhandled exceptions](#unhandled-exceptions).
 - **Page views carry `url.template`, and an untitled one is named after it** (`/orders/{id:int}`, was `/orders/42`):
   in the log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the `PageName` of
   `PageVisitTime`. Group by `url.path` for the old breakdown. See [Page route templates](#page-route-templates).

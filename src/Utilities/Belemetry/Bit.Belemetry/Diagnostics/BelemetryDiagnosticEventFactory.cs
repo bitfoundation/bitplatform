@@ -467,7 +467,8 @@ internal sealed class BelemetryDiagnosticEventFactory
         if (scope == ApiScope) return "tracked";
         if (IsFrameworkRendererScope(scope)
             || (IsCircuitScope(scope) && scope.EndsWith(".CircuitHost", StringComparison.Ordinal))
-            || scope == "Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost") return "unhandled";
+            || scope == "Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost"
+            || scope == BelemetryUnhandledExceptions.ScopeName) return "unhandled";
         if (IsCircuitScope(scope)) return "circuit";
         if (scope.StartsWith("Microsoft.JSInterop", StringComparison.Ordinal)) return "js-interop";
         if (exceptionType is not null && exceptionType.StartsWith("Microsoft.JSInterop.", StringComparison.Ordinal)) return "js-interop";

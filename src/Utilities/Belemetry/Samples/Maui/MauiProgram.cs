@@ -61,7 +61,19 @@ public static class MauiProgram
             o.Metrics.Meters.Add(SampleTelemetry.Name);
         });
 
-        return builder.Build();
+        var app = builder.Build();
+
+        // Belemetry records what reaches AppDomain.UnhandledException itself (iOS and Mac Catalyst raise it for a crash),
+        // and saves it for the next launch to send. These platforms may report a crash only through an event of their own:
+        // forwarded, it is recorded and saved the same way, and one both events report is recorded once.
+#if ANDROID
+        Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#elif WINDOWS
+        // WinUI reports an exception on its UI thread here; it ends the app unless a handler sets e.Handled.
+        Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#endif
+
+        return app;
     }
 
     // The Android emulator reaches the development machine's localhost at 10.0.2.2.

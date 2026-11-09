@@ -50,7 +50,10 @@ public sealed class BelemetryOptions
     /// <summary>Data minimization.</summary>
     public BelemetryPrivacyOptions Privacy { get; } = new();
 
-    /// <summary>Protection against error floods (duplicates and a per-minute cap), on both sides.</summary>
+    /// <summary>
+    /// The .NET exceptions nothing caught (unhandled and unobserved task exceptions), and protection against error
+    /// floods (duplicates and a per-minute cap), on both sides.
+    /// </summary>
     public BelemetryErrorOptions Errors { get; } = new();
 
     /// <summary>

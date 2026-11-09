@@ -189,7 +189,7 @@ internal static class BelemetryIssueReportBuilder
 
     private static string OriginText(string origin) => origin switch
     {
-        "unhandled" => "not handled (the renderer or the circuit reported it)",
+        "unhandled" => "not handled (the renderer, the circuit or the runtime reported it)",
         "error-boundary" => "caught by an error boundary",
         "js-interop" => "thrown by a JS interop call",
         "circuit" => "reported by the circuit",

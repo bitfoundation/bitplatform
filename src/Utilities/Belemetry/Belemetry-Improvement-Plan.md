@@ -120,6 +120,7 @@ that were audited and found sound are marked "baseline".
 | Consent | Per-feature consent, held records, purge on revoke, GPC | `BelemetryConsentState`, `consent.ts` | existing | README Consent | baseline |
 | Export | OTLP protobuf/JSON/gRPC, Azure Monitor, retries, persistence | `Exporters/*` | existing (conformance vs official protos) | README Exporters | baseline |
 | Browser | Page views, interactions, web vitals, errors, fetch/XHR | `Scripts/instrumentations/*` | existing | README Browser | baseline |
+| Exceptions | .NET unhandled and unobserved task exceptions recorded without app code; a crashing process saves its queue for the next launch (the process ends before anything async completes) | `BelemetryUnhandledExceptions`, `BelemetryPipeline.PersistForExit`, `BelemetryFileRequestStore.SaveNow`, `Errors.CaptureUnhandledExceptions`; `TrackBitBelemetryUnhandledException` for the crashes Android, WinUI and WinForms report elsewhere (wired in the MAUI sample). Not done on purpose: waiting on the network as the process ends (no disk without `Persistence`, custom exporters), and `Persistence` in the default `Server.Features` (instances sharing a machine would share the store) | `BelemetryUnhandledExceptionTests` | README Unhandled exceptions and The server pipeline, demo .NET page | done (#14703) |
 
 ---
 
@@ -444,7 +445,7 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 | C. Browser and Blazor instrumentation | + bfcache restores (page views, web vitals), rage clicks, XHR abort/timeout | `instrumentations.test.js`, `fetch.test.js` |
 | D. Tracing and correlation | baseline (W3C, parent-based sampling, propagation allow-list); unchanged | existing suites |
 | E. Metrics | baseline aggregation and cardinality; + self-telemetry meter | `SelfTelemetry_CountsDropsAndExports_OnTheBitBelemetryMeter` |
-| F. Logging and exceptions | + error dedupe and rate limit (both sides), structured values scrubbed, credential names redacted, processor failures reported | `BelemetryLimitsTests`, `limits.test.js`, privacy suites |
+| F. Logging and exceptions | + error dedupe and rate limit (both sides), structured values scrubbed, credential names redacted, processor failures reported; + .NET unhandled and unobserved task exceptions, saved to disk as a process crashes (#14703) | `BelemetryLimitsTests`, `limits.test.js`, privacy suites, `BelemetryUnhandledExceptionTests` |
 | G. Sessions and context | baseline sessions; + global attributes in the script that cannot bypass consent | `api.test.js` |
 | H. Export and transport | per-backend retry policy, partial successes, keepalive budget (bytes + requests), sequential resend, remainder-only persistence after a partial success | sender, transport and store tests |
 | I. Buffering and delivery | bounded queues and stores (baseline) + bounded error limiter, relay budget, value length; delivery guarantees documented (best effort at unload) | README "Offline persistence" |

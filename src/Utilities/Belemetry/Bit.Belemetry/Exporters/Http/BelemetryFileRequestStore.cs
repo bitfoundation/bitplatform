@@ -38,8 +38,7 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
         {
             Directory.CreateDirectory(_directory);
 
-            // Time-prefixed names make a plain name sort the oldest first, for both loading and eviction.
-            var path = Path.Combine(_directory, $"{request.Time:D15}-{request.Id}{Extension}");
+            var path = PathOf(request);
             var temp = path + ".tmp";
             await using (var stream = File.Create(temp))
             {
@@ -55,6 +54,52 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
             _lock.Release();
         }
     }
+
+    /// <summary>
+    /// Saves <paramref name="request"/> synchronously, for a process that is ending (an unhandled exception), where
+    /// nothing async completes. Without the store's lock - a save or a resend pass may hold it across an await that never
+    /// resumes - which a file of its own does without: it is written under a temporary name and moved into place, so a
+    /// load never reads it half-written.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <param name="keep">Requests saved before it that the store makes room without: older files are evicted for it, never these.</param>
+    /// <returns>
+    /// Whether the store is within its size limit with it. When it is not, the file stays all the same: whether it is
+    /// worth more than the limit is the caller's to say (<see cref="DeleteNow"/>).
+    /// </returns>
+    public bool SaveNow(BelemetryHttpRequest request, IReadOnlyCollection<BelemetryHttpRequest> keep)
+    {
+        Directory.CreateDirectory(_directory);
+
+        var path = PathOf(request);
+        var temp = path + ".tmp";
+        using (var stream = File.Create(temp))
+        {
+            // Never headers on disk, as in SaveAsync.
+            JsonSerializer.Serialize(stream, request.WithoutHeaders(), BelemetryJsonContext.Default.BelemetryHttpRequest);
+        }
+        File.Move(temp, path, overwrite: true);
+
+        try
+        {
+            var kept = new HashSet<string>(keep.Select(FileName), StringComparer.Ordinal) { FileName(request) };
+            return EvictOverLimit(kept);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // A save that holds the lock may be evicting too; whatever is still over the limit goes on the next save.
+            return true;
+        }
+    }
+
+    /// <summary>Deletes what <see cref="SaveNow"/> saved of <paramref name="request"/>, synchronously.</summary>
+    public void DeleteNow(BelemetryHttpRequest request) => TryDelete(PathOf(request));
+
+    /// <summary>The path of <paramref name="request"/>'s file in the store.</summary>
+    private string PathOf(BelemetryHttpRequest request) => Path.Combine(_directory, FileName(request));
+
+    /// <summary>The name of <paramref name="request"/>'s file: time-prefixed, so a plain name sorts the oldest first, for both loading and eviction.</summary>
+    private static string FileName(BelemetryHttpRequest request) => $"{request.Time:D15}-{request.Id}{Extension}";
 
     public async ValueTask<IReadOnlyList<BelemetryHttpRequest>> LoadAsync(int max, CancellationToken cancellationToken)
     {
@@ -129,7 +174,11 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
         }
     }
 
-    private void EvictOverLimit()
+    /// <summary>
+    /// Evicts the oldest files until the store is within its size limit, but none named in <paramref name="keep"/>;
+    /// returns whether it is.
+    /// </summary>
+    private bool EvictOverLimit(IReadOnlySet<string>? keep = null)
     {
         var files = new DirectoryInfo(_directory).GetFiles("*" + Extension).OrderBy(f => f.Name, StringComparer.Ordinal).ToList();
         var total = files.Sum(f => f.Length);
@@ -137,9 +186,12 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
         foreach (var file in files)
         {
             if (total <= _maxBytes) break;
+            if (keep?.Contains(file.Name) is true) continue;
             total -= file.Length;
             TryDelete(file.FullName);
         }
+
+        return total <= _maxBytes;
     }
 
     private static void TryDelete(string path)
