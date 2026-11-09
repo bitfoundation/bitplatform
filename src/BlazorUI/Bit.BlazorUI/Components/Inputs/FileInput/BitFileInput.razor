@@ -26,7 +26,7 @@
                 aria-disabled="@(Disabled || ReadOnly ? "true" : null)"
                 aria-invalid="@(IsInvalid && Disabled is false ? "true" : null)"
                 aria-label="@AriaLabel"
-                aria-describedby="@(_HasDescription ? _descriptionId : null)"
+                aria-describedby="@_ButtonDescribedBy"
                 style="@Styles?.Label"
                 class="bit-fin-lbl @Classes?.Label">
             @if (ShowDropZone)
@@ -43,6 +43,29 @@
             }
             <span class="bit-fin-lbt">@(Label ?? BitStrings.Current.Browse)</span>
         </button>
+    }
+
+    @* What the app rejected the selection as a whole for, right under the browse button and ahead of the hint - the
+       order the button reads the two out in. The files the input rejected on its own say why in the list instead. *@
+    @if (_HasErrorMessage)
+    {
+        <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-fin-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                @ErrorMessage
+            }
+        </div>
+    }
+
+    @if (_HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may not have
+           at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-fin-vhd">@ErrorMessageAriaLabel</span>
     }
 
     @if (_HasDescription)
@@ -189,6 +212,16 @@
     }
 
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-fin-lvr">@_announcement</div>
+
+    @* The rejection the app asserted is announced out of a region of its own, so the selection region above and this
+       one never say each other's text: text only, never ErrorMessageTemplate itself, which is arbitrary markup meant
+       to be seen - a template is announced through ErrorMessageAriaLabel, or as a bare "Invalid input". Once a file
+       input is wired for an error message the region is rendered whether or not it has anything to say, because a
+       live region that arrives with its text already in it is the one thing screen readers are known to miss. *@
+    @if (_hasLiveRegion)
+    {
+        <div role="status" aria-live="polite" aria-atomic="true" class="bit-fin-vhd">@_ErrorLiveText</div>
+    }
 
     @* The value's carrier in a form - the names of the valid files: what a post reads under Name and where the
        InputHtmlAttributes land. The native file input above cannot be it, since the list the component keeps

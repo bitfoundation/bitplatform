@@ -133,6 +133,27 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the browse button for a rejection of the whole selection the app decided on its own (a server that refused the upload, a cross-field rule), apart from the message of each file the component rejects itself. It marks the file input invalid, is referenced by the browse button's aria-describedby and is announced as it appears."
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the browse button references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every file input under it, so set it there only as a generic replacement for \"Invalid input\"."
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces ErrorMessage and marks the file input invalid the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set."
+        },
+        new()
+        {
             Name = "FileIconSelector",
             Type = "Func<BitFileInputInfo, BitIconInfo?>?",
             DefaultValue = "null",
@@ -185,6 +206,13 @@ public partial class BitFileInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to hide the default browse button label from the UI."
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the selection invalid without an EditContext having said so: the same look and the same aria-invalid on the browse button a failing validation gives it. ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce."
         },
         new()
         {
@@ -600,6 +628,13 @@ public partial class BitFileInputDemo
                },
                new()
                {
+                   Name = "ErrorMessageContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message of the BitFileInput (its ErrorMessage or ErrorMessageTemplate), rendered under the browse button. The message of each invalid file item is styled by ErrorMessage."
+               },
+               new()
+               {
                    Name = "Description",
                    Type = "string?",
                    DefaultValue = "null",
@@ -659,7 +694,7 @@ public partial class BitFileInputDemo
                    Name = "ErrorMessage",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the validation error message of each invalid file item of the BitFileInput."
+                   Description = "Custom CSS classes/styles for the validation error message of each invalid file item of the BitFileInput. The error message of the BitFileInput itself is styled by ErrorMessageContainer."
                },
                new()
                {
@@ -879,7 +914,7 @@ public partial class BitFileInputDemo
         {
             Name = "--bit-FileInput-description-font-size",
             DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Text size of that hint, of the file size and of the folder. The Size parameter wins over it.",
+            Description = "Text size of that hint, of the error message, of the file size and of the folder. The Size parameter wins over it.",
         },
         new()
         {
@@ -974,8 +1009,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-invalid-color",
-            DefaultValue = "--bit-clr-err / --bit-clr-err-focus",
-            Description = "Role color, and focus ring, of the browse button while the value fails the validation of the EditForm it is in. The failed validation wins over an explicit Color for that time.",
+            DefaultValue = "--bit-clr-err / --bit-clr-err-focus / --bit-clr-err-fg",
+            Description = "Role color, and focus ring, of the browse button while the value is invalid - failing the validation of the EditForm it is in, or rejected by the app through Invalid or ErrorMessage - and the color of the error message under it. The invalid state wins over an explicit Color for that time.",
         },
         new()
         {
@@ -1200,4 +1235,7 @@ public partial class BitFileInputDemo
     {
         validationResult = null;
     }
+
+    // The names of the valid files, joined with commas.
+    private string? contractNames;
 }
