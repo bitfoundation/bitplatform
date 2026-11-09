@@ -349,7 +349,7 @@ public class SupportedAppVersionsOptions
             AppPlatformType.MacOS => MinimumSupportedMacOSAppVersion,
             AppPlatformType.Windows => MinimumSupportedWindowsAppVersion,
             AppPlatformType.Web => MinimumSupportedWebAppVersion,
-            AppPlatformType.Linux => null, // No Linux client ships a minimum version, so there is nothing to enforce.
+            AppPlatformType.Linux => null, // No Linux client ships a minimum version.
             _ => throw new ArgumentOutOfRangeException(nameof(platformType), platformType, null)
         };
     }

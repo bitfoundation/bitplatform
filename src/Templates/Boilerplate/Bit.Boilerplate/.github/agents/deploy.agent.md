@@ -330,6 +330,9 @@ there, and the setting or secret that carries it. Every environment gets its own
   SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
   calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
 <!--#endif-->
+- Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before a release raise its
+  patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
+  the web and the api.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
@@ -392,9 +395,11 @@ column is dropped one release after the code stops using it. What is left:
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
-- Turn Early Hints off on the zone (`PATCH zones/<zone id>/settings/early_hints` with `{"value":"off"}`), and read it
-  back. The app is a PWA whose pages render on the client, so it would only send the server fetches that don't help
-  performance.
+- Turn Speed Brain and Early Hints off on the zone before the first deployment (`PATCH
+  zones/<zone id>/settings/speed_brain` and `.../early_hints` with `{"value":"off"}`), and read them back. The app is a
+  PWA whose pages render on the client, so Speed Brain's prefetches only send the server fetches that don't help
+  performance. Its header is stored in the pages the service worker keeps, so turned off later, it goes away with the next
+  deployment and not before.
 - The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
   follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
