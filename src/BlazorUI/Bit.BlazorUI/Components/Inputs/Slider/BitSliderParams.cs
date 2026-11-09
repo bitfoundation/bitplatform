@@ -68,10 +68,33 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
     public bool? DraggableTrack { get; set; }
 
     /// <summary>
+    /// A line under the slider saying why its value was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every slider the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// sliders announce it too. A reason that fits one slider alone belongs on that slider.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Builds the text of every label the slider draws from the value it stands for. Takes precedence over
     /// <see cref="ValueFormat"/>.
     /// </summary>
     public Func<double, string>? GetValueText { get; set; }
+
+    /// <summary>
+    /// Marks the value of the slider as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// Fills the track from the far end instead of from the near one.
@@ -259,9 +282,24 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.TakeFromCascade(nameof(DraggableTrack), DraggableTrack.Value, static s => s.DraggableTrack, static (s, v) => s.DraggableTrack = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitSlider.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static s => s.ErrorMessage, static (s, v) => s.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitSlider.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static s => s.ErrorMessageAriaLabel, static (s, v) => s.ErrorMessageAriaLabel = v);
+        }
+
         if (GetValueText is not null)
         {
             bitSlider.TakeFromCascade(nameof(GetValueText), GetValueText, static s => s.GetValueText, static (s, v) => s.GetValueText = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitSlider.TakeFromCascade(nameof(Invalid), Invalid.Value, static s => s.Invalid, static (s, v) => s.Invalid = v);
         }
 
         if (Inverted.HasValue)

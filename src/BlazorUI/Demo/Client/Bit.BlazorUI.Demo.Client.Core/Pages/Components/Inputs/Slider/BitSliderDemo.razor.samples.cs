@@ -321,7 +321,27 @@ private string focusState = blurredText;";
 else
 {
     <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
-}";
+}
+
+
+<BitSlider Label=""Monthly budget""
+           Max=""10""
+           @bind-Value=""budgetValue""
+           ErrorMessage=""@(budgetValue > 8 ? ""Above what your plan allows."" : null)"" />
+
+<BitSlider Label=""Marked invalid, explained elsewhere"" Max=""10"" DefaultValue=""5"" Invalid />
+
+<BitSlider IsRanged
+           Label=""Price bracket""
+           Max=""100""
+           DefaultLowerValue=""20""
+           DefaultUpperValue=""40""
+           ErrorMessageAriaLabel=""No product is priced in this bracket."">
+    <ErrorMessageTemplate>
+        No product is priced in this bracket.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">See the catalog</BitLink>
+    </ErrorMessageTemplate>
+</BitSlider>";
     private readonly string example12CsharpCode = @"
 public class BitSliderDemoFormModel
 {
@@ -357,7 +377,10 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}";
+}
+
+
+private double budgetValue = 9;";
 
     private readonly string example13RazorCode = @"
 <BitSlider Label=""Quality""

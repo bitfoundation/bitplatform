@@ -19,7 +19,7 @@
 //   --bit-Slider-disabled-color          the fill, the thumb ring, the marks and the origin
 //                                        tick while Disabled is true                       (default: $clr-bg-dis)
 //   --bit-Slider-invalid-color           the fill, the thumb ring and the focus ring while
-//                                        the value is invalid                                (default: $clr-err, and $clr-err-focus for the focus ring)
+//                                        the value is invalid, and the error message         (default: $clr-err, and $clr-err-focus for the focus ring)
 //   --bit-Slider-rail-color              the part of the track the fill has not reached      (default: $clr-bg-sec)
 //   --bit-Slider-rail-size               thickness of the rail and of the fill               (default: $siz-track-md)
 //   --bit-Slider-rail-radius             corner radius of the rail and of the fill           (default: the rail thickness, which draws a pill)
@@ -640,6 +640,17 @@ $sld-private-properties:
 // from the page visually but left in the accessibility tree.
 .bit-sld-dsc {
     @include visually-hidden;
+}
+
+// The error line is painted with the one variable that already carries the whole invalid look, so recoloring the
+// error state recolors the message along with the fill and the thumbs. It is set in the small text the Size steps
+// for the mark labels, and keeps its color on a disabled slider: it still says what is wrong with the value.
+.bit-sld-erm {
+    display: block;
+    overflow-wrap: break-word;
+    margin-block-start: spacing(0.5);
+    color: var(--bit-Slider-invalid-color, #{$clr-err});
+    font-size: var(--bit-sld-sz-font-size-sub, #{$tg-fs-xs});
 }
 
 

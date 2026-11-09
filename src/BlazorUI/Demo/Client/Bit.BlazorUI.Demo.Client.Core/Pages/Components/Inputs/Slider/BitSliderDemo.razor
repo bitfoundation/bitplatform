@@ -531,6 +531,38 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error look and <b>aria-invalid</b>
+            on every thumb for a value something else refused - a server, a rule spanning two fields - and
+            <b>ErrorMessage</b> adds the line that says why, right under the slider. A message implies <b>Invalid</b>,
+            so the flag on its own is for marking a slider whose explanation lives somewhere else. The thumbs are
+            described by the line, and a live region announces it the moment it appears - once, rather than again at
+            every step of a drag. <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no
+            text a screen reader can be handed, so it is announced as a bare "Invalid input" unless
+            <b>ErrorMessageAriaLabel</b> says what it shows.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitSlider Label="Monthly budget"
+                       Max="10"
+                       @bind-Value="budgetValue"
+                       ErrorMessage="@(budgetValue > 8 ? "Above what your plan allows." : null)" />
+            <br />
+            <BitSlider Label="Marked invalid, explained elsewhere" Max="10" DefaultValue="5" Invalid />
+            <br />
+            <BitSlider IsRanged
+                       Label="Price bracket"
+                       Max="100"
+                       DefaultLowerValue="20"
+                       DefaultUpperValue="40"
+                       ErrorMessageAriaLabel="No product is priced in this bracket.">
+                <ErrorMessageTemplate>
+                    No product is priced in this bracket.
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">See the catalog</BitLink>
+                </ErrorMessageTemplate>
+            </BitSlider>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
