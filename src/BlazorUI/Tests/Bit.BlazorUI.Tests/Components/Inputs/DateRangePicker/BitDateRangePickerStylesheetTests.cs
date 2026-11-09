@@ -67,4 +67,17 @@ public class BitDateRangePickerStylesheetTests
         Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n    .bit-dtrp-#{$role} {", System.StringComparison.Ordinal), "The role classes come before the callout that resets what they publish.");
         Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n.bit-dtrp-sm {", System.StringComparison.Ordinal), "The size classes come before the callout that resets what they publish.");
     }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldColorTheErrorMessageLikeTheInvalidBorderEvenWhileDisabled()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The message follows the variable the invalid border does, so restyling one restyles the other.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtrp-erm {"), "color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});");
+
+        // Nothing else styles it - the disabled picker dims its own parts by name - so a message gone grey never
+        // stops reading as the reason.
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-dtrp-erm\b").Count, "Another rule restyles the error message.");
+    }
 }

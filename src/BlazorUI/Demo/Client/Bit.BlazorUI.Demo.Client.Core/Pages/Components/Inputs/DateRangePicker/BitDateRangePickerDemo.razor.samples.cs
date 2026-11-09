@@ -413,7 +413,22 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                     InvalidErrorMessage=""Write the range as dd/MM/yyyy - dd/MM/yyyy.""
                     DisabledDateErrorMessage=""Weekends are not bookable.""
                     OutOfRangeErrorMessage=""A booking cannot be longer than a week.""
-                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />";
+                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+
+
+<BitDateRangePicker Label=""Stay""
+                    @bind-Value=""stayRange""
+                    ErrorMessage=""@GetStayError()"" />
+
+<BitDateRangePicker Label=""Marked invalid, explained elsewhere"" Invalid />
+
+<BitDateRangePicker Label=""Conference days""
+                    ErrorMessageAriaLabel=""Those days are fully booked."">
+    <ErrorMessageTemplate>
+        Those days are fully booked.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Join the waiting list</BitLink>
+    </ErrorMessageTemplate>
+</BitDateRangePicker>";
     private readonly string example20CsharpCode = @"
 public class FormValidationDateRangePickerModel
 {
@@ -444,6 +459,19 @@ private void HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     successMessage = string.Empty;
+}
+
+private BitDateRangePickerValue? stayRange = new()
+{
+    StartDate = new DateTimeOffset(DateTime.Today.AddDays(7)),
+    EndDate = new DateTimeOffset(DateTime.Today.AddDays(8)),
+};
+
+private string? GetStayError()
+{
+    if (stayRange?.StartDate is not { } start || stayRange.EndDate is not { } end) return null;
+
+    return (end - start).TotalDays < 2 ? ""A stay must be at least two nights."" : null;
 }";
 
     private readonly string example21RazorCode = @"
