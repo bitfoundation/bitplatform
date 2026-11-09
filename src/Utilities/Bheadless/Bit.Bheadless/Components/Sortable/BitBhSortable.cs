@@ -230,7 +230,18 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
 
     // Whether this list takes item from source, another list of its group.
     internal bool Accepts(BitBhSortable<TItem> source, TItem item)
-        => source != this && _disposed is false && Disabled is false && AllowDropIn && (CanAccept?.Invoke(item, source.ListId) ?? true);
+        => source != this && _disposed is false && Disabled is false && AllowDropIn && (CanAccept?.Invoke(item, source.ListId) ?? true)
+           // An item whose key is already here would give two items one @key.
+           && HasKey(KeyOf(item)) is false;
+
+    private object? KeyOf(TItem item) => ItemKey?.Invoke(item) ?? item;
+
+    private bool HasKey(object? key)
+    {
+        foreach (var item in Items)
+            if (Equals(KeyOf(item), key)) return true;
+        return false;
+    }
 
     internal void ClearPreview() => _preview = null;
 
@@ -373,8 +384,15 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
 
     internal async Task HandleKeyDownAsync(int index, KeyboardEventArgs e)
     {
+        if (Disabled)
+        {
+            // While an item of the group is picked up every handle keeps Tab from moving the focus (its keys end the
+            // grab): on a handle of a disabled list it would hold the focus there for good. It ends the grab here too.
+            if (e.Key == "Tab" && SortGroup.Grab is not null) await CancelGrabAsync();
+            return;
+        }
         // A held Space / Enter repeats: the item would be dropped and picked up again and again.
-        if (Disabled || (e.Repeat && e.Key is " " or "Enter")) return;
+        if (e.Repeat && e.Key is " " or "Enter") return;
 
         // While an item is grabbed every handle's keys drive the grab, not only the grabbed item's - nor only those of
         // the list it is in: handles are positional, so right after a move the focused handle is the one at the item's
@@ -425,6 +443,14 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
         {
             var origin = grab.Origin;
             var to = grab.Index;
+            // What changed while the item was picked up: the list it came from (the item is no longer where it was), or
+            // the rules (the list it came from keeps it, this one refuses it now). The move is cancelled, not made.
+            var stillThere = grab.OriginIndex < origin.Items.Count && Equals(origin.KeyOf(origin.Items[grab.OriginIndex]), origin.KeyOf(grab.Item));
+            if (stillThere is false || (origin != this && (origin.CanGive is false || Accepts(origin, grab.Item) is false)))
+            {
+                await CancelGrabAsync();
+                return;
+            }
             SortGroup.EndGrab();
             if (origin == this)
             {
@@ -462,6 +488,8 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
         if (ordered.Contains(current) is false) ordered = lists;
         var at = ordered.IndexOf(current) + (forward ? 1 : -1);
         if (at < 0 || at >= ordered.Count || ordered[at]._disposed) return;
+        // The list may have left the group (another Group) while its order was asked for.
+        if (group.Members.Contains(ordered[at]) is false) return;
         await current.MoveGrabToAsync(grab, ordered[at]);
     }
 
@@ -605,12 +633,15 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    // Moves the item at from in source to to in target: through their bindings, else in place in mutable lists.
+    // Moves the item at from in source to to in target: through their bindings, else in place in mutable lists. The target
+    // takes it first: if that fails (a throwing handler), the source still has it.
     private static async Task TransferAsync(BitBhSortable<TItem> source, int from, BitBhSortable<TItem> target, int to)
     {
         var item = source.Items[from];
+        // Where it lands: the event and the focus name that position.
+        to = Math.Clamp(to, 0, target.Items.Count);
+        await target.ChangeItemsAsync(list => list.Insert(to, item));
         await source.ChangeItemsAsync(list => list.RemoveAt(from));
-        await target.ChangeItemsAsync(list => list.Insert(Math.Min(to, list.Count), item));
         await target.OnTransfer.InvokeAsync(new BitBhTransferEventArgs<TItem>(
             item, target.ItemKey?.Invoke(item) ?? item, source.ListId, from, target.ListId, to));
         target._focusAfterRender ??= target.HandleId(to);

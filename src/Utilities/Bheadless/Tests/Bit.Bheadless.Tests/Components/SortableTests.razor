@@ -137,7 +137,8 @@
 
     private sealed class BoardOptions
     {
-        public Action<BitBhTransferEventArgs<string>>? OnTransfer { get; init; }
+        // (the list that raised it, the event)
+        public Action<string, BitBhTransferEventArgs<string>>? OnTransfer { get; init; }
         public Action<BitBhReorderEventArgs<string>>? OnReorder { get; init; }
         public bool TodoGives { get; init; } = true;
         public bool DoingTakes { get; init; } = true;
@@ -152,20 +153,20 @@
             @<Stateful T="Board" Initial="@(new Board(["Alpha", "Beta"], ["Gamma"], []))" Context="s">
                 <BitBhSortable TItem="string" Id="todo" Group="board" Items="s.Value!.Todo" AllowDragOut="o.TodoGives"
                                ItemsChanged="items => s.Set(s.Value! with { Todo = items.ToList() })"
-                               OnTransfer="e => o.OnTransfer?.Invoke(e)" OnReorder="e => o.OnReorder?.Invoke(e)"
+                               OnTransfer='e => o.OnTransfer?.Invoke("todo", e)' OnReorder="e => o.OnReorder?.Invoke(e)"
                                aria-label="To do" Context="item">
                     <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
                     @item.Item
                 </BitBhSortable>
                 <BitBhSortable TItem="string" Id="doing" Group="board" Items="s.Value!.Doing" AllowDropIn="o.DoingTakes"
                                ItemsChanged="items => s.Set(s.Value! with { Doing = items.ToList() })"
-                               OnTransfer="e => o.OnTransfer?.Invoke(e)" ListLabel="In progress" Context="item">
+                               OnTransfer='e => o.OnTransfer?.Invoke("doing", e)' ListLabel="In progress" Context="item">
                     <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
                     @item.Item
                 </BitBhSortable>
                 <BitBhSortable TItem="string" Id="done" Group="@o.DoneGroup" Items="s.Value!.Done" CanAccept="o.DoneAccepts"
                                ItemsChanged="items => s.Set(s.Value! with { Done = items.ToList() })"
-                               OnTransfer="e => o.OnTransfer?.Invoke(e)" aria-label="Done" Context="item">
+                               OnTransfer='e => o.OnTransfer?.Invoke("done", e)' aria-label="Done" Context="item">
                     <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
                     @item.Item
                 </BitBhSortable>
@@ -194,8 +195,8 @@
     [TestMethod]
     public async Task Keyboard_moves_an_item_to_the_next_lists_and_drops_it_in_an_empty_one()
     {
-        var transfers = new List<BitBhTransferEventArgs<string>>();
-        var cut = RenderBoard(new() { OnTransfer = transfers.Add });
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)) });
 
         cut.Find("#todo-handle-0").Press(" ");
         await Announcer.WaitForAsync("Picked up Alpha. Position 1 of 2.");
@@ -227,17 +228,18 @@
         Assert.AreSequenceEqual(new[] { "Alpha" }, board.Done);
         Assert.AreEqual("false", cut.Find("#done-handle-0").GetAttribute("aria-pressed"));
 
-        // One event, on the list that received the item, with what a model needs to move it.
+        // One event, raised by the list that received the item, with what a model needs to move it.
         var transfer = Assert.ContainsSingle(transfers);
-        Assert.AreEqual(new BitBhTransferEventArgs<string>("Alpha", "Alpha", "todo", 0, "done", 0), transfer);
+        Assert.AreEqual("done", transfer.List);
+        Assert.AreEqual(new BitBhTransferEventArgs<string>("Alpha", "Alpha", "todo", 0, "done", 0), transfer.Args);
         cut.ShouldBeAccessible();
     }
 
     [TestMethod]
     public async Task Escape_returns_an_item_moved_to_another_list_to_where_it_was()
     {
-        var transfers = new List<BitBhTransferEventArgs<string>>();
-        var cut = RenderBoard(new() { OnTransfer = transfers.Add });
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)) });
 
         cut.Find("#todo-handle-1").Press(" ");
         cut.Find("#todo-handle-1").Press("ArrowRight");
@@ -260,8 +262,8 @@
     public async Task Moving_back_to_its_own_list_and_dropping_reorders_it()
     {
         BitBhReorderEventArgs<string>? reorder = null;
-        var transfers = new List<BitBhTransferEventArgs<string>>();
-        var cut = RenderBoard(new() { OnTransfer = transfers.Add, OnReorder = e => reorder = e });
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)), OnReorder = e => reorder = e });
 
         cut.Find("#todo-handle-0").Press(" ");
         cut.Find("#todo-handle-0").Press("ArrowRight");
@@ -331,7 +333,7 @@
     }
 
     [TestMethod]
-    public void A_give_only_list_never_lets_an_item_out_and_an_ungrouped_list_ignores_the_arrows_across_it()
+    public void An_accept_only_list_never_lets_an_item_out_and_an_ungrouped_list_ignores_the_arrows_across_it()
     {
         var cut = RenderBoard(new() { TodoGives = false });
         cut.Find("#todo-handle-0").Press(" ");
@@ -367,8 +369,8 @@
     [TestMethod]
     public async Task A_pointer_drop_in_another_list_moves_the_item_there()
     {
-        var transfers = new List<BitBhTransferEventArgs<string>>();
-        var cut = RenderBoard(new() { OnTransfer = transfers.Add, DoneAccepts = (item, _) => item != "Beta" });
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)), DoneAccepts = (item, _) => item != "Beta" });
         var todo = cut.FindComponents<BitBhSortable<string>>()[0].Instance;
 
         // The runtime learns which lists take the item when the drag starts.
@@ -378,7 +380,7 @@
         await Announcer.WaitForAsync("Dropped Beta in In progress at position 1 of 2.");
         Assert.AreSequenceEqual(new[] { "Alpha" }, Bound(cut).Todo);
         Assert.AreSequenceEqual(new[] { "Beta", "Gamma" }, Bound(cut).Doing);
-        Assert.AreEqual(new BitBhTransferEventArgs<string>("Beta", "Beta", "todo", 1, "doing", 0), Assert.ContainsSingle(transfers));
+        Assert.AreEqual(("doing", new BitBhTransferEventArgs<string>("Beta", "Beta", "todo", 1, "doing", 0)), Assert.ContainsSingle(transfers));
         Assert.AreEqual("doing-handle-0", this.LastFocusRequest());
 
         // Into the empty list, past its end.
@@ -403,7 +405,7 @@
     }
 
     [TestMethod]
-    public async Task A_give_only_list_names_no_drop_target_to_the_runtime()
+    public async Task An_accept_only_list_names_no_drop_target_to_the_runtime()
     {
         // The runtime drags its items along its axis only, and learns of no other list.
         var cut = RenderBoard(new() { TodoGives = false });
@@ -414,6 +416,27 @@
         var attach = JSInterop.Invocations.Where(i => i.Identifier == "sortable.attach").ToList();
         Assert.IsTrue(attach.Any(i => Equals(i.Arguments[1], "doing") && Equals(((IDictionary<string, object?>)i.Arguments[2]!)["grouped"], true)));
         Assert.IsTrue(attach.Any(i => Equals(i.Arguments[1], "todo") && Equals(((IDictionary<string, object?>)i.Arguments[2]!)["grouped"], false)));
+    }
+
+    [TestMethod]
+    public void A_list_that_already_has_the_items_key_takes_no_copy_of_it()
+    {
+        // Two items with one @key would break the list's rendering: the keyboard skips it.
+        var cut = Render(
+            @<div>
+                <BitBhSortable TItem="string" Id="left" Group="pair" Items="@(new List<string> { "Alpha" })" aria-label="Left" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="@(new List<string> { "Alpha" })" aria-label="Right" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+            </div>);
+
+        cut.Find("#left-handle-0").Press(" ");
+        cut.Find("#left-handle-0").Press("ArrowRight");
+        Assert.HasCount(1, cut.FindAll("#right > li"));
+        Assert.HasCount(1, cut.FindAll("#left > li"));
+        Assert.AreEqual("true", cut.Find("#left-handle-0").GetAttribute("aria-pressed"));
     }
 
     [TestMethod]

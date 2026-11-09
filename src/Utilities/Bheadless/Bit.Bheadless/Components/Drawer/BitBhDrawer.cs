@@ -485,6 +485,17 @@ public class BitBhDrawer : BitBhComponentBase, IAsyncDisposable
         _panelDismissOnEscape = dismissOnEscape;
     }
 
+    /// <summary>
+    /// A panel rendered for the first time. Mounted after the drawer opened (content rendered later), it was not there for
+    /// this opening's attach: the runtime is asked again - by the attach in flight once it returns, else by a render.
+    /// </summary>
+    internal void PanelMounted()
+    {
+        if (_disposed || !IsOpen || !_swipeTried || _swipeHandle > 0) return;
+        _swipeTried = false;
+        if (!_swipeSyncing) StateHasChanged();
+    }
+
     private void ReportNested(BitBhDrawer child, bool open)
     {
         if (open ? _openChildren.Add(child) : _openChildren.Remove(child)) StateHasChanged();
@@ -531,6 +542,10 @@ public class BitBhDrawer : BitBhComponentBase, IAsyncDisposable
     /// </summary>
     public async Task SetActiveSnapPointAsync(BitBhDrawerSnapPoint? snapPoint)
     {
+        // What the drawer rests at: a value that is not one of the snap points stands for the first (none without any).
+        var points = SnapPointList;
+        if (points.Count == 0) snapPoint = null;
+        else if (snapPoint is not { } wanted || !points.Contains(wanted)) snapPoint = points[0];
         if (CurrentSnapPoint == snapPoint) return;
         if (!IsProvided(nameof(ActiveSnapPoint)))
             _activeSnapPoint = snapPoint;

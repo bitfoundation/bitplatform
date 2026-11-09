@@ -231,9 +231,11 @@
     <Description>
         <code>OpenOnHover</code> opens the menu when the pointer rests on the button for <code>HoverOpenDelay</code>
         (here 200 ms) and closes it <code>HoverCloseDelay</code> (here 400 ms) after the pointer has left the button
-        and the menu. The hover leaves the focus where it is - type in the field, hover the button, keep typing - and
-        the first key press on the button (or with nothing focused) moves it into the menu. A click on the button
-        keeps the menu open; Escape closes it from anywhere. See the menubar page for site navigation.
+        and the menu. The hover leaves the focus where it is - type in the field, hover the button, keep typing. On the
+        button, <kbd>Enter</kbd>, <kbd>Space</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd> moves the focus into the menu; with
+        nothing focused, so does one of the menu's own keys (the arrows, <kbd>Home</kbd> / <kbd>End</kbd>,
+        <kbd>Enter</kbd>, <kbd>Space</kbd>). A click on the button keeps the menu open; Escape closes it from anywhere.
+        See the menubar page for site navigation.
     </Description>
     <LiveContent>
         <input class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" aria-label="Notes" placeholder="Type here, then hover Account" />

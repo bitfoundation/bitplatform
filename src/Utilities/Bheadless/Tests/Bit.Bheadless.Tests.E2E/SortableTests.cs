@@ -112,10 +112,12 @@ public sealed class SortableTests : DemoTest
         var done = Column(board, "Done");
         await Expect(done).ToHaveAttributeAsync("data-empty", "");
 
-        // "Done" refuses blocked cards (CanAccept): it is no drop target, and a drop on it leaves the card home.
-        var blocked = (await Handle(board, "Fix flaky login test").BoundingBoxAsync())!;
+        // "Done" refuses blocked cards (CanAccept): it is no drop target, and a drop on it leaves the card home - dropped
+        // level with the first card of its column, where a reorder along the column would have put it first.
+        var first = (await Handle(board, "Write release notes").BoundingBoxAsync())!;
         var doneBox = (await done.BoundingBoxAsync())!;
-        await DragAsync(page, Handle(board, "Fix flaky login test"), doneBox.X + doneBox.Width / 2, blocked.Y + blocked.Height / 2,
+        var y = Math.Clamp(first.Y + first.Height / 2, doneBox.Y + 2, doneBox.Y + doneBox.Height - 2);
+        await DragAsync(page, Handle(board, "Fix flaky login test"), doneBox.X + doneBox.Width / 2, y,
             async () => await Expect(doing).ToHaveAttributeAsync("data-drop-target", ""),
             async () => await Expect(done).Not.ToHaveAttributeAsync("data-drop-target", ""));
         await Expect(page.Locator("[data-bit-bh-live-region]")).ToContainTextAsync("Reordering cancelled. Fix flaky login test returned to position 2.");

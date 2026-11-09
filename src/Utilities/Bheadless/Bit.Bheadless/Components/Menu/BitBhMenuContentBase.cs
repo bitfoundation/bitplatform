@@ -103,13 +103,16 @@ public abstract class BitBhMenuContentBase : BitBhFloatingContentBase
         builder.AddEventStopPropagationAttribute(41, "onkeydown", true);
         builder.AddAttribute(42, "onfocus",
             On<FocusEventArgs>("onfocus", HandleFocus));
-        builder.AddAttribute(43, "onblur",
+        // focusin, not focus: it bubbles, so the focus going to an item that takes it itself (a link) counts too.
+        builder.AddAttribute(43, "onfocusin",
+            On<FocusEventArgs>("onfocusin", HandleFocusIn));
+        builder.AddAttribute(44, "onblur",
             On<FocusEventArgs>("onblur", () => Level.HasFocus = false));
-        builder.AddAttribute(44, "onpointerenter",
+        builder.AddAttribute(45, "onpointerenter",
             On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
         // A menu that opens on hover follows the pointer over every one of its panels.
         if (Level.Root.TracksHover)
-            builder.AddAttribute(45, "onpointerleave",
+            builder.AddAttribute(46, "onpointerleave",
                 On<PointerEventArgs>("onpointerleave", HandlePointerLeave));
 
         builder.AddElementReferenceCapture(50, CaptureElement);
@@ -149,6 +152,21 @@ public abstract class BitBhMenuContentBase : BitBhFloatingContentBase
         Level.HasFocus = true;
         // The focus moving in takes over a menu the pointer opened: it stays open until it is dismissed.
         Level.Root.FocusEntered();
+    }
+
+    // The same for the focus going into the panel - to an item that takes it itself (a link) - which the panel's own
+    // focus event (it does not bubble) misses.
+    private void HandleFocusIn() => Level.Root.FocusEntered();
+
+    /// <summary>
+    /// The keyboard or a click took over the hover-opened menu: this open panel's layer, and those of the submenus open
+    /// from it, are no longer hover-driven ones (which Escape dismisses ahead of the panel's own keys).
+    /// </summary>
+    internal async Task ReleaseHoverAsync()
+    {
+        if (!IsOpen) return;
+        await Floating.SetHoverAsync(false);
+        if (Level.OpenSub?.Content is { } sub) await sub.ReleaseHoverAsync();
     }
 
     private Task HandlePointerEnter(PointerEventArgs args)

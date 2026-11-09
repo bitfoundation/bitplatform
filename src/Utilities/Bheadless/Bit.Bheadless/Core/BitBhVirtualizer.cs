@@ -20,7 +20,12 @@ internal sealed class BitBhVirtualizer<TItem> : ComponentBase, IAsyncDisposable
     internal const int InitialCount = 20;
 
     private BitBhInterop? _interop;
-    private IReadOnlyList<TItem>? _items;
+    private bool _seen;
+    private int _seenCount;
+    private TItem? _seenFirst;
+    private TItem? _seenLast;
+    private int _seenStart;
+    private readonly List<TItem> _seenWindow = [];
     private int _start;
     private int _end;
     private int _epoch;
@@ -65,36 +70,49 @@ internal sealed class BitBhVirtualizer<TItem> : ComponentBase, IAsyncDisposable
 
     protected override void OnParametersSet()
     {
-        // Another list (a new filter) is not the one measured: the runtime starts its sizes over (the epoch). A list
-        // rebuilt with the same items - Items="@list.Where(…).ToList()" makes a new one on every render - is not another.
-        if (!ReferenceEquals(_items, Items))
-        {
-            if (_items is null || !SameItems(_items, Items)) _epoch++;
-            _items = Items;
-        }
+        // Another list (a new filter) is not the one measured: the runtime starts its sizes over (the epoch). Compared with
+        // what the list held when last seen, not with the list itself: a list rebuilt with the same items -
+        // Items="@list.Where(…).ToList()" makes a new one on every render - is not another, and one sorted in place is.
+        if (!_seen || !SameAsSeen(Items)) _epoch++;
         var count = Items.Count;
         var length = Math.Max(_end - _start, InitialCount);
         _end = Math.Min(count, _start + length);
         _start = Math.Max(0, Math.Min(_start, _end - length));
+        See();
     }
 
     /// <summary>
-    /// Whether <paramref name="b"/> holds the items of <paramref name="a"/>, judged by the count, the ends and the
-    /// rendered window: the cost is the window's however long the list (it runs on every render of a list rebuilt by
+    /// Whether <paramref name="items"/> holds the items last seen (<see cref="See"/>), judged by the count, the ends and
+    /// the rendered window: the cost is the window's however long the list (it runs on every render of a list rebuilt by
     /// every render). A list changed only outside the window keeps the sizes measured on it, estimates the runtime
     /// corrects as those items render.
     /// </summary>
-    private bool SameItems(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+    private bool SameAsSeen(IReadOnlyList<TItem> items)
     {
-        var count = a.Count;
-        if (count != b.Count) return false;
+        var count = _seenCount;
+        if (count != items.Count) return false;
         if (count == 0) return true;
         var comparer = EqualityComparer<TItem>.Default;
-        if (!comparer.Equals(a[0], b[0]) || !comparer.Equals(a[count - 1], b[count - 1])) return false;
-        var end = Math.Min(_end, count);
-        for (var i = Math.Min(_start, end); i < end; i++)
-            if (!comparer.Equals(a[i], b[i])) return false;
+        if (!comparer.Equals(_seenFirst, items[0]) || !comparer.Equals(_seenLast, items[count - 1])) return false;
+        for (var i = 0; i < _seenWindow.Count; i++)
+            if (!comparer.Equals(_seenWindow[i], items[_seenStart + i])) return false;
         return true;
+    }
+
+    /// <summary>
+    /// Keeps a copy of what <see cref="SameAsSeen"/> compares - not the list, which its owner may change in place (sort
+    /// it) - for the next render.
+    /// </summary>
+    private void See()
+    {
+        var items = Items;
+        _seen = true;
+        _seenCount = items.Count;
+        _seenFirst = _seenCount > 0 ? items[0] : default;
+        _seenLast = _seenCount > 0 ? items[_seenCount - 1] : default;
+        _seenStart = _start;
+        _seenWindow.Clear();
+        for (var i = _start; i < _end; i++) _seenWindow.Add(items[i]);
     }
 
     /// <summary>
@@ -109,8 +127,11 @@ internal sealed class BitBhVirtualizer<TItem> : ComponentBase, IAsyncDisposable
         start = Math.Clamp(start, 0, count);
         end = Math.Clamp(end, start, count);
         if (start == _start && end == _end) return;
+        // Changed in place since the last render (no new parameters to say so): the sizes are not its items' any more.
+        if (!SameAsSeen(Items)) _epoch++;
         _start = start;
         _end = end;
+        See();
         StateHasChanged();
     }
 

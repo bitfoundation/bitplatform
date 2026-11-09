@@ -26,6 +26,11 @@ public sealed class BitBhOptions
     /// <c>&lt;head&gt;</c> (before any stylesheet that matters for the first paint) so they apply as the page is parsed,
     /// before it is first painted. Default: <c>false</c>.
     /// </para>
+    /// <para>
+    /// The runtime applies the <c>data-bit-bh-style</c> of every element on the page, as it cannot tell the components'
+    /// from others. Markup that is not yours (user content rendered as a <c>MarkupString</c>) must not carry it: have the
+    /// sanitizer that cleans such markup remove <c>data-bit-bh-style</c>, as it removes <c>style</c>.
+    /// </para>
     /// </summary>
     public bool StrictCsp { get; set; }
 }

@@ -166,5 +166,8 @@ public class BitBhMenuSub : ComponentBase, IDisposable
         _openTimer?.Dispose();
         _closeTimer?.Dispose();
         if (ParentLevel?.OpenSub == this) ParentLevel.OpenSub = null;
+        // Removed while open (the application's state): its panel goes without a pointerleave - as when it closes, a menu
+        // that opens on hover stops counting it.
+        if (_open && ParentLevel?.Root is { TracksHover: true } root) root.PanelHoverChanged(ContentId, inside: false);
     }
 }

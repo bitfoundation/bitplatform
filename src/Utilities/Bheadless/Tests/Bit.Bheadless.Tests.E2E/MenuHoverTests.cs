@@ -40,22 +40,30 @@ public sealed class MenuHoverTests : DemoTest
         page.EvaluateAsync<bool>("() => document.activeElement === document.body || document.activeElement === null");
 
     /// <summary>
-    /// Starts a clock that stops when <paramref name="target"/>'s <paramref name="attribute"/> becomes
-    /// <paramref name="value"/>; <see cref="ElapsedAsync"/> reads it. Started before the action, it can only measure more
-    /// than the component waited - a lower bound that a slow machine never breaks.
+    /// Starts a clock at the first <paramref name="pointerEvent"/> on <paramref name="source"/> - the pointer entering the
+    /// trigger, leaving the menu - that stops when <paramref name="target"/>'s <paramref name="attribute"/> becomes
+    /// <paramref name="value"/>; <see cref="ElapsedAsync"/> reads it (-1 when the event never came). The component's delay
+    /// starts once it hears of that event, so the clock measures at least the delay - a lower bound a slow machine never
+    /// breaks - and nothing of what went before the event (moving the mouse there) counts towards it.
     /// </summary>
-    private static Task StartClockAsync(ILocator target, string attribute, string value) => target.EvaluateAsync(
-        """
-        (el, [attribute, value]) => {
-          const start = performance.now();
-          window.__bhClock = new Promise(resolve => {
-            const observer = new MutationObserver(() => {
-              if (el.getAttribute(attribute) === value) { observer.disconnect(); resolve(performance.now() - start); }
-            });
-            observer.observe(el, { attributes: true, attributeFilter: [attribute] });
-          });
-        }
-        """, new object[] { attribute, value });
+    private static async Task StartClockAsync(ILocator target, string attribute, string value, ILocator source, string pointerEvent)
+    {
+        var from = await source.ElementHandleAsync();
+        await target.EvaluateAsync(
+            """
+            (el, [attribute, value, from, pointerEvent]) => {
+              let start = null;
+              // Not a capturing listener: pointerenter / pointerleave on the element itself, not on one inside it.
+              from.addEventListener(pointerEvent, () => { start ??= performance.now(); });
+              window.__bhClock = new Promise(resolve => {
+                const observer = new MutationObserver(() => {
+                  if (el.getAttribute(attribute) === value) { observer.disconnect(); resolve(start === null ? -1 : performance.now() - start); }
+                });
+                observer.observe(el, { attributes: true, attributeFilter: [attribute] });
+              });
+            }
+            """, new object[] { attribute, value, from, pointerEvent });
+    }
 
     private static Task<double> ElapsedAsync(IPage page) => page.EvaluateAsync<double>("() => window.__bhClock");
 
@@ -87,7 +95,7 @@ public sealed class MenuHoverTests : DemoTest
         await page.EvaluateAsync("() => document.activeElement?.blur()");
         var trigger = Trigger(sample, "Products");
 
-        await StartClockAsync(trigger, "aria-expanded", "true");
+        await StartClockAsync(trigger, "aria-expanded", "true", trigger, "pointerenter");
         await trigger.HoverAsync();
         var opened = await ElapsedAsync(page);
         Assert.IsGreaterThanOrEqualTo(MenubarOpenDelay - 20, opened, $"The menu opened {opened:0} ms after the hover, before its delay.");
@@ -143,7 +151,7 @@ public sealed class MenuHoverTests : DemoTest
         Assert.IsTrue(await NothingFocusedAsync(page), $"Hovering an item moved the focus to {await FocusedAsync(page)}.");
 
         // Out of the menu, well clear of the bar: it closes after its delay and gives no focus to the trigger.
-        await StartClockAsync(trigger, "aria-expanded", "false");
+        await StartClockAsync(trigger, "aria-expanded", "false", menu, "pointerleave");
         await MoveAwayAsync(page, menu);
         var closed = await ElapsedAsync(page);
         Assert.IsGreaterThanOrEqualTo(MenubarCloseDelay - 20, closed, $"The menu closed {closed:0} ms after the pointer left it, before its delay.");

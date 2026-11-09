@@ -122,11 +122,26 @@ public sealed class PointerAndScrollTests : DemoTest
               return o ? o.getAttribute('aria-posinset') + ' ' + (o.getBoundingClientRect().top - t) : null;
             }
             """;
+        // The offset once the list is at rest: the window it renders (the range on its first spacer, which the runtime
+        // asked for) and the option's place - which moves as the runtime measures what rendered - unchanged for a few
+        // frames in a row, rather than after a fixed wait.
         const string offsetOf =
             """
-            (l, pos) => {
-              const o = l.querySelector(`[role=option][aria-posinset="${pos}"]`);
-              return o ? o.getBoundingClientRect().top - (l.getBoundingClientRect().top + l.clientTop) : null;
+            async (l, pos) => {
+              const read = () => {
+                const o = l.querySelector(`[role=option][aria-posinset="${pos}"]`);
+                const range = l.querySelector('[data-bit-bh-spacer=before]')?.getAttribute('data-bit-bh-range');
+                return { offset: o ? o.getBoundingClientRect().top - (l.getBoundingClientRect().top + l.clientTop) : null, range };
+              };
+              const frame = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+              let last = read(), still = 0;
+              for (const deadline = performance.now() + 5000; still < 10 && performance.now() < deadline;) {
+                await frame();
+                const now = read();
+                if (now.offset === last.offset && now.range === last.range) still++;
+                else { still = 0; last = now; }
+              }
+              return last.offset;
             }
             """;
 
@@ -141,7 +156,6 @@ public sealed class PointerAndScrollTests : DemoTest
             var parts = (await panel.EvaluateAsync<string?>(top))!.Split(' ');
             var (pos, offset) = (parts[0], double.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture));
             await panel.EvaluateAsync("l => l.scrollTop -= 40");
-            await page.WaitForTimeoutAsync(150);
             var moved = await panel.EvaluateAsync<double?>(offsetOf, pos);
             Assert.IsNotNull(moved, $"Option {pos} is no longer rendered.");
             Assert.AreEqual(offset + 40, moved.Value, 1.0, $"Option {pos} jumped (step {step}, landed on {landed}).");

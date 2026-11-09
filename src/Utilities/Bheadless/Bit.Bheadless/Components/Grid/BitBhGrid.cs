@@ -221,6 +221,8 @@ public class BitBhGrid : BitBhComponentBase
     {
         var row = cell.Row;
         if (row is null) return;
+        // Read before the first await: focus events that arrive after it are the keys' that came next (or a click).
+        var focusEvents = Context.FocusEvents;
         await Context.Rows.EnsureOrderAsync(Interop);
         await row.CellCollection.EnsureOrderAsync(Interop);
 
@@ -235,36 +237,36 @@ public class BitBhGrid : BitBhComponentBase
         if (e.Key == right)
         {
             if (TreeGrid && colIndex == 0 && row.HasChildren && !IsExpanded(row.Key)) await SetExpandedAsync(row, true);
-            else await FocusCellAsync(row, colIndex + 1, cell);
+            else await FocusCellAsync(row, colIndex + 1, cell, focusEvents);
         }
         else if (e.Key == left)
         {
             if (TreeGrid && colIndex == 0 && row.HasChildren && IsExpanded(row.Key)) await SetExpandedAsync(row, false);
-            else if (TreeGrid && colIndex == 0 && row.ParentKey is { } parentKey) await FocusCellAsync(rows.FirstOrDefault(r => r.Key == parentKey), 0, cell);
-            else await FocusCellAsync(row, colIndex - 1, cell);
+            else if (TreeGrid && colIndex == 0 && row.ParentKey is { } parentKey) await FocusCellAsync(rows.FirstOrDefault(r => r.Key == parentKey), 0, cell, focusEvents);
+            else await FocusCellAsync(row, colIndex - 1, cell, focusEvents);
         }
         else switch (e.Key)
         {
             case "ArrowDown":
-                await FocusCellAsync(rows.ElementAtOrDefault(rowIndex + 1), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(rowIndex + 1), colIndex, cell, focusEvents);
                 if (e.ShiftKey && rows.ElementAtOrDefault(rowIndex + 1) is { } down) await SelectRowAsync(down, false, true);
                 break;
             case "ArrowUp":
-                await FocusCellAsync(rows.ElementAtOrDefault(rowIndex - 1), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(rowIndex - 1), colIndex, cell, focusEvents);
                 if (e.ShiftKey && rows.ElementAtOrDefault(rowIndex - 1) is { } up) await SelectRowAsync(up, false, true);
                 break;
             case "PageDown":
-                await FocusCellAsync(rows.ElementAtOrDefault(Math.Min(rows.Count - 1, rowIndex + Page)), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(Math.Min(rows.Count - 1, rowIndex + Page)), colIndex, cell, focusEvents);
                 break;
             case "PageUp":
-                await FocusCellAsync(rows.ElementAtOrDefault(Math.Max(0, rowIndex - Page)), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(Math.Max(0, rowIndex - Page)), colIndex, cell, focusEvents);
                 break;
             case "Home":
-                await FocusCellAsync(ctrl ? rows.FirstOrDefault() : row, 0, cell);
+                await FocusCellAsync(ctrl ? rows.FirstOrDefault() : row, 0, cell, focusEvents);
                 break;
             case "End":
                 var target = ctrl ? rows.LastOrDefault() : row;
-                await FocusCellAsync(target, (target?.Cells.Count ?? 1) - 1, cell);
+                await FocusCellAsync(target, (target?.Cells.Count ?? 1) - 1, cell, focusEvents);
                 break;
             case " ":
                 // A held key repeats: the selection would flip back and forth.
@@ -282,15 +284,20 @@ public class BitBhGrid : BitBhComponentBase
 
     // The runtime moves the focus for the arrow keys itself, as they are pressed (grid in bit-bheadless.ts): over a Blazor
     // Server connection this move lands a round trip later, by when the next keys may have moved the focus on - so it is
-    // made only while the focus is still on the cell the key was pressed on.
-    internal async Task FocusCellAsync(BitBhGridRow? row, int col, BitBhGridCell from)
+    // made only while the focus is still on the cell the key was pressed on. When it is not made because the focus went
+    // to another cell after the key (focusEvents: the count when it was pressed), that cell keeps the tab stop: the
+    // tab stop follows the browser's focus, not the key that arrived late.
+    internal async Task FocusCellAsync(BitBhGridRow? row, int col, BitBhGridCell from, int focusEvents)
     {
         if (row is null) return;
         await row.CellCollection.EnsureOrderAsync(Interop);
         if (row.Cells.Count == 0) return;
         var cell = row.Cells[Math.Clamp(col, 0, row.Cells.Count - 1)];
         Context.SetFocus(cell);
-        await Interop.FocusFromAsync(cell.ItemId, from.ItemId);
+        if (await Interop.FocusFromAsync(cell.ItemId, from.ItemId)) return;
+        if (Context.FocusEvents != focusEvents && Context.DomFocusedCell is { Row: { IsRegistered: true } focusedRow } focused
+            && !ReferenceEquals(focused, cell) && focusedRow.IndexOfCell(focused) >= 0)
+            Context.SetFocus(focused);
     }
 
     internal async Task HandleRowClickAsync(BitBhGridRow row, MouseEventArgs e)

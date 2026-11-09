@@ -348,6 +348,25 @@
     }
 
     [TestMethod]
+    public async Task A_snap_point_that_is_not_one_of_them_moves_the_drawer_to_the_first_and_reports_that()
+    {
+        var changes = new List<BitBhDrawerSnapPoint?>();
+        var cut = Render(
+            @<BitBhDrawer DefaultOpen="true" SnapPoints="Points" DefaultActiveSnapPoint="1" OnActiveSnapPointChange="p => changes.Add(p)">
+                <BitBhDrawerPanel aria-label="Filters"><BitBhDrawerHandle /></BitBhDrawerPanel>
+            </BitBhDrawer>);
+        var drawer = cut.FindComponent<BitBhDrawer>().Instance;
+
+        await cut.InvokeAsync(() => drawer.SetActiveSnapPointAsync(0.75));
+        CollectionAssert.AreEqual(new BitBhDrawerSnapPoint?[] { (BitBhDrawerSnapPoint)"160px" }, changes);
+        Assert.AreEqual("160px", cut.Find("[role=dialog]").GetAttribute("data-snap-point"));
+
+        // Null stands for the first too: the drawer is there already.
+        await cut.InvokeAsync(() => drawer.SetActiveSnapPointAsync(null));
+        Assert.HasCount(1, changes);
+    }
+
+    [TestMethod]
     public void The_handle_steps_through_the_snap_points_with_the_keyboard()
     {
         var changes = new List<BitBhDrawerSnapPoint?>();

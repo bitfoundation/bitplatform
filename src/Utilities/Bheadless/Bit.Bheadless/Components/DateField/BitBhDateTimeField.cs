@@ -64,7 +64,19 @@ public class BitBhDateTimeField : BitBhDateFieldBase<DateTime>
         => State.ComposeDate() is { } date && State.ComposeTime() is { } time ? date.ToDateTime(time) : null;
 
     private protected override string ToIso(DateTime value)
-        => value.ToString(Granularity == BitBhTimeGranularity.Second ? "yyyy-MM-ddTHH:mm:ss" : "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+        => Normalize(value).ToString(Granularity == BitBhTimeGranularity.Second ? "yyyy-MM-ddTHH:mm:ss" : "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+
+    // The units below the granularity are 0, as the segments compose them: a value from outside, the placeholder's time.
+    private protected override DateTime Normalize(DateTime value)
+    {
+        var ticks = Granularity switch
+        {
+            BitBhTimeGranularity.Hour => TimeSpan.TicksPerHour,
+            BitBhTimeGranularity.Minute => TimeSpan.TicksPerMinute,
+            _ => TimeSpan.TicksPerSecond,
+        };
+        return new DateTime(value.Ticks - (value.Ticks % ticks), value.Kind);
+    }
 
     /// <summary>The placeholder: <see cref="BitBhDateFieldBase{TValue}.PlaceholderValue"/>, else today at midnight.</summary>
     private DateTime Placeholder => PlaceholderValue ?? DateTime.Today;

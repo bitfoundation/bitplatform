@@ -194,8 +194,11 @@ public abstract class BitBhComponentBase : ComponentBase
     /// </summary>
     protected Dictionary<string, object> MergeAttributes(Dictionary<string, object> internalAttributes)
     {
-        if (Options.StrictCsp && internalAttributes.Remove("style", out var style))
+        if (Options.StrictCsp && internalAttributes.ContainsKey("style"))
         {
+            // A copy: the caller's dictionary (one a derived component keeps and reuses) keeps its style.
+            internalAttributes = new Dictionary<string, object>(internalAttributes, internalAttributes.Comparer);
+            internalAttributes.Remove("style", out var style);
             if (style?.ToString() is { Length: > 0 } declarations)
             {
                 internalAttributes[BitBhAttributeUtilities.StrictStyleAttribute] =

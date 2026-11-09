@@ -63,6 +63,11 @@ public class BitBhDrawerPanel : BitBhComponentBase
 
     protected override void OnParametersSet() => DrawerContext?.RegisterPanel(InitialFocus, DismissOnEscape);
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) DrawerContext?.PanelMounted();
+    }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         if (DrawerContext is { IsPresent: false }) return;

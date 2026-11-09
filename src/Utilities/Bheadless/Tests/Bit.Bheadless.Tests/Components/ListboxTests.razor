@@ -409,7 +409,7 @@
     }
 
     [TestMethod]
-    public async Task The_runtime_moves_the_window_and_the_keys_reach_every_option_of_different_heights()
+    public async Task A_range_set_as_the_runtime_would_renders_its_window_and_End_asks_the_runtime_to_reveal_the_last_option()
     {
         var cut = Render(VariableListbox());
         cut.Find("[role=combobox]").Press("ArrowDown");

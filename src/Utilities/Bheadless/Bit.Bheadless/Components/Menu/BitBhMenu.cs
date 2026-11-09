@@ -37,6 +37,7 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     private bool _openedByHover;
     private BitBhDelayedAction? _hoverTimer;
     private readonly HashSet<string> _hoveredParts = new(StringComparer.Ordinal);
+    private bool _disposed;
 
     [CascadingParameter]
     private BitBhDirection CascadedDir { get; set; }
@@ -72,9 +73,9 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     /// Opens the menu when the pointer rests on its button (after <see cref="HoverOpenDelay"/>) and closes it when the
     /// pointer has left the button and every panel of the menu (after <see cref="HoverCloseDelay"/>) - Base UI's
     /// <c>openOnHover</c>, for menubar-style navigation. A hover-opened menu leaves the focus where it is: the pointer
-    /// highlights its items without focusing it, and closing it gives no focus back. The first key press - on the button,
-    /// or with nothing focused - moves the focus into it, and a click on the button keeps it open (it no longer closes
-    /// when the pointer leaves). Only a mouse hovers: a touch or pen press is a click. The keyboard opens it as always.
+    /// highlights its items without focusing it, and closing it gives no focus back. Enter, Space, ↓ or ↑ on the button -
+    /// or, with nothing focused, one of the menu's own keys - moves the focus into it, and a click on the button keeps it
+    /// open (it no longer closes when the pointer leaves). Only a mouse hovers: a touch or pen press is a click. The keyboard opens it as always.
     /// </summary>
     [Parameter]
     public bool OpenOnHover { get; set; }
@@ -138,12 +139,14 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
 
     protected override void OnParametersSet()
     {
-        // Closed from outside (a controlled Open): the next open is not a hover's unless a hover makes it.
-        if (!IsOpen) _openedByHover = false;
+        // Closed from outside (a controlled Open): the next open is not a hover's unless a hover makes it, and the panels
+        // that went away with it (no pointerleave) are no longer counted as hovered.
+        if (!IsOpen) ResetHover();
     }
 
     public void Dispose()
     {
+        _disposed = true;
         _hoverTimer?.Dispose();
         MenubarContext?.Unregister(this);
     }
@@ -240,17 +243,18 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     /// </summary>
     internal void HoverEnter(string part, bool canOpen)
     {
-        if (!TracksHover) return;
+        if (_disposed || !TracksHover) return;
         _hoveredParts.Add(part);
         HoverTimer.Cancel();
         if (IsOpen || !canOpen || Disabled) return;
-        HoverTimer.Schedule(Math.Max(0, HoverOpenDelay), () => IsOpen || Disabled ? Task.CompletedTask : OpenByHoverAsync());
+        // OpenOnHover is read again when the delay is over: it may have been turned off meanwhile.
+        HoverTimer.Schedule(Math.Max(0, HoverOpenDelay), () => IsOpen || Disabled || !OpenOnHover ? Task.CompletedTask : OpenByHoverAsync());
     }
 
     /// <summary>The pointer left a part of the menu: once it is over none, a hover-opened menu closes after <see cref="HoverCloseDelay"/>.</summary>
     internal void HoverLeave(string part)
     {
-        if (!TracksHover) return;
+        if (_disposed || !TracksHover) return;
         _hoveredParts.Remove(part);
         if (_hoveredParts.Count > 0) return;
         HoverTimer.Cancel();
@@ -272,6 +276,20 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
         _openedByHover = false;
         _hoverTimer?.Cancel();
         StateHasChanged();
+        // The runtime still holds the open panels' layers as hover-driven ones, which Escape dismisses ahead of their keys.
+        if (Items is { } items) _ = ReleaseHoverLayersAsync(items);
+    }
+
+    private async Task ReleaseHoverLayersAsync(BitBhMenuItems items)
+    {
+        try
+        {
+            await items.ReleaseHoverAsync();
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
     }
 
     private void ResetHover()

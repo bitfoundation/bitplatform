@@ -450,16 +450,7 @@ function createRuntime() {
 
         // <BitBhVisuallyHidden Focusable>: reveal while keyboard focus is inside (skip links). In strict CSP mode the
         // clipping is the style bridge's to take off and put back: a policy refuses setAttribute('style', …).
-        document.addEventListener('focusin', (e) => {
-            const el = isElement(e.target) ? e.target.closest('[data-bit-bh-visually-hidden="focusable"]') : null;
-            if (!el) return;
-            if (el.hasAttribute(STRICT_STYLE)) {
-                styleBridge()?.reveal(el, true);
-            } else if (el.hasAttribute('style')) {
-                el.setAttribute('data-bit-bh-clip', el.getAttribute('style'));
-                el.removeAttribute('style');
-            }
-        }, true);
+        document.addEventListener('focusin', (e) => revealVisuallyHidden(e.target), true);
         document.addEventListener('focusout', (e) => {
             const el = isElement(e.target) ? e.target.closest('[data-bit-bh-visually-hidden="focusable"]') : null;
             if (!el || (e.relatedTarget && el.contains(e.relatedTarget as Node))) return;
@@ -485,6 +476,18 @@ function createRuntime() {
             const trigger = panel && document.getElementById(panel.getAttribute('data-bit-bh-trigger'));
             if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click();
         }, true);
+    }
+
+    /** Reveals the focusable <BitBhVisuallyHidden> the focus went into (see install). */
+    function revealVisuallyHidden(target: EventTarget | null) {
+        const el = isElement(target) ? target.closest('[data-bit-bh-visually-hidden="focusable"]') : null;
+        if (!el) return;
+        if (el.hasAttribute(STRICT_STYLE)) {
+            styleBridge()?.reveal(el, true);
+        } else if (el.hasAttribute('style')) {
+            el.setAttribute('data-bit-bh-clip', el.getAttribute('style'));
+            el.removeAttribute('style');
+        }
     }
 
     /**
@@ -525,7 +528,12 @@ function createRuntime() {
             // A computed specifier: the bridge is a classic script, not a module TypeScript could resolve.
             const url = new URL('./bit-bheadless-csp.js', import.meta.url).href;
             styleBridgeLoad ??= import(url).then(
-                () => !!styleBridge(),
+                () => {
+                    // A skip link focused before the bridge was there: its focusin found nothing to take the clipping
+                    // off, and the bridge has just put it on.
+                    if (styleBridge()) revealVisuallyHidden(document.activeElement);
+                    return !!styleBridge();
+                },
                 (error) => {
                     styleBridgeLoad = null;
                     console.error('[Bit.Bheadless] failed to load the strict CSP style bridge.', error);
@@ -1061,6 +1069,10 @@ function createRuntime() {
         setIds(handle: number, ids: string[]) {
             const layer = layerStack.find((l) => l.id === handle);
             if (layer) layer.ids = (ids || []).filter(Boolean);
+        },
+        setHover(handle: number, hover: boolean) {
+            const layer = layerStack.find((l) => l.id === handle);
+            if (layer) layer.options = { ...layer.options, hover };
         },
         isTop(handle: number) {
             return layerStack.length > 0 && layerStack[layerStack.length - 1].id === handle;
@@ -1730,12 +1742,14 @@ function createRuntime() {
             return id;
         },
 
-        update(handle: number, opts?: { anchor?: AnchorOptions; layerIds?: string[] }) {
+        update(handle: number, opts?: { anchor?: AnchorOptions; layerIds?: string[]; hover?: boolean }) {
             const state = floatingHandles.get(handle);
             if (!state) return;
             if (opts?.anchor && state.anchor) anchor.update(state.anchor, opts.anchor);
             else if (state.anchor) anchor.update(state.anchor);
             if (opts?.layerIds && state.layer) layers.setIds(state.layer, [state.contentId, ...opts.layerIds]);
+            // A hover-opened menu the keyboard or a click took over: no longer a hover layer Escape dismisses first.
+            if (typeof opts?.hover === 'boolean' && state.layer) layers.setHover(state.layer, opts.hover);
         },
 
         setPoint(handle: number, x: number, y: number) {
@@ -2171,7 +2185,13 @@ function createRuntime() {
             const container = byId(containerId);
             if (!container) return;
             // Items that differ in height: the list reveals it - or will, once it has attached.
-            for (const vl of virtualLists.values()) if (vl.list === container) { vlReveal(vl, index); return; }
+            for (const vl of virtualLists.values()) if (vl.list === container) {
+                // A render the observer has not reported yet (a new filter's list, in the same task on WebAssembly) is
+                // synced first: synced after, it would drop this reveal as one meant for the list it replaced.
+                if (vl.mutations.takeRecords().length) vlSync(vl);
+                vlReveal(vl, index);
+                return;
+            }
             if (container.querySelector(':scope > [data-bit-bh-spacer]')) { pendingReveals.set(container, index); return; }
             const el = itemId ? document.getElementById(itemId) : null;
             if (el) { dom.scrollIntoView(itemId); return; }
@@ -2472,9 +2492,11 @@ function createRuntime() {
         const rects = items.map((el) => el.getBoundingClientRect());
         const drag = {
             item, from, to: from, items, rects, vertical, startX: e.clientX, startY: e.clientY, pointerId: e.pointerId, started: false,
-            targets: [] as SortableTarget[], over: null as SortableTarget | null,
+            targets: [] as SortableTarget[], over: null as SortableTarget | null, outside: false,
         };
         state.drag = drag;
+        // Where the list is: a grouped drag let go outside it, over no list that takes the item, is no reorder.
+        const ownRect = grouped ? byId(state.containerId)?.getBoundingClientRect() ?? null : null;
         // The inline values the drag writes on the item are the consumer's again once it ends.
         const savedPosition = item.style.position;
         const savedZIndex = item.style.zIndex;
@@ -2523,6 +2545,7 @@ function createRuntime() {
                 over?.el.setAttribute('data-drag-over', '');
             }
             if (over) {
+                drag.outside = false;
                 // Out of its list: the items after it close the gap ...
                 items.forEach((el, i) => {
                     if (el !== item) el.style.transform = i > from ? (vertical ? `translateY(${-(size + gapSize)}px)` : `translateX(${-(size + gapSize)}px)`) : '';
@@ -2539,6 +2562,15 @@ function createRuntime() {
                 over.items.forEach((el, i) => {
                     el.style.transform = i >= to ? (over.vertical ? `translateY(${room}px)` : `translateX(${room}px)`) : '';
                 });
+                return;
+            }
+
+            // Over no list that takes it - another list of the group that refuses it, or none: dropped there, it goes
+            // back where it was, not to the place in its own list its position along the list's axis would make.
+            drag.outside = !!ownRect && !(ev.clientX >= ownRect.left && ev.clientX <= ownRect.right && ev.clientY >= ownRect.top && ev.clientY <= ownRect.bottom);
+            if (drag.outside) {
+                drag.to = from;
+                for (const el of items) if (el !== item) el.style.transform = '';
                 return;
             }
 
@@ -2582,8 +2614,9 @@ function createRuntime() {
             const swallow = (ce: Event) => { ce.stopPropagation(); ce.preventDefault(); };
             document.addEventListener('click', swallow, { capture: true, once: true });
             setTimeout(() => document.removeEventListener('click', swallow, true), 0);
-            const target = !cancelled && drag.over ? drag.over.el.id : null;
-            state.dotnet?.invokeMethodAsync('OnPointerDragEnd', drag.from, cancelled ? drag.from : drag.to, !!cancelled, target).catch(() => { });
+            const dropped = !cancelled && (drag.over !== null || !drag.outside);
+            const target = dropped && drag.over ? drag.over.el.id : null;
+            state.dotnet?.invokeMethodAsync('OnPointerDragEnd', drag.from, dropped ? drag.to : drag.from, !dropped, target).catch(() => { });
         };
         const up = (ev: PointerEvent) => end(ev, false);
         const cancel = (ev: PointerEvent) => end(ev, true);

@@ -14,7 +14,7 @@
     // The literals come from the culture's patterns, and the ICU data each OS ships tells en-US's space before AM / PM:
     // a plain one on Windows, a narrow no-break one (U+202F, CLDR 42+) on Linux.
     private static string Shown(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
-        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent)).Replace(' ', ' ');
+        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent)).Replace(' ', ' ');
 
     private static string[] Names(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
         => cut.FindAll("[role=spinbutton]").Select(s => s.AccessibleName()).ToArray();
@@ -138,6 +138,21 @@
                                             DefaultValue="new DateTime(2026, 11, 8, 14, 45, 0)" aria-label="Um" />);
         CollectionAssert.AreEqual(new[] { "day", "month", "year", "hour", "AM/PM" }, Names(hours));
         Assert.AreEqual("08.11.2026 02 PM", Shown(hours));
+    }
+
+    [TestMethod]
+    public void Units_below_the_granularity_are_dropped_from_a_given_value_and_the_placeholders_time()
+    {
+        var cut = Render(@<BitBhDateTimeField Culture="De" Granularity="BitBhTimeGranularity.Hour" DefaultValue="new DateTime(2026, 11, 8, 14, 45, 30)"
+                                          aria-label="Um" Name="um" />);
+        Assert.AreEqual("2026-11-08T14:00", cut.Find("input[type=hidden]").GetAttribute("value"));
+
+        DateTime? value = null;
+        var picker = Render(@<BitBhDateTimePicker Culture="De" Granularity="BitBhTimeGranularity.Hour" PlaceholderValue="new DateTime(2026, 11, 8, 9, 15, 0)"
+                                              ValueChanged="v => value = v" aria-label="Termin">@PickerParts()</BitBhDateTimePicker>);
+        picker.Find(".trigger").Click();
+        picker.Find("td[tabindex='0']").Click();
+        Assert.AreEqual(new TimeOnly(9, 0), TimeOnly.FromDateTime(value!.Value));
     }
 
     [TestMethod]

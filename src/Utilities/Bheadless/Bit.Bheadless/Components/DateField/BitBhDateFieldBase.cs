@@ -162,6 +162,12 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     private protected abstract string ToIso(TValue value);
 
+    /// <summary>
+    /// <paramref name="value"/> without the units the segments don't edit (a time field's seconds at minute granularity):
+    /// what the field stores and posts, so a unit no segment shows never comes along unseen.
+    /// </summary>
+    private protected virtual TValue Normalize(TValue value) => value;
+
     /// <summary>The value of a segment in <see cref="PlaceholderValue"/> (or its default).</summary>
     private protected abstract int PlaceholderPart(BitBhDateSegmentType type);
 
@@ -193,7 +199,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     protected override void OnInitialized()
     {
-        _value = DefaultValue;
+        _value = DefaultValue is { } initial ? Normalize(initial) : null;
         if (IsFieldControl) FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
@@ -554,6 +560,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     /// <summary>Sets the value from code other than the segments (a picker's calendar), firing the change callbacks.</summary>
     private protected async Task SetValueAsync(TValue? value)
     {
+        if (value is { } given) value = Normalize(given);
         if (value is { } v) Load(v);
         else State.Clear();
         if (Nullable.Equals(value, CurrentValue))

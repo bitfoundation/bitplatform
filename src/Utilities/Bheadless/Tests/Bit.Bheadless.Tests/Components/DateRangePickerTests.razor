@@ -53,6 +53,20 @@
         => cut.Find($"td[data-date='{date}']:not([data-outside-month])");
 
     [TestMethod]
+    public async Task Clearing_empties_a_date_typed_only_partway()
+    {
+        // The range is null before and after: only the picker telling the inputs empties their segments.
+        var cut = Render(@<BitBhDateRangePicker Culture="En" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Type(cut, "start", "month", "11");
+        Assert.StartsWith("11/", Shown(cut, "start"));
+
+        await cut.InvokeAsync(() => cut.FindComponent<BitBhDateRangePicker>().Instance.ClearAsync());
+        Assert.AreEqual("mm/dd/yyyy", Shown(cut, "start"));
+        Assert.IsTrue(Input(cut, "start").HasAttribute("data-empty"));
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-empty"));
+    }
+
+    [TestMethod]
     public void Closed_picker_is_a_labelled_group_with_a_start_an_end_and_a_button()
     {
         var cut = Labelled(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12">@Parts()</BitBhDateRangePicker>);

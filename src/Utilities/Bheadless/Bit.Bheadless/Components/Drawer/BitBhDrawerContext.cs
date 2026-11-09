@@ -105,6 +105,8 @@ public sealed class BitBhDrawerContext : IBitBhCloseContext
     internal void Register(BitBhDrawerPart part, bool present) => Owner.Register(part, present);
 
     internal void RegisterPanel(Func<ElementReference>? initialFocus, bool dismissOnEscape) => Owner.RegisterPanel(initialFocus, dismissOnEscape);
+
+    internal void PanelMounted() => Owner.PanelMounted();
 }
 
 /// <summary>Render-fragment context exposed by drawer parts for state-driven rendering.</summary>

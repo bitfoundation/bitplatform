@@ -140,7 +140,9 @@
         Under a policy whose <code>style-src</code> has no <code>'unsafe-inline'</code>, turn on strict CSP mode: the
         components then render no <code>style</code> attribute and the runtime applies their styles through the CSSOM,
         which such a policy allows. The script in <code>&lt;head&gt;</code> applies them before the prerendered page is
-        first painted.
+        first painted. With WebAssembly or Auto rendering, turn it on in both <code>Program.cs</code> files, the
+        server's and the client's, like the registration itself: the pages are prerendered on the server and then run
+        in the browser.
     </p>
     <CodeBlock Code="@StrictCspCode" />
 </div>

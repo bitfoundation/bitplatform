@@ -74,7 +74,7 @@ public class BitBhDateRangePickerInput : BitBhComponentBase
         builder.AddComponentParameter(6, nameof(BitBhDateRangeField.Max), picker.Max);
         builder.AddComponentParameter(7, nameof(BitBhDateRangeField.PlaceholderValue), picker.PlaceholderValue);
         builder.AddComponentParameter(8, nameof(BitBhDateRangeField.Culture), picker.Culture);
-        builder.AddComponentParameter(9, nameof(BitBhDateRangeField.Disabled), picker.Disabled);
+        builder.AddComponentParameter(9, nameof(BitBhDateRangeField.Disabled), picker.IsDisabled);
         builder.AddComponentParameter(10, nameof(BitBhDateRangeField.ReadOnly), picker.ReadOnly);
         // The range is valid or not as a whole: both inputs say so.
         builder.AddComponentParameter(11, nameof(BitBhDateRangeField.Invalid), picker.IsInvalid);
@@ -98,6 +98,9 @@ internal sealed class BitBhDateRangeField : BitBhDateField
 {
     private bool _wasFocused;
     private bool _wasEmpty;
+    // Where the field is registered: Picker and Part can change.
+    private BitBhDateRangePicker? _registeredPicker;
+    private BitBhDateRangePart _registeredPart;
 
     [Parameter]
     public BitBhDateRangePicker Picker { get; set; } = default!;
@@ -118,10 +121,22 @@ internal sealed class BitBhDateRangeField : BitBhDateField
 
     private protected override bool IsValueUnavailable(DateOnly value) => Picker.IsDateUnavailable?.Invoke(value) ?? false;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        base.OnInitialized();
-        Picker.RegisterField(Part, this, true);
+        if (_registeredPicker != Picker || _registeredPart != Part)
+        {
+            _registeredPicker?.RegisterField(_registeredPart, this, false);
+            (_registeredPicker, _registeredPart) = (Picker, Part);
+            Picker.RegisterField(Part, this, true);
+        }
+        base.OnParametersSet();
+    }
+
+    /// <summary>Empties the segments - a date typed partway included - and leaves the value to the picker.</summary>
+    internal void ClearSegments()
+    {
+        State.Clear();
+        StateHasChanged();
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -141,7 +156,8 @@ internal sealed class BitBhDateRangeField : BitBhDateField
 
     public override void Dispose()
     {
-        Picker.RegisterField(Part, this, false);
+        _registeredPicker?.RegisterField(_registeredPart, this, false);
+        _registeredPicker = null;
         base.Dispose();
     }
 }

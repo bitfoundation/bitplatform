@@ -73,6 +73,7 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     private bool? _valueInvalid;
     private BitBhDateRangeField? _startField;
     private BitBhDateRangeField? _endField;
+    private bool _disposed;
 
     [CascadingParameter]
     private BitBhFieldContext? FieldContext { get; set; }
@@ -289,6 +290,9 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     public async Task ClearAsync()
     {
         _start = _end = null;
+        // A date typed partway is no value yet: the inputs, whose (null) value does not change, are emptied here.
+        _startField?.ClearSegments();
+        _endField?.ClearSegments();
         await CommitAsync();
     }
 
@@ -339,12 +343,16 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
         {
             if (present) _startField = field;
             else if (_startField == field) _startField = null;
+            else return;
         }
         else
         {
             if (present) _endField = field;
             else if (_endField == field) _endField = null;
+            else return;
         }
+        // An input that goes away takes its focus and its segments with it: the root and the group show what is left.
+        if (!present && !_disposed) StateHasChanged();
     }
 
     /// <summary>An input's focus or emptiness changed: the root and the group show it.</summary>
@@ -419,6 +427,7 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
 
     public virtual void Dispose()
     {
+        _disposed = true;
         _binding?.Dispose();
         FieldContext?.ReleaseControlFocus(this);
     }

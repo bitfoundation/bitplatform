@@ -76,6 +76,8 @@ public class BitBhColorSlider : BitBhComponentBase
         // ahead of the consumer's style so theirs wins.
         var styleAttribute = StyleAttribute;
         attributes[styleAttribute] = attributes.TryGetValue(styleAttribute, out var own) ? BitBhAttributeUtilities.JoinStyles(style, own?.ToString()) : style;
+        // The slider takes it as the consumer's attribute, not a style of its own: it would not ask for the bridge.
+        if (Options.StrictCsp) RequestStrictStyles();
         attributes["data-channel"] = Channel.ToString().ToLowerInvariant();
 
         builder.OpenComponent<BitBhSlider>(0);
