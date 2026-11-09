@@ -23,6 +23,10 @@ on:
         description: Boilerplate tests with SQL Server
         type: boolean
         default: true
+      boilerplate_workbench:
+        description: Boilerplate Workbench tests
+        type: boolean
+        default: true
       boilerplate_configurations:
         description: Boilerplate configurations
         type: boolean
@@ -155,20 +159,6 @@ jobs:
       with:
         name: postgres-tests-invariantglobalization
         path: ./TestPostgreSQL/src/Tests/TestResults
-        retention-days: 14
-
-    - name: Run Workbench tests
-      id: test-postgresql-workbench
-      if: ${{ !cancelled() }}
-      working-directory: TestPostgreSQL/src/WorkbenchTests
-      run: dotnet test
-
-    - name: Upload Workbench test results on failure
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: ${{ !cancelled() && steps.test-postgresql-workbench.outcome == 'failure' }}
-      with:
-        name: postgres-tests-workbench
-        path: ./TestPostgreSQL/src/WorkbenchTests/TestResults
         retention-days: 14
 
     - name: Run landing page tests (InvariantGlobalization)
@@ -342,20 +332,6 @@ jobs:
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
-    - name: Run Workbench tests
-      id: test-mssql-workbench
-      if: ${{ !cancelled() }}
-      working-directory: TestSqlServer/src/WorkbenchTests
-      run: dotnet test
-
-    - name: Upload Workbench test results on failure
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: ${{ !cancelled() && steps.test-mssql-workbench.outcome == 'failure' }}
-      with:
-        name: sqlserver-tests-workbench
-        path: ./TestSqlServer/src/WorkbenchTests/TestResults
-        retention-days: 14
-
     - name: Run landing page tests
       if: ${{ !cancelled() }}
       working-directory: TestSqlServer/src/LandingPage/TestSqlServer.LandingPage.Tests
@@ -364,6 +340,51 @@ jobs:
     # This job deliberately has no InvariantGlobalization run: Microsoft.Data.SqlClient throws
     # "Globalization Invariant Mode is not supported." out of SqlConnection.Open, so the whole assembly aborts in
     # its initializer before a single browser starts. The PostgreSQL job above covers that configuration.
+
+
+  test_boilerplate_workbench:
+    name: create project with bit new and test its workbench
+    if: ${{ inputs.boilerplate_workbench }}
+    runs-on: ubuntu-26.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    # With the options that add to the Workbench (the Admin dashboard, the ads' upgrade section, the tenants, offline
+    # data and the rest) on, as they are in the template's own source the Workbench tests are written in. The Workbench
+    # reads no database, so the default one is enough.
+    - name: Create project with bit new
+      run: bit new TestWorkbench --framework net11.0 --module Admin --multitenant --signalR --notification --ads --offlineDb --appInsights --advancedTests --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
+
+    - name: Run Workbench tests
+      id: test-workbench
+      working-directory: TestWorkbench/src/WorkbenchTests
+      run: dotnet test
+
+    - name: Upload Workbench test results on failure
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ !cancelled() && steps.test-workbench.outcome == 'failure' }}
+      with:
+        name: tests-workbench
+        path: ./TestWorkbench/src/WorkbenchTests/TestResults
+        retention-days: 14
 
 
   build_boilerplate_configurations:
