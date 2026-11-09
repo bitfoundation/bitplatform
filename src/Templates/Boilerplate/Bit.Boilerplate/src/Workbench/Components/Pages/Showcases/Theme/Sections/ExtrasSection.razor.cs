@@ -244,7 +244,7 @@ public partial class ExtrasSection
     private List<BitNavItem> CreateNavItems() =>
     [
         new() { Key = "home", Text = AppLocalizer[nameof(AppStrings.Home)], IconName = BitIconName.Home },
-        new() { Key = "dashboard", Text = AppLocalizer[nameof(AppStrings.Dashboard)], IconName = BitIconName.BarChartVerticalFill },
+        new() { Key = "dashboard", Text = Localizer[nameof(WorkbenchStrings.ThemeExtrasDashboard)], IconName = BitIconName.BarChartVerticalFill },
         new()
         {
             Key = "catalog",
@@ -253,8 +253,8 @@ public partial class ExtrasSection
             IsExpanded = true,
             ChildItems =
             [
-                new() { Key = "categories", Text = AppLocalizer[nameof(AppStrings.Categories)], IconName = BitIconName.BuildQueue },
-                new() { Key = "products", Text = AppLocalizer[nameof(AppStrings.Products)], IconName = BitIconName.Product }
+                new() { Key = "categories", Text = Localizer[nameof(WorkbenchStrings.ThemeExtrasCategories)], IconName = BitIconName.BuildQueue },
+                new() { Key = "products", Text = Localizer[nameof(WorkbenchStrings.ThemeExtrasProducts)], IconName = BitIconName.Product }
             ]
         },
         new() { Key = "orders", Text = Localizer[nameof(WorkbenchStrings.ThemeExtrasOrders)], IconName = BitIconName.ShoppingCart, Badge = "3" },

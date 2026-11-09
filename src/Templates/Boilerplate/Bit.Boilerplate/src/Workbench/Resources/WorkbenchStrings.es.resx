@@ -3996,6 +3996,15 @@
     <data name="ThemeExtrasOrders" xml:space="preserve">
         <value>Pedidos</value>
     </data>
+    <data name="ThemeExtrasDashboard" xml:space="preserve">
+        <value>Tablero</value>
+    </data>
+    <data name="ThemeExtrasCategories" xml:space="preserve">
+        <value>Categorías</value>
+    </data>
+    <data name="ThemeExtrasProducts" xml:space="preserve">
+        <value>Productos</value>
+    </data>
     <data name="ThemeExtrasThisYear" xml:space="preserve">
         <value>Este año</value>
     </data>
