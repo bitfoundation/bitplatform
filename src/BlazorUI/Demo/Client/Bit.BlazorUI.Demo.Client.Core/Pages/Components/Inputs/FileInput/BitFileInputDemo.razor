@@ -509,6 +509,40 @@
             </EditForm>
             <div>@validationResult</div>
         </div>
+
+        <br /><br />
+
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error look and the
+            <b>aria-invalid</b> of the browse button on a selection something else refused - a server, a rule spanning
+            two fields - and <b>ErrorMessage</b> adds the line that says why, right under the button and ahead of the
+            <b>Description</b>. It is about the selection as a whole: a file the component rejects itself still says
+            why in the list. A message implies <b>Invalid</b>, so the flag on its own is for marking a file input whose
+            explanation lives somewhere else. The button is described by the line, and a live region of its own, apart
+            from the one that announces the selection, says it the moment it appears. <b>ErrorMessageTemplate</b> puts
+            arbitrary markup there instead. A template has no text a screen reader can be handed, so it is announced as
+            a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b> says what it shows.
+        </div>
+
+        <br />
+
+        <div class="example-box">
+            <BitFileInput Multiple ShowRemoveButton
+                          Label="Upload contracts"
+                          Description="Pick two files to see the message."
+                          @bind-Value="contractNames"
+                          ErrorMessage="@(contractNames?.Contains(',') is true ? "Upload one contract at a time." : null)" />
+            <br />
+            <BitFileInput Label="Marked invalid, explained elsewhere" Invalid />
+            <br />
+            <BitFileInput Label="Upload photos"
+                          ErrorMessageAriaLabel="Your storage is full. Free up space to upload more.">
+                <ErrorMessageTemplate>
+                    Your storage is full.
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">Free up space</BitLink>
+                </ErrorMessageTemplate>
+            </BitFileInput>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">

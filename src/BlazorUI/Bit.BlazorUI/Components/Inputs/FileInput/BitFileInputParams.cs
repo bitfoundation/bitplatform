@@ -111,6 +111,23 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
     public string? DuplicateErrorMessage { get; set; }
 
     /// <summary>
+    /// A line under the browse button saying why the selection was rejected, which marks the file input invalid in
+    /// the same way <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every file input the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// file inputs announce it too. A reason that fits one file input alone belongs on that file input.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Custom provider of the glyph shown in the thumbnail's place for a file that has no image preview.
     /// </summary>
     public Func<BitFileInputInfo, BitIconInfo?>? FileIconSelector { get; set; }
@@ -140,6 +157,12 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
     /// Whether to hide the default browse button label from the UI.
     /// </summary>
     public bool? HideLabel { get; set; }
+
+    /// <summary>
+    /// Marks the selection of the file input as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute on the browse button that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// The text displayed on the browse button.
@@ -347,6 +370,16 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
             bitFileInput.TakeFromCascade(nameof(DuplicateErrorMessage), DuplicateErrorMessage, static f => f.DuplicateErrorMessage, static (f, v) => f.DuplicateErrorMessage = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitFileInput.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static f => f.ErrorMessage, static (f, v) => f.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitFileInput.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static f => f.ErrorMessageAriaLabel, static (f, v) => f.ErrorMessageAriaLabel = v);
+        }
+
         if (FileIconSelector is not null)
         {
             bitFileInput.TakeFromCascade(nameof(FileIconSelector), FileIconSelector, static f => f.FileIconSelector, static (f, v) => f.FileIconSelector = v);
@@ -375,6 +408,11 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
         if (HideLabel.HasValue)
         {
             bitFileInput.TakeFromCascade(nameof(HideLabel), HideLabel.Value, static f => f.HideLabel, static (f, v) => f.HideLabel = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitFileInput.TakeFromCascade(nameof(Invalid), Invalid.Value, static f => f.Invalid, static (f, v) => f.Invalid = v);
         }
 
         if (Label.HasValue())

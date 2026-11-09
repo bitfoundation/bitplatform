@@ -494,7 +494,24 @@ private readonly BitFileInputParams[] fileInputParams =
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
-<div>@validationResult</div>";
+<div>@validationResult</div>
+
+
+<BitFileInput Multiple ShowRemoveButton
+              Label=""Upload contracts""
+              Description=""Pick two files to see the message.""
+              @bind-Value=""contractNames""
+              ErrorMessage=""@(contractNames?.Contains(',') is true ? ""Upload one contract at a time."" : null)"" />
+
+<BitFileInput Label=""Marked invalid, explained elsewhere"" Invalid />
+
+<BitFileInput Label=""Upload photos""
+              ErrorMessageAriaLabel=""Your storage is full. Free up space to upload more."">
+    <ErrorMessageTemplate>
+        Your storage is full.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Free up space</BitLink>
+    </ErrorMessageTemplate>
+</BitFileInput>";
     private readonly string example20CsharpCode = @"
 public class BitFileInputDemoFormModel
 {
@@ -513,7 +530,10 @@ private void HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     validationResult = null;
-}";
+}
+
+// The names of the valid files, joined with commas.
+private string? contractNames;";
     private const string example20ScssCode = @"
 .validation-message {
     color: var(--bit-clr-err);

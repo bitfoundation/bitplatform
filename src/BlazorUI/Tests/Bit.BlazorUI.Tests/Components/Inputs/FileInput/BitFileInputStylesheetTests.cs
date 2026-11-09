@@ -110,4 +110,20 @@ public class BitFileInputStylesheetTests
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal) < stylesheet.IndexOf(".bit-fin-#{$role} {", StringComparison.Ordinal), "The role classes come before the root that resets them.");
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-fin-md {", StringComparison.Ordinal), "The size classes come before the root that resets them.");
     }
+
+    [TestMethod]
+    public void BitFileInputShouldColorTheErrorMessageLikeTheInvalidBrowseButtonEvenWhileDisabled()
+    {
+        var stylesheet = ReadStylesheet();
+        var declarations = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-fin-erm {");
+
+        // The message follows the variable the invalid browse button does, read as text on the page, and the size the
+        // hint under it does - which an explicit Size wins over.
+        StringAssert.Contains(declarations, "color: var(--bit-FileInput-invalid-color, #{$clr-err-fg});");
+        StringAssert.Contains(declarations, "font-size: var(--bit-fin-fs-fontsize, var(--bit-FileInput-description-font-size, #{$tg-fs-xs}));");
+
+        // Nothing else styles it - the disabled file input only sets the text color of its root, which the message
+        // does not inherit - so a message gone grey never stops reading as the reason.
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-fin-erm\b").Count, "Another rule restyles the error message.");
+    }
 }

@@ -31,6 +31,9 @@ public partial class BitFileInput : BitInputBase<string?>
     private ElementReference _labelRef;
     private string _buttonId = default!;
     private string _descriptionId = default!;
+    private string _errorId = default!;
+    private string _errorLabelId = default!;
+    private bool _hasLiveRegion;
     private int? _focusAfterRemoveIndex;
     private List<BitFileInputInfo> _files = [];
     private IJSObjectReference _dropZoneRef = default!;
@@ -174,6 +177,44 @@ public partial class BitFileInput : BitInputBase<string?>
     [Parameter] public string? DuplicateErrorMessage { get; set; }
 
     /// <summary>
+    /// The message shown under the browse button when the selection was rejected by the app itself (a server that
+    /// refused the upload, a rule spanning two fields), as opposed to the message of each file the file input
+    /// rejected on its own. Setting it marks the file input invalid on its own - the same look and the same
+    /// aria-invalid attribute <see cref="Invalid"/> gives it - and the message is referenced by the browse button
+    /// through aria-describedby and announced by a live region the moment it shows up.
+    /// </summary>
+    /// <remarks>
+    /// A file input inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
+    /// <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the file input the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for the
+    /// forced state, whose reason is usually explained (and announced) elsewhere - and the browse button references
+    /// it through its aria-describedby attribute, so the same reason is read out on every later focus too. A plain
+    /// <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a template
+    /// switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and marks
+    /// the file input invalid in the same way. It replaces the message for a screen reader as well: a template is
+    /// free to render anything at all, so the live region announces <see cref="ErrorMessageAriaLabel"/> for it, or
+    /// a bare "Invalid input" when that is not set.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Custom provider of the glyph shown in the thumbnail's place for a file that has no image preview,
     /// which is rendered while <see cref="ShowPreview"/> is enabled. Receives the file and returns the icon
     /// to draw, or null to leave that file without one. When not set, the icon is picked from the file's
@@ -219,6 +260,19 @@ public partial class BitFileInput : BitInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool HideLabel { get; set; }
+
+    /// <summary>
+    /// Marks the file input as invalid without an <c>EditContext</c> having said so, giving it the same look and the
+    /// same aria-invalid attribute on the browse button a failed validation does. Setting <see cref="ErrorMessage"/>
+    /// implies it. It says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a
+    /// reason to announce.
+    /// </summary>
+    /// <remarks>
+    /// It is about the selection as a whole: the files the file input rejected on its own are marked in the file
+    /// list, each with its own message.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// The text displayed on the browse button. Defaults to "Browse".
@@ -589,6 +643,44 @@ public partial class BitFileInput : BitInputBase<string?>
 
     private bool _HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    private bool _HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    // A rejection the app decided on its own, which the EditContext knows nothing about. A message is one: a field
+    // that says what is wrong with its selection is a field saying the selection is wrong.
+    protected override bool HasError => Invalid || _HasErrorMessage;
+
+    // Whether ErrorMessageAriaLabel speaks for the rejection on screen: a template, which wins over a plain message
+    // (see the markup) and is free to render anything at all, or the forced state without a message. A whitespace
+    // label is no label - announcing it would leave the field sounding accepted.
+    private bool _HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                       && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    // What the live region of the error says, always matching what is on screen: a plain message is its own text,
+    // while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than left in
+    // silence. The forced state is the one rejection only announced with a label of its own, its reason being
+    // explained - and announced - elsewhere.
+    private string? _ErrorLiveText => _HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                      : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                      : ErrorMessage.HasValue() ? ErrorMessage
+                                      : null;
+
+    // What describes the browse button, in the order the two sit under it: what is wrong with the selection first,
+    // then the hint. A label stands in for an error template, which may well be a bare icon with no text to describe
+    // the button with at all.
+    private string? _ButtonDescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                _HasErrorAriaLabel ? _errorLabelId : _HasErrorMessage ? _errorId : null,
+                _HasDescription ? _descriptionId : null,
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
     // A read-only file input keeps showing its files but takes no new ones and gives none up, so it accepts no drop
     // or paste either.
     private bool _AllowsDrop => AllowDrop && ReadOnly is false;
@@ -643,6 +735,8 @@ public partial class BitFileInput : BitInputBase<string?>
         InputId = $"FileInput-{UniqueId}-input";
         _buttonId = $"FileInput-{UniqueId}-label";
         _descriptionId = $"FileInput-{UniqueId}-description";
+        _errorId = $"FileInput-{UniqueId}-error";
+        _errorLabelId = $"FileInput-{UniqueId}-error-label";
 
         return base.OnInitializedAsync();
     }
@@ -650,6 +744,18 @@ public partial class BitFileInput : BitInputBase<string?>
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region of the error is only rendered for a file input that is wired to say something through it -
+        // one whose ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for
+        // now - so a form of plain file inputs does not carry an empty one per input. A label a BitParams hands down is
+        // not written by the markup, yet it is said out of the region the moment Invalid turns on, so holding one wires
+        // the file input too. Once there it stays, since it has to be on the page before the text meant to be
+        // announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || _ErrorLiveText is not null;
 
         // A value the consumer emptied - a form reset, a model cleared after a save - clears the selection it stood
         // for. Any other value pushed in names files a browser cannot be handed from code, so it is left to the
