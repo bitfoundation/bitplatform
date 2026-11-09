@@ -143,6 +143,27 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the checkbox saying why its state was rejected, which marks it invalid in the same way Invalid does and is announced by a live region the moment it shows up.",
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the checkbox references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every checkbox under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the checkbox invalid in the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -168,6 +189,13 @@ public partial class BitCheckboxDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the built-in icon to render in the indeterminate state, replacing the default filled square.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the state of the checkbox as invalid, giving a state rejected by something other than the cascading EditContext the same look and the same aria-invalid attribute a failing data annotation gives it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {
@@ -368,6 +396,20 @@ public partial class BitCheckboxDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the description of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "ErrorMessageContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the line carrying the error message of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "ErrorMessage",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message of the BitCheckbox. Ignored when an ErrorMessageTemplate replaces the plain message."
                },
                new()
                {
@@ -582,13 +624,13 @@ public partial class BitCheckboxDemo
         {
             Name = "--bit-Checkbox-description-font-size",
             DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Font size of the description, one step below the label on the type ramp. The Size parameter wins over it.",
+            Description = "Font size of the description and the error message, one step below the label on the type ramp. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-description-gap",
             DefaultValue = "spacing(0.25)",
-            Description = "Room between the label and the description under it.",
+            Description = "Room above the description and the error message under the label.",
         },
         new()
         {
@@ -642,6 +684,8 @@ public partial class BitCheckboxDemo
 
     private string SuccessMessage = string.Empty;
     private BitCheckboxValidationModel validationModel = new();
+
+    private bool paperInvoices = true;
 
     private int savedCount;
 

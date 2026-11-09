@@ -11,7 +11,14 @@ public partial class BitCheckbox : BitInputBase<bool>
 {
     private bool _autoLoading;
     private bool _isChanging;
+    private bool _hasAttempted;
+    private bool _hasLiveRegion;
+    private int _liveTextId;
+    private string? _liveText;
+    private string? _announcedLiveText;
     private string _inputId = string.Empty;
+    private string _errorId = string.Empty;
+    private string _errorLabelId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _ariaDescriptionId = string.Empty;
 
@@ -186,6 +193,45 @@ public partial class BitCheckbox : BitInputBase<bool>
     public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// A line under the checkbox saying why its state was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused to save the new state,
+    /// a rule spanning two controls. A checkbox inside an <c>EditForm</c> already gets its messages from the
+    /// cascading EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the checkbox the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and the checkbox
+    /// references it through its aria-describedby attribute, so the same reason is read out on every later
+    /// focus too. A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking
+    /// the checkbox invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// It replaces the message for a screen reader as well: a template is free to render anything at all, so
+    /// the live region announces <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when
+    /// that is not set - never the plain <see cref="ErrorMessage"/> it hides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Stretches the checkbox across the full available width, pushing the box and the label to opposite edges.
     /// </summary>
     /// <remarks>
@@ -216,6 +262,20 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? IndeterminateIconName { get; set; }
+
+    /// <summary>
+    /// Marks the state of the checkbox as invalid, giving a state rejected by something other than the cascading
+    /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A checkbox failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// On its own it says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a
+    /// reason to announce.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Descriptive label for the checkbox.
@@ -363,6 +423,8 @@ public partial class BitCheckbox : BitInputBase<bool>
         CascadingParameters?.UpdateParameters(this);
 
         _inputId = $"BitCheckbox-{UniqueId}-input";
+        _errorId = $"BitCheckbox-{UniqueId}-error";
+        _errorLabelId = $"BitCheckbox-{UniqueId}-error-label";
         _descriptionId = $"BitCheckbox-{UniqueId}-description";
         _ariaDescriptionId = $"BitCheckbox-{UniqueId}-aria-description";
 
@@ -381,6 +443,20 @@ public partial class BitCheckbox : BitInputBase<bool>
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region is only rendered for a checkbox that is wired to say something through it - one whose
+        // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
+        // so a list of plain checkboxes does not carry an empty live region per row. A label a BitParams hands down
+        // is not written by the markup, yet it is said out of the region the moment Invalid turns on, so holding
+        // one wires the checkbox too. Once there it stays, since it has to be on the page before the text that is
+        // meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || LiveText is not null;
+
+        SyncLiveRegion();
 
         base.OnParametersSet();
     }
@@ -451,6 +527,11 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => HasDescription ? "bit-chb-hds" : string.Empty);
 
+        // An error message takes a line of its own under the checkbox too, and frees the label row from the full
+        // width in the same way - through a class of its own rather than by widening what the description class
+        // means.
+        ClassBuilder.Register(() => HasErrorMessage ? "bit-chb-her" : string.Empty);
+
         // The focus ring is drawn around the box, which a custom face replaces - so the checkbox says that
         // it has no box and the stylesheet puts the ring around the whole face instead of nowhere.
         ClassBuilder.Register(() => ChildContent is not null ? "bit-chb-cct" : string.Empty);
@@ -483,6 +564,44 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// Whether the checkbox carries a visible description, which is what the extra line under it is rendered for.
     /// </summary>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// Whether the checkbox carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the state of the checkbox, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the state is a rejection of it, so it marks the checkbox the same
+    /// way the flag does instead of leaving a red line under a box that still looks accepted.
+    /// </remarks>
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// Whether <see cref="ErrorMessageAriaLabel"/> speaks for the rejection on screen: a template, which wins
+    /// over a plain message and is free to render anything at all, or the forced state without a message.
+    /// </summary>
+    /// <remarks>
+    /// A whitespace label is no label - announcing it would leave the checkbox sounding accepted.
+    /// </remarks>
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    /// <summary>
+    /// What the live region carries, which is the rejection on screen and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// It always matches what is shown: a plain message is its own text, while a template - never read out
+    /// itself, since a live region reading out a block of markup is worse than one saying nothing - is
+    /// announced through its label, or as "Invalid input" rather than left in silence. The forced state is
+    /// the one rejection only announced with a label of its own, its reason being explained elsewhere.
+    /// </remarks>
+    private string? LiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                : ErrorMessage.HasValue() ? ErrorMessage
+                                : null;
 
     /// <summary>
     /// Whether the checkbox is busy, from the <see cref="Loading"/> parameter or from
@@ -589,6 +708,8 @@ public partial class BitCheckbox : BitInputBase<bool>
             var oldValue = CurrentValue;
             var (newValue, newIndeterminate) = GetNextState();
 
+            _hasAttempted = true;
+
             if (OnChanging.HasDelegate)
             {
                 var changingArgs = new BitCheckboxChangeArgs(newValue, newIndeterminate);
@@ -616,6 +737,14 @@ public partial class BitCheckbox : BitInputBase<bool>
         finally
         {
             _isChanging = false;
+
+            // What the app made of the attempt is only known once its callbacks are done, so that is when it is
+            // announced - and an error it still shows is said again even when it is the very message the last
+            // attempt was refused with, which is a rejection all the same. The render that follows the click
+            // carries it to the page.
+            SyncLiveRegion(_hasAttempted);
+
+            _hasAttempted = false;
 
             if (autoLoading) SetAutoLoading(false);
         }
@@ -654,6 +783,30 @@ public partial class BitCheckbox : BitInputBase<bool>
         if (CurrentValue == (oldValue is false)) return;
 
         await _js.BitUtilsSetProperty(InputElement, "checked", CurrentValue);
+    }
+
+    /// <summary>
+    /// Brings the live region in step with the message, announcing it only when it is not what was said last.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is announced while a change is in flight: the parameters may come and go several times as the
+    /// callbacks of the change re-render the page, and only where they land once the change is over is its
+    /// outcome. The text sits in a keyed element so every announcement replaces the element rather than only
+    /// rewriting its text - the same message said twice would otherwise change nothing in the DOM, and a live
+    /// region that did not change is one nothing is read out of.
+    /// </remarks>
+    /// <param name="reannounce">Says a message again even when it is the one that was said last.</param>
+    private void SyncLiveRegion(bool reannounce = false)
+    {
+        if (_isChanging) return;
+
+        var text = LiveText;
+
+        if (text == _announcedLiveText && (reannounce is false || text is null)) return;
+
+        _announcedLiveText = text;
+        _liveText = text;
+        _liveTextId++;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)

@@ -25,8 +25,8 @@
 //   --bit-Checkbox-gap                       room between the box and the label           (default: spacing(1))
 //   --bit-Checkbox-font-size                 the label                                    (default: $tg-fs-sm)
 //   --bit-Checkbox-font-weight               the label                                    (default: $tg-fw-regular)
-//   --bit-Checkbox-description-font-size     the description                              (default: $tg-fs-xs)
-//   --bit-Checkbox-description-gap           room between the label and the description   (default: spacing(0.25))
+//   --bit-Checkbox-description-font-size     the description and the error message        (default: $tg-fs-xs)
+//   --bit-Checkbox-description-gap           room above the description and the error line(default: spacing(0.25))
 //   --bit-Checkbox-min-height                smallest height and width of the click target(default: the box, never below spacing(3))
 //
 // A parameter written on the checkbox wins over the variable that restyles what it sets: an explicit Color over
@@ -276,10 +276,26 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     font-size: var(--bit-chb-des-fontsize, var(--bit-Checkbox-description-font-size, #{$tg-fs-xs}));
 }
 
-// A description makes the root as wide as the longer of the two lines, so the label row is let go of the
-// full width it otherwise takes - which is what keeps the end-aligned placements packed against their own
-// content instead of against the far edge of a sentence underneath them.
-.bit-chb-hds .bit-chb-lbl {
+// The error message: a line of its own under the checkbox, above the description - what is wrong with the
+// state is the first thing to read under the box, while the description only says what checking it means.
+// It is indented and sized like the description, and it keeps the error color in the disabled state, where
+// it is information about the state rather than an affordance that has been taken away. A long message
+// wraps inside its line instead of widening the checkbox.
+.bit-chb-erm {
+    // Outside the label, so it neither toggles the checkbox nor inherits the pointer the root carries.
+    cursor: auto;
+    overflow-wrap: break-word;
+    color: $clr-err;
+    margin-inline-start: var(--bit-chb-des-indent);
+    margin-block-start: var(--bit-Checkbox-description-gap, #{spacing(0.25)});
+    font-size: var(--bit-chb-des-fontsize, var(--bit-Checkbox-description-font-size, #{$tg-fs-xs}));
+}
+
+// A description or an error message makes the root as wide as the longest of its lines, so the label row is
+// let go of the full width it otherwise takes - which is what keeps the end-aligned placements packed against
+// their own content instead of against the far edge of a sentence underneath them.
+.bit-chb-hds .bit-chb-lbl,
+.bit-chb-her .bit-chb-lbl {
     width: fit-content;
 }
 
