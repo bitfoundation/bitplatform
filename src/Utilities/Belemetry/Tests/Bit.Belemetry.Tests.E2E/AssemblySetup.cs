@@ -2,8 +2,8 @@
 using Microsoft.Playwright;
 
 // Test classes run in parallel with each other; the tests inside one class run in order. Each web mode class talks to
-// its own host process and each test to its own browser context. The hybrid class drives the single page of its app
-// window, which is why ordering within a class matters.
+// its own host process and each test to its own browser context. The hybrid and MAUI classes each drive the single page
+// of their app window, which is why ordering within a class matters.
 [assembly: Parallelize(Workers = 0, Scope = ExecutionScope.ClassLevel)]
 
 namespace Bit.Belemetry.Tests.E2E;
@@ -25,6 +25,7 @@ public static class AssemblySetup
     public static async Task CleanupAsync()
     {
         await HybridSession.StopAsync();
+        await MauiSampleApp.StopAsync();
         await HarnessHosts.StopAllAsync();
         await PlaywrightSession.StopAsync();
     }
