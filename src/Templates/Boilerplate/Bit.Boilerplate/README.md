@@ -20,6 +20,11 @@ These passwords are for development and are not for Production: the first deploy
 change the passwords right after it.
 
 
+## Monitoring your project
+
+Register your project at [bitfabric.co](https://bitfabric.co) for health checks and monitoring, SLA tracking, accessibility
+and performance checks, a status page and more.
+
 ## Documentation
 
 To help you get started, we have comprehensive documentation available. You can find detailed guides, samples, and more at:
