@@ -26,7 +26,8 @@ public sealed class BelemetryDiagnosticException
     public string? Anchor { get; init; }
 
     /// <summary>
-    /// Where it was observed: <c>unhandled</c> (renderer or circuit), <c>error-boundary</c>, <c>event-handler</c>,
+    /// Where it was observed: <c>unhandled</c> (renderer, circuit, or the runtime's unhandled and unobserved task
+    /// exceptions), <c>error-boundary</c>, <c>event-handler</c>,
     /// <c>js-interop</c>, <c>circuit</c>, <c>browser</c>, <c>tracked</c> (<see cref="IBelemetry.TrackException"/>), <c>log</c>.
     /// </summary>
     public string Origin { get; init; } = "log";

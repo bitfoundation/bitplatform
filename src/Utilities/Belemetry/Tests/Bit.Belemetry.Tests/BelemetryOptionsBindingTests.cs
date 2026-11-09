@@ -29,7 +29,7 @@ public class BelemetryOptionsBindingTests
             "Debug": true,
             "Consent": { "Default": "Errors", "Persist": false, "HonorGlobalPrivacyControl": false, "PendingLimit": 50 },
             "Privacy": { "RedactQueryParameters": [ "ssn" ], "StripQueryString": true, "StripFragment": false, "ScrubPatterns": false, "CollectUserAgent": false, "BlockedAttributes": [ "user.email" ], "RedactedAttributes": [ "ssn" ] },
-            "Errors": { "DuplicateWindow": "00:00:02", "MaxPerMinute": 10 },
+            "Errors": { "CaptureUnhandledExceptions": false, "DuplicateWindow": "00:00:02", "MaxPerMinute": 10 },
             "MaxValueLength": 1000,
             "Diagnostics": {
               "Enabled": true, "MaxEvents": 100, "MaxFailureEvents": 20, "MaxMemoryBytes": 65536, "Categories": "Exception, Http", "MinimumLogLevel": "Error",
@@ -111,6 +111,7 @@ public class BelemetryOptionsBindingTests
         CollectionAssert.Contains(o.Privacy.RedactedAttributes, "ssn");
         CollectionAssert.Contains(o.Privacy.RedactedAttributes, "password", "Added to the defaults.");
 
+        Assert.IsFalse(o.Errors.CaptureUnhandledExceptions);
         Assert.AreEqual(TimeSpan.FromSeconds(2), o.Errors.DuplicateWindow);
         Assert.AreEqual(10, o.Errors.MaxPerMinute);
         Assert.AreEqual(1000, o.MaxValueLength);

@@ -35,6 +35,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private BelemetryActivityCollector? _activities;
     private BelemetryMeterCollector? _meters;
     private BelemetryAspNetCoreRequests? _requests;
+    private BelemetryUnhandledExceptions? _unhandled;
     private ILogger? _diagnostics;
     private Task? _loop;
     private int _started;
@@ -76,6 +77,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// </summary>
     internal Task StoreCleared => Volatile.Read(ref _storeCleared);
 
+    /// <summary>The unhandled exception hooks, once <see cref="Start"/> installed them (<see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/>).</summary>
+    internal BelemetryUnhandledExceptions? UnhandledExceptions => _unhandled;
+
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
 
@@ -96,6 +100,9 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         // Diagnostics work without any exporter: the timeline is local until a capture is exported on purpose.
         Diagnostics.Start();
+
+        // Before the exporters are checked: the diagnostic timeline alone wants the unhandled exceptions too.
+        if (BelemetryUnhandledExceptions.AppliesTo(Settings, Diagnostics.Enabled)) _unhandled = new BelemetryUnhandledExceptions(this);
         if (Settings.HasExporters is false) return;
 
         if (Settings.CollectDotnet)
@@ -470,6 +477,71 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
 
         return requests;
+    }
+
+    /// <summary>
+    /// Saves what is queued for later, synchronously, as the process ends (<see cref="BelemetryUnhandledExceptions"/>):
+    /// nothing async completes then. Off the browser it goes to the file store - only with
+    /// <see cref="BelemetryFeatures.Persistence"/>, as any undelivered request - and the next launch sends it with the
+    /// rest of the store. In WebAssembly the page outlives the .NET runtime, so it goes to the script as the unload drain
+    /// sends it (fetch, retry and the page's own persistence). Records held for a consent decision stay in memory: they
+    /// never go on the wire or on disk.
+    /// </summary>
+    internal void PersistForExit()
+    {
+        if (Settings.HasExporters is false) return;
+
+        if (Settings.IsBrowser)
+        {
+            // JS interop starts the script's call synchronously in WebAssembly: its requests are on their way before
+            // the runtime stops.
+            if (_services.GetService<BelemetryBrowserBridgeRegistry>()?.SendRequests is { } send && DrainForUnload() is { Count: > 0 } requests)
+            {
+                _ = send(requests);
+            }
+            return;
+        }
+
+        if (Exporters.Store is not BelemetryFileRequestStore store || CanRecord(BelemetryFeatures.Persistence) is false) return;
+
+        List<Entry> entries;
+        BelemetryConsentMark mark;
+        lock (_lock)
+        {
+            entries = TakeReady(int.MaxValue);
+
+            // Under the lock, with the take, as for an export: a revoke from here on withdraws what is saved.
+            mark = Revocations.Mark(FeaturesOf(entries));
+        }
+
+        var saved = new List<BelemetryHttpRequest>();
+        foreach (var batch in BuildBatches(entries, []))
+        {
+            foreach (var exporter in Exporters.HttpExporters)
+            {
+                foreach (var request in exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)))
+                {
+                    if (mark.IsWithdrawn) break;
+
+                    try
+                    {
+                        store.SaveNow(request);
+                        saved.Add(request);
+                        Self.Exported(exporter.Name, "stored", request.Count);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogDiagnostic(ex, "Persisting a request as the process ends failed; it is dropped.");
+                    }
+                }
+            }
+        }
+
+        // A revoke meanwhile clears the store, maybe before these landed.
+        if (mark.IsWithdrawn || CanRecord(BelemetryFeatures.Persistence) is false)
+        {
+            foreach (var request in saved) store.DeleteNow(request);
+        }
     }
 
     /// <summary>
@@ -944,6 +1016,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // Idempotent: a host may dispose the container while the app disposes the pipeline it resolved itself.
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
+        _unhandled?.Dispose();
         _consent.Changed -= OnConsentChanged;
         Diagnostics.Dispose();
         _activities?.Dispose();

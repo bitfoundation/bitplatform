@@ -38,8 +38,7 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
         {
             Directory.CreateDirectory(_directory);
 
-            // Time-prefixed names make a plain name sort the oldest first, for both loading and eviction.
-            var path = Path.Combine(_directory, $"{request.Time:D15}-{request.Id}{Extension}");
+            var path = PathOf(request);
             var temp = path + ".tmp";
             await using (var stream = File.Create(temp))
             {
@@ -55,6 +54,41 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
             _lock.Release();
         }
     }
+
+    /// <summary>
+    /// Saves <paramref name="request"/> synchronously, for a process that is ending (an unhandled exception), where
+    /// nothing async completes. Without the store's lock - a save or a resend pass may hold it across an await that never
+    /// resumes - which a file of its own does without: it is written under a temporary name and moved into place, so a
+    /// load never reads it half-written.
+    /// </summary>
+    public void SaveNow(BelemetryHttpRequest request)
+    {
+        Directory.CreateDirectory(_directory);
+
+        var path = PathOf(request);
+        var temp = path + ".tmp";
+        using (var stream = File.Create(temp))
+        {
+            // Never headers on disk, as in SaveAsync.
+            JsonSerializer.Serialize(stream, request.WithoutHeaders(), BelemetryJsonContext.Default.BelemetryHttpRequest);
+        }
+        File.Move(temp, path, overwrite: true);
+
+        try
+        {
+            EvictOverLimit();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // A save that holds the lock may be evicting too; whatever is still over the limit goes on the next save.
+        }
+    }
+
+    /// <summary>Deletes what <see cref="SaveNow"/> saved of <paramref name="request"/>, synchronously.</summary>
+    public void DeleteNow(BelemetryHttpRequest request) => TryDelete(PathOf(request));
+
+    // Time-prefixed names make a plain name sort the oldest first, for both loading and eviction.
+    private string PathOf(BelemetryHttpRequest request) => Path.Combine(_directory, $"{request.Time:D15}-{request.Id}{Extension}");
 
     public async ValueTask<IReadOnlyList<BelemetryHttpRequest>> LoadAsync(int max, CancellationToken cancellationToken)
     {

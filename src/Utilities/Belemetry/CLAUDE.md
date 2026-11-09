@@ -55,7 +55,9 @@ core because every host may need them and they add no dependency.
   - Interop DTOs go through the source-generated `BelemetryJsonContext`.
   - The package is `IsTrimmable` and `IsAotCompatible`.
 - **No threads.** Browser WebAssembly is single-threaded, so the pipeline runs on async loops with timers only.
-  `new Thread`, blocking waits and `.Result` are forbidden.
+  `new Thread`, blocking waits and `.Result` are forbidden. A process ending on an unhandled exception runs nothing
+  async to completion, so `BelemetryPipeline.PersistForExit` saves the queue synchronously (`BelemetryFileRequestStore.SaveNow`,
+  without the store's lock; in WebAssembly the script gets it, as from the unload drain) - still without waiting on anything.
 - **`BelemetryOptions` stays bindable** by the configuration binder's source generator, which runs in the consuming
   app (`Tests/Bit.Belemetry.Tests/BelemetryOptionsBindingTests.cs` binds every option): collections are get-only
   `List<T>` or `Dictionary<,>`, nested options are get-only instances, an array default is empty (a binder appends
@@ -79,7 +81,7 @@ together, plus the tests on both sides.
 
 | Name | Bit | Covers |
 | --- | --- | --- |
-| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException`; the exceptions recorded on spans (`Activity.AddException`, taken off the span without it) |
+| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException`; unhandled .NET exceptions and unobserved task exceptions (`BelemetryUnhandledExceptions`); the exceptions recorded on spans (`Activity.AddException`, taken off the span without it) |
 | `PageViews` | 2 | Page views (history/enhanced navigation, `TrackPageView`) |
 | `Interactions` | 4 | Clicks and other user interactions |
 | `Performance` | 8 | Web vitals (LCP, INP, CLS, FCP, TTFB), document-load span, resource timing, long tasks |
@@ -432,7 +434,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - **Exception groups in a capture** export the occurrences of the events the capture exports only; a group known only from
   its history keeps its counts and template (the preview lists those), with no occurrence.
 - **Unhandled**: only the framework's categories (`Microsoft.AspNetCore.Components.*Renderer`, the circuit host, the
-  WebAssembly host) mark an exception unhandled; an app's `PdfRenderer` logs a handled one.
+  WebAssembly host) and Belemetry's own `Bit.Belemetry.UnhandledExceptions` scope mark an exception unhandled; an app's
+  `PdfRenderer` logs a handled one.
 - **Framework activities** (`BelemetryDiagnosticHub.CreatesActivity`): the hub's listener makes the framework create
   `Navigate`/`HandleEvent`/`StartCircuit` only when that changes nothing for the app's traces - Belemetry's export covers
   the source (its decision, `IgnoredActivityNames` respected), or `Diagnostics.CreateFrameworkActivities` (default: not

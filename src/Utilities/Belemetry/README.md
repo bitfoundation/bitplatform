@@ -413,7 +413,7 @@ feature the configuration switched off records nothing - so a feature you enable
 
 | Feature | Covers |
 | --- | --- |
-| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
+| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; unhandled .NET exceptions and unobserved task exceptions; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
 | `PageViews` | Page views (navigation, `TrackPageView`) |
 | `Interactions` | Clicks and other interactions |
 | `Performance` | Web vitals, document load, resource timing, long tasks |
@@ -520,6 +520,37 @@ attributes, the active scopes (`Logs.IncludeScopes`), the exception (`exception.
 Belemetry's own diagnostics are logged under the category `Bit.Belemetry`, which is never exported (an export failure
 would otherwise be exported by the pipeline it describes). Every other category is collected, including your own
 types in `Bit.Belemetry.*` namespaces; `Logs.ExcludedCategories` drops more by prefix.
+
+### Unhandled exceptions
+
+An exception nothing caught reaches no `ILogger`, so the .NET pipeline listens for them itself
+(`Errors.CaptureUnhandledExceptions`, on by default):
+
+- `AppDomain.UnhandledException` - the crash of a MAUI, WPF or WinForms app, or a background thread of a server that
+  threw. The record is a FATAL `exception` event (`Critical` in Application Insights) with the body `An unhandled
+  exception ended the process.`.
+- `TaskScheduler.UnobservedTaskException` - a faulted task that was never awaited, raised when the garbage collector
+  finds it. The record is an ERROR `exception` event with the body `A faulted task's exception was never observed.`;
+  the task's own exception is reported rather than its `AggregateException` when it is the only one. The event is not
+  marked observed: that stays the app's choice.
+
+Both carry `exception.type`, `exception.message`, `exception.stacktrace` and the trace context of the thread that
+threw, under the scope `Bit.Belemetry.UnhandledExceptions`. They are `Errors` records: consent and the
+[error limits](#error-floods-and-runaway-values) apply as to any other, and production diagnostics count them as
+unhandled exceptions (the `UnhandledExceptions` trigger).
+
+The process ends right after `AppDomain.UnhandledException`, before anything async completes. So Belemetry writes the
+crash record, with everything still queued before it, to the [offline store](#offline-persistence) synchronously,
+and the next launch sends it with the rest of the store (its first resend pass is 10 s after start). That needs
+`Persistence`: granted by the user on a client, in `Server.Features` on a server. Without it nothing is written to
+disk and the record is lost with the process. Records held for a consent decision are never written either. In
+WebAssembly the page outlives the .NET runtime, so the queue is handed to the script instead, which sends it as it
+sends the unload flush. Only the HTTP exporters (OTLP, Azure Monitor) are saved; custom exporters and the console
+exporter get the records only if the process goes on.
+
+On Windows desktop, an exception on the UI thread goes to `Application.ThreadException` (WinForms) or
+`Dispatcher.UnhandledException` (WPF) first, and reaches `AppDomain.UnhandledException` only when they do not handle
+it. Log what such a handler handles to record it.
 
 ### Traces
 
@@ -1142,6 +1173,9 @@ headers are added when a stored request is sent, so a rotated key applies to the
 request stored by the browser is resent with the headers of the browser exporter posting to the same URL.) A request
 stored for an endpoint the exporter no longer posts to is dropped, so the current key never goes to an old address.
 
+A .NET process that ends with an unhandled exception saves its queue to the store as it goes down, and the next
+launch sends it - see [Unhandled exceptions](#unhandled-exceptions).
+
 ---
 
 ## The server pipeline
@@ -1389,6 +1423,10 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   `_OTHER`.
 - **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new
   web-vitals generation after a back/forward-cache restore.
+- **Unhandled .NET exceptions are recorded** (`AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`)
+  as `Errors` events, and a crashing process saves its queue for the next launch (with `Persistence`). Switch it off
+  with `Errors.CaptureUnhandledExceptions = false`, e.g. when the app records them itself. See
+  [Unhandled exceptions](#unhandled-exceptions).
 - **Page views carry `url.template`, and an untitled one is named after it** (`/orders/{id:int}`, was `/orders/42`):
   in the log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the `PageName` of
   `PageVisitTime`. Group by `url.path` for the old breakdown. See [Page route templates](#page-route-templates).

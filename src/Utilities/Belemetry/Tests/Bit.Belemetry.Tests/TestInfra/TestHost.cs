@@ -4,7 +4,8 @@ namespace Bit.Belemetry.Tests;
 
 /// <summary>
 /// A Belemetry service provider wired for tests: an in-memory exporter, no environment variables, no persisted
-/// consent, no persistence, and timers long enough that only explicit flushes export.
+/// consent, no persistence, no process-wide unhandled exception hooks, and timers long enough that only explicit
+/// flushes export.
 /// </summary>
 internal sealed class TestHost : IAsyncDisposable
 {
@@ -50,6 +51,9 @@ internal sealed class TestHost : IAsyncDisposable
         o.UseEnvironmentVariables = false;
         o.Consent.Persist = false;
         o.Persistence.Enabled = false;
+        // Process-wide: a faulted task another test dropped would be finalized into whichever test's pipeline is
+        // listening. BelemetryUnhandledExceptionTests turns it on.
+        o.Errors.CaptureUnhandledExceptions = false;
         o.Batch.FlushInterval = TimeSpan.FromHours(1);
         o.Metrics.ExportInterval = TimeSpan.FromHours(1);
         o.Traces.Sources.Clear();
