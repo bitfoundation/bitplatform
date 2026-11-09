@@ -160,7 +160,7 @@ public class BitBhRating : BitBhComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _value = DefaultValue;
-        FieldContext?.SetControlFocus(() => Interop.FocusAsync(ComponentId).AsTask());
+        FieldContext?.SetControlFocus(this, () => Interop.FocusAsync(ComponentId).AsTask());
     }
 
     protected override void OnParametersSet()
@@ -320,7 +320,7 @@ public class BitBhRating : BitBhComponentBase, IAsyncDisposable
     {
         _disposed = true;
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
         if (!_attached && _handle > 0) await Interop.RatingDetachAsync(_handle);
         _ref?.Dispose();
         GC.SuppressFinalize(this);

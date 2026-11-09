@@ -466,20 +466,28 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
 
     // ── Strict Content-Security-Policy ───────────────────────────────────────
 
+    /// <summary>How many times a runtime that answered it could not load the style bridge is asked again.</summary>
+    private const int StrictStylesAttempts = 3;
+
     private bool _strictStylesEnabled;
     private bool _strictStylesPending;
+    private int _strictStylesFailures;
 
-    /// <summary>Whether the runtime has been asked to apply the strict CSP styles (and has not failed to).</summary>
-    internal bool StrictStylesRequested => _strictStylesEnabled || _strictStylesPending;
+    /// <summary>
+    /// Whether there is nothing to ask the runtime about the strict CSP styles: it applies them, is being asked to,
+    /// or failed to load the style bridge too many times to keep asking.
+    /// </summary>
+    internal bool StrictStylesRequested => _strictStylesEnabled || _strictStylesPending || _strictStylesFailures >= StrictStylesAttempts;
 
     /// <summary>
     /// Has the runtime apply the <c>data-bit-bh-style</c> of the page through the CSSOM (see
     /// <see cref="BitBhOptions.StrictCsp"/>). Sent once per scope; a call that did not reach the browser (a circuit
-    /// that went away) is sent again by the next one.
+    /// that went away) is sent again by the next one, and so is one the runtime answered with a bridge it could not
+    /// load (a network error), up to <see cref="StrictStylesAttempts"/> times.
     /// </summary>
     internal void RequestStrictStyles()
     {
-        if (_disposed || _strictStylesEnabled || _strictStylesPending) return;
+        if (_disposed || StrictStylesRequested) return;
         _strictStylesPending = true;
         _ = EnableStrictStylesAsync();
     }
@@ -488,8 +496,12 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     {
         try
         {
-            var (answered, _) = await TryInvokeAsync<bool>("styles.enable");
-            _strictStylesEnabled = answered;
+            var (answered, enabled) = await TryInvokeAsync<bool>("styles.enable");
+            if (answered is false) return;
+            // No module to call (a test double of the JS runtime) has no bridge to load: nothing failed.
+            var noBrowser = _module is { IsCompletedSuccessfully: true, Result: null };
+            if (enabled || noBrowser) _strictStylesEnabled = true;
+            else _strictStylesFailures++;
         }
         catch (Exception)
         {

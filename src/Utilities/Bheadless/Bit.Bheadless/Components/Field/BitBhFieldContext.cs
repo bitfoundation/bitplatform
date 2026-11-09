@@ -21,7 +21,8 @@ public sealed class BitBhFieldContext
     private int _seq;
     private string[] _messages = [];
     private bool _controlInvalid;
-    private Func<Task>? _focusControl;
+    // The controls that aren't labelable elements, in the order they registered: the first one is the label's.
+    private readonly List<(object Owner, Func<Task> Focus)> _focusControls = new();
 
     internal BitBhFieldContext(string baseId, Action changed)
     {
@@ -93,20 +94,36 @@ public sealed class BitBhFieldContext
     /// Whether <c>&lt;label for&gt;</c> can target the control. False when the control isn't a
     /// labelable element (radio group, slider …); the label then focuses it on click instead.
     /// </summary>
-    internal bool LabelTargetsControl => _focusControl is null;
+    internal bool LabelTargetsControl => _focusControls.Count == 0;
 
     /// <summary>
-    /// Registered by controls that aren't labelable elements: how to focus them when the
-    /// label is clicked. Pass null when the control goes away.
+    /// Registered by a control that isn't a labelable element (<paramref name="owner"/>): how to focus it when the label
+    /// is clicked. A control registering again replaces its own registration. With several - another control mounted
+    /// later in the same field, such as a calendar in a popover - the first one keeps the label, and a control going away
+    /// (<see cref="ReleaseControlFocus"/>) takes only its own registration with it.
     /// </summary>
-    internal void SetControlFocus(Func<Task>? focus)
+    internal void SetControlFocus(object owner, Func<Task> focus)
     {
-        if (ReferenceEquals(_focusControl, focus)) return;
-        _focusControl = focus;
-        _changed();
+        var index = _focusControls.FindIndex(c => ReferenceEquals(c.Owner, owner));
+        if (index >= 0)
+        {
+            _focusControls[index] = (owner, focus);
+            return;
+        }
+        _focusControls.Add((owner, focus));
+        if (_focusControls.Count == 1) _changed();
     }
 
-    internal Task FocusControlAsync() => _focusControl?.Invoke() ?? Task.CompletedTask;
+    /// <summary>Withdraws the registration of <paramref name="owner"/> (a control going away), if it has one.</summary>
+    internal void ReleaseControlFocus(object owner)
+    {
+        var index = _focusControls.FindIndex(c => ReferenceEquals(c.Owner, owner));
+        if (index < 0) return;
+        _focusControls.RemoveAt(index);
+        if (index == 0) _changed();
+    }
+
+    internal Task FocusControlAsync() => _focusControls.Count > 0 ? _focusControls[0].Focus() : Task.CompletedTask;
 
     /// <summary>Id of the label when one is rendered, for <c>aria-labelledby</c>.</summary>
     public string? LabelledBy => HasLabel ? LabelId : null;

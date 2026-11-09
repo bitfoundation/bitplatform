@@ -30,8 +30,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     private BitBhDateSegmentType? _focusIntent;
     // The same across the start and end fields of a range picker: the field the focus left this one for.
     private BitBhDateFieldBase<TValue>? _focusIntentField;
-    private long _focusIntentAt;
-    private readonly List<BitBhDateSegmentType> _leftBehind = new();
+    private readonly BitBhFocusMoves<BitBhDateSegmentType> _focusMoves = new();
     private IReadOnlyList<BitBhDateSegment> _segments = [];
 
     [CascadingParameter]
@@ -195,7 +194,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     protected override void OnInitialized()
     {
         _value = DefaultValue;
-        if (IsFieldControl) FieldContext?.SetControlFocus(FocusAsync);
+        if (IsFieldControl) FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     protected override void OnParametersSet()
@@ -351,14 +350,13 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     void IBitBhDateFieldOwner.HandleFocus(BitBhDateSegmentType type)
     {
-        if (((_focusIntent is { } intent && type != intent) || _focusIntentField is not null) && _leftBehind.Contains(type) && IsFocusInFlight())
+        if (((_focusIntent is { } intent && type != intent) || _focusIntentField is not null) && _focusMoves.IsEcho(type))
         {
-            // The echo of a focus move already overtaken by the next one: typing goes on in the segment ahead.
+            // The echo of a focus move already overtaken by the next one: typing goes on in the segment ahead. A focus
+            // event on any other segment - the one typed into included - is the user's (a click).
             return;
         }
-        _focusIntent = null;
-        _focusIntentField = null;
-        _leftBehind.Clear();
+        ForgetFocusIntent();
         // The focus has arrived from the other field of a range: the keys still on their way are all in.
         if (PreviousField is { } previous && previous._focusIntentField == this) previous.ForgetFocusIntent();
         if (NextField is { } next && next._focusIntentField == this) next.ForgetFocusIntent();
@@ -378,14 +376,14 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     async Task IBitBhDateFieldOwner.HandleKeyDownAsync(BitBhDateSegmentType type, KeyboardEventArgs e)
     {
         if (IsDisabled || e.CtrlKey || e.MetaKey || e.AltKey) return;
-        if (_focusIntentField is { } field && _leftBehind.Contains(type) && IsFocusInFlight())
+        if (_focusIntentField is { } field && _focusMoves.IsLeftBehind(type))
         {
             // Meant for the other field of the range, which the focus is on its way to.
             if ((field._focusIntent ?? field._focusedSegment) is { } target)
                 await ((IBitBhDateFieldOwner)field).HandleKeyDownAsync(target, e);
             return;
         }
-        if (_focusIntent is { } intent && intent != type && _leftBehind.Contains(type) && IsFocusInFlight()) type = intent;
+        if (_focusIntent is { } intent && intent != type && _focusMoves.IsLeftBehind(type)) type = intent;
         var rtl = EffectiveDir == BitBhDirection.Rtl;
         var editable = !IsReadOnly;
         switch (e.Key)
@@ -483,8 +481,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
             State.EndTyping();
             await CommitAsync();
         }
-        if (!_leftBehind.Contains(from)) _leftBehind.Add(from);
-        _focusIntentAt = Environment.TickCount64;
+        _focusMoves.Leaving(from);
         if (field != this)
         {
             _focusIntent = null;
@@ -493,6 +490,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
             return;
         }
         _focusIntent = editable[target];
+        _focusMoves.Requesting(editable[target]);
         await Interop.FocusAsync(SegmentId(editable[target]));
     }
 
@@ -503,7 +501,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
         if (IsDisabled || editable.Count == 0) return;
         ForgetFocusIntent();
         _focusIntent = last ? editable[^1] : editable[0];
-        _focusIntentAt = Environment.TickCount64;
+        _focusMoves.Requesting(_focusIntent.Value);
         await Interop.FocusAsync(SegmentId(_focusIntent.Value));
     }
 
@@ -511,11 +509,8 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     {
         _focusIntent = null;
         _focusIntentField = null;
-        _leftBehind.Clear();
+        _focusMoves.Clear();
     }
-
-    // A focus move that has not landed within a second never will (the element went away): stop redirecting.
-    private bool IsFocusInFlight() => Environment.TickCount64 - _focusIntentAt < 1000;
 
     /// <summary>
     /// Takes the value the segments make once they are all filled (and nothing is being typed), or null when one was
@@ -578,6 +573,6 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        if (IsFieldControl) FieldContext?.SetControlFocus(null);
+        if (IsFieldControl) FieldContext?.ReleaseControlFocus(this);
     }
 }

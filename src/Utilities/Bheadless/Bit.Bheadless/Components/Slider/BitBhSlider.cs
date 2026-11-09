@@ -185,7 +185,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _values = DefaultValues?.ToArray() ?? [DefaultValue ?? Min];
-        FieldContext?.SetControlFocus(FocusAsync);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     /// <summary>Focuses the first thumb.</summary>
@@ -506,7 +506,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     {
         _disposed = true;
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
         // An attach in flight is undone by SyncAsync once it returns.
         if (_syncing is false) await DetachAsync();
         _callbacksRef?.Dispose();

@@ -112,7 +112,7 @@ public class BitBhRadioGroup : BitBhComponentBase, IDisposable
     protected override void OnInitialized()
     {
         _value = DefaultValue;
-        FieldContext?.SetControlFocus(FocusAsync);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     /// <summary>Focuses the checked radio, or the first enabled one.</summary>
@@ -238,6 +238,6 @@ public class BitBhRadioGroup : BitBhComponentBase, IDisposable
     public void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
     }
 }

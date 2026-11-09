@@ -56,7 +56,8 @@ public class BitBhMenuButton : BitBhComponentBase
         if (Menubar is not null)
             builder.AddAttribute(33, "onfocus",
                 On<FocusEventArgs>("onfocus", HandleFocus));
-        if (OpenOnHover)
+        // A menu a menubar opened by hover follows the pointer too, OpenOnHover or not.
+        if (OpenOnHover || (MenuContext?.OpenedByHover ?? false))
             builder.AddAttribute(34, "onpointerleave",
                 On<PointerEventArgs>("onpointerleave", HandlePointerLeave));
         builder.AddElementReferenceCapture(40, CaptureElement);

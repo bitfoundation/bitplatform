@@ -171,7 +171,7 @@
 
     private const string StrictCspCode = """
         // Program.cs
-        builder.Services.AddBitBheadlessServices(options => options.StrictCsp = true);
+        builder.Services.AddBitBheadlessServices(configureOptions: options => options.StrictCsp = true);
 
         <!-- App.razor, in <head> -->
         <script src="_content/Bit.Bheadless/bit-bheadless-csp.js"></script>

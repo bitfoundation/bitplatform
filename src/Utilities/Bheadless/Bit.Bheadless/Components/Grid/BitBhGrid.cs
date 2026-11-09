@@ -91,6 +91,9 @@ public class BitBhGrid : BitBhComponentBase
     [Parameter]
     public int PageSize { get; set; } = 10;
 
+    /// <summary>The rows PageUp / PageDown move, here and in the runtime alike: a negative <see cref="PageSize"/> moves none.</summary>
+    private int Page => Math.Max(0, PageSize);
+
     /// <summary>Reading direction. Inherits from <see cref="BitBhDirectionProvider"/>.</summary>
     [Parameter]
     public BitBhDirection? Dir { get; set; }
@@ -147,7 +150,7 @@ public class BitBhGrid : BitBhComponentBase
         // What the runtime's arrow-key navigation reads (grid in bit-bheadless.ts): the rows' collection, the page and
         // the reading direction (a BitBhDirectionProvider renders no dir attribute).
         attrs["data-bit-bh-grid"] = Context.Rows.Key;
-        attrs["data-bit-bh-page-size"] = PageSize.ToString(CultureInfo.InvariantCulture);
+        attrs["data-bit-bh-page-size"] = Page.ToString(CultureInfo.InvariantCulture);
         if (EffectiveDir == BitBhDirection.Rtl) attrs["data-bit-bh-dir"] = "rtl";
         return attrs;
     }
@@ -251,10 +254,10 @@ public class BitBhGrid : BitBhComponentBase
                 if (e.ShiftKey && rows.ElementAtOrDefault(rowIndex - 1) is { } up) await SelectRowAsync(up, false, true);
                 break;
             case "PageDown":
-                await FocusCellAsync(rows.ElementAtOrDefault(Math.Min(rows.Count - 1, rowIndex + PageSize)), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(Math.Min(rows.Count - 1, rowIndex + Page)), colIndex, cell);
                 break;
             case "PageUp":
-                await FocusCellAsync(rows.ElementAtOrDefault(Math.Max(0, rowIndex - PageSize)), colIndex, cell);
+                await FocusCellAsync(rows.ElementAtOrDefault(Math.Max(0, rowIndex - Page)), colIndex, cell);
                 break;
             case "Home":
                 await FocusCellAsync(ctrl ? rows.FirstOrDefault() : row, 0, cell);

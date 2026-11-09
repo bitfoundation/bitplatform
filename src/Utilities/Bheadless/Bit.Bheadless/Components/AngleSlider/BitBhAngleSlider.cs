@@ -128,7 +128,7 @@ public class BitBhAngleSlider : BitBhComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         _value = DefaultValue;
-        FieldContext?.SetControlFocus(() => _thumbId is null ? Task.CompletedTask : Interop.FocusAsync(_thumbId).AsTask());
+        FieldContext?.SetControlFocus(this, () => _thumbId is null ? Task.CompletedTask : Interop.FocusAsync(_thumbId).AsTask());
     }
 
     protected override void OnParametersSet()
@@ -286,7 +286,7 @@ public class BitBhAngleSlider : BitBhComponentBase, IAsyncDisposable
     {
         _disposed = true;
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
         if (!_attaching && _handle > 0) await Interop.AreaDetachAsync(_handle);
         _ref?.Dispose();
         GC.SuppressFinalize(this);

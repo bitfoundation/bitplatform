@@ -68,8 +68,9 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     // only a complete range in order makes.
     private DateOnly? _start;
     private DateOnly? _end;
-    private bool _open;
-    private bool _hasGroup;
+    // Whether the dates make an invalid range, worked out on first read after they or the parameters change: it can
+    // walk every day of the range through IsDateUnavailable, and every render reads it several times.
+    private bool? _valueInvalid;
     private BitBhDateRangeField? _startField;
     private BitBhDateRangeField? _endField;
 
@@ -197,7 +198,7 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     public BitBhDateRange? CurrentValue => IsProvided(nameof(Value)) ? Value : _value;
 
     /// <summary>Whether the calendar popover is open.</summary>
-    public bool IsOpen => IsProvided(nameof(Open)) ? Open : _open;
+    public bool IsOpen => PickerContext.IsOpen;
 
     /// <summary>Whether the picker is disabled (own flag, field or fieldset).</summary>
     public bool IsDisabled => Disabled || (FieldContext?.Disabled ?? false) || (FieldsetContext?.Disabled ?? false);
@@ -219,9 +220,6 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
 
     internal BitBhDatePickerContext PickerContext => _picker ??= new BitBhDatePickerContext(this);
 
-    internal string GroupId => $"{ComponentId}-group";
-    internal string TriggerId => $"{ComponentId}-trigger";
-    internal string ContentId => $"{ComponentId}-content";
     internal string InputId(BitBhDateRangePart part) => $"{ComponentId}-{(part == BitBhDateRangePart.Start ? "start" : "end")}";
     internal string? LabelledBy => FieldContext?.LabelledBy;
     internal BitBhDirection EffectiveDir => Dir ?? CascadedDir;
@@ -232,20 +230,15 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
 
     private bool IsEmpty => (_startField?.IsEmpty ?? _start is null) && (_endField?.IsEmpty ?? _end is null);
 
-    private bool IsValueInvalid
-        => (_start is { } start && !IsSelectable(start)) || (_end is { } end && !IsSelectable(end)) || IsReversed
-           || (_start is { } s && _end is { } e && s <= e && SpansUnavailable(s, e));
+    private bool IsValueInvalid => _valueInvalid ??= ComputeValueInvalid();
 
-    private bool IsSelectable(DateOnly date)
-        => (Min is not { } min || date >= min) && (Max is not { } max || date <= max) && !(IsDateUnavailable?.Invoke(date) ?? false);
-
-    private bool SpansUnavailable(DateOnly start, DateOnly end)
+    // The calendar's rules (BitBhDateRange), on what the inputs hold.
+    private bool ComputeValueInvalid()
     {
-        // As the calendar: long ranges are not walked day by day, only what a person could pick by hand is checked.
-        if (AllowsNonContiguousRanges || IsDateUnavailable is not { } unavailable || end.DayNumber - start.DayNumber > 3700) return false;
-        for (var d = start; d <= end; d = d.AddDays(1))
-            if (unavailable(d)) return true;
-        return false;
+        if (IsReversed) return true;
+        if (_start is { } start && _end is { } end)
+            return !new BitBhDateRange(start, end).IsSelectable(Min, Max, IsDateUnavailable, AllowsNonContiguousRanges);
+        return (_start ?? _end) is { } date && !BitBhDateRange.IsSelectable(date, Min, Max, IsDateUnavailable);
     }
 
     /// <summary>What the input of <paramref name="part"/> holds.</summary>
@@ -256,12 +249,15 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     protected override void OnInitialized()
     {
         _value = DefaultValue;
-        _open = DefaultOpen;
-        FieldContext?.SetControlFocus(FocusAsync);
+        // Created once the parameters are in: the popover starts from DefaultOpen.
+        _picker = new BitBhDatePickerContext(this);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     protected override void OnParametersSet()
     {
+        // Min, Max or IsDateUnavailable (whose answers can change with the same delegate) may have changed.
+        _valueInvalid = null;
         var current = CurrentValue;
         if (!_initialized || current != _lastValue)
         {
@@ -302,12 +298,7 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
         builder.AddAttribute(10, "id", ComponentId);
         builder.AddMultipleAttributes(20, GetFinalAttributes());
         builder.AddElementReferenceCapture(30, CaptureElement);
-        builder.OpenComponent<CascadingValue<BitBhDatePickerContext>>(40);
-        builder.AddComponentParameter(41, "Value", PickerContext);
-        // Not fixed: the parts render the open state and the range, which change without new parameters.
-        builder.AddComponentParameter(42, "IsFixed", false);
-        builder.AddComponentParameter(43, "ChildContent", ChildContent);
-        builder.CloseComponent();
+        builder.AddContent(40, PickerContext.Cascade(ChildContent));
         builder.CloseElement();
 
         // Like a native disabled control, a disabled picker posts nothing.
@@ -370,6 +361,7 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     /// <summary>Takes the range the inputs make - null unless both are filled in, in order - then renders.</summary>
     private async Task CommitAsync()
     {
+        _valueInvalid = null;
         var next = _start is { } start && _end is { } end && start <= end ? new BitBhDateRange(start, end) : null;
         if (next != CurrentValue)
         {
@@ -386,18 +378,10 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
     // ── The popover ──────────────────────────────────────────────────────────
 
     /// <summary>Opens the calendar popover.</summary>
-    public Task OpenAsync() => IsOpen || IsDisabled ? Task.CompletedTask : SetOpenAsync(true);
+    public Task OpenAsync() => PickerContext.OpenAsync();
 
     /// <summary>Closes the calendar popover.</summary>
-    public Task CloseAsync() => IsOpen ? SetOpenAsync(false) : Task.CompletedTask;
-
-    private async Task SetOpenAsync(bool open)
-    {
-        if (!IsProvided(nameof(Open))) _open = open;
-        await OpenChanged.InvokeAsync(open);
-        await OnOpenChange.InvokeAsync(open);
-        StateHasChanged();
-    }
+    public Task CloseAsync() => PickerContext.CloseAsync();
 
     /// <summary>A range picked in the calendar.</summary>
     private async Task SelectRangeAsync(BitBhDateRange range)
@@ -406,32 +390,23 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
         _start = range.Start;
         _end = range.End;
         await CommitAsync();
-        if (CloseOnSelect) await CloseAsync();
+        await PickerContext.PickedAsync();
     }
 
-    // ── What the parts and the calendar read ─────────────────────────────────
+    // ── What the popover and the calendar read ───────────────────────────────
 
+    bool IBitBhDatePickerOwner.IsOpenControlled => IsProvided(nameof(Open));
+    string IBitBhDatePickerOwner.RootId => ComponentId;
+    void IBitBhDatePickerOwner.Render() => StateHasChanged();
     bool IBitBhDatePickerOwner.IsRange => true;
-    string IBitBhDatePickerOwner.GroupId => GroupId;
-    string IBitBhDatePickerOwner.TriggerId => TriggerId;
-    string IBitBhDatePickerOwner.ContentId => ContentId;
-    bool IBitBhDatePickerOwner.HasGroup => _hasGroup;
     string? IBitBhDatePickerOwner.LabelledBy => LabelledBy;
     DateOnly? IBitBhDatePickerOwner.SelectedDate => null;
     BitBhDateRange? IBitBhDatePickerOwner.SelectedRange => CurrentValue;
     DateOnly? IBitBhDatePickerOwner.MinDate => Min;
     DateOnly? IBitBhDatePickerOwner.MaxDate => Max;
     BitBhDirection IBitBhDatePickerOwner.EffectiveDir => EffectiveDir;
-    Task IBitBhDatePickerOwner.ToggleAsync() => IsOpen ? CloseAsync() : OpenAsync();
     Task IBitBhDatePickerOwner.SelectDateAsync(DateOnly date) => Task.CompletedTask;
     Task IBitBhDatePickerOwner.SelectRangeAsync(BitBhDateRange range) => SelectRangeAsync(range);
-
-    void IBitBhDatePickerOwner.RegisterGroup(bool present)
-    {
-        if (_hasGroup == present) return;
-        _hasGroup = present;
-        StateHasChanged();
-    }
 
     void IBitBhDatePickerOwner.AddGroupState(Dictionary<string, object> attrs, Dictionary<string, object>? own)
     {
@@ -440,12 +415,11 @@ public class BitBhDateRangePicker : BitBhComponentBase, IBitBhDatePickerOwner, I
         if (FieldContext?.LabelledBy is { } label && !named) attrs["aria-labelledby"] = label;
         if (FieldContext?.DescribedBy is { } description) attrs["aria-describedby"] = description;
         AddStateAttributes(attrs);
-        SetDataState(attrs, IsOpen);
     }
 
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
     }
 }

@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Library-wide settings. Register them for the whole app with
-/// <c>builder.Services.AddBitBheadlessServices(options =&gt; …)</c>, or cascade an instance to a part of the
+/// <c>builder.Services.AddBitBheadlessServices(configureOptions: options =&gt; …)</c>, or cascade an instance to a part of the
 /// page (<c>&lt;CascadingValue Value="options" IsFixed="true"&gt;</c>), which then takes precedence there.
 /// </summary>
 public sealed class BitBhOptions

@@ -38,22 +38,22 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
 
     protected override BitBhAnchorOptions? EffectiveAnchor => Anchor ?? DefaultAnchor;
 
-    private string ContentId => Picker?.Owner.ContentId ?? ComponentId;
+    private string ContentId => Picker?.ContentId ?? ComponentId;
 
     protected override BitBhFloatingRequest CreateFloatingRequest()
     {
-        var owner = Picker?.Owner;
+        var picker = Picker;
         var layer = new BitBhLayerOptions
         {
             FocusOutside = true,
             ParentHandle = ParentLayerHandle,
         };
-        layer.BranchIds.Add(owner?.TriggerId);
+        layer.BranchIds.Add(picker?.TriggerId);
 
         return new BitBhFloatingRequest
         {
             ContentId = ContentId,
-            ReferenceId = owner is null ? null : owner.HasGroup ? owner.GroupId : owner.TriggerId,
+            ReferenceId = picker is null ? null : picker.HasGroup ? picker.GroupId : picker.TriggerId,
             Anchor = EffectiveAnchor,
             ArrowId = ArrowId,
             Portal = EffectivePortal,
@@ -64,7 +64,7 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
                 // The calendar marks its focused date data-bit-bh-autofocus: "first" lands on it.
                 AutoFocus = "first",
                 RestoreFocus = true,
-                ReturnFocusId = owner?.TriggerId,
+                ReturnFocusId = picker?.TriggerId,
             },
         };
     }

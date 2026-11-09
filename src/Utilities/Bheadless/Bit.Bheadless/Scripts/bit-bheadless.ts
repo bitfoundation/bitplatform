@@ -2074,9 +2074,18 @@ function createRuntime() {
         const end = Math.min(vl.count, last + 1 + vl.overscan);
         if (start === vl.start && end === vl.end) return;
         vl.requesting = true;
-        // The render it brings is on the page (and synced) by the time the call returns: then look again.
-        const done = () => { vl.requesting = false; vlRequest(vl); };
-        vl.dotnet.invokeMethodAsync('SetRange', start, end, vl.epoch).then(done, done);
+        const from = vl.start;
+        const to = vl.end;
+        // The render it brings is on the page by the time the call returns. Once it has been synced (the window moved),
+        // look again: the view may have moved on during the call. A call that moved nothing (a list since replaced) or
+        // failed (a dropped circuit) is not repeated: the next scroll, resize or render asks again, so a call that keeps
+        // failing can't spin in a loop.
+        const done = () => {
+            vl.requesting = false;
+            if (vl.start !== from || vl.end !== to) vlRequest(vl);
+        };
+        const failed = () => { vl.requesting = false; };
+        vl.dotnet.invokeMethodAsync('SetRange', start, end, vl.epoch).then(done, failed);
     }
 
     function vlReveal(vl: VirtualList, index: number) {
@@ -4137,7 +4146,9 @@ function createRuntime() {
         if (rowIndex < 0 || col < 0) return;
         const rtl = grid.getAttribute('data-bit-bh-dir') === 'rtl';
         const tree = grid.getAttribute('role') === 'treegrid';
-        const page = parseInt(grid.getAttribute('data-bit-bh-page-size') ?? '', 10) || 10;
+        // The component's page, 0 included (no move): the default only when the attribute is missing.
+        const pageSize = parseInt(grid.getAttribute('data-bit-bh-page-size') ?? '', 10);
+        const page = isNaN(pageSize) ? 10 : Math.max(0, pageSize);
 
         let to: [Element | undefined, number] | null = null;
         switch (e.key) {

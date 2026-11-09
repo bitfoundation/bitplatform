@@ -340,7 +340,7 @@ A few components set styles of their own: the clipping of `BitBhVisuallyHidden`,
 
 ```csharp
 // Program.cs (server and, for WebAssembly / Auto, the client project too)
-builder.Services.AddBitBheadlessServices(options => options.StrictCsp = true);
+builder.Services.AddBitBheadlessServices(configureOptions: options => options.StrictCsp = true);
 ```
 
 ```razor

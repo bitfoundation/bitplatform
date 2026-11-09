@@ -131,8 +131,9 @@ public sealed class BitBhMenubarContext
     {
         if (OpenMenu is { } open && open != menu && !menu.IsDisabled)
         {
-            // A menu the pointer opened hands over to the next one the same way: the focus stays where it is.
-            if (open.OpenedByHover && menu.OpenOnHover) await menu.OpenByHoverAsync();
+            // A menu the pointer opened hands over to the next one the same way, whether that one opens on hover or
+            // not: the focus stays where it is (a hover never moves it), and the next one closes when the pointer leaves.
+            if (open.OpenedByHover) await menu.OpenByHoverAsync();
             else await menu.OpenAsync(BitBhMenuFocus.Container);
         }
     }

@@ -110,13 +110,17 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     string? IBitBhMenuRoot.TriggerId => ButtonId;
     BitBhMenubarContext? IBitBhMenuRoot.Menubar => MenubarContext;
     bool IBitBhMenuRoot.OpenedByHover => OpenedByHover;
-    bool IBitBhMenuRoot.TracksHover => OpenOnHover;
+    bool IBitBhMenuRoot.TracksHover => TracksHover;
     void IBitBhMenuRoot.PanelHoverChanged(string contentId, bool inside)
     {
         if (inside) HoverEnter(contentId, canOpen: false);
         else HoverLeave(contentId);
     }
     void IBitBhMenuRoot.FocusEntered() => TakeOver();
+
+    // A menu follows the pointer while it opens on hover, or while a hover opened it (a menubar hands a hover-opened menu
+    // over to the next one the pointer rests on the same way, OpenOnHover or not).
+    private bool TracksHover => OpenOnHover || OpenedByHover;
 
     private string ButtonId => $"{ComponentId}-button";
     private string ItemsId => $"{ComponentId}-items";
@@ -236,7 +240,7 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     /// </summary>
     internal void HoverEnter(string part, bool canOpen)
     {
-        if (!OpenOnHover) return;
+        if (!TracksHover) return;
         _hoveredParts.Add(part);
         HoverTimer.Cancel();
         if (IsOpen || !canOpen || Disabled) return;
@@ -246,7 +250,7 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     /// <summary>The pointer left a part of the menu: once it is over none, a hover-opened menu closes after <see cref="HoverCloseDelay"/>.</summary>
     internal void HoverLeave(string part)
     {
-        if (!OpenOnHover) return;
+        if (!TracksHover) return;
         _hoveredParts.Remove(part);
         if (_hoveredParts.Count > 0) return;
         HoverTimer.Cancel();

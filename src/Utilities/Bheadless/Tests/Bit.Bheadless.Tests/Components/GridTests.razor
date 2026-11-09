@@ -20,8 +20,8 @@
     ];
 
     private RenderFragment Grid(FileRow[] rows, bool tree = false, BitBhGridSelectionMode mode = BitBhGridSelectionMode.None,
-        Action<IReadOnlyCollection<string>>? onSelect = null, Action<string>? onActivate = null) =>
-        @<BitBhGrid As="table" aria-label="Files" TreeGrid="tree" SelectionMode="mode"
+        Action<IReadOnlyCollection<string>>? onSelect = null, Action<string>? onActivate = null, int pageSize = 10) =>
+        @<BitBhGrid As="table" aria-label="Files" TreeGrid="tree" SelectionMode="mode" PageSize="pageSize"
                  SelectedKeysChanged="k => onSelect?.Invoke(k)" OnRowActivate="k => onActivate?.Invoke(k)">
             <BitBhGridRowGroup As="thead">
                 <BitBhGridRow As="tr" IsHeaderRow="true">
@@ -332,5 +332,17 @@
 
         var rtl = Render(@<BitBhDirectionProvider Dir="BitBhDirection.Rtl">@Grid(Flat)</BitBhDirectionProvider>);
         Assert.AreEqual("rtl", rtl.Find("table").GetAttribute("data-bit-bh-dir"));
+    }
+
+    [TestMethod]
+    public void A_page_size_of_zero_or_less_moves_no_row_here_or_in_the_runtime()
+    {
+        // The runtime moves by the page size the grid renders, 0 included: the same rows the grid itself moves by.
+        var cut = Render(Grid(Flat, pageSize: -3));
+        Assert.AreEqual("0", cut.Find("table").GetAttribute("data-bit-bh-page-size"));
+
+        Cell(cut, "alpha.txt").Press("PageDown");
+        Assert.AreEqual("0", Cell(cut, "alpha.txt").GetAttribute("tabindex"));
+        Assert.AreEqual(Cell(cut, "alpha.txt").Id, this.LastFocusRequest());
     }
 }

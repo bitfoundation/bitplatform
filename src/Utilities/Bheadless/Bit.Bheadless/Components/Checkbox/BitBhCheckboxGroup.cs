@@ -89,7 +89,7 @@ public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
         if (DefaultValues is not null) _values = DefaultValues.ToList();
         // A group is no labelable element: the field's label names it through aria-labelledby and, clicked,
         // focuses its first checkbox (instead of a <label for> pointing at an id nothing has).
-        FieldContext?.SetControlFocus(FocusAsync);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     /// <summary>Focuses the first enabled checkbox.</summary>
@@ -174,7 +174,7 @@ public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
     public void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
     }
 }
 

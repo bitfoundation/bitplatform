@@ -30,7 +30,7 @@ public class BitBhDatePickerTrigger : BitBhComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, Tag);
-        builder.AddAttribute(10, "id", Picker?.Owner.TriggerId ?? ComponentId);
+        builder.AddAttribute(10, "id", Picker?.TriggerId ?? ComponentId);
         builder.AddMultipleAttributes(20, GetFinalAttributes());
         builder.AddAttribute(30, "onclick", On<MouseEventArgs>("onclick", HandleClickAsync));
         builder.AddAttribute(31, "onkeydown", On<KeyboardEventArgs>("onkeydown", HandleKeyDownAsync));
@@ -57,10 +57,10 @@ public class BitBhDatePickerTrigger : BitBhComponentBase
         SetAriaBool(attrs, "aria-expanded", open);
         if (Picker is { } picker)
         {
-            if (open) attrs["aria-controls"] = picker.Owner.ContentId;
+            if (open) attrs["aria-controls"] = picker.ContentId;
             // With a label, the button says which field it chooses for: "Choose date, Departure".
             if (picker.Owner.LabelledBy is { } label && GetAdditionalAttribute("aria-label") is null && GetAdditionalAttribute("aria-labelledby") is null)
-                attrs["aria-labelledby"] = $"{picker.Owner.TriggerId} {label}";
+                attrs["aria-labelledby"] = $"{picker.TriggerId} {label}";
         }
         // The trigger belongs to the open popover's layer: an Escape pressed on it closes the popover.
         if (open) attrs[BitBhKeyboard.KeysAttribute] = "Escape";

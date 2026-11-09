@@ -316,6 +316,41 @@
     }
 
     [TestMethod]
+    public void A_hover_opened_menu_hands_over_without_the_focus_to_a_menu_that_does_not_open_on_hover()
+    {
+        // The focus is elsewhere (a text field) while the pointer crosses the bar: a hover opened the first menu, so the
+        // next one opens the same way, OpenOnHover or not - the focus stays where it is.
+        var cut = Render(
+            @<BitBhMenubar aria-label="Site">
+                <BitBhMenu OpenOnHover="true" HoverOpenDelay="0" HoverCloseDelay="10000">
+                    <BitBhMenuButton>Products</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <BitBhMenu HoverCloseDelay="0">
+                    <BitBhMenuButton>Resources</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Blog</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>);
+        AngleSharp.Dom.IElement Trigger(int i) => cut.FindAll("[role=menubar] > div > [aria-haspopup=menu]")[i];
+
+        Trigger(0).PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(0).GetAttribute("aria-expanded")));
+        Trigger(0).PointerLeave(Mouse);
+        Trigger(1).PointerEnter(Mouse);
+
+        Assert.AreEqual("false", Trigger(0).GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Trigger(1).GetAttribute("aria-expanded"));
+        var menu = cut.FindAll("[role=menu]")[1];
+        cut.WaitForAssertion(() => Assert.AreEqual("none", Part(OpenOptions(menu.Id), "focus")["autoFocus"]));
+        Assert.AreEqual(0, FocusRequests);
+        Assert.AreEqual("0", Trigger(0).GetAttribute("tabindex"));
+
+        // Opened by the hover, it closes when the pointer leaves it, as the menu it took over from would have.
+        Trigger(1).PointerLeave(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("false", Trigger(1).GetAttribute("aria-expanded")));
+    }
+
+    [TestMethod]
     public void A_touch_on_another_menubar_trigger_does_not_switch_to_it_before_its_click()
     {
         // A touch enters the trigger right before its click: switching on it would open the menu and the click shut it.

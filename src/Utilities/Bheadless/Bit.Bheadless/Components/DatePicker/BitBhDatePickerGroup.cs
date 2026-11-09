@@ -24,12 +24,12 @@ public class BitBhDatePickerGroup : BitBhComponentBase, IDisposable
 
     protected override string DefaultTag => "div";
 
-    protected override void OnInitialized() => Picker?.Owner.RegisterGroup(true);
+    protected override void OnInitialized() => Picker?.RegisterGroup(true);
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, Tag);
-        builder.AddAttribute(10, "id", Picker?.Owner.GroupId ?? ComponentId);
+        builder.AddAttribute(10, "id", Picker?.GroupId ?? ComponentId);
         builder.AddMultipleAttributes(20, GetFinalAttributes());
         builder.AddAttribute(30, "onkeydown", On<KeyboardEventArgs>("onkeydown", HandleKeyDownAsync));
         builder.AddElementReferenceCapture(40, CaptureElement);
@@ -40,7 +40,11 @@ public class BitBhDatePickerGroup : BitBhComponentBase, IDisposable
     protected override Dictionary<string, object> BuildComponentAttributes()
     {
         var attrs = base.BuildComponentAttributes();
-        if (Picker is { } picker) picker.Owner.AddGroupState(attrs, AdditionalAttributes);
+        if (Picker is { } picker)
+        {
+            picker.Owner.AddGroupState(attrs, AdditionalAttributes);
+            SetDataState(attrs, picker.IsOpen);
+        }
         else attrs["role"] = "group";
         return attrs;
     }
@@ -48,5 +52,5 @@ public class BitBhDatePickerGroup : BitBhComponentBase, IDisposable
     private Task HandleKeyDownAsync(KeyboardEventArgs e)
         => e.AltKey && e.Key == "ArrowDown" && Picker is { } picker ? picker.OpenAsync() : Task.CompletedTask;
 
-    public void Dispose() => Picker?.Owner.RegisterGroup(false);
+    public void Dispose() => Picker?.RegisterGroup(false);
 }

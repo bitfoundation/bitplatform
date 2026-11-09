@@ -257,6 +257,82 @@
     }
 
     [TestMethod]
+    public void A_calendar_can_turn_off_the_non_contiguous_ranges_its_picker_allows()
+    {
+        var cut = Render(
+            @<BitBhDateRangePicker Culture="En" AllowsNonContiguousRanges="true" IsDateUnavailable="d => d.Day == 10" aria-label="Stay">
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+                <BitBhDatePickerContent>
+                    <BitBhCalendar AllowsNonContiguousRanges="false" DefaultFocusedDate="new DateOnly(2026, 11, 8)"><BitBhCalendarGrid /></BitBhCalendar>
+                </BitBhDatePickerContent>
+            </BitBhDateRangePicker>);
+
+        cut.Find(".trigger").Click();
+        Cell(cut, "2026-11-11").Click();
+        // The calendar's own false wins over the picker's true: the range can't reach past the 10th.
+        Assert.IsTrue(Cell(cut, "2026-11-09").HasAttribute("data-disabled"));
+    }
+
+    [TestMethod]
+    public void A_single_date_calendar_in_a_range_picker_keeps_its_own_date()
+    {
+        DateOnly? picked = null;
+        BitBhDateRange? value = null;
+        var cut = Render(
+            @<BitBhDateRangePicker Culture="En" ValueChanged="v => value = v" aria-label="Stay">
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+                <BitBhDatePickerContent>
+                    <BitBhCalendar SelectionMode="BitBhCalendarSelectionMode.Single" DefaultFocusedDate="new DateOnly(2026, 11, 8)"
+                                   OnValueChange="d => picked = d"><BitBhCalendarGrid /></BitBhCalendar>
+                </BitBhDatePickerContent>
+            </BitBhDateRangePicker>);
+
+        cut.Find(".trigger").Click();
+        Cell(cut, "2026-11-10").Click();
+
+        Assert.AreEqual(new DateOnly(2026, 11, 10), picked);
+        Assert.IsTrue(Cell(cut, "2026-11-10").HasAttribute("data-selected"));
+        Assert.IsNull(value);
+    }
+
+    [TestMethod]
+    public void The_range_is_walked_for_unavailable_dates_once_per_change_not_on_every_render()
+    {
+        // The dates strictly inside Nov 8 - 12 are only ever asked about by the walk across the range (the inputs ask
+        // about their own date, and the calendar is closed).
+        var inside = 0;
+        Func<DateOnly, bool> unavailable = d => { if (d.Day is > 8 and < 12) inside++; return false; };
+        var cut = Render(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" IsDateUnavailable="unavailable" aria-label="Stay">@Parts()</BitBhDateRangePicker>);
+        Assert.AreEqual(3, inside);
+
+        // Focusing a segment renders the picker, the group and both inputs again.
+        Segment(cut, "start", "day").Focus();
+        Segment(cut, "end", "day").Focus();
+        Assert.IsTrue(cut.Find(".group").HasAttribute("data-focused"));
+        Assert.AreEqual(3, inside);
+
+        // A new range (Nov 8 - 13) is walked again.
+        Segment(cut, "end", "day").Press("ArrowUp");
+        Assert.AreEqual(6, inside);
+    }
+
+    [TestMethod]
+    public void The_label_still_focuses_the_start_once_the_calendar_has_come_and_gone()
+    {
+        var cut = Labelled(@<BitBhDateRangePicker Culture="En">@Parts()</BitBhDateRangePicker>);
+        var month = Segment(cut, "start", "month").Id;
+
+        cut.Find(".trigger").Click();
+        Assert.IsNotEmpty(cut.FindAll("[role=grid]"));
+        cut.Find(".trigger").Click();
+        Assert.IsEmpty(cut.FindAll("[role=grid]"));
+
+        cut.Find("label").Click();
+        Assert.AreEqual(month, this.LastFocusRequest());
+        Assert.IsFalse(cut.Find("label").HasAttribute("for"));
+    }
+
+    [TestMethod]
     public void A_range_set_from_outside_fills_and_empties_both_inputs()
     {
         var cut = Render(

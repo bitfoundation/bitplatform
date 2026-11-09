@@ -180,6 +180,18 @@
     }
 
     [TestMethod]
+    public void A_style_bridge_that_failed_to_load_is_asked_for_again_a_few_times()
+    {
+        UseStrictCsp();
+        // The runtime answers false: the bridge did not load (a network error).
+        JSInterop.SetupModule(BitBhInterop.ModulePath).Setup<bool>("styles.enable").SetResult(false);
+        var cut = Render(Styled());
+        for (var i = 0; i < 5; i++) cut.Find("[aria-label=Volume], [aria-label=To]").Press("ArrowLeft");
+
+        Assert.HasCount(3, JSInterop.Invocations.Where(i => i.Identifier == "styles.enable"));
+    }
+
+    [TestMethod]
     public void Cascaded_options_take_precedence_over_the_registered_ones()
     {
         UseStrictCsp();
@@ -207,10 +219,25 @@
     public void AddBitBheadlessServices_registers_the_options()
     {
         var services = new ServiceCollection();
-        services.AddBitBheadlessServices(options => options.StrictCsp = true);
+        services.AddBitBheadlessServices(configureOptions: options => options.StrictCsp = true);
 
         using var provider = services.BuildServiceProvider();
         Assert.IsTrue(provider.GetRequiredService<BitBhOptions>().StrictCsp);
         Assert.IsTrue(services.Any(d => d.ServiceType == typeof(BitBhInterop)), "The other services are registered too.");
+    }
+
+    [TestMethod]
+    public void AddBitBheadlessServices_takes_the_strings_and_the_options_in_one_call()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBheadlessServices(strings => strings.Increase = "Augmenter", options => options.StrictCsp = true);
+
+        using var provider = services.BuildServiceProvider();
+        Assert.IsTrue(provider.GetRequiredService<BitBhOptions>().StrictCsp);
+        Assert.AreEqual("Augmenter", provider.GetRequiredService<BitBhStrings>().Increase);
+
+        // One unnamed argument configures the strings, as it did before the options existed: no ambiguous call.
+        Assert.IsNotNull(new ServiceCollection().AddBitBheadlessServices(null));
+        Assert.IsNotNull(new ServiceCollection().AddBitBheadlessServices(_ => { }));
     }
 }

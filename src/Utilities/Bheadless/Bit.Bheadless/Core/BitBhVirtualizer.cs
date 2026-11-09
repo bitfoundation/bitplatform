@@ -78,11 +78,21 @@ internal sealed class BitBhVirtualizer<TItem> : ComponentBase, IAsyncDisposable
         _start = Math.Max(0, Math.Min(_start, _end - length));
     }
 
-    private static bool SameItems(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+    /// <summary>
+    /// Whether <paramref name="b"/> holds the items of <paramref name="a"/>, judged by the count, the ends and the
+    /// rendered window: the cost is the window's however long the list (it runs on every render of a list rebuilt by
+    /// every render). A list changed only outside the window keeps the sizes measured on it, estimates the runtime
+    /// corrects as those items render.
+    /// </summary>
+    private bool SameItems(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
     {
-        if (a.Count != b.Count) return false;
+        var count = a.Count;
+        if (count != b.Count) return false;
+        if (count == 0) return true;
         var comparer = EqualityComparer<TItem>.Default;
-        for (var i = 0; i < a.Count; i++)
+        if (!comparer.Equals(a[0], b[0]) || !comparer.Equals(a[count - 1], b[count - 1])) return false;
+        var end = Math.Min(_end, count);
+        for (var i = Math.Min(_start, end); i < end; i++)
             if (!comparer.Equals(a[i], b[i])) return false;
         return true;
     }
