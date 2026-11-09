@@ -122,7 +122,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | --- | --- | --- |
 | `SERVER_ADDRESS` | variable | The environment's public address, which the deployment adds to the app's `TrustedOrigins` |
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
-| `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
+| `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with; without it a missing translation fails the deploy |
 <!--#if (aspire == true)-->
 | `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |

@@ -614,7 +614,7 @@ bit translate
 - `bit translate --check` calls no model and fails when any translation is missing, for CI.
 - `bit translate --dry-run` lists what would be translated.
 - `bit translate --language fa` translates only the languages you name.
-- A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it is still wrong.
+- A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it is still wrong, which fails the run.
 
 ## Philosophy of `bit translate` in CD Pipelines
 
@@ -643,8 +643,8 @@ An earlier step of the job installs the bit CLI, with bit platform's `bit-setup`
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
 > the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the
-> step skips translation instead of failing the deploy - so a missing or misnamed secret ships that release with
-> its `.resx` keys left untranslated. Leave the secret blank only when untranslated keys are acceptable.
+> step fails the deploy when any `.resx` key is untranslated. Leave the secret blank only when every translation is
+> committed.
 
 ### When to Run the Tool
 

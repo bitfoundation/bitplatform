@@ -15,6 +15,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
     private long outputTokens;
     private int translatedKeys;
     private int batchCount;
+    private int skippedKeys;
 
     public async Task<int> RunAsync(TranslateRequest request, CancellationToken cancellationToken)
     {
@@ -88,8 +89,8 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (string.IsNullOrWhiteSpace(settings.OpenAI.ApiKey))
         {
-            cli.Console.Warn($"Nothing was translated: there's no API key. Set the OpenAI__ApiKey environment variable (or OpenAI:ApiKey in {ResxTranslatorSettings.FileName}).");
-            return CliApp.ExitOk;
+            cli.Console.Fail($"{totalMissing} translation{(totalMissing == 1 ? " is" : "s are")} missing and there's no API key to translate {(totalMissing == 1 ? "it" : "them")}. Set the OpenAI__ApiKey environment variable (or OpenAI:ApiKey in {ResxTranslatorSettings.FileName}).");
+            return CliApp.ExitFailed;
         }
 
         var client = clientFactory?.Invoke(settings) ?? ChatTranslationClient.Create(settings);
@@ -140,7 +141,16 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
         cli.Console.Out.WriteLine();
         cli.Console.Out.MarkupLine($"[bold]Translated {translatedKeys} key{(translatedKeys == 1 ? "" : "s")}[/] [grey]in {batchCount} request{(batchCount == 1 ? "" : "s")}, {inputTokens:N0} input and {outputTokens:N0} output tokens[/]");
 
-        return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
+        if (steps.AnyFailed)
+            return CliApp.ExitFailed;
+
+        if (skippedKeys > 0)
+        {
+            cli.Console.Fail($"{skippedKeys} translation{(skippedKeys == 1 ? " is" : "s are")} still missing: the model's placeholders didn't match. Run bit translate again.");
+            return CliApp.ExitFailed;
+        }
+
+        return CliApp.ExitOk;
     }
 
     private async Task<(Dictionary<string, string> Translations, int Skipped)> TranslateAsync(ITranslationClient client, ResxWork item, Action<string> progress, CancellationToken cancellationToken)
@@ -200,6 +210,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
             }
 
             Interlocked.Add(ref translatedKeys, translations.Count);
+            Interlocked.Add(ref skippedKeys, skipped);
         }
 
         return (translations, skipped);

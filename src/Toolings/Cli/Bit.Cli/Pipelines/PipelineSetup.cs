@@ -48,7 +48,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         ["S3_CONNECTION_STRING"] = "the S3-compatible storage the files go to, such as Cloudflare R2; appsettings.json has samples",
         ["AZURE_BLOB_STORAGE_CONNECTION_STRING"] = "the connection string of the Azure Storage account the files go to",
         ["CLOUDFLARE_TUNNEL_TOKEN"] = "the connector token of this environment's Cloudflare Tunnel",
-        ["OPENAI_APIKEY"] = "an OpenAI compatible API key for bit translate; without it nothing is translated",
+        ["OPENAI_APIKEY"] = "an OpenAI compatible API key for bit translate; without it a missing translation fails the deploy",
         ["CLOUDFLARE_ZONE"] = "the zone id on your domain's Cloudflare overview page",
         ["CLOUDFLARE_TOKEN"] = "a Cloudflare API token that can purge the zone's cache",
         [AppleIssuerId] = "the issuer id on App Store Connect's Users and Access > Integrations page",
