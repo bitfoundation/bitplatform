@@ -205,7 +205,10 @@ public class BitSliderParamsTests : BunitTestContext
             Classes = new BitSliderClassStyles { Root = "cascaded-root" },
             Color = BitColor.Warning,
             DraggableTrack = true,
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             GetValueText = getValueText,
+            Invalid = true,
             Inverted = true,
             IsOriginFromZero = true,
             IsRanged = true,
@@ -247,7 +250,10 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.AreSame(@params.Classes, instance.Classes);
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.IsTrue(instance.DraggableTrack);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
         Assert.AreSame(getValueText, instance.GetValueText);
+        Assert.IsTrue(instance.Invalid);
         Assert.IsTrue(instance.Inverted);
         Assert.IsTrue(instance.IsOriginFromZero);
         Assert.IsTrue(instance.IsRanged);
@@ -303,6 +309,37 @@ public class BitSliderParamsTests : BunitTestContext
             Assert.AreEqual("2", input.GetAttribute("step"));
             StringAssert.StartsWith(input.GetAttribute("aria-valuetext"), "Level ");
         }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var com = RenderWithParams(new BitSliderParams { ErrorMessage = "Not available on the free plan." });
+
+        Assert.AreEqual("Not available on the free plan.", com.Find(".bit-sld-erm").TextContent.Trim());
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
+        Assert.AreEqual("Not available on the free plan.", com.Find("[role=status]").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitSliderShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var com = RenderWithParams(new BitSliderParams { ErrorMessageAriaLabel = "Refused by the server." },
+                                   builder => builder.AddAttribute(2, nameof(BitSlider.Invalid), invalid));
+
+        Assert.AreEqual(string.Empty, com.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        com.Render();
+
+        Assert.AreEqual("Refused by the server.", com.Find("[role=status]").TextContent.Trim());
     }
 
     [TestMethod]

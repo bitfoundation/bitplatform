@@ -18,6 +18,9 @@ public partial class BitSlider : BitInputBase<double>
     private double _thumbA;
     private double _thumbB;
 
+    // Whether the live region that announces an error message is rendered (see OnParametersSet).
+    private bool _hasLiveRegion;
+
     // Whether the last pass had to move an end of the range to satisfy the scale or the distance constraints.
     // The correction itself happens in OnParametersSet, but telling the parent about it has to wait for the
     // async half of the lifecycle, since an EventCallback cannot be awaited from the synchronous one.
@@ -167,6 +170,46 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public bool DraggableTrack { get; set; }
 
     /// <summary>
+    /// A line under the Slider saying why its value was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused the value, a rule spanning
+    /// two fields. A Slider inside an <c>EditForm</c> already gets its messages from the cascading EditContext
+    /// through the <c>ValidationMessage</c> component. A ranged Slider has one message for the pair, which both of
+    /// its thumbs are described by.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the Slider the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and every thumb references
+    /// it through its aria-describedby attribute, so the same reason is read out on every later focus too.
+    /// A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a template
+    /// switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking the
+    /// Slider invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// It replaces the message for a screen reader as well: a template is free to render anything at all, so the
+    /// live region announces <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when that is not
+    /// set - never the plain <see cref="ErrorMessage"/> it hides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Builds the text of every label the Slider draws - the ones beside the track, the ones under the marks
     /// and the floating one on the thumb - from the value they stand for.
     /// </summary>
@@ -199,6 +242,20 @@ public partial class BitSlider : BitInputBase<double>
     /// The default upper value of the ranged Slider, used when <see cref="UpperValue"/> is not bound.
     /// </summary>
     [Parameter] public double? DefaultUpperValue { get; set; }
+
+    /// <summary>
+    /// Marks the value of the Slider as invalid, giving a value rejected by something other than the cascading
+    /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute, on every thumb, that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A Slider failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// On its own it says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a
+    /// reason to announce.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Fills the track from the far end instead of from the near one, so the highlighted part is what lies
@@ -618,6 +675,18 @@ public partial class BitSlider : BitInputBase<double>
         // the scale, the step and the marks among them, all of which the caches below and the normalization
         // after it are built from.
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region is only rendered for a slider that is wired to say something through it - one whose
+        // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
+        // so a form full of plain sliders does not carry an empty live region per slider. A label a BitParams hands
+        // down is not written by the markup, yet it is said out of the region the moment Invalid turns on, so
+        // holding one wires the slider too. Once there it stays, since it has to be on the page before the text
+        // that is meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || LiveText is not null;
 
         _marks = null;
         _markValues = null;
@@ -1283,7 +1352,9 @@ public partial class BitSlider : BitInputBase<double>
     /// The two are joined rather than one winning, because the attribute the component writes lands after the
     /// splatted ones and would otherwise replace them - and a validation message, a hint or a unit the caller has
     /// associated with the field by hand is exactly the kind of thing that must not be silently dropped.
-    /// aria-describedby takes a list of ids, so both simply appear in it.
+    /// aria-describedby takes a list of ids, so both simply appear in it. The error line joins them between the
+    /// two, ahead of the description: what is wrong with the value is the more urgent thing to hear, and a label
+    /// stands in for an error template, which may well be a bare icon with no text to describe the thumbs with.
     /// </remarks>
     private string? GetDescribedBy()
     {
@@ -1291,10 +1362,63 @@ public partial class BitSlider : BitInputBase<double>
             ? value?.ToString()
             : null;
 
-        if (AriaDescription.HasValue() is false) return supplied;
+        var describedBy = string.Join(' ', new[]
+        {
+            supplied,
+            HasErrorAriaLabel ? ErrorLabelId : HasErrorMessage ? ErrorId : null,
+            AriaDescription.HasValue() ? DescriptionId : null,
+        }.Where(id => id.HasValue()));
 
-        return supplied.HasValue() ? $"{supplied} {DescriptionId}" : DescriptionId;
+        return describedBy.HasValue() ? describedBy : null;
     }
+
+    /// <summary>
+    /// The id of the error line, which is what the thumbs point at while it is shown.
+    /// </summary>
+    private string ErrorId => $"{_Id}-error";
+
+    /// <summary>
+    /// The id of the visually hidden <see cref="ErrorMessageAriaLabel"/>, which stands in for the error line.
+    /// </summary>
+    private string ErrorLabelId => $"{_Id}-error-label";
+
+    /// <summary>
+    /// Whether the slider carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the value of the slider, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the value is a rejection of it, so it marks the slider the same way the
+    /// flag does instead of leaving a red line under a track that still looks accepted.
+    /// </remarks>
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// Whether <see cref="ErrorMessageAriaLabel"/> speaks for the rejection on screen: a template, which wins over a
+    /// plain message and is free to render anything at all, or the forced state without a message.
+    /// </summary>
+    /// <remarks>
+    /// A whitespace label is no label - announcing it would leave the slider sounding accepted.
+    /// </remarks>
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    /// <summary>
+    /// What the live region carries, which is the rejection on screen and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// It always matches what is shown: a plain message is its own text, while a template - never read out itself,
+    /// since a live region reading out a block of markup is worse than one saying nothing - is announced through its
+    /// label, or as "Invalid input" rather than left in silence. The forced state is the one rejection only announced
+    /// with a label of its own, its reason being explained elsewhere.
+    /// </remarks>
+    private string? LiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                : ErrorMessage.HasValue() ? ErrorMessage
+                                : null;
 
     /// <summary>
     /// The element a thumb borrows its name from when there is no text to name it with directly.
