@@ -366,12 +366,12 @@ column is dropped one release after the code stops using it. What is left:
 <!--#if (cloudflare == true || filesStorage == "S3")-->
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
-  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS and Cache
-  Rules with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
+  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS, Cache
+  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
   everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
   Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
   delete it. Before anything else, try one read with it for each permission (tunnels, Access applications, R2 buckets,
-  DNS records, rulesets and the token list), so a missing one shows now and not halfway through.
+  DNS records, zone settings, rulesets and the token list), so a missing one shows now and not halfway through.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
@@ -392,6 +392,8 @@ column is dropped one release after the code stops using it. What is left:
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
+- Turn Early Hints off on the zone (`PATCH zones/<zone id>/settings/early_hints` with `{"value":"off"}`), and read it
+  back. It has to stay off.
 - The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
   follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
