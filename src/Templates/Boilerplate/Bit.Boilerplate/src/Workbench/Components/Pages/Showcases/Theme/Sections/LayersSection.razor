@@ -1,0 +1,53 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="layers" Title="@Localizer[nameof(WorkbenchStrings.ThemeLayers)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeLayersWhatFloatsOverWhatHow)]">
+    <div class="groups">
+        <div class="group">
+            <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeLayersLayers)]</BitText>
+            <div class="stack">
+                @foreach (var (token, index) in LayersInOrder.Select((token, index) => (token, index)))
+                {
+                    <div class="layer" style="--wb-layer:@index">
+                        <TokenLabel Name="@ShortName(token)" Value="@ValueOf(token)" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="group">
+            <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeLayersScreenBreakpoints)]</BitText>
+            @foreach (var token in ThemeTokens.Breakpoints)
+            {
+                <div class="breakpoint">
+                    <span class="breakpoint-name">@token.Name[9..]</span>
+                    <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+                </div>
+            }
+        </div>
+
+        <div class="group">
+            <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]</BitText>
+            <div class="row">
+                <span class="opacity-sample">@AppLocalizer[nameof(AppStrings.Save)]</span>
+                <span class="opacity-sample faded">@AppLocalizer[nameof(AppStrings.Save)]</span>
+            </div>
+            <TokenLabel Name="@ThemeTokens.DisabledOpacity.Name" Value="@ValueOf(ThemeTokens.DisabledOpacity)" />
+        </div>
+
+        <div class="group">
+            <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeLayersDialogLayout)]</BitText>
+            <div class="dialog-mock">
+                <span class="dialog-title">@Localizer[nameof(WorkbenchStrings.ThemeDialogTitle)]</span>
+                <span class="dialog-text">@Localizer[nameof(WorkbenchStrings.ThemeDialogMessage)]</span>
+                <div class="dialog-actions">
+                    <BitButton Size="BitSize.Small" Color="BitColor.Error">@AppLocalizer[nameof(AppStrings.Delete)]</BitButton>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Outline">@AppLocalizer[nameof(AppStrings.Cancel)]</BitButton>
+                </div>
+            </div>
+            @foreach (var token in ThemeTokens.DialogLayout)
+            {
+                <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+            }
+        </div>
+    </div>
+</ThemeSection>

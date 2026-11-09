@@ -1,0 +1,67 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="progress" Title="@Localizer[nameof(WorkbenchStrings.ThemeProgressSection)]">
+    <ComponentStates Name="@Localizer[nameof(WorkbenchStrings.ThemeLoaders)]">
+        <StateSample Name="BitBarsLoading"><BitBarsLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitBouncingDotsLoading"><BitBouncingDotsLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitCircleLoading"><BitCircleLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitDotsRingLoading"><BitDotsRingLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitDualRingLoading"><BitDualRingLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitEllipsisLoading"><BitEllipsisLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitGridLoading"><BitGridLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitHeartLoading"><BitHeartLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitHourglassLoading"><BitHourglassLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitOrbitingDotsLoading"><BitOrbitingDotsLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitRingLoading"><BitRingLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitRippleLoading"><BitRippleLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitRollerLoading"><BitRollerLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitRollingDashesLoading"><BitRollingDashesLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitRollingSquareLoading"><BitRollingSquareLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitSlickBarsLoading"><BitSlickBarsLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitSpinnerLoading"><BitSpinnerLoading Size="BitSize.Small" /></StateSample>
+        <StateSample Name="BitXboxLoading"><BitXboxLoading Size="BitSize.Small" /></StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitProgress" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressDeterminate)]">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgress)]" Percent="62" ShowPercentNumber />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressIndeterminate)]">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgressSyncing)]" Indeterminate />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgressUploadFailed)]" Percent="38" Color="BitColor.Error" Description="@Localizer[nameof(WorkbenchStrings.ThemeProgressTheConnectionDropped)]" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressCircular)]">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgressStorage)]" Percent="74" Circular ShowPercentNumber />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressSegments)]">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgressStep3Of5)]" Percent="60" Segments="5" Color="BitColor.Success" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressStriped)]">
+            <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgressDownloadingTheMenu)]" Percent="45" Striped Color="BitColor.Info" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitShimmer" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressLine)]">
+            <BitShimmer Height="2.5rem" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressParagraph)]">
+            <BitShimmer Lines="3" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressAvatarAndLines)]">
+            <div class="row shimmer-person">
+                <BitShimmer Circle Height="2.5rem" Width="2.5rem" />
+                <div class="shimmer-lines">
+                    <BitShimmer Lines="2" />
+                </div>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressLoaded)]">
+            <BitShimmer Loaded>
+                <BitPersona PrimaryText="@Localizer[nameof(WorkbenchStrings.DemoUserYas)]" SecondaryText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsOwner)]" ImageUrl="@WorkbenchPhotos.Find(nameof(WorkbenchStrings.DemoUserYas))" Size="BitPersonaSize.Size40" />
+            </BitShimmer>
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

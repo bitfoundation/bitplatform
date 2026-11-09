@@ -1,0 +1,17 @@
+@inherits WorkbenchComponentBase
+
+<div class="weather">
+    <div class="weather-now">
+        <BitIcon IconName="@SkyIcon" Size="BitSize.Large" Color="@SkyColor" />
+        <div class="weather-place">
+            <BitText Typography="BitTypography.Subtitle2">@City</BitText>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Condition</BitText>
+        </div>
+        <span class="weather-temperature">@Degrees(Temperature)</span>
+    </div>
+    <div class="weather-facts">
+        <span>@Localizer[nameof(WorkbenchStrings.ThemeAiHigh), Degrees(High)]</span>
+        <span>@Localizer[nameof(WorkbenchStrings.ThemeAiLow), Degrees(Low)]</span>
+        <span>@Localizer[nameof(WorkbenchStrings.ThemeAiChanceOfRain), Rain]</span>
+    </div>
+</div>

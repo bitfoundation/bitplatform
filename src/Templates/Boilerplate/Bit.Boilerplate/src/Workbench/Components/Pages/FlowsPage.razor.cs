@@ -5,7 +5,8 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// /flows lists the flows of the review; /flows/{id} draws one as a Bit.Blow board of live screens joined by arrows,
-/// which dev mode can rearrange, link and label, and anyone can present screen by screen.
+/// which dev mode can rearrange, link and label, and anyone can present screen by screen. A sample's arrows open their
+/// editor in dev mode too, and a change made there goes into the review's own copy of the sample, which then opens.
 /// </summary>
 public partial class FlowsPage
 {
@@ -22,6 +23,8 @@ public partial class FlowsPage
     // The review document couldn't be opened, so the board shows a message instead of loading for ever.
     private bool isOpenFailed;
     private string? labelDraft;
+    // The arrow whose editor opens again once the copy of the sample a change was made on is shown.
+    private string? linkToReopen;
     private readonly List<BlowNode> nodes = [];
     private readonly List<BlowEdge> edges = [];
     // Each screen's 1-based place in the flow, shown on its card.
@@ -34,10 +37,16 @@ public partial class FlowsPage
 
     [Parameter] public string? FlowId { get; set; }
 
+    /// <summary>The arrow whose editor the board opens with, as the tour opens one.</summary>
+    [SupplyParameterFromQuery(Name = WorkbenchUrls.ArrowQueryKey)] public string? ArrowId { get; set; }
+
     private WorkbenchFlow? Flow => FlowId is null ? null : reviewSession.AllFlows.FirstOrDefault(f => f.Id == FlowId);
 
     // Only dev mode may change a board, and nobody a sample's.
     private bool CanEdit => reviewSession.CanWrite && Flow is { IsSample: false };
+
+    // A sample's arrows too, as a change to one goes into a copy of the sample.
+    private bool CanEditArrows => reviewSession.CanWrite && Flow is not null;
 
     private WorkbenchFlowLink? EditingLink => editingLinkId is null ? null : Flow?.Links.FirstOrDefault(l => l.Id == editingLinkId);
 
@@ -67,6 +76,7 @@ public partial class FlowsPage
         }
 
         Rebuild();
+        OpenArrowEditor();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -90,7 +100,55 @@ public partial class FlowsPage
 
         Rebuild();
 
+        // The review's own flows are known only now.
+        if (editingLinkId is null)
+        {
+            OpenArrowEditor();
+        }
+
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Opens the editor of the arrow the address names, or of the one a change on a sample was made on, now on its copy,
+    /// keeping the label that was being written.
+    /// </summary>
+    private void OpenArrowEditor()
+    {
+        var keepsDraft = linkToReopen is not null;
+        var linkId = linkToReopen ?? ArrowId;
+
+        linkToReopen = null;
+
+        if (linkId is null || CanEditArrows is false || Flow?.Links.FirstOrDefault(l => l.Id == linkId) is not { } link)
+            return;
+
+        editingLinkId = link.Id;
+        labelDraft = keepsDraft ? labelDraft : link.Label;
+    }
+
+    /// <summary>
+    /// Makes a change to the flow shown or, on a sample, to the review's own copy of it, which then opens; with an arrow
+    /// given, that arrow's editor opens again on the copy.
+    /// </summary>
+    private async Task ChangeFlow(Action<string> change, string? reopenLinkId = null)
+    {
+        if (Flow is not { } flow)
+            return;
+
+        if (flow.IsSample is false)
+        {
+            change(flow.Id);
+            return;
+        }
+
+        if (await reviewSession.CopySample(flow.Id) is not { } copyId)
+            return;
+
+        change(copyId);
+
+        linkToReopen = reopenLinkId;
+        NavigationManager.NavigateTo(WorkbenchUrls.Flow(copyId));
     }
 
     /// <summary>
@@ -122,6 +180,11 @@ public partial class FlowsPage
             if (existing.TryGetValue(screen.Id, out var node))
             {
                 node.Data = screen;
+
+                // A sample's copy keeps its screens' ids, and with them the sample's nodes, which couldn't be changed.
+                node.Draggable = CanEdit;
+                node.Connectable = CanEdit;
+                node.Deletable = CanEdit;
 
                 if (node.Dragging is false)
                 {
@@ -234,7 +297,7 @@ public partial class FlowsPage
 
     private void EditLabel(BlowEdgeMouseEvent args)
     {
-        if (CanEdit is false || Flow?.Links.FirstOrDefault(l => l.Id == args.Edge.Id) is not { } link)
+        if (CanEditArrows is false || Flow?.Links.FirstOrDefault(l => l.Id == args.Edge.Id) is not { } link)
             return;
 
         editingLinkId = link.Id;
@@ -256,11 +319,11 @@ public partial class FlowsPage
         }
     }
 
-    private void DeleteLink()
+    private async Task DeleteLink()
     {
-        if (FlowId is not null && editingLinkId is not null)
+        if (editingLinkId is { } linkId)
         {
-            reviewSession.RemoveLink(FlowId, editingLinkId);
+            await ChangeFlow(flowId => reviewSession.RemoveLink(flowId, linkId));
         }
 
         CloseLabelEditor();
@@ -312,7 +375,7 @@ public partial class FlowsPage
 
         if (spot is not null)
         {
-            reviewSession.SetLinkSpot(FlowId, link.Id, spot);
+            await ChangeFlow(flowId => reviewSession.SetLinkSpot(flowId, link.Id, spot), reopenLinkId: link.Id);
         }
 
         await ShowAll();
@@ -348,19 +411,22 @@ public partial class FlowsPage
         isScreenNotLoaded = false;
     }
 
-    private void ClearSpot()
+    private async Task ClearSpot()
     {
-        if (FlowId is not null && editingLinkId is not null)
+        if (editingLinkId is { } linkId)
         {
-            reviewSession.SetLinkSpot(FlowId, editingLinkId, null);
+            await ChangeFlow(flowId => reviewSession.SetLinkSpot(flowId, linkId, null), reopenLinkId: linkId);
         }
     }
 
-    private void SaveLabel()
+    /// <summary>Saves a label that changed; one left as it was changes nothing, and so makes no copy of a sample.</summary>
+    private async Task SaveLabel()
     {
-        if (FlowId is not null && editingLinkId is not null)
+        var label = string.IsNullOrWhiteSpace(labelDraft) ? null : labelDraft.Trim();
+
+        if (EditingLink is { } link && label != link.Label)
         {
-            reviewSession.SetLinkLabel(FlowId, editingLinkId, labelDraft);
+            await ChangeFlow(flowId => reviewSession.SetLinkLabel(flowId, link.Id, label));
         }
 
         CloseLabelEditor();

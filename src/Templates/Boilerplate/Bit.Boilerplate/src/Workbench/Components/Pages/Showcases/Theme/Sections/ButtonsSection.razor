@@ -1,0 +1,132 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="buttons" Title="@Localizer[nameof(WorkbenchStrings.ThemeButtons)]">
+    @foreach (var variant in Enum.GetValues<BitVariant>())
+    {
+        <div class="row">
+            @foreach (var color in ThemeSamples.Colors)
+            {
+                <BitButton Variant="variant" Color="color">@color</BitButton>
+            }
+        </div>
+    }
+    <div class="row">
+        @foreach (var size in Enum.GetValues<BitSize>())
+        {
+            <BitButton Size="size" IconName="@BitIconName.Add">@size</BitButton>
+        }
+        <BitButton IconOnly IconName="@BitIconName.Settings" Title="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" />
+    </div>
+
+    @* From here on each component is shown in its states; a sample with Force is drawn hovered, focused or pressed. *@
+    <ComponentStates Name="BitActionButton">
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates)
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitActionButton IconName="@BitIconName.Signin">@AppLocalizer[nameof(AppStrings.SignIn)]</BitActionButton>
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitActionButton IconName="@BitIconName.Signin" Disabled>@AppLocalizer[nameof(AppStrings.SignIn)]</BitActionButton>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsColored)]">
+            <BitActionButton IconName="@BitIconName.Delete" Color="BitColor.Error">@AppLocalizer[nameof(AppStrings.Delete)]</BitActionButton>
+        </StateSample>
+    </ComponentStates>
+
+    @foreach (var variant in Enum.GetValues<BitVariant>())
+    {
+        <ComponentStates Name="@($"BitButton · {variant}")">
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates)
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitButton Variant="variant" IconName="@BitIconName.Save">@SaveText</BitButton>
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitButton Variant="variant" IconName="@BitIconName.Save" Disabled>@SaveText</BitButton>
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+                <BitButton Variant="variant" IconName="@BitIconName.Save" IsLoading>@SaveText</BitButton>
+            </StateSample>
+        </ComponentStates>
+    }
+
+    <ComponentStates Name="BitButton" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsWithASecondLine)]">
+            <BitButton IconName="@BitIconName.CloudUpload" SecondaryText="@Localizer[nameof(WorkbenchStrings.ThemeButtonsEveryChangeIsKeptFor)]">@Localizer[nameof(WorkbenchStrings.ThemeButtonsBackUpNow)]</BitButton>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsRoundedIconAtTheEnd)]">
+            <BitButton Rounded IconName="@BitIconName.ChevronRight" IconPlacement="BitPlacement.End">@Localizer[nameof(WorkbenchStrings.ThemeButtonsContinue)]</BitButton>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsFullWidth)]">
+            <BitButton FullWidth Variant="BitVariant.Outline" IconName="@BitIconName.Add">@Localizer[nameof(WorkbenchStrings.ThemeButtonsAddABuilding)]</BitButton>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsAsALink)]">
+            <BitButton Href="#" Variant="BitVariant.Text" IconName="@BitIconName.OpenInNewWindow">@Localizer[nameof(WorkbenchStrings.ThemeButtonsOpenTheGuide)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitButtonGroup" Wide>
+        @foreach (var variant in Enum.GetValues<BitVariant>())
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitButtonGroup Items="periods" Variant="variant" />
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitButtonGroup Items="periods" Toggle DefaultToggleKey="week" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="button" Index="2">
+            <BitButtonGroup Items="periods" Variant="BitVariant.Outline" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="button" Index="2">
+            <BitButtonGroup Items="periods" Variant="BitVariant.Outline" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsIconsOnly)]">
+            <BitButtonGroup Items="alignments" IconOnly Variant="BitVariant.Outline" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitButtonGroup Items="periods" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMenuButton">
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitMenuButton Text="@ActionsText" Items="menuItems" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsSplit)]">
+            <BitMenuButton Text="@SaveText" IconName="@BitIconName.Save" Items="menuItems" Split />
+        </StateSample>
+        <StateSample Name="@BitVariant.Outline.ToString()">
+            <BitMenuButton Text="@ActionsText" Items="menuItems" Variant="BitVariant.Outline" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitMenuButton Text="@ActionsText" Items="menuItems" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitToggleButton">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOff)">
+            <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOn)">
+            <BitToggleButton IconName="@BitIconName.FavoriteStarFill" Text="@FavoriteText" DefaultIsChecked="true" />
+        </StateSample>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1))
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" />
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsOnOutline)]">
+            <BitToggleButton IconName="@BitIconName.Microphone" Text="@Localizer[nameof(WorkbenchStrings.ThemeButtonsMute)]" Variant="BitVariant.Outline" DefaultIsChecked="true" />
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

@@ -137,6 +137,25 @@ public class HomePageUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task ThePages_Should_ShowUnderTheirCategoriesAsInThePagesPane(WorkbenchSurface surface)
+    {
+        await OpenHome();
+
+        var categories = WorkbenchPageCatalog.Pages.GroupBy(p => p.CategoryKey).ToArray();
+        var groups = Page.Locator("section#pages .catalog-group");
+
+        await Expect(groups).ToHaveCountAsync(categories.Length);
+
+        for (var i = 0; i < categories.Length; i++)
+        {
+            var group = groups.Nth(i);
+
+            await Expect(group.GetByRole(AriaRole.Heading, new() { Level = 3 })).ToHaveTextAsync(WorkbenchStrings.ResourceManager.GetString(categories[i].Key)!);
+            await Expect(group.Locator("a.page-card .page-title")).ToHaveTextAsync([.. categories[i].Select(p => WorkbenchStrings.ResourceManager.GetString(p.TitleKey)!)]);
+        }
+    }
+
+    [TestMethod, EverySurface]
     public async Task StartHere_Should_OpenThePageWithTheTour(WorkbenchSurface surface)
     {
         await OpenHome();
@@ -248,6 +267,31 @@ public class HomePageUITests : WorkbenchPageTest
         await thumbnail.ScrollIntoViewIfNeededAsync();
 
         await WorkbenchTestReviewer.WaitFor(() => thumbnail.EvaluateAsync<int>("image => image.naturalWidth"), width => width > 0, TimeSpan.FromSeconds(90));
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AThumbnailOnItsWay_Should_ShimmerUntilItArrives(WorkbenchSurface surface)
+    {
+        var release = new TaskCompletionSource();
+
+        await Context.RouteAsync(url => url.Contains("/api/thumbnails/", StringComparison.Ordinal), async route =>
+        {
+            await release.Task;
+            await route.ContinueAsync();
+        });
+
+        await OpenHome();
+
+        var thumbnail = Page.Locator("a.page-card img.light-only").First;
+        var wave = new Regex("thumbnail-wave");
+
+        await thumbnail.ScrollIntoViewIfNeededAsync();
+        await Expect(thumbnail).ToHaveCSSAsync("animation-name", wave);
+
+        release.SetResult();
+
+        await Expect(thumbnail).ToHaveAttributeAsync("data-thumbnail-state", "loaded", new() { Timeout = 120_000 });
+        await Expect(thumbnail).Not.ToHaveCSSAsync("animation-name", wave);
     }
 
     [TestMethod, EverySurface]

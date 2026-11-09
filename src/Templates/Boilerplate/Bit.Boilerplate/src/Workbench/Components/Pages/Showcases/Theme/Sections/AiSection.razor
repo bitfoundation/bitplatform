@@ -1,0 +1,564 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="ai" Title="@Localizer[nameof(WorkbenchStrings.ThemeAi)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeAiEverySampleHereIsStatic)]">
+    <BitAiOptionsProvider UiOptions="uiOptions">
+
+        <ComponentStates Name="BitAiAgentRunView" Full>
+            <StateSample Name="@nameof(BitAiAgentRunStatus.Running)">
+                <BitAiAgentRunView Run="samples.RunningRun" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiAgentRunStatus.WaitingForInput)">
+                <BitAiAgentRunView Run="samples.WaitingRun" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiAgentRunStatus.Completed)">
+                <BitAiAgentRunView Run="samples.CompletedRun" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiAgentRunStatus.Failed)">
+                <BitAiAgentRunView Run="samples.FailedRun" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiAgentStatusBadge">
+            @foreach (var status in Enum.GetValues<BitAiAgentRunStatus>())
+            {
+                <StateSample Name="@status.ToString()">
+                    <BitAiAgentStatusBadge Status="status" />
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiAgentStepView" Wide>
+            @foreach (var step in samples.Steps)
+            {
+                <StateSample Name="@step.Status.ToString()">
+                    <BitAiAgentStepView Step="step" />
+                </StateSample>
+            }
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithToolCalls)]">
+                <BitAiAgentStepView Step="samples.StepWithTools" Conversation="samples.AgentConversation" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiAgentStepView Step="samples.StepWithTools" Conversation="samples.AgentConversation" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiArtifactPartView" Full>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiArtifactPartView Part="samples.ArtifactPart" Conversation="samples.ArtifactConversation" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiNotInTheConversation)]">
+                <BitAiArtifactPartView Part="samples.MissingArtifactPart" Conversation="samples.ArtifactConversation" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiArtifactView" Full>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiDocument)]">
+                <BitAiArtifactView Artifact="samples.DocumentArtifact" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiSeveralVersions)]">
+                <BitAiArtifactView Artifact="samples.VersionedArtifact" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiBeingWritten)]">
+                <BitAiArtifactView Artifact="samples.StreamingArtifact" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiAttachmentChip" Wide>
+            <StateSample Name="@nameof(BitAiAttachmentStatus.Ready)">
+                <BitAiAttachmentChip Attachment="samples.ReportAttachment" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiImage)]">
+                <BitAiAttachmentChip Attachment="samples.PhotoAttachment" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiAttachmentStatus.Uploading)">
+                <BitAiAttachmentChip Attachment="samples.UploadingAttachment" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiAttachmentStatus.Failed)">
+                <BitAiAttachmentChip Attachment="samples.FailedAttachment" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiRemovable)]">
+                <BitAiAttachmentChip Attachment="samples.ReportAttachment" OnRemove="KeepAttachment" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiAttachmentChip Attachment="samples.ReportAttachment" OnRemove="KeepAttachment" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        @* A chat fills what holds it, so each one gets a box of its own height and scrolls inside it. *@
+        <ComponentStates Name="BitAiChat" Full>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <div class="chat-box">
+                    <BitAiChat Session="emptyChatSession"
+                               EmptyTitle="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeTitle)]"
+                               EmptyBody="@Localizer[nameof(WorkbenchStrings.ThemeAiAskAboutSalesStockThe)]"
+                               Suggestions="samples.Suggestions"
+                               Placeholder="@PromptPlaceholder" />
+                </div>
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.AssistantTranscript)]">
+                <div class="chat-box">
+                    <BitAiChat Session="chatSession" Placeholder="@PromptPlaceholder">
+                        <HeaderTemplate>
+                            <div class="chat-header">
+                                <BitIcon IconName="@BitIconName.Robot" />
+                                <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.ThemeAiStoreAssistant)]</BitText>
+                            </div>
+                        </HeaderTemplate>
+                        <FooterTemplate>
+                            <div class="chat-footer">
+                                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeAiTheAssistantCanMakeMistakes)]</BitText>
+                            </div>
+                        </FooterTemplate>
+                    </BitAiChat>
+                </div>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiChatMessage" Full>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiFromTheUser)]">
+                <BitAiChatMessage Message="samples.UserMessage" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Complete)">
+                <div class="scroll-box">
+                    <BitAiChatMessage Message="samples.ReplyMessage" Conversation="samples.MessageConversation" />
+                </div>
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiChatMessage Message="samples.StreamingMessage" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Pending)">
+                <BitAiChatMessage Message="samples.PendingMessage" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Failed)">
+                <BitAiChatMessage Message="samples.FailedMessage" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiFromTheSystem)]">
+                <BitAiChatMessage Message="samples.SystemMessage" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiCitationMarker" Wide>
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitText Typography="BitTypography.Body2">@(CitedSentence)<BitAiCitationMarker Citation="samples.Citations[0]" /></BitText>
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitText Typography="BitTypography.Body2">@(CitedSentence)<BitAiCitationMarker Citation="samples.Citations[0]" Disabled /></BitText>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiCodeBlockView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithAFileName)]">
+                <BitAiCodeBlockView Code="@AiSamples.CSharpCode" Language="csharp" FileName="RestockRule.cs" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithoutAHeader)]">
+                <BitAiCodeBlockView Code="@AiSamples.ShellCode" Language="bash" ShowHeader="false" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiCodeBlockView Code="@AiSamples.StreamingCode" Language="json" IsStreaming />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiLineNumbers)]">
+                <BitAiOptionsProvider UiOptions="lineNumbersOptions">
+                    <BitAiCodeBlockView Code="@AiSamples.CSharpCode" Language="csharp" FileName="RestockRule.cs" />
+                </BitAiOptionsProvider>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiCollapsible" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+                <BitAiCollapsible Title="@CollapsibleTitle">
+                    <BitText Typography="BitTypography.Body2">@CollapsibleText</BitText>
+                </BitAiCollapsible>
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+                <BitAiCollapsible Title="@CollapsibleTitle" Open="true">
+                    <BitText Typography="BitTypography.Body2">@CollapsibleText</BitText>
+                </BitAiCollapsible>
+            </StateSample>
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1).Take(2))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitAiCollapsible Title="@CollapsibleTitle">
+                        <BitText Typography="BitTypography.Body2">@CollapsibleText</BitText>
+                    </BitAiCollapsible>
+                </StateSample>
+            }
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiContextMeter" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiPlentyLeft)]">
+                <BitAiContextMeter Used="6_200" Window="32_000" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiFillingUp)]">
+                <BitAiContextMeter Used="26_400" Window="32_000" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiAlmostFull)]">
+                <BitAiContextMeter Used="31_100" Window="32_000" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithTheUnsentPrompt)]">
+                <BitAiContextMeter Used="20_800" Window="32_000" PendingTokens="4_200" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiConversationList" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+                <BitAiConversationList Conversations="conversations" SelectedId="@selectedConversationId" OnSelect="SelectConversation" OnDelete="DeleteConversation"
+                                       AriaLabel="@($"BitAiConversationList, {Localizer[nameof(WorkbenchStrings.ThemeStateSelected)]}")" />
+            </StateSample>
+            @* The second conversation of the list takes the state: each one is a button of its own, followed by its delete button. *@
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1).Take(2))
+            {
+                <StateSample NameKey="@nameKey" Force="@force" Target="li > button:first-child" Index="2">
+                    <BitAiConversationList Conversations="samples.Conversations" SelectedId="weekly" OnDelete="DeleteConversation"
+                                           AriaLabel="@($"BitAiConversationList, {Localizer[nameKey]}")" />
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiConversationList Conversations="samples.Conversations" SelectedId="weekly" OnDelete="DeleteConversation" Disabled
+                                       AriaLabel="@($"BitAiConversationList, {Localizer[nameof(WorkbenchStrings.ThemeDisabled)]}")" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiCopyButton">
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitAiCopyButton Content="@CopyText" />
+                </StateSample>
+            }
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithItsLabel)]">
+                <BitAiCopyButton Content="@CopyText" ShowLabel />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiCopyButton Content="@CopyText" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiDataTable" Full>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiDataTable Rows="samples.TableRows" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiEmptyState" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiEmptyState IconName="@BitIconName.Robot"
+                                 Title="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeTitle)]"
+                                 Body="@Localizer[nameof(WorkbenchStrings.ThemeAiAskAboutSalesStockThe)]"
+                                 Suggestions="samples.Suggestions" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiErrorView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithRetry)]">
+                <BitAiErrorView Error="samples.RetryableError" OnRetry="Retry" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithoutRetry)]">
+                <BitAiErrorView Error="samples.FilterError" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeDensityCompact)]">
+                <BitAiErrorView Error="samples.RetryableError" OnRetry="Retry" Compact />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiForm" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitAiForm Definition="samples.Form" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.PosBusy)]">
+                <BitAiForm Definition="samples.Form" Busy />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiSubmitted)]">
+                <BitAiForm Definition="samples.Form" Submitted />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiForm Definition="samples.Form" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiGenerativeUiView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiRegistered)]">
+                <BitAiGenerativeUiView Part="samples.WeatherPart" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiNotRegistered)]">
+                <BitAiGenerativeUiView Part="samples.UnregisteredPart" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiPropsThatDonTFit)]">
+                <BitAiGenerativeUiView Part="samples.MismatchedPart" ShowBindingErrors />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiImagePartView" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiImagePartView Part="samples.ImagePart" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiJsonView" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+                <BitAiJsonView Value="samples.OrderJson" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+                <BitAiJsonView Value="samples.OrderJson" DefaultExpandDepth="0" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiMarkdownView" Full>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <div class="scroll-box" role="region" tabindex="0" aria-label="@Localizer[nameof(WorkbenchStrings.ThemeAiAFormattedAnswer)]">
+                    <BitAiMarkdownView Document="samples.MarkdownDocument" />
+                </div>
+            </StateSample>
+        </ComponentStates>
+
+        @* The actions show on hover or focus unless pinned; the usage after them shows always, as the section's options ask. *@
+        <ComponentStates Name="BitAiMessageActions" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiMessageActions Message="samples.ActionsMessage" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitAiMessageActions Message="samples.ActionsMessage" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiPinned)]">
+                <BitAiMessageActions Message="samples.ActionsMessage" Pinned />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiRated)]">
+                <BitAiMessageActions Message="samples.RatedMessage" Pinned />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiMessageList" Full>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.AssistantTranscript)]">
+                <div class="list-box">
+                    <BitAiMessageList Conversation="samples.ListConversation" />
+                </div>
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <div class="list-box">
+                    <BitAiMessageList Conversation="samples.ReplyingConversation" />
+                </div>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiMessagePartView" Full>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiAPartOfEachKind)]">
+                <div class="scroll-box column">
+                    @foreach (var part in samples.PartsMessage.Parts)
+                    {
+                        <BitAiMessagePartView @key="part.PartId" Part="part" Message="samples.PartsMessage" />
+                    }
+                </div>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiModelSelector" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiModelSelector Models="samples.Models" @bind-ModelId="modelId" />
+            </StateSample>
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1).Take(2))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitAiModelSelector Models="samples.Models" ModelId="thorough" />
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiModelSelector Models="samples.Models" ModelId="thorough" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiPromptInput" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <BitAiPromptInput Placeholder="@PromptPlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitAiPromptInput Placeholder="@PromptPlaceholder" Value="@Localizer[nameof(WorkbenchStrings.ThemeAiWhatRunsOutBeforeFriday)]">
+                    <HintTemplate>
+                        <BitAiContextMeter Used="12_400" Window="32_000" />
+                    </HintTemplate>
+                </BitAiPromptInput>
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="textarea">
+                <BitAiPromptInput Placeholder="@PromptPlaceholder" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiGenerating)]">
+                <BitAiPromptInput Placeholder="@PromptPlaceholder" Generating="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiPromptInput Placeholder="@PromptPlaceholder" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiReasoningPartView" Wide>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiReasoningPartView Part="samples.ThinkingPart" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+                <BitAiReasoningPartView Part="samples.ReasonedPart" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+                <BitAiOptionsProvider UiOptions="openReasoningOptions">
+                    <BitAiReasoningPartView Part="samples.ReasonedPart" />
+                </BitAiOptionsProvider>
+            </StateSample>
+        </ComponentStates>
+
+        @* The button floats just above the bottom of what holds it, the way it sits over a chat's composer. *@
+        <ComponentStates Name="BitAiScrollToLatest" Wide>
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <div class="scroll-stage">
+                        <div class="scroll-anchor">
+                            <BitAiScrollToLatest Visible="true" />
+                        </div>
+                    </div>
+                </StateSample>
+            }
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiSourceCard" Wide>
+            @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitAiSourceCard Source="samples.WebSource" Number="3" />
+                </StateSample>
+            }
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithoutALink)]">
+                <BitAiSourceCard Source="samples.DatasetSource" Number="1" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiSourceList" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiSourceList Citations="samples.Citations" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiStreamingMarkdown" Wide>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiStreamingMarkdown Text="@samples.StreamingMarkdownText" IsStreaming />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Complete)">
+                <BitAiStreamingMarkdown Text="@samples.MarkdownText" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiStructuredDataView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiRecord)]">
+                <BitAiStructuredDataView Part="samples.ObjectDataPart" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.BuildingsVariantTable)]">
+                <BitAiStructuredDataView Part="samples.TableDataPart" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiStructuredDataView Part="samples.StreamingDataPart" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiTextPartView" Wide>
+            <StateSample Name="@nameof(BitAiMessageStatus.Complete)">
+                <BitAiTextPartView Part="samples.TextPart" Message="samples.TextMessage" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
+                <BitAiTextPartView Part="samples.StreamingTextPart" Message="samples.StreamingTextMessage" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithCitations)]">
+                <BitAiTextPartView Part="samples.CitedPart" Message="samples.CitedMessage" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiThinkingIndicator">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiThinkingIndicator />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithALabel)]">
+                <BitAiThinkingIndicator Label="@Localizer[nameof(WorkbenchStrings.ThemeAiReadingTheSalesReport)]" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiTokenUsageView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiTokens)]">
+                <BitAiTokenUsageView Usage="samples.TokenUsage" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithTheCost)]">
+                <BitAiTokenUsageView Usage="samples.CostUsage" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiWithSpeedAndLatency)]">
+                <BitAiTokenUsageView Usage="samples.GenerationMetadata.Usage" Metadata="samples.GenerationMetadata" ShowLatency />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiInDetail)]">
+                <BitAiTokenUsageView Usage="samples.DetailedUsage" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiToolApproval" Wide>
+            <StateSample Name="@nameof(BitAiToolRisk.Write)">
+                <BitAiToolApproval Call="samples.WriteApprovalCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolRisk.Destructive)">
+                <BitAiToolApproval Call="samples.DestructiveApprovalCall" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiToolApproval Call="samples.DisabledApprovalCall" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiToolCallView" Wide>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Streaming)">
+                <BitAiToolCallView Call="samples.StreamingCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Running)">
+                <BitAiToolCallView Call="samples.RunningCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.AwaitingApproval)">
+                <BitAiToolCallView Call="samples.AwaitingCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Completed)">
+                <BitAiToolCallView Call="samples.CompletedCall" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+                <BitAiOptionsProvider UiOptions="openToolCallsOptions">
+                    <BitAiToolCallView Call="samples.CompletedCall" />
+                </BitAiOptionsProvider>
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Failed)">
+                <BitAiToolCallView Call="samples.FailedCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Rejected)">
+                <BitAiToolCallView Call="samples.DeclinedCall" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Cancelled)">
+                <BitAiToolCallView Call="samples.CancelledCall" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitAiToolResultView" Wide>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.DataLive)]">
+                <BitAiToolResultView Part="samples.DataResultPart" />
+            </StateSample>
+            <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeForeground)]">
+                <BitAiToolResultView Part="samples.TextResultPart" />
+            </StateSample>
+            <StateSample Name="@nameof(BitAiToolCallStatus.Failed)">
+                <BitAiToolResultView Part="samples.FailedResultPart" />
+            </StateSample>
+        </ComponentStates>
+
+        @* The microphone button shows only in a browser that can dictate, and listening would ask for the microphone, so it shows idle. *@
+        <ComponentStates Name="BitAiVoiceInput">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitAiVoiceInput />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAiVoiceInput Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeAiNoLookOfTheirOwn), "BitAiOptionsProvider, BitAiRendererBoundary"]</BitText>
+    </BitAiOptionsProvider>
+</ThemeSection>

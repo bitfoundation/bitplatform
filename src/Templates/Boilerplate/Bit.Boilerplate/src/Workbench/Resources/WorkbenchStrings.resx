@@ -2358,17 +2358,11 @@
     <data name="ThemeToggle" xml:space="preserve">
         <value>Notifications</value>
     </data>
-    <data name="ThemeFeedback" xml:space="preserve">
-        <value>Messages and status</value>
-    </data>
     <data name="ThemeMessage" xml:space="preserve">
         <value>{0} message, the way the app shows it.</value>
     </data>
     <data name="ThemeProgress" xml:space="preserve">
         <value>Uploading</value>
-    </data>
-    <data name="ThemeContainers" xml:space="preserve">
-        <value>Cards and people</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Tab {0}</value>
@@ -2622,9 +2616,6 @@
     <data name="ThemeStateCollapsed" xml:space="preserve">
         <value>Collapsed</value>
     </data>
-    <data name="ThemeSelection" xml:space="preserve">
-        <value>Choices</value>
-    </data>
     <data name="ThemeNavigation" xml:space="preserve">
         <value>Navigation</value>
     </data>
@@ -2699,6 +2690,63 @@
     </data>
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Saved a minute ago</value>
+    </data>
+    <data name="ThemeSwitchSection" xml:space="preserve">
+        <value>Section</value>
+    </data>
+    <data name="ThemeShadows" xml:space="preserve">
+        <value>Shadows</value>
+    </data>
+    <data name="ThemeSizes" xml:space="preserve">
+        <value>Sizes and spacing</value>
+    </data>
+    <data name="ThemeMotion" xml:space="preserve">
+        <value>Motion</value>
+    </data>
+    <data name="ThemeLayers" xml:space="preserve">
+        <value>Layers, breakpoints and layout</value>
+    </data>
+    <data name="ThemePickers" xml:space="preserve">
+        <value>Pickers</value>
+    </data>
+    <data name="ThemeLayouts" xml:space="preserve">
+        <value>Layouts</value>
+    </data>
+    <data name="ThemeLists" xml:space="preserve">
+        <value>Lists</value>
+    </data>
+    <data name="ThemeNotifications" xml:space="preserve">
+        <value>Notifications</value>
+    </data>
+    <data name="ThemeProgressSection" xml:space="preserve">
+        <value>Progress</value>
+    </data>
+    <data name="ThemeSurfaces" xml:space="preserve">
+        <value>Surfaces</value>
+    </data>
+    <data name="ThemeUtilities" xml:space="preserve">
+        <value>Utilities</value>
+    </data>
+    <data name="ThemeExtras" xml:space="preserve">
+        <value>Extras</value>
+    </data>
+    <data name="ThemeAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="ThemeSwitchDensity" xml:space="preserve">
+        <value>Density</value>
+    </data>
+    <data name="ThemeDensityCompact" xml:space="preserve">
+        <value>Compact</value>
+    </data>
+    <data name="ThemeDensitySpacious" xml:space="preserve">
+        <value>Spacious</value>
+    </data>
+    <data name="ThemeOverlayCallout" xml:space="preserve">
+        <value>Callout</value>
+    </data>
+    <data name="ThemeOverlayModal" xml:space="preserve">
+        <value>Modal</value>
     </data>
     <data name="PageFailed" xml:space="preserve">
         <value>Something went wrong on this page.</value>
@@ -3107,5 +3155,1586 @@
     </data>
     <data name="LandingConsentFirstVisit" xml:space="preserve">
         <value>First visit</value>
+    </data>
+    <data name="FlowSampleHint" xml:space="preserve">
+        <value>A sample: double-click a screen to try it, or an arrow to change it, which makes your own copy of this flow.</value>
+    </data>
+    <data name="ArrowSampleNote" xml:space="preserve">
+        <value>This is a sample, which stays as it is: a change here makes your own copy of this flow with the change, and opens it.</value>
+    </data>
+    <data name="ThemeAiHowDidTheStoresDo" xml:space="preserve">
+        <value>How did the stores do this week?</value>
+    </data>
+    <data name="ThemeAiWhatRunsOutBeforeFriday" xml:space="preserve">
+        <value>What runs out before Friday?</value>
+    </data>
+    <data name="ThemeAiDraftTheHolidayOpeningHours" xml:space="preserve">
+        <value>Draft the holiday opening hours</value>
+    </data>
+    <data name="ThemeAiOverThe100MBLimit" xml:space="preserve">
+        <value>Over the 100 MB limit</value>
+    </data>
+    <data name="ThemeAiCanYouCheckThisDelivery" xml:space="preserve">
+        <value>Can you check this delivery note against our order?</value>
+    </data>
+    <data name="ThemeAiTheDeliveryNoteLists24" xml:space="preserve">
+        <value>The delivery note lists **24 oat milk** and **60 croissants**, as ordered. The paper cups</value>
+    </data>
+    <data name="ThemeAiCheckingTheStockInUtrecht" xml:space="preserve">
+        <value>Checking the stock in Utrecht</value>
+    </data>
+    <data name="ThemeAiTheAssistantCouldNotAnswer" xml:space="preserve">
+        <value>The assistant could not answer. Try again in a moment.</value>
+    </data>
+    <data name="ThemeAiJoinedTheConversation" xml:space="preserve">
+        <value>{0} joined the conversation.</value>
+    </data>
+    <data name="ThemeAiWeeklySalesReview" xml:space="preserve">
+        <value>Weekly sales review</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksTo" xml:space="preserve">
+        <value>Rotterdam grew most, thanks to the terrace.</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStore" xml:space="preserve">
+        <value>Restock the Utrecht store</value>
+    </data>
+    <data name="ThemeAiOrderPlacedForFridayMorning" xml:space="preserve">
+        <value>Order placed for Friday morning.</value>
+    </data>
+    <data name="ThemeAiTwoDraftsOfThePoster" xml:space="preserve">
+        <value>Two drafts of the poster text.</value>
+    </data>
+    <data name="ThemeAiHolidayOpeningHours" xml:space="preserve">
+        <value>Holiday opening hours</value>
+    </data>
+    <data name="ThemeAiPublishedOnEveryStorePage" xml:space="preserve">
+        <value>Published on every store page.</value>
+    </data>
+    <data name="ThemeAiTeamScheduleForJune" xml:space="preserve">
+        <value>Team schedule for June</value>
+    </data>
+    <data name="ThemeAiThreeShiftsStillOpen" xml:space="preserve">
+        <value>Three shifts still open.</value>
+    </data>
+    <data name="ThemeAiCompareTheBakeries" xml:space="preserve">
+        <value>Compare the bakeries</value>
+    </data>
+    <data name="ThemeAiDekkerDeliversEarliest" xml:space="preserve">
+        <value>Dekker delivers earliest.</value>
+    </data>
+    <data name="ThemeAiSunny" xml:space="preserve">
+        <value>Sunny</value>
+    </data>
+    <data name="ThemeAiTwoPeopleReadingASales" xml:space="preserve">
+        <value>Two people reading a sales chart through a magnifying glass</value>
+    </data>
+    <data name="ThemeAiTheWeeklyReportAsAn" xml:space="preserve">
+        <value>The weekly report, as an illustration</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek" xml:space="preserve">
+        <value>Rotterdam grew most this week, thanks to the **new terrace** and the longer opening hours on Saturday.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeekThanksTo" xml:space="preserve">
+        <value>Rotterdam grew most this week, thanks to the **new terrace** and</value>
+    </data>
+    <data name="ThemeAiOrderPO1042IsBooked" xml:space="preserve">
+        <value>Order PO-1042 is booked for Friday at 7:00.</value>
+    </data>
+    <data name="ThemeAiHereIsTheOrderI" xml:space="preserve">
+        <value>Here is the order I drafted, with the delivery note it follows.</value>
+    </data>
+    <data name="ThemeAiTheWeekSSalesAre" xml:space="preserve">
+        <value>The week's sales are in. Next, compare each store with last week and look for what changed most.</value>
+    </data>
+    <data name="ThemeAiCompareEachStoreSNet" xml:space="preserve">
+        <value>Compare each store's net sales with last week's, then say what changed most and why.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturday" xml:space="preserve">
+        <value>**Utrecht** had its best Saturday since March: 412 orders, most of them before noon.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturdaySinceMarch" xml:space="preserve">
+        <value>**Utrecht** had its best Saturday since March: 412 orders, most</value>
+    </data>
+    <data name="ThemeAiPlaceTheOrder" xml:space="preserve">
+        <value>Place the order</value>
+    </data>
+    <data name="ThemeAiOrder24OatMilk60" xml:space="preserve">
+        <value>Order 24 oat milk, 60 croissants and 20 paper cups from Dekker for Friday at 7:00?</value>
+    </data>
+    <data name="ThemeAiDeleteAPriceList" xml:space="preserve">
+        <value>Delete a price list</value>
+    </data>
+    <data name="ThemeAiPermanentlyDeleteTheMarchPrice" xml:space="preserve">
+        <value>Permanently delete the March price list? This cannot be undone.</value>
+    </data>
+    <data name="ThemeAiOpeningHours" xml:space="preserve">
+        <value>Opening hours</value>
+    </data>
+    <data name="ThemeAiSales" xml:space="preserve">
+        <value>Sales</value>
+    </data>
+    <data name="ThemeAiReading18Of30Days" xml:space="preserve">
+        <value>Reading 18 of 30 days</value>
+    </data>
+    <data name="ThemeAiStock" xml:space="preserve">
+        <value>Stock</value>
+    </data>
+    <data name="ThemeAiDeliveries" xml:space="preserve">
+        <value>Deliveries</value>
+    </data>
+    <data name="ThemeAiTheSupplierSSystemDid" xml:space="preserve">
+        <value>The supplier's system did not answer.</value>
+    </data>
+    <data name="ThemeAiYouDeclinedThisToolCall" xml:space="preserve">
+        <value>You declined this tool call.</value>
+    </data>
+    <data name="ThemeAiExportTheReport" xml:space="preserve">
+        <value>Export the report</value>
+    </data>
+    <data name="ThemeAiUtrechtHas4CartonsOf" xml:space="preserve">
+        <value>Utrecht has 4 cartons of oat milk left, enough until Thursday.</value>
+    </data>
+    <data name="ThemeAiThereIsNoStoreCalled" xml:space="preserve">
+        <value>There is no store called Haarlem.</value>
+    </data>
+    <data name="ThemeAiTheSalesServiceDidNot" xml:space="preserve">
+        <value>The sales service did not answer in time.</value>
+    </data>
+    <data name="ThemeAiTheProviderSContentFilter" xml:space="preserve">
+        <value>The provider's content filter blocked this request.</value>
+    </data>
+    <data name="ThemeAiSalesReportWeek20" xml:space="preserve">
+        <value>Sales report, week 20</value>
+    </data>
+    <data name="ThemeAiNetSalesOfEveryStore" xml:space="preserve">
+        <value>Net sales of every store, by day.</value>
+    </data>
+    <data name="ThemeAiSupplierPriceList2026" xml:space="preserve">
+        <value>Supplier price list 2026</value>
+    </data>
+    <data name="ThemeAiPurchasing" xml:space="preserve">
+        <value>Purchasing</value>
+    </data>
+    <data name="ThemeAiOpeningHoursOfTheStores" xml:space="preserve">
+        <value>Opening hours of the stores</value>
+    </data>
+    <data name="ThemeAiStoreWebsite" xml:space="preserve">
+        <value>Store website</value>
+    </data>
+    <data name="ThemeAiRotterdamNetSalesUp12" xml:space="preserve">
+        <value>Rotterdam: net sales up 12.1% on the week before.</value>
+    </data>
+    <data name="ThemeAiOatMilkPerCartonOf" xml:space="preserve">
+        <value>Oat milk, per carton of 12: €21.60.</value>
+    </data>
+    <data name="ThemeAiStoreAssistant" xml:space="preserve">
+        <value>Store assistant</value>
+    </data>
+    <data name="ThemeAiThinksItThroughAndUses" xml:space="preserve">
+        <value>Thinks it through and uses the store's tools.</value>
+    </data>
+    <data name="ThemeAiShortAnswersRightAway" xml:space="preserve">
+        <value>Short answers, right away.</value>
+    </data>
+    <data name="ThemeAiVision" xml:space="preserve">
+        <value>Vision</value>
+    </data>
+    <data name="ThemeAiReadsPhotosOfShelvesAnd" xml:space="preserve">
+        <value>Reads photos of shelves and receipts.</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBefore" xml:space="preserve">
+        <value>3 products run out before Friday.</value>
+    </data>
+    <data name="ThemeAi2Of3StorePages" xml:space="preserve">
+        <value>2 of 3 store pages could not be saved.</value>
+    </data>
+    <data name="ThemeAiRotterdamThePageIsOpen" xml:space="preserve">
+        <value>Rotterdam: the page is open in another editor.</value>
+    </data>
+    <data name="ThemeAiUtrechtThePageIsOpen" xml:space="preserve">
+        <value>Utrecht: the page is open in another editor.</value>
+    </data>
+    <data name="ThemeAiReadThisWeekSSales" xml:space="preserve">
+        <value>Read this week's sales</value>
+    </data>
+    <data name="ThemeAiCroissantsUp18OatMilk" xml:space="preserve">
+        <value>Croissants up 18%, oat milk up 9%</value>
+    </data>
+    <data name="ThemeAiCheckTheStockInThe" xml:space="preserve">
+        <value>Check the stock in the back room</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBeforeFriday" xml:space="preserve">
+        <value>3 products run out before Friday</value>
+    </data>
+    <data name="ThemeAiDraftTheOrder" xml:space="preserve">
+        <value>Draft the order</value>
+    </data>
+    <data name="ThemeAiSendItToTheSupplier" xml:space="preserve">
+        <value>Send it to the supplier</value>
+    </data>
+    <data name="ThemeAi24OatMilk60Croissants" xml:space="preserve">
+        <value>24 oat milk, 60 croissants, 20 paper cups</value>
+    </data>
+    <data name="ThemeAiPickADeliverySlot" xml:space="preserve">
+        <value>Pick a delivery slot</value>
+    </data>
+    <data name="ThemeAiDekkerCanDeliverOnFriday" xml:space="preserve">
+        <value>Dekker can deliver on Friday at 7:00 or on Saturday at 9:00. Which one should I book?</value>
+    </data>
+    <data name="ThemeAiFriday700" xml:space="preserve">
+        <value>Friday, 7:00</value>
+    </data>
+    <data name="ThemeAiSaturday900" xml:space="preserve">
+        <value>Saturday, 9:00</value>
+    </data>
+    <data name="ThemeAiOrderPO1042ConfirmedFor" xml:space="preserve">
+        <value>Order PO-1042 confirmed for Friday at 7:00</value>
+    </data>
+    <data name="ThemeAiOpeningHoursAgent" xml:space="preserve">
+        <value>Opening hours agent</value>
+    </data>
+    <data name="ThemeAiPublishTheHolidayOpeningHours" xml:space="preserve">
+        <value>Publish the holiday opening hours on every store page</value>
+    </data>
+    <data name="ThemeAiTheRunStoppedBeforeAnnouncing" xml:space="preserve">
+        <value>The run stopped before announcing the new hours.</value>
+    </data>
+    <data name="ThemeAiCollectTheHoursFromThe" xml:space="preserve">
+        <value>Collect the hours from the store managers</value>
+    </data>
+    <data name="ThemeAiHoursFromAll3Store" xml:space="preserve">
+        <value>Hours from all 3 store managers</value>
+    </data>
+    <data name="ThemeAiUpdateTheStorePages" xml:space="preserve">
+        <value>Update the store pages</value>
+    </data>
+    <data name="ThemeAiAnnounceTheNewHours" xml:space="preserve">
+        <value>Announce the new hours</value>
+    </data>
+    <data name="ThemeAiSendTheOrderToThe" xml:space="preserve">
+        <value>Send the order to the supplier</value>
+    </data>
+    <data name="ThemeAiComparedWithTheSameWeek" xml:space="preserve">
+        <value>Compared with the same week last year.</value>
+    </data>
+    <data name="ThemeAiRestockAgent" xml:space="preserve">
+        <value>Restock agent</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStoreBefore" xml:space="preserve">
+        <value>Restock the Utrecht store before the weekend</value>
+    </data>
+    <data name="ThemeAiEveryStoreKeepsItsUsual" xml:space="preserve">
+        <value>Every store keeps its usual hours, except on these days:</value>
+    </data>
+    <data name="ThemeAiClosed" xml:space="preserve">
+        <value>Closed</value>
+    </data>
+    <data name="ThemeAiOrdersPlacedInTheApp" xml:space="preserve">
+        <value>Orders placed in the app on those days are ready an hour later than usual.</value>
+    </data>
+    <data name="ThemeAiFirstDraft" xml:space="preserve">
+        <value>First draft</value>
+    </data>
+    <data name="ThemeAiPriceChangesForJune" xml:space="preserve">
+        <value>Price changes for June</value>
+    </data>
+    <data name="ThemeAiNoChange" xml:space="preserve">
+        <value>no change</value>
+    </data>
+    <data name="ThemeAiFromTheSupplierSNew" xml:space="preserve">
+        <value>From the supplier's new price list</value>
+    </data>
+    <data name="ThemeAiByWhatSells" xml:space="preserve">
+        <value>By what sells</value>
+    </data>
+    <data name="ThemeAiUntilTheNextDelivery" xml:space="preserve">
+        <value>Until the next delivery</value>
+    </data>
+    <data name="ThemeAiEmailToTheSupplier" xml:space="preserve">
+        <value>Email to the supplier</value>
+    </data>
+    <data name="ThemeAiDearDekkerTeam" xml:space="preserve">
+        <value>Dear Dekker team,</value>
+    </data>
+    <data name="ThemeAiCouldYouDeliverTheOrder" xml:space="preserve">
+        <value>Could you deliver the order below to our Utrecht store on Friday at 7:00? The back door</value>
+    </data>
+    <data name="ThemeAiNetSalesCameTo34" xml:space="preserve">
+        <value>Net sales came to **€34,820**, up 8.4% on last week.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksToTheNew" xml:space="preserve">
+        <value>Rotterdam grew most, thanks to the new terrace.</value>
+    </data>
+    <data name="ThemeAiWillItBeWarmEnough" xml:space="preserve">
+        <value>Will it be warm enough for the terrace in Amsterdam tomorrow?</value>
+    </data>
+    <data name="ThemeAiYesItWillBeMild" xml:space="preserve">
+        <value>Yes. It will be mild and mostly dry, so the terrace can open at noon.</value>
+    </data>
+    <data name="ThemeAiPartlyCloudy" xml:space="preserve">
+        <value>Partly cloudy</value>
+    </data>
+    <data name="ThemeAiThreeProductsRunOutBefore" xml:space="preserve">
+        <value>Three products run out before Friday's delivery:</value>
+    </data>
+    <data name="ThemeAi4CartonsLeftEnoughUntil" xml:space="preserve">
+        <value>4 cartons left, enough until Thursday</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek2" xml:space="preserve">
+        <value>Rotterdam grew most this week.</value>
+    </data>
+    <data name="ThemeAiOatMilkCosts2160" xml:space="preserve">
+        <value>Oat milk costs €21.60 a carton of 12 from Dekker.</value>
+    </data>
+    <data name="ThemeAiBookTheDelivery" xml:space="preserve">
+        <value>Book the delivery</value>
+    </data>
+    <data name="ThemeAiCheckWhatIFilledIn" xml:space="preserve">
+        <value>Check what I filled in before I send the order.</value>
+    </data>
+    <data name="ThemeAiSendTheOrder" xml:space="preserve">
+        <value>Send the order</value>
+    </data>
+    <data name="ThemeAiDeliveryDate" xml:space="preserve">
+        <value>Delivery date</value>
+    </data>
+    <data name="ThemeAiCrates" xml:space="preserve">
+        <value>Crates</value>
+    </data>
+    <data name="ThemeAiBeforeOpeningTime" xml:space="preserve">
+        <value>Before opening time</value>
+    </data>
+    <data name="ThemeAiTheDriverHasAKey" xml:space="preserve">
+        <value>The driver has a key to the back door.</value>
+    </data>
+    <data name="ThemeAiNotesForTheDriver" xml:space="preserve">
+        <value>Notes for the driver</value>
+    </data>
+    <data name="ThemeAiAnythingTheDriverShouldKnow" xml:space="preserve">
+        <value>Anything the driver should know</value>
+    </data>
+    <data name="ThemeAiWeekendChecklist" xml:space="preserve">
+        <value>Weekend checklist</value>
+    </data>
+    <data name="ThemeAiBeforeSaturdayEveryStoreChecks" xml:space="preserve">
+        <value>Before **Saturday**, every store checks its stock, its terrace and its team. *Rotterdam* opens an hour earlier.</value>
+    </data>
+    <data name="ThemeAiOrderTheOatMilk" xml:space="preserve">
+        <value>Order the oat milk</value>
+    </data>
+    <data name="ThemeAiBookTheFridayDelivery" xml:space="preserve">
+        <value>Book the Friday delivery</value>
+    </data>
+    <data name="ThemeAiPutTheTerraceHeatersOut" xml:space="preserve">
+        <value>Put the terrace heaters out</value>
+    </data>
+    <data name="ThemeAiAFullShelfAtOpening" xml:space="preserve">
+        <value>A full shelf at opening time sells more than a discount at closing time.</value>
+    </data>
+    <data name="ThemeAiEverySampleHereIsStatic" xml:space="preserve">
+        <value>Every sample here is static: nothing on this page calls a model.</value>
+    </data>
+    <data name="ThemeAiWithToolCalls" xml:space="preserve">
+        <value>With tool calls</value>
+    </data>
+    <data name="ThemeAiNotInTheConversation" xml:space="preserve">
+        <value>Not in the conversation</value>
+    </data>
+    <data name="ThemeAiDocument" xml:space="preserve">
+        <value>Document</value>
+    </data>
+    <data name="ThemeAiSeveralVersions" xml:space="preserve">
+        <value>Several versions</value>
+    </data>
+    <data name="ThemeAiBeingWritten" xml:space="preserve">
+        <value>Being written</value>
+    </data>
+    <data name="ThemeAiImage" xml:space="preserve">
+        <value>Image</value>
+    </data>
+    <data name="ThemeAiRemovable" xml:space="preserve">
+        <value>Removable</value>
+    </data>
+    <data name="ThemeAiAskAboutSalesStockThe" xml:space="preserve">
+        <value>Ask about sales, stock, the team or the weather for the terrace.</value>
+    </data>
+    <data name="ThemeAiTheAssistantCanMakeMistakes" xml:space="preserve">
+        <value>The assistant can make mistakes. Check what matters.</value>
+    </data>
+    <data name="ThemeAiFromTheUser" xml:space="preserve">
+        <value>From the user</value>
+    </data>
+    <data name="ThemeAiFromTheSystem" xml:space="preserve">
+        <value>From the system</value>
+    </data>
+    <data name="ThemeAiWithAFileName" xml:space="preserve">
+        <value>With a file name</value>
+    </data>
+    <data name="ThemeAiWithoutAHeader" xml:space="preserve">
+        <value>Without a header</value>
+    </data>
+    <data name="ThemeAiLineNumbers" xml:space="preserve">
+        <value>Line numbers</value>
+    </data>
+    <data name="ThemeAiPlentyLeft" xml:space="preserve">
+        <value>Plenty left</value>
+    </data>
+    <data name="ThemeAiFillingUp" xml:space="preserve">
+        <value>Filling up</value>
+    </data>
+    <data name="ThemeAiAlmostFull" xml:space="preserve">
+        <value>Almost full</value>
+    </data>
+    <data name="ThemeAiWithTheUnsentPrompt" xml:space="preserve">
+        <value>With the unsent prompt</value>
+    </data>
+    <data name="ThemeAiWithItsLabel" xml:space="preserve">
+        <value>With its label</value>
+    </data>
+    <data name="ThemeAiWithRetry" xml:space="preserve">
+        <value>With retry</value>
+    </data>
+    <data name="ThemeAiWithoutRetry" xml:space="preserve">
+        <value>Without retry</value>
+    </data>
+    <data name="ThemeAiSubmitted" xml:space="preserve">
+        <value>Submitted</value>
+    </data>
+    <data name="ThemeAiRegistered" xml:space="preserve">
+        <value>Registered</value>
+    </data>
+    <data name="ThemeAiNotRegistered" xml:space="preserve">
+        <value>Not registered</value>
+    </data>
+    <data name="ThemeAiPropsThatDonTFit" xml:space="preserve">
+        <value>Props that don't fit</value>
+    </data>
+    <data name="ThemeAiAFormattedAnswer" xml:space="preserve">
+        <value>A formatted answer</value>
+    </data>
+    <data name="ThemeAiPinned" xml:space="preserve">
+        <value>Pinned</value>
+    </data>
+    <data name="ThemeAiRated" xml:space="preserve">
+        <value>Rated</value>
+    </data>
+    <data name="ThemeAiAPartOfEachKind" xml:space="preserve">
+        <value>A part of each kind</value>
+    </data>
+    <data name="ThemeAiGenerating" xml:space="preserve">
+        <value>Generating</value>
+    </data>
+    <data name="ThemeAiWithoutALink" xml:space="preserve">
+        <value>Without a link</value>
+    </data>
+    <data name="ThemeAiRecord" xml:space="preserve">
+        <value>Record</value>
+    </data>
+    <data name="ThemeAiWithCitations" xml:space="preserve">
+        <value>With citations</value>
+    </data>
+    <data name="ThemeAiWithALabel" xml:space="preserve">
+        <value>With a label</value>
+    </data>
+    <data name="ThemeAiReadingTheSalesReport" xml:space="preserve">
+        <value>Reading the sales report</value>
+    </data>
+    <data name="ThemeAiTokens" xml:space="preserve">
+        <value>Tokens</value>
+    </data>
+    <data name="ThemeAiWithTheCost" xml:space="preserve">
+        <value>With the cost</value>
+    </data>
+    <data name="ThemeAiWithSpeedAndLatency" xml:space="preserve">
+        <value>With speed and latency</value>
+    </data>
+    <data name="ThemeAiInDetail" xml:space="preserve">
+        <value>In detail</value>
+    </data>
+    <data name="ThemeAiNoLookOfTheirOwn" xml:space="preserve">
+        <value>No look of their own: {0}.</value>
+    </data>
+    <data name="ThemeAiAskTheStoreAssistant" xml:space="preserve">
+        <value>Ask the store assistant...</value>
+    </data>
+    <data name="ThemeAiWhatTheAssistantCanSee" xml:space="preserve">
+        <value>What the assistant can see</value>
+    </data>
+    <data name="ThemeAiSalesStockAndTheTeam" xml:space="preserve">
+        <value>Sales, stock and the team's schedule of your stores. Never your customers' payment details.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek3" xml:space="preserve">
+        <value>Rotterdam grew most this week</value>
+    </data>
+    <data name="ThemeAiThisChatIsASample" xml:space="preserve">
+        <value>This chat is a sample on the theme page, so no model answers it.</value>
+    </data>
+    <data name="ThemeAiHigh" xml:space="preserve">
+        <value>High {0}</value>
+    </data>
+    <data name="ThemeAiLow" xml:space="preserve">
+        <value>Low {0}</value>
+    </data>
+    <data name="ThemeAiChanceOfRain" xml:space="preserve">
+        <value>Chance of rain {0}%</value>
+    </data>
+    <data name="ThemeButtonsColored" xml:space="preserve">
+        <value>Colored</value>
+    </data>
+    <data name="ThemeButtonsWithASecondLine" xml:space="preserve">
+        <value>With a second line</value>
+    </data>
+    <data name="ThemeButtonsEveryChangeIsKeptFor" xml:space="preserve">
+        <value>Every change is kept for 30 days</value>
+    </data>
+    <data name="ThemeButtonsBackUpNow" xml:space="preserve">
+        <value>Back up now</value>
+    </data>
+    <data name="ThemeButtonsRoundedIconAtTheEnd" xml:space="preserve">
+        <value>Rounded, icon at the end</value>
+    </data>
+    <data name="ThemeButtonsContinue" xml:space="preserve">
+        <value>Continue</value>
+    </data>
+    <data name="ThemeButtonsFullWidth" xml:space="preserve">
+        <value>Full width</value>
+    </data>
+    <data name="ThemeButtonsAddABuilding" xml:space="preserve">
+        <value>Add a building</value>
+    </data>
+    <data name="ThemeButtonsAsALink" xml:space="preserve">
+        <value>As a link</value>
+    </data>
+    <data name="ThemeButtonsOpenTheGuide" xml:space="preserve">
+        <value>Open the guide</value>
+    </data>
+    <data name="ThemeButtonsIconsOnly" xml:space="preserve">
+        <value>Icons only</value>
+    </data>
+    <data name="ThemeButtonsSplit" xml:space="preserve">
+        <value>Split</value>
+    </data>
+    <data name="ThemeButtonsOnOutline" xml:space="preserve">
+        <value>On, outline</value>
+    </data>
+    <data name="ThemeButtonsMute" xml:space="preserve">
+        <value>Mute</value>
+    </data>
+    <data name="ThemeButtonsAlignStart" xml:space="preserve">
+        <value>Align start</value>
+    </data>
+    <data name="ThemeButtonsAlignCenter" xml:space="preserve">
+        <value>Align center</value>
+    </data>
+    <data name="ThemeButtonsAlignEnd" xml:space="preserve">
+        <value>Align end</value>
+    </data>
+    <data name="ThemeButtonsShare" xml:space="preserve">
+        <value>Share</value>
+    </data>
+    <data name="ThemeColorsEveryColorOfTheTheme" xml:space="preserve">
+        <value>Every color of the theme with the value it has in this view: each role's states, shades, text, tint and disabled colors, the neutrals, the grays they come from and the intent names.</value>
+    </data>
+    <data name="ThemeColorsGrays" xml:space="preserve">
+        <value>Grays</value>
+    </data>
+    <data name="ThemeColorsSpecialPurpose" xml:space="preserve">
+        <value>Special purpose</value>
+    </data>
+    <data name="ThemeColorsIntent" xml:space="preserve">
+        <value>Intent</value>
+    </data>
+    <data name="ThemeExtrasLatestOrders" xml:space="preserve">
+        <value>Latest orders</value>
+    </data>
+    <data name="ThemeExtrasCustomer" xml:space="preserve">
+        <value>Customer</value>
+    </data>
+    <data name="ThemeExtrasNoOrdersYetToday" xml:space="preserve">
+        <value>No orders yet today.</value>
+    </data>
+    <data name="ThemeExtrasTheComponentsOfTheBit" xml:space="preserve">
+        <value>The components of the Bit.BlazorUI.Extras package: grids, charts, calendars, maps, editors and viewers.</value>
+    </data>
+    <data name="ThemeExtrasBars" xml:space="preserve">
+        <value>Bars</value>
+    </data>
+    <data name="ThemeExtrasRevenuePerMonth" xml:space="preserve">
+        <value>Revenue per month</value>
+    </data>
+    <data name="ThemeExtrasLines" xml:space="preserve">
+        <value>Lines</value>
+    </data>
+    <data name="ThemeExtrasVisitorsPerDay" xml:space="preserve">
+        <value>Visitors per day</value>
+    </data>
+    <data name="ThemeExtrasDoughnut" xml:space="preserve">
+        <value>Doughnut</value>
+    </data>
+    <data name="ThemeExtrasSalesByPaymentMethod" xml:space="preserve">
+        <value>Sales by payment method</value>
+    </data>
+    <data name="ThemeExtrasNoSalesYetThisMonth" xml:space="preserve">
+        <value>No sales yet this month.</value>
+    </data>
+    <data name="ThemeExtrasWeDonTShipThere" xml:space="preserve">
+        <value>We don't ship there yet.</value>
+    </data>
+    <data name="ThemeExtrasSortedByTotalOneOrder" xml:space="preserve">
+        <value>Sorted by total, one order selected</value>
+    </data>
+    <data name="ThemeExtrasTodaySSalesCouldnT" xml:space="preserve">
+        <value>Today's sales couldn't be loaded. Try again in a moment.</value>
+    </data>
+    <data name="ThemeExtrasBesideAName" xml:space="preserve">
+        <value>Beside a name</value>
+    </data>
+    <data name="ThemeExtrasShapes" xml:space="preserve">
+        <value>Shapes</value>
+    </data>
+    <data name="ThemeExtrasTodaySOrders" xml:space="preserve">
+        <value>Today's orders</value>
+    </data>
+    <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
+        <value>Loading more orders...</value>
+    </data>
+    <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
+        <value>That's every order of today.</value>
+    </data>
+    <data name="ThemeExtrasHoldCtrlWhileScrollingTo" xml:space="preserve">
+        <value>Hold Ctrl while scrolling to zoom the map</value>
+    </data>
+    <data name="ThemeExtrasUseTwoFingersToMove" xml:space="preserve">
+        <value>Use two fingers to move the map</value>
+    </data>
+    <data name="ThemeExtrasOurStores" xml:space="preserve">
+        <value>Our stores</value>
+    </data>
+    <data name="ThemeExtrasPreview" xml:space="preserve">
+        <value>Preview</value>
+    </data>
+    <data name="ThemeExtrasSaveYourChanges" xml:space="preserve">
+        <value>Save your changes?</value>
+    </data>
+    <data name="ThemeExtrasTheProductHasEditsThat" xml:space="preserve">
+        <value>The product has edits that aren't saved yet.</value>
+    </data>
+    <data name="ThemeExtrasInvoice" xml:space="preserve">
+        <value>Invoice {0}</value>
+    </data>
+    <data name="ThemeExtrasEnterTheWholePhoneNumber" xml:space="preserve">
+        <value>Enter the whole phone number.</value>
+    </data>
+    <data name="ThemeExtrasWriteAFewLinesBefore" xml:space="preserve">
+        <value>Write a few lines before you send it.</value>
+    </data>
+    <data name="ThemeExtrasLookingThroughThisWeekS" xml:space="preserve">
+        <value>Looking through this week's orders...</value>
+    </data>
+    <data name="ThemeExtrasDraftingAReply" xml:space="preserve">
+        <value>Drafting a reply...</value>
+    </data>
+    <data name="ThemeExtrasPickTheTimeZoneYour" xml:space="preserve">
+        <value>Pick the time zone your store is in.</value>
+    </data>
+    <data name="ThemeExtrasAllOrders" xml:space="preserve">
+        <value>All orders</value>
+    </data>
+    <data name="ThemeExtrasNotShownHereWhichTakes" xml:space="preserve">
+        <value>Not shown here: {0}, which takes over the keyboard scrolling of the page it is on. The app's own shell is one.</value>
+    </data>
+    <data name="ThemeExtrasCountry" xml:space="preserve">
+        <value>Country</value>
+    </data>
+    <data name="ThemeExtrasPickACountry" xml:space="preserve">
+        <value>Pick a country</value>
+    </data>
+    <data name="ThemeExtrasWeeklyUpdate" xml:space="preserve">
+        <value>Weekly update</value>
+    </data>
+    <data name="ThemeExtrasWriteTheUpdateInMarkdown" xml:space="preserve">
+        <value>Write the update in Markdown</value>
+    </data>
+    <data name="ThemeExtrasNewsletter" xml:space="preserve">
+        <value>Newsletter</value>
+    </data>
+    <data name="ThemeExtrasWriteSomethingWorthReading" xml:space="preserve">
+        <value>Write something worth reading</value>
+    </data>
+    <data name="ThemeExtrasTodaySSales" xml:space="preserve">
+        <value>Today's sales</value>
+    </data>
+    <data name="ThemeExtrasANewVersionIsReady" xml:space="preserve">
+        <value>A new version is ready</value>
+    </data>
+    <data name="ThemeExtrasRestartTheAppToStart" xml:space="preserve">
+        <value>Restart the app to start using it.</value>
+    </data>
+    <data name="ThemeExtrasPaymentReceived" xml:space="preserve">
+        <value>Payment received</value>
+    </data>
+    <data name="ThemeExtrasOrder8042IsPaidAnd" xml:space="preserve">
+        <value>Order 8042 is paid and on its way to the counter.</value>
+    </data>
+    <data name="ThemeExtrasStorageAlmostFull" xml:space="preserve">
+        <value>Storage almost full</value>
+    </data>
+    <data name="ThemeExtrasDeleteOldExportsToKeep" xml:space="preserve">
+        <value>Delete old exports to keep saving receipts.</value>
+    </data>
+    <data name="ThemeExtrasYourPlanEndsTomorrow" xml:space="preserve">
+        <value>Your plan ends tomorrow</value>
+    </data>
+    <data name="ThemeExtrasRenewItTodayToKeep" xml:space="preserve">
+        <value>Renew it today to keep taking orders.</value>
+    </data>
+    <data name="ThemeExtrasPaymentFailed" xml:space="preserve">
+        <value>Payment failed</value>
+    </data>
+    <data name="ThemeExtrasTheCardWasDeclinedAsk" xml:space="preserve">
+        <value>The card was declined. Ask for another way to pay.</value>
+    </data>
+    <data name="ThemeExtrasSalesGrewAgainThisWeek" xml:space="preserve">
+        <value>Sales grew again this week, led by the oat milk latte.</value>
+    </data>
+    <data name="ThemeExtrasRevenue" xml:space="preserve">
+        <value>Revenue</value>
+    </data>
+    <data name="ThemeExtrasNewCustomers" xml:space="preserve">
+        <value>New customers</value>
+    </data>
+    <data name="ThemeExtrasNextStep" xml:space="preserve">
+        <value>Next step</value>
+    </data>
+    <data name="ThemeExtrasPlanTheSummerMenu" xml:space="preserve">
+        <value>plan the summer menu</value>
+    </data>
+    <data name="ThemeExtrasReleaseNotes" xml:space="preserve">
+        <value>Release notes</value>
+    </data>
+    <data name="ThemeExtrasVersion24IsOut" xml:space="preserve">
+        <value>Version 2.4 is out, with offline orders and a faster dashboard.</value>
+    </data>
+    <data name="ThemeExtrasWhatSNew" xml:space="preserve">
+        <value>What's new</value>
+    </data>
+    <data name="ThemeExtrasOfflineOrders" xml:space="preserve">
+        <value>Offline orders</value>
+    </data>
+    <data name="ThemeExtrasKeepSellingWhenTheConnection" xml:space="preserve">
+        <value>keep selling when the connection drops.</value>
+    </data>
+    <data name="ThemeExtrasFasterDashboard" xml:space="preserve">
+        <value>Faster dashboard</value>
+    </data>
+    <data name="ThemeExtrasReportsOpenInUnderA" xml:space="preserve">
+        <value>reports open in under a second.</value>
+    </data>
+    <data name="ThemeExtrasExport" xml:space="preserve">
+        <value>Export</value>
+    </data>
+    <data name="ThemeExtrasNowWritesExcelFilesToo" xml:space="preserve">
+        <value>now writes Excel files too.</value>
+    </data>
+    <data name="ThemeExtrasTipSearchTheWholeApp" xml:space="preserve">
+        <value>Tip: search the whole app from the box at the top.</value>
+    </data>
+    <data name="ThemeExtrasPlan" xml:space="preserve">
+        <value>Plan</value>
+    </data>
+    <data name="ThemeExtrasStores" xml:space="preserve">
+        <value>Stores</value>
+    </data>
+    <data name="ThemeExtrasPricePerMonth" xml:space="preserve">
+        <value>Price per month</value>
+    </data>
+    <data name="ThemeExtrasStarter" xml:space="preserve">
+        <value>Starter</value>
+    </data>
+    <data name="ThemeExtrasReadTheFullChangelog" xml:space="preserve">
+        <value>Read the full changelog</value>
+    </data>
+    <data name="ThemeExtrasSummerMenu" xml:space="preserve">
+        <value>Summer menu</value>
+    </data>
+    <data name="ThemeExtrasFromJuneEveryStoreServes" xml:space="preserve">
+        <value>From June, every store serves three cold drinks:</value>
+    </data>
+    <data name="ThemeExtrasIcedOatMilkLatte" xml:space="preserve">
+        <value>Iced oat milk latte</value>
+    </data>
+    <data name="ThemeExtrasFreshLemonade" xml:space="preserve">
+        <value>Fresh lemonade</value>
+    </data>
+    <data name="ThemeExtrasWhenDoesMyOrderArrive" xml:space="preserve">
+        <value>When does my order arrive?</value>
+    </data>
+    <data name="ThemeExtrasDelivery" xml:space="preserve">
+        <value>Delivery</value>
+    </data>
+    <data name="ThemeExtrasOrdersPlacedBefore4Pm" xml:space="preserve">
+        <value>Orders placed before 4 pm leave the same day and arrive within two working days.</value>
+    </data>
+    <data name="ThemeExtrasCanIReturnSomething" xml:space="preserve">
+        <value>Can I return something?</value>
+    </data>
+    <data name="ThemeExtrasReturns" xml:space="preserve">
+        <value>Returns</value>
+    </data>
+    <data name="ThemeExtrasSendItBackWithin30" xml:space="preserve">
+        <value>Send it back within 30 days, free of charge, in its original packaging.</value>
+    </data>
+    <data name="ThemeExtrasHowCanIPay" xml:space="preserve">
+        <value>How can I pay?</value>
+    </data>
+    <data name="ThemeExtrasByCardMobileWalletOr" xml:space="preserve">
+        <value>By card, mobile wallet or gift card, online and in every store.</value>
+    </data>
+    <data name="ThemeExtrasCatalog" xml:space="preserve">
+        <value>Catalog</value>
+    </data>
+    <data name="ThemeExtrasOrders" xml:space="preserve">
+        <value>Orders</value>
+    </data>
+    <data name="ThemeExtrasThisYear" xml:space="preserve">
+        <value>This year</value>
+    </data>
+    <data name="ThemeExtrasLastYear" xml:space="preserve">
+        <value>Last year</value>
+    </data>
+    <data name="ThemeExtrasLastWeek" xml:space="preserve">
+        <value>Last week</value>
+    </data>
+    <data name="ThemeExtrasTeamStandUp" xml:space="preserve">
+        <value>Team stand-up</value>
+    </data>
+    <data name="ThemeExtrasPlansForTheDay" xml:space="preserve">
+        <value>Plans for the day</value>
+    </data>
+    <data name="ThemeExtrasMenuTasting" xml:space="preserve">
+        <value>Menu tasting</value>
+    </data>
+    <data name="ThemeExtrasThreeNewSummerDrinks" xml:space="preserve">
+        <value>Three new summer drinks</value>
+    </data>
+    <data name="ThemeExtrasSupplierCall" xml:space="preserve">
+        <value>Supplier call</value>
+    </data>
+    <data name="ThemeExtrasBeansForTheNextQuarter" xml:space="preserve">
+        <value>Beans for the next quarter</value>
+    </data>
+    <data name="ThemeExtrasBaristaTraining" xml:space="preserve">
+        <value>Barista training</value>
+    </data>
+    <data name="ThemeExtrasMilkTextureAndLatteArt" xml:space="preserve">
+        <value>Milk texture and latte art</value>
+    </data>
+    <data name="ThemeExtrasStockDelivery" xml:space="preserve">
+        <value>Stock delivery</value>
+    </data>
+    <data name="ThemeExtrasCupsLidsAndOatMilk" xml:space="preserve">
+        <value>Cups, lids and oat milk</value>
+    </data>
+    <data name="ThemeExtrasFoodSafetyInspection" xml:space="preserve">
+        <value>Food safety inspection</value>
+    </data>
+    <data name="ThemeExtrasLatteArtWorkshop" xml:space="preserve">
+        <value>Latte art workshop</value>
+    </data>
+    <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
+        <value>For customers, twelve seats</value>
+    </data>
+    <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
+        <value>Week numbers, time</value>
+    </data>
+    <data name="ThemeInputsWithADescription" xml:space="preserve">
+        <value>With a description</value>
+    </data>
+    <data name="ThemeInputsEmailMeReceipts" xml:space="preserve">
+        <value>Email me receipts</value>
+    </data>
+    <data name="ThemeInputsOneAMonthNeverMore" xml:space="preserve">
+        <value>One a month, never more.</value>
+    </data>
+    <data name="ThemeInputsHorizontal" xml:space="preserve">
+        <value>horizontal</value>
+    </data>
+    <data name="ThemeInputsWithIcons" xml:space="preserve">
+        <value>With icons</value>
+    </data>
+    <data name="ThemeInputsChips" xml:space="preserve">
+        <value>Chips</value>
+    </data>
+    <data name="ThemeInputsDropZone" xml:space="preserve">
+        <value>Drop zone</value>
+    </data>
+    <data name="ThemeInputsAttachTheInvoice" xml:space="preserve">
+        <value>Attach the invoice</value>
+    </data>
+    <data name="ThemeInputsWithFiles" xml:space="preserve">
+        <value>With files</value>
+    </data>
+    <data name="ThemeInputsUploadPhotos" xml:space="preserve">
+        <value>Upload photos</value>
+    </data>
+    <data name="ThemeInputsPrefixSuffixSteps" xml:space="preserve">
+        <value>Prefix, suffix, steps</value>
+    </data>
+    <data name="ThemeInputsPrice" xml:space="preserve">
+        <value>Price</value>
+    </data>
+    <data name="ThemeInputsPerKg" xml:space="preserve">
+        <value>per kg</value>
+    </data>
+    <data name="ThemeInputsHalfStars" xml:space="preserve">
+        <value>Half stars</value>
+    </data>
+    <data name="ThemeInputsWithASearchButton" xml:space="preserve">
+        <value>With a search button</value>
+    </data>
+    <data name="ThemeInputsRangeWithMarks" xml:space="preserve">
+        <value>Range with marks</value>
+    </data>
+    <data name="ThemeInputsPriceRange" xml:space="preserve">
+        <value>Price range</value>
+    </data>
+    <data name="ThemeInputsTypeATagAndPress" xml:space="preserve">
+        <value>Type a tag and press Enter</value>
+    </data>
+    <data name="ThemeInputsIconPrefixClearAndCount" xml:space="preserve">
+        <value>Icon, prefix, clear and count</value>
+    </data>
+    <data name="ThemeInputsWebsite" xml:space="preserve">
+        <value>Website</value>
+    </data>
+    <data name="ThemeInputsUnderlined" xml:space="preserve">
+        <value>Underlined</value>
+    </data>
+    <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
+        <value>With on and off text</value>
+    </data>
+    <data name="ThemeInputsDarkMap" xml:space="preserve">
+        <value>Dark map</value>
+    </data>
+    <data name="ThemeInputsRateYourVisit" xml:space="preserve">
+        <value>Rate your visit</value>
+    </data>
+    <data name="ThemeInputsTags" xml:space="preserve">
+        <value>Tags</value>
+    </data>
+    <data name="ThemeInputsBike" xml:space="preserve">
+        <value>Bike</value>
+    </data>
+    <data name="ThemeInputsVan" xml:space="preserve">
+        <value>Van</value>
+    </data>
+    <data name="ThemeInputsPickUp" xml:space="preserve">
+        <value>Pick up</value>
+    </data>
+    <data name="ThemeInputsVegan" xml:space="preserve">
+        <value>Vegan</value>
+    </data>
+    <data name="ThemeInputsGlutenFree" xml:space="preserve">
+        <value>Gluten free</value>
+    </data>
+    <data name="ThemeInputsOrganic" xml:space="preserve">
+        <value>Organic</value>
+    </data>
+    <data name="ThemeLayersWhatFloatsOverWhatHow" xml:space="preserve">
+        <value>What floats over what, how much a disabled element fades, the widths the layout changes at, and how a dialog lays out its text and buttons.</value>
+    </data>
+    <data name="ThemeLayersLayers" xml:space="preserve">
+        <value>Layers</value>
+    </data>
+    <data name="ThemeLayersScreenBreakpoints" xml:space="preserve">
+        <value>Screen breakpoints</value>
+    </data>
+    <data name="ThemeLayersDialogLayout" xml:space="preserve">
+        <value>Dialog layout</value>
+    </data>
+    <data name="ThemeLayoutsPrivacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="ThemeLayoutsBorderedAndElevated" xml:space="preserve">
+        <value>Bordered and elevated</value>
+    </data>
+    <data name="ThemeLayoutsTwelveColumns" xml:space="preserve">
+        <value>Twelve columns</value>
+    </data>
+    <data name="ThemeLayoutsColoredAndElevated" xml:space="preserve">
+        <value>Colored and elevated</value>
+    </data>
+    <data name="ThemeLayoutsBordered" xml:space="preserve">
+        <value>Bordered</value>
+    </data>
+    <data name="ThemeLayoutsHeaderNavPanelMainAnd" xml:space="preserve">
+        <value>Header, nav panel, main and footer</value>
+    </data>
+    <data name="ThemeLayoutsPushingTheActionsToThe" xml:space="preserve">
+        <value>Pushing the actions to the end</value>
+    </data>
+    <data name="ThemeLayouts3Selected" xml:space="preserve">
+        <value>3 selected</value>
+    </data>
+    <data name="ThemeLayoutsHorizontalCenteredWrapping" xml:space="preserve">
+        <value>Horizontal, centered, wrapping</value>
+    </data>
+    <data name="ThemeLayoutsVertical" xml:space="preserve">
+        <value>Vertical</value>
+    </data>
+    <data name="ThemeLayoutsBread" xml:space="preserve">
+        <value>Bread</value>
+    </data>
+    <data name="ThemeLayoutsPastry" xml:space="preserve">
+        <value>Pastry</value>
+    </data>
+    <data name="ThemeLayoutsCoffee" xml:space="preserve">
+        <value>Coffee</value>
+    </data>
+    <data name="ThemeLayoutsTea" xml:space="preserve">
+        <value>Tea</value>
+    </data>
+    <data name="ThemeLayoutsCakes" xml:space="preserve">
+        <value>Cakes</value>
+    </data>
+    <data name="ThemeListsNobodyIsOnShiftYet" xml:space="preserve">
+        <value>Nobody is on shift yet.</value>
+    </data>
+    <data name="ThemeListsTwoAtATime" xml:space="preserve">
+        <value>Two at a time</value>
+    </data>
+    <data name="ThemeListsThisWeekSSpecials" xml:space="preserve">
+        <value>This week's specials</value>
+    </data>
+    <data name="ThemeListsWithDots" xml:space="preserve">
+        <value>With dots</value>
+    </data>
+    <data name="ThemeListsTodaySSpecials" xml:space="preserve">
+        <value>Today's specials</value>
+    </data>
+    <data name="ThemeListsBreakfastBox" xml:space="preserve">
+        <value>Breakfast box</value>
+    </data>
+    <data name="ThemeListsCroissantJuiceAndCoffee" xml:space="preserve">
+        <value>Croissant, juice and coffee</value>
+    </data>
+    <data name="ThemeListsOatFlatWhite" xml:space="preserve">
+        <value>Oat flat white</value>
+    </data>
+    <data name="ThemeListsTwoForOneBeforeTen" xml:space="preserve">
+        <value>Two for one before ten</value>
+    </data>
+    <data name="ThemeListsCarrotCake" xml:space="preserve">
+        <value>Carrot cake</value>
+    </data>
+    <data name="ThemeListsBakedEveryMorning" xml:space="preserve">
+        <value>Baked every morning</value>
+    </data>
+    <data name="ThemeListsClickAndCollect" xml:space="preserve">
+        <value>Click and collect</value>
+    </data>
+    <data name="ThemeListsReadyInFifteenMinutes" xml:space="preserve">
+        <value>Ready in fifteen minutes</value>
+    </data>
+    <data name="ThemeListsBaked" xml:space="preserve">
+        <value>Baked</value>
+    </data>
+    <data name="ThemeListsOnItsWay" xml:space="preserve">
+        <value>On its way</value>
+    </data>
+    <data name="ThemeListsDelivered" xml:space="preserve">
+        <value>Delivered</value>
+    </data>
+    <data name="ThemeListsAbout1030" xml:space="preserve">
+        <value>About 10:30</value>
+    </data>
+    <data name="ThemeMotionHowLongTheThemeS" xml:space="preserve">
+        <value>How long the theme's animations take and how they speed up or slow down. Each row says where the components use it; Play moves every dot with its row's duration and easing. Turn on Reduced motion under Try the theme to see the durations drop to zero.</value>
+    </data>
+    <data name="ThemeMotionPlay" xml:space="preserve">
+        <value>Play</value>
+    </data>
+    <data name="ThemeMotionLoops" xml:space="preserve">
+        <value>Loops</value>
+    </data>
+    <data name="ThemeMotionSpinnersLikeAButtonThat" xml:space="preserve">
+        <value>Spinners, like a button that is saving: one turn takes this long and eases this way</value>
+    </data>
+    <data name="ThemeMotionSaving" xml:space="preserve">
+        <value>Saving...</value>
+    </data>
+    <data name="ThemeMotionSpeedFactors" xml:space="preserve">
+        <value>Speed factors</value>
+    </data>
+    <data name="ThemeMotionEveryAnimationSDurationIs" xml:space="preserve">
+        <value>Every animation's duration is multiplied by this; Reduced motion sets it to 0.</value>
+    </data>
+    <data name="ThemeMotionAnimationsThatRepeatLikeSpinners" xml:space="preserve">
+        <value>Animations that repeat, like spinners, pulsing badges and progress stripes, are multiplied by this.</value>
+    </data>
+    <data name="ThemeMotionQuickFeedbackLikeAButton" xml:space="preserve">
+        <value>Quick feedback, like a button's color when it is hovered or pressed</value>
+    </data>
+    <data name="ThemeMotionMostChangesLikeAToggle" xml:space="preserve">
+        <value>Most changes, like a toggle switching or a section expanding</value>
+    </data>
+    <data name="ThemeMotionBiggerMovesLikeACalendar" xml:space="preserve">
+        <value>Bigger moves, like a calendar sliding to the next month</value>
+    </data>
+    <data name="ThemeMotionComingInStartsFastAnd" xml:space="preserve">
+        <value>Coming in: starts fast and slows down, like a menu or a callout opening</value>
+    </data>
+    <data name="ThemeMotionGoingOutStartsSlowAnd" xml:space="preserve">
+        <value>Going out: starts slow and speeds up, like a modal, a panel or a snack bar leaving</value>
+    </data>
+    <data name="ThemeNavsFilters" xml:space="preserve">
+        <value>Filters</value>
+    </data>
+    <data name="ThemeNavsInStock" xml:space="preserve">
+        <value>In stock</value>
+    </data>
+    <data name="ThemeNavsOnSale" xml:space="preserve">
+        <value>On sale</value>
+    </data>
+    <data name="ThemeNavsFilled" xml:space="preserve">
+        <value>Filled</value>
+    </data>
+    <data name="ThemeNavsFirstLastAndSummary" xml:space="preserve">
+        <value>First, last and summary</value>
+    </data>
+    <data name="ThemeNavsIconsAndCounts" xml:space="preserve">
+        <value>Icons and counts</value>
+    </data>
+    <data name="ThemeNavsInbox" xml:space="preserve">
+        <value>Inbox</value>
+    </data>
+    <data name="ThemeNavsSent" xml:space="preserve">
+        <value>Sent</value>
+    </data>
+    <data name="ThemeNavsShops" xml:space="preserve">
+        <value>Shops</value>
+    </data>
+    <data name="ThemeNavsReports" xml:space="preserve">
+        <value>Reports</value>
+    </data>
+    <data name="ThemeNotificationsMessages" xml:space="preserve">
+        <value>Messages</value>
+    </data>
+    <data name="ThemeNotificationsOverTheMaximum" xml:space="preserve">
+        <value>Over the maximum</value>
+    </data>
+    <data name="ThemeNotificationsDot" xml:space="preserve">
+        <value>Dot</value>
+    </data>
+    <data name="ThemeNotificationsOnItsOwn" xml:space="preserve">
+        <value>On its own</value>
+    </data>
+    <data name="ThemeNotificationsNew" xml:space="preserve">
+        <value>New</value>
+    </data>
+    <data name="ThemeNotificationsTitleActionsAndDismiss" xml:space="preserve">
+        <value>Title, actions and dismiss</value>
+    </data>
+    <data name="ThemeNotificationsYourCardExpiresSoon" xml:space="preserve">
+        <value>Your card expires soon</value>
+    </data>
+    <data name="ThemeNotificationsUpdateItBeforeJune1" xml:space="preserve">
+        <value>Update it before June 1 so your next order goes through.</value>
+    </data>
+    <data name="ThemeNotificationsUpdateCard" xml:space="preserve">
+        <value>Update card</value>
+    </data>
+    <data name="ThemeNotificationsEveryLine" xml:space="preserve">
+        <value>Every line</value>
+    </data>
+    <data name="ThemeNotificationsOwner" xml:space="preserve">
+        <value>Owner</value>
+    </data>
+    <data name="ThemeNotificationsInTheAmsterdamShop" xml:space="preserve">
+        <value>In the Amsterdam shop</value>
+    </data>
+    <data name="ThemeNotificationsBackAt1400" xml:space="preserve">
+        <value>Back at 14:00</value>
+    </data>
+    <data name="ThemeNotificationsInitials" xml:space="preserve">
+        <value>Initials</value>
+    </data>
+    <data name="ThemeNotificationsShownFromAButton" xml:space="preserve">
+        <value>Shown from a button</value>
+    </data>
+    <data name="ThemeNotificationsDismissible" xml:space="preserve">
+        <value>Dismissible</value>
+    </data>
+    <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
+        <value>Delivery times</value>
+    </data>
+    <data name="ThemeOverlaysOrdersBefore1000Arrive" xml:space="preserve">
+        <value>Orders before 10:00 arrive the same day.</value>
+    </data>
+    <data name="ThemePickersInlineDial" xml:space="preserve">
+        <value>Inline dial</value>
+    </data>
+    <data name="ThemePickersEveryPart" xml:space="preserve">
+        <value>Every part</value>
+    </data>
+    <data name="ThemePickersBrandColor" xml:space="preserve">
+        <value>Brand color</value>
+    </data>
+    <data name="ThemePickersInlineCalendar" xml:space="preserve">
+        <value>Inline calendar</value>
+    </data>
+    <data name="ThemePickersPickTheDates" xml:space="preserve">
+        <value>Pick the dates</value>
+    </data>
+    <data name="ThemePickersTheShopClosesAt18" xml:space="preserve">
+        <value>The shop closes at 18:00.</value>
+    </data>
+    <data name="ThemePickersInline" xml:space="preserve">
+        <value>Inline</value>
+    </data>
+    <data name="ThemePickersOpensAt" xml:space="preserve">
+        <value>Opens at</value>
+    </data>
+    <data name="ThemePickersPickATime" xml:space="preserve">
+        <value>Pick a time</value>
+    </data>
+    <data name="ThemePickersStay" xml:space="preserve">
+        <value>Stay</value>
+    </data>
+    <data name="ThemeProgressDeterminate" xml:space="preserve">
+        <value>Determinate</value>
+    </data>
+    <data name="ThemeProgressIndeterminate" xml:space="preserve">
+        <value>Indeterminate</value>
+    </data>
+    <data name="ThemeProgressSyncing" xml:space="preserve">
+        <value>Syncing</value>
+    </data>
+    <data name="ThemeProgressUploadFailed" xml:space="preserve">
+        <value>Upload failed</value>
+    </data>
+    <data name="ThemeProgressTheConnectionDropped" xml:space="preserve">
+        <value>The connection dropped.</value>
+    </data>
+    <data name="ThemeProgressCircular" xml:space="preserve">
+        <value>Circular</value>
+    </data>
+    <data name="ThemeProgressStorage" xml:space="preserve">
+        <value>Storage</value>
+    </data>
+    <data name="ThemeProgressSegments" xml:space="preserve">
+        <value>Segments</value>
+    </data>
+    <data name="ThemeProgressStep3Of5" xml:space="preserve">
+        <value>Step 3 of 5</value>
+    </data>
+    <data name="ThemeProgressStriped" xml:space="preserve">
+        <value>Striped</value>
+    </data>
+    <data name="ThemeProgressDownloadingTheMenu" xml:space="preserve">
+        <value>Downloading the menu</value>
+    </data>
+    <data name="ThemeProgressLine" xml:space="preserve">
+        <value>Line</value>
+    </data>
+    <data name="ThemeProgressParagraph" xml:space="preserve">
+        <value>Paragraph</value>
+    </data>
+    <data name="ThemeProgressAvatarAndLines" xml:space="preserve">
+        <value>Avatar and lines</value>
+    </data>
+    <data name="ThemeProgressLoaded" xml:space="preserve">
+        <value>Loaded</value>
+    </data>
+    <data name="ThemeShadowsTheShadowEachSurfaceLifts" xml:space="preserve">
+        <value>The shadow each surface lifts with, the general scale, and the 24 elevation steps.</value>
+    </data>
+    <data name="ThemeShapeTheCornerRadiusScaleAnd" xml:space="preserve">
+        <value>The corner radius scale and the radius each family of components takes, then the border widths and the focus ring.</value>
+    </data>
+    <data name="ThemeShapeBordersAndFocus" xml:space="preserve">
+        <value>Borders and focus</value>
+    </data>
+    <data name="ThemeSizesTheSizesComponentsAreBuilt" xml:space="preserve">
+        <value>The sizes components are built from, each drawn as a bar of its length, then the spacing unit, the density and the insets of cards and dialogs. Try the Density switch to see them change.</value>
+    </data>
+    <data name="ThemeSizesSpacing" xml:space="preserve">
+        <value>Spacing</value>
+    </data>
+    <data name="ThemeSurfacesTheSurfacesThatFloatOver" xml:space="preserve">
+        <value>The surfaces that float over the page open from their buttons here; the Open overlay switch opens them for links and screenshots.</value>
+    </data>
+    <data name="ThemeSurfacesIconAndDescription" xml:space="preserve">
+        <value>Icon and description</value>
+    </data>
+    <data name="ThemeSurfacesVisaEndingIn4242" xml:space="preserve">
+        <value>Visa ending in 4242</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromItsAnchor" xml:space="preserve">
+        <value>Opens from its anchor</value>
+    </data>
+    <data name="ThemeSurfacesTitleBodyAndActions" xml:space="preserve">
+        <value>Title, body and actions</value>
+    </data>
+    <data name="ThemeSurfacesAutumnMenu" xml:space="preserve">
+        <value>Autumn menu</value>
+    </data>
+    <data name="ThemeSurfacesStartsOnMonday" xml:space="preserve">
+        <value>Starts on Monday</value>
+    </data>
+    <data name="ThemeSurfacesPublish" xml:space="preserve">
+        <value>Publish</value>
+    </data>
+    <data name="ThemeSurfacesWithAnImage" xml:space="preserve">
+        <value>With an image</value>
+    </data>
+    <data name="ThemeSurfacesMonthlySalesReport" xml:space="preserve">
+        <value>Monthly sales report</value>
+    </data>
+    <data name="ThemeSurfacesReadyToShare" xml:space="preserve">
+        <value>Ready to share</value>
+    </data>
+    <data name="ThemeSurfacesTwoPeopleReadingTheSales" xml:space="preserve">
+        <value>Two people reading the sales charts</value>
+    </data>
+    <data name="ThemeSurfacesSalesGrew12OnLast" xml:space="preserve">
+        <value>Sales grew 12% on last month.</value>
+    </data>
+    <data name="ThemeSurfacesOutlined" xml:space="preserve">
+        <value>Outlined</value>
+    </data>
+    <data name="ThemeSurfacesCollapsedToAPeek" xml:space="preserve">
+        <value>Collapsed to a peek</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromAButton" xml:space="preserve">
+        <value>Opens from a button</value>
+    </data>
+    <data name="ThemeSurfacesShowLess" xml:space="preserve">
+        <value>Show less</value>
+    </data>
+    <data name="ThemeSurfacesShowMore" xml:space="preserve">
+        <value>Show more</value>
+    </data>
+    <data name="ThemeSurfacesDiscardChanges" xml:space="preserve">
+        <value>Discard changes</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromCode" xml:space="preserve">
+        <value>Opens from code</value>
+    </data>
+    <data name="ThemeSurfacesModalFromTheService" xml:space="preserve">
+        <value>Modal from the service</value>
+    </data>
+    <data name="ThemeSurfacesFadedEdges" xml:space="preserve">
+        <value>Faded edges</value>
+    </data>
+    <data name="ThemeSurfacesSideBySide" xml:space="preserve">
+        <value>Side by side</value>
+    </data>
+    <data name="ThemeSurfacesResizeThePanels" xml:space="preserve">
+        <value>Resize the panels</value>
+    </data>
+    <data name="ThemeSurfacesOrderDetails" xml:space="preserve">
+        <value>Order details</value>
+    </data>
+    <data name="ThemeSurfacesStacked" xml:space="preserve">
+        <value>Stacked</value>
+    </data>
+    <data name="ThemeSurfacesDiscardYourChanges" xml:space="preserve">
+        <value>Discard your changes?</value>
+    </data>
+    <data name="ThemeSurfacesWhatYouTypedSinceThe" xml:space="preserve">
+        <value>What you typed since the last save is lost.</value>
+    </data>
+    <data name="ThemeSurfacesDiscard" xml:space="preserve">
+        <value>Discard</value>
+    </data>
+    <data name="ThemeOpenedByBitModalService" xml:space="preserve">
+        <value>Opened by BitModalService</value>
+    </data>
+    <data name="ThemeAnyComponentCanBeShown" xml:space="preserve">
+        <value>Any component can be shown in a modal from code, without markup on the page.</value>
+    </data>
+    <data name="ThemeTypographyTheTypeRampBitTextDraws" xml:space="preserve">
+        <value>The type ramp BitText draws, then the fonts, sizes and weights it is built from, and last the tokens that style the text inside certain components.</value>
+    </data>
+    <data name="ThemeTypographyFonts" xml:space="preserve">
+        <value>Fonts</value>
+    </data>
+    <data name="ThemeTypographyFontSizes" xml:space="preserve">
+        <value>Font sizes</value>
+    </data>
+    <data name="ThemeTypographyFontWeights" xml:space="preserve">
+        <value>Font weights</value>
+    </data>
+    <data name="ThemeTypographyTextInsideComponents" xml:space="preserve">
+        <value>Text inside components</value>
+    </data>
+    <data name="ThemeTypographyButtonsMenusAndOtherControls" xml:space="preserve">
+        <value>Buttons, menus and other controls: the weight, letter spacing and case of their text</value>
+    </data>
+    <data name="ThemeTypographyDialogsTheSizeAndWeight" xml:space="preserve">
+        <value>Dialogs: the size and weight of their title</value>
+    </data>
+    <data name="ThemeTypographyInputsTheWeightOfThe" xml:space="preserve">
+        <value>Inputs: the weight of the label over the field</value>
+    </data>
+    <data name="ThemeTypographyHeadersAndFootersTheLine" xml:space="preserve">
+        <value>Headers and footers: the line height of their text</value>
+    </data>
+    <data name="ThemeTypographyBitTextWithGutterTheSpace" xml:space="preserve">
+        <value>BitText with Gutter: the space under a paragraph</value>
+    </data>
+    <data name="ThemeUtilitiesAnyTagStyledLikeA" xml:space="preserve">
+        <value>Any tag, styled like a component</value>
+    </data>
+    <data name="ThemeUtilitiesTheBestCroissantIHad" xml:space="preserve">
+        <value>The best croissant I had outside Paris.</value>
+    </data>
+    <data name="ThemeUtilitiesSpinning" xml:space="preserve">
+        <value>Spinning</value>
+    </data>
+    <data name="ThemeUtilitiesCoverRoundedWithAShadow" xml:space="preserve">
+        <value>Cover, rounded, with a shadow</value>
+    </data>
+    <data name="ThemeUtilitiesContainBordered" xml:space="preserve">
+        <value>Contain, bordered</value>
+    </data>
+    <data name="ThemeUtilitiesUnderlinedWithAnIcon" xml:space="preserve">
+        <value>Underlined, with an icon</value>
+    </data>
+    <data name="ThemeUtilitiesReportAProblem" xml:space="preserve">
+        <value>Report a problem</value>
+    </data>
+    <data name="ThemeUtilitiesWhatThisViewSWidth" xml:space="preserve">
+        <value>What this view's width matches</value>
+    </data>
+    <data name="ThemeUtilitiesNarrowerThanMd" xml:space="preserve">
+        <value>Narrower than md</value>
+    </data>
+    <data name="ThemeUtilitiesMdOrWider" xml:space="preserve">
+        <value>md or wider</value>
+    </data>
+    <data name="ThemeUtilitiesOverABox" xml:space="preserve">
+        <value>Over a box</value>
+    </data>
+    <data name="ThemeUtilitiesPullTheListDown" xml:space="preserve">
+        <value>Pull the list down</value>
+    </data>
+    <data name="ThemeUtilitiesWithText" xml:space="preserve">
+        <value>With text</value>
+    </data>
+    <data name="ThemeUtilitiesOr" xml:space="preserve">
+        <value>or</value>
+    </data>
+    <data name="ThemeUtilitiesScrollTheBox" xml:space="preserve">
+        <value>Scroll the box</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeInTheBox" xml:space="preserve">
+        <value>Swipe in the box</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeOrDragHere" xml:space="preserve">
+        <value>Swipe or drag here</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedUp" xml:space="preserve">
+        <value>Swiped up</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedDown" xml:space="preserve">
+        <value>Swiped down</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedLeft" xml:space="preserve">
+        <value>Swiped left</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedRight" xml:space="preserve">
+        <value>Swiped right</value>
+    </data>
+    <data name="ThemeUtilitiesForegrounds" xml:space="preserve">
+        <value>Foregrounds</value>
+    </data>
+    <data name="ThemeUtilitiesPrimaryText" xml:space="preserve">
+        <value>Primary text</value>
+    </data>
+    <data name="ThemeUtilitiesSecondaryText" xml:space="preserve">
+        <value>Secondary text</value>
+    </data>
+    <data name="ThemeUtilitiesTertiaryText" xml:space="preserve">
+        <value>Tertiary text</value>
+    </data>
+    <data name="ThemeUtilitiesSaved" xml:space="preserve">
+        <value>Saved</value>
+    </data>
+    <data name="ThemeUtilitiesStyles" xml:space="preserve">
+        <value>Styles</value>
+    </data>
+    <data name="ThemeUtilitiesBold" xml:space="preserve">
+        <value>Bold</value>
+    </data>
+    <data name="ThemeUtilitiesItalic" xml:space="preserve">
+        <value>Italic</value>
+    </data>
+    <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
+        <value>Clamped to two lines</value>
+    </data>
+    <data name="ThemeSectionsOfThisPage" xml:space="preserve">
+        <value>Sections of this page</value>
+    </data>
+    <data name="ThemeRenameTheShop" xml:space="preserve">
+        <value>Rename the shop</value>
+    </data>
+    <data name="ThemeTheNewNameShowsOn" xml:space="preserve">
+        <value>The new name shows on receipts from tomorrow.</value>
+    </data>
+    <data name="FlowCopyName" xml:space="preserve">
+        <value>{0} (copy)</value>
+    </data>
+    <data name="TourArrowsTitle" xml:space="preserve">
+        <value>Change an arrow</value>
+    </data>
+    <data name="TourArrowsText" xml:space="preserve">
+        <value>Double-click an arrow to rename it, mark the button it starts from or delete it. A sample stays as it is: a change to one of its arrows makes your own copy of the flow.</value>
+    </data>
+    <data name="ThemeTokensScale" xml:space="preserve">
+        <value>Scale</value>
+    </data>
+    <data name="ThemeTokensFamilies" xml:space="preserve">
+        <value>Families</value>
+    </data>
+    <data name="ThemeTokensElevation" xml:space="preserve">
+        <value>Elevation</value>
+    </data>
+    <data name="ThemeTokensControlHeight" xml:space="preserve">
+        <value>Control height</value>
+    </data>
+    <data name="ThemeTokensControlPadding" xml:space="preserve">
+        <value>Control padding</value>
+    </data>
+    <data name="ThemeTokensIcons" xml:space="preserve">
+        <value>Icons</value>
+    </data>
+    <data name="ThemeTokensCheckboxesAndRadios" xml:space="preserve">
+        <value>Checkboxes and radios</value>
+    </data>
+    <data name="ThemeTokensListRows" xml:space="preserve">
+        <value>List rows</value>
+    </data>
+    <data name="ThemeTokensTabs" xml:space="preserve">
+        <value>Tabs</value>
+    </data>
+    <data name="ThemeTokensLinesAndTracks" xml:space="preserve">
+        <value>Lines and tracks</value>
+    </data>
+    <data name="ThemeTokensSwitches" xml:space="preserve">
+        <value>Switches</value>
+    </data>
+    <data name="ThemeTokensSliderThumbs" xml:space="preserve">
+        <value>Slider thumbs</value>
+    </data>
+    <data name="ThemeTokensBadges" xml:space="preserve">
+        <value>Badges</value>
+    </data>
+    <data name="ThemeTokensLimits" xml:space="preserve">
+        <value>Limits</value>
+    </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>Not every text of the components on this page is translated into every language. That doesn't mean they can't be: every component here can be localized, but translating all of their texts added little to what this page is for. Ask your AI agent to complete the translations when you need them.</value>
     </data>
 </root>

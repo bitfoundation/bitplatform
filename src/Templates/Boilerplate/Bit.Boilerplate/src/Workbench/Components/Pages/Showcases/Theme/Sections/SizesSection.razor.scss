@@ -1,0 +1,66 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.groups {
+    gap: 1.25rem 1.5rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.group {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.size-row {
+    gap: 0.125rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.bar {
+    height: 0.625rem;
+    max-width: 100%;
+    // Each bar gets its length from the markup.
+    width: var(--wb-size);
+    border-radius: $bit-shape-radius-full;
+    background-color: $bit-color-primary;
+}
+
+.insets {
+    gap: 1rem;
+    display: grid;
+    align-items: end;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+}
+
+.inset-cell {
+    gap: 0.25rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.inset {
+    display: block;
+    // Each box gets its inset from the markup; the tinted band is the inset.
+    padding: var(--wb-inset);
+    border-radius: $bit-shape-radius-surface;
+    border: 1px dashed $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 15%, transparent);
+}
+
+.inset-content {
+    height: 1.5rem;
+    display: block;
+    border-radius: $bit-shape-radius-sm;
+    background-color: $bit-color-background-primary;
+}
+
+.density {
+    font-weight: $bit-typography-fw-semibold;
+    font-size: $bit-typography-fs-2xl;
+}

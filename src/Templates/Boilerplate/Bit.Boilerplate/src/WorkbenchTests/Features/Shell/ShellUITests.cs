@@ -744,7 +744,8 @@ public class ShellUITests : ShellPageTest
     [TestMethod, OnDesktops]
     public async Task TheKeyboardOrAPressInAView_Should_SelectIt(WorkbenchSurface surface)
     {
-        await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "ipad-mini" }])}");
+        // The first view opens on the theme page's Buttons tab, where its icon button is.
+        await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se", Switches = "section=buttons" }, new() { Device = "ipad-mini" }])}");
 
         var first = Page.GetByRole(AriaRole.Group, new() { Name = "iPhone SE" });
         var second = Page.GetByRole(AriaRole.Group, new() { Name = "iPad mini" });

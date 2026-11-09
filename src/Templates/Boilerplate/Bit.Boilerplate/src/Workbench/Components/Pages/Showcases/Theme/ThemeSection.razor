@@ -1,0 +1,12 @@
+@inherits WorkbenchComponentBase
+
+<section @ref="Element" id="@Id" class="theme-section">
+    <header class="section-header">
+        <BitText Typography="BitTypography.H6" Element="h2">@Title</BitText>
+        @if (Hint is not null)
+        {
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Hint</BitText>
+        }
+    </header>
+    @ChildContent
+</section>

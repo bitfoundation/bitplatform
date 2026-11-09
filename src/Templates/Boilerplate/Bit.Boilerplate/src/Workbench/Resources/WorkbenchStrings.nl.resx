@@ -2256,17 +2256,11 @@
     <data name="ThemeToggle" xml:space="preserve">
         <value>Meldingen</value>
     </data>
-    <data name="ThemeFeedback" xml:space="preserve">
-        <value>Berichten en status</value>
-    </data>
     <data name="ThemeMessage" xml:space="preserve">
         <value>Een {0}-bericht, zoals de app het toont.</value>
     </data>
     <data name="ThemeProgress" xml:space="preserve">
         <value>Uploaden</value>
-    </data>
-    <data name="ThemeContainers" xml:space="preserve">
-        <value>Kaarten en mensen</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Tabblad {0}</value>
@@ -2622,9 +2616,6 @@
     <data name="ThemeStateCollapsed" xml:space="preserve">
         <value>Ingevouwen</value>
     </data>
-    <data name="ThemeSelection" xml:space="preserve">
-        <value>Keuzes</value>
-    </data>
     <data name="ThemeNavigation" xml:space="preserve">
         <value>Navigatie</value>
     </data>
@@ -2699,6 +2690,63 @@
     </data>
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Een minuut geleden opgeslagen</value>
+    </data>
+    <data name="ThemeSwitchSection" xml:space="preserve">
+        <value>Onderdeel</value>
+    </data>
+    <data name="ThemeShadows" xml:space="preserve">
+        <value>Schaduwen</value>
+    </data>
+    <data name="ThemeSizes" xml:space="preserve">
+        <value>Afmetingen en ruimte</value>
+    </data>
+    <data name="ThemeMotion" xml:space="preserve">
+        <value>Beweging</value>
+    </data>
+    <data name="ThemeLayers" xml:space="preserve">
+        <value>Lagen, breekpunten en indeling</value>
+    </data>
+    <data name="ThemePickers" xml:space="preserve">
+        <value>Kiezers</value>
+    </data>
+    <data name="ThemeLayouts" xml:space="preserve">
+        <value>Indelingen</value>
+    </data>
+    <data name="ThemeLists" xml:space="preserve">
+        <value>Lijsten</value>
+    </data>
+    <data name="ThemeNotifications" xml:space="preserve">
+        <value>Meldingen</value>
+    </data>
+    <data name="ThemeProgressSection" xml:space="preserve">
+        <value>Voortgang</value>
+    </data>
+    <data name="ThemeSurfaces" xml:space="preserve">
+        <value>Oppervlakken</value>
+    </data>
+    <data name="ThemeUtilities" xml:space="preserve">
+        <value>Hulpmiddelen</value>
+    </data>
+    <data name="ThemeExtras" xml:space="preserve">
+        <value>Extra&apos;s</value>
+    </data>
+    <data name="ThemeAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="ThemeSwitchDensity" xml:space="preserve">
+        <value>Dichtheid</value>
+    </data>
+    <data name="ThemeDensityCompact" xml:space="preserve">
+        <value>Compact</value>
+    </data>
+    <data name="ThemeDensitySpacious" xml:space="preserve">
+        <value>Ruim</value>
+    </data>
+    <data name="ThemeOverlayCallout" xml:space="preserve">
+        <value>Ballon</value>
+    </data>
+    <data name="ThemeOverlayModal" xml:space="preserve">
+        <value>Modaal venster</value>
     </data>
     <data name="PageFailed" xml:space="preserve">
         <value>Er ging iets mis op deze pagina.</value>
@@ -3107,5 +3155,1586 @@
     </data>
     <data name="LandingConsentFirstVisit" xml:space="preserve">
         <value>Eerste bezoek</value>
+    </data>
+    <data name="FlowSampleHint" xml:space="preserve">
+        <value>Een voorbeeld: dubbelklik op een scherm om het uit te proberen, of op een pijl om hem te wijzigen. Dat maakt je eigen kopie van deze flow.</value>
+    </data>
+    <data name="ArrowSampleNote" xml:space="preserve">
+        <value>Dit is een voorbeeld, dat blijft zoals het is: een wijziging hier maakt je eigen kopie van deze flow met die wijziging, en opent die.</value>
+    </data>
+    <data name="ThemeAiHowDidTheStoresDo" xml:space="preserve">
+        <value>Hoe deden de winkels het deze week?</value>
+    </data>
+    <data name="ThemeAiWhatRunsOutBeforeFriday" xml:space="preserve">
+        <value>Wat raakt er voor vrijdag op?</value>
+    </data>
+    <data name="ThemeAiDraftTheHolidayOpeningHours" xml:space="preserve">
+        <value>Stel de openingstijden voor de feestdagen op</value>
+    </data>
+    <data name="ThemeAiOverThe100MBLimit" xml:space="preserve">
+        <value>Boven de limiet van 100 MB</value>
+    </data>
+    <data name="ThemeAiCanYouCheckThisDelivery" xml:space="preserve">
+        <value>Kun je deze pakbon met onze bestelling vergelijken?</value>
+    </data>
+    <data name="ThemeAiTheDeliveryNoteLists24" xml:space="preserve">
+        <value>Op de pakbon staan **24 havermelk** en **60 croissants**, zoals besteld. De papieren bekers</value>
+    </data>
+    <data name="ThemeAiCheckingTheStockInUtrecht" xml:space="preserve">
+        <value>Voorraad in Utrecht controleren</value>
+    </data>
+    <data name="ThemeAiTheAssistantCouldNotAnswer" xml:space="preserve">
+        <value>De assistent kon niet antwoorden. Probeer het zo opnieuw.</value>
+    </data>
+    <data name="ThemeAiJoinedTheConversation" xml:space="preserve">
+        <value>{0} neemt nu deel aan het gesprek.</value>
+    </data>
+    <data name="ThemeAiWeeklySalesReview" xml:space="preserve">
+        <value>Verkoopoverzicht van de week</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksTo" xml:space="preserve">
+        <value>Rotterdam groeide het meest, dankzij het terras.</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStore" xml:space="preserve">
+        <value>Voorraad van Utrecht aanvullen</value>
+    </data>
+    <data name="ThemeAiOrderPlacedForFridayMorning" xml:space="preserve">
+        <value>Bestelling geplaatst voor vrijdagochtend.</value>
+    </data>
+    <data name="ThemeAiTwoDraftsOfThePoster" xml:space="preserve">
+        <value>Twee concepten van de postertekst.</value>
+    </data>
+    <data name="ThemeAiHolidayOpeningHours" xml:space="preserve">
+        <value>Openingstijden feestdagen</value>
+    </data>
+    <data name="ThemeAiPublishedOnEveryStorePage" xml:space="preserve">
+        <value>Gepubliceerd op elke winkelpagina.</value>
+    </data>
+    <data name="ThemeAiTeamScheduleForJune" xml:space="preserve">
+        <value>Teamrooster voor juni</value>
+    </data>
+    <data name="ThemeAiThreeShiftsStillOpen" xml:space="preserve">
+        <value>Nog drie diensten open.</value>
+    </data>
+    <data name="ThemeAiCompareTheBakeries" xml:space="preserve">
+        <value>Bakkerijen vergelijken</value>
+    </data>
+    <data name="ThemeAiDekkerDeliversEarliest" xml:space="preserve">
+        <value>Dekker levert het vroegst.</value>
+    </data>
+    <data name="ThemeAiSunny" xml:space="preserve">
+        <value>Zonnig</value>
+    </data>
+    <data name="ThemeAiTwoPeopleReadingASales" xml:space="preserve">
+        <value>Twee mensen die een verkoopgrafiek door een vergrootglas bekijken</value>
+    </data>
+    <data name="ThemeAiTheWeeklyReportAsAn" xml:space="preserve">
+        <value>Het weekrapport, als illustratie</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek" xml:space="preserve">
+        <value>Rotterdam groeide deze week het meest, dankzij het **nieuwe terras** en de langere openingstijden op zaterdag.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeekThanksTo" xml:space="preserve">
+        <value>Rotterdam groeide deze week het meest, dankzij het **nieuwe terras** en</value>
+    </data>
+    <data name="ThemeAiOrderPO1042IsBooked" xml:space="preserve">
+        <value>Bestelling PO-1042 staat geboekt voor vrijdag om 7:00.</value>
+    </data>
+    <data name="ThemeAiHereIsTheOrderI" xml:space="preserve">
+        <value>Hier is de bestelling die ik heb opgesteld, met de pakbon waarop die gebaseerd is.</value>
+    </data>
+    <data name="ThemeAiTheWeekSSalesAre" xml:space="preserve">
+        <value>De verkoopcijfers van de week zijn binnen. Nu elke winkel vergelijken met vorige week en kijken wat het meest veranderde.</value>
+    </data>
+    <data name="ThemeAiCompareEachStoreSNet" xml:space="preserve">
+        <value>De netto-omzet van elke winkel vergelijken met die van vorige week, en dan zeggen wat het meest veranderde en waarom.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturday" xml:space="preserve">
+        <value>**Utrecht** had zijn beste zaterdag sinds maart: 412 bestellingen, de meeste nog voor de middag.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturdaySinceMarch" xml:space="preserve">
+        <value>**Utrecht** had zijn beste zaterdag sinds maart: 412 bestellingen, de meeste</value>
+    </data>
+    <data name="ThemeAiPlaceTheOrder" xml:space="preserve">
+        <value>Bestelling plaatsen</value>
+    </data>
+    <data name="ThemeAiOrder24OatMilk60" xml:space="preserve">
+        <value>24 havermelk, 60 croissants en 20 papieren bekers bij Dekker bestellen voor vrijdag om 7:00?</value>
+    </data>
+    <data name="ThemeAiDeleteAPriceList" xml:space="preserve">
+        <value>Prijslijst verwijderen</value>
+    </data>
+    <data name="ThemeAiPermanentlyDeleteTheMarchPrice" xml:space="preserve">
+        <value>De prijslijst van maart definitief verwijderen? Dit kan niet ongedaan worden gemaakt.</value>
+    </data>
+    <data name="ThemeAiOpeningHours" xml:space="preserve">
+        <value>Openingstijden</value>
+    </data>
+    <data name="ThemeAiSales" xml:space="preserve">
+        <value>Verkoop</value>
+    </data>
+    <data name="ThemeAiReading18Of30Days" xml:space="preserve">
+        <value>Leest dag 18 van 30</value>
+    </data>
+    <data name="ThemeAiStock" xml:space="preserve">
+        <value>Voorraad</value>
+    </data>
+    <data name="ThemeAiDeliveries" xml:space="preserve">
+        <value>Leveringen</value>
+    </data>
+    <data name="ThemeAiTheSupplierSSystemDid" xml:space="preserve">
+        <value>Het systeem van de leverancier gaf geen antwoord.</value>
+    </data>
+    <data name="ThemeAiYouDeclinedThisToolCall" xml:space="preserve">
+        <value>Je hebt deze toolaanroep geweigerd.</value>
+    </data>
+    <data name="ThemeAiExportTheReport" xml:space="preserve">
+        <value>Rapport exporteren</value>
+    </data>
+    <data name="ThemeAiUtrechtHas4CartonsOf" xml:space="preserve">
+        <value>Utrecht heeft nog 4 pakken havermelk, genoeg tot donderdag.</value>
+    </data>
+    <data name="ThemeAiThereIsNoStoreCalled" xml:space="preserve">
+        <value>Er is geen winkel met de naam Haarlem.</value>
+    </data>
+    <data name="ThemeAiTheSalesServiceDidNot" xml:space="preserve">
+        <value>De verkoopservice antwoordde niet op tijd.</value>
+    </data>
+    <data name="ThemeAiTheProviderSContentFilter" xml:space="preserve">
+        <value>Het inhoudsfilter van de provider heeft dit verzoek geblokkeerd.</value>
+    </data>
+    <data name="ThemeAiSalesReportWeek20" xml:space="preserve">
+        <value>Verkooprapport, week 20</value>
+    </data>
+    <data name="ThemeAiNetSalesOfEveryStore" xml:space="preserve">
+        <value>Netto-omzet van elke winkel, per dag.</value>
+    </data>
+    <data name="ThemeAiSupplierPriceList2026" xml:space="preserve">
+        <value>Prijslijst leveranciers 2026</value>
+    </data>
+    <data name="ThemeAiPurchasing" xml:space="preserve">
+        <value>Inkoop</value>
+    </data>
+    <data name="ThemeAiOpeningHoursOfTheStores" xml:space="preserve">
+        <value>Openingstijden van de winkels</value>
+    </data>
+    <data name="ThemeAiStoreWebsite" xml:space="preserve">
+        <value>Website van de winkels</value>
+    </data>
+    <data name="ThemeAiRotterdamNetSalesUp12" xml:space="preserve">
+        <value>Rotterdam: netto-omzet 12,1% hoger dan de week ervoor.</value>
+    </data>
+    <data name="ThemeAiOatMilkPerCartonOf" xml:space="preserve">
+        <value>Havermelk, per doos van 12: € 21,60.</value>
+    </data>
+    <data name="ThemeAiStoreAssistant" xml:space="preserve">
+        <value>Winkelassistent</value>
+    </data>
+    <data name="ThemeAiThinksItThroughAndUses" xml:space="preserve">
+        <value>Denkt goed na en gebruikt de tools van de winkel.</value>
+    </data>
+    <data name="ThemeAiShortAnswersRightAway" xml:space="preserve">
+        <value>Korte antwoorden, meteen.</value>
+    </data>
+    <data name="ThemeAiVision" xml:space="preserve">
+        <value>Beeld</value>
+    </data>
+    <data name="ThemeAiReadsPhotosOfShelvesAnd" xml:space="preserve">
+        <value>Leest foto's van schappen en bonnen.</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBefore" xml:space="preserve">
+        <value>3 producten raken voor vrijdag op.</value>
+    </data>
+    <data name="ThemeAi2Of3StorePages" xml:space="preserve">
+        <value>2 van de 3 winkelpagina's konden niet worden opgeslagen.</value>
+    </data>
+    <data name="ThemeAiRotterdamThePageIsOpen" xml:space="preserve">
+        <value>Rotterdam: de pagina is geopend in een andere editor.</value>
+    </data>
+    <data name="ThemeAiUtrechtThePageIsOpen" xml:space="preserve">
+        <value>Utrecht: de pagina is geopend in een andere editor.</value>
+    </data>
+    <data name="ThemeAiReadThisWeekSSales" xml:space="preserve">
+        <value>Verkoop van deze week lezen</value>
+    </data>
+    <data name="ThemeAiCroissantsUp18OatMilk" xml:space="preserve">
+        <value>Croissants 18% meer, havermelk 9% meer</value>
+    </data>
+    <data name="ThemeAiCheckTheStockInThe" xml:space="preserve">
+        <value>Voorraad in het magazijn controleren</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBeforeFriday" xml:space="preserve">
+        <value>3 producten raken voor vrijdag op</value>
+    </data>
+    <data name="ThemeAiDraftTheOrder" xml:space="preserve">
+        <value>Bestelling opstellen</value>
+    </data>
+    <data name="ThemeAiSendItToTheSupplier" xml:space="preserve">
+        <value>Naar de leverancier sturen</value>
+    </data>
+    <data name="ThemeAi24OatMilk60Croissants" xml:space="preserve">
+        <value>24 havermelk, 60 croissants, 20 papieren bekers</value>
+    </data>
+    <data name="ThemeAiPickADeliverySlot" xml:space="preserve">
+        <value>Levermoment kiezen</value>
+    </data>
+    <data name="ThemeAiDekkerCanDeliverOnFriday" xml:space="preserve">
+        <value>Dekker kan vrijdag om 7:00 of zaterdag om 9:00 leveren. Welke zal ik boeken?</value>
+    </data>
+    <data name="ThemeAiFriday700" xml:space="preserve">
+        <value>Vrijdag, 7:00</value>
+    </data>
+    <data name="ThemeAiSaturday900" xml:space="preserve">
+        <value>Zaterdag, 9:00</value>
+    </data>
+    <data name="ThemeAiOrderPO1042ConfirmedFor" xml:space="preserve">
+        <value>Bestelling PO-1042 bevestigd voor vrijdag om 7:00</value>
+    </data>
+    <data name="ThemeAiOpeningHoursAgent" xml:space="preserve">
+        <value>Agent voor openingstijden</value>
+    </data>
+    <data name="ThemeAiPublishTheHolidayOpeningHours" xml:space="preserve">
+        <value>Openingstijden voor de feestdagen op elke winkelpagina publiceren</value>
+    </data>
+    <data name="ThemeAiTheRunStoppedBeforeAnnouncing" xml:space="preserve">
+        <value>De uitvoering stopte voordat de nieuwe tijden waren aangekondigd.</value>
+    </data>
+    <data name="ThemeAiCollectTheHoursFromThe" xml:space="preserve">
+        <value>Tijden verzamelen bij de winkelmanagers</value>
+    </data>
+    <data name="ThemeAiHoursFromAll3Store" xml:space="preserve">
+        <value>Tijden van alle 3 winkelmanagers</value>
+    </data>
+    <data name="ThemeAiUpdateTheStorePages" xml:space="preserve">
+        <value>Winkelpagina's bijwerken</value>
+    </data>
+    <data name="ThemeAiAnnounceTheNewHours" xml:space="preserve">
+        <value>Nieuwe tijden aankondigen</value>
+    </data>
+    <data name="ThemeAiSendTheOrderToThe" xml:space="preserve">
+        <value>Bestelling naar de leverancier sturen</value>
+    </data>
+    <data name="ThemeAiComparedWithTheSameWeek" xml:space="preserve">
+        <value>Vergeleken met dezelfde week vorig jaar.</value>
+    </data>
+    <data name="ThemeAiRestockAgent" xml:space="preserve">
+        <value>Agent voor bevoorrading</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStoreBefore" xml:space="preserve">
+        <value>Voorraad van Utrecht aanvullen voor het weekend</value>
+    </data>
+    <data name="ThemeAiEveryStoreKeepsItsUsual" xml:space="preserve">
+        <value>Elke winkel houdt zijn gewone openingstijden aan, behalve op deze dagen:</value>
+    </data>
+    <data name="ThemeAiClosed" xml:space="preserve">
+        <value>Gesloten</value>
+    </data>
+    <data name="ThemeAiOrdersPlacedInTheApp" xml:space="preserve">
+        <value>Bestellingen die op die dagen in de app worden geplaatst, zijn een uur later klaar dan normaal.</value>
+    </data>
+    <data name="ThemeAiFirstDraft" xml:space="preserve">
+        <value>Eerste concept</value>
+    </data>
+    <data name="ThemeAiPriceChangesForJune" xml:space="preserve">
+        <value>Prijswijzigingen voor juni</value>
+    </data>
+    <data name="ThemeAiNoChange" xml:space="preserve">
+        <value>geen wijziging</value>
+    </data>
+    <data name="ThemeAiFromTheSupplierSNew" xml:space="preserve">
+        <value>Uit de nieuwe prijslijst van de leverancier</value>
+    </data>
+    <data name="ThemeAiByWhatSells" xml:space="preserve">
+        <value>Op basis van verkoop</value>
+    </data>
+    <data name="ThemeAiUntilTheNextDelivery" xml:space="preserve">
+        <value>Tot de volgende levering</value>
+    </data>
+    <data name="ThemeAiEmailToTheSupplier" xml:space="preserve">
+        <value>E-mail aan de leverancier</value>
+    </data>
+    <data name="ThemeAiDearDekkerTeam" xml:space="preserve">
+        <value>Beste team van Dekker,</value>
+    </data>
+    <data name="ThemeAiCouldYouDeliverTheOrder" xml:space="preserve">
+        <value>Kunnen jullie de onderstaande bestelling vrijdag om 7:00 bij onze winkel in Utrecht leveren? De achterdeur</value>
+    </data>
+    <data name="ThemeAiNetSalesCameTo34" xml:space="preserve">
+        <value>De netto-omzet kwam uit op **€ 34.820**, 8,4% meer dan vorige week.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksToTheNew" xml:space="preserve">
+        <value>Rotterdam groeide het meest, dankzij het nieuwe terras.</value>
+    </data>
+    <data name="ThemeAiWillItBeWarmEnough" xml:space="preserve">
+        <value>Wordt het morgen warm genoeg voor het terras in Amsterdam?</value>
+    </data>
+    <data name="ThemeAiYesItWillBeMild" xml:space="preserve">
+        <value>Ja. Het wordt zacht en grotendeels droog, dus het terras kan vanaf het middaguur open.</value>
+    </data>
+    <data name="ThemeAiPartlyCloudy" xml:space="preserve">
+        <value>Half bewolkt</value>
+    </data>
+    <data name="ThemeAiThreeProductsRunOutBefore" xml:space="preserve">
+        <value>Drie producten raken op voor de levering van vrijdag:</value>
+    </data>
+    <data name="ThemeAi4CartonsLeftEnoughUntil" xml:space="preserve">
+        <value>Nog 4 pakken, genoeg tot donderdag</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek2" xml:space="preserve">
+        <value>Rotterdam groeide deze week het meest.</value>
+    </data>
+    <data name="ThemeAiOatMilkCosts2160" xml:space="preserve">
+        <value>Havermelk kost bij Dekker € 21,60 per doos van 12.</value>
+    </data>
+    <data name="ThemeAiBookTheDelivery" xml:space="preserve">
+        <value>Levering boeken</value>
+    </data>
+    <data name="ThemeAiCheckWhatIFilledIn" xml:space="preserve">
+        <value>Controleer wat ik heb ingevuld voordat ik de bestelling verstuur.</value>
+    </data>
+    <data name="ThemeAiSendTheOrder" xml:space="preserve">
+        <value>Bestelling versturen</value>
+    </data>
+    <data name="ThemeAiDeliveryDate" xml:space="preserve">
+        <value>Leverdatum</value>
+    </data>
+    <data name="ThemeAiCrates" xml:space="preserve">
+        <value>Kratten</value>
+    </data>
+    <data name="ThemeAiBeforeOpeningTime" xml:space="preserve">
+        <value>Voor openingstijd</value>
+    </data>
+    <data name="ThemeAiTheDriverHasAKey" xml:space="preserve">
+        <value>De chauffeur heeft een sleutel van de achterdeur.</value>
+    </data>
+    <data name="ThemeAiNotesForTheDriver" xml:space="preserve">
+        <value>Notities voor de chauffeur</value>
+    </data>
+    <data name="ThemeAiAnythingTheDriverShouldKnow" xml:space="preserve">
+        <value>Alles wat de chauffeur moet weten</value>
+    </data>
+    <data name="ThemeAiWeekendChecklist" xml:space="preserve">
+        <value>Checklist voor het weekend</value>
+    </data>
+    <data name="ThemeAiBeforeSaturdayEveryStoreChecks" xml:space="preserve">
+        <value>Voor **zaterdag** controleert elke winkel zijn voorraad, zijn terras en zijn team. *Rotterdam* gaat een uur eerder open.</value>
+    </data>
+    <data name="ThemeAiOrderTheOatMilk" xml:space="preserve">
+        <value>Havermelk bestellen</value>
+    </data>
+    <data name="ThemeAiBookTheFridayDelivery" xml:space="preserve">
+        <value>Levering van vrijdag boeken</value>
+    </data>
+    <data name="ThemeAiPutTheTerraceHeatersOut" xml:space="preserve">
+        <value>Terrasverwarmers buiten zetten</value>
+    </data>
+    <data name="ThemeAiAFullShelfAtOpening" xml:space="preserve">
+        <value>Een vol schap bij opening verkoopt meer dan korting bij sluitingstijd.</value>
+    </data>
+    <data name="ThemeAiEverySampleHereIsStatic" xml:space="preserve">
+        <value>Elk voorbeeld hier is statisch: niets op deze pagina roept een model aan.</value>
+    </data>
+    <data name="ThemeAiWithToolCalls" xml:space="preserve">
+        <value>Met toolaanroepen</value>
+    </data>
+    <data name="ThemeAiNotInTheConversation" xml:space="preserve">
+        <value>Niet in het gesprek</value>
+    </data>
+    <data name="ThemeAiDocument" xml:space="preserve">
+        <value>Document</value>
+    </data>
+    <data name="ThemeAiSeveralVersions" xml:space="preserve">
+        <value>Meerdere versies</value>
+    </data>
+    <data name="ThemeAiBeingWritten" xml:space="preserve">
+        <value>Wordt geschreven</value>
+    </data>
+    <data name="ThemeAiImage" xml:space="preserve">
+        <value>Afbeelding</value>
+    </data>
+    <data name="ThemeAiRemovable" xml:space="preserve">
+        <value>Verwijderbaar</value>
+    </data>
+    <data name="ThemeAiAskAboutSalesStockThe" xml:space="preserve">
+        <value>Vraag naar verkoop, voorraad, het team of het weer voor het terras.</value>
+    </data>
+    <data name="ThemeAiTheAssistantCanMakeMistakes" xml:space="preserve">
+        <value>De assistent kan fouten maken. Controleer wat belangrijk is.</value>
+    </data>
+    <data name="ThemeAiFromTheUser" xml:space="preserve">
+        <value>Van de gebruiker</value>
+    </data>
+    <data name="ThemeAiFromTheSystem" xml:space="preserve">
+        <value>Van het systeem</value>
+    </data>
+    <data name="ThemeAiWithAFileName" xml:space="preserve">
+        <value>Met een bestandsnaam</value>
+    </data>
+    <data name="ThemeAiWithoutAHeader" xml:space="preserve">
+        <value>Zonder kop</value>
+    </data>
+    <data name="ThemeAiLineNumbers" xml:space="preserve">
+        <value>Regelnummers</value>
+    </data>
+    <data name="ThemeAiPlentyLeft" xml:space="preserve">
+        <value>Nog ruimte genoeg</value>
+    </data>
+    <data name="ThemeAiFillingUp" xml:space="preserve">
+        <value>Raakt vol</value>
+    </data>
+    <data name="ThemeAiAlmostFull" xml:space="preserve">
+        <value>Bijna vol</value>
+    </data>
+    <data name="ThemeAiWithTheUnsentPrompt" xml:space="preserve">
+        <value>Met de niet-verstuurde prompt</value>
+    </data>
+    <data name="ThemeAiWithItsLabel" xml:space="preserve">
+        <value>Met label</value>
+    </data>
+    <data name="ThemeAiWithRetry" xml:space="preserve">
+        <value>Met opnieuw proberen</value>
+    </data>
+    <data name="ThemeAiWithoutRetry" xml:space="preserve">
+        <value>Zonder opnieuw proberen</value>
+    </data>
+    <data name="ThemeAiSubmitted" xml:space="preserve">
+        <value>Verstuurd</value>
+    </data>
+    <data name="ThemeAiRegistered" xml:space="preserve">
+        <value>Geregistreerd</value>
+    </data>
+    <data name="ThemeAiNotRegistered" xml:space="preserve">
+        <value>Niet geregistreerd</value>
+    </data>
+    <data name="ThemeAiPropsThatDonTFit" xml:space="preserve">
+        <value>Props die niet passen</value>
+    </data>
+    <data name="ThemeAiAFormattedAnswer" xml:space="preserve">
+        <value>Een opgemaakt antwoord</value>
+    </data>
+    <data name="ThemeAiPinned" xml:space="preserve">
+        <value>Vastgezet</value>
+    </data>
+    <data name="ThemeAiRated" xml:space="preserve">
+        <value>Beoordeeld</value>
+    </data>
+    <data name="ThemeAiAPartOfEachKind" xml:space="preserve">
+        <value>Van elke soort een deel</value>
+    </data>
+    <data name="ThemeAiGenerating" xml:space="preserve">
+        <value>Aan het genereren</value>
+    </data>
+    <data name="ThemeAiWithoutALink" xml:space="preserve">
+        <value>Zonder link</value>
+    </data>
+    <data name="ThemeAiRecord" xml:space="preserve">
+        <value>Record</value>
+    </data>
+    <data name="ThemeAiWithCitations" xml:space="preserve">
+        <value>Met bronvermeldingen</value>
+    </data>
+    <data name="ThemeAiWithALabel" xml:space="preserve">
+        <value>Met een label</value>
+    </data>
+    <data name="ThemeAiReadingTheSalesReport" xml:space="preserve">
+        <value>Het verkooprapport lezen</value>
+    </data>
+    <data name="ThemeAiTokens" xml:space="preserve">
+        <value>Tokens</value>
+    </data>
+    <data name="ThemeAiWithTheCost" xml:space="preserve">
+        <value>Met de kosten</value>
+    </data>
+    <data name="ThemeAiWithSpeedAndLatency" xml:space="preserve">
+        <value>Met snelheid en latentie</value>
+    </data>
+    <data name="ThemeAiInDetail" xml:space="preserve">
+        <value>Gedetailleerd</value>
+    </data>
+    <data name="ThemeAiNoLookOfTheirOwn" xml:space="preserve">
+        <value>Zonder eigen uiterlijk: {0}.</value>
+    </data>
+    <data name="ThemeAiAskTheStoreAssistant" xml:space="preserve">
+        <value>Vraag het de winkelassistent...</value>
+    </data>
+    <data name="ThemeAiWhatTheAssistantCanSee" xml:space="preserve">
+        <value>Wat de assistent kan zien</value>
+    </data>
+    <data name="ThemeAiSalesStockAndTheTeam" xml:space="preserve">
+        <value>Verkoop, voorraad en het teamrooster van je winkels. Nooit de betaalgegevens van je klanten.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek3" xml:space="preserve">
+        <value>Rotterdam groeide deze week het meest</value>
+    </data>
+    <data name="ThemeAiThisChatIsASample" xml:space="preserve">
+        <value>Deze chat is een voorbeeld op de themapagina, dus er antwoordt geen model.</value>
+    </data>
+    <data name="ThemeAiHigh" xml:space="preserve">
+        <value>Max. {0}</value>
+    </data>
+    <data name="ThemeAiLow" xml:space="preserve">
+        <value>Min. {0}</value>
+    </data>
+    <data name="ThemeAiChanceOfRain" xml:space="preserve">
+        <value>Kans op regen {0}%</value>
+    </data>
+    <data name="ThemeButtonsColored" xml:space="preserve">
+        <value>Gekleurd</value>
+    </data>
+    <data name="ThemeButtonsWithASecondLine" xml:space="preserve">
+        <value>Met een tweede regel</value>
+    </data>
+    <data name="ThemeButtonsEveryChangeIsKeptFor" xml:space="preserve">
+        <value>Elke wijziging wordt 30 dagen bewaard</value>
+    </data>
+    <data name="ThemeButtonsBackUpNow" xml:space="preserve">
+        <value>Nu back-up maken</value>
+    </data>
+    <data name="ThemeButtonsRoundedIconAtTheEnd" xml:space="preserve">
+        <value>Afgerond, pictogram aan het eind</value>
+    </data>
+    <data name="ThemeButtonsContinue" xml:space="preserve">
+        <value>Doorgaan</value>
+    </data>
+    <data name="ThemeButtonsFullWidth" xml:space="preserve">
+        <value>Volledige breedte</value>
+    </data>
+    <data name="ThemeButtonsAddABuilding" xml:space="preserve">
+        <value>Gebouw toevoegen</value>
+    </data>
+    <data name="ThemeButtonsAsALink" xml:space="preserve">
+        <value>Als link</value>
+    </data>
+    <data name="ThemeButtonsOpenTheGuide" xml:space="preserve">
+        <value>Open de handleiding</value>
+    </data>
+    <data name="ThemeButtonsIconsOnly" xml:space="preserve">
+        <value>Alleen pictogrammen</value>
+    </data>
+    <data name="ThemeButtonsSplit" xml:space="preserve">
+        <value>Gesplitst</value>
+    </data>
+    <data name="ThemeButtonsOnOutline" xml:space="preserve">
+        <value>Aan, omlijnd</value>
+    </data>
+    <data name="ThemeButtonsMute" xml:space="preserve">
+        <value>Dempen</value>
+    </data>
+    <data name="ThemeButtonsAlignStart" xml:space="preserve">
+        <value>Aan begin uitlijnen</value>
+    </data>
+    <data name="ThemeButtonsAlignCenter" xml:space="preserve">
+        <value>Centreren</value>
+    </data>
+    <data name="ThemeButtonsAlignEnd" xml:space="preserve">
+        <value>Aan eind uitlijnen</value>
+    </data>
+    <data name="ThemeButtonsShare" xml:space="preserve">
+        <value>Delen</value>
+    </data>
+    <data name="ThemeColorsEveryColorOfTheTheme" xml:space="preserve">
+        <value>Elke kleur van het thema met de waarde die hij in deze weergave heeft: per rol de toestanden, schakeringen, tekst-, tint- en uitgeschakelde kleuren, de neutrale kleuren, de grijstinten waar die uit voortkomen en de namen per intentie.</value>
+    </data>
+    <data name="ThemeColorsGrays" xml:space="preserve">
+        <value>Grijstinten</value>
+    </data>
+    <data name="ThemeColorsSpecialPurpose" xml:space="preserve">
+        <value>Speciaal gebruik</value>
+    </data>
+    <data name="ThemeColorsIntent" xml:space="preserve">
+        <value>Intentie</value>
+    </data>
+    <data name="ThemeExtrasLatestOrders" xml:space="preserve">
+        <value>Laatste bestellingen</value>
+    </data>
+    <data name="ThemeExtrasCustomer" xml:space="preserve">
+        <value>Klant</value>
+    </data>
+    <data name="ThemeExtrasNoOrdersYetToday" xml:space="preserve">
+        <value>Vandaag nog geen bestellingen.</value>
+    </data>
+    <data name="ThemeExtrasTheComponentsOfTheBit" xml:space="preserve">
+        <value>De componenten van het pakket Bit.BlazorUI.Extras: tabellen, grafieken, agenda's, kaarten, editors en viewers.</value>
+    </data>
+    <data name="ThemeExtrasBars" xml:space="preserve">
+        <value>Staven</value>
+    </data>
+    <data name="ThemeExtrasRevenuePerMonth" xml:space="preserve">
+        <value>Omzet per maand</value>
+    </data>
+    <data name="ThemeExtrasLines" xml:space="preserve">
+        <value>Lijnen</value>
+    </data>
+    <data name="ThemeExtrasVisitorsPerDay" xml:space="preserve">
+        <value>Bezoekers per dag</value>
+    </data>
+    <data name="ThemeExtrasDoughnut" xml:space="preserve">
+        <value>Donut</value>
+    </data>
+    <data name="ThemeExtrasSalesByPaymentMethod" xml:space="preserve">
+        <value>Omzet per betaalmethode</value>
+    </data>
+    <data name="ThemeExtrasNoSalesYetThisMonth" xml:space="preserve">
+        <value>Deze maand nog geen verkopen.</value>
+    </data>
+    <data name="ThemeExtrasWeDonTShipThere" xml:space="preserve">
+        <value>Daar leveren we nog niet.</value>
+    </data>
+    <data name="ThemeExtrasSortedByTotalOneOrder" xml:space="preserve">
+        <value>Gesorteerd op totaal, één bestelling geselecteerd</value>
+    </data>
+    <data name="ThemeExtrasTodaySSalesCouldnT" xml:space="preserve">
+        <value>De verkoop van vandaag kon niet worden geladen. Probeer het zo opnieuw.</value>
+    </data>
+    <data name="ThemeExtrasBesideAName" xml:space="preserve">
+        <value>Naast een naam</value>
+    </data>
+    <data name="ThemeExtrasShapes" xml:space="preserve">
+        <value>Vormen</value>
+    </data>
+    <data name="ThemeExtrasTodaySOrders" xml:space="preserve">
+        <value>Bestellingen van vandaag</value>
+    </data>
+    <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
+        <value>Meer bestellingen laden...</value>
+    </data>
+    <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
+        <value>Dat zijn alle bestellingen van vandaag.</value>
+    </data>
+    <data name="ThemeExtrasHoldCtrlWhileScrollingTo" xml:space="preserve">
+        <value>Houd Ctrl ingedrukt tijdens het scrollen om in te zoomen op de kaart</value>
+    </data>
+    <data name="ThemeExtrasUseTwoFingersToMove" xml:space="preserve">
+        <value>Gebruik twee vingers om de kaart te verplaatsen</value>
+    </data>
+    <data name="ThemeExtrasOurStores" xml:space="preserve">
+        <value>Onze winkels</value>
+    </data>
+    <data name="ThemeExtrasPreview" xml:space="preserve">
+        <value>Voorbeeld</value>
+    </data>
+    <data name="ThemeExtrasSaveYourChanges" xml:space="preserve">
+        <value>Je wijzigingen opslaan?</value>
+    </data>
+    <data name="ThemeExtrasTheProductHasEditsThat" xml:space="preserve">
+        <value>Het product heeft wijzigingen die nog niet zijn opgeslagen.</value>
+    </data>
+    <data name="ThemeExtrasInvoice" xml:space="preserve">
+        <value>Factuur {0}</value>
+    </data>
+    <data name="ThemeExtrasEnterTheWholePhoneNumber" xml:space="preserve">
+        <value>Vul het volledige telefoonnummer in.</value>
+    </data>
+    <data name="ThemeExtrasWriteAFewLinesBefore" xml:space="preserve">
+        <value>Schrijf een paar regels voordat je het verstuurt.</value>
+    </data>
+    <data name="ThemeExtrasLookingThroughThisWeekS" xml:space="preserve">
+        <value>De bestellingen van deze week doornemen...</value>
+    </data>
+    <data name="ThemeExtrasDraftingAReply" xml:space="preserve">
+        <value>Antwoord opstellen...</value>
+    </data>
+    <data name="ThemeExtrasPickTheTimeZoneYour" xml:space="preserve">
+        <value>Kies de tijdzone van je winkel.</value>
+    </data>
+    <data name="ThemeExtrasAllOrders" xml:space="preserve">
+        <value>Alle bestellingen</value>
+    </data>
+    <data name="ThemeExtrasNotShownHereWhichTakes" xml:space="preserve">
+        <value>Hier niet getoond: {0}, dat het scrollen met het toetsenbord overneemt op de pagina waar het staat. De eigen app-schil is er zo een.</value>
+    </data>
+    <data name="ThemeExtrasCountry" xml:space="preserve">
+        <value>Land</value>
+    </data>
+    <data name="ThemeExtrasPickACountry" xml:space="preserve">
+        <value>Kies een land</value>
+    </data>
+    <data name="ThemeExtrasWeeklyUpdate" xml:space="preserve">
+        <value>Wekelijkse update</value>
+    </data>
+    <data name="ThemeExtrasWriteTheUpdateInMarkdown" xml:space="preserve">
+        <value>Schrijf de update in Markdown</value>
+    </data>
+    <data name="ThemeExtrasNewsletter" xml:space="preserve">
+        <value>Nieuwsbrief</value>
+    </data>
+    <data name="ThemeExtrasWriteSomethingWorthReading" xml:space="preserve">
+        <value>Schrijf iets wat het lezen waard is</value>
+    </data>
+    <data name="ThemeExtrasTodaySSales" xml:space="preserve">
+        <value>Verkoop van vandaag</value>
+    </data>
+    <data name="ThemeExtrasANewVersionIsReady" xml:space="preserve">
+        <value>Er staat een nieuwe versie klaar</value>
+    </data>
+    <data name="ThemeExtrasRestartTheAppToStart" xml:space="preserve">
+        <value>Start de app opnieuw om die te gebruiken.</value>
+    </data>
+    <data name="ThemeExtrasPaymentReceived" xml:space="preserve">
+        <value>Betaling ontvangen</value>
+    </data>
+    <data name="ThemeExtrasOrder8042IsPaidAnd" xml:space="preserve">
+        <value>Bestelling 8042 is betaald en onderweg naar de toonbank.</value>
+    </data>
+    <data name="ThemeExtrasStorageAlmostFull" xml:space="preserve">
+        <value>Opslag bijna vol</value>
+    </data>
+    <data name="ThemeExtrasDeleteOldExportsToKeep" xml:space="preserve">
+        <value>Verwijder oude exports om bonnen te blijven bewaren.</value>
+    </data>
+    <data name="ThemeExtrasYourPlanEndsTomorrow" xml:space="preserve">
+        <value>Je abonnement loopt morgen af</value>
+    </data>
+    <data name="ThemeExtrasRenewItTodayToKeep" xml:space="preserve">
+        <value>Verleng het vandaag om bestellingen te blijven aannemen.</value>
+    </data>
+    <data name="ThemeExtrasPaymentFailed" xml:space="preserve">
+        <value>Betaling mislukt</value>
+    </data>
+    <data name="ThemeExtrasTheCardWasDeclinedAsk" xml:space="preserve">
+        <value>De kaart is geweigerd. Vraag om een andere manier van betalen.</value>
+    </data>
+    <data name="ThemeExtrasSalesGrewAgainThisWeek" xml:space="preserve">
+        <value>De verkoop groeide deze week weer, met de haverlatte voorop.</value>
+    </data>
+    <data name="ThemeExtrasRevenue" xml:space="preserve">
+        <value>Omzet</value>
+    </data>
+    <data name="ThemeExtrasNewCustomers" xml:space="preserve">
+        <value>Nieuwe klanten</value>
+    </data>
+    <data name="ThemeExtrasNextStep" xml:space="preserve">
+        <value>Volgende stap</value>
+    </data>
+    <data name="ThemeExtrasPlanTheSummerMenu" xml:space="preserve">
+        <value>het zomermenu plannen</value>
+    </data>
+    <data name="ThemeExtrasReleaseNotes" xml:space="preserve">
+        <value>Releasenotes</value>
+    </data>
+    <data name="ThemeExtrasVersion24IsOut" xml:space="preserve">
+        <value>Versie 2.4 is uit, met offline bestellingen en een sneller dashboard.</value>
+    </data>
+    <data name="ThemeExtrasWhatSNew" xml:space="preserve">
+        <value>Wat is er nieuw</value>
+    </data>
+    <data name="ThemeExtrasOfflineOrders" xml:space="preserve">
+        <value>Offline bestellingen</value>
+    </data>
+    <data name="ThemeExtrasKeepSellingWhenTheConnection" xml:space="preserve">
+        <value>blijf verkopen als de verbinding wegvalt.</value>
+    </data>
+    <data name="ThemeExtrasFasterDashboard" xml:space="preserve">
+        <value>Sneller dashboard</value>
+    </data>
+    <data name="ThemeExtrasReportsOpenInUnderA" xml:space="preserve">
+        <value>rapporten openen in minder dan een seconde.</value>
+    </data>
+    <data name="ThemeExtrasExport" xml:space="preserve">
+        <value>Export</value>
+    </data>
+    <data name="ThemeExtrasNowWritesExcelFilesToo" xml:space="preserve">
+        <value>maakt nu ook Excel-bestanden.</value>
+    </data>
+    <data name="ThemeExtrasTipSearchTheWholeApp" xml:space="preserve">
+        <value>Tip: doorzoek de hele app via het vak bovenaan.</value>
+    </data>
+    <data name="ThemeExtrasPlan" xml:space="preserve">
+        <value>Abonnement</value>
+    </data>
+    <data name="ThemeExtrasStores" xml:space="preserve">
+        <value>Winkels</value>
+    </data>
+    <data name="ThemeExtrasPricePerMonth" xml:space="preserve">
+        <value>Prijs per maand</value>
+    </data>
+    <data name="ThemeExtrasStarter" xml:space="preserve">
+        <value>Starter</value>
+    </data>
+    <data name="ThemeExtrasReadTheFullChangelog" xml:space="preserve">
+        <value>Lees het volledige wijzigingslogboek</value>
+    </data>
+    <data name="ThemeExtrasSummerMenu" xml:space="preserve">
+        <value>Zomermenu</value>
+    </data>
+    <data name="ThemeExtrasFromJuneEveryStoreServes" xml:space="preserve">
+        <value>Vanaf juni schenkt elke winkel drie koude drankjes:</value>
+    </data>
+    <data name="ThemeExtrasIcedOatMilkLatte" xml:space="preserve">
+        <value>IJskoude haverlatte</value>
+    </data>
+    <data name="ThemeExtrasFreshLemonade" xml:space="preserve">
+        <value>Verse limonade</value>
+    </data>
+    <data name="ThemeExtrasWhenDoesMyOrderArrive" xml:space="preserve">
+        <value>Wanneer komt mijn bestelling aan?</value>
+    </data>
+    <data name="ThemeExtrasDelivery" xml:space="preserve">
+        <value>Bezorging</value>
+    </data>
+    <data name="ThemeExtrasOrdersPlacedBefore4Pm" xml:space="preserve">
+        <value>Bestellingen die vóór 16:00 zijn geplaatst, gaan dezelfde dag de deur uit en komen binnen twee werkdagen aan.</value>
+    </data>
+    <data name="ThemeExtrasCanIReturnSomething" xml:space="preserve">
+        <value>Kan ik iets retourneren?</value>
+    </data>
+    <data name="ThemeExtrasReturns" xml:space="preserve">
+        <value>Retourneren</value>
+    </data>
+    <data name="ThemeExtrasSendItBackWithin30" xml:space="preserve">
+        <value>Stuur het binnen 30 dagen gratis terug, in de originele verpakking.</value>
+    </data>
+    <data name="ThemeExtrasHowCanIPay" xml:space="preserve">
+        <value>Hoe kan ik betalen?</value>
+    </data>
+    <data name="ThemeExtrasByCardMobileWalletOr" xml:space="preserve">
+        <value>Met pinpas, mobiel betalen of cadeaukaart, online en in elke winkel.</value>
+    </data>
+    <data name="ThemeExtrasCatalog" xml:space="preserve">
+        <value>Catalogus</value>
+    </data>
+    <data name="ThemeExtrasOrders" xml:space="preserve">
+        <value>Bestellingen</value>
+    </data>
+    <data name="ThemeExtrasThisYear" xml:space="preserve">
+        <value>Dit jaar</value>
+    </data>
+    <data name="ThemeExtrasLastYear" xml:space="preserve">
+        <value>Vorig jaar</value>
+    </data>
+    <data name="ThemeExtrasLastWeek" xml:space="preserve">
+        <value>Vorige week</value>
+    </data>
+    <data name="ThemeExtrasTeamStandUp" xml:space="preserve">
+        <value>Dagstart</value>
+    </data>
+    <data name="ThemeExtrasPlansForTheDay" xml:space="preserve">
+        <value>Plannen voor vandaag</value>
+    </data>
+    <data name="ThemeExtrasMenuTasting" xml:space="preserve">
+        <value>Menuproeverij</value>
+    </data>
+    <data name="ThemeExtrasThreeNewSummerDrinks" xml:space="preserve">
+        <value>Drie nieuwe zomerdrankjes</value>
+    </data>
+    <data name="ThemeExtrasSupplierCall" xml:space="preserve">
+        <value>Gesprek met leverancier</value>
+    </data>
+    <data name="ThemeExtrasBeansForTheNextQuarter" xml:space="preserve">
+        <value>Bonen voor het volgende kwartaal</value>
+    </data>
+    <data name="ThemeExtrasBaristaTraining" xml:space="preserve">
+        <value>Baristatraining</value>
+    </data>
+    <data name="ThemeExtrasMilkTextureAndLatteArt" xml:space="preserve">
+        <value>Melkschuim en latte art</value>
+    </data>
+    <data name="ThemeExtrasStockDelivery" xml:space="preserve">
+        <value>Voorraadlevering</value>
+    </data>
+    <data name="ThemeExtrasCupsLidsAndOatMilk" xml:space="preserve">
+        <value>Bekers, deksels en havermelk</value>
+    </data>
+    <data name="ThemeExtrasFoodSafetyInspection" xml:space="preserve">
+        <value>Inspectie voedselveiligheid</value>
+    </data>
+    <data name="ThemeExtrasLatteArtWorkshop" xml:space="preserve">
+        <value>Workshop latte art</value>
+    </data>
+    <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
+        <value>Voor klanten, twaalf plaatsen</value>
+    </data>
+    <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
+        <value>Weeknummers, tijd</value>
+    </data>
+    <data name="ThemeInputsWithADescription" xml:space="preserve">
+        <value>Met een beschrijving</value>
+    </data>
+    <data name="ThemeInputsEmailMeReceipts" xml:space="preserve">
+        <value>Bonnen per e-mail ontvangen</value>
+    </data>
+    <data name="ThemeInputsOneAMonthNeverMore" xml:space="preserve">
+        <value>Eén per maand, nooit meer.</value>
+    </data>
+    <data name="ThemeInputsHorizontal" xml:space="preserve">
+        <value>horizontaal</value>
+    </data>
+    <data name="ThemeInputsWithIcons" xml:space="preserve">
+        <value>Met pictogrammen</value>
+    </data>
+    <data name="ThemeInputsChips" xml:space="preserve">
+        <value>Chips</value>
+    </data>
+    <data name="ThemeInputsDropZone" xml:space="preserve">
+        <value>Neerzetzone</value>
+    </data>
+    <data name="ThemeInputsAttachTheInvoice" xml:space="preserve">
+        <value>Voeg de factuur toe</value>
+    </data>
+    <data name="ThemeInputsWithFiles" xml:space="preserve">
+        <value>Met bestanden</value>
+    </data>
+    <data name="ThemeInputsUploadPhotos" xml:space="preserve">
+        <value>Foto's uploaden</value>
+    </data>
+    <data name="ThemeInputsPrefixSuffixSteps" xml:space="preserve">
+        <value>Voorvoegsel, achtervoegsel, stappen</value>
+    </data>
+    <data name="ThemeInputsPrice" xml:space="preserve">
+        <value>Prijs</value>
+    </data>
+    <data name="ThemeInputsPerKg" xml:space="preserve">
+        <value>per kg</value>
+    </data>
+    <data name="ThemeInputsHalfStars" xml:space="preserve">
+        <value>Halve sterren</value>
+    </data>
+    <data name="ThemeInputsWithASearchButton" xml:space="preserve">
+        <value>Met een zoekknop</value>
+    </data>
+    <data name="ThemeInputsRangeWithMarks" xml:space="preserve">
+        <value>Bereik met markeringen</value>
+    </data>
+    <data name="ThemeInputsPriceRange" xml:space="preserve">
+        <value>Prijsklasse</value>
+    </data>
+    <data name="ThemeInputsTypeATagAndPress" xml:space="preserve">
+        <value>Typ een tag en druk op Enter</value>
+    </data>
+    <data name="ThemeInputsIconPrefixClearAndCount" xml:space="preserve">
+        <value>Pictogram, voorvoegsel, wissen en teller</value>
+    </data>
+    <data name="ThemeInputsWebsite" xml:space="preserve">
+        <value>Website</value>
+    </data>
+    <data name="ThemeInputsUnderlined" xml:space="preserve">
+        <value>Onderstreept</value>
+    </data>
+    <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
+        <value>Met tekst voor aan en uit</value>
+    </data>
+    <data name="ThemeInputsDarkMap" xml:space="preserve">
+        <value>Donkere kaart</value>
+    </data>
+    <data name="ThemeInputsRateYourVisit" xml:space="preserve">
+        <value>Beoordeel je bezoek</value>
+    </data>
+    <data name="ThemeInputsTags" xml:space="preserve">
+        <value>Tags</value>
+    </data>
+    <data name="ThemeInputsBike" xml:space="preserve">
+        <value>Fiets</value>
+    </data>
+    <data name="ThemeInputsVan" xml:space="preserve">
+        <value>Bestelbus</value>
+    </data>
+    <data name="ThemeInputsPickUp" xml:space="preserve">
+        <value>Afhalen</value>
+    </data>
+    <data name="ThemeInputsVegan" xml:space="preserve">
+        <value>Vegan</value>
+    </data>
+    <data name="ThemeInputsGlutenFree" xml:space="preserve">
+        <value>Glutenvrij</value>
+    </data>
+    <data name="ThemeInputsOrganic" xml:space="preserve">
+        <value>Biologisch</value>
+    </data>
+    <data name="ThemeLayersWhatFloatsOverWhatHow" xml:space="preserve">
+        <value>Wat boven wat zweeft, hoeveel een uitgeschakeld element vervaagt, de breedtes waarbij de indeling verandert, en hoe een dialoogvenster zijn tekst en knoppen indeelt.</value>
+    </data>
+    <data name="ThemeLayersLayers" xml:space="preserve">
+        <value>Lagen</value>
+    </data>
+    <data name="ThemeLayersScreenBreakpoints" xml:space="preserve">
+        <value>Schermbreekpunten</value>
+    </data>
+    <data name="ThemeLayersDialogLayout" xml:space="preserve">
+        <value>Indeling van dialoogvensters</value>
+    </data>
+    <data name="ThemeLayoutsPrivacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="ThemeLayoutsBorderedAndElevated" xml:space="preserve">
+        <value>Met rand en verhoogd</value>
+    </data>
+    <data name="ThemeLayoutsTwelveColumns" xml:space="preserve">
+        <value>Twaalf kolommen</value>
+    </data>
+    <data name="ThemeLayoutsColoredAndElevated" xml:space="preserve">
+        <value>Gekleurd en verhoogd</value>
+    </data>
+    <data name="ThemeLayoutsBordered" xml:space="preserve">
+        <value>Met rand</value>
+    </data>
+    <data name="ThemeLayoutsHeaderNavPanelMainAnd" xml:space="preserve">
+        <value>Kopbalk, navigatiepaneel, hoofdinhoud en voettekst</value>
+    </data>
+    <data name="ThemeLayoutsPushingTheActionsToThe" xml:space="preserve">
+        <value>Acties naar het eind geduwd</value>
+    </data>
+    <data name="ThemeLayouts3Selected" xml:space="preserve">
+        <value>3 geselecteerd</value>
+    </data>
+    <data name="ThemeLayoutsHorizontalCenteredWrapping" xml:space="preserve">
+        <value>Horizontaal, gecentreerd, met terugloop</value>
+    </data>
+    <data name="ThemeLayoutsVertical" xml:space="preserve">
+        <value>Verticaal</value>
+    </data>
+    <data name="ThemeLayoutsBread" xml:space="preserve">
+        <value>Brood</value>
+    </data>
+    <data name="ThemeLayoutsPastry" xml:space="preserve">
+        <value>Gebak</value>
+    </data>
+    <data name="ThemeLayoutsCoffee" xml:space="preserve">
+        <value>Koffie</value>
+    </data>
+    <data name="ThemeLayoutsTea" xml:space="preserve">
+        <value>Thee</value>
+    </data>
+    <data name="ThemeLayoutsCakes" xml:space="preserve">
+        <value>Taarten</value>
+    </data>
+    <data name="ThemeListsNobodyIsOnShiftYet" xml:space="preserve">
+        <value>Er heeft nog niemand dienst.</value>
+    </data>
+    <data name="ThemeListsTwoAtATime" xml:space="preserve">
+        <value>Twee tegelijk</value>
+    </data>
+    <data name="ThemeListsThisWeekSSpecials" xml:space="preserve">
+        <value>Specials van deze week</value>
+    </data>
+    <data name="ThemeListsWithDots" xml:space="preserve">
+        <value>Met stippen</value>
+    </data>
+    <data name="ThemeListsTodaySSpecials" xml:space="preserve">
+        <value>Specials van vandaag</value>
+    </data>
+    <data name="ThemeListsBreakfastBox" xml:space="preserve">
+        <value>Ontbijtbox</value>
+    </data>
+    <data name="ThemeListsCroissantJuiceAndCoffee" xml:space="preserve">
+        <value>Croissant, sap en koffie</value>
+    </data>
+    <data name="ThemeListsOatFlatWhite" xml:space="preserve">
+        <value>Flat white met haver</value>
+    </data>
+    <data name="ThemeListsTwoForOneBeforeTen" xml:space="preserve">
+        <value>Twee voor één vóór tien uur</value>
+    </data>
+    <data name="ThemeListsCarrotCake" xml:space="preserve">
+        <value>Worteltaart</value>
+    </data>
+    <data name="ThemeListsBakedEveryMorning" xml:space="preserve">
+        <value>Elke ochtend vers gebakken</value>
+    </data>
+    <data name="ThemeListsClickAndCollect" xml:space="preserve">
+        <value>Bestellen en afhalen</value>
+    </data>
+    <data name="ThemeListsReadyInFifteenMinutes" xml:space="preserve">
+        <value>Klaar in een kwartier</value>
+    </data>
+    <data name="ThemeListsBaked" xml:space="preserve">
+        <value>Gebakken</value>
+    </data>
+    <data name="ThemeListsOnItsWay" xml:space="preserve">
+        <value>Onderweg</value>
+    </data>
+    <data name="ThemeListsDelivered" xml:space="preserve">
+        <value>Bezorgd</value>
+    </data>
+    <data name="ThemeListsAbout1030" xml:space="preserve">
+        <value>Rond 10:30</value>
+    </data>
+    <data name="ThemeMotionHowLongTheThemeS" xml:space="preserve">
+        <value>Hoe lang de animaties van het thema duren en hoe ze versnellen of vertragen. Elke rij zegt waar de componenten de waarde gebruiken; Afspelen beweegt elke stip met de duur en het verloop van zijn rij. Zet Verminder beweging aan onder Thema uitproberen om de duur naar nul te zien gaan.</value>
+    </data>
+    <data name="ThemeMotionPlay" xml:space="preserve">
+        <value>Afspelen</value>
+    </data>
+    <data name="ThemeMotionLoops" xml:space="preserve">
+        <value>Herhalingen</value>
+    </data>
+    <data name="ThemeMotionSpinnersLikeAButtonThat" xml:space="preserve">
+        <value>Spinners, zoals een knop die aan het opslaan is: één rondje duurt zo lang en verloopt zo</value>
+    </data>
+    <data name="ThemeMotionSaving" xml:space="preserve">
+        <value>Opslaan...</value>
+    </data>
+    <data name="ThemeMotionSpeedFactors" xml:space="preserve">
+        <value>Snelheidsfactoren</value>
+    </data>
+    <data name="ThemeMotionEveryAnimationSDurationIs" xml:space="preserve">
+        <value>De duur van elke animatie wordt hiermee vermenigvuldigd; Verminder beweging zet deze op 0.</value>
+    </data>
+    <data name="ThemeMotionAnimationsThatRepeatLikeSpinners" xml:space="preserve">
+        <value>Animaties die zich herhalen, zoals spinners, pulserende badges en voortgangsstrepen, worden hiermee vermenigvuldigd.</value>
+    </data>
+    <data name="ThemeMotionQuickFeedbackLikeAButton" xml:space="preserve">
+        <value>Snelle feedback, zoals de kleur van een knop bij aanwijzen of indrukken</value>
+    </data>
+    <data name="ThemeMotionMostChangesLikeAToggle" xml:space="preserve">
+        <value>De meeste veranderingen, zoals een schakelaar die omspringt of een onderdeel dat uitvouwt</value>
+    </data>
+    <data name="ThemeMotionBiggerMovesLikeACalendar" xml:space="preserve">
+        <value>Grotere bewegingen, zoals een kalender die naar de volgende maand schuift</value>
+    </data>
+    <data name="ThemeMotionComingInStartsFastAnd" xml:space="preserve">
+        <value>Binnenkomen: begint snel en vertraagt, zoals een menu of ballon die opengaat</value>
+    </data>
+    <data name="ThemeMotionGoingOutStartsSlowAnd" xml:space="preserve">
+        <value>Weggaan: begint langzaam en versnelt, zoals een modaal venster, een paneel of een snackbar die verdwijnt</value>
+    </data>
+    <data name="ThemeNavsFilters" xml:space="preserve">
+        <value>Filters</value>
+    </data>
+    <data name="ThemeNavsInStock" xml:space="preserve">
+        <value>Op voorraad</value>
+    </data>
+    <data name="ThemeNavsOnSale" xml:space="preserve">
+        <value>In de aanbieding</value>
+    </data>
+    <data name="ThemeNavsFilled" xml:space="preserve">
+        <value>Gevuld</value>
+    </data>
+    <data name="ThemeNavsFirstLastAndSummary" xml:space="preserve">
+        <value>Eerste, laatste en samenvatting</value>
+    </data>
+    <data name="ThemeNavsIconsAndCounts" xml:space="preserve">
+        <value>Pictogrammen en aantallen</value>
+    </data>
+    <data name="ThemeNavsInbox" xml:space="preserve">
+        <value>Inbox</value>
+    </data>
+    <data name="ThemeNavsSent" xml:space="preserve">
+        <value>Verzonden</value>
+    </data>
+    <data name="ThemeNavsShops" xml:space="preserve">
+        <value>Winkels</value>
+    </data>
+    <data name="ThemeNavsReports" xml:space="preserve">
+        <value>Rapporten</value>
+    </data>
+    <data name="ThemeNotificationsMessages" xml:space="preserve">
+        <value>Berichten</value>
+    </data>
+    <data name="ThemeNotificationsOverTheMaximum" xml:space="preserve">
+        <value>Boven het maximum</value>
+    </data>
+    <data name="ThemeNotificationsDot" xml:space="preserve">
+        <value>Stip</value>
+    </data>
+    <data name="ThemeNotificationsOnItsOwn" xml:space="preserve">
+        <value>Los</value>
+    </data>
+    <data name="ThemeNotificationsNew" xml:space="preserve">
+        <value>Nieuw</value>
+    </data>
+    <data name="ThemeNotificationsTitleActionsAndDismiss" xml:space="preserve">
+        <value>Titel, acties en sluiten</value>
+    </data>
+    <data name="ThemeNotificationsYourCardExpiresSoon" xml:space="preserve">
+        <value>Je kaart verloopt binnenkort</value>
+    </data>
+    <data name="ThemeNotificationsUpdateItBeforeJune1" xml:space="preserve">
+        <value>Werk hem bij voor 1 juni, zodat je volgende bestelling doorgaat.</value>
+    </data>
+    <data name="ThemeNotificationsUpdateCard" xml:space="preserve">
+        <value>Kaart bijwerken</value>
+    </data>
+    <data name="ThemeNotificationsEveryLine" xml:space="preserve">
+        <value>Alle regels</value>
+    </data>
+    <data name="ThemeNotificationsOwner" xml:space="preserve">
+        <value>Eigenaar</value>
+    </data>
+    <data name="ThemeNotificationsInTheAmsterdamShop" xml:space="preserve">
+        <value>In de winkel in Amsterdam</value>
+    </data>
+    <data name="ThemeNotificationsBackAt1400" xml:space="preserve">
+        <value>Terug om 14:00</value>
+    </data>
+    <data name="ThemeNotificationsInitials" xml:space="preserve">
+        <value>Initialen</value>
+    </data>
+    <data name="ThemeNotificationsShownFromAButton" xml:space="preserve">
+        <value>Getoond via een knop</value>
+    </data>
+    <data name="ThemeNotificationsDismissible" xml:space="preserve">
+        <value>Sluitbaar</value>
+    </data>
+    <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
+        <value>Levertijden</value>
+    </data>
+    <data name="ThemeOverlaysOrdersBefore1000Arrive" xml:space="preserve">
+        <value>Bestellingen van voor 10:00 komen dezelfde dag aan.</value>
+    </data>
+    <data name="ThemePickersInlineDial" xml:space="preserve">
+        <value>Inline wijzerplaat</value>
+    </data>
+    <data name="ThemePickersEveryPart" xml:space="preserve">
+        <value>Alle onderdelen</value>
+    </data>
+    <data name="ThemePickersBrandColor" xml:space="preserve">
+        <value>Merkkleur</value>
+    </data>
+    <data name="ThemePickersInlineCalendar" xml:space="preserve">
+        <value>Inline kalender</value>
+    </data>
+    <data name="ThemePickersPickTheDates" xml:space="preserve">
+        <value>Kies de datums</value>
+    </data>
+    <data name="ThemePickersTheShopClosesAt18" xml:space="preserve">
+        <value>De winkel sluit om 18:00.</value>
+    </data>
+    <data name="ThemePickersInline" xml:space="preserve">
+        <value>Inline</value>
+    </data>
+    <data name="ThemePickersOpensAt" xml:space="preserve">
+        <value>Opent om</value>
+    </data>
+    <data name="ThemePickersPickATime" xml:space="preserve">
+        <value>Kies een tijd</value>
+    </data>
+    <data name="ThemePickersStay" xml:space="preserve">
+        <value>Verblijf</value>
+    </data>
+    <data name="ThemeProgressDeterminate" xml:space="preserve">
+        <value>Bepaald</value>
+    </data>
+    <data name="ThemeProgressIndeterminate" xml:space="preserve">
+        <value>Onbepaald</value>
+    </data>
+    <data name="ThemeProgressSyncing" xml:space="preserve">
+        <value>Synchroniseren</value>
+    </data>
+    <data name="ThemeProgressUploadFailed" xml:space="preserve">
+        <value>Uploaden mislukt</value>
+    </data>
+    <data name="ThemeProgressTheConnectionDropped" xml:space="preserve">
+        <value>De verbinding is weggevallen.</value>
+    </data>
+    <data name="ThemeProgressCircular" xml:space="preserve">
+        <value>Rond</value>
+    </data>
+    <data name="ThemeProgressStorage" xml:space="preserve">
+        <value>Opslag</value>
+    </data>
+    <data name="ThemeProgressSegments" xml:space="preserve">
+        <value>Segmenten</value>
+    </data>
+    <data name="ThemeProgressStep3Of5" xml:space="preserve">
+        <value>Stap 3 van 5</value>
+    </data>
+    <data name="ThemeProgressStriped" xml:space="preserve">
+        <value>Gestreept</value>
+    </data>
+    <data name="ThemeProgressDownloadingTheMenu" xml:space="preserve">
+        <value>Menu downloaden</value>
+    </data>
+    <data name="ThemeProgressLine" xml:space="preserve">
+        <value>Regel</value>
+    </data>
+    <data name="ThemeProgressParagraph" xml:space="preserve">
+        <value>Alinea</value>
+    </data>
+    <data name="ThemeProgressAvatarAndLines" xml:space="preserve">
+        <value>Avatar en regels</value>
+    </data>
+    <data name="ThemeProgressLoaded" xml:space="preserve">
+        <value>Geladen</value>
+    </data>
+    <data name="ThemeShadowsTheShadowEachSurfaceLifts" xml:space="preserve">
+        <value>De schaduw waarmee elk oppervlak omhoogkomt, de algemene schaal en de 24 verhogingsniveaus.</value>
+    </data>
+    <data name="ThemeShapeTheCornerRadiusScaleAnd" xml:space="preserve">
+        <value>De schaal van hoekradiussen en de radius van elke familie componenten, daarna de randdiktes en de focusring.</value>
+    </data>
+    <data name="ThemeShapeBordersAndFocus" xml:space="preserve">
+        <value>Randen en focus</value>
+    </data>
+    <data name="ThemeSizesTheSizesComponentsAreBuilt" xml:space="preserve">
+        <value>De afmetingen waaruit componenten zijn opgebouwd, elk getekend als een balk van die lengte, daarna de ruimte-eenheid, de dichtheid en de binnenmarges van kaarten en dialoogvensters. Probeer de schakelaar Dichtheid om ze te zien veranderen.</value>
+    </data>
+    <data name="ThemeSizesSpacing" xml:space="preserve">
+        <value>Ruimte</value>
+    </data>
+    <data name="ThemeSurfacesTheSurfacesThatFloatOver" xml:space="preserve">
+        <value>De oppervlakken die boven de pagina zweven, openen hier via hun knoppen; de schakelaar Overlay openen opent ze voor links en schermafbeeldingen.</value>
+    </data>
+    <data name="ThemeSurfacesIconAndDescription" xml:space="preserve">
+        <value>Pictogram en beschrijving</value>
+    </data>
+    <data name="ThemeSurfacesVisaEndingIn4242" xml:space="preserve">
+        <value>Visa eindigend op 4242</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromItsAnchor" xml:space="preserve">
+        <value>Opent vanaf zijn anker</value>
+    </data>
+    <data name="ThemeSurfacesTitleBodyAndActions" xml:space="preserve">
+        <value>Titel, tekst en acties</value>
+    </data>
+    <data name="ThemeSurfacesAutumnMenu" xml:space="preserve">
+        <value>Herfstmenu</value>
+    </data>
+    <data name="ThemeSurfacesStartsOnMonday" xml:space="preserve">
+        <value>Begint maandag</value>
+    </data>
+    <data name="ThemeSurfacesPublish" xml:space="preserve">
+        <value>Publiceren</value>
+    </data>
+    <data name="ThemeSurfacesWithAnImage" xml:space="preserve">
+        <value>Met een afbeelding</value>
+    </data>
+    <data name="ThemeSurfacesMonthlySalesReport" xml:space="preserve">
+        <value>Maandelijks verkooprapport</value>
+    </data>
+    <data name="ThemeSurfacesReadyToShare" xml:space="preserve">
+        <value>Klaar om te delen</value>
+    </data>
+    <data name="ThemeSurfacesTwoPeopleReadingTheSales" xml:space="preserve">
+        <value>Twee mensen die de verkoopgrafieken bekijken</value>
+    </data>
+    <data name="ThemeSurfacesSalesGrew12OnLast" xml:space="preserve">
+        <value>De verkoop groeide 12% ten opzichte van vorige maand.</value>
+    </data>
+    <data name="ThemeSurfacesOutlined" xml:space="preserve">
+        <value>Omlijnd</value>
+    </data>
+    <data name="ThemeSurfacesCollapsedToAPeek" xml:space="preserve">
+        <value>Ingevouwen tot een strookje</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromAButton" xml:space="preserve">
+        <value>Opent via een knop</value>
+    </data>
+    <data name="ThemeSurfacesShowLess" xml:space="preserve">
+        <value>Minder tonen</value>
+    </data>
+    <data name="ThemeSurfacesShowMore" xml:space="preserve">
+        <value>Meer tonen</value>
+    </data>
+    <data name="ThemeSurfacesDiscardChanges" xml:space="preserve">
+        <value>Wijzigingen verwerpen</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromCode" xml:space="preserve">
+        <value>Opent vanuit code</value>
+    </data>
+    <data name="ThemeSurfacesModalFromTheService" xml:space="preserve">
+        <value>Modaal venster via de service</value>
+    </data>
+    <data name="ThemeSurfacesFadedEdges" xml:space="preserve">
+        <value>Vervaagde randen</value>
+    </data>
+    <data name="ThemeSurfacesSideBySide" xml:space="preserve">
+        <value>Naast elkaar</value>
+    </data>
+    <data name="ThemeSurfacesResizeThePanels" xml:space="preserve">
+        <value>Pas de grootte van de panelen aan</value>
+    </data>
+    <data name="ThemeSurfacesOrderDetails" xml:space="preserve">
+        <value>Bestelgegevens</value>
+    </data>
+    <data name="ThemeSurfacesStacked" xml:space="preserve">
+        <value>Gestapeld</value>
+    </data>
+    <data name="ThemeSurfacesDiscardYourChanges" xml:space="preserve">
+        <value>Je wijzigingen verwerpen?</value>
+    </data>
+    <data name="ThemeSurfacesWhatYouTypedSinceThe" xml:space="preserve">
+        <value>Wat je sinds de laatste keer opslaan hebt getypt, gaat verloren.</value>
+    </data>
+    <data name="ThemeSurfacesDiscard" xml:space="preserve">
+        <value>Verwerpen</value>
+    </data>
+    <data name="ThemeOpenedByBitModalService" xml:space="preserve">
+        <value>Geopend door BitModalService</value>
+    </data>
+    <data name="ThemeAnyComponentCanBeShown" xml:space="preserve">
+        <value>Elk component kan vanuit code in een modaal venster worden getoond, zonder markup op de pagina.</value>
+    </data>
+    <data name="ThemeTypographyTheTypeRampBitTextDraws" xml:space="preserve">
+        <value>De typografische schaal die BitText tekent, daarna de lettertypen, groottes en diktes waaruit die is opgebouwd, en tot slot de tokens die de tekst in bepaalde componenten opmaken.</value>
+    </data>
+    <data name="ThemeTypographyFonts" xml:space="preserve">
+        <value>Lettertypen</value>
+    </data>
+    <data name="ThemeTypographyFontSizes" xml:space="preserve">
+        <value>Lettergroottes</value>
+    </data>
+    <data name="ThemeTypographyFontWeights" xml:space="preserve">
+        <value>Letterdiktes</value>
+    </data>
+    <data name="ThemeTypographyTextInsideComponents" xml:space="preserve">
+        <value>Tekst in componenten</value>
+    </data>
+    <data name="ThemeTypographyButtonsMenusAndOtherControls" xml:space="preserve">
+        <value>Knoppen, menu's en andere bedieningselementen: de dikte, letterafstand en hoofdletters van hun tekst</value>
+    </data>
+    <data name="ThemeTypographyDialogsTheSizeAndWeight" xml:space="preserve">
+        <value>Dialoogvensters: de grootte en dikte van hun titel</value>
+    </data>
+    <data name="ThemeTypographyInputsTheWeightOfThe" xml:space="preserve">
+        <value>Invoervelden: de dikte van het label boven het veld</value>
+    </data>
+    <data name="ThemeTypographyHeadersAndFootersTheLine" xml:space="preserve">
+        <value>Kopbalken en voetteksten: de regelhoogte van hun tekst</value>
+    </data>
+    <data name="ThemeTypographyBitTextWithGutterTheSpace" xml:space="preserve">
+        <value>BitText met Gutter: de ruimte onder een alinea</value>
+    </data>
+    <data name="ThemeUtilitiesAnyTagStyledLikeA" xml:space="preserve">
+        <value>Elke tag, opgemaakt als een component</value>
+    </data>
+    <data name="ThemeUtilitiesTheBestCroissantIHad" xml:space="preserve">
+        <value>De beste croissant die ik buiten Paris heb gegeten.</value>
+    </data>
+    <data name="ThemeUtilitiesSpinning" xml:space="preserve">
+        <value>Draaiend</value>
+    </data>
+    <data name="ThemeUtilitiesCoverRoundedWithAShadow" xml:space="preserve">
+        <value>Vullend, afgerond, met schaduw</value>
+    </data>
+    <data name="ThemeUtilitiesContainBordered" xml:space="preserve">
+        <value>Passend, met rand</value>
+    </data>
+    <data name="ThemeUtilitiesUnderlinedWithAnIcon" xml:space="preserve">
+        <value>Onderstreept, met een pictogram</value>
+    </data>
+    <data name="ThemeUtilitiesReportAProblem" xml:space="preserve">
+        <value>Een probleem melden</value>
+    </data>
+    <data name="ThemeUtilitiesWhatThisViewSWidth" xml:space="preserve">
+        <value>Waar de breedte van deze weergave bij past</value>
+    </data>
+    <data name="ThemeUtilitiesNarrowerThanMd" xml:space="preserve">
+        <value>Smaller dan md</value>
+    </data>
+    <data name="ThemeUtilitiesMdOrWider" xml:space="preserve">
+        <value>md of breder</value>
+    </data>
+    <data name="ThemeUtilitiesOverABox" xml:space="preserve">
+        <value>Over een vak</value>
+    </data>
+    <data name="ThemeUtilitiesPullTheListDown" xml:space="preserve">
+        <value>Trek de lijst omlaag</value>
+    </data>
+    <data name="ThemeUtilitiesWithText" xml:space="preserve">
+        <value>Met tekst</value>
+    </data>
+    <data name="ThemeUtilitiesOr" xml:space="preserve">
+        <value>of</value>
+    </data>
+    <data name="ThemeUtilitiesScrollTheBox" xml:space="preserve">
+        <value>Scrol in het vak</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeInTheBox" xml:space="preserve">
+        <value>Veeg in het vak</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeOrDragHere" xml:space="preserve">
+        <value>Veeg of sleep hier</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedUp" xml:space="preserve">
+        <value>Omhoog geveegd</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedDown" xml:space="preserve">
+        <value>Omlaag geveegd</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedLeft" xml:space="preserve">
+        <value>Naar links geveegd</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedRight" xml:space="preserve">
+        <value>Naar rechts geveegd</value>
+    </data>
+    <data name="ThemeUtilitiesForegrounds" xml:space="preserve">
+        <value>Voorgrondkleuren</value>
+    </data>
+    <data name="ThemeUtilitiesPrimaryText" xml:space="preserve">
+        <value>Primaire tekst</value>
+    </data>
+    <data name="ThemeUtilitiesSecondaryText" xml:space="preserve">
+        <value>Secundaire tekst</value>
+    </data>
+    <data name="ThemeUtilitiesTertiaryText" xml:space="preserve">
+        <value>Tertiaire tekst</value>
+    </data>
+    <data name="ThemeUtilitiesSaved" xml:space="preserve">
+        <value>Opgeslagen</value>
+    </data>
+    <data name="ThemeUtilitiesStyles" xml:space="preserve">
+        <value>Stijlen</value>
+    </data>
+    <data name="ThemeUtilitiesBold" xml:space="preserve">
+        <value>Vet</value>
+    </data>
+    <data name="ThemeUtilitiesItalic" xml:space="preserve">
+        <value>Cursief</value>
+    </data>
+    <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
+        <value>Afgekapt op twee regels</value>
+    </data>
+    <data name="ThemeSectionsOfThisPage" xml:space="preserve">
+        <value>Onderdelen van deze pagina</value>
+    </data>
+    <data name="ThemeRenameTheShop" xml:space="preserve">
+        <value>Winkel hernoemen</value>
+    </data>
+    <data name="ThemeTheNewNameShowsOn" xml:space="preserve">
+        <value>De nieuwe naam staat vanaf morgen op de bonnen.</value>
+    </data>
+    <data name="FlowCopyName" xml:space="preserve">
+        <value>{0} (kopie)</value>
+    </data>
+    <data name="TourArrowsTitle" xml:space="preserve">
+        <value>Een pijl wijzigen</value>
+    </data>
+    <data name="TourArrowsText" xml:space="preserve">
+        <value>Dubbelklik op een pijl om hem te hernoemen, de knop te markeren waar hij begint of hem te verwijderen. Een voorbeeld blijft zoals het is: een wijziging aan een van de pijlen maakt je eigen kopie van de flow.</value>
+    </data>
+    <data name="ThemeTokensScale" xml:space="preserve">
+        <value>Schaal</value>
+    </data>
+    <data name="ThemeTokensFamilies" xml:space="preserve">
+        <value>Families</value>
+    </data>
+    <data name="ThemeTokensElevation" xml:space="preserve">
+        <value>Verhoging</value>
+    </data>
+    <data name="ThemeTokensControlHeight" xml:space="preserve">
+        <value>Hoogte van bedieningselementen</value>
+    </data>
+    <data name="ThemeTokensControlPadding" xml:space="preserve">
+        <value>Binnenmarge van bedieningselementen</value>
+    </data>
+    <data name="ThemeTokensIcons" xml:space="preserve">
+        <value>Pictogrammen</value>
+    </data>
+    <data name="ThemeTokensCheckboxesAndRadios" xml:space="preserve">
+        <value>Selectievakjes en keuzerondjes</value>
+    </data>
+    <data name="ThemeTokensListRows" xml:space="preserve">
+        <value>Lijstrijen</value>
+    </data>
+    <data name="ThemeTokensTabs" xml:space="preserve">
+        <value>Tabbladen</value>
+    </data>
+    <data name="ThemeTokensLinesAndTracks" xml:space="preserve">
+        <value>Lijnen en banen</value>
+    </data>
+    <data name="ThemeTokensSwitches" xml:space="preserve">
+        <value>Schakelaars</value>
+    </data>
+    <data name="ThemeTokensSliderThumbs" xml:space="preserve">
+        <value>Schuifknoppen</value>
+    </data>
+    <data name="ThemeTokensBadges" xml:space="preserve">
+        <value>Badges</value>
+    </data>
+    <data name="ThemeTokensLimits" xml:space="preserve">
+        <value>Limieten</value>
+    </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>Niet elke tekst van de componenten op deze pagina is in elke taal vertaald. Dat betekent niet dat het niet kan: elk component hier is te lokaliseren, maar alle teksten vertalen voegde weinig toe aan waar deze pagina voor is. Vraag je AI-agent de vertalingen aan te vullen wanneer je ze nodig hebt.</value>
     </data>
 </root>

@@ -1,0 +1,58 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+// A big sample keeps to a box of its own height and scrolls inside it, so the page stays readable on a phone.
+.scroll-box {
+    min-width: 0;
+    overflow: auto;
+    max-height: 24rem;
+
+    &:focus-visible {
+        outline: $bit-shape-focus-ring-width solid $bit-color-primary-focus;
+        outline-offset: $bit-shape-focus-ring-offset;
+    }
+}
+
+// A chat and a message list fill what holds them and scroll inside it.
+.chat-box,
+.list-box {
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: $bit-shape-border-width solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.chat-box {
+    height: 30rem;
+}
+
+.list-box {
+    height: 22rem;
+}
+
+.chat-header {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 1rem;
+    border-bottom: $bit-shape-border-width solid $bit-color-border-tertiary;
+}
+
+.chat-footer {
+    text-align: center;
+    padding: 0.25rem 1rem 0.5rem;
+}
+
+// The scroll-to-latest button floats just above the bottom of what holds it, so the stage leaves room over its anchor.
+.scroll-stage {
+    height: 4.5rem;
+    display: flex;
+    align-items: flex-end;
+}
+
+.scroll-anchor {
+    width: 100%;
+    position: relative;
+}

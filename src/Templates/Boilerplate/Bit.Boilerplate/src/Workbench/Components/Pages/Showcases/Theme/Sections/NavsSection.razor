@@ -1,0 +1,132 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="navs" Title="@Localizer[nameof(WorkbenchStrings.ThemeNavigation)]">
+    <ComponentStates Name="BitBreadcrumb" Wide>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force" Target="a, button" Index="2">
+                <BitBreadcrumb Items="crumbs" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeStateCollapsed)]">
+            <BitBreadcrumb Items="longCrumbs" MaxDisplayedItems="3" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitBreadcrumb Items="crumbs" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDropMenu">
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitDropMenu Text="@Localizer[nameof(WorkbenchStrings.ThemeNavsFilters)]" IconName="@BitIconName.Filter">
+                    <div class="menu-body">
+                        <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeNavsInStock)]" Value="true" />
+                        <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeNavsOnSale)]" />
+                    </div>
+                </BitDropMenu>
+            </StateSample>
+        }
+        @foreach (var variant in new[] { BitVariant.Outline, BitVariant.Text })
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitDropMenu Text="@Localizer[nameof(WorkbenchStrings.ThemeNavsFilters)]" IconName="@BitIconName.Filter" Variant="variant">
+                    <div class="menu-body">
+                        <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeNavsInStock)]" Value="true" />
+                    </div>
+                </BitDropMenu>
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitDropMenu Text="@Localizer[nameof(WorkbenchStrings.ThemeNavsFilters)]" IconName="@BitIconName.Filter" Disabled>
+                <div class="menu-body"></div>
+            </BitDropMenu>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitNav" Wide>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force" Index="2">
+                <BitNav Items="navItems" Mode="BitNavMode.Manual" DefaultSelectedItem="navItems[0]"
+                        AriaLabel="@($"BitNav, {Localizer[nameKey]}")" />
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+            <BitNav Items="treeItems" Mode="BitNavMode.Manual" DefaultSelectedItem="treeItems[1].ChildItems[0]" AllExpanded
+                    AriaLabel="@($"BitNav, {Localizer[nameof(WorkbenchStrings.ThemeStateExpanded)]}")" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitNavBar" Wide>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force" Index="2">
+                <BitNavBar Items="navBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="navBarItems[0]" FullWidth
+                           AriaLabel="@($"BitNavBar, {Localizer[nameKey]}")" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNavsFilled)]">
+            <BitNavBar Items="navBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="navBarItems[1]" FullWidth Filled
+                       AriaLabel="@($"BitNavBar, {Localizer[nameof(WorkbenchStrings.ThemeNavsFilled)]}")" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPagination" Wide>
+        @foreach (var variant in Enum.GetValues<BitVariant>())
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitPagination Count="12" DefaultSelectedPage="4" Variant="variant" />
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="button" Index="3">
+            <BitPagination Count="12" DefaultSelectedPage="4" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="button" Index="3">
+            <BitPagination Count="12" DefaultSelectedPage="4" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNavsFirstLastAndSummary)]">
+            <BitPagination Count="12" DefaultSelectedPage="4" ShowFirstButton ShowLastButton Rounded />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitPagination Count="12" DefaultSelectedPage="4" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPivot" Wide>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
+        {
+            <StateSample NameKey="@nameKey" Force="@force" Target="[role=tab]" Index="2">
+                <BitPivot>
+                    <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 1]">
+                        <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 2]">
+                        <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                    </BitPivotItem>
+                </BitPivot>
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNavsIconsAndCounts)]">
+            <BitPivot>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeNavsInbox)]" IconName="@BitIconName.Inbox" ItemCount="12">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeNavsSent)]" IconName="@BitIconName.Send">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitPivotItem>
+            </BitPivot>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitPivot Disabled>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 1]">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 2]">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitPivotItem>
+            </BitPivot>
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

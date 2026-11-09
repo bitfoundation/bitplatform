@@ -1,0 +1,43 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="shape" Title="@Localizer[nameof(WorkbenchStrings.ThemeShape)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeShapeTheCornerRadiusScaleAnd)]">
+    @foreach (var group in ThemeTokens.Radii)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[group.TitleKey]</BitText>
+        <div class="radii">
+            @foreach (var token in group.Tokens)
+            {
+                <div class="radius-cell">
+                    <span class="radius-box" style="--wb-radius:@token.Css"></span>
+                    <TokenLabel Name="@ShortName(token)" Value="@ValueOf(token)" />
+                </div>
+            }
+        </div>
+    }
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeShapeBordersAndFocus)]</BitText>
+    <div class="strokes">
+        <div class="stroke-cell">
+            <span class="stroke-box"></span>
+            <TokenLabel Name="--bit-shp-brd-width" Value="@Values.GetValueOrDefault("--bit-shp-brd-width")" />
+            <TokenLabel Name="--bit-shp-brd-style" Value="@Values.GetValueOrDefault("--bit-shp-brd-style")" />
+            <TokenLabel Name="--bit-shp-brd-radius" Value="@Values.GetValueOrDefault("--bit-shp-brd-radius")" />
+        </div>
+        <div class="stroke-cell">
+            <span class="stroke-box thick"></span>
+            <TokenLabel Name="--bit-shp-brd-width-thick" Value="@Values.GetValueOrDefault("--bit-shp-brd-width-thick")" />
+        </div>
+        <div class="stroke-cell">
+            <span class="stroke-box outline-ring"></span>
+            <TokenLabel Name="--bit-shp-focus-ring-width" Value="@Values.GetValueOrDefault("--bit-shp-focus-ring-width")" />
+            <TokenLabel Name="--bit-shp-focus-ring-offset" Value="@Values.GetValueOrDefault("--bit-shp-focus-ring-offset")" />
+        </div>
+        @foreach (var token in ThemeTokens.FocusRings)
+        {
+            <div class="stroke-cell">
+                <span class="stroke-box shadow-ring" style="--wb-ring:@token.Css"></span>
+                <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+            </div>
+        }
+    </div>
+</ThemeSection>

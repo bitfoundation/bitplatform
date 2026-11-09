@@ -12,6 +12,26 @@ public class TourUITests : WorkbenchPageTest
 
     private ILocator Mode(string name) => Page.Locator(".modes").GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    private ILocator ArrowEditor => Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel });
+
+    private static readonly Regex onTheSample = new($"/flows/{WorkbenchSampleFlows.BuildingsId}$");
+
+    private static readonly Regex onTheSamplesArrow = new($"/flows/{WorkbenchSampleFlows.BuildingsId}\\?{WorkbenchUrls.ArrowQueryKey}={WorkbenchSampleFlows.BuildingsAddArrowId}$");
+
+    /// <summary>The steps up to and including the Flows one, after the first.</summary>
+    private static readonly string[] stepsToFlows = [WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows];
+
+    /// <summary>The steps on the building sample's board: the arrow's one only where an arrow can be changed.</summary>
+    private string[] BoardSteps => HasAgent ? [WorkbenchStrings.Flows, WorkbenchStrings.TourArrowsTitle] : [WorkbenchStrings.Flows];
+
+    /// <summary>The arrow step's editor, open on the sample's Add building arrow.</summary>
+    private async Task ExpectTheSamplesArrowEditor()
+    {
+        await Expect(Page).ToHaveURLAsync(onTheSamplesArrow);
+        await Expect(ArrowEditor).ToBeVisibleAsync();
+        await Expect(ArrowEditor.GetByRole(AriaRole.Textbox, new() { Name = WorkbenchStrings.ArrowLabel })).ToHaveValueAsync(WorkbenchStrings.BuildingsAdd);
+    }
+
     private async Task Advance(string nextTitle)
     {
         await Press(Next);
@@ -52,8 +72,14 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
 
         await Advance(WorkbenchStrings.Flows);
-        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+        await Expect(Page).ToHaveURLAsync(onTheSample);
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
+
+        if (HasAgent)
+        {
+            await Advance(WorkbenchStrings.TourArrowsTitle);
+            await ExpectTheSamplesArrowEditor();
+        }
 
         await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
@@ -117,7 +143,7 @@ public class TourUITests : WorkbenchPageTest
 
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
 
-        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows, WorkbenchStrings.HomeWhyManyAppsTitle })
+        foreach (var title in (string[])[.. stepsToFlows[..^1], .. BoardSteps, WorkbenchStrings.HomeWhyManyAppsTitle])
         {
             await Advance(title);
         }
@@ -127,8 +153,16 @@ public class TourUITests : WorkbenchPageTest
 
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
 
-        await Expect(Popover.GetByText(WorkbenchStrings.Flows, new() { Exact = true })).ToBeVisibleAsync();
-        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+        await Expect(Popover.GetByText(BoardSteps[^1], new() { Exact = true })).ToBeVisibleAsync();
+
+        if (HasAgent)
+        {
+            await ExpectTheSamplesArrowEditor();
+        }
+        else
+        {
+            await Expect(Page).ToHaveURLAsync(onTheSample);
+        }
 
         await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));
@@ -162,6 +196,40 @@ public class TourUITests : WorkbenchPageTest
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts.*theme=dark.*device=desktop-1536"));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task TheArrowStep_Should_OpenTheSamplesArrowAndCloseItGoingBackWithoutACopy(WorkbenchSurface surface)
+    {
+        var flows = (await Server.Agent.GetFlows(CancellationToken.None)).Count;
+
+        await OpenWorkbench("shifts", "?device=desktop-1536");
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+
+        foreach (var title in (string[])[.. stepsToFlows, WorkbenchStrings.TourArrowsTitle])
+        {
+            await Advance(title);
+        }
+
+        await ExpectTheSamplesArrowEditor();
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
+
+        await Expect(Popover.GetByText(WorkbenchStrings.Flows, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(onTheSample);
+        await Expect(ArrowEditor).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
+
+        await Advance(WorkbenchStrings.TourArrowsTitle);
+        await ExpectTheSamplesArrowEditor();
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts.*device=desktop-1536"));
+
+        Assert.HasCount(flows, await Server.Agent.GetFlows(CancellationToken.None), "The tour changes no flow.");
     }
 
     private async Task ExpectAboveTheCard(ILocator target)
@@ -217,9 +285,16 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
         await Advance(WorkbenchStrings.Flows);
-        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+        await Expect(Page).ToHaveURLAsync(onTheSample);
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
         await ExpectAboveTheCard(Page.Locator(".flow-board"));
+
+        if (HasAgent)
+        {
+            await Advance(WorkbenchStrings.TourArrowsTitle);
+            await ExpectTheSamplesArrowEditor();
+            await ExpectAboveTheCard(ArrowEditor);
+        }
 
         await Advance(WorkbenchStrings.HomeWhyManyAppsTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/landing-minimal"));

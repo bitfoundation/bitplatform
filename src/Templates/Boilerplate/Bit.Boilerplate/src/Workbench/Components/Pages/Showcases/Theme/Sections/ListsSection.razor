@@ -1,0 +1,86 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="lists" Title="@Localizer[nameof(WorkbenchStrings.ThemeLists)]">
+    <ComponentStates Name="BitBasicList" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <div class="list-box">
+                <BitBasicList Items="people" Role="list" Style="height:100%" TabIndex="0" AriaLabel="@Localizer[nameof(WorkbenchStrings.PosTeam)]">
+                    <HeaderTemplate>
+                        <BitText Typography="BitTypography.Overline" Class="list-header">@Localizer[nameof(WorkbenchStrings.PosTeam)]</BitText>
+                    </HeaderTemplate>
+                    <RowTemplate Context="person">
+                        <div class="list-row" role="listitem">
+                            <BitPersona PrimaryText="@Localizer[person.NameKey]" SecondaryText="@Localizer[person.RoleKey]" ImageUrl="@WorkbenchPhotos.Find(person.NameKey)" Size="BitPersonaSize.Size32" />
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+            <div class="list-box">
+                <BitBasicList Items="people" Loading Role="list" Style="height:100%">
+                    <RowTemplate Context="person">
+                        <div class="list-row" role="listitem">@Localizer[person.NameKey]</div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <div class="list-box">
+                <BitBasicList Items="noPeople" Role="list" Style="height:100%">
+                    <RowTemplate Context="person">
+                        <div class="list-row" role="listitem">@Localizer[person.NameKey]</div>
+                    </RowTemplate>
+                    <EmptyContent>
+                        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Class="list-empty">@Localizer[nameof(WorkbenchStrings.ThemeListsNobodyIsOnShiftYet)]</BitText>
+                    </EmptyContent>
+                </BitBasicList>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCarousel" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeListsTwoAtATime)]">
+            <BitCarousel VisibleItemsCount="2" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeListsThisWeekSSpecials)]">
+                @foreach (var slide in slides)
+                {
+                    <BitCarouselItem>
+                        <div class="slide">
+                            <BitIcon IconName="@slide.Icon" Size="BitSize.Large" Color="BitColor.Primary" />
+                            <BitText Typography="BitTypography.Subtitle1">@slide.Title</BitText>
+                            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@slide.Text</BitText>
+                        </div>
+                    </BitCarouselItem>
+                }
+            </BitCarousel>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSwiper" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeListsWithDots)]">
+            <BitSwiper VisibleItemsCount="3" ShowDots AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeListsTodaySSpecials)]">
+                @foreach (var slide in slides)
+                {
+                    <BitSwiperItem>
+                        <div class="slide">
+                            <BitIcon IconName="@slide.Icon" Size="BitSize.Large" Color="BitColor.Secondary" />
+                            <BitText Typography="BitTypography.Subtitle2">@slide.Title</BitText>
+                        </div>
+                    </BitSwiperItem>
+                }
+            </BitSwiper>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTimeline" Full>
+        @foreach (var variant in Enum.GetValues<BitVariant>())
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitTimeline Items="steps" Variant="variant" Horizontal />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsVertical)]">
+            <BitTimeline Items="steps" />
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

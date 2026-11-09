@@ -11,15 +11,25 @@ public class ChecksApiTests
 
     public static IEnumerable<object[]> Views => WorkbenchPageCatalog.Pages.SelectMany(page => new[] { new object[] { page.Key, DevicePresets.DefaultKey }, [page.Key, "desktop-1536"] });
 
+    /// <summary>The theme page shows one tab at a time, so each tab past the one it opens on is checked on its own.</summary>
+    public static IEnumerable<object[]> ThemeTabs => WorkbenchPageCatalog.Find("theme")!.Switches.Single(pageSwitch => pageSwitch.Key == "section").Options.Skip(1)
+        .SelectMany(tab => new[] { new object[] { tab.Value, DevicePresets.DefaultKey }, [tab.Value, "desktop-1536"] });
+
     [TestMethod]
     [DynamicData(nameof(Views))]
-    public async Task EveryPage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string pageKey, string device)
+    public Task EveryPage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string pageKey, string device) => ExpectNoFinding(pageKey, $"?device={device}");
+
+    [TestMethod]
+    [DynamicData(nameof(ThemeTabs))]
+    public Task EveryTabOfTheThemePage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string tab, string device) => ExpectNoFinding("theme", $"?device={device}&sw-section={tab}");
+
+    private async Task ExpectNoFinding(string pageKey, string query)
     {
         var server = await WorkbenchTestsInitializer.SharedServer;
         using var client = server.CreateClient();
         client.Timeout = TimeSpan.FromMinutes(2);
 
-        var response = await client.GetAsync($"api/checks/{pageKey}?device={device}", TestContext.CancellationToken);
+        var response = await client.GetAsync($"api/checks/{pageKey}{query}", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 

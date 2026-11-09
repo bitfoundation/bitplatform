@@ -18,18 +18,50 @@ public static class WorkbenchPageCatalog
             BitIconName.Color,
             typeof(ThemePage),
             nameof(WorkbenchStrings.CategoryDesignSystem),
-            ["BitButton", "BitTextField", "BitDropdown", "BitNavBar", "BitDialog"],
+            ["BitButton", "BitTextField", "BitDropdown", "BitNavBar", "BitDialog", "BitDataGrid", "BitAiChat"],
             nameof(WorkbenchStrings.ThemePageCaption))
         {
             Switches =
             [
+                // The page's tabs, in their order: the token families, the overlays, then the demo's categories of components.
+                new("section", nameof(WorkbenchStrings.ThemeSwitchSection),
+                [
+                    new("colors", nameof(WorkbenchStrings.ThemeColors)),
+                    new("typography", nameof(WorkbenchStrings.ThemeTypography)),
+                    new("shape", nameof(WorkbenchStrings.ThemeShape)),
+                    new("shadows", nameof(WorkbenchStrings.ThemeShadows)),
+                    new("sizes", nameof(WorkbenchStrings.ThemeSizes)),
+                    new("motion", nameof(WorkbenchStrings.ThemeMotion)),
+                    new("layers", nameof(WorkbenchStrings.ThemeLayers)),
+                    new("overlays", nameof(WorkbenchStrings.ThemeOverlays)),
+                    new("buttons", nameof(WorkbenchStrings.ThemeButtons)),
+                    new("inputs", nameof(WorkbenchStrings.ThemeInputs)),
+                    new("pickers", nameof(WorkbenchStrings.ThemePickers)),
+                    new("layouts", nameof(WorkbenchStrings.ThemeLayouts)),
+                    new("lists", nameof(WorkbenchStrings.ThemeLists)),
+                    new("navs", nameof(WorkbenchStrings.ThemeNavigation)),
+                    new("notifications", nameof(WorkbenchStrings.ThemeNotifications)),
+                    new("progress", nameof(WorkbenchStrings.ThemeProgressSection)),
+                    new("surfaces", nameof(WorkbenchStrings.ThemeSurfaces)),
+                    new("utilities", nameof(WorkbenchStrings.ThemeUtilities)),
+                    new("extras", nameof(WorkbenchStrings.ThemeExtras)),
+                    new("ai", nameof(WorkbenchStrings.ThemeAi))
+                ]),
+                new("density", nameof(WorkbenchStrings.ThemeSwitchDensity),
+                [
+                    new("default", nameof(WorkbenchStrings.ThemeStateDefault)),
+                    new("compact", nameof(WorkbenchStrings.ThemeDensityCompact)),
+                    new("spacious", nameof(WorkbenchStrings.ThemeDensitySpacious))
+                ]),
                 new("overlay", nameof(WorkbenchStrings.ThemeSwitchOverlay),
                 [
                     new("none", nameof(WorkbenchStrings.ThemeOverlayNone)),
                     new("dropdown", nameof(WorkbenchStrings.ThemeOverlayDropdown)),
                     new("date", nameof(WorkbenchStrings.ThemeOverlayDatePicker)),
                     new("menu", nameof(WorkbenchStrings.ThemeOverlayMenu)),
+                    new("callout", nameof(WorkbenchStrings.ThemeOverlayCallout)),
                     new("dialog", nameof(WorkbenchStrings.ThemeOverlayDialog)),
+                    new("modal", nameof(WorkbenchStrings.ThemeOverlayModal)),
                     new("panel", nameof(WorkbenchStrings.ThemeOverlayPanel)),
                     new("snackbar", nameof(WorkbenchStrings.ThemeOverlaySnackBar))
                 ])

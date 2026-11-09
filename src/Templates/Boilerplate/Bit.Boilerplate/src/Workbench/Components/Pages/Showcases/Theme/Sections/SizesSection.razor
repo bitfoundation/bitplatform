@@ -1,0 +1,40 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="sizes" Title="@Localizer[nameof(WorkbenchStrings.ThemeSizes)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeSizesTheSizesComponentsAreBuilt)]">
+    <div class="groups">
+        @foreach (var group in ThemeTokens.Sizes)
+        {
+            <div class="group">
+                <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[group.TitleKey]</BitText>
+                @foreach (var token in group.Tokens)
+                {
+                    <div class="size-row">
+                        <span class="bar" style="--wb-size:@token.Css"></span>
+                        <TokenLabel Name="@ShortName(token)" Value="@ValueOf(token)" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeSizesSpacing)]</BitText>
+    <div class="insets">
+        @foreach (var token in ThemeTokens.Spacing)
+        {
+            <div class="inset-cell">
+                @if (token.Name is "--bit-layout-density-scale")
+                {
+                    @* A theme that sets no density reads as 1, the default every size falls back to. *@
+                    var density = string.IsNullOrEmpty(ValueOf(token)) ? "1" : ValueOf(token);
+                    <span class="density">× @density</span>
+                    <TokenLabel Name="@ShortName(token)" Value="@density" />
+                }
+                else
+                {
+                    <span class="inset" style="--wb-inset:@token.Css"><span class="inset-content"></span></span>
+                    <TokenLabel Name="@ShortName(token)" Value="@ValueOf(token)" />
+                }
+            </div>
+        }
+    </div>
+</ThemeSection>

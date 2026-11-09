@@ -1,0 +1,382 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="extras" Title="@Localizer[nameof(WorkbenchStrings.ThemeExtras)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTheComponentsOfTheBit)]">
+
+    <ComponentStates Name="BitAccordionList" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[0]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[1]" DefaultExpandedKey="delivery" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiple)">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[2]" Multiple DefaultExpandedKeys="multipleKeys" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[3]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[4]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitAccordionList TItem="BitAccordionListItem" Items="faqLists[5]" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitChart" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasBars)]">
+            <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLines)]">
+            <BitChart Type="BitChartType.Line" Data="visitorsData" Options="lineOptions" Height="14rem" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasVisitorsPerDay)]" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasDoughnut)]">
+            <BitChart Type="BitChartType.Doughnut" Data="paymentsData" Options="doughnutOptions" Height="14rem" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasSalesByPaymentMethod)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+            <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" IsLoading Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitChart Type="BitChartType.Bar" Data="emptyData" Options="barOptions" Height="14rem" NoDataText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoSalesYetThisMonth)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCountryPicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" DefaultValue="BitCountries.Netherlands" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" DefaultValue="BitCountries.Netherlands" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" DefaultValue="BitCountries.Canada"
+                              ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasWeDonTShipThere)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" DefaultValue="BitCountries.Netherlands" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitCountryPicker Label="@CountryLabel" Placeholder="@CountryPlaceholder" SearchBoxPlaceholder="@SearchText" DefaultValue="BitCountries.Netherlands" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDataGrid" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasSortedByTotalOneOrder)]">
+            <ExtrasOrdersGrid Items="ExtrasSamples.Orders" SortedByTotal SelectionMode="BitSelectionMode.Single" SelectedItems="selectedOrders" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+            <ExtrasOrdersGrid Items="noOrders" Loading />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <ExtrasOrdersGrid Items="noOrders" />
+        </StateSample>
+    </ComponentStates>
+
+    @* The error state is put in place after the first render, through the boundary's own Capture. *@
+    <ComponentStates Name="BitErrorBoundary" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitErrorBoundary NoLogging HideHomeButton HideRefreshButton HeadingLevel="4"
+                              Title="@AppLocalizer[nameof(AppStrings.SomethingWentWrong)]"
+                              Message="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySSalesCouldnT)]"
+                              RecoverText="@AppLocalizer[nameof(AppStrings.TryAgain)]">
+                <div class="sales-card">
+                    <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@ReportTitle</BitText>
+                    <BitText Typography="BitTypography.H5">@ExtrasSamples.Money(1284.50m)</BitText>
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosOrdersCount), 96]</BitText>
+                </div>
+            </BitErrorBoundary>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitErrorBoundary @ref="failedBoundary" NoLogging HideHomeButton HideRefreshButton HeadingLevel="4"
+                              Title="@AppLocalizer[nameof(AppStrings.SomethingWentWrong)]"
+                              Message="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySSalesCouldnT)]"
+                              RecoverText="@AppLocalizer[nameof(AppStrings.TryAgain)]">
+                <div class="sales-card">
+                    <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@ReportTitle</BitText>
+                    <BitText Typography="BitTypography.H5">@ExtrasSamples.Money(1284.50m)</BitText>
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosOrdersCount), 96]</BitText>
+                </div>
+            </BitErrorBoundary>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitFlag" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasBesideAName)]">
+            <div class="flags">
+                @foreach (var country in flagCountries)
+                {
+                    @* The name says which country it is, so the flag beside it stays decorative. *@
+                    <div class="flag-row">
+                        <BitFlag Country="country" Rounded Bordered />
+                        <span class="flag-name">@country.Name</span>
+                        <span class="flag-code">+@country.Code</span>
+                    </div>
+                }
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasShapes)]">
+            <div class="flag-shapes">
+                <BitFlag Country="BitCountries.Netherlands" AutoAlt Height="1.25rem" />
+                <BitFlag Country="BitCountries.Japan" AutoAlt Height="1.25rem" Rounded Bordered />
+                <BitFlag Country="BitCountries.Canada" AutoAlt Height="1.25rem" Rounded Shadow />
+                <BitFlag Country="BitCountries.Sweden" AutoAlt Height="1.5rem" Circular Bordered />
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitFullCalendar" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="calendar-box">
+                @* Phones start on the day view, as a week doesn't fit them. *@
+                <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="OnPhoneChanged" />
+                <BitFullCalendar Events="calendarEvents"
+                                 View="CalendarView"
+                                 ViewChanged="ShowCalendarView"
+                                 DefaultDate="ThemeSamples.Today.Date"
+                                 Settings="calendarSettings"
+                                 Texts="calendarTexts"
+                                 TimeProvider="sampleClock"
+                                 HideFilters
+                                 HideSettings />
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitInfiniteScrolling" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="scroll-box">
+                <BitInfiniteScrolling TItem="int"
+                                      ItemsProvider="LoadOrders"
+                                      PageSize="12"
+                                      MaxItems="48"
+                                      Class="orders-feed"
+                                      AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySOrders)]"
+                                      LoadingMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLoadingMoreOrders)]"
+                                      EndMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasThatSEveryOrderOf)]">
+                    <ItemTemplate Context="index">
+                        <ExtrasOrderRow Index="index" />
+                    </ItemTemplate>
+                </BitInfiniteScrolling>
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <div class="scroll-box">
+                <BitInfiniteScrolling TItem="int"
+                                      ItemsProvider="LoadNoOrders"
+                                      Class="orders-feed"
+                                      AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySOrders)]"
+                                      LoadingMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLoadingMoreOrders)]"
+                                      EmptyMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoOrdersYetToday)]">
+                    <ItemTemplate Context="index">
+                        <ExtrasOrderRow Index="index" />
+                    </ItemTemplate>
+                </BitInfiniteScrolling>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMap" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="map-box">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="mapProvider"
+                        Markers="mapMarkers"
+                        CooperativeGestures
+                        CooperativeGesturesWheelHint="@Localizer[nameof(WorkbenchStrings.ThemeExtrasHoldCtrlWhileScrollingTo)]"
+                        CooperativeGesturesTouchHint="@Localizer[nameof(WorkbenchStrings.ThemeExtrasUseTwoFingersToMove)]"
+                        MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
+                        AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasOurStores)]"
+                        Class="stores-map" />
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMarkdownEditor" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Mode="BitMarkdownEditorMode.Edit" Height="9rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Value="@markdownDraft" Height="12rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="textarea">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Value="@markdownDraft" Mode="BitMarkdownEditorMode.Edit" Height="9rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasPreview)]">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Value="@markdownDraft" Mode="BitMarkdownEditorMode.Preview" Height="12rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Value="@markdownDraft" Mode="BitMarkdownEditorMode.Edit" Height="9rem" SpellCheck="false" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitMarkdownEditor Label="@NotesLabel" Placeholder="@NotesPlaceholder" Value="@markdownDraft" Mode="BitMarkdownEditorMode.Edit" Height="9rem" SpellCheck="false" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMarkdownViewer" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            @* Its headings sit under the section's and the component's own. *@
+            <BitMarkdownViewer Markdown="@markdownDocument" Pipeline="BitMarkdownPipelines.GitHub" HeadingLevelOffset="3" />
+        </StateSample>
+    </ComponentStates>
+
+    @* A message box is the body of a dialog, its title in the dialog title's size, so each sits in a dialog's frame and width. *@
+    <ComponentStates Name="BitMessageBox" CellWidth="24rem">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="dialog-frame">
+                <BitMessageBox Title="@Localizer[nameof(WorkbenchStrings.ThemeExtrasSaveYourChanges)]"
+                               Body="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTheProductHasEditsThat)]"
+                               Buttons="BitMessageBoxButtons.OkCancel"
+                               OkText="@SaveText"
+                               CancelText="@CancelText"
+                               TitleElement="h4" />
+            </div>
+        </StateSample>
+        @foreach (var (nameKey, color, title, body) in messageBoxes)
+        {
+            <StateSample NameKey="@nameKey">
+                <div class="dialog-frame">
+                    <BitMessageBox Color="color" Title="@title" Body="@body" Buttons="BitMessageBoxButtons.Ok" OkText="@OkText" TitleElement="h4" />
+                </div>
+            </StateSample>
+        }
+    </ComponentStates>
+
+    @* Each panel stays a column of its own box on every screen, never the drawer it turns into on a phone. *@
+    <ComponentStates Name="BitNavPanel" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+            <div class="nav-box open">
+                <BitNavPanel TItem="BitNavItem"
+                             Items="openNavItems"
+                             DrawerBreakpoint="BitNavPanelBreakpoint.Never"
+                             NavMode="BitNavMode.Manual"
+                             DefaultSelectedItem="openNavItems[0]"
+                             SearchBoxPlaceholder="@SearchText"
+                             AriaLabel="@($"BitNavPanel, {Localizer[nameof(WorkbenchStrings.ThemeStateExpanded)]}")"
+                             Class="menu-panel" />
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+            <div class="nav-box rail">
+                <BitNavPanel TItem="BitNavItem"
+                             Items="railNavItems"
+                             IsToggled="true"
+                             DrawerBreakpoint="BitNavPanelBreakpoint.Never"
+                             NavMode="BitNavMode.Manual"
+                             DefaultSelectedItem="railNavItems[0]"
+                             SearchBoxPlaceholder="@SearchText"
+                             AriaLabel="@($"BitNavPanel, {Localizer[nameof(WorkbenchStrings.ThemeStateCollapsed)]}")"
+                             Class="menu-panel" />
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPdfViewer" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitPdfViewer Source="invoice" Height="26rem" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasInvoice), ExtrasSamples.Orders[0].Number]" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPhoneInput" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Index="2">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+3120")" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasEnterTheWholePhoneNumber)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitRichTextEditor" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Height="8rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Value="@richText" Height="11rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="[role=textbox]">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Value="@richText" Height="11rem" SpellCheck="false" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Height="8rem" SpellCheck="false"
+                               ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasWriteAFewLinesBefore)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Value="@richText" Height="11rem" SpellCheck="false" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitRichTextEditor Label="@NewsletterLabel" Placeholder="@NewsletterPlaceholder" Value="@richText" Height="11rem" SpellCheck="false" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTextShimmer" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitTextShimmer Text="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLookingThroughThisWeekS)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemePrimary)">
+            <BitTextShimmer Color="BitColor.Primary" Text="@Localizer[nameof(WorkbenchStrings.ThemeExtrasDraftingAReply)]" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.AssistantStopped)]">
+            <BitTextShimmer Static Text="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLookingThroughThisWeekS)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTextShimmer Disabled Text="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLookingThroughThisWeekS)]" />
+        </StateSample>
+    </ComponentStates>
+
+    @* A fixed reference date keeps the offsets the same in winter and summer. *@
+    <ComponentStates Name="BitTimeZonePicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" DefaultValue="@("Europe/Amsterdam")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" DefaultValue="@("Europe/Amsterdam")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today"
+                               ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasPickTheTimeZoneYour)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" DefaultValue="@("Europe/Amsterdam")" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTimeZonePicker TValue="string" Label="@TimeZoneLabel" Placeholder="@TimeZonePlaceholder" SearchBoxPlaceholder="@TimeZoneSearch" ReferenceDate="ThemeSamples.Today" DefaultValue="@("Europe/Amsterdam")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitVirtualize" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="scroll-box">
+                <BitVirtualize TItem="int" Items="allOrders" ItemSize="56" Class="orders-list" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasAllOrders)]">
+                    <ItemTemplate Context="index">
+                        <ExtrasOrderRow Index="index" Fixed />
+                    </ItemTemplate>
+                </BitVirtualize>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeExtrasNotShownHereWhichTakes), "BitAppShell"]</BitText>
+</ThemeSection>

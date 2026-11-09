@@ -32,8 +32,11 @@ public class FlowsUITests : FlowPageTest
     {
         await OpenFlowsPage();
 
-        var buildings = Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.SampleFlowBuildings });
+        // By its address, as a copy of it made on its board starts with its name.
+        var buildings = Page.Locator($"a[href='{WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId)}']");
         var pos = Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.SampleFlowPos });
+
+        await Expect(buildings).ToContainTextAsync(WorkbenchStrings.SampleFlowBuildings);
 
         await Expect(buildings).ToContainTextAsync(WorkbenchStrings.FlowSample);
         await Expect(pos).ToContainTextAsync(WorkbenchStrings.FlowSample);
@@ -434,7 +437,7 @@ public class FlowsUITests : FlowPageTest
         await OpenTab(WorkbenchModes.FlowsColumn);
 
         await Expect(Tools.GetByText(WorkbenchStrings.FlowsHint)).ToBeVisibleAsync();
-        await Expect(Tools.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.SampleFlowBuildings })).ToBeVisibleAsync();
+        await Expect(Tools.Locator($"a[href='{WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId)}']")).ToContainTextAsync(WorkbenchStrings.SampleFlowBuildings);
 
         var link = Tools.GetByRole(AriaRole.Link, new() { Name = flow.Name });
 
@@ -491,11 +494,15 @@ public class FlowsUITests : FlowPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task ASample_Should_LetNothingBeMovedOrDeletedEvenInDevMode(WorkbenchSurface surface)
+    public async Task ASample_Should_LetNothingBeMovedOrDeletedEvenInDevModeWhereOnlyItsArrowsOpen(WorkbenchSurface surface)
     {
+        var flows = (await Server.Agent.GetFlows(CancellationToken.None)).Count;
+
         await OpenBoard(WorkbenchSampleFlows.BuildingsId, 3);
 
-        await ExpectNothingToMoveOrGo("list", 3);
+        await ExpectNothingToMoveOrGo("list", 3, opensTheArrowsEditor: HasAgent);
+
+        Assert.HasCount(flows, await Server.Agent.GetFlows(CancellationToken.None), "Opening a sample's arrow and leaving it makes no copy.");
     }
 
     [TestMethod, EverySurface]
@@ -596,8 +603,11 @@ public class FlowsUITests : FlowPageTest
         }
     }
 
-    /// <summary>Really tries to move a screen, delete it and an arrow, and open an arrow's editor. Presenting at the end proves the board has dealt with all of that.</summary>
-    private async Task ExpectNothingToMoveOrGo(string screenId, int screens)
+    /// <summary>
+    /// Really tries to move a screen, delete it and an arrow, and open an arrow's editor, which only a sample in dev mode opens,
+    /// to be cancelled there. Presenting at the end proves the board has dealt with all of that.
+    /// </summary>
+    private async Task ExpectNothingToMoveOrGo(string screenId, int screens, bool opensTheArrowsEditor = false)
     {
         var title = CardOf(screenId).Locator(".screen-title");
         var node = Page.Locator($".bit-blow-node[data-id='{screenId}']");
@@ -618,7 +628,20 @@ public class FlowsUITests : FlowPageTest
         await (IsPhone ? arrow.Locator(".bit-blow-edge-label").TapAsync(new() { Force = true }) : arrow.Locator(".bit-blow-edge-label").ClickAsync(new() { Force = true }));
         await Page.Keyboard.PressAsync("Delete");
 
+        // A phone takes that tap and the next one, on the same spot, for a double tap: then the double press's second tap would
+        // land on the editor the first one opened, which covers the arrow's middle on a phone.
+        if (IsPhone)
+        {
+            await Page.WaitForTimeoutAsync(600);
+        }
+
         await DoublePressArrow(arrowId!);
+
+        if (opensTheArrowsEditor)
+        {
+            await Expect(LabelEditor).ToBeVisibleAsync();
+            await Press(EditorButton(WorkbenchStrings.Cancel));
+        }
 
         await Press(PresentButton);
         await Expect(Presenter).ToBeVisibleAsync();
@@ -627,6 +650,6 @@ public class FlowsUITests : FlowPageTest
         await Expect(Cards).ToHaveCountAsync(screens);
         await Expect(Arrows).ToHaveCountAsync(arrows);
         await Expect(arrow).Not.ToHaveClassAsync(new Regex(@"\bselected\b"));
-        await Expect(Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel })).ToHaveCountAsync(0);
+        await Expect(LabelEditor).ToHaveCountAsync(0);
     }
 }

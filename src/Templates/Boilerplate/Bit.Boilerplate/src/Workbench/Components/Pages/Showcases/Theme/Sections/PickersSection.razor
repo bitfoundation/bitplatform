@@ -1,0 +1,94 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="pickers" Title="@Localizer[nameof(WorkbenchStrings.ThemePickers)]">
+    <ComponentStates Name="BitCircularTimePicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitCircularTimePicker Label="@StartLabel" Placeholder="@TimePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitCircularTimePicker Label="@StartLabel" Value="sampleTime" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitCircularTimePicker Label="@StartLabel" Value="sampleTime" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitCircularTimePicker Label="@StartLabel" Value="sampleTime" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemePickersInlineDial)]">
+            <BitCircularTimePicker Label="@StartLabel" Value="sampleTime" Standalone />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitColorPicker" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemePickersEveryPart)]">
+            <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#1276c6")" ShowAlphaSlider ShowPreview ShowInputs Presets="presets" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#ca5010")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#107c10")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDatePicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitDatePicker Label="@BirthDateLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitDatePicker Label="@BirthDateLabel" Value="birthDate" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitDatePicker Label="@BirthDateLabel" Value="birthDate" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitDatePicker Label="@BirthDateLabel" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeDateError)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitDatePicker Label="@BirthDateLabel" Value="birthDate" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemePickersInlineCalendar)]">
+            <BitDatePicker Label="@Localizer[nameof(WorkbenchStrings.ThemeAiDeliveryDate)]" Value="ThemeSamples.Today" Today="ThemeSamples.Today" Standalone />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDateRangePicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitDateRangePicker Label="@StayLabel" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemePickersPickTheDates)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitDateRangePicker Label="@StayLabel" Value="stay" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitDateRangePicker Label="@StayLabel" Value="stay" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitDateRangePicker Label="@StayLabel" Value="stay" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemePickersInlineCalendar)]">
+            <BitDateRangePicker Label="@StayLabel" Value="stay" Today="ThemeSamples.Today" Standalone />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTimePicker" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitTimePicker Label="@StartLabel" Placeholder="@TimePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitTimePicker Label="@StartLabel" Value="sampleTime" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitTimePicker Label="@StartLabel" Value="sampleTime" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitTimePicker Label="@StartLabel" Value="lateTime" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemePickersTheShopClosesAt18)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTimePicker Label="@StartLabel" Value="sampleTime" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemePickersInline)]">
+            @* The inline picker's value field takes its name from AriaLabel only, not from Label. *@
+            <BitTimePicker Label="@StartLabel" AriaLabel="@StartLabel" Value="sampleTime" Standalone />
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

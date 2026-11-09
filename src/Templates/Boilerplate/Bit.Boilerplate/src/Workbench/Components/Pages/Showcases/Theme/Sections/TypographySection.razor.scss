@@ -1,0 +1,88 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.type-scale,
+.ramp {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.type-row,
+.ramp-row {
+    gap: 1rem;
+    display: grid;
+    min-width: 0;
+    align-items: baseline;
+    grid-template-columns: 6rem minmax(0, 1fr);
+
+    ::deep .sample {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.ramp-row {
+    grid-template-columns: 5rem minmax(0, 1fr);
+}
+
+.type-name {
+    font-size: 11px;
+    color: $bit-color-foreground-secondary;
+}
+
+.token-grid {
+    gap: 1rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+}
+
+.token-cell {
+    gap: 0.25rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.font-sample,
+.weight-sample {
+    overflow-wrap: anywhere;
+    font-size: $bit-typography-fs-md;
+}
+
+.ramp-sample {
+    line-height: 1.1;
+}
+
+// What the token styles, in words, over the component it styles.
+.use-name {
+    font-size: $bit-typography-fs-sm;
+    color: $bit-color-foreground-secondary;
+}
+
+.use-sample {
+    min-width: 0;
+    padding: 0.25rem 0 0.5rem;
+}
+
+// A dialog's top drawn small: its title over its message, in the dialog's own corners and shadow.
+.dialog-mock {
+    gap: 0.375rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    box-shadow: $bit-box-shadow-dialog;
+    border-radius: $bit-shape-radius-dialog;
+    background-color: $bit-color-background-primary;
+}
+
+.dialog-title {
+    font-size: var(--bit-tpg-dialog-title-font-size);
+    font-weight: var(--bit-tpg-dialog-title-font-weight);
+}
+
+.dialog-text {
+    font-size: $bit-typography-fs-sm;
+    color: $bit-color-foreground-secondary;
+}

@@ -2,7 +2,7 @@
 
 <div class="component">
     <BitText Typography="BitTypography.Subtitle2" Element="h3">@Name</BitText>
-    <div class="states @(Wide ? "wide" : null)">
+    <div class="states @StatesClass" style="@(CellWidth is null ? null : $"--wb-cell:{CellWidth}")">
         @ChildContent
     </div>
 </div>

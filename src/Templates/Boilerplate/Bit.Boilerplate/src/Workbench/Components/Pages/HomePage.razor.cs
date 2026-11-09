@@ -50,6 +50,12 @@ public partial class HomePage
     /// <summary>The page the hero shows on the phone: the buildings map, or another page of the catalog.</summary>
     private static WorkbenchPageInfo? PhonePage => WorkbenchPageCatalog.Find("buildings") ?? WorkbenchPageCatalog.Pages.FirstOrDefault(p => p != HeroPage) ?? HeroPage;
 
+    /// <summary>The catalog's pages by category, in the catalog's order, as the Pages pane groups them.</summary>
+    private static IEnumerable<IGrouping<string, WorkbenchPageInfo>> PageGroups => WorkbenchPageCatalog.Pages.GroupBy(p => p.CategoryKey);
+
+    /// <summary>How many of the catalog's columns a group takes: one per card, up to the three a wide screen has.</summary>
+    private static string SpanClass(int cardCount) => $"span-{Math.Min(cardCount, 3)}";
+
     /// <summary>The page's comments that are not done yet.</summary>
     private int OpenCount(string pageKey) => reviewSession.ThreadsOf(pageKey).Count(t => t.Status is not WorkbenchReviewStatus.Done);
 

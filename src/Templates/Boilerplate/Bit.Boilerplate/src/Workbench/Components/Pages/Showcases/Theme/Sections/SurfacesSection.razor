@@ -1,0 +1,216 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="surfaces" Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfaces)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTheSurfacesThatFloatOver)]">
+    <ComponentStates Name="BitAccordion" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+            <BitAccordion Title="@ProfileTitle">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitAccordion>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+            <BitAccordion Title="@ProfileTitle" DefaultIsExpanded="true">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitAccordion>
+        </StateSample>
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Skip(1).Take(2))
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitAccordion Title="@ProfileTitle">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitAccordion>
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitAccordion Title="@ProfileTitle" Disabled>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitAccordion>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesIconAndDescription)]">
+            <BitAccordion Title="@Localizer[nameof(WorkbenchStrings.PosPayment)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesVisaEndingIn4242)]" IconName="@BitIconName.PaymentCard">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitAccordion>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCallout">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromItsAnchor)]">
+            <BitCallout ShowArrow>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Info">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysDeliveryTimes)]</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-body">
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysDeliveryTimes)]</BitText>
+                        <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysOrdersBefore1000Arrive)]</BitText>
+                    </div>
+                </Content>
+            </BitCallout>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCard" CellWidth="18rem">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTitleBodyAndActions)]">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Subtitle="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesStartsOnMonday)]" IconName="@BitIconName.Cake">
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </ChildContent>
+                <Actions>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text">@AppLocalizer[nameof(AppStrings.Edit)]</BitButton>
+                    <BitButton Size="BitSize.Small">@Localizer[nameof(WorkbenchStrings.ThemeSurfacesPublish)]</BitButton>
+                </Actions>
+            </BitCard>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesWithAnImage)]">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesMonthlySalesReport)]" Subtitle="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesReadyToShare)]" ImageUrl="@ThemeSamples.IllustrationUrl" ImageAlt="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTwoPeopleReadingTheSales)]" ImageHeight="9rem">
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSurfacesSalesGrew12OnLast)]</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Subtitle="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesStartsOnMonday)]" Hoverable Href="#">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Subtitle="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesStartsOnMonday)]" Hoverable Href="#">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Subtitle="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesStartsOnMonday)]" Selected>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOutlined)]">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Outlined NoShadow>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeButtonsColored)]">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Color="BitColor.Primary" Variant="BitVariant.Fill">
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Loading>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitCard Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" Href="#" Disabled>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </BitCard>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCollapse" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+            <BitCollapse Expanded>
+                <div class="collapse-body">@SampleText</div>
+            </BitCollapse>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesCollapsedToAPeek)]">
+            <BitCollapse CollapsedSize="1.5rem">
+                <div class="collapse-body">@SampleText @SampleText</div>
+            </BitCollapse>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
+            <div class="column">
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="() => isCollapseOpen = !isCollapseOpen">@(isCollapseOpen ? Localizer[nameof(WorkbenchStrings.ThemeSurfacesShowLess)] : Localizer[nameof(WorkbenchStrings.ThemeSurfacesShowMore)])</BitButton>
+                <BitCollapse Expanded="isCollapseOpen">
+                    <div class="collapse-body">@SampleText</div>
+                </BitCollapse>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDialog">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Undo" Color="BitColor.Error" OnClick="() => isDialogOpen = true">@Localizer[nameof(WorkbenchStrings.ThemeSurfacesDiscardChanges)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitModal">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.FullScreen" OnClick="() => isModalOpen = true">@Localizer[nameof(WorkbenchStrings.ThemeOverlayModal)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitModalService">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromCode)]">
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Code" OnClick="ShowModalFromService">@Localizer[nameof(WorkbenchStrings.ThemeSurfacesModalFromTheService)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPanel">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Filter" OnClick="() => isPanelOpen = true">@Localizer[nameof(WorkbenchStrings.ThemeNavsFilters)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitScrollablePane" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesFadedEdges)]">
+            <BitScrollablePane Height="9rem" Fade Modern AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeAiOpeningHours)]" Focusable>
+                <div class="pane-body">
+                    @foreach (var day in openingHours)
+                    {
+                        <div class="pane-row"><span>@day.Day</span><span>@day.Hours</span></div>
+                    }
+                </div>
+            </BitScrollablePane>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSplitter" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesSideBySide)]">
+            <BitSplitter DefaultPercent="40" Style="height:8rem" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesResizeThePanels)]">
+                <FirstPanel><div class="panel-body">@Localizer[nameof(WorkbenchStrings.ThemeExtrasOrders)]</div></FirstPanel>
+                <SecondPanel><div class="panel-body">@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOrderDetails)]</div></SecondPanel>
+            </BitSplitter>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesStacked)]">
+            <BitSplitter Vertical Style="height:8rem" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesResizeThePanels)]">
+                <FirstPanel><div class="panel-body">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</div></FirstPanel>
+                <SecondPanel><div class="panel-body">@Localizer[nameof(WorkbenchStrings.BuildingsTitle)]</div></SecondPanel>
+            </BitSplitter>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTooltip">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)">
+            <div class="tooltip-stage">
+                <BitTooltip Text="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" IsShown>
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Info" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" />
+                </BitTooltip>
+            </div>
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>
+
+@* Titled apart from the Overlays section's dialog and panel, so each is found by its own name. *@
+<BitDialog @bind-IsOpen="isDialogOpen"
+           Title="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesDiscardYourChanges)]"
+           Message="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesWhatYouTypedSinceThe)]"
+           OkText="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesDiscard)]"
+           CancelText="@AppLocalizer[nameof(AppStrings.Cancel)]" />
+
+<BitModal @bind-IsOpen="isModalOpen" HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesAutumnMenu)]" ShowCloseButton>
+    <Body>
+        <div class="modal-body">
+            <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeNamePlaceholder)]" />
+        </div>
+    </Body>
+    <Footer>
+        <div class="modal-footer">
+            <BitButton Variant="BitVariant.Outline" OnClick="() => isModalOpen = false">@AppLocalizer[nameof(AppStrings.Cancel)]</BitButton>
+            <BitButton OnClick="() => isModalOpen = false">@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
+        </div>
+    </Footer>
+</BitModal>
+
+<BitPanel @bind-IsOpen="isPanelOpen" HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeNavsFilters)]" ShowCloseButton>
+    <div class="modal-body">
+        <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+        <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeNamePlaceholder)]" />
+    </div>
+</BitPanel>

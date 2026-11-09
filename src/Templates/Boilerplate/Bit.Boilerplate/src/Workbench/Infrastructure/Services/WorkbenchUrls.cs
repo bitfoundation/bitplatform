@@ -30,6 +30,12 @@ public static class WorkbenchUrls
 
     public static string Flow(string flowId) => $"{Flows}/{flowId}";
 
+    /// <summary>The query key of the arrow whose editor a flow's board opens with.</summary>
+    public const string ArrowQueryKey = "arrow";
+
+    /// <summary>A flow's board with an arrow's editor open.</summary>
+    public static string FlowArrow(string flowId, string linkId) => QueryHelpers.AddQueryString(Flow(flowId), ArrowQueryKey, linkId);
+
     public static string Preview(string pageKey, WorkbenchScenario scenario, string? paneId = null, string? snapshotId = null)
     {
         var url = $"/preview/{pageKey}{scenario.ToQueryString()}";
