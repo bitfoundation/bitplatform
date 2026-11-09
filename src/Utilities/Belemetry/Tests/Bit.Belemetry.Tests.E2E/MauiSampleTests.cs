@@ -8,8 +8,8 @@ namespace Bit.Belemetry.Tests.E2E;
 /// <summary>
 /// The MAUI sample (Samples/Maui) as a Windows app: the Blazor Hybrid host Belemetry documents, run as people copy it,
 /// with MAUI's own BlazorWebView rather than the WinForms one <see cref="HybridModeTests"/> drives. The transport is
-/// Relay - the script hands its records to .NET over JS interop and the app process exports them with its own - and the
-/// sample's consent banner gates everything.
+/// Relay - the script hands its records to .NET over JS interop and the app process exports them with its own - and
+/// consent gates everything: the app starts with every feature granted (see <see cref="MauiSampleApp"/>).
 /// </summary>
 /// <remarks>
 /// Windows only, like WebView2 (see <see cref="MauiSampleApp"/>); Android's WebView, WKWebView on iOS and Mac Catalyst
@@ -109,33 +109,29 @@ public class MauiSampleTests : HarnessTest
         Assert.AreEqual("activity-span", activity.Attributes.GetValueOrDefault("sample.button"));
 
         // A metric point carries no session: this run of the app is told apart by its random service.instance.id.
+        // Waited for longer: should the flush fail past its retries, the stored request's retry or the next metrics
+        // export, each up to a minute later, delivers the measurement.
         var instance = log.Resource.GetValueOrDefault("service.instance.id");
         Assert.IsNotNull(instance);
         var metric = await Collector.WaitForAsync(t => FromTheApp(t.Metrics).FirstOrDefault(m => m.Name == "samples.button.clicks"
                                                                                                  && m.Resource.GetValueOrDefault("service.instance.id") == instance),
-            "the Meter measurement");
+            "the Meter measurement", timeout: TimeSpan.FromMinutes(2));
         Assert.AreEqual("sum", metric.Type);
     }
 
     /// <summary>
-    /// Reloads the home page and grants every feature through the sample's consent banner - or, when an earlier test
-    /// already decided (the decision is app-wide and survives a reload), checks that it granted everything.
-    /// Returns the page's session id.
+    /// Reloads the home page and waits for the script to hold the decision granting every feature, which the app
+    /// restored from the consent file the suite wrote (see <see cref="MauiSampleApp"/>). Returns the page's session id.
     /// </summary>
     private async Task<string> OpenWithConsentAsync()
     {
         await GotoAsync("/");
         await Expect(Page.Locator("h1")).ToHaveTextAsync("Belemetry samples", new() { Timeout = 120_000 });
-        // <BelemetryInitializer /> starts the script once the app is interactive.
+        // <BelemetryInitializer /> starts the script once the app is interactive, then hands it the decision of .NET.
         await WaitForScriptAsync();
 
-        if ((await ContextAsync()).Decided is false)
-        {
-            await Page.Locator("#consent-accept").ClickAsync();
-            await Expect(Page.Locator(".consent-banner")).ToBeHiddenAsync();
-        }
-
         await Page.WaitForFunctionAsync("() => window.BitBelemetry.getContext().decided && window.BitBelemetry.getConsent() === 4095");
+        await Expect(Page.Locator(".consent-banner")).ToBeHiddenAsync();
         return await SessionIdAsync();
     }
 

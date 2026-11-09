@@ -54,7 +54,7 @@ finds its own records in a receiver shared with other tests.
 | `_content/Bit.Belemetry/bit-belemetry.js` served as JavaScript with the documented exports | yes | - | - | - |
 | Server pipeline on: `ILogger`, `Activity` (with the ASP.NET Core parent span) and `Meter` exported, as OTLP and envelopes | yes | - | - | - |
 | Server pipeline off (default): nothing from .NET exported | yes | - | - | - |
-| Nothing sent before consent; granting sends the held records | - | yes | - | granted through the sample's banner |
+| Nothing sent before consent; granting sends the held records | - | yes | - | - |
 | Revoking stops sending and clears the stored session, pseudo id and user id | - | yes | C# revoke reaches the script | - |
 | Page views: initial load, client-side / enhanced navigation, counted once | - | yes | - | client-side, relayed |
 | Clicks with `data-bit-belemetry-name`; `[data-bit-belemetry-ignore]` skipped | - | yes | relayed | relayed |
@@ -124,8 +124,14 @@ The MAUI suite (`MauiSampleTests`) builds `Samples/Maui` for Windows - unpackage
 (`-p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true`), so it runs without installing an MSIX - starts it,
 and attaches to its WebView2 with `ConnectOverCDPAsync`. The sample runs unchanged: its OTLP exporter's endpoint is set
 in code, so the suite points it at the receiver of the static SSR host with `OTEL_EXPORTER_OTLP_{TRACES,LOGS,METRICS}_ENDPOINT`
-(signal endpoints fill in what the code left unset) and `OTEL_EXPORTER_OTLP_PROTOCOL=http/json`. The tests grant consent
-through the sample's own banner and tell its records apart by `service.name` (`belemetry-samples-maui`).
+(signal endpoints fill in what the code left unset) and `OTEL_EXPORTER_OTLP_PROTOCOL=http/json`. The tests tell its
+records apart by `service.name` (`belemetry-samples-maui`).
+
+The app starts with every feature granted: the suite writes that decision to the file a Hybrid host restores consent
+from, `%LOCALAPPDATA%\bit-belemetry\belemetry-samples-maui\consent.json` (the sample sets no `Persistence.Directory`),
+and it wins over whatever the WebView's `localStorage` holds - the elevated app's default WebView2 folder included. The
+decision that was there is kept beside it as `consent.json.e2e-backup` and put back when the app stops; a run stopped
+before that leaves the backup for the next run to put back.
 
 MAUI gives the app no way to open WebView2's debugging port in code (`BlazorWebViewInitializing`'s options never reach
 the control on Windows), so the suite sets `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`, which an elevated process ignores.

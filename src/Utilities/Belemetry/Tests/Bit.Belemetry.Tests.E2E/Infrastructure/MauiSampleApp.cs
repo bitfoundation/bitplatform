@@ -24,6 +24,11 @@ namespace Bit.Belemetry.Tests.E2E.Infrastructure;
 /// <see cref="E2EEnvironment.MauiDebuggingPort"/> says which.
 /// </para>
 /// <para>
+/// The app starts with every feature granted, from the file a Hybrid host keeps its consent decision in (see
+/// <see cref="SeedConsent"/>): restored at startup, that decision wins over whatever the WebView's <c>localStorage</c>
+/// holds, so neither a decision of an earlier run nor the user's own changes what the tests see.
+/// </para>
+/// <para>
 /// The sample is built unpackaged and with the Windows App SDK inside it (<see cref="BuildProperties"/>): the default,
 /// packaged (MSIX) build only runs once installed. Building it needs the MAUI workloads, and running it the WebView2
 /// Runtime.
@@ -45,6 +50,14 @@ public sealed class MauiSampleApp : IAsyncDisposable
     public static readonly string[] BuildProperties = ["-p:WindowsPackageType=None", "-p:WindowsAppSDKSelfContained=true"];
 
     private static readonly Lazy<Task<MauiSampleApp>> _shared = new(StartAsync);
+
+    // Where Belemetry keeps the decision of a Hybrid app that sets no Persistence.Directory, as the sample does not.
+    private static readonly string _consentFile = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
+        "bit-belemetry", ServiceName, "consent.json");
+
+    // The user's own decision while the suite's replaces it: empty when there was none.
+    private static readonly string _consentBackup = _consentFile + ".e2e-backup";
 
     private readonly ChildProcess _process;
     private readonly string _userDataFolder;
@@ -121,8 +134,7 @@ public sealed class MauiSampleApp : IAsyncDisposable
 
         var port = E2EEnvironment.MauiDebuggingPort ?? ChildProcess.FreePort();
         // A folder of its own: WebView2 instances that share one share a browser process, whose port would then never
-        // open, and the consent decision a previous run left in its localStorage would hide the sample's banner. Like the
-        // arguments, ignored when elevated, where the app gets its default folder.
+        // open. Like the arguments, ignored when elevated, where the app gets its default folder.
         var userDataFolder = Path.Combine(Path.GetTempPath(), "bit-belemetry-maui-" + Guid.NewGuid().ToString("N"));
         var environment = new Dictionary<string, string>
         {
@@ -135,10 +147,13 @@ public sealed class MauiSampleApp : IAsyncDisposable
         if (E2EEnvironment.MauiDebuggingPort is null)
             environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
 
-        var process = ChildProcess.Start(executable, [], Path.GetDirectoryName(executable)!, environment);
+        SeedConsent();
+        ChildProcess? process = null;
 
         try
         {
+            process = ChildProcess.Start(executable, [], Path.GetDirectoryName(executable)!, environment);
+
             var debuggerUrl = $"http://127.0.0.1:{port}";
             await process.WaitForHttpAsync(debuggerUrl + "/json/version", TimeSpan.FromMinutes(2));
 
@@ -149,9 +164,51 @@ public sealed class MauiSampleApp : IAsyncDisposable
         }
         catch
         {
-            await process.DisposeAsync();
+            if (process is not null) await process.DisposeAsync();
             await DeleteUserDataFolderAsync(userDataFolder);
+            RestoreConsent();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Writes a decision granting every feature to the app's consent file, after setting aside the one there. A backup
+    /// already there is the user's decision still, from a run that never put it back (a stopped debugger), so it is kept
+    /// rather than replaced by that run's.
+    /// </summary>
+    private static void SeedConsent()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_consentFile)!);
+
+        if (File.Exists(_consentBackup) is false)
+        {
+            if (File.Exists(_consentFile)) File.Copy(_consentFile, _consentBackup);
+            else File.WriteAllBytes(_consentBackup, []);
+        }
+
+        File.WriteAllText(_consentFile, $$"""{"v":1,"features":4095,"time":{{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}""");
+    }
+
+    /// <summary>Puts back the decision <see cref="SeedConsent"/> set aside, once the app is gone.</summary>
+    private static void RestoreConsent()
+    {
+        try
+        {
+            if (File.Exists(_consentBackup) is false) return;
+
+            if (new FileInfo(_consentBackup).Length == 0)
+            {
+                File.Delete(_consentFile);
+                File.Delete(_consentBackup);
+            }
+            else
+            {
+                File.Move(_consentBackup, _consentFile, overwrite: true);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The backup stays, and the next run puts it back.
         }
     }
 
@@ -202,5 +259,6 @@ public sealed class MauiSampleApp : IAsyncDisposable
 
         await _process.DisposeAsync();
         await DeleteUserDataFolderAsync(_userDataFolder);
+        RestoreConsent();
     }
 }
