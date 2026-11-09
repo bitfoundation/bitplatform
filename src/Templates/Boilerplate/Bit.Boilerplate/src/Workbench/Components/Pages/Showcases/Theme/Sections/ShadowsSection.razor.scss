@@ -1,0 +1,24 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.shadows {
+    gap: 1.25rem 1rem;
+    display: grid;
+    // Room around each box, so its shadow shows in full.
+    padding: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+}
+
+.shadow-cell {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.shadow-box {
+    height: 4rem;
+    // Each box gets its shadow from the markup.
+    box-shadow: var(--wb-shadow);
+    border-radius: $bit-shape-radius-surface;
+    background-color: $bit-color-background-primary;
+}

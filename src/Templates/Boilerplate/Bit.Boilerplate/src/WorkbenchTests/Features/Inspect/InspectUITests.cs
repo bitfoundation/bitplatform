@@ -4,7 +4,11 @@ namespace Boilerplate.WorkbenchTests.Features.Inspect;
 [TestClass, TestCategory("UITest")]
 public class InspectUITests : WorkbenchCodeCopyPageTest
 {
-    private const string ThemePage = "Workbench/Components/Pages/Showcases/Theme/ThemePage.razor";
+    /// <summary>The file the theme page's buttons are written in, the icon button the tests pick among them.</summary>
+    private const string ButtonsSection = "Workbench/Components/Pages/Showcases/Theme/Sections/ButtonsSection.razor";
+
+    /// <summary>The theme page shows one tab at a time; its icon button and its Buttons heading are on this one.</summary>
+    private const string ButtonsTab = "?sw-section=buttons";
 
     private const string StoreView = "?device=store-play-phone&backdrop=ocean";
 
@@ -40,9 +44,12 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
         }
     }
 
+    /// <summary>Opens the page in Inspect mode; the theme page opens on its Buttons tab unless the query names another.</summary>
     private async Task Inspect(string pageKey = "theme", string query = "")
     {
-        await OpenWorkbench(pageKey, query);
+        var isOnButtonsTab = pageKey is "theme" && query.Contains("sw-section=", StringComparison.Ordinal) is false;
+
+        await OpenWorkbench(pageKey, isOnButtonsTab is false ? query : query.Length == 0 ? ButtonsTab : $"{query}&{ButtonsTab[1..]}");
         await SetMode(WorkbenchStrings.ModeInspect, "inspect");
     }
 
@@ -56,12 +63,12 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     /// <summary>Writes an attribute into the icon button's tag in the copy, as an edit the running code doesn't have yet.</summary>
     private static void AddToTheIconButton(string attribute)
     {
-        var file = InTheCopy(ThemePage);
+        var file = InTheCopy(ButtonsSection);
 
         File.WriteAllText(file, File.ReadAllText(file).Replace("<BitButton IconOnly IconName=\"@BitIconName.Settings\"", $"<BitButton {attribute} IconOnly IconName=\"@BitIconName.Settings\"", StringComparison.Ordinal));
     }
 
-    private static string LineOf(string text) => (Array.FindIndex(ReadTheCopy(ThemePage).ReplaceLineEndings().Split(Environment.NewLine), line => line.Contains(text, StringComparison.Ordinal)) + 1).ToString(CultureInfo.InvariantCulture);
+    private static string LineOf(string text) => (Array.FindIndex(ReadTheCopy(ButtonsSection).ReplaceLineEndings().Split(Environment.NewLine), line => line.Contains(text, StringComparison.Ordinal)) + 1).ToString(CultureInfo.InvariantCulture);
 
     [TestMethod, OnDesktops]
     public async Task TheCard_Should_DescribeWhatIsUnderThePointer(WorkbenchSurface surface)
@@ -145,7 +152,7 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task EditTextMode_Should_OutlineWhatIsUnderThePointerWithoutACard(WorkbenchSurface surface)
     {
-        await OpenWorkbench("theme");
+        await OpenWorkbench("theme", ButtonsTab);
         await SetMode(WorkbenchStrings.ModeText, "text");
 
         await SectionHeading.HoverAsync();
@@ -157,7 +164,7 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task Inspect_Should_AskForAPickAndNameItsTabUntilItEnds(WorkbenchSurface surface)
     {
-        await OpenWorkbench("theme");
+        await OpenWorkbench("theme", ButtonsTab);
 
         await Expect(Page.Locator("#wb-tab-view")).ToHaveTextAsync(WorkbenchStrings.ViewTab);
         await Expect(Mode(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
@@ -209,8 +216,8 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
 
         var source = Panel.Locator(".source");
 
-        await Expect(source).ToHaveTextAsync($"ThemePage.razor:{LineOf(nameof(WorkbenchStrings.ThemeIconButton))}");
-        await Expect(source).ToHaveAttributeAsync("title", ThemePage);
+        await Expect(source).ToHaveTextAsync($"ButtonsSection.razor:{LineOf(nameof(WorkbenchStrings.ThemeIconButton))}");
+        await Expect(source).ToHaveAttributeAsync("title", ButtonsSection);
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
@@ -305,7 +312,7 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task AColorParameter_Should_GetAColorField(WorkbenchSurface surface)
     {
-        await Inspect();
+        await Inspect(query: "?sw-section=progress");
 
         await Press(View().GetByText(WorkbenchStrings.ThemeProgress).First);
 
@@ -471,7 +478,8 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     {
         await Inspect(query: "?chrome=false");
 
-        await Press(View().Locator(".type-name").First);
+        // The page's own padding, outside its tabs and every other component.
+        await View().Locator(".theme").ClickAsync(new() { Position = new() { X = 4, Y = 4 } });
 
         await Expect(Panel.GetByText(WorkbenchStrings.ComponentNotReadable)).ToBeVisibleAsync();
         await Expect(Panel.Locator(".parameter")).ToHaveCountAsync(0);
@@ -500,7 +508,7 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task ATagThatNoLongerAddsUp_Should_SaySoAndStayReadOnly(WorkbenchSurface surface)
     {
-        var file = InTheCopy(ThemePage);
+        var file = InTheCopy(ButtonsSection);
 
         File.WriteAllText(file, File.ReadAllText(file) + Environment.NewLine + "<BitButton>A tag the running code doesn't have yet</BitButton>");
 
@@ -575,7 +583,7 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task APickInAView_Should_SelectThatView(WorkbenchSurface surface)
     {
-        await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "iphone-se", Theme = WorkbenchThemeMode.Dark }])}");
+        await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se", Switches = "section=buttons" }, new() { Device = "iphone-se", Theme = WorkbenchThemeMode.Dark, Switches = "section=buttons" }])}");
 
         var panes = await Page.Locator("iframe[data-pane-id]").EvaluateAllAsync<string[]>("frames => frames.map(f => f.dataset.paneId)");
 

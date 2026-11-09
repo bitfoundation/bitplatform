@@ -6,6 +6,9 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
 {
     private const string ThemePage = "Workbench/Components/Pages/Showcases/Theme/ThemePage.razor";
 
+    /// <summary>The file the theme page's icon button is written in, on its Buttons tab.</summary>
+    private const string ButtonsSection = "Workbench/Components/Pages/Showcases/Theme/Sections/ButtonsSection.razor";
+
     private const string Texts = "Workbench/Resources/WorkbenchStrings.resx";
 
     private ILocator ComponentPanel => Page.Locator(".component-panel");
@@ -30,9 +33,9 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
     }
 
     /// <summary>Opens a page in a mode, on a phone turned sideways, as an upright one has no modes to pick.</summary>
-    private async Task OpenInMode(string pageKey, string mode, string frameMode)
+    private async Task OpenInMode(string pageKey, string mode, string frameMode, string query = "")
     {
-        await OpenWorkbench(pageKey);
+        await OpenWorkbench(pageKey, query);
 
         if (IsPhone)
         {
@@ -50,7 +53,7 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
 
     private async Task PickTheIconButton()
     {
-        await OpenInMode("theme", WorkbenchStrings.ModeInspect, "inspect");
+        await OpenInMode("theme", WorkbenchStrings.ModeInspect, "inspect", "?sw-section=buttons");
 
         await Press(IconButton);
 
@@ -107,7 +110,7 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
     {
         await PickTheIconButton();
 
-        var before = ReadTheCopy(ThemePage);
+        var before = ReadTheCopy(ButtonsSection);
         var field = Parameter(nameof(BitButton.Href)).GetByRole(AriaRole.Textbox);
 
         await field.EvaluateAsync("e => { e.removeAttribute('disabled'); e.removeAttribute('aria-disabled'); }");
@@ -120,7 +123,7 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
 
         await Expect(ComponentPanel.Locator(".status")).ToHaveCountAsync(0);
 
-        Assert.AreEqual(before, ReadTheCopy(ThemePage));
+        Assert.AreEqual(before, ReadTheCopy(ButtonsSection));
     }
 
     [TestMethod, WithAnAgent]
@@ -148,7 +151,7 @@ public class TunnelVisitorUITests : WorkbenchCodeCopyPageTest
     [TestMethod, WithAnAgent]
     public async Task ATextNotInTheTranslationFiles_Should_OfferNoAsk(WorkbenchSurface surface)
     {
-        await OpenInMode("theme", WorkbenchStrings.ModeText, "text");
+        await OpenInMode("theme", WorkbenchStrings.ModeText, "text", "?sw-section=typography");
 
         await Press(View().Locator(".type-name").First);
 

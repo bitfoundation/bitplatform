@@ -75,6 +75,34 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         return id;
     }
 
+    /// <summary>
+    /// Makes the review's own copy of a sample flow: its screens with their page states and places, and its arrows, under the
+    /// same ids, so what was open on the sample can open again on the copy. Returns its id, or null when this circuit can't
+    /// write. The sample stays as it is, for everyone.
+    /// </summary>
+    public async Task<string?> CopySample(string sampleId)
+    {
+        if (document is null || CanWrite is false || AllFlows.FirstOrDefault(f => f.Id == sampleId) is not { IsSample: true } sample)
+            return null;
+
+        var id = Guid.NewGuid().ToString("N")[..16];
+        List<WorkbenchFlowScreen> screens = [];
+
+        foreach (var screen in sample.Screens)
+        {
+            var hasState = screen.HasState && await attachments.SaveState($"{id}{screen.Id}", await attachments.ReadState($"{sample.Id}{screen.Id}"));
+
+            screens.Add(screen with { HasState = hasState });
+        }
+
+        document.Transact(_ => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, localizer[nameof(WorkbenchStrings.FlowCopyName), sample.Name], screens, sample.Links), null);
+
+        // Read at once, as the board opens the copy right after.
+        Refresh();
+
+        return id;
+    }
+
     /// <summary>Adds a view to a flow, right of its last screen and linked from it, with the view's page state.</summary>
     public async Task AddScreen(string flowId, string pageKey, string query, string? note, string? state, string? linkLabel)
     {

@@ -1,0 +1,58 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.overlay-stage,
+.pull-stage,
+.sticky-stage,
+.swipe-stage {
+    height: 9rem;
+    position: relative;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.overlay-stage {
+    padding: 0.75rem;
+    overflow: hidden;
+}
+
+.pull-stage,
+.sticky-stage {
+    overflow: auto;
+}
+
+.pull-row {
+    padding: 0.5rem 0.75rem;
+    font-size: $bit-typography-fs-sm;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.sticky-header {
+    padding: 0.5rem 0.75rem;
+    font-weight: $bit-typography-fw-semibold;
+    background-color: $bit-color-background-secondary;
+}
+
+.swipe-stage {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    touch-action: none;
+    user-select: none;
+    background-color: $bit-color-background-secondary;
+}
+
+.quote-stage ::deep .quote {
+    margin: 0;
+    font-style: italic;
+    padding: 0.75rem 1rem;
+    border-radius: $bit-shape-radius-sm;
+    background-color: $bit-color-background-secondary;
+    border-inline-start: $bit-shape-border-width-thick solid $bit-color-primary;
+}
+
+.separator-row {
+    height: 1.5rem;
+    flex-wrap: nowrap;
+}

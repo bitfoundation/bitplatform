@@ -2256,17 +2256,11 @@
     <data name="ThemeToggle" xml:space="preserve">
         <value>Aviseringar</value>
     </data>
-    <data name="ThemeFeedback" xml:space="preserve">
-        <value>Meddelanden och status</value>
-    </data>
     <data name="ThemeMessage" xml:space="preserve">
         <value>Ett {0}-meddelande, så som appen visar det.</value>
     </data>
     <data name="ThemeProgress" xml:space="preserve">
         <value>Laddar upp</value>
-    </data>
-    <data name="ThemeContainers" xml:space="preserve">
-        <value>Kort och personer</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Flik {0}</value>
@@ -2622,9 +2616,6 @@
     <data name="ThemeStateCollapsed" xml:space="preserve">
         <value>Hopfälld</value>
     </data>
-    <data name="ThemeSelection" xml:space="preserve">
-        <value>Val</value>
-    </data>
     <data name="ThemeNavigation" xml:space="preserve">
         <value>Navigering</value>
     </data>
@@ -2699,6 +2690,63 @@
     </data>
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Sparades för en minut sedan</value>
+    </data>
+    <data name="ThemeSwitchSection" xml:space="preserve">
+        <value>Avsnitt</value>
+    </data>
+    <data name="ThemeShadows" xml:space="preserve">
+        <value>Skuggor</value>
+    </data>
+    <data name="ThemeSizes" xml:space="preserve">
+        <value>Storlekar och avstånd</value>
+    </data>
+    <data name="ThemeMotion" xml:space="preserve">
+        <value>Rörelse</value>
+    </data>
+    <data name="ThemeLayers" xml:space="preserve">
+        <value>Lager, brytpunkter och layout</value>
+    </data>
+    <data name="ThemePickers" xml:space="preserve">
+        <value>Väljare</value>
+    </data>
+    <data name="ThemeLayouts" xml:space="preserve">
+        <value>Layouter</value>
+    </data>
+    <data name="ThemeLists" xml:space="preserve">
+        <value>Listor</value>
+    </data>
+    <data name="ThemeNotifications" xml:space="preserve">
+        <value>Aviseringar</value>
+    </data>
+    <data name="ThemeProgressSection" xml:space="preserve">
+        <value>Förlopp</value>
+    </data>
+    <data name="ThemeSurfaces" xml:space="preserve">
+        <value>Ytor</value>
+    </data>
+    <data name="ThemeUtilities" xml:space="preserve">
+        <value>Verktyg</value>
+    </data>
+    <data name="ThemeExtras" xml:space="preserve">
+        <value>Extra</value>
+    </data>
+    <data name="ThemeAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="ThemeSwitchDensity" xml:space="preserve">
+        <value>Täthet</value>
+    </data>
+    <data name="ThemeDensityCompact" xml:space="preserve">
+        <value>Kompakt</value>
+    </data>
+    <data name="ThemeDensitySpacious" xml:space="preserve">
+        <value>Luftig</value>
+    </data>
+    <data name="ThemeOverlayCallout" xml:space="preserve">
+        <value>Pratbubbla</value>
+    </data>
+    <data name="ThemeOverlayModal" xml:space="preserve">
+        <value>Modalfönster</value>
     </data>
     <data name="PageFailed" xml:space="preserve">
         <value>Något gick fel på den här sidan.</value>
@@ -3107,5 +3155,1583 @@
     </data>
     <data name="LandingConsentFirstVisit" xml:space="preserve">
         <value>Första besöket</value>
+    </data>
+    <data name="FlowSampleHint" xml:space="preserve">
+        <value>Ett exempel: dubbelklicka på en skärm för att prova den, eller på en pil för att ändra den, vilket skapar din egen kopia av flödet.</value>
+    </data>
+    <data name="ArrowSampleNote" xml:space="preserve">
+        <value>Det här är ett exempel, och det förblir som det är: en ändring här skapar din egen kopia av flödet med ändringen och öppnar den.</value>
+    </data>
+    <data name="ThemeAiHowDidTheStoresDo" xml:space="preserve">
+        <value>Hur gick det för butikerna den här veckan?</value>
+    </data>
+    <data name="ThemeAiWhatRunsOutBeforeFriday" xml:space="preserve">
+        <value>Vad tar slut före fredag?</value>
+    </data>
+    <data name="ThemeAiDraftTheHolidayOpeningHours" xml:space="preserve">
+        <value>Skriv utkast till helgdagarnas öppettider</value>
+    </data>
+    <data name="ThemeAiOverThe100MBLimit" xml:space="preserve">
+        <value>Över gränsen på 100 MB</value>
+    </data>
+    <data name="ThemeAiCanYouCheckThisDelivery" xml:space="preserve">
+        <value>Kan du kontrollera den här följesedeln mot vår beställning?</value>
+    </data>
+    <data name="ThemeAiTheDeliveryNoteLists24" xml:space="preserve">
+        <value>Följesedeln visar **24 havredryck** och **60 croissanter**, enligt beställningen. Pappersmuggarna</value>
+    </data>
+    <data name="ThemeAiCheckingTheStockInUtrecht" xml:space="preserve">
+        <value>Kontrollerar lagret i Utrecht</value>
+    </data>
+    <data name="ThemeAiTheAssistantCouldNotAnswer" xml:space="preserve">
+        <value>Assistenten kunde inte svara. Försök igen om en stund.</value>
+    </data>
+    <data name="ThemeAiJoinedTheConversation" xml:space="preserve">
+        <value>{0} anslöt till konversationen.</value>
+    </data>
+    <data name="ThemeAiWeeklySalesReview" xml:space="preserve">
+        <value>Genomgång av veckans försäljning</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksTo" xml:space="preserve">
+        <value>Rotterdam växte mest, tack vare terrassen.</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStore" xml:space="preserve">
+        <value>Fyll på butiken i Utrecht</value>
+    </data>
+    <data name="ThemeAiOrderPlacedForFridayMorning" xml:space="preserve">
+        <value>Beställningen är lagd till fredag morgon.</value>
+    </data>
+    <data name="ThemeAiTwoDraftsOfThePoster" xml:space="preserve">
+        <value>Två utkast till affischtexten.</value>
+    </data>
+    <data name="ThemeAiHolidayOpeningHours" xml:space="preserve">
+        <value>Öppettider för helgdagarna</value>
+    </data>
+    <data name="ThemeAiPublishedOnEveryStorePage" xml:space="preserve">
+        <value>Publicerat på alla butikssidor.</value>
+    </data>
+    <data name="ThemeAiTeamScheduleForJune" xml:space="preserve">
+        <value>Teamets schema för juni</value>
+    </data>
+    <data name="ThemeAiThreeShiftsStillOpen" xml:space="preserve">
+        <value>Tre pass är fortfarande lediga.</value>
+    </data>
+    <data name="ThemeAiCompareTheBakeries" xml:space="preserve">
+        <value>Jämför bagerierna</value>
+    </data>
+    <data name="ThemeAiDekkerDeliversEarliest" xml:space="preserve">
+        <value>Dekker levererar tidigast.</value>
+    </data>
+    <data name="ThemeAiSunny" xml:space="preserve">
+        <value>Soligt</value>
+    </data>
+    <data name="ThemeAiTwoPeopleReadingASales" xml:space="preserve">
+        <value>Två personer som läser ett försäljningsdiagram genom ett förstoringsglas</value>
+    </data>
+    <data name="ThemeAiTheWeeklyReportAsAn" xml:space="preserve">
+        <value>Veckorapporten, som illustration</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek" xml:space="preserve">
+        <value>Rotterdam växte mest den här veckan, tack vare den **nya terrassen** och de längre öppettiderna på lördagen.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeekThanksTo" xml:space="preserve">
+        <value>Rotterdam växte mest den här veckan, tack vare den **nya terrassen** och</value>
+    </data>
+    <data name="ThemeAiOrderPO1042IsBooked" xml:space="preserve">
+        <value>Beställning PO-1042 är bokad till fredag kl. 7:00.</value>
+    </data>
+    <data name="ThemeAiHereIsTheOrderI" xml:space="preserve">
+        <value>Här är beställningen jag tog fram, med följesedeln den utgår från.</value>
+    </data>
+    <data name="ThemeAiTheWeekSSalesAre" xml:space="preserve">
+        <value>Veckans försäljningssiffror har kommit in. Jämför sedan varje butik med förra veckan och leta efter det som har ändrats mest.</value>
+    </data>
+    <data name="ThemeAiCompareEachStoreSNet" xml:space="preserve">
+        <value>Jämför varje butiks nettoförsäljning med förra veckans och säg vad som ändrades mest och varför.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturday" xml:space="preserve">
+        <value>**Utrecht** hade sin bästa lördag sedan mars: 412 beställningar, de flesta före lunch.</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturdaySinceMarch" xml:space="preserve">
+        <value>**Utrecht** hade sin bästa lördag sedan mars: 412 beställningar, de flesta</value>
+    </data>
+    <data name="ThemeAiPlaceTheOrder" xml:space="preserve">
+        <value>Lägg beställningen</value>
+    </data>
+    <data name="ThemeAiOrder24OatMilk60" xml:space="preserve">
+        <value>Beställa 24 havredryck, 60 croissanter och 20 pappersmuggar från Dekker till fredag kl. 7:00?</value>
+    </data>
+    <data name="ThemeAiDeleteAPriceList" xml:space="preserve">
+        <value>Ta bort en prislista</value>
+    </data>
+    <data name="ThemeAiPermanentlyDeleteTheMarchPrice" xml:space="preserve">
+        <value>Ta bort prislistan för mars permanent? Det går inte att ångra.</value>
+    </data>
+    <data name="ThemeAiOpeningHours" xml:space="preserve">
+        <value>Öppettider</value>
+    </data>
+    <data name="ThemeAiSales" xml:space="preserve">
+        <value>Försäljning</value>
+    </data>
+    <data name="ThemeAiReading18Of30Days" xml:space="preserve">
+        <value>Läser 18 av 30 dagar</value>
+    </data>
+    <data name="ThemeAiStock" xml:space="preserve">
+        <value>Lager</value>
+    </data>
+    <data name="ThemeAiDeliveries" xml:space="preserve">
+        <value>Leveranser</value>
+    </data>
+    <data name="ThemeAiTheSupplierSSystemDid" xml:space="preserve">
+        <value>Leverantörens system svarade inte.</value>
+    </data>
+    <data name="ThemeAiYouDeclinedThisToolCall" xml:space="preserve">
+        <value>Du nekade det här verktygsanropet.</value>
+    </data>
+    <data name="ThemeAiExportTheReport" xml:space="preserve">
+        <value>Exportera rapporten</value>
+    </data>
+    <data name="ThemeAiUtrechtHas4CartonsOf" xml:space="preserve">
+        <value>Utrecht har 4 kartonger havredryck kvar, det räcker till torsdag.</value>
+    </data>
+    <data name="ThemeAiThereIsNoStoreCalled" xml:space="preserve">
+        <value>Det finns ingen butik som heter Haarlem.</value>
+    </data>
+    <data name="ThemeAiTheSalesServiceDidNot" xml:space="preserve">
+        <value>Försäljningstjänsten svarade inte i tid.</value>
+    </data>
+    <data name="ThemeAiTheProviderSContentFilter" xml:space="preserve">
+        <value>AI-tjänstens innehållsfilter blockerade den här förfrågan.</value>
+    </data>
+    <data name="ThemeAiSalesReportWeek20" xml:space="preserve">
+        <value>Försäljningsrapport, vecka 20</value>
+    </data>
+    <data name="ThemeAiNetSalesOfEveryStore" xml:space="preserve">
+        <value>Nettoförsäljning för varje butik, per dag.</value>
+    </data>
+    <data name="ThemeAiSupplierPriceList2026" xml:space="preserve">
+        <value>Leverantörens prislista 2026</value>
+    </data>
+    <data name="ThemeAiPurchasing" xml:space="preserve">
+        <value>Inköp</value>
+    </data>
+    <data name="ThemeAiOpeningHoursOfTheStores" xml:space="preserve">
+        <value>Butikernas öppettider</value>
+    </data>
+    <data name="ThemeAiStoreWebsite" xml:space="preserve">
+        <value>Butikens webbplats</value>
+    </data>
+    <data name="ThemeAiRotterdamNetSalesUp12" xml:space="preserve">
+        <value>Rotterdam: nettoförsäljningen ökade 12,1 % jämfört med veckan innan.</value>
+    </data>
+    <data name="ThemeAiOatMilkPerCartonOf" xml:space="preserve">
+        <value>Havredryck, per kartong om 12: 21,60 €.</value>
+    </data>
+    <data name="ThemeAiStoreAssistant" xml:space="preserve">
+        <value>Butiksassistent</value>
+    </data>
+    <data name="ThemeAiThinksItThroughAndUses" xml:space="preserve">
+        <value>Tänker igenom saken och använder butikens verktyg.</value>
+    </data>
+    <data name="ThemeAiShortAnswersRightAway" xml:space="preserve">
+        <value>Korta svar, direkt.</value>
+    </data>
+    <data name="ThemeAiVision" xml:space="preserve">
+        <value>Vision</value>
+    </data>
+    <data name="ThemeAiReadsPhotosOfShelvesAnd" xml:space="preserve">
+        <value>Läser foton av hyllor och kvitton.</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBefore" xml:space="preserve">
+        <value>3 produkter tar slut före fredag.</value>
+    </data>
+    <data name="ThemeAi2Of3StorePages" xml:space="preserve">
+        <value>2 av 3 butikssidor kunde inte sparas.</value>
+    </data>
+    <data name="ThemeAiRotterdamThePageIsOpen" xml:space="preserve">
+        <value>Rotterdam: sidan är öppen i en annan redigerare.</value>
+    </data>
+    <data name="ThemeAiUtrechtThePageIsOpen" xml:space="preserve">
+        <value>Utrecht: sidan är öppen i en annan redigerare.</value>
+    </data>
+    <data name="ThemeAiReadThisWeekSSales" xml:space="preserve">
+        <value>Läs veckans försäljning</value>
+    </data>
+    <data name="ThemeAiCroissantsUp18OatMilk" xml:space="preserve">
+        <value>Croissanter upp 18 %, havredryck upp 9 %</value>
+    </data>
+    <data name="ThemeAiCheckTheStockInThe" xml:space="preserve">
+        <value>Kontrollera lagret i förrådet</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBeforeFriday" xml:space="preserve">
+        <value>3 produkter tar slut före fredag</value>
+    </data>
+    <data name="ThemeAiDraftTheOrder" xml:space="preserve">
+        <value>Förbered beställningen</value>
+    </data>
+    <data name="ThemeAiSendItToTheSupplier" xml:space="preserve">
+        <value>Skicka den till leverantören</value>
+    </data>
+    <data name="ThemeAi24OatMilk60Croissants" xml:space="preserve">
+        <value>24 havredryck, 60 croissanter, 20 pappersmuggar</value>
+    </data>
+    <data name="ThemeAiPickADeliverySlot" xml:space="preserve">
+        <value>Välj en leveranstid</value>
+    </data>
+    <data name="ThemeAiDekkerCanDeliverOnFriday" xml:space="preserve">
+        <value>Dekker kan leverera på fredag kl. 7:00 eller på lördag kl. 9:00. Vilken ska jag boka?</value>
+    </data>
+    <data name="ThemeAiFriday700" xml:space="preserve">
+        <value>Fredag kl. 7:00</value>
+    </data>
+    <data name="ThemeAiSaturday900" xml:space="preserve">
+        <value>Lördag kl. 9:00</value>
+    </data>
+    <data name="ThemeAiOrderPO1042ConfirmedFor" xml:space="preserve">
+        <value>Beställning PO-1042 bekräftad till fredag kl. 7:00</value>
+    </data>
+    <data name="ThemeAiOpeningHoursAgent" xml:space="preserve">
+        <value>Öppettidsagent</value>
+    </data>
+    <data name="ThemeAiPublishTheHolidayOpeningHours" xml:space="preserve">
+        <value>Publicera helgdagarnas öppettider på alla butikssidor</value>
+    </data>
+    <data name="ThemeAiTheRunStoppedBeforeAnnouncing" xml:space="preserve">
+        <value>Körningen avbröts innan de nya tiderna meddelades.</value>
+    </data>
+    <data name="ThemeAiCollectTheHoursFromThe" xml:space="preserve">
+        <value>Samla in tiderna från butikscheferna</value>
+    </data>
+    <data name="ThemeAiHoursFromAll3Store" xml:space="preserve">
+        <value>Tider från alla 3 butikschefer</value>
+    </data>
+    <data name="ThemeAiUpdateTheStorePages" xml:space="preserve">
+        <value>Uppdatera butikssidorna</value>
+    </data>
+    <data name="ThemeAiAnnounceTheNewHours" xml:space="preserve">
+        <value>Meddela de nya tiderna</value>
+    </data>
+    <data name="ThemeAiSendTheOrderToThe" xml:space="preserve">
+        <value>Skicka beställningen till leverantören</value>
+    </data>
+    <data name="ThemeAiComparedWithTheSameWeek" xml:space="preserve">
+        <value>Jämfört med samma vecka i fjol.</value>
+    </data>
+    <data name="ThemeAiRestockAgent" xml:space="preserve">
+        <value>Påfyllningsagent</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStoreBefore" xml:space="preserve">
+        <value>Fyll på butiken i Utrecht före helgen</value>
+    </data>
+    <data name="ThemeAiEveryStoreKeepsItsUsual" xml:space="preserve">
+        <value>Alla butiker har sina vanliga öppettider, utom de här dagarna:</value>
+    </data>
+    <data name="ThemeAiClosed" xml:space="preserve">
+        <value>Stängt</value>
+    </data>
+    <data name="ThemeAiOrdersPlacedInTheApp" xml:space="preserve">
+        <value>Beställningar som görs i appen de dagarna är klara en timme senare än vanligt.</value>
+    </data>
+    <data name="ThemeAiFirstDraft" xml:space="preserve">
+        <value>Första utkastet</value>
+    </data>
+    <data name="ThemeAiPriceChangesForJune" xml:space="preserve">
+        <value>Prisändringar för juni</value>
+    </data>
+    <data name="ThemeAiNoChange" xml:space="preserve">
+        <value>ingen ändring</value>
+    </data>
+    <data name="ThemeAiFromTheSupplierSNew" xml:space="preserve">
+        <value>Från leverantörens nya prislista</value>
+    </data>
+    <data name="ThemeAiByWhatSells" xml:space="preserve">
+        <value>Efter vad som säljer</value>
+    </data>
+    <data name="ThemeAiUntilTheNextDelivery" xml:space="preserve">
+        <value>Till nästa leverans</value>
+    </data>
+    <data name="ThemeAiEmailToTheSupplier" xml:space="preserve">
+        <value>Mejl till leverantören</value>
+    </data>
+    <data name="ThemeAiDearDekkerTeam" xml:space="preserve">
+        <value>Hej alla på Dekker,</value>
+    </data>
+    <data name="ThemeAiCouldYouDeliverTheOrder" xml:space="preserve">
+        <value>Kan ni leverera beställningen nedan till vår butik i Utrecht på fredag kl. 7:00? Bakdörren</value>
+    </data>
+    <data name="ThemeAiNetSalesCameTo34" xml:space="preserve">
+        <value>Nettoförsäljningen landade på **34 820 €**, upp 8,4 % mot förra veckan.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksToTheNew" xml:space="preserve">
+        <value>Rotterdam växte mest, tack vare den nya terrassen.</value>
+    </data>
+    <data name="ThemeAiWillItBeWarmEnough" xml:space="preserve">
+        <value>Blir det varmt nog för terrassen i Amsterdam i morgon?</value>
+    </data>
+    <data name="ThemeAiYesItWillBeMild" xml:space="preserve">
+        <value>Ja. Det blir milt och mestadels torrt, så terrassen kan öppna klockan tolv.</value>
+    </data>
+    <data name="ThemeAiPartlyCloudy" xml:space="preserve">
+        <value>Växlande molnighet</value>
+    </data>
+    <data name="ThemeAiThreeProductsRunOutBefore" xml:space="preserve">
+        <value>Tre produkter tar slut före fredagens leverans:</value>
+    </data>
+    <data name="ThemeAi4CartonsLeftEnoughUntil" xml:space="preserve">
+        <value>4 kartonger kvar, räcker till torsdag</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek2" xml:space="preserve">
+        <value>Rotterdam växte mest den här veckan.</value>
+    </data>
+    <data name="ThemeAiOatMilkCosts2160" xml:space="preserve">
+        <value>Havredryck kostar 21,60 € per kartong om 12 hos Dekker.</value>
+    </data>
+    <data name="ThemeAiBookTheDelivery" xml:space="preserve">
+        <value>Boka leveransen</value>
+    </data>
+    <data name="ThemeAiCheckWhatIFilledIn" xml:space="preserve">
+        <value>Kontrollera det jag har fyllt i innan jag skickar beställningen.</value>
+    </data>
+    <data name="ThemeAiSendTheOrder" xml:space="preserve">
+        <value>Skicka beställningen</value>
+    </data>
+    <data name="ThemeAiDeliveryDate" xml:space="preserve">
+        <value>Leveransdatum</value>
+    </data>
+    <data name="ThemeAiCrates" xml:space="preserve">
+        <value>Backar</value>
+    </data>
+    <data name="ThemeAiBeforeOpeningTime" xml:space="preserve">
+        <value>Före öppning</value>
+    </data>
+    <data name="ThemeAiTheDriverHasAKey" xml:space="preserve">
+        <value>Chauffören har en nyckel till bakdörren.</value>
+    </data>
+    <data name="ThemeAiNotesForTheDriver" xml:space="preserve">
+        <value>Anteckningar till chauffören</value>
+    </data>
+    <data name="ThemeAiAnythingTheDriverShouldKnow" xml:space="preserve">
+        <value>Något chauffören bör veta</value>
+    </data>
+    <data name="ThemeAiWeekendChecklist" xml:space="preserve">
+        <value>Checklista inför helgen</value>
+    </data>
+    <data name="ThemeAiBeforeSaturdayEveryStoreChecks" xml:space="preserve">
+        <value>Inför **lördag** går varje butik igenom sitt lager, sin terrass och sitt team. *Rotterdam* öppnar en timme tidigare.</value>
+    </data>
+    <data name="ThemeAiOrderTheOatMilk" xml:space="preserve">
+        <value>Beställ havredrycken</value>
+    </data>
+    <data name="ThemeAiBookTheFridayDelivery" xml:space="preserve">
+        <value>Boka fredagens leverans</value>
+    </data>
+    <data name="ThemeAiPutTheTerraceHeatersOut" xml:space="preserve">
+        <value>Ställ ut terrassvärmarna</value>
+    </data>
+    <data name="ThemeAiAFullShelfAtOpening" xml:space="preserve">
+        <value>En full hylla vid öppning säljer mer än en rabatt vid stängning.</value>
+    </data>
+    <data name="ThemeAiEverySampleHereIsStatic" xml:space="preserve">
+        <value>Alla exempel här är statiska: inget på den här sidan anropar en modell.</value>
+    </data>
+    <data name="ThemeAiWithToolCalls" xml:space="preserve">
+        <value>Med verktygsanrop</value>
+    </data>
+    <data name="ThemeAiNotInTheConversation" xml:space="preserve">
+        <value>Inte i konversationen</value>
+    </data>
+    <data name="ThemeAiDocument" xml:space="preserve">
+        <value>Dokument</value>
+    </data>
+    <data name="ThemeAiSeveralVersions" xml:space="preserve">
+        <value>Flera versioner</value>
+    </data>
+    <data name="ThemeAiBeingWritten" xml:space="preserve">
+        <value>Skrivs nu</value>
+    </data>
+    <data name="ThemeAiImage" xml:space="preserve">
+        <value>Bild</value>
+    </data>
+    <data name="ThemeAiRemovable" xml:space="preserve">
+        <value>Borttagbar</value>
+    </data>
+    <data name="ThemeAiAskAboutSalesStockThe" xml:space="preserve">
+        <value>Fråga om försäljning, lager, teamet eller vädret för terrassen.</value>
+    </data>
+    <data name="ThemeAiTheAssistantCanMakeMistakes" xml:space="preserve">
+        <value>Assistenten kan göra fel. Kontrollera det som är viktigt.</value>
+    </data>
+    <data name="ThemeAiFromTheUser" xml:space="preserve">
+        <value>Från användaren</value>
+    </data>
+    <data name="ThemeAiFromTheSystem" xml:space="preserve">
+        <value>Från systemet</value>
+    </data>
+    <data name="ThemeAiWithAFileName" xml:space="preserve">
+        <value>Med filnamn</value>
+    </data>
+    <data name="ThemeAiWithoutAHeader" xml:space="preserve">
+        <value>Utan rubrikrad</value>
+    </data>
+    <data name="ThemeAiLineNumbers" xml:space="preserve">
+        <value>Radnummer</value>
+    </data>
+    <data name="ThemeAiPlentyLeft" xml:space="preserve">
+        <value>Mycket kvar</value>
+    </data>
+    <data name="ThemeAiFillingUp" xml:space="preserve">
+        <value>Börjar bli full</value>
+    </data>
+    <data name="ThemeAiAlmostFull" xml:space="preserve">
+        <value>Nästan full</value>
+    </data>
+    <data name="ThemeAiWithTheUnsentPrompt" xml:space="preserve">
+        <value>Med den oskickade frågan</value>
+    </data>
+    <data name="ThemeAiWithItsLabel" xml:space="preserve">
+        <value>Med etikett</value>
+    </data>
+    <data name="ThemeAiWithRetry" xml:space="preserve">
+        <value>Med nytt försök</value>
+    </data>
+    <data name="ThemeAiWithoutRetry" xml:space="preserve">
+        <value>Utan nytt försök</value>
+    </data>
+    <data name="ThemeAiSubmitted" xml:space="preserve">
+        <value>Skickat</value>
+    </data>
+    <data name="ThemeAiRegistered" xml:space="preserve">
+        <value>Registrerad</value>
+    </data>
+    <data name="ThemeAiNotRegistered" xml:space="preserve">
+        <value>Inte registrerad</value>
+    </data>
+    <data name="ThemeAiPropsThatDonTFit" xml:space="preserve">
+        <value>Parametrar som inte passar</value>
+    </data>
+    <data name="ThemeAiAFormattedAnswer" xml:space="preserve">
+        <value>Ett formaterat svar</value>
+    </data>
+    <data name="ThemeAiPinned" xml:space="preserve">
+        <value>Fäst</value>
+    </data>
+    <data name="ThemeAiRated" xml:space="preserve">
+        <value>Betygsatt</value>
+    </data>
+    <data name="ThemeAiAPartOfEachKind" xml:space="preserve">
+        <value>En del av varje sort</value>
+    </data>
+    <data name="ThemeAiGenerating" xml:space="preserve">
+        <value>Genererar</value>
+    </data>
+    <data name="ThemeAiWithoutALink" xml:space="preserve">
+        <value>Utan länk</value>
+    </data>
+    <data name="ThemeAiRecord" xml:space="preserve">
+        <value>Post</value>
+    </data>
+    <data name="ThemeAiWithCitations" xml:space="preserve">
+        <value>Med källhänvisningar</value>
+    </data>
+    <data name="ThemeAiWithALabel" xml:space="preserve">
+        <value>Med etikett</value>
+    </data>
+    <data name="ThemeAiReadingTheSalesReport" xml:space="preserve">
+        <value>Läser försäljningsrapporten</value>
+    </data>
+    <data name="ThemeAiTokens" xml:space="preserve">
+        <value>Token</value>
+    </data>
+    <data name="ThemeAiWithTheCost" xml:space="preserve">
+        <value>Med kostnad</value>
+    </data>
+    <data name="ThemeAiWithSpeedAndLatency" xml:space="preserve">
+        <value>Med hastighet och latens</value>
+    </data>
+    <data name="ThemeAiInDetail" xml:space="preserve">
+        <value>I detalj</value>
+    </data>
+    <data name="ThemeAiNoLookOfTheirOwn" xml:space="preserve">
+        <value>Utan eget utseende: {0}.</value>
+    </data>
+    <data name="ThemeAiAskTheStoreAssistant" xml:space="preserve">
+        <value>Fråga butiksassistenten...</value>
+    </data>
+    <data name="ThemeAiWhatTheAssistantCanSee" xml:space="preserve">
+        <value>Vad assistenten kan se</value>
+    </data>
+    <data name="ThemeAiSalesStockAndTheTeam" xml:space="preserve">
+        <value>Försäljning, lager och teamets schema i dina butiker. Aldrig dina kunders betalningsuppgifter.</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek3" xml:space="preserve">
+        <value>Rotterdam växte mest den här veckan</value>
+    </data>
+    <data name="ThemeAiThisChatIsASample" xml:space="preserve">
+        <value>Den här chatten är ett exempel på temasidan, så ingen modell svarar på den.</value>
+    </data>
+    <data name="ThemeAiHigh" xml:space="preserve">
+        <value>Högst {0}</value>
+    </data>
+    <data name="ThemeAiLow" xml:space="preserve">
+        <value>Lägst {0}</value>
+    </data>
+    <data name="ThemeAiChanceOfRain" xml:space="preserve">
+        <value>Regnrisk {0} %</value>
+    </data>
+    <data name="ThemeButtonsColored" xml:space="preserve">
+        <value>Färgad</value>
+    </data>
+    <data name="ThemeButtonsWithASecondLine" xml:space="preserve">
+        <value>Med en andra rad</value>
+    </data>
+    <data name="ThemeButtonsEveryChangeIsKeptFor" xml:space="preserve">
+        <value>Varje ändring sparas i 30 dagar</value>
+    </data>
+    <data name="ThemeButtonsBackUpNow" xml:space="preserve">
+        <value>Säkerhetskopiera nu</value>
+    </data>
+    <data name="ThemeButtonsRoundedIconAtTheEnd" xml:space="preserve">
+        <value>Rundad, ikon i slutet</value>
+    </data>
+    <data name="ThemeButtonsContinue" xml:space="preserve">
+        <value>Fortsätt</value>
+    </data>
+    <data name="ThemeButtonsFullWidth" xml:space="preserve">
+        <value>Full bredd</value>
+    </data>
+    <data name="ThemeButtonsAddABuilding" xml:space="preserve">
+        <value>Lägg till en byggnad</value>
+    </data>
+    <data name="ThemeButtonsAsALink" xml:space="preserve">
+        <value>Som länk</value>
+    </data>
+    <data name="ThemeButtonsOpenTheGuide" xml:space="preserve">
+        <value>Öppna guiden</value>
+    </data>
+    <data name="ThemeButtonsIconsOnly" xml:space="preserve">
+        <value>Bara ikoner</value>
+    </data>
+    <data name="ThemeButtonsSplit" xml:space="preserve">
+        <value>Delad</value>
+    </data>
+    <data name="ThemeButtonsOnOutline" xml:space="preserve">
+        <value>På, kontur</value>
+    </data>
+    <data name="ThemeButtonsMute" xml:space="preserve">
+        <value>Ljud av</value>
+    </data>
+    <data name="ThemeButtonsAlignStart" xml:space="preserve">
+        <value>Justera mot början</value>
+    </data>
+    <data name="ThemeButtonsAlignCenter" xml:space="preserve">
+        <value>Centrera</value>
+    </data>
+    <data name="ThemeButtonsAlignEnd" xml:space="preserve">
+        <value>Justera mot slutet</value>
+    </data>
+    <data name="ThemeButtonsShare" xml:space="preserve">
+        <value>Dela</value>
+    </data>
+    <data name="ThemeColorsEveryColorOfTheTheme" xml:space="preserve">
+        <value>Alla temats färger med det värde de har i den här vyn: varje rolls lägen, nyanser, text-, ton- och inaktiveringsfärger, de neutrala färgerna, gråtonerna de bygger på och de semantiska namnen.</value>
+    </data>
+    <data name="ThemeColorsGrays" xml:space="preserve">
+        <value>Gråtoner</value>
+    </data>
+    <data name="ThemeColorsSpecialPurpose" xml:space="preserve">
+        <value>Specialfärger</value>
+    </data>
+    <data name="ThemeColorsIntent" xml:space="preserve">
+        <value>Semantiska</value>
+    </data>
+    <data name="ThemeExtrasLatestOrders" xml:space="preserve">
+        <value>Senaste beställningar</value>
+    </data>
+    <data name="ThemeExtrasCustomer" xml:space="preserve">
+        <value>Kund</value>
+    </data>
+    <data name="ThemeExtrasNoOrdersYetToday" xml:space="preserve">
+        <value>Inga beställningar än i dag.</value>
+    </data>
+    <data name="ThemeExtrasTheComponentsOfTheBit" xml:space="preserve">
+        <value>Komponenterna i paketet Bit.BlazorUI.Extras: datatabeller, diagram, kalendrar, kartor, redigerare och visare.</value>
+    </data>
+    <data name="ThemeExtrasBars" xml:space="preserve">
+        <value>Staplar</value>
+    </data>
+    <data name="ThemeExtrasRevenuePerMonth" xml:space="preserve">
+        <value>Intäkter per månad</value>
+    </data>
+    <data name="ThemeExtrasLines" xml:space="preserve">
+        <value>Linjer</value>
+    </data>
+    <data name="ThemeExtrasVisitorsPerDay" xml:space="preserve">
+        <value>Besökare per dag</value>
+    </data>
+    <data name="ThemeExtrasDoughnut" xml:space="preserve">
+        <value>Ring</value>
+    </data>
+    <data name="ThemeExtrasSalesByPaymentMethod" xml:space="preserve">
+        <value>Försäljning per betalsätt</value>
+    </data>
+    <data name="ThemeExtrasNoSalesYetThisMonth" xml:space="preserve">
+        <value>Ingen försäljning än den här månaden.</value>
+    </data>
+    <data name="ThemeExtrasWeDonTShipThere" xml:space="preserve">
+        <value>Vi levererar inte dit än.</value>
+    </data>
+    <data name="ThemeExtrasSortedByTotalOneOrder" xml:space="preserve">
+        <value>Sorterad efter summa, en beställning vald</value>
+    </data>
+    <data name="ThemeExtrasTodaySSalesCouldnT" xml:space="preserve">
+        <value>Dagens försäljning kunde inte laddas. Försök igen om en stund.</value>
+    </data>
+    <data name="ThemeExtrasBesideAName" xml:space="preserve">
+        <value>Bredvid ett namn</value>
+    </data>
+    <data name="ThemeExtrasShapes" xml:space="preserve">
+        <value>Former</value>
+    </data>
+    <data name="ThemeExtrasTodaySOrders" xml:space="preserve">
+        <value>Dagens beställningar</value>
+    </data>
+    <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
+        <value>Laddar fler beställningar...</value>
+    </data>
+    <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
+        <value>Det var alla beställningar för i dag.</value>
+    </data>
+    <data name="ThemeExtrasHoldCtrlWhileScrollingTo" xml:space="preserve">
+        <value>Håll ned Ctrl medan du rullar för att zooma kartan</value>
+    </data>
+    <data name="ThemeExtrasUseTwoFingersToMove" xml:space="preserve">
+        <value>Använd två fingrar för att flytta kartan</value>
+    </data>
+    <data name="ThemeExtrasOurStores" xml:space="preserve">
+        <value>Våra butiker</value>
+    </data>
+    <data name="ThemeExtrasPreview" xml:space="preserve">
+        <value>Förhandsvisning</value>
+    </data>
+    <data name="ThemeExtrasSaveYourChanges" xml:space="preserve">
+        <value>Spara dina ändringar?</value>
+    </data>
+    <data name="ThemeExtrasTheProductHasEditsThat" xml:space="preserve">
+        <value>Produkten har ändringar som inte har sparats än.</value>
+    </data>
+    <data name="ThemeExtrasInvoice" xml:space="preserve">
+        <value>Faktura {0}</value>
+    </data>
+    <data name="ThemeExtrasEnterTheWholePhoneNumber" xml:space="preserve">
+        <value>Ange hela telefonnumret.</value>
+    </data>
+    <data name="ThemeExtrasWriteAFewLinesBefore" xml:space="preserve">
+        <value>Skriv några rader innan du skickar.</value>
+    </data>
+    <data name="ThemeExtrasLookingThroughThisWeekS" xml:space="preserve">
+        <value>Går igenom veckans beställningar...</value>
+    </data>
+    <data name="ThemeExtrasDraftingAReply" xml:space="preserve">
+        <value>Skriver ett svar...</value>
+    </data>
+    <data name="ThemeExtrasPickTheTimeZoneYour" xml:space="preserve">
+        <value>Välj tidszonen som din butik ligger i.</value>
+    </data>
+    <data name="ThemeExtrasAllOrders" xml:space="preserve">
+        <value>Alla beställningar</value>
+    </data>
+    <data name="ThemeExtrasNotShownHereWhichTakes" xml:space="preserve">
+        <value>Visas inte här: {0}, som tar över tangentbordsrullningen på sidan den ligger på. Appens eget skal är en sådan.</value>
+    </data>
+    <data name="ThemeExtrasCountry" xml:space="preserve">
+        <value>Land</value>
+    </data>
+    <data name="ThemeExtrasPickACountry" xml:space="preserve">
+        <value>Välj ett land</value>
+    </data>
+    <data name="ThemeExtrasWeeklyUpdate" xml:space="preserve">
+        <value>Veckouppdatering</value>
+    </data>
+    <data name="ThemeExtrasWriteTheUpdateInMarkdown" xml:space="preserve">
+        <value>Skriv uppdateringen i Markdown</value>
+    </data>
+    <data name="ThemeExtrasNewsletter" xml:space="preserve">
+        <value>Nyhetsbrev</value>
+    </data>
+    <data name="ThemeExtrasWriteSomethingWorthReading" xml:space="preserve">
+        <value>Skriv något som är värt att läsa</value>
+    </data>
+    <data name="ThemeExtrasTodaySSales" xml:space="preserve">
+        <value>Dagens försäljning</value>
+    </data>
+    <data name="ThemeExtrasANewVersionIsReady" xml:space="preserve">
+        <value>En ny version är klar</value>
+    </data>
+    <data name="ThemeExtrasRestartTheAppToStart" xml:space="preserve">
+        <value>Starta om appen för att börja använda den.</value>
+    </data>
+    <data name="ThemeExtrasPaymentReceived" xml:space="preserve">
+        <value>Betalning mottagen</value>
+    </data>
+    <data name="ThemeExtrasOrder8042IsPaidAnd" xml:space="preserve">
+        <value>Beställning 8042 är betald och på väg till disken.</value>
+    </data>
+    <data name="ThemeExtrasStorageAlmostFull" xml:space="preserve">
+        <value>Lagringsutrymmet är nästan fullt</value>
+    </data>
+    <data name="ThemeExtrasDeleteOldExportsToKeep" xml:space="preserve">
+        <value>Ta bort gamla exporter för att kunna fortsätta spara kvitton.</value>
+    </data>
+    <data name="ThemeExtrasYourPlanEndsTomorrow" xml:space="preserve">
+        <value>Ditt abonnemang går ut i morgon</value>
+    </data>
+    <data name="ThemeExtrasRenewItTodayToKeep" xml:space="preserve">
+        <value>Förnya det i dag för att fortsätta ta emot beställningar.</value>
+    </data>
+    <data name="ThemeExtrasPaymentFailed" xml:space="preserve">
+        <value>Betalningen misslyckades</value>
+    </data>
+    <data name="ThemeExtrasTheCardWasDeclinedAsk" xml:space="preserve">
+        <value>Kortet nekades. Be om ett annat betalsätt.</value>
+    </data>
+    <data name="ThemeExtrasSalesGrewAgainThisWeek" xml:space="preserve">
+        <value>Försäljningen ökade igen den här veckan, med havrelatten i täten.</value>
+    </data>
+    <data name="ThemeExtrasRevenue" xml:space="preserve">
+        <value>Intäkter</value>
+    </data>
+    <data name="ThemeExtrasNewCustomers" xml:space="preserve">
+        <value>Nya kunder</value>
+    </data>
+    <data name="ThemeExtrasNextStep" xml:space="preserve">
+        <value>Nästa steg</value>
+    </data>
+    <data name="ThemeExtrasPlanTheSummerMenu" xml:space="preserve">
+        <value>planera sommarmenyn</value>
+    </data>
+    <data name="ThemeExtrasReleaseNotes" xml:space="preserve">
+        <value>Versionsinformation</value>
+    </data>
+    <data name="ThemeExtrasVersion24IsOut" xml:space="preserve">
+        <value>Version 2.4 är här, med offlinebeställningar och en snabbare översikt.</value>
+    </data>
+    <data name="ThemeExtrasWhatSNew" xml:space="preserve">
+        <value>Nyheter</value>
+    </data>
+    <data name="ThemeExtrasOfflineOrders" xml:space="preserve">
+        <value>Offlinebeställningar</value>
+    </data>
+    <data name="ThemeExtrasKeepSellingWhenTheConnection" xml:space="preserve">
+        <value>sälj vidare även när anslutningen bryts.</value>
+    </data>
+    <data name="ThemeExtrasFasterDashboard" xml:space="preserve">
+        <value>Snabbare översikt</value>
+    </data>
+    <data name="ThemeExtrasReportsOpenInUnderA" xml:space="preserve">
+        <value>rapporter öppnas på under en sekund.</value>
+    </data>
+    <data name="ThemeExtrasExport" xml:space="preserve">
+        <value>Export</value>
+    </data>
+    <data name="ThemeExtrasNowWritesExcelFilesToo" xml:space="preserve">
+        <value>skapar nu även Excel-filer.</value>
+    </data>
+    <data name="ThemeExtrasTipSearchTheWholeApp" xml:space="preserve">
+        <value>Tips: sök i hela appen i rutan högst upp.</value>
+    </data>
+    <data name="ThemeExtrasPlan" xml:space="preserve">
+        <value>Abonnemang</value>
+    </data>
+    <data name="ThemeExtrasStores" xml:space="preserve">
+        <value>Butiker</value>
+    </data>
+    <data name="ThemeExtrasPricePerMonth" xml:space="preserve">
+        <value>Pris per månad</value>
+    </data>
+    <data name="ThemeExtrasStarter" xml:space="preserve">
+        <value>Start</value>
+    </data>
+    <data name="ThemeExtrasReadTheFullChangelog" xml:space="preserve">
+        <value>Läs hela ändringsloggen</value>
+    </data>
+    <data name="ThemeExtrasSummerMenu" xml:space="preserve">
+        <value>Sommarmeny</value>
+    </data>
+    <data name="ThemeExtrasFromJuneEveryStoreServes" xml:space="preserve">
+        <value>Från juni serverar alla butiker tre kalla drycker:</value>
+    </data>
+    <data name="ThemeExtrasIcedOatMilkLatte" xml:space="preserve">
+        <value>Iskall havrelatte</value>
+    </data>
+    <data name="ThemeExtrasFreshLemonade" xml:space="preserve">
+        <value>Färsk lemonad</value>
+    </data>
+    <data name="ThemeExtrasWhenDoesMyOrderArrive" xml:space="preserve">
+        <value>När kommer min beställning?</value>
+    </data>
+    <data name="ThemeExtrasDelivery" xml:space="preserve">
+        <value>Leverans</value>
+    </data>
+    <data name="ThemeExtrasOrdersPlacedBefore4Pm" xml:space="preserve">
+        <value>Beställningar som görs före kl. 16 skickas samma dag och kommer fram inom två arbetsdagar.</value>
+    </data>
+    <data name="ThemeExtrasCanIReturnSomething" xml:space="preserve">
+        <value>Kan jag returnera något?</value>
+    </data>
+    <data name="ThemeExtrasReturns" xml:space="preserve">
+        <value>Returer</value>
+    </data>
+    <data name="ThemeExtrasSendItBackWithin30" xml:space="preserve">
+        <value>Skicka tillbaka varan inom 30 dagar, utan kostnad, i originalförpackningen.</value>
+    </data>
+    <data name="ThemeExtrasHowCanIPay" xml:space="preserve">
+        <value>Hur kan jag betala?</value>
+    </data>
+    <data name="ThemeExtrasByCardMobileWalletOr" xml:space="preserve">
+        <value>Med kort, mobilbetalning eller presentkort, både online och i alla butiker.</value>
+    </data>
+    <data name="ThemeExtrasCatalog" xml:space="preserve">
+        <value>Katalog</value>
+    </data>
+    <data name="ThemeExtrasOrders" xml:space="preserve">
+        <value>Beställningar</value>
+    </data>
+    <data name="ThemeExtrasThisYear" xml:space="preserve">
+        <value>I år</value>
+    </data>
+    <data name="ThemeExtrasLastYear" xml:space="preserve">
+        <value>Förra året</value>
+    </data>
+    <data name="ThemeExtrasLastWeek" xml:space="preserve">
+        <value>Förra veckan</value>
+    </data>
+    <data name="ThemeExtrasTeamStandUp" xml:space="preserve">
+        <value>Teamavstämning</value>
+    </data>
+    <data name="ThemeExtrasPlansForTheDay" xml:space="preserve">
+        <value>Dagens planer</value>
+    </data>
+    <data name="ThemeExtrasMenuTasting" xml:space="preserve">
+        <value>Menyprovning</value>
+    </data>
+    <data name="ThemeExtrasThreeNewSummerDrinks" xml:space="preserve">
+        <value>Tre nya sommardrycker</value>
+    </data>
+    <data name="ThemeExtrasSupplierCall" xml:space="preserve">
+        <value>Samtal med leverantör</value>
+    </data>
+    <data name="ThemeExtrasBeansForTheNextQuarter" xml:space="preserve">
+        <value>Bönor för nästa kvartal</value>
+    </data>
+    <data name="ThemeExtrasBaristaTraining" xml:space="preserve">
+        <value>Baristautbildning</value>
+    </data>
+    <data name="ThemeExtrasMilkTextureAndLatteArt" xml:space="preserve">
+        <value>Mjölkskum och latte art</value>
+    </data>
+    <data name="ThemeExtrasStockDelivery" xml:space="preserve">
+        <value>Varuleverans</value>
+    </data>
+    <data name="ThemeExtrasCupsLidsAndOatMilk" xml:space="preserve">
+        <value>Muggar, lock och havredryck</value>
+    </data>
+    <data name="ThemeExtrasFoodSafetyInspection" xml:space="preserve">
+        <value>Livsmedelskontroll</value>
+    </data>
+    <data name="ThemeExtrasLatteArtWorkshop" xml:space="preserve">
+        <value>Workshop i latte art</value>
+    </data>
+    <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
+        <value>För kunder, tolv platser</value>
+    </data>
+    <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
+        <value>Veckonummer, tid</value>
+    </data>
+    <data name="ThemeInputsWithADescription" xml:space="preserve">
+        <value>Med beskrivning</value>
+    </data>
+    <data name="ThemeInputsEmailMeReceipts" xml:space="preserve">
+        <value>Mejla mig kvitton</value>
+    </data>
+    <data name="ThemeInputsOneAMonthNeverMore" xml:space="preserve">
+        <value>Ett i månaden, aldrig fler.</value>
+    </data>
+    <data name="ThemeInputsHorizontal" xml:space="preserve">
+        <value>horisontell</value>
+    </data>
+    <data name="ThemeInputsWithIcons" xml:space="preserve">
+        <value>Med ikoner</value>
+    </data>
+    <data name="ThemeInputsChips" xml:space="preserve">
+        <value>Chips</value>
+    </data>
+    <data name="ThemeInputsDropZone" xml:space="preserve">
+        <value>Släppyta</value>
+    </data>
+    <data name="ThemeInputsAttachTheInvoice" xml:space="preserve">
+        <value>Bifoga fakturan</value>
+    </data>
+    <data name="ThemeInputsWithFiles" xml:space="preserve">
+        <value>Med filer</value>
+    </data>
+    <data name="ThemeInputsUploadPhotos" xml:space="preserve">
+        <value>Ladda upp foton</value>
+    </data>
+    <data name="ThemeInputsPrefixSuffixSteps" xml:space="preserve">
+        <value>Prefix, suffix, steg</value>
+    </data>
+    <data name="ThemeInputsPrice" xml:space="preserve">
+        <value>Pris</value>
+    </data>
+    <data name="ThemeInputsPerKg" xml:space="preserve">
+        <value>per kg</value>
+    </data>
+    <data name="ThemeInputsHalfStars" xml:space="preserve">
+        <value>Halva stjärnor</value>
+    </data>
+    <data name="ThemeInputsWithASearchButton" xml:space="preserve">
+        <value>Med sökknapp</value>
+    </data>
+    <data name="ThemeInputsRangeWithMarks" xml:space="preserve">
+        <value>Intervall med markeringar</value>
+    </data>
+    <data name="ThemeInputsPriceRange" xml:space="preserve">
+        <value>Prisintervall</value>
+    </data>
+    <data name="ThemeInputsTypeATagAndPress" xml:space="preserve">
+        <value>Skriv en tagg och tryck på Enter</value>
+    </data>
+    <data name="ThemeInputsIconPrefixClearAndCount" xml:space="preserve">
+        <value>Ikon, prefix, rensa och räknare</value>
+    </data>
+    <data name="ThemeInputsWebsite" xml:space="preserve">
+        <value>Webbplats</value>
+    </data>
+    <data name="ThemeInputsUnderlined" xml:space="preserve">
+        <value>Understruken</value>
+    </data>
+    <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
+        <value>Med text för på och av</value>
+    </data>
+    <data name="ThemeInputsDarkMap" xml:space="preserve">
+        <value>Mörk karta</value>
+    </data>
+    <data name="ThemeInputsRateYourVisit" xml:space="preserve">
+        <value>Betygsätt ditt besök</value>
+    </data>
+    <data name="ThemeInputsTags" xml:space="preserve">
+        <value>Taggar</value>
+    </data>
+    <data name="ThemeInputsBike" xml:space="preserve">
+        <value>Cykel</value>
+    </data>
+    <data name="ThemeInputsVan" xml:space="preserve">
+        <value>Skåpbil</value>
+    </data>
+    <data name="ThemeInputsPickUp" xml:space="preserve">
+        <value>Hämta själv</value>
+    </data>
+    <data name="ThemeInputsVegan" xml:space="preserve">
+        <value>Vegansk</value>
+    </data>
+    <data name="ThemeInputsGlutenFree" xml:space="preserve">
+        <value>Glutenfri</value>
+    </data>
+    <data name="ThemeInputsOrganic" xml:space="preserve">
+        <value>Ekologisk</value>
+    </data>
+    <data name="ThemeLayersWhatFloatsOverWhatHow" xml:space="preserve">
+        <value>Vad som ligger ovanpå vad, hur mycket ett inaktiverat element tonas ned, bredderna där layouten ändras och hur en dialogruta placerar sin text och sina knappar.</value>
+    </data>
+    <data name="ThemeLayersLayers" xml:space="preserve">
+        <value>Lager</value>
+    </data>
+    <data name="ThemeLayersScreenBreakpoints" xml:space="preserve">
+        <value>Skärmbrytpunkter</value>
+    </data>
+    <data name="ThemeLayersDialogLayout" xml:space="preserve">
+        <value>Dialogrutans layout</value>
+    </data>
+    <data name="ThemeLayoutsPrivacy" xml:space="preserve">
+        <value>Integritet</value>
+    </data>
+    <data name="ThemeLayoutsBorderedAndElevated" xml:space="preserve">
+        <value>Med kant och upphöjd</value>
+    </data>
+    <data name="ThemeLayoutsTwelveColumns" xml:space="preserve">
+        <value>Tolv kolumner</value>
+    </data>
+    <data name="ThemeLayoutsColoredAndElevated" xml:space="preserve">
+        <value>Färgad och upphöjd</value>
+    </data>
+    <data name="ThemeLayoutsBordered" xml:space="preserve">
+        <value>Med kant</value>
+    </data>
+    <data name="ThemeLayoutsHeaderNavPanelMainAnd" xml:space="preserve">
+        <value>Sidhuvud, navigeringspanel, huvudinnehåll och sidfot</value>
+    </data>
+    <data name="ThemeLayoutsPushingTheActionsToThe" xml:space="preserve">
+        <value>Skjuter åtgärderna till slutet</value>
+    </data>
+    <data name="ThemeLayouts3Selected" xml:space="preserve">
+        <value>3 valda</value>
+    </data>
+    <data name="ThemeLayoutsHorizontalCenteredWrapping" xml:space="preserve">
+        <value>Horisontell, centrerad, radbrytande</value>
+    </data>
+    <data name="ThemeLayoutsVertical" xml:space="preserve">
+        <value>Vertikal</value>
+    </data>
+    <data name="ThemeLayoutsBread" xml:space="preserve">
+        <value>Bröd</value>
+    </data>
+    <data name="ThemeLayoutsPastry" xml:space="preserve">
+        <value>Bakverk</value>
+    </data>
+    <data name="ThemeLayoutsCoffee" xml:space="preserve">
+        <value>Kaffe</value>
+    </data>
+    <data name="ThemeLayoutsTea" xml:space="preserve">
+        <value>Te</value>
+    </data>
+    <data name="ThemeLayoutsCakes" xml:space="preserve">
+        <value>Tårtor</value>
+    </data>
+    <data name="ThemeListsNobodyIsOnShiftYet" xml:space="preserve">
+        <value>Ingen har pass än.</value>
+    </data>
+    <data name="ThemeListsTwoAtATime" xml:space="preserve">
+        <value>Två åt gången</value>
+    </data>
+    <data name="ThemeListsThisWeekSSpecials" xml:space="preserve">
+        <value>Veckans erbjudanden</value>
+    </data>
+    <data name="ThemeListsWithDots" xml:space="preserve">
+        <value>Med punkter</value>
+    </data>
+    <data name="ThemeListsTodaySSpecials" xml:space="preserve">
+        <value>Dagens erbjudanden</value>
+    </data>
+    <data name="ThemeListsBreakfastBox" xml:space="preserve">
+        <value>Frukostlåda</value>
+    </data>
+    <data name="ThemeListsCroissantJuiceAndCoffee" xml:space="preserve">
+        <value>Croissant, juice och kaffe</value>
+    </data>
+    <data name="ThemeListsOatFlatWhite" xml:space="preserve">
+        <value>Flat white på havre</value>
+    </data>
+    <data name="ThemeListsTwoForOneBeforeTen" xml:space="preserve">
+        <value>Två för en före tio</value>
+    </data>
+    <data name="ThemeListsCarrotCake" xml:space="preserve">
+        <value>Morotskaka</value>
+    </data>
+    <data name="ThemeListsBakedEveryMorning" xml:space="preserve">
+        <value>Bakas varje morgon</value>
+    </data>
+    <data name="ThemeListsClickAndCollect" xml:space="preserve">
+        <value>Klicka och hämta</value>
+    </data>
+    <data name="ThemeListsReadyInFifteenMinutes" xml:space="preserve">
+        <value>Klar om femton minuter</value>
+    </data>
+    <data name="ThemeListsBaked" xml:space="preserve">
+        <value>Bakad</value>
+    </data>
+    <data name="ThemeListsOnItsWay" xml:space="preserve">
+        <value>På väg</value>
+    </data>
+    <data name="ThemeListsDelivered" xml:space="preserve">
+        <value>Levererad</value>
+    </data>
+    <data name="ThemeListsAbout1030" xml:space="preserve">
+        <value>Cirka 10:30</value>
+    </data>
+    <data name="ThemeMotionHowLongTheThemeS" xml:space="preserve">
+        <value>Hur lång tid temats animationer tar och hur de accelererar eller bromsar in. Varje rad visar var komponenterna använder den; Spela flyttar varje punkt med radens varaktighet och easing. Slå på Minska rörelse under Prova temat för att se varaktigheterna sjunka till noll.</value>
+    </data>
+    <data name="ThemeMotionPlay" xml:space="preserve">
+        <value>Spela</value>
+    </data>
+    <data name="ThemeMotionLoops" xml:space="preserve">
+        <value>Loopar</value>
+    </data>
+    <data name="ThemeMotionSpinnersLikeAButtonThat" xml:space="preserve">
+        <value>Snurror, som en knapp som sparar: ett varv tar så här lång tid och rör sig på det här sättet</value>
+    </data>
+    <data name="ThemeMotionSaving" xml:space="preserve">
+        <value>Sparar...</value>
+    </data>
+    <data name="ThemeMotionSpeedFactors" xml:space="preserve">
+        <value>Hastighetsfaktorer</value>
+    </data>
+    <data name="ThemeMotionEveryAnimationSDurationIs" xml:space="preserve">
+        <value>Varje animations varaktighet multipliceras med detta; Minska rörelse sätter den till 0.</value>
+    </data>
+    <data name="ThemeMotionAnimationsThatRepeatLikeSpinners" xml:space="preserve">
+        <value>Animationer som upprepas, som snurror, pulserande märken och förloppsränder, multipliceras med detta.</value>
+    </data>
+    <data name="ThemeMotionQuickFeedbackLikeAButton" xml:space="preserve">
+        <value>Snabb återkoppling, som en knapps färg när man hovrar över den eller trycker på den</value>
+    </data>
+    <data name="ThemeMotionMostChangesLikeAToggle" xml:space="preserve">
+        <value>De flesta ändringar, som ett reglage som slås om eller ett avsnitt som fälls ut</value>
+    </data>
+    <data name="ThemeMotionBiggerMovesLikeACalendar" xml:space="preserve">
+        <value>Större rörelser, som en kalender som glider till nästa månad</value>
+    </data>
+    <data name="ThemeMotionComingInStartsFastAnd" xml:space="preserve">
+        <value>In: börjar snabbt och saktar in, som när en meny eller en pratbubbla öppnas</value>
+    </data>
+    <data name="ThemeMotionGoingOutStartsSlowAnd" xml:space="preserve">
+        <value>Ut: börjar långsamt och ökar farten, som när ett modalfönster, en panel eller en snackbar försvinner</value>
+    </data>
+    <data name="ThemeNavsFilters" xml:space="preserve">
+        <value>Filter</value>
+    </data>
+    <data name="ThemeNavsInStock" xml:space="preserve">
+        <value>I lager</value>
+    </data>
+    <data name="ThemeNavsOnSale" xml:space="preserve">
+        <value>På rea</value>
+    </data>
+    <data name="ThemeNavsFilled" xml:space="preserve">
+        <value>Fylld</value>
+    </data>
+    <data name="ThemeNavsFirstLastAndSummary" xml:space="preserve">
+        <value>Första, sista och sammanfattning</value>
+    </data>
+    <data name="ThemeNavsIconsAndCounts" xml:space="preserve">
+        <value>Ikoner och antal</value>
+    </data>
+    <data name="ThemeNavsInbox" xml:space="preserve">
+        <value>Inkorg</value>
+    </data>
+    <data name="ThemeNavsSent" xml:space="preserve">
+        <value>Skickat</value>
+    </data>
+    <data name="ThemeNavsShops" xml:space="preserve">
+        <value>Butiker</value>
+    </data>
+    <data name="ThemeNavsReports" xml:space="preserve">
+        <value>Rapporter</value>
+    </data>
+    <data name="ThemeNotificationsMessages" xml:space="preserve">
+        <value>Meddelanden</value>
+    </data>
+    <data name="ThemeNotificationsOverTheMaximum" xml:space="preserve">
+        <value>Över maxvärdet</value>
+    </data>
+    <data name="ThemeNotificationsDot" xml:space="preserve">
+        <value>Punkt</value>
+    </data>
+    <data name="ThemeNotificationsOnItsOwn" xml:space="preserve">
+        <value>Fristående</value>
+    </data>
+    <data name="ThemeNotificationsNew" xml:space="preserve">
+        <value>Ny</value>
+    </data>
+    <data name="ThemeNotificationsTitleActionsAndDismiss" xml:space="preserve">
+        <value>Rubrik, åtgärder och stäng</value>
+    </data>
+    <data name="ThemeNotificationsYourCardExpiresSoon" xml:space="preserve">
+        <value>Ditt kort går snart ut</value>
+    </data>
+    <data name="ThemeNotificationsUpdateItBeforeJune1" xml:space="preserve">
+        <value>Uppdatera det före 1 juni så att din nästa beställning går igenom.</value>
+    </data>
+    <data name="ThemeNotificationsUpdateCard" xml:space="preserve">
+        <value>Uppdatera kort</value>
+    </data>
+    <data name="ThemeNotificationsEveryLine" xml:space="preserve">
+        <value>Alla rader</value>
+    </data>
+    <data name="ThemeNotificationsOwner" xml:space="preserve">
+        <value>Ägare</value>
+    </data>
+    <data name="ThemeNotificationsInTheAmsterdamShop" xml:space="preserve">
+        <value>I butiken i Amsterdam</value>
+    </data>
+    <data name="ThemeNotificationsBackAt1400" xml:space="preserve">
+        <value>Tillbaka kl. 14:00</value>
+    </data>
+    <data name="ThemeNotificationsInitials" xml:space="preserve">
+        <value>Initialer</value>
+    </data>
+    <data name="ThemeNotificationsShownFromAButton" xml:space="preserve">
+        <value>Visas från en knapp</value>
+    </data>
+    <data name="ThemeNotificationsDismissible" xml:space="preserve">
+        <value>Kan stängas</value>
+    </data>
+    <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
+        <value>Leveranstider</value>
+    </data>
+    <data name="ThemeOverlaysOrdersBefore1000Arrive" xml:space="preserve">
+        <value>Beställningar före kl. 10:00 kommer fram samma dag.</value>
+    </data>
+    <data name="ThemePickersInlineDial" xml:space="preserve">
+        <value>Inbäddad urtavla</value>
+    </data>
+    <data name="ThemePickersEveryPart" xml:space="preserve">
+        <value>Alla delar</value>
+    </data>
+    <data name="ThemePickersBrandColor" xml:space="preserve">
+        <value>Varumärkesfärg</value>
+    </data>
+    <data name="ThemePickersInlineCalendar" xml:space="preserve">
+        <value>Inbäddad kalender</value>
+    </data>
+    <data name="ThemePickersPickTheDates" xml:space="preserve">
+        <value>Välj datumen</value>
+    </data>
+    <data name="ThemePickersTheShopClosesAt18" xml:space="preserve">
+        <value>Butiken stänger kl. 18:00.</value>
+    </data>
+    <data name="ThemePickersInline" xml:space="preserve">
+        <value>Inbäddad</value>
+    </data>
+    <data name="ThemePickersOpensAt" xml:space="preserve">
+        <value>Öppnar kl.</value>
+    </data>
+    <data name="ThemePickersPickATime" xml:space="preserve">
+        <value>Välj en tid</value>
+    </data>
+    <data name="ThemePickersStay" xml:space="preserve">
+        <value>Vistelse</value>
+    </data>
+    <data name="ThemeProgressDeterminate" xml:space="preserve">
+        <value>Bestämd</value>
+    </data>
+    <data name="ThemeProgressIndeterminate" xml:space="preserve">
+        <value>Obestämd</value>
+    </data>
+    <data name="ThemeProgressSyncing" xml:space="preserve">
+        <value>Synkroniserar</value>
+    </data>
+    <data name="ThemeProgressUploadFailed" xml:space="preserve">
+        <value>Uppladdningen misslyckades</value>
+    </data>
+    <data name="ThemeProgressTheConnectionDropped" xml:space="preserve">
+        <value>Anslutningen bröts.</value>
+    </data>
+    <data name="ThemeProgressCircular" xml:space="preserve">
+        <value>Cirkulär</value>
+    </data>
+    <data name="ThemeProgressStorage" xml:space="preserve">
+        <value>Lagringsutrymme</value>
+    </data>
+    <data name="ThemeProgressSegments" xml:space="preserve">
+        <value>Segment</value>
+    </data>
+    <data name="ThemeProgressStep3Of5" xml:space="preserve">
+        <value>Steg 3 av 5</value>
+    </data>
+    <data name="ThemeProgressStriped" xml:space="preserve">
+        <value>Randig</value>
+    </data>
+    <data name="ThemeProgressDownloadingTheMenu" xml:space="preserve">
+        <value>Laddar ned menyn</value>
+    </data>
+    <data name="ThemeProgressLine" xml:space="preserve">
+        <value>Rad</value>
+    </data>
+    <data name="ThemeProgressParagraph" xml:space="preserve">
+        <value>Stycke</value>
+    </data>
+    <data name="ThemeProgressAvatarAndLines" xml:space="preserve">
+        <value>Avatar och rader</value>
+    </data>
+    <data name="ThemeProgressLoaded" xml:space="preserve">
+        <value>Inläst</value>
+    </data>
+    <data name="ThemeShadowsTheShadowEachSurfaceLifts" xml:space="preserve">
+        <value>Skuggan som varje yta lyfts med, den allmänna skalan och de 24 höjdnivåerna.</value>
+    </data>
+    <data name="ThemeShapeTheCornerRadiusScaleAnd" xml:space="preserve">
+        <value>Skalan för hörnradier och radien som varje komponentfamilj får, sedan kantbredderna och fokusringen.</value>
+    </data>
+    <data name="ThemeShapeBordersAndFocus" xml:space="preserve">
+        <value>Kanter och fokus</value>
+    </data>
+    <data name="ThemeSizesTheSizesComponentsAreBuilt" xml:space="preserve">
+        <value>Storlekarna som komponenterna byggs av, var och en ritad som en stapel med sin längd, sedan avståndsenheten, tätheten och marginalerna i kort och dialogrutor. Prova reglaget Täthet för att se dem ändras.</value>
+    </data>
+    <data name="ThemeSizesSpacing" xml:space="preserve">
+        <value>Avstånd</value>
+    </data>
+    <data name="ThemeSurfacesTheSurfacesThatFloatOver" xml:space="preserve">
+        <value>Ytorna som svävar över sidan öppnas från sina knappar här; reglaget Öppna överlägg öppnar dem för länkar och skärmbilder.</value>
+    </data>
+    <data name="ThemeSurfacesIconAndDescription" xml:space="preserve">
+        <value>Ikon och beskrivning</value>
+    </data>
+    <data name="ThemeSurfacesVisaEndingIn4242" xml:space="preserve">
+        <value>Visa som slutar på 4242</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromItsAnchor" xml:space="preserve">
+        <value>Öppnas från sitt ankare</value>
+    </data>
+    <data name="ThemeSurfacesTitleBodyAndActions" xml:space="preserve">
+        <value>Rubrik, innehåll och åtgärder</value>
+    </data>
+    <data name="ThemeSurfacesAutumnMenu" xml:space="preserve">
+        <value>Höstmeny</value>
+    </data>
+    <data name="ThemeSurfacesStartsOnMonday" xml:space="preserve">
+        <value>Börjar på måndag</value>
+    </data>
+    <data name="ThemeSurfacesPublish" xml:space="preserve">
+        <value>Publicera</value>
+    </data>
+    <data name="ThemeSurfacesWithAnImage" xml:space="preserve">
+        <value>Med bild</value>
+    </data>
+    <data name="ThemeSurfacesMonthlySalesReport" xml:space="preserve">
+        <value>Månatlig försäljningsrapport</value>
+    </data>
+    <data name="ThemeSurfacesReadyToShare" xml:space="preserve">
+        <value>Klar att dela</value>
+    </data>
+    <data name="ThemeSurfacesTwoPeopleReadingTheSales" xml:space="preserve">
+        <value>Två personer som läser försäljningsdiagrammen</value>
+    </data>
+    <data name="ThemeSurfacesSalesGrew12OnLast" xml:space="preserve">
+        <value>Försäljningen ökade 12 % jämfört med förra månaden.</value>
+    </data>
+    <data name="ThemeSurfacesOutlined" xml:space="preserve">
+        <value>Med kontur</value>
+    </data>
+    <data name="ThemeSurfacesCollapsedToAPeek" xml:space="preserve">
+        <value>Hopfälld, delvis synlig</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromAButton" xml:space="preserve">
+        <value>Öppnas från en knapp</value>
+    </data>
+    <data name="ThemeSurfacesShowLess" xml:space="preserve">
+        <value>Visa mindre</value>
+    </data>
+    <data name="ThemeSurfacesShowMore" xml:space="preserve">
+        <value>Visa mer</value>
+    </data>
+    <data name="ThemeSurfacesDiscardChanges" xml:space="preserve">
+        <value>Förkasta ändringar</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromCode" xml:space="preserve">
+        <value>Öppnas från kod</value>
+    </data>
+    <data name="ThemeSurfacesModalFromTheService" xml:space="preserve">
+        <value>Modalfönster från tjänsten</value>
+    </data>
+    <data name="ThemeSurfacesFadedEdges" xml:space="preserve">
+        <value>Tonade kanter</value>
+    </data>
+    <data name="ThemeSurfacesSideBySide" xml:space="preserve">
+        <value>Sida vid sida</value>
+    </data>
+    <data name="ThemeSurfacesResizeThePanels" xml:space="preserve">
+        <value>Ändra storlek på panelerna</value>
+    </data>
+    <data name="ThemeSurfacesOrderDetails" xml:space="preserve">
+        <value>Beställningsdetaljer</value>
+    </data>
+    <data name="ThemeSurfacesStacked" xml:space="preserve">
+        <value>Staplade</value>
+    </data>
+    <data name="ThemeSurfacesDiscardYourChanges" xml:space="preserve">
+        <value>Förkasta dina ändringar?</value>
+    </data>
+    <data name="ThemeSurfacesWhatYouTypedSinceThe" xml:space="preserve">
+        <value>Det du har skrivit sedan du senast sparade går förlorat.</value>
+    </data>
+    <data name="ThemeSurfacesDiscard" xml:space="preserve">
+        <value>Förkasta</value>
+    </data>
+    <data name="ThemeOpenedByBitModalService" xml:space="preserve">
+        <value>Öppnad av BitModalService</value>
+    </data>
+    <data name="ThemeAnyComponentCanBeShown" xml:space="preserve">
+        <value>Vilken komponent som helst kan visas i ett modalfönster från kod, utan markup på sidan.</value>
+    </data>
+    <data name="ThemeTypographyTheTypeRampBitTextDraws" xml:space="preserve">
+        <value>Typskalan som BitText ritar, sedan typsnitten, storlekarna och vikterna den bygger på, och sist de token som styr texten i vissa komponenter.</value>
+    </data>
+    <data name="ThemeTypographyFonts" xml:space="preserve">
+        <value>Typsnitt</value>
+    </data>
+    <data name="ThemeTypographyFontSizes" xml:space="preserve">
+        <value>Teckenstorlekar</value>
+    </data>
+    <data name="ThemeTypographyFontWeights" xml:space="preserve">
+        <value>Teckenvikter</value>
+    </data>
+    <data name="ThemeTypographyTextInsideComponents" xml:space="preserve">
+        <value>Text i komponenter</value>
+    </data>
+    <data name="ThemeTypographyButtonsMenusAndOtherControls" xml:space="preserve">
+        <value>Knappar, menyer och andra kontroller: vikt, teckenavstånd och skiftläge för deras text</value>
+    </data>
+    <data name="ThemeTypographyDialogsTheSizeAndWeight" xml:space="preserve">
+        <value>Dialogrutor: storlek och vikt för rubriken</value>
+    </data>
+    <data name="ThemeTypographyInputsTheWeightOfThe" xml:space="preserve">
+        <value>Inmatningsfält: vikten på etiketten ovanför fältet</value>
+    </data>
+    <data name="ThemeTypographyHeadersAndFootersTheLine" xml:space="preserve">
+        <value>Sidhuvuden och sidfötter: radhöjden för deras text</value>
+    </data>
+    <data name="ThemeTypographyBitTextWithGutterTheSpace" xml:space="preserve">
+        <value>BitText med Gutter: avståndet under ett stycke</value>
+    </data>
+    <data name="ThemeUtilitiesAnyTagStyledLikeA" xml:space="preserve">
+        <value>Valfri tagg, formaterad som en komponent</value>
+    </data>
+    <data name="ThemeUtilitiesTheBestCroissantIHad" xml:space="preserve">
+        <value>Den bästa croissant jag har ätit utanför Paris.</value>
+    </data>
+    <data name="ThemeUtilitiesSpinning" xml:space="preserve">
+        <value>Snurrar</value>
+    </data>
+    <data name="ThemeUtilitiesCoverRoundedWithAShadow" xml:space="preserve">
+        <value>Cover, rundad, med skugga</value>
+    </data>
+    <data name="ThemeUtilitiesContainBordered" xml:space="preserve">
+        <value>Contain, med kant</value>
+    </data>
+    <data name="ThemeUtilitiesUnderlinedWithAnIcon" xml:space="preserve">
+        <value>Understruken, med ikon</value>
+    </data>
+    <data name="ThemeUtilitiesReportAProblem" xml:space="preserve">
+        <value>Rapportera ett problem</value>
+    </data>
+    <data name="ThemeUtilitiesWhatThisViewSWidth" xml:space="preserve">
+        <value>Vad den här vyns bredd matchar</value>
+    </data>
+    <data name="ThemeUtilitiesNarrowerThanMd" xml:space="preserve">
+        <value>Smalare än md</value>
+    </data>
+    <data name="ThemeUtilitiesMdOrWider" xml:space="preserve">
+        <value>md eller bredare</value>
+    </data>
+    <data name="ThemeUtilitiesOverABox" xml:space="preserve">
+        <value>Över en ruta</value>
+    </data>
+    <data name="ThemeUtilitiesPullTheListDown" xml:space="preserve">
+        <value>Dra ned listan</value>
+    </data>
+    <data name="ThemeUtilitiesWithText" xml:space="preserve">
+        <value>Med text</value>
+    </data>
+    <data name="ThemeUtilitiesOr" xml:space="preserve">
+        <value>eller</value>
+    </data>
+    <data name="ThemeUtilitiesScrollTheBox" xml:space="preserve">
+        <value>Rulla i rutan</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeInTheBox" xml:space="preserve">
+        <value>Svep i rutan</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeOrDragHere" xml:space="preserve">
+        <value>Svep eller dra här</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedUp" xml:space="preserve">
+        <value>Svepte uppåt</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedDown" xml:space="preserve">
+        <value>Svepte nedåt</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedLeft" xml:space="preserve">
+        <value>Svepte åt vänster</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedRight" xml:space="preserve">
+        <value>Svepte åt höger</value>
+    </data>
+    <data name="ThemeUtilitiesForegrounds" xml:space="preserve">
+        <value>Förgrundsfärger</value>
+    </data>
+    <data name="ThemeUtilitiesPrimaryText" xml:space="preserve">
+        <value>Primär text</value>
+    </data>
+    <data name="ThemeUtilitiesSecondaryText" xml:space="preserve">
+        <value>Sekundär text</value>
+    </data>
+    <data name="ThemeUtilitiesTertiaryText" xml:space="preserve">
+        <value>Tertiär text</value>
+    </data>
+    <data name="ThemeUtilitiesSaved" xml:space="preserve">
+        <value>Sparat</value>
+    </data>
+    <data name="ThemeUtilitiesStyles" xml:space="preserve">
+        <value>Stilar</value>
+    </data>
+    <data name="ThemeUtilitiesBold" xml:space="preserve">
+        <value>Fet</value>
+    </data>
+    <data name="ThemeUtilitiesItalic" xml:space="preserve">
+        <value>Kursiv</value>
+    </data>
+    <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
+        <value>Begränsad till två rader</value>
+    </data>
+    <data name="ThemeSectionsOfThisPage" xml:space="preserve">
+        <value>Avsnitt på den här sidan</value>
+    </data>
+    <data name="ThemeRenameTheShop" xml:space="preserve">
+        <value>Byt namn på butiken</value>
+    </data>
+    <data name="ThemeTheNewNameShowsOn" xml:space="preserve">
+        <value>Det nya namnet syns på kvitton från och med i morgon.</value>
+    </data>
+    <data name="FlowCopyName" xml:space="preserve">
+        <value>{0} (kopia)</value>
+    </data>
+    <data name="TourArrowsTitle" xml:space="preserve">
+        <value>Ändra en pil</value>
+    </data>
+    <data name="TourArrowsText" xml:space="preserve">
+        <value>Dubbelklicka på en pil för att byta namn på den, markera knappen den börjar vid eller ta bort den. Ett exempel förblir som det är: en ändring av någon av dess pilar skapar din egen kopia av flödet.</value>
+    </data>
+    <data name="ThemeTokensScale" xml:space="preserve">
+        <value>Skala</value>
+    </data>
+    <data name="ThemeTokensFamilies" xml:space="preserve">
+        <value>Familjer</value>
+    </data>
+    <data name="ThemeTokensElevation" xml:space="preserve">
+        <value>Höjdnivåer</value>
+    </data>
+    <data name="ThemeTokensControlHeight" xml:space="preserve">
+        <value>Kontrollhöjd</value>
+    </data>
+    <data name="ThemeTokensControlPadding" xml:space="preserve">
+        <value>Kontrollutfyllnad</value>
+    </data>
+    <data name="ThemeTokensIcons" xml:space="preserve">
+        <value>Ikoner</value>
+    </data>
+    <data name="ThemeTokensCheckboxesAndRadios" xml:space="preserve">
+        <value>Kryssrutor och alternativknappar</value>
+    </data>
+    <data name="ThemeTokensListRows" xml:space="preserve">
+        <value>Listrader</value>
+    </data>
+    <data name="ThemeTokensTabs" xml:space="preserve">
+        <value>Flikar</value>
+    </data>
+    <data name="ThemeTokensLinesAndTracks" xml:space="preserve">
+        <value>Linjer och spår</value>
+    </data>
+    <data name="ThemeTokensSwitches" xml:space="preserve">
+        <value>Reglage</value>
+    </data>
+    <data name="ThemeTokensSliderThumbs" xml:space="preserve">
+        <value>Skjutreglagens handtag</value>
+    </data>
+    <data name="ThemeTokensBadges" xml:space="preserve">
+        <value>Märken</value>
+    </data>
+    <data name="ThemeTokensLimits" xml:space="preserve">
+        <value>Gränser</value>
     </data>
 </root>

@@ -19,6 +19,15 @@ public abstract class FlowPageTest : ReviewPageTest
 
     protected ILocator DeleteFlowButton => Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DeleteFlow });
 
+    protected ILocator LabelEditor => Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel });
+
+    protected ILocator LabelField => LabelEditor.GetByRole(AriaRole.Textbox, new() { Name = WorkbenchStrings.ArrowLabel });
+
+    protected ILocator EditorButton(string name) => LabelEditor.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    /// <summary>The label of the building sample's Add building arrow.</summary>
+    protected ILocator SampleAddArrowLabel => Page.Locator($".bit-blow-edge[data-id='{WorkbenchSampleFlows.BuildingsAddArrowId}'] .bit-blow-edge-label");
+
     protected ILocator CardOf(string screenId) => Page.Locator($".bit-blow-node[data-id='{screenId}'] .screen-card");
 
     protected IFrameLocator Screen(string screenId) => Page.FrameLocator($"iframe[data-screen-id='{screenId}']");

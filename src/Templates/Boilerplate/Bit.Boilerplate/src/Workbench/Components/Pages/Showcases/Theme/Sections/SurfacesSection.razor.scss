@@ -1,0 +1,55 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.callout-body,
+.modal-body {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.75rem;
+    max-width: 18rem;
+    flex-direction: column;
+}
+
+.modal-body {
+    padding: 1rem;
+    max-width: 24rem;
+}
+
+.modal-footer {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.75rem 1rem;
+    justify-content: flex-end;
+}
+
+.collapse-body {
+    padding: 0.75rem;
+    font-size: $bit-typography-fs-sm;
+    border-radius: $bit-shape-radius-surface;
+    background-color: $bit-color-background-secondary;
+}
+
+.pane-body {
+    padding: 0.25rem 0.75rem;
+}
+
+.pane-row {
+    display: flex;
+    padding: 0.5rem 0;
+    font-size: $bit-typography-fs-sm;
+    justify-content: space-between;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.panel-body {
+    height: 100%;
+    padding: 0.75rem;
+    font-size: $bit-typography-fs-sm;
+    background-color: $bit-color-background-secondary;
+}
+
+.tooltip-stage {
+    display: flex;
+    // Room above the button for the tooltip that is always shown.
+    padding-top: 3rem;
+    justify-content: center;
+}

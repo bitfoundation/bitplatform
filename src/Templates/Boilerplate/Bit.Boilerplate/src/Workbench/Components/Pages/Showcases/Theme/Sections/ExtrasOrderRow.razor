@@ -1,0 +1,10 @@
+@inherits WorkbenchComponentBase
+
+<div class="order-row @(Fixed ? "fixed" : null)">
+    <span class="order-icon"><BitIcon IconName="@BitIconName.ShoppingCart" Size="BitSize.Small" /></span>
+    <span class="order-text">
+        <span class="order-title">@Localizer[nameof(WorkbenchStrings.PosOrder)] #@Number</span>
+        <span class="order-meta">@ProductText × @Quantity · @TimeText</span>
+    </span>
+    <span class="order-amount">@ExtrasSamples.Money(Amount)</span>
+</div>

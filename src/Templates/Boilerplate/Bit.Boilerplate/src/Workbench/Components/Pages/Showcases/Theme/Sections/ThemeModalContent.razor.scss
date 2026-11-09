@@ -1,0 +1,12 @@
+.content {
+    gap: 0.75rem;
+    display: flex;
+    padding: 1.25rem;
+    max-width: 24rem;
+    flex-direction: column;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+}

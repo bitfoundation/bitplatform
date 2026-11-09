@@ -2,13 +2,17 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// The flows every Workbench starts with, so the Flows page shows what a flow is before anyone draws one. They live here, not in
-/// the review document, so they reach every copy and can't be changed; one whose page was removed from the project is left out.
+/// the review document, so they reach every copy and can't be changed: a change made on one's board goes into the review's own
+/// copy of it. One whose page was removed from the project is left out.
 /// </summary>
 public static class WorkbenchSampleFlows
 {
     public const string IdPrefix = "sample";
     public const string BuildingsId = $"{IdPrefix}buildings";
     private const string PosId = $"{IdPrefix}pos";
+
+    /// <summary>The building sample's Add building arrow, named as <see cref="Build"/> names an arrow: by its two screens.</summary>
+    public const string BuildingsAddArrowId = "listform";
 
     // The room a phone takes on the board, with space for the labels of the arrows between screens.
     private const double ColumnStep = 850;

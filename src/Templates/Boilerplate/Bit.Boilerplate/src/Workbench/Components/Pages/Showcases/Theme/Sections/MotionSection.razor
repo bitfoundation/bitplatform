@@ -1,0 +1,47 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="motion" Title="@Localizer[nameof(WorkbenchStrings.ThemeMotion)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeMotionHowLongTheThemeS)]">
+    <div class="row">
+        <BitToggleButton IconName="@BitIconName.Play" OnIconName="@BitIconName.Previous" OnText="@Localizer[nameof(WorkbenchStrings.TourBack)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeMotionPlay)]" @bind-IsChecked="isPlayed" />
+    </div>
+
+    <div class="motions @(isPlayed ? "played" : null)">
+        @foreach (var motion in motions)
+        {
+            <div class="motion-row">
+                <div class="motion-name">
+                    <BitText Typography="BitTypography.Body2">@motion.Use</BitText>
+                    <TokenLabel Name="@motion.Duration" Value="@Values.GetValueOrDefault(motion.Duration)" />
+                    <TokenLabel Name="@motion.Easing" Value="@Values.GetValueOrDefault(motion.Easing)" />
+                </div>
+                <span class="track" style="--wb-duration:var(@motion.Duration);--wb-easing:var(@motion.Easing)">
+                    <span class="dot"></span>
+                </span>
+            </div>
+        }
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeMotionLoops)]</BitText>
+    <div class="motion-row">
+        <div class="motion-name">
+            <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeMotionSpinnersLikeAButtonThat)]</BitText>
+            <TokenLabel Name="--bit-mot-duration-spinner" Value="@Values.GetValueOrDefault("--bit-mot-duration-spinner")" />
+            <TokenLabel Name="--bit-mot-easing-spinner" Value="@Values.GetValueOrDefault("--bit-mot-easing-spinner")" />
+        </div>
+        <div class="row">
+            <BitButton IsLoading LoadingLabel="@Localizer[nameof(WorkbenchStrings.ThemeMotionSaving)]">@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
+        </div>
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeMotionSpeedFactors)]</BitText>
+    <div class="factors">
+        <div class="factor">
+            <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeMotionEveryAnimationSDurationIs)]</BitText>
+            <TokenLabel Name="--bit-mot-duration-factor" Value="@Values.GetValueOrDefault("--bit-mot-duration-factor")" />
+        </div>
+        <div class="factor">
+            <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeMotionAnimationsThatRepeatLikeSpinners)]</BitText>
+            <TokenLabel Name="--bit-mot-loop-factor" Value="@Values.GetValueOrDefault("--bit-mot-loop-factor")" />
+        </div>
+    </div>
+</ThemeSection>

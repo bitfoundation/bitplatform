@@ -1,0 +1,112 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="layouts" Title="@Localizer[nameof(WorkbenchStrings.ThemeLayouts)]">
+    <ComponentStates Name="BitFooter" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitFooter>
+                <BitText Typography="BitTypography.Caption1">© 2026 Bit Bakery</BitText>
+                <BitSpacer />
+                <BitLink Href="#">@Localizer[nameof(WorkbenchStrings.ThemeLayoutsPrivacy)]</BitLink>
+                <BitLink Href="#">@Localizer[nameof(WorkbenchStrings.LandingContact)]</BitLink>
+            </BitFooter>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsBorderedAndElevated)]">
+            <BitFooter Bordered Elevated>
+                <BitText Typography="BitTypography.Caption1">© 2026 Bit Bakery</BitText>
+                <BitSpacer />
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Mail">@Localizer[nameof(WorkbenchStrings.LandingContact)]</BitButton>
+            </BitFooter>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitGrid" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsTwelveColumns)]">
+            <BitGrid Columns="12" Spacing="0.5rem">
+                @foreach (var span in spans)
+                {
+                    <BitGridItem ColumnSpan="span">
+                        <div class="cell">@span</div>
+                    </BitGridItem>
+                }
+            </BitGrid>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitHeader" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitHeader>
+                <BitText Typography="BitTypography.Subtitle1">Bit Bakery</BitText>
+                <BitSpacer />
+                <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Search" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" />
+                <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Ringer" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" />
+            </BitHeader>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsColoredAndElevated)]">
+            <BitHeader Color="BitColor.Primary" Elevated>
+                <BitText Typography="BitTypography.Subtitle1">Bit Bakery</BitText>
+                <BitSpacer />
+                <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Contact" FixedColor AriaLabel="@AppLocalizer[nameof(AppStrings.ProfileTitle)]" />
+            </BitHeader>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsBordered)]">
+            <BitHeader Bordered>
+                <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.GlobalNavButton" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeOverlayMenu)]" />
+                <BitText Typography="BitTypography.Subtitle1">@AppLocalizer[nameof(AppStrings.Settings)]</BitText>
+            </BitHeader>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitLayout" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsHeaderNavPanelMainAnd)]">
+            <div class="layout-stage">
+                <BitLayout Bordered>
+                    <Header>
+                        <div class="layout-part">Bit Bakery</div>
+                    </Header>
+                    <NavPanel>
+                        <div class="layout-part nav">
+                            <BitLink Href="#">@AppLocalizer[nameof(AppStrings.Home)]</BitLink>
+                            <BitLink Href="#">@AppLocalizer[nameof(AppStrings.Settings)]</BitLink>
+                        </div>
+                    </NavPanel>
+                    <Main>
+                        <div class="layout-part">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</div>
+                    </Main>
+                    <Footer>
+                        <div class="layout-part">© 2026</div>
+                    </Footer>
+                </BitLayout>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSpacer" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsPushingTheActionsToThe)]">
+            <div class="bar">
+                <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.ThemeLayouts3Selected)]</BitText>
+                <BitSpacer />
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline">@AppLocalizer[nameof(AppStrings.Cancel)]</BitButton>
+                <BitButton Size="BitSize.Small" Color="BitColor.Error">@AppLocalizer[nameof(AppStrings.Delete)]</BitButton>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitStack" Full>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsHorizontalCenteredWrapping)]">
+            <div class="stack-stage">
+                <BitStack Horizontal Wrap Gap="0.5rem" HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                    @foreach (var tag in stackItems)
+                    {
+                        <BitTag Text="@tag" Variant="BitVariant.Outline" />
+                    }
+                </BitStack>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsVertical)]">
+            <BitStack Gap="0.5rem">
+                <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Value="@Localizer[nameof(WorkbenchStrings.DemoUserYas)]" />
+                <BitButton FullWidth>@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
+            </BitStack>
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

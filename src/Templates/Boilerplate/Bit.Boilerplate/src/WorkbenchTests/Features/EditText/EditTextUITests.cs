@@ -160,7 +160,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         var shown = string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ThemeMessage, nameof(BitColor.Warning));
 
-        await EditText();
+        await EditText(query: "?sw-section=notifications");
 
         await Pick(View().GetByText(shown).First, shown);
 
@@ -171,9 +171,11 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task APlaceholderOrAButtonsName_Should_BePickedToo(WorkbenchSurface surface)
     {
-        await EditText();
+        await EditText(query: "?sw-section=inputs");
 
         await Pick(View().GetByRole(AriaRole.Searchbox, new() { Name = WorkbenchStrings.ThemeSearch }).First, WorkbenchStrings.ThemeSearch);
+
+        await EditText(query: "?sw-section=buttons");
 
         await Pick(View().GetByLabel(WorkbenchStrings.ThemeIconButton, new() { Exact = true }), WorkbenchStrings.ThemeIconButton);
     }
@@ -181,9 +183,9 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task ASpotWithoutText_Should_AskForATextAgain(WorkbenchSurface surface)
     {
-        await EditText();
+        await EditText(query: "?sw-section=shape");
 
-        await Pick(Heading(WorkbenchStrings.ThemeButtons), WorkbenchStrings.ThemeButtons);
+        await Pick(Heading(WorkbenchStrings.ThemeShape), WorkbenchStrings.ThemeShape);
 
         await Press(View().Locator(".radius-box").First);
 
@@ -194,7 +196,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task AStoreView_Should_LetItsPageAndItsCaptionBePicked(WorkbenchSurface surface)
     {
-        await EditText("theme", "?device=store-play-phone&backdrop=ocean");
+        await EditText("theme", "?device=store-play-phone&backdrop=ocean&sw-section=buttons");
 
         var screen = View().FrameLocator("iframe.screen-frame");
 
@@ -210,7 +212,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task AnotherPage_Should_ForgetThePickedText(WorkbenchSurface surface)
     {
-        await EditText();
+        await EditText(query: "?sw-section=buttons");
 
         await Pick(Heading(WorkbenchStrings.ThemeButtons), WorkbenchStrings.ThemeButtons);
 
@@ -254,7 +256,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestMethod, OnDesktops]
     public async Task ATextNotInTheTranslationFiles_Should_SaySoAndGoToTheAgentWhenThereIsOne(WorkbenchSurface surface)
     {
-        await EditText();
+        await EditText(query: "?sw-section=typography");
 
         var text = await View().Locator(".type-name").First.InnerTextAsync();
 
@@ -319,7 +321,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
         var english = $"Rounded corners {Guid.NewGuid():N}";
         var persian = $"گوشه‌ها {Guid.NewGuid():N}";
 
-        await EditText();
+        await EditText(query: "?sw-section=shape");
 
         await Pick(Heading(WorkbenchStrings.ThemeShape), WorkbenchStrings.ThemeShape);
 
@@ -348,7 +350,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         var text = $"Sizes & <shapes> {Guid.NewGuid():N}";
 
-        await EditText();
+        await EditText(query: "?sw-section=inputs");
 
         await Pick(Heading(WorkbenchStrings.ThemeInputs), WorkbenchStrings.ThemeInputs);
 
@@ -365,7 +367,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         var text = $"Your details {Guid.NewGuid():N}";
 
-        await EditText();
+        await EditText(query: "?sw-section=navs");
 
         await Pick(View().GetByText(AppStrings.ProfileTitle, new() { Exact = true }).First, AppStrings.ProfileTitle);
 
@@ -382,7 +384,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     [TestCategory("Localization")]
     public async Task EveryLanguagesField_Should_BeSaved(WorkbenchSurface surface)
     {
-        await EditText();
+        await EditText(query: "?sw-section=navs");
 
         await Pick(Heading(WorkbenchStrings.ThemeNavigation), WorkbenchStrings.ThemeNavigation);
 
@@ -405,9 +407,9 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         var text = $"Forms {Guid.NewGuid():N}";
 
-        await EditText();
+        await EditText(query: "?sw-section=pickers");
 
-        await Pick(Heading(WorkbenchStrings.ThemeSelection), WorkbenchStrings.ThemeSelection);
+        await Pick(Heading(WorkbenchStrings.ThemePickers), WorkbenchStrings.ThemePickers);
 
         await Field(Language("en-GB")).FillAsync(text);
         await Press(SaveButton);
@@ -417,7 +419,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
         await Expect(Field(Language("en-GB"))).ToHaveValueAsync(text);
         await Expect(Page.GetByText(WorkbenchStrings.SaveTranslationsFailed)).ToHaveCountAsync(0);
 
-        Assert.AreEqual(text, Entry(WorkbenchTexts, nameof(WorkbenchStrings.ThemeSelection)));
+        Assert.AreEqual(text, Entry(WorkbenchTexts, nameof(WorkbenchStrings.ThemePickers)));
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
@@ -425,7 +427,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         var shown = string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ThemeTab, 1);
 
-        await EditText();
+        await EditText(query: "?sw-section=navs");
 
         await Pick(View().GetByText(shown, new() { Exact = true }).First, shown);
 
@@ -453,7 +455,7 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     {
         File.Delete(InTheCopy("Workbench/Resources/WorkbenchStrings.de.resx"));
 
-        await EditText();
+        await EditText(query: "?sw-section=buttons");
 
         await Pick(Heading(WorkbenchStrings.ThemeButtons), WorkbenchStrings.ThemeButtons);
 

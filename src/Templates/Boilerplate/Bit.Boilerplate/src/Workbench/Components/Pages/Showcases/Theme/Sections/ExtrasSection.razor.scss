@@ -1,0 +1,121 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+// The content the error boundary samples guard: a small sales card.
+.sales-card {
+    gap: 0.125rem;
+    display: flex;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    flex-direction: column;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-secondary;
+}
+
+// A message box framed the way the dialog that holds it would be.
+.dialog-frame {
+    min-width: 0;
+    overflow: hidden;
+    box-shadow: $bit-box-shadow-dialog;
+    border-radius: $bit-shape-radius-dialog;
+    background-color: $bit-color-background-primary;
+}
+
+.flags {
+    gap: 0.625rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.flag-row {
+    gap: 0.625rem;
+    display: flex;
+    min-width: 0;
+    font-size: 14px;
+    align-items: center;
+}
+
+.flag-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.flag-code {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: $bit-color-foreground-secondary;
+}
+
+.flag-shapes {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// A week of the working day, short enough to read on a phone without scrolling past it.
+.calendar-box {
+    min-width: 0;
+    --bit-FullCalendar-height: 32rem;
+}
+
+// The long lists scroll inside a box of their own.
+.scroll-box {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid $bit-color-border-tertiary;
+
+    ::deep .orders-feed {
+        max-height: 16rem;
+    }
+
+    ::deep .orders-list {
+        height: 16rem;
+    }
+}
+
+.map-box {
+    height: 18rem;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid $bit-color-border-tertiary;
+
+    ::deep .stores-map {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// Darkens the light base map in dark themes: inverted, with the hues turned back.
+:root[bit-theme$="dark"] .map-box {
+    --bit-Map-tile-filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
+}
+
+// A nav panel is as tall as the screen; here it fills a short box instead.
+.nav-box {
+    display: flex;
+    height: 20rem;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid $bit-color-border-tertiary;
+
+    ::deep .menu-panel {
+        height: 100%;
+    }
+
+    &.open {
+        max-width: 17rem;
+
+        ::deep .menu-panel {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
+    &.rail {
+        width: fit-content;
+    }
+}

@@ -134,6 +134,10 @@
             {
                 <p class="board-help">@Localizer[nameof(WorkbenchStrings.BoardHelp)]</p>
             }
+            else if (CanEditArrows && flow.IsSample && presentIndex < 0 && pickingLinkId is null)
+            {
+                <p class="board-help">@Localizer[nameof(WorkbenchStrings.FlowSampleHint)]</p>
+            }
 
             @if (presentIndex >= 0 && presentIndex < flow.Screens.Length)
             {
@@ -164,7 +168,7 @@
                 </div>
             }
 
-            @* Opened by double-clicking an arrow, or right after drawing one. *@
+            @* Opened by double-clicking an arrow, right after drawing one, or by the address. *@
             @if (EditingLink is { } editing)
             {
                 <div class="label-editor" role="dialog" aria-label="@Localizer[nameof(WorkbenchStrings.ArrowLabel)]" @onkeydown="OnLabelEditorKeyDown">
@@ -173,6 +177,12 @@
                                   Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
                                   MaxLength="120"
                                   AutoFocus />
+                    @if (flow.IsSample)
+                    {
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" role="note">
+                            @Localizer[nameof(WorkbenchStrings.ArrowSampleNote)]
+                        </BitText>
+                    }
                     <div class="arrow-start">
                         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
                             @Localizer[editing.Spot is null ? nameof(WorkbenchStrings.ArrowStartHint) : nameof(WorkbenchStrings.ArrowStartMarked), numbers.GetValueOrDefault(editing.From)]

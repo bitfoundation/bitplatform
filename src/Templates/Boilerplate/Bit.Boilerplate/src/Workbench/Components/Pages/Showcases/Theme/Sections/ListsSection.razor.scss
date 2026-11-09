@@ -1,0 +1,35 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.list-box {
+    height: 12rem;
+    overflow: hidden;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.list-box ::deep .list-header {
+    display: block;
+    padding: 0.5rem 0.75rem 0.25rem;
+}
+
+.list-row {
+    padding: 0.375rem 0.75rem;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.list-box ::deep .list-empty {
+    display: block;
+    padding: 1rem 0.75rem;
+}
+
+.slide {
+    gap: 0.25rem;
+    height: 100%;
+    display: flex;
+    padding: 1rem;
+    min-height: 7rem;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: $bit-shape-radius-surface;
+    background-color: $bit-color-background-secondary;
+}

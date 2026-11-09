@@ -1,0 +1,118 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="notifications" Title="@Localizer[nameof(WorkbenchStrings.ThemeNotifications)]">
+    <ComponentStates Name="BitBadge">
+        @foreach (var color in ThemeSamples.Colors.Take(4))
+        {
+            <StateSample Name="@color.ToString()">
+                <div class="badge-stage">
+                    <BitBadge Content="@(12)" Color="color">
+                        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Ringer" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" />
+                    </BitBadge>
+                </div>
+            </StateSample>
+        }
+        @foreach (var variant in new[] { BitVariant.Outline, BitVariant.Text })
+        {
+            <StateSample Name="@variant.ToString()">
+                <div class="badge-stage">
+                    <BitBadge Content="@(7)" Variant="variant">
+                        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Mail" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsMessages)]" />
+                    </BitBadge>
+                </div>
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsOverTheMaximum)]">
+            <div class="badge-stage">
+                <BitBadge Content="@(120)" Max="99" Color="BitColor.Error">
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.ShoppingCart" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasOrders)]" />
+                </BitBadge>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsDot)]">
+            <div class="badge-stage">
+                <BitBadge Dot Color="BitColor.Success">
+                    <BitPersona ImageUrl="@WorkbenchPhotos.Find(nameof(WorkbenchStrings.DemoUserYas))" PrimaryText="@Localizer[nameof(WorkbenchStrings.DemoUserYas)]" Size="BitPersonaSize.Size32" HidePersonaDetails />
+                </BitBadge>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsOnItsOwn)]">
+            <BitBadge Content="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsNew)]" Inline Color="BitColor.Tertiary" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMessage" Full>
+        @foreach (var color in ThemeSamples.StatusColors)
+        {
+            <StateSample Name="@color.ToString()">
+                <BitMessage Color="color">@Localizer[nameof(WorkbenchStrings.ThemeMessage), color]</BitMessage>
+            </StateSample>
+        }
+        @foreach (var variant in new[] { BitVariant.Outline, BitVariant.Text })
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitMessage Color="BitColor.Info" Variant="variant">@Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Info]</BitMessage>
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsTitleActionsAndDismiss)]">
+            <BitMessage Color="BitColor.Warning" Title="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsYourCardExpiresSoon)]" Dismissible Multiline>
+                <ChildContent>@Localizer[nameof(WorkbenchStrings.ThemeNotificationsUpdateItBeforeJune1)]</ChildContent>
+                <Actions>
+                    <BitButton Size="BitSize.Small" Color="BitColor.Warning">@Localizer[nameof(WorkbenchStrings.ThemeNotificationsUpdateCard)]</BitButton>
+                </Actions>
+            </BitMessage>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPersona" Wide>
+        @foreach (var (nameKey, presence) in people)
+        {
+            <StateSample Name="@presence.ToString()">
+                <BitPersona PrimaryText="@Localizer[nameKey]" Presence="presence" Size="BitPersonaSize.Size48" ImageUrl="@(presence is BitPersonaPresence.Dnd ? null : WorkbenchPhotos.Find(nameKey))" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsEveryLine)]">
+            <BitPersona PrimaryText="@Localizer[nameof(WorkbenchStrings.DemoUserYas)]" SecondaryText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsOwner)]" TertiaryText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsInTheAmsterdamShop)]" OptionalText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsBackAt1400)]"
+                        ImageUrl="@WorkbenchPhotos.Find(nameof(WorkbenchStrings.DemoUserYas))" Presence="BitPersonaPresence.Away" Size="BitPersonaSize.Size72" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsInitials)]">
+            <BitPersona PrimaryText="Noor van Dijk" SecondaryText="@Localizer[nameof(WorkbenchStrings.ShiftsRoleBarista)]" Size="BitPersonaSize.Size48" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSnackBar">
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsShownFromAButton)]">
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Feedback" OnClick="ShowSnackBars">@Localizer[nameof(WorkbenchStrings.ThemeOverlaySnackBar)]</BitButton>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTag">
+        @foreach (var color in ThemeSamples.Colors)
+        {
+            <StateSample Name="@color.ToString()">
+                <BitTag Text="@color.ToString()" Color="color" />
+            </StateSample>
+        }
+        @foreach (var variant in new[] { BitVariant.Outline, BitVariant.Text })
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsVegan)]" IconName="@BitIconName.Heart" Variant="variant" Color="BitColor.Success" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsDismissible)]">
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsGlutenFree)]" OnDismiss="() => { }" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)]" DefaultSelected OnChange="(bool _) => { }" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)]" OnClick="() => { }" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)]" OnClick="() => { }" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeInputsOrganic)]" OnClick="() => { }" Disabled />
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>
