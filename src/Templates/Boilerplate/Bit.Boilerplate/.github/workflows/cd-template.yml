@@ -59,11 +59,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
-#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
-#else
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#endif
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
@@ -580,11 +576,7 @@ jobs:
         with:
           files: 'src\**\appsettings*json'
         env:
-#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
-#else
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#endif
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
@@ -668,11 +660,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
-#else
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#endif
 
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
@@ -738,11 +726,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-#if (api == "Standalone")
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
-#else
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#endif
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0
