@@ -61,10 +61,10 @@ public class BelemetryUnhandledExceptionTests
     {
         Assert.IsTrue(new BelemetryOptions().Errors.CaptureUnhandledExceptions, "On by default.");
 
-        await using (var host = CreateHost()) Assert.IsNotNull(host.Pipeline.UnhandledExceptions);
-        await using (var host = CreateHost(o => o.Errors.CaptureUnhandledExceptions = false)) Assert.IsNull(host.Pipeline.UnhandledExceptions);
-        await using (var host = CreateHost(o => o.Features = BelemetryFeatures.All & ~BelemetryFeatures.Errors)) Assert.IsNull(host.Pipeline.UnhandledExceptions);
-        await using (var host = CreateHost(o => o.Enabled = false)) Assert.IsNull(host.Pipeline.UnhandledExceptions);
+        await using (var host = CreateHost()) Assert.IsTrue(host.Pipeline.UnhandledExceptions.IsSubscribed);
+        await using (var host = CreateHost(o => o.Errors.CaptureUnhandledExceptions = false)) Assert.IsFalse(host.Pipeline.UnhandledExceptions.IsSubscribed);
+        await using (var host = CreateHost(o => o.Features = BelemetryFeatures.All & ~BelemetryFeatures.Errors)) Assert.IsFalse(host.Pipeline.UnhandledExceptions.IsSubscribed);
+        await using (var host = CreateHost(o => o.Enabled = false)) Assert.IsFalse(host.Pipeline.UnhandledExceptions.IsSubscribed);
 
         // A server pipeline that does not collect .NET telemetry exports none of it; its diagnostics still want them.
         var server = TestHost.CreateSettings(o =>
@@ -82,7 +82,7 @@ public class BelemetryUnhandledExceptionTests
         await using var host = CreateHost();
         var exception = Thrown(new InvalidOperationException("The order book is closed."));
 
-        host.Pipeline.UnhandledExceptions!.OnUnhandled(exception, terminating: true);
+        host.Pipeline.UnhandledExceptions.OnUnhandled(exception, terminating: true);
         await host.FlushAsync();
 
         var log = host.Memory.Logs.Single();
@@ -104,7 +104,7 @@ public class BelemetryUnhandledExceptionTests
         await using var host = CreateHost();
         using var activity = new Activity("checkout").SetIdFormat(ActivityIdFormat.W3C).Start();
 
-        host.Pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("boom"), terminating: false);
+        host.Pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: false);
         activity.Stop();
         await host.FlushAsync();
 
@@ -120,7 +120,7 @@ public class BelemetryUnhandledExceptionTests
     public async Task AnUnobservedTaskException_IsRecorded_WithTheTasksOwnException()
     {
         await using var host = CreateHost();
-        var hooks = host.Pipeline.UnhandledExceptions!;
+        var hooks = host.Pipeline.UnhandledExceptions;
 
         hooks.OnUnobserved(new AggregateException(new AggregateException(new TimeoutException("one"))));
         hooks.OnUnobserved(new AggregateException(new TimeoutException("two"), new ArgumentException("three")));
@@ -157,7 +157,7 @@ public class BelemetryUnhandledExceptionTests
     public async Task TheErrorLimits_ApplyToThem()
     {
         await using var host = CreateHost(o => o.Errors.MaxPerMinute = 1);
-        var hooks = host.Pipeline.UnhandledExceptions!;
+        var hooks = host.Pipeline.UnhandledExceptions;
 
         hooks.OnUnobserved(new AggregateException(new TimeoutException("first")));
         hooks.OnUnobserved(new AggregateException(new TimeoutException("second")));
@@ -172,7 +172,7 @@ public class BelemetryUnhandledExceptionTests
         await using var host = CreateHost(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.Errors);
         host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
 
-        host.Pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("boom"), terminating: false);
+        host.Pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: false);
         await host.FlushAsync();
 
         Assert.IsEmpty(host.Memory.Logs);
@@ -187,7 +187,7 @@ public class BelemetryUnhandledExceptionTests
             var pipeline = provider.GetRequiredService<BelemetryPipeline>();
             pipeline.Enqueue(Records.Log("placing the order", severity: BelemetrySeverity.Warn));
 
-            pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("The order book is closed."), terminating: true);
+            pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("The order book is closed."), terminating: true);
 
             Assert.IsEmpty(handler.Requests, "Nothing async completes as the process ends: it is saved, not sent.");
             var files = StoredFiles();
@@ -218,7 +218,7 @@ public class BelemetryUnhandledExceptionTests
         await using var provider = CreateProvider(handler, consent: BelemetryFeatures.All & ~BelemetryFeatures.Persistence);
         var pipeline = provider.GetRequiredService<BelemetryPipeline>();
 
-        pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
 
         Assert.IsEmpty(StoredFiles());
 
@@ -234,7 +234,7 @@ public class BelemetryUnhandledExceptionTests
         await using var provider = CreateProvider(handler, consent: BelemetryFeatures.Persistence);
         var pipeline = provider.GetRequiredService<BelemetryPipeline>();
 
-        pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
 
         Assert.IsEmpty(StoredFiles(), "Records held for a decision never go on the wire or on disk.");
     }
@@ -261,7 +261,7 @@ public class BelemetryUnhandledExceptionTests
             return ValueTask.CompletedTask;
         };
 
-        pipeline.UnhandledExceptions!.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
+        pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("boom"), terminating: true);
 
         var request = sent.Single();
         Assert.AreEqual("http://collector.test:4318/v1/logs", request.Url);
@@ -269,6 +269,75 @@ public class BelemetryUnhandledExceptionTests
         Assert.IsTrue(request.Features!.Value.HasFlag(BelemetryFeatures.Errors));
         var log = ExportLogsServiceRequest.Parser.ParseFrom(request.Body).ResourceLogs[0].ScopeLogs[0].LogRecords.Single();
         Assert.AreEqual("An unhandled exception ended the process.", log.Body.StringValue);
+    }
+
+    [TestMethod]
+    public async Task APlatformsOwnCrashEvent_IsSavedForTheNextLaunch_ThroughTheApi()
+    {
+        var handler = new FakeHttpMessageHandler();
+        await using (var provider = CreateProvider(handler))
+        {
+            provider.GetRequiredService<BelemetryPipeline>().Enqueue(Records.Log("placing the order"));
+
+            // What an AndroidEnvironment.UnhandledExceptionRaiser handler does.
+            provider.TrackBitBelemetryUnhandledException(new InvalidOperationException("The order book is closed."));
+
+            Assert.HasCount(1, StoredFiles());
+            Assert.IsEmpty(handler.Requests);
+        }
+
+        await using (var provider = CreateProvider(handler))
+        {
+            await provider.GetRequiredService<BelemetryPipeline>().Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+        }
+
+        var logs = ExportLogsServiceRequest.Parser.ParseFrom(handler.Requests.Single().Body).ResourceLogs.SelectMany(r => r.ScopeLogs).SelectMany(s => s.LogRecords).ToList();
+        CollectionAssert.AreEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
+    }
+
+    [TestMethod]
+    public async Task OneCrash_ThatBothEventsReport_IsOneRecord()
+    {
+        await using var host = CreateHost();
+        var crash = new InvalidOperationException("boom");
+
+        // The platform's event first, then AppDomain.UnhandledException with the same exception.
+        host.Services.TrackBitBelemetryUnhandledException(crash);
+        host.Pipeline.UnhandledExceptions.OnUnhandled(crash, terminating: true);
+        // Another exception is another record (another message: the error limits' duplicate window would drop a twin).
+        host.Pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("another boom"), terminating: true);
+        await host.FlushAsync();
+
+        Assert.HasCount(2, host.Memory.Logs);
+    }
+
+    [TestMethod]
+    public async Task TheApi_RecordsAHandledOne_AsAnError_EvenWithTheHooksOff()
+    {
+        // TestHost leaves the hooks off: the app's explicit call still records.
+        await using var host = TestHost.Create();
+
+        host.Services.TrackBitBelemetryUnhandledException(new InvalidOperationException("boom"), terminating: false);
+        await host.FlushAsync();
+
+        Assert.IsFalse(host.Pipeline.UnhandledExceptions.IsSubscribed);
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual(BelemetrySeverity.Error, log.Severity, "The handler let the app go on.");
+        Assert.AreEqual(BelemetryUnhandledExceptions.ScopeName, log.Scope.Name);
+    }
+
+    [TestMethod]
+    public async Task TheApi_DoesNothing_WhereBelemetryIsNotRegistered_OrTheProviderIsGone()
+    {
+        Assert.ThrowsExactly<ArgumentNullException>(() => ((IServiceProvider)null!).TrackBitBelemetryUnhandledException(new InvalidOperationException()));
+        await using var empty = new ServiceCollection().BuildServiceProvider();
+        Assert.ThrowsExactly<ArgumentNullException>(() => empty.TrackBitBelemetryUnhandledException(null!));
+
+        empty.TrackBitBelemetryUnhandledException(new InvalidOperationException("boom"));
+
+        var host = TestHost.Create();
+        await host.DisposeAsync();
+        host.Services.TrackBitBelemetryUnhandledException(new InvalidOperationException("boom"));
     }
 
     [TestMethod]

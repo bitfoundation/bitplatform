@@ -57,7 +57,10 @@ core because every host may need them and they add no dependency.
 - **No threads.** Browser WebAssembly is single-threaded, so the pipeline runs on async loops with timers only.
   `new Thread`, blocking waits and `.Result` are forbidden. A process ending on an unhandled exception runs nothing
   async to completion, so `BelemetryPipeline.PersistForExit` saves the queue synchronously (`BelemetryFileRequestStore.SaveNow`,
-  without the store's lock; in WebAssembly the script gets it, as from the unload drain) - still without waiting on anything.
+  without the store's lock; in WebAssembly the script gets it, as from the unload drain) - still without waiting on anything,
+  the network included: a crash never takes longer because of telemetry. Platforms that report a crash elsewhere (.NET for
+  Android, WinUI, WinForms' UI thread) reach the same path through `Belemetry.TrackBitBelemetryUnhandledException`; the core
+  cannot subscribe to their events itself (no platform target frameworks).
 - **`BelemetryOptions` stays bindable** by the configuration binder's source generator, which runs in the consuming
   app (`Tests/Bit.Belemetry.Tests/BelemetryOptionsBindingTests.cs` binds every option): collections are get-only
   `List<T>` or `Dictionary<,>`, nested options are get-only instances, an array default is empty (a binder appends

@@ -120,7 +120,7 @@ that were audited and found sound are marked "baseline".
 | Consent | Per-feature consent, held records, purge on revoke, GPC | `BelemetryConsentState`, `consent.ts` | existing | README Consent | baseline |
 | Export | OTLP protobuf/JSON/gRPC, Azure Monitor, retries, persistence | `Exporters/*` | existing (conformance vs official protos) | README Exporters | baseline |
 | Browser | Page views, interactions, web vitals, errors, fetch/XHR | `Scripts/instrumentations/*` | existing | README Browser | baseline |
-| Exceptions | .NET unhandled and unobserved task exceptions recorded without app code; a crashing process saves its queue for the next launch (the process ends before anything async completes) | `BelemetryUnhandledExceptions`, `BelemetryPipeline.PersistForExit`, `BelemetryFileRequestStore.SaveNow`, `Errors.CaptureUnhandledExceptions` | `BelemetryUnhandledExceptionTests` | README Unhandled exceptions, demo .NET page | done (#14703) |
+| Exceptions | .NET unhandled and unobserved task exceptions recorded without app code; a crashing process saves its queue for the next launch (the process ends before anything async completes) | `BelemetryUnhandledExceptions`, `BelemetryPipeline.PersistForExit`, `BelemetryFileRequestStore.SaveNow`, `Errors.CaptureUnhandledExceptions`; `TrackBitBelemetryUnhandledException` for the crashes Android, WinUI and WinForms report elsewhere (wired in the MAUI sample). Not done on purpose: waiting on the network as the process ends (no disk without `Persistence`, custom exporters), and `Persistence` in the default `Server.Features` (instances sharing a machine would share the store) | `BelemetryUnhandledExceptionTests` | README Unhandled exceptions and The server pipeline, demo .NET page | done (#14703) |
 
 ---
 

@@ -35,7 +35,6 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private BelemetryActivityCollector? _activities;
     private BelemetryMeterCollector? _meters;
     private BelemetryAspNetCoreRequests? _requests;
-    private BelemetryUnhandledExceptions? _unhandled;
     private ILogger? _diagnostics;
     private Task? _loop;
     private int _started;
@@ -56,6 +55,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         _errors = settings.IsServer ? null : new BelemetryErrorLimiter(settings.Options.Errors);
         _consent.Changed += OnConsentChanged;
         Diagnostics = new BelemetryDiagnosticHub(settings, consent, services);
+        UnhandledExceptions = new BelemetryUnhandledExceptions(this);
     }
 
     public BelemetrySettings Settings { get; }
@@ -77,8 +77,11 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     /// </summary>
     internal Task StoreCleared => Volatile.Read(ref _storeCleared);
 
-    /// <summary>The unhandled exception hooks, once <see cref="Start"/> installed them (<see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/>).</summary>
-    internal BelemetryUnhandledExceptions? UnhandledExceptions => _unhandled;
+    /// <summary>
+    /// Records the exceptions nothing caught: from the process-wide events once <see cref="Start"/> subscribed it
+    /// (<see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/>), and from the app (<see cref="Belemetry.TrackBitBelemetryUnhandledException"/>).
+    /// </summary>
+    internal BelemetryUnhandledExceptions UnhandledExceptions { get; }
 
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
@@ -102,7 +105,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         Diagnostics.Start();
 
         // Before the exporters are checked: the diagnostic timeline alone wants the unhandled exceptions too.
-        if (BelemetryUnhandledExceptions.AppliesTo(Settings, Diagnostics.Enabled)) _unhandled = new BelemetryUnhandledExceptions(this);
+        if (BelemetryUnhandledExceptions.AppliesTo(Settings, Diagnostics.Enabled)) UnhandledExceptions.Subscribe();
         if (Settings.HasExporters is false) return;
 
         if (Settings.CollectDotnet)
@@ -1016,7 +1019,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // Idempotent: a host may dispose the container while the app disposes the pipeline it resolved itself.
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
-        _unhandled?.Dispose();
+        UnhandledExceptions.Dispose();
         _consent.Changed -= OnConsentChanged;
         Diagnostics.Dispose();
         _activities?.Dispose();

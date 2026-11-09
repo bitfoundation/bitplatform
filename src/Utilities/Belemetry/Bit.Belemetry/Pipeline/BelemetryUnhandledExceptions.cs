@@ -10,21 +10,29 @@ namespace Bit.Belemetry;
 /// <remarks>
 /// The process ends right after <see cref="AppDomain.UnhandledException"/>, so nothing async gets to complete there:
 /// the record, and everything queued before it, is written to the request store synchronously
-/// (<see cref="BelemetryPipeline.PersistForExit"/>), and the next launch sends it with the rest of the store.
+/// (<see cref="BelemetryPipeline.PersistForExit"/>), and the next launch sends it with the rest of the store. A crash
+/// some platforms report elsewhere (.NET for Android, WinUI, WinForms' UI thread) comes through
+/// <see cref="Belemetry.TrackBitBelemetryUnhandledException"/> to the same place.
 /// </remarks>
-internal sealed class BelemetryUnhandledExceptions : IDisposable
+internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) : IDisposable
 {
     /// <summary>The instrumentation scope of its records; diagnostics count their exceptions as unhandled.</summary>
     internal const string ScopeName = "Bit.Belemetry.UnhandledExceptions";
 
     private static readonly BelemetryScope _scope = new(ScopeName, BelemetrySettings.SdkVersion);
 
-    private readonly BelemetryPipeline _pipeline;
+    private int _subscribed;
     private int _disposed;
+    private Exception? _lastUnhandled;
 
-    public BelemetryUnhandledExceptions(BelemetryPipeline pipeline)
+    /// <summary>Whether it listens to <see cref="AppDomain.UnhandledException"/> and <see cref="TaskScheduler.UnobservedTaskException"/> (<see cref="Subscribe"/>).</summary>
+    public bool IsSubscribed => Volatile.Read(ref _subscribed) == 1 && Volatile.Read(ref _disposed) == 0;
+
+    /// <summary>Starts listening to the process-wide events (<see cref="AppliesTo"/>). Idempotent.</summary>
+    public void Subscribe()
     {
-        _pipeline = pipeline;
+        if (Volatile.Read(ref _disposed) == 1 || Interlocked.Exchange(ref _subscribed, 1) == 1) return;
+
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
@@ -49,20 +57,26 @@ internal sealed class BelemetryUnhandledExceptions : IDisposable
 
     /// <summary>
     /// Records an exception nothing caught; when it ends the process (<paramref name="terminating"/>), also saves what is
-    /// queued for the next launch.
+    /// queued for the next launch. The exception object recorded last is not recorded again: one crash may be reported
+    /// twice, by a platform's own event (<see cref="Belemetry.TrackBitBelemetryUnhandledException"/>) and by
+    /// <see cref="AppDomain.UnhandledException"/>.
     /// </summary>
     internal void OnUnhandled(Exception exception, bool terminating)
     {
         if (Volatile.Read(ref _disposed) == 1) return;
 
-        Record(exception, terminating ? BelemetrySeverity.Fatal : BelemetrySeverity.Error, terminating ? "Critical" : "Error",
-               terminating ? "An unhandled exception ended the process." : "An unhandled exception was thrown.");
+        if (ReferenceEquals(Interlocked.Exchange(ref _lastUnhandled, exception), exception) is false)
+        {
+            Record(exception, terminating ? BelemetrySeverity.Fatal : BelemetrySeverity.Error, terminating ? "Critical" : "Error",
+                   terminating ? "An unhandled exception ended the process." : "An unhandled exception was thrown.");
+        }
 
         if (terminating is false) return;
 
         try
         {
-            _pipeline.PersistForExit();
+            // Again for a crash reported twice: the queue is empty by then, unless the first report did not end the process.
+            pipeline.PersistForExit();
         }
         catch
         {
@@ -115,7 +129,7 @@ internal sealed class BelemetryUnhandledExceptions : IDisposable
                 record.Flags = (int)activity.ActivityTraceFlags;
             }
 
-            _pipeline.Enqueue(record, resource: null, relayed: false, export: _pipeline.IsCollecting);
+            pipeline.Enqueue(record, resource: null, relayed: false, export: pipeline.IsCollecting);
         }
         catch
         {
@@ -125,7 +139,7 @@ internal sealed class BelemetryUnhandledExceptions : IDisposable
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
+        if (Interlocked.Exchange(ref _disposed, 1) == 1 || Volatile.Read(ref _subscribed) == 0) return;
 
         AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
         TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;

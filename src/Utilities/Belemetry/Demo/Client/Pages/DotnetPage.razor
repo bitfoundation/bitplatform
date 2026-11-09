@@ -58,6 +58,10 @@
         <code>TaskScheduler.UnobservedTaskException</code> - a faulted task nobody awaited - as an ERROR one, both
         <code>Errors</code> records under the scope <code>Bit.Belemetry.UnhandledExceptions</code>. A crashing process
         writes its queue to the offline store as it goes down (with <code>Persistence</code>), and the next launch sends it.
+        A crash a platform reports through an event of its own - .NET for Android's
+        <code>AndroidEnvironment.UnhandledExceptionRaiser</code>, WinUI's <code>Application.UnhandledException</code>,
+        WinForms' <code>Application.ThreadException</code> - is forwarded with
+        <code>services.TrackBitBelemetryUnhandledException(e.Exception)</code> and handled the same way.
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">ILogger</span></span></div>
