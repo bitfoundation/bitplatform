@@ -656,4 +656,22 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual(new Uri("https://user:pw-7f3a@otel.test"), settings.OtlpExporters.Single().Endpoint);
         Assert.IsEmpty(settings.StartupWarnings);
     }
+
+    [TestMethod]
+    public void ServerHost_PublishesTheIgnoredUrlsWithoutUserInfo()
+    {
+        // An endpoint copied into IgnoreUrls brings its credential along; the patterns are kept otherwise.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.IgnoreUrls.Add(@"^https://user:pw-7f3a@collector\.test(:\d+)?/");
+            o.Browser.IgnoreUrls.Add(@"/api/users/\w+@example\.com");
+        }, webHost: true);
+
+        var config = BelemetryBrowserConfigFactory.Create(settings);
+
+        Assert.DoesNotContain("pw-7f3a", BelemetryBrowserConfigFactory.ToJson(config));
+        CollectionAssert.IsSubsetOf(new[] { "/_framework/", @"^https://collector\.test(:\d+)?/", @"/api/users/\w+@example\.com" }, config.Dependencies.IgnoreUrls);
+        Assert.AreEqual(@"^https://user:pw-7f3a@collector\.test(:\d+)?/", settings.Options.Browser.IgnoreUrls[^2], "The options keep what was configured.");
+    }
 }

@@ -294,6 +294,28 @@ public class BelemetryHttpSenderTests
     }
 
     [TestMethod]
+    [DataRow("https://user:pw-7f3a@collector.test:99999/v1/logs", "https://collector.test:99999/v1/logs")]
+    [DataRow("https://user:pw-7f3a@collector test/v1/logs?a=b@c", "https://collector test/v1/logs?a=b@c")]
+    [DataRow("https://a@b:pw-7f3a@collector test#x", "https://collector test#x")]
+    [DataRow("//user:pw-7f3a@collector test/v1/logs", "//collector test/v1/logs")]
+    public void UserInfo_IsRemoved_FromAUrlNoUriParses(string url, string expected)
+    {
+        // A malformed URL can hold a credential as well: a message never repeats it verbatim.
+        Assert.IsFalse(Uri.TryCreate(url, UriKind.Absolute, out _), url);
+        Assert.AreEqual(expected, BelemetryUserInfo.Remove(url));
+    }
+
+    [TestMethod]
+    [DataRow(@"^https://user:pw-7f3a@collector\.test(:\d+)?/", @"^https://collector\.test(:\d+)?/")]
+    [DataRow(@"https?://pw-7f3a@a\.test/|https?://u:pw-7f3a@b\.test/x\?mail=a@b", @"https?://a\.test/|https?://b\.test/x\?mail=a@b")]
+    [DataRow(@"/api/users/\w+@example\.com", @"/api/users/\w+@example\.com")]
+    [DataRow("/_framework/", "/_framework/")]
+    public void UserInfo_IsRemovedAsText_KeepingTheRestOfAPattern(string pattern, string expected)
+    {
+        Assert.AreEqual(expected, BelemetryUserInfo.RemoveFromText(pattern));
+    }
+
+    [TestMethod]
     public async Task AzurePartialSuccess_OnTheLastAttempt_LeavesOnlyTheRejectedItemsToStore()
     {
         // A stored request is replayed with a single attempt. Storing the original after a 206 would resend the items

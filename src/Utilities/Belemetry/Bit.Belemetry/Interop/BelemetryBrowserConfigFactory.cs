@@ -70,7 +70,9 @@ internal static class BelemetryBrowserConfigFactory
                 Fetch = browser.Fetch,
                 Xhr = browser.Xhr,
                 PropagateTraceContextTo = [.. browser.PropagateTraceContextTo],
-                IgnoreUrls = [.. browser.IgnoreUrls],
+                // Without user info, as the exporters' entries: a pattern copied from an endpoint would publish its
+                // credential in every page. Removed as text, as parsing would rewrite a regular expression.
+                IgnoreUrls = [.. browser.IgnoreUrls.Select(BelemetryUserInfo.RemoveFromText)],
             },
             Errors = new()
             {

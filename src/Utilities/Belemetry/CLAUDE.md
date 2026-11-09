@@ -217,8 +217,9 @@ Notes on the fields:
 - `endpoint`, `tracesEndpoint`, `logsEndpoint` and the `ignoreUrls` entries never carry user info, on any host
   (`BelemetryUserInfo`): a server would publish the credential in every page, and fetch refuses a URL with credentials
   anyway (.NET's `HttpClient` does not send it either). A server warns at startup about an exporter whose page
-  endpoints had some. Belemetry's own messages - the startup warnings, `BelemetryHttpSender`'s warnings and
-  diagnostics - name every URL without it too.
+  endpoints had some. `Browser.IgnoreUrls` patterns lose it as text (`BelemetryUserInfo.RemoveFromText`: parsing would
+  rewrite a regex). Belemetry's own messages - the startup warnings, `BelemetryHttpSender`'s warnings and
+  diagnostics - name every URL without it too, a URL no `Uri` parses included (removed as text).
 - `blockedAttributes` are exact, case-sensitive attribute keys removed from every record, span event, span link and
   metric point. A blocked id
   (`session.id`, ...) is not added by the enrichment step either, and is removed from relayed records that carry it.
