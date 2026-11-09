@@ -242,6 +242,34 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.AreEqual("Not available on the free plan.", component.Find("[role=status]").TextContent.Trim());
     }
 
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCheckboxParams { ErrorMessageAriaLabel = "Refused by the server." } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.AddAttribute(1, nameof(BitCheckbox.Invalid), invalid);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        Assert.AreEqual("Refused by the server.", component.Find("[role=status]").TextContent.Trim());
+    }
+
     [TestMethod]
     public void BitCheckboxParamsUpdateParametersShouldNotOverwriteExistingValues()
     {

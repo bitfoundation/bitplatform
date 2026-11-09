@@ -446,11 +446,14 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         // The live region is only rendered for a checkbox that is wired to say something through it - one whose
         // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
-        // so a list of plain checkboxes does not carry an empty live region per row. Once there it stays, since
-        // it has to be on the page before the text that is meant to be announced out of it.
+        // so a list of plain checkboxes does not carry an empty live region per row. A label a BitParams hands down
+        // is not written by the markup, yet it is said out of the region the moment Invalid turns on, so holding
+        // one wires the checkbox too. Once there it stays, since it has to be on the page before the text that is
+        // meant to be announced out of it.
         _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
                           || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
                           || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
                           || LiveText is not null;
 
         SyncLiveRegion();
