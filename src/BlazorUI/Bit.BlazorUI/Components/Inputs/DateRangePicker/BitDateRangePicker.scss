@@ -19,7 +19,8 @@
 //   --bit-DateRangePicker-preview-background       body of the range previewed while hovering (default: $clr-bg-sec)
 //   --bit-DateRangePicker-focus-color              focus ring of the field and of every cell
 //                                                  and button in the calendar     (default: $clr-pri-focus)
-//   --bit-DateRangePicker-invalid-color            border and underline while invalid         (default: $clr-err)
+//   --bit-DateRangePicker-invalid-color            border and underline while invalid, and the error message
+//                                                                       (default: $clr-err)
 //   --bit-DateRangePicker-required-color           the asterisk after a required label        (default: $clr-req)
 //   --bit-DateRangePicker-disabled-color           text of every disabled part                (default: $clr-fg-dis)
 //
@@ -288,6 +289,16 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
 .bit-dtrp-wrp {
     position: relative;
+}
+
+// The rejection is colored like the border of the field it sits under, so the two follow one variable, and
+// it keeps that color while the picker is disabled: a message gone grey stops reading as the reason.
+.bit-dtrp-erm {
+    display: block;
+    overflow-wrap: break-word;
+    padding-top: spacing(0.5);
+    font-size: $tg-fs-2xs;
+    color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});
 }
 
 .bit-dtrp-icn {

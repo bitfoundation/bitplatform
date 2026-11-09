@@ -278,6 +278,17 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
     public string? EndTimeMinuteInputAriaLabel { get; set; }
 
     /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every DateRangePicker the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// DateRangePickers announce it too. A reason that fits one DateRangePicker alone belongs on that DateRangePicker.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Whether the disabled days are excluded from the selected range. By default a range simply spans over
     /// the disabled days between its two ends. When enabled, once the start date is picked every day whose
     /// range would contain a disabled day becomes unselectable, so the produced range never covers one.
@@ -1066,6 +1077,11 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
         if (EndTimeMinuteInputAriaLabel.HasValue())
         {
             bitDateRangePicker.TakeFromCascade(nameof(EndTimeMinuteInputAriaLabel), EndTimeMinuteInputAriaLabel!, static d => d.EndTimeMinuteInputAriaLabel, static (d, v) => d.EndTimeMinuteInputAriaLabel = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitDateRangePicker.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel!, static d => d.ErrorMessageAriaLabel, static (d, v) => d.ErrorMessageAriaLabel = v);
         }
 
         if (ExcludeDisabledDates.HasValue)

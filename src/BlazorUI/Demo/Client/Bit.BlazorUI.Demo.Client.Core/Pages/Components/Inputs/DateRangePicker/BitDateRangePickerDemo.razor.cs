@@ -325,6 +325,27 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown below the DateRangePicker for a rejection the app decided on its own (a server response, a cross-field rule). It marks the DateRangePicker invalid, is referenced by the input's aria-describedby and is announced as it appears. Standalone, it follows the calendar and describes it instead."
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every DateRangePicker under it, so set it there only as a generic replacement for \"Invalid input\"."
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces ErrorMessage and marks the DateRangePicker invalid the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set."
+        },
+        new()
+        {
             Name = "ExcludeDisabledDates",
             Type = "bool",
             DefaultValue = "false",
@@ -512,6 +533,13 @@ public partial class BitDateRangePickerDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom template for the DateRangePicker's icon."
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the DateRangePicker invalid without an EditContext having said so: the same look and aria-invalid a failing validation gives it. ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce."
         },
         new()
         {
@@ -1188,7 +1216,7 @@ public partial class BitDateRangePickerDemo
         {
             Name = "--bit-DateRangePicker-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "Border and underline of the field while the value is invalid.",
+            Description = "Border and underline of the field while the value is invalid, and the error message.",
         },
         new()
         {
@@ -1568,6 +1596,20 @@ public partial class BitDateRangePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the icon of the BitDateRangePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message container of the BitDateRangePicker."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message of the BitDateRangePicker."
                 },
                 new()
                 {
@@ -2381,6 +2423,19 @@ public partial class BitDateRangePickerDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
+    }
+
+    private BitDateRangePickerValue? stayRange = new()
+    {
+        StartDate = new DateTimeOffset(DateTime.Today.AddDays(7)),
+        EndDate = new DateTimeOffset(DateTime.Today.AddDays(8)),
+    };
+
+    private string? GetStayError()
+    {
+        if (stayRange?.StartDate is not { } start || stayRange.EndDate is not { } end) return null;
+
+        return (end - start).TotalDays < 2 ? "A stay must be at least two nights." : null;
     }
 
     private BitDateRangePickerValue? selectedDateRange = new()

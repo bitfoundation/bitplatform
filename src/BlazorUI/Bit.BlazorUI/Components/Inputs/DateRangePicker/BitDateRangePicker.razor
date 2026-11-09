@@ -66,7 +66,8 @@
                        disabled="@(Disabled)"
                        aria-disabled="@GetInputAriaDisabled(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
-                       aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                       aria-invalid="@(IsInvalid ? "true" : null)"
+                       aria-describedby="@GetInputDescribedBy()"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
                        aria-labelledby="@(Label.HasValue() ? _labelId : null)"
@@ -115,6 +116,21 @@
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
+    @if (Standalone is false)
+    {
+        @RenderErrorMessage()
+    }
+
+    @* The rejection the app asserted is announced the moment it shows up: text only, never ErrorMessageTemplate
+       itself, which is arbitrary markup meant to be seen - a template is announced through ErrorMessageAriaLabel,
+       or as a bare "Invalid input". Once a picker is wired for an error message the region is rendered whether or
+       not it has anything to say, because a live region that arrives with its text already in it is the one thing
+       screen readers are known to miss. *@
+    @if (_hasLiveRegion)
+    {
+        <div role="status" aria-live="polite" aria-atomic="true" class="bit-dtrp-sdt">@ErrorLiveText</div>
+    }
+
 </div>
 
 @if (Standalone is false)
@@ -137,6 +153,7 @@
          class="bit-dtrp-cac @Classes?.CalloutContainer"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
+         aria-describedby="@(Standalone ? ErrorDescriptionId : null)"
          @attributes=@CalloutHtmlAttributes
          @onkeydown="HandleOnCalloutKeyDown"
          aria-label="@CalloutAriaLabel">
@@ -968,3 +985,38 @@
         }
     </div>
 </div>
+
+@* A standalone calendar sits below the root, so its error message follows the calendar rather than splitting the
+   label from it. *@
+@if (Standalone)
+{
+    @RenderErrorMessage()
+}
+
+@code {
+    // What is wrong with the range, under the field it is about (or under the calendar, standalone), which the
+    // input - or the standalone calendar - is described by.
+    private RenderFragment RenderErrorMessage() => __builder =>
+    {
+        @if (HasErrorMessage)
+        {
+            <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetStandaloneStyles(Styles?.ErrorMessageContainer)" class="bit-dtrp-erm @Classes?.ErrorMessageContainer">
+                @if (ErrorMessageTemplate is not null)
+                {
+                    @ErrorMessageTemplate
+                }
+                else
+                {
+                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                }
+            </div>
+        }
+
+        @if (HasErrorAriaLabel)
+        {
+            @* The text a template (or the forced state) is described by on focus, which the template itself may
+               not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+            <span id="@_errorLabelId" class="bit-dtrp-sdt">@ErrorMessageAriaLabel</span>
+        }
+    };
+}

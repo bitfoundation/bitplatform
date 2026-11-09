@@ -555,6 +555,35 @@
                                 OutOfRangeErrorMessage="A booking cannot be longer than a week."
                                 Placeholder="dd/MM/yyyy - dd/MM/yyyy" />
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error look and
+            <b>aria-invalid</b> on a range something else refused - a server, a rule spanning two fields - and
+            <b>ErrorMessage</b> adds the line that says why, right under the field (under the calendar of a
+            <b>Standalone</b> picker). A message implies <b>Invalid</b>, so the flag on its own is for marking a picker
+            whose explanation lives somewhere else. The input is described by the line, and a live region says it the
+            moment it appears. <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no text a
+            screen reader can be handed, so it is announced as a bare "Invalid input" unless
+            <b>ErrorMessageAriaLabel</b> says what it shows.
+        </div>
+        <br />
+        <div>The first picker starts on a one-night stay, which the app refuses; pick a longer one to clear the message:</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="Stay"
+                                @bind-Value="stayRange"
+                                ErrorMessage="@GetStayError()" />
+            <br />
+            <BitDateRangePicker Label="Marked invalid, explained elsewhere" Invalid />
+            <br />
+            <BitDateRangePicker Label="Conference days"
+                                ErrorMessageAriaLabel="Those days are fully booked.">
+                <ErrorMessageTemplate>
+                    Those days are fully booked.
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">Join the waiting list</BitLink>
+                </ErrorMessageTemplate>
+            </BitDateRangePicker>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example21RazorCode" Id="example21">
