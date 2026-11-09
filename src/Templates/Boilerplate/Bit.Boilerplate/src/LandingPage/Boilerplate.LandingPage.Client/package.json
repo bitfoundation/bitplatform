@@ -3,6 +3,6 @@
         "node": ">=24"
     },
     "devDependencies": {
-        "sass": "1.108.0"
+        "sass": "1.108.1"
     }
 }

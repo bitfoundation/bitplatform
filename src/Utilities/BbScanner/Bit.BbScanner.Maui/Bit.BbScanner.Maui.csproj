@@ -24,10 +24,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.120" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.130" />
         <!-- For BlazorWebView's type only: the app references it in full, and its build assets - blazor.webview.js
              among them - would otherwise be the library's static web assets too, and clash with the app's. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.120" ExcludeAssets="build;buildTransitive" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.130" ExcludeAssets="build;buildTransitive" />
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">

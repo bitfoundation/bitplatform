@@ -14,7 +14,7 @@
     <!-- The server's copy of the demo model, on the stock provider the browser's UseBitBsqlite builds on. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.1" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
