@@ -1,0 +1,385 @@
+﻿@page "/scroll-area"
+
+<PageTitle>Scroll Area · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Scroll Area</h1>
+    <p class="bb-subtitle">Native scrolling with custom scrollbars you can style. The content scrolls as in any scrolling element - keyboard, wheel, touch, screen readers, find in page - while thumbs, overflow hooks and fade variables are kept up to date in the browser, with no .NET call per scroll.</p>
+</div>
+
+<SectionSwitcher Slug="scroll-area" />
+
+<DemoBlock Title="Vertical list"
+           Code="@_listCode"
+           Css="@_listCss">
+    <Description>
+        <code>BitBhScrollAreaViewport</code> is the native scroll container, its own scrollbars hidden;
+        <code>BitBhScrollAreaScrollbar</code> + <code>BitBhScrollAreaThumb</code> draw the custom one. With the default
+        <code>Type="Hover"</code> the scrollbar shows while the pointer is over the area or the content scrolls
+        (<code>data-state="visible"</code>), and hides <code>ScrollHideDelay</code> (600 ms) after the pointer leaves - fade it
+        with <code>[data-state="hidden"]</code>. Drag the thumb, press the track to page, or use the wheel over it. The list has
+        nothing focusable, so the viewport itself becomes a tab stop while it overflows: focus it and scroll with the arrow
+        keys. Its <code>role="region"</code> and <code>aria-label</code> say what it is.
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea class="scroll-area">
+            <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Release tags">
+                <div class="scroll-area-content">
+                    <p class="scroll-area-heading">Tags</p>
+                    @foreach (var tag in tags)
+                    {
+                        <div class="scroll-area-tag">@tag</div>
+                    }
+                </div>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+                <BitBhScrollAreaThumb class="scroll-area-thumb" />
+            </BitBhScrollAreaScrollbar>
+        </BitBhScrollArea>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Both axes and the corner"
+           Code="@_bothCode"
+           Css="@_bothCss">
+    <Description>
+        One scrollbar per axis: <code>Orientation="BitBhOrientation.Horizontal"</code> lays a scrollbar along the bottom.
+        <code>Type="Always"</code> keeps both visible, overflow or not. Where they meet, <code>BitBhScrollAreaCorner</code>
+        fills the square - sized from the scrollbars through <code>--bit-bh-scroll-area-corner-width</code> /
+        <code>-height</code>, which the scrollbars also stop short of. Thumb lengths follow the visible fraction
+        (<code>--bit-bh-scroll-area-thumb-height</code> / <code>-width</code>, at least 18px).
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea Type="BitBhScrollAreaType.Always" class="scroll-area scroll-area-wide">
+            <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Build log">
+                <pre class="scroll-area-log">@log</pre>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+                <BitBhScrollAreaThumb class="scroll-area-thumb" />
+            </BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="scroll-area-scrollbar">
+                <BitBhScrollAreaThumb class="scroll-area-thumb" />
+            </BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaCorner class="scroll-area-corner" />
+        </BitBhScrollArea>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Fading edges, shown while scrolling"
+           Code="@_fadeCode"
+           Css="@_fadeCss">
+    <Description>
+        <code>Type="Scroll"</code> shows the scrollbar while the content scrolls (and while the pointer is on it), then hides
+        it <code>ScrollHideDelay</code> later - 900 ms here. The root carries <code>--bit-bh-scroll-area-overflow-y-start</code>
+        / <code>-end</code>: the pixels of content hidden past each edge. A mask that fades over <code>min(2.5rem, …)</code>
+        of them fades an edge only where there is more to see, and no further than there is. <code>data-overflow-y-start</code>
+        / <code>-end</code> (and <code>data-scrolling</code>, <code>data-hovering</code>) are there for selectors.
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea Type="BitBhScrollAreaType.Scroll" ScrollHideDelay="900" class="scroll-area scroll-area-faded">
+            <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Terms of service">
+                <div class="scroll-area-content">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p class="scroll-area-paragraph">@paragraph</p>
+                    }
+                </div>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+                <BitBhScrollAreaThumb class="scroll-area-thumb" />
+            </BitBhScrollAreaScrollbar>
+        </BitBhScrollArea>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Focusable content, right to left"
+           Code="@_rtlCode"
+           Css="@_rtlCss">
+    <Description>
+        A row of filter chips scrolls sideways. The chips take the focus, so the viewport stays out of the tab order (the
+        browser scrolls a focused chip into view). <code>Dir="BitBhDirection.Rtl"</code> (or a
+        <code>BitBhDirectionProvider</code>) writes <code>dir</code> on the root: the content starts on the right, the thumb
+        moves right to left and a vertical scrollbar would sit on the left. <code>Type="Auto"</code> shows the scrollbar
+        whenever the content overflows.
+    </Description>
+    <LiveContent>
+        <div class="scroll-area-demo">
+            <BitBhScrollArea Dir="BitBhDirection.Rtl" Type="BitBhScrollAreaType.Auto" class="scroll-area scroll-area-strip">
+                <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Filters">
+                    <div class="scroll-area-chips">
+                        @foreach (var filter in filters)
+                        {
+                            <button type="button" class="scroll-area-chip" aria-pressed="@(selected.Contains(filter) ? "true" : "false")"
+                                    @onclick="() => Toggle(filter)">@filter</button>
+                        }
+                    </div>
+                </BitBhScrollAreaViewport>
+                <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="scroll-area-scrollbar">
+                    <BitBhScrollAreaThumb class="scroll-area-thumb" />
+                </BitBhScrollAreaScrollbar>
+            </BitBhScrollArea>
+            <p class="scroll-area-output">Filters: <strong>@(selected.Count == 0 ? "none" : string.Join(", ", selected))</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private readonly string[] tags = [.. Enumerable.Range(1, 50).Select(i => $"v1.2.0-beta.{51 - i}")];
+
+    private readonly string log = string.Join('\n', Enumerable.Range(1, 40).Select(i =>
+        $"[12:{i / 60:00}:{i % 60:00}] info  step {i:00}/40  Compiling src/Components/Feature{i:00}/Feature{i:00}View.razor -> obj/Release/net11.0/Feature{i:00}View.g.cs"));
+
+    private readonly string[] paragraphs =
+    [
+        "These terms govern your use of the service. By creating an account you agree to them, so please read them in full.",
+        "You are responsible for the content you upload and for keeping your password secret. Tell us at once about any unauthorised use of your account.",
+        "We may change the service at any time. When a change affects you, we will tell you in advance by email or in the product itself.",
+        "Paid plans renew automatically until cancelled. You can cancel at any time; the plan stays active until the end of the period you paid for.",
+        "We keep your data only as long as needed to provide the service, and you can export or delete it whenever you like.",
+        "If a part of these terms turns out to be unenforceable, the rest stays in effect. These terms are the whole agreement between us.",
+    ];
+
+    private readonly string[] filters = ["All", "Design", "Engineering", "Marketing", "Sales", "Support", "Finance", "Legal", "People", "Operations", "Research"];
+    private readonly List<string> selected = [];
+
+    private void Toggle(string filter)
+    {
+        if (!selected.Remove(filter)) selected.Add(filter);
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _listCode = """
+<BitBhScrollArea class="scroll-area">
+    <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Release tags">
+        <div class="scroll-area-content">
+            <p class="scroll-area-heading">Tags</p>
+            @foreach (var tag in tags)
+            {
+                <div class="scroll-area-tag">@tag</div>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+        <BitBhScrollAreaThumb class="scroll-area-thumb" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+
+@code {
+    private readonly string[] tags = [.. Enumerable.Range(1, 50).Select(i => $"v1.2.0-beta.{51 - i}")];
+}
+""";
+
+    private const string _bothCode = """
+<BitBhScrollArea Type="BitBhScrollAreaType.Always" class="scroll-area scroll-area-wide">
+    <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Build log">
+        <pre class="scroll-area-log">@log</pre>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+        <BitBhScrollAreaThumb class="scroll-area-thumb" />
+    </BitBhScrollAreaScrollbar>
+    <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="scroll-area-scrollbar">
+        <BitBhScrollAreaThumb class="scroll-area-thumb" />
+    </BitBhScrollAreaScrollbar>
+    <BitBhScrollAreaCorner class="scroll-area-corner" />
+</BitBhScrollArea>
+
+@code {
+    private readonly string log = string.Join('\n', Enumerable.Range(1, 40).Select(i =>
+        $"[12:{i / 60:00}:{i % 60:00}] info  step {i:00}/40  Compiling src/Components/Feature{i:00}/Feature{i:00}View.razor -> obj/Release/net11.0/Feature{i:00}View.g.cs"));
+}
+""";
+
+    private const string _fadeCode = """
+<BitBhScrollArea Type="BitBhScrollAreaType.Scroll" ScrollHideDelay="900" class="scroll-area scroll-area-faded">
+    <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Terms of service">
+        <div class="scroll-area-content">
+            @foreach (var paragraph in paragraphs)
+            {
+                <p class="scroll-area-paragraph">@paragraph</p>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="scroll-area-scrollbar">
+        <BitBhScrollAreaThumb class="scroll-area-thumb" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+""";
+
+    private const string _rtlCode = """
+<BitBhScrollArea Dir="BitBhDirection.Rtl" Type="BitBhScrollAreaType.Auto" class="scroll-area scroll-area-strip">
+    <BitBhScrollAreaViewport class="scroll-area-viewport" role="region" aria-label="Filters">
+        <div class="scroll-area-chips">
+            @foreach (var filter in filters)
+            {
+                <button type="button" class="scroll-area-chip" aria-pressed="@(selected.Contains(filter) ? "true" : "false")"
+                        @onclick="() => Toggle(filter)">@filter</button>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="scroll-area-scrollbar">
+        <BitBhScrollAreaThumb class="scroll-area-thumb" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+
+<p class="scroll-area-output">Filters: <strong>@(selected.Count == 0 ? "none" : string.Join(", ", selected))</strong></p>
+
+@code {
+    private readonly string[] filters = ["All", "Design", "Engineering", "Marketing", "Sales", "Support", "Finance", "Legal", "People", "Operations", "Research"];
+    private readonly List<string> selected = [];
+
+    private void Toggle(string filter)
+    {
+        if (!selected.Remove(filter)) selected.Add(filter);
+    }
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/scroll-area.css) ─────────────────────────────
+
+    private const string _baseCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+
+/* Root: a size, a frame, and overflow hidden (inline: position: relative) */
+.scroll-area {
+    width: 100%;
+    max-width: 18rem;
+    height: 15rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* Viewport: fills the root (inline: overflow: scroll, native scrollbars hidden) */
+.scroll-area-viewport {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    outline: none;
+}
+
+/* A viewport with nothing focusable inside is a tab stop: show where the keyboard is. */
+.scroll-area-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--color-focus); }
+
+/* Scrollbar: a 10px track (inline: position: absolute along the edge) */
+.scroll-area-scrollbar {
+    display: flex;
+    padding: 2px;
+    background: transparent;
+    transition: opacity 160ms ease, background-color 160ms ease;
+}
+
+.scroll-area-scrollbar[data-orientation="vertical"]   { width: 10px; }
+.scroll-area-scrollbar[data-orientation="horizontal"] { height: 10px; flex-direction: column; }
+
+.scroll-area-scrollbar[data-hovering],
+.scroll-area-scrollbar[data-dragging] { background: var(--color-fill); }
+
+/* Hidden by the area's Type: fade out (the scrollbar takes no pointer input meanwhile). */
+.scroll-area-scrollbar[data-state="hidden"] { opacity: 0; }
+
+/* Thumb (inline: its length from --bit-bh-scroll-area-thumb-height / -width, its position a transform) */
+.scroll-area-thumb {
+    flex: 1;
+    border-radius: 999px;
+    background: var(--color-border-control);
+}
+
+.scroll-area-thumb:hover,
+.scroll-area-thumb[data-dragging] { background: var(--color-border-control-hover); }
+""";
+
+    private const string _listCss = _baseCss + """
+
+
+/* Tags list */
+.scroll-area-content { padding: 0.75rem 1rem; }
+
+.scroll-area-heading {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.scroll-area-tag {
+    padding: 0.4rem 0;
+    border-top: 1px solid var(--color-border-subtle);
+    font-size: 0.8125rem;
+}
+""";
+
+    private const string _bothCss = _baseCss + """
+
+
+/* Corner: fills the square both scrollbars leave (inline: position and size) */
+.scroll-area-corner { background: var(--color-fill); }
+
+/* Wide, unwrapped lines */
+.scroll-area-wide { max-width: 26rem; height: 12rem; }
+
+.scroll-area-log {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font: 0.8125rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre;
+}
+""";
+
+    private const string _fadeCss = _baseCss + """
+
+
+/* The overflow variables are the pixels of content hidden past each edge */
+.scroll-area-faded .scroll-area-viewport {
+    mask-image: linear-gradient(to bottom,
+        transparent 0,
+        #000 min(2.5rem, var(--bit-bh-scroll-area-overflow-y-start, 0px)),
+        #000 calc(100% - min(2.5rem, var(--bit-bh-scroll-area-overflow-y-end, 0px))),
+        transparent 100%);
+}
+
+.scroll-area-content   { padding: 0.75rem 1rem; }
+.scroll-area-paragraph { margin: 0 0 0.75rem; font-size: 0.875rem; line-height: 1.6; }
+""";
+
+    private const string _rtlCss = _baseCss + """
+
+
+/* Horizontal chips */
+.scroll-area-strip { max-width: 22rem; height: auto; }
+.scroll-area-strip .scroll-area-viewport { height: auto; }
+
+.scroll-area-chips {
+    display: flex;
+    gap: 0.5rem;
+    width: max-content;
+    padding: 0.75rem 0.75rem 1rem;
+}
+
+.scroll-area-chip {
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.scroll-area-chip:hover { background: var(--color-fill); }
+.scroll-area-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.scroll-area-chip[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.scroll-area-demo   { display: grid; gap: 0.75rem; width: 100%; }
+.scroll-area-output { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.scroll-area-output strong { color: var(--color-text); font-weight: 600; }
+""";
+}

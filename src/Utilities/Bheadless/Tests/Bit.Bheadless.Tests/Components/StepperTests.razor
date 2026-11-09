@@ -1,0 +1,88 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment Steps(params string[] titles) => @<text>
+        <BitBhStepperList>
+            @for (var i = 0; i < titles.Length; i++)
+            {
+                var index = i;
+                <BitBhStepperItem Index="index">
+                    <BitBhStepperTrigger>
+                        <BitBhStepperIndicator>@(index + 1)</BitBhStepperIndicator>
+                        <BitBhStepperTitle>@titles[index]</BitBhStepperTitle>
+                    </BitBhStepperTrigger>
+                </BitBhStepperItem>
+            }
+        </BitBhStepperList>
+        @for (var i = 0; i < titles.Length; i++)
+        {
+            var index = i;
+            <BitBhStepperContent Index="index">Content @titles[index]</BitBhStepperContent>
+        }
+        <BitBhStepperPrevious>Back</BitBhStepperPrevious>
+        <BitBhStepperNext>Next</BitBhStepperNext>
+    </text>;
+
+    [TestMethod]
+    public void Steps_expose_their_state_and_the_current_one()
+    {
+        var cut = Render(@<BitBhStepper Count="3" DefaultStep="1">@Steps("Account", "Address", "Payment")</BitBhStepper>);
+
+        var items = cut.FindAll("li");
+        Assert.AreEqual("completed", items[0].GetAttribute("data-state"));
+        Assert.AreEqual("active", items[1].GetAttribute("data-state"));
+        Assert.AreEqual("inactive", items[2].GetAttribute("data-state"));
+        Assert.AreEqual("step", cut.FindAll("li button")[1].GetAttribute("aria-current"));
+        Assert.AreEqual("Steps", cut.Find("ol").AccessibleName());
+
+        var regions = cut.FindAll("[role=region]");
+        Assert.HasCount(3, regions);
+        Assert.AreEqual("Address", regions[1].AccessibleName());
+        Assert.IsTrue(regions[0].HasAttribute("hidden"));
+        Assert.IsFalse(regions[1].HasAttribute("hidden"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Next_previous_and_complete()
+    {
+        var steps = new List<int>();
+        var completed = false;
+        var cut = Render(@<BitBhStepper Count="2" OnStepChange="s => steps.Add(s)" OnComplete="() => completed = true">@Steps("One", "Two")</BitBhStepper>);
+
+        cut.FindAll("button").Single(b => Text(b) == "Next").Click();
+        Assert.AreEqual(1, steps[^1]);
+        cut.FindAll("button").Single(b => Text(b) == "Next").Click();
+        Assert.IsTrue(completed);
+        cut.FindAll("button").Single(b => Text(b) == "Back").Click();
+        Assert.AreEqual(0, steps[^1]);
+        Assert.IsTrue(cut.FindAll("button").Single(b => Text(b) == "Back").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void Linear_stepper_only_reaches_steps_in_order_and_validates()
+    {
+        var valid = false;
+        var cut = Render(@<BitBhStepper Count="3" Linear="true" CanGoNext="@(_ => valid)">@Steps("A", "B", "C")</BitBhStepper>);
+
+        var triggers = cut.FindAll("li button");
+        Assert.IsTrue(triggers[1].HasAttribute("disabled"));
+        Assert.IsTrue(triggers[2].HasAttribute("disabled"));
+        cut.FindAll("button").Single(b => Text(b) == "Next").Click();
+        Assert.AreEqual("active", cut.FindAll("li")[0].GetAttribute("data-state"));
+
+        // Once the current step is valid it can be left: Next goes on, and the step after it can be reached.
+        valid = true;
+        cut.FindAll("button").Single(b => Text(b) == "Next").Click();
+        Assert.AreEqual("active", cut.FindAll("li")[1].GetAttribute("data-state"));
+        Assert.IsFalse(cut.FindAll("li button")[2].HasAttribute("disabled"));
+
+        valid = false;
+        cut.FindAll("li button")[2].Click();
+        Assert.AreEqual("active", cut.FindAll("li")[1].GetAttribute("data-state"));
+        // Back is always allowed.
+        cut.FindAll("li button")[0].Click();
+        Assert.AreEqual("active", cut.FindAll("li")[0].GetAttribute("data-state"));
+    }
+}

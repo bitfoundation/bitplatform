@@ -24,6 +24,25 @@ public class FilterTests
     }
 
     [TestMethod]
+    public void Selection_placement_aligns_the_selected_item()
+    {
+        BitBhAnchorOptions options = "selection";
+        Assert.AreEqual(BitBhAnchorOptions.SelectedItem, options.AlignItem);
+        Assert.AreEqual("bottom start", options.To);
+        Assert.IsNull(((BitBhAnchorOptions)"top").AlignItem);
+    }
+
+    [TestMethod]
+    public void Culture_aware_matching_follows_the_culture_rules()
+    {
+        var turkish = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+        // In Turkish the capital of "i" is "İ": "İstanbul" contains "ist" there.
+        Assert.IsTrue(BitBhFilter.StartsWith("İstanbul", "ist", turkish));
+        Assert.IsTrue(BitBhFilter.Contains("Diyarbakır", "BAKIR", turkish));
+        Assert.IsTrue(BitBhFilter.Contains("Café", "cafe", System.Globalization.CultureInfo.GetCultureInfo("fr-FR")));
+    }
+
+    [TestMethod]
     public void Score_ranks_exact_then_prefix_then_fuzzy()
     {
         var exact = BitBhFilter.Score("Settings", "settings");

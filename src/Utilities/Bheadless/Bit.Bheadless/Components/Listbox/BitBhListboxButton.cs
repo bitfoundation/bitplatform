@@ -125,7 +125,9 @@ public class BitBhListboxButton<TValue> : BitBhComponentBase, IDisposable
         }
 
         attrs[BitBhKeyboard.KeysAttribute] = IsOpen
-            ? "ArrowDown ArrowUp Home End PageUp PageDown Enter Space"
+            ? ListboxContext?.Multiple == true
+                ? "ArrowDown ArrowUp Home End PageUp PageDown Enter Space Ctrl+a Meta+a"
+                : "ArrowDown ArrowUp Home End PageUp PageDown Enter Space"
             : "ArrowDown ArrowUp Home End Enter Space";
 
         if (IsDisabled)

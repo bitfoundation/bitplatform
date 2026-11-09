@@ -504,4 +504,29 @@
         Assert.AreEqual("Enter", box.GetAttribute("data-bit-bh-keys"));
         Assert.IsTrue(cut.Find("[role=checkbox]").HasAttribute("blazor:onclick"));
     }
+
+    [TestMethod]
+    public void Read_only_checkbox_switch_and_radio_group_keep_their_state()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhCheckbox ReadOnly="true" DefaultChecked="true" aria-label="Agreed" />
+                <BitBhSwitch ReadOnly="true" aria-label="Sync" />
+                <BitBhRadioGroup ReadOnly="true" DefaultValue="a" aria-label="Plan">
+                    <BitBhRadio Value="a">A</BitBhRadio>
+                    <BitBhRadio Value="b">B</BitBhRadio>
+                </BitBhRadioGroup>
+            </div>);
+
+        cut.Find("[role=checkbox]").Click();
+        cut.Find("[role=switch]").Click();
+        cut.FindAll("[role=radio]")[1].Click();
+        Assert.AreEqual("true", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+        Assert.AreEqual("true", cut.Find("[role=checkbox]").GetAttribute("aria-readonly"));
+        Assert.AreEqual("false", cut.Find("[role=switch]").GetAttribute("aria-checked"));
+        Assert.AreEqual("true", cut.FindAll("[role=radio]")[0].GetAttribute("aria-checked"));
+        Assert.AreEqual("true", cut.Find("[role=radiogroup]").GetAttribute("aria-readonly"));
+        Assert.IsFalse(cut.Find("[role=checkbox]").HasAttribute("disabled"));
+        cut.ShouldBeAccessible();
+    }
 }

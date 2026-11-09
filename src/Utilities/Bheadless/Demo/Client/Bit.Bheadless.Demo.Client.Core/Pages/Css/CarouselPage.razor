@@ -1,0 +1,145 @@
+﻿@page "/carousel"
+
+<PageTitle>Carousel · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Carousel</h1>
+    <p class="bb-subtitle">The WAI-ARIA carousel: slides with previous / next buttons, indicators, swiping, and automatic rotation with its rotation control.</p>
+</div>
+
+<SectionSwitcher Slug="carousel" />
+
+<DemoBlock Title="Autoplaying slides" Code="@_code" Css="@_css">
+    <Description>
+        The root is a region with <code>aria-roledescription="carousel"</code>; each slide a group named "2 of 4"; slides out of
+        view are <code>inert</code>. The carousel rotates every <code>AutoplayInterval</code> ms, pauses while hovered and stops
+        for good when keyboard focus enters it, as the APG asks - the rotation control (first in the tab order) starts it again.
+        Drag the slides to swipe. The track is moved by the root's <code>--bit-bh-carousel-index</code> alone.
+    </Description>
+    <LiveContent>
+        <BitBhCarousel aria-label="Featured" Loop="true" Autoplay="true" AutoplayInterval="4000" class="carousel">
+            <Template Context="c">
+                <div class="carousel-viewport">
+                    <BitBhCarouselSlides class="carousel-track">
+                        @foreach (var (name, color) in _slides)
+                        {
+                            <BitBhCarouselSlide class="carousel-slide">
+                                <div class="carousel-card" style="background:@color">@name</div>
+                            </BitBhCarouselSlide>
+                        }
+                    </BitBhCarouselSlides>
+                </div>
+                <div class="carousel-controls">
+                    <BitBhCarouselAutoplayToggle class="carousel-btn">
+                        <Template Context="playing">@(playing ? "❚❚" : "▶")</Template>
+                    </BitBhCarouselAutoplayToggle>
+                    <BitBhCarouselPrevious class="carousel-btn">‹</BitBhCarouselPrevious>
+                    @for (var i = 0; i < c.PageCount; i++)
+                    {
+                        var index = i;
+                        <BitBhCarouselIndicator Index="index" class="carousel-dot" />
+                    }
+                    <BitBhCarouselNext class="carousel-btn">›</BitBhCarouselNext>
+                </div>
+            </Template>
+        </BitBhCarousel>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Several slides in view" Code="@_multiCode" Css="@_css">
+    <Description>
+        <code>SlidesPerView</code> shows several slides at once and <code>SlidesPerMove</code> sets how far a button or a swipe
+        moves; without <code>Loop</code> the buttons disable at the ends.
+    </Description>
+    <LiveContent>
+        <BitBhCarousel aria-label="Colors" SlidesPerView="2" class="carousel">
+            <div class="carousel-viewport">
+                <BitBhCarouselSlides class="carousel-track">
+                    @foreach (var (name, color) in _slides)
+                    {
+                        <BitBhCarouselSlide class="carousel-slide">
+                            <div class="carousel-card" style="background:@color">@name</div>
+                        </BitBhCarouselSlide>
+                    }
+                </BitBhCarouselSlides>
+            </div>
+            <div class="carousel-controls">
+                <BitBhCarouselPrevious class="carousel-btn">‹</BitBhCarouselPrevious>
+                <BitBhCarouselNext class="carousel-btn">›</BitBhCarouselNext>
+            </div>
+        </BitBhCarousel>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly (string Name, string Color)[] _slides =
+    [
+        ("Ocean", "#1d4ed8"), ("Forest", "#15803d"), ("Sunset", "#b45309"), ("Berry", "#7e22ce"),
+    ];
+
+    private const string _code = """
+<BitBhCarousel aria-label="Featured" Loop="true" Autoplay="true" AutoplayInterval="4000" class="carousel">
+    <Template Context="c">
+        <div class="carousel-viewport">
+            <BitBhCarouselSlides class="carousel-track">
+                @foreach (var slide in slides)
+                {
+                    <BitBhCarouselSlide class="carousel-slide">…</BitBhCarouselSlide>
+                }
+            </BitBhCarouselSlides>
+        </div>
+        <BitBhCarouselAutoplayToggle class="carousel-btn">
+            <Template Context="playing">@(playing ? "❚❚" : "▶")</Template>
+        </BitBhCarouselAutoplayToggle>
+        <BitBhCarouselPrevious class="carousel-btn">‹</BitBhCarouselPrevious>
+        @for (var i = 0; i < c.PageCount; i++)
+        {
+            var index = i;
+            <BitBhCarouselIndicator Index="index" class="carousel-dot" />
+        }
+        <BitBhCarouselNext class="carousel-btn">›</BitBhCarouselNext>
+    </Template>
+</BitBhCarousel>
+""";
+
+    private const string _multiCode = """
+<BitBhCarousel aria-label="Colors" SlidesPerView="2" class="carousel">
+    <div class="carousel-viewport">
+        <BitBhCarouselSlides class="carousel-track">
+            @foreach (var slide in slides)
+            {
+                <BitBhCarouselSlide class="carousel-slide">…</BitBhCarouselSlide>
+            }
+        </BitBhCarouselSlides>
+    </div>
+    <BitBhCarouselPrevious class="carousel-btn">‹</BitBhCarouselPrevious>
+    <BitBhCarouselNext class="carousel-btn">›</BitBhCarouselNext>
+</BitBhCarousel>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.carousel-viewport { overflow: hidden; border-radius: 0.75rem; }
+
+/* The track slides by the root's --bit-bh-carousel-index; while dragged it follows --bit-bh-carousel-drag */
+.carousel-track {
+    display: flex;
+    transform: translateX(calc(var(--bit-bh-carousel-index) * -100% / var(--bit-bh-carousel-slides-per-view)
+                               + var(--bit-bh-carousel-drag, 0px)));
+    transition: transform 300ms ease;
+}
+
+.carousel-track[data-dragging] { transition: none; }
+
+.carousel-slide { flex: 0 0 calc(100% / var(--bit-bh-carousel-slides-per-view)); }
+
+.carousel-btn:disabled { opacity: 0.4; }
+
+/* A 24px target with the visible dot drawn inside (WCAG 2.5.8) */
+.carousel-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 1.5rem; height: 1.5rem; }
+.carousel-dot::before { content: ""; width: 0.6rem; height: 0.6rem; border-radius: 999px; background: var(--color-border-control); }
+
+/* aria-current / data-current on the dot of the slide in view */
+.carousel-dot[data-current]::before { width: 1.4rem; background: var(--color-primary); }
+""";
+}

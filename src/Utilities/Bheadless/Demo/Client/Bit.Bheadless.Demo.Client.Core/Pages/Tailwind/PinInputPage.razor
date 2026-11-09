@@ -1,0 +1,66 @@
+﻿@page "/tw/pin-input"
+
+<PageTitle>PIN Input (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>PIN Input</h1>
+    <p class="bb-subtitle">One input per character for PINs and one-time codes: typing moves on, paste and SMS autofill spread over the positions.</p>
+</div>
+
+<SectionSwitcher Slug="pin-input" />
+
+<TwDemoBlock Title="One-time code" Code="@_otpCode">
+    <Description>
+        <code>Otp</code> lets phones fill the code from a text message; a pasted code spreads over the positions. Filled
+        positions get <code>data-filled</code> and the whole input <code>data-complete</code>, styled with
+        <code>data-[filled]:</code> and <code>group-data-[complete]:</code>.
+    </Description>
+    <LiveContent>
+        <BitBhPinInput @bind-Value="pinCode" Otp="true" aria-label="Verification code" class="group inline-flex items-center gap-2">
+            @for (var i = 0; i < 6; i++)
+            {
+                <BitBhPinInputSlot class="h-12 w-10 rounded-lg border border-zinc-300 bg-white text-center text-xl font-semibold text-zinc-900 focus:outline-2 focus:outline-blue-600 data-[filled]:border-blue-500 group-data-[complete]:border-green-500 group-data-[complete]:bg-green-50" />
+            }
+        </BitBhPinInput>
+        <span class="text-sm text-zinc-500">Value: <strong class="text-zinc-900">@pinCode</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Masked PIN" Code="@_maskCode">
+    <Description>
+        <code>Mask</code> hides the digits; <code>Placeholder</code> marks the empty positions.
+    </Description>
+    <LiveContent>
+        <BitBhPinInput Mask="true" Placeholder="○" aria-label="PIN" class="inline-flex gap-2">
+            @for (var i = 0; i < 4; i++)
+            {
+                <BitBhPinInputSlot class="h-12 w-10 rounded-lg border border-zinc-300 bg-white text-center text-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-2 focus:outline-blue-600" />
+            }
+        </BitBhPinInput>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private string pinCode = string.Empty;
+
+    private const string _otpCode = """
+<BitBhPinInput @bind-Value="pinCode" Otp="true" aria-label="Verification code" class="group inline-flex items-center gap-2">
+    @for (var i = 0; i < 6; i++)
+    {
+        <BitBhPinInputSlot class="h-12 w-10 rounded-lg border border-zinc-300 bg-white text-center text-xl font-semibold
+                                  focus:outline-2 focus:outline-blue-600 data-[filled]:border-blue-500
+                                  group-data-[complete]:border-green-500 group-data-[complete]:bg-green-50" />
+    }
+</BitBhPinInput>
+""";
+
+    private const string _maskCode = """
+<BitBhPinInput Mask="true" Placeholder="○" aria-label="PIN" class="inline-flex gap-2">
+    @for (var i = 0; i < 4; i++)
+    {
+        <BitBhPinInputSlot class="h-12 w-10 rounded-lg border border-zinc-300 bg-white text-center text-xl
+                                  placeholder:text-zinc-400 focus:outline-2 focus:outline-blue-600" />
+    }
+</BitBhPinInput>
+""";
+}

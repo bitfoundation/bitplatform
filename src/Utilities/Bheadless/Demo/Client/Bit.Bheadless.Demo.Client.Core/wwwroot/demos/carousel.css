@@ -1,0 +1,82 @@
+﻿/* carousel demo styles — plain CSS section. The library ships zero CSS. */
+
+.carousel {
+    position: relative;
+    display: grid;
+    gap: 0.75rem;
+    width: min(32rem, 100%);
+}
+
+.carousel-viewport { overflow: hidden; border-radius: 0.75rem; }
+
+/* The track slides by the root's --bit-bh-carousel-index; while dragged it follows --bit-bh-carousel-drag */
+.carousel-track {
+    display: flex;
+    transform: translateX(calc(var(--bit-bh-carousel-index) * -100% / var(--bit-bh-carousel-slides-per-view) + var(--bit-bh-carousel-drag, 0px)));
+    transition: transform 300ms ease;
+    cursor: grab;
+}
+
+.carousel-track[data-dragging] { transition: none; cursor: grabbing; }
+[dir="rtl"] .carousel-track { transform: translateX(calc(var(--bit-bh-carousel-index) * 100% / var(--bit-bh-carousel-slides-per-view) + var(--bit-bh-carousel-drag, 0px))); }
+
+.carousel-slide {
+    flex: 0 0 calc(100% / var(--bit-bh-carousel-slides-per-view));
+    box-sizing: border-box;
+    padding: 0 0.25rem;
+}
+
+.carousel-card {
+    display: grid;
+    place-items: center;
+    height: 10rem;
+    border-radius: 0.75rem;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.carousel-controls { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+
+.carousel-btn {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.carousel-btn:hover:enabled { background: var(--color-fill); }
+.carousel-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.carousel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.carousel-dot {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+/* The visible dot is drawn inside a 24px target (WCAG 2.5.8) */
+.carousel-dot::before {
+    content: "";
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: var(--color-border-control);
+    transition: width 200ms ease;
+}
+
+.carousel-dot:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; }
+/* aria-current / data-current on the dot of the slide in view */
+.carousel-dot[data-current]::before { width: 1.4rem; background: var(--color-primary); }

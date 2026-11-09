@@ -1,0 +1,102 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Color_converts_between_models_and_css()
+    {
+        var teal = BitBhColor.Parse("#008080");
+        Assert.AreEqual("#008080", teal.ToHex());
+        Assert.AreEqual(180, teal.Hue, 0.01);
+        Assert.AreEqual("rgb(0 128 128)", teal.ToRgbString());
+        Assert.AreEqual("hsl(180 100% 25%)", teal.ToHslString());
+
+        Assert.AreEqual("#ff0000", BitBhColor.Parse("f00").ToHex());
+        Assert.AreEqual("#11223380", BitBhColor.Parse("#11223380").ToHex());
+        Assert.AreEqual("#ff8000", BitBhColor.Parse("rgb(255, 128, 0)").ToHex());
+        Assert.AreEqual("#00ff00", BitBhColor.Parse("hsl(120 100% 50%)").ToHex());
+        Assert.AreEqual(0.5, BitBhColor.Parse("rgb(0 0 0 / 50%)").Alpha, 0.001);
+        Assert.IsFalse(BitBhColor.TryParse("not a color", out _));
+        Assert.IsFalse(BitBhColor.TryParse("#12", out _));
+
+        // A gray keeps its hue: the picker's hue doesn't jump back to red.
+        var blue = BitBhColor.FromRgb(0, 0, 255);
+        var gray = blue.With(BitBhColorChannel.Saturation, 0);
+        Assert.AreEqual(240, gray.Hue);
+        Assert.AreEqual(240, gray.With(BitBhColorChannel.Brightness, 50).Hue);
+        var midGray = BitBhColor.FromRgb(128, 128, 128) with { Hue = 240 };
+        Assert.AreEqual(240, midGray.With(BitBhColorChannel.Red, 128).Hue);
+        Assert.AreEqual(360, blue.With(BitBhColorChannel.Hue, 360).Hue);
+    }
+
+    [TestMethod]
+    public void Color_area_thumb_is_a_2d_slider_moved_by_the_arrow_keys()
+    {
+        BitBhColor? color = null;
+        var cut = Render(
+            @<BitBhColorArea DefaultValue="@BitBhColor.FromRgb(255, 0, 0)" ValueChanged="c => color = c">
+                <BitBhColorAreaThumb aria-label="Color" />
+            </BitBhColorArea>);
+
+        var thumb = cut.Find("[role=slider]");
+        Assert.AreEqual("2D slider", thumb.GetAttribute("aria-roledescription"));
+        Assert.AreEqual("Saturation 100%, Brightness 100%", thumb.GetAttribute("aria-valuetext"));
+        Assert.Contains("left:100%", thumb.GetAttribute("style")!);
+        Assert.Contains("--bit-bh-color-area-hue:#ff0000", cut.Find("div").GetAttribute("style")!);
+
+        thumb.Press("ArrowLeft", shift: true);
+        Assert.AreEqual(90, color!.Value.Get(BitBhColorChannel.Saturation), 0.01);
+        cut.Find("[role=slider]").Press("ArrowDown");
+        Assert.AreEqual(99, color!.Value.Get(BitBhColorChannel.Brightness), 0.01);
+        cut.Find("[role=slider]").Press("Home");
+        Assert.AreEqual(0, color!.Value.Get(BitBhColorChannel.Saturation), 0.01);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Color_slider_moves_one_channel_and_announces_it()
+    {
+        BitBhColor? color = null;
+        var cut = Render(
+            @<BitBhColorSlider DefaultValue="@BitBhColor.FromRgb(255, 0, 0)" Channel="BitBhColorChannel.Hue" ValueChanged="c => color = c">
+                <BitBhSliderTrack />
+                <BitBhSliderThumb aria-label="Hue" />
+            </BitBhColorSlider>);
+
+        var thumb = cut.Find("[role=slider]");
+        Assert.AreEqual("360", thumb.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("0°", thumb.GetAttribute("aria-valuetext"));
+        Assert.Contains("--bit-bh-color-slider-gradient:linear-gradient(to right, #ff0000", cut.Find("[data-channel]").GetAttribute("style")!);
+
+        thumb.Press("PageUp");
+        Assert.AreEqual(15, color!.Value.Hue);
+        Assert.AreEqual("15°", cut.Find("[role=slider]").GetAttribute("aria-valuetext"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Swatch_and_field()
+    {
+        BitBhColor? picked = null;
+        var cut = Render(
+            @<div>
+                <BitBhColorSwatch Color="@BitBhColor.Parse("#1d4ed8")" Label="Ocean" />
+                <BitBhColorField DefaultValue="@BitBhColor.Parse("#1d4ed8")" ValueChanged="c => picked = c" aria-label="Hex" />
+            </div>);
+
+        var swatch = cut.Find("[role=img]");
+        Assert.AreEqual("Ocean", swatch.AccessibleName());
+        Assert.Contains("background-color:rgb(29 78 216)", swatch.GetAttribute("style")!);
+
+        Assert.AreEqual("#1d4ed8", cut.Find("input").GetAttribute("value"));
+        cut.Find("input").Input("rgb(255 0 0)");
+        cut.Find("input").Blur();
+        Assert.AreEqual("#ff0000", picked!.Value.ToHex());
+        Assert.AreEqual("#ff0000", cut.Find("input").GetAttribute("value"));
+
+        cut.Find("input").Input("nope");
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("#ff0000", cut.Find("input").GetAttribute("value"));
+        cut.ShouldBeAccessible();
+    }
+}

@@ -1,0 +1,759 @@
+﻿@using System.Reflection
+@using AngleSharp.Dom
+@using Microsoft.JSInterop
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static string Now(IElement handle) => handle.GetAttribute("aria-valuenow")!;
+
+    [TestMethod]
+    public void Handles_are_focusable_window_splitters()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel class="first" MinSize="20" MaxSize="70">One</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="handle" />
+                <BitBhSplitterPanel class="second" MinSize="10">Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var handle = cut.Find(".handle");
+        Assert.AreEqual("separator", handle.Role());
+        Assert.AreEqual("0", handle.GetAttribute("tabindex"));
+        Assert.AreEqual("50", Now(handle));
+        Assert.AreEqual("20", handle.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("70", handle.GetAttribute("aria-valuemax"));
+        Assert.AreEqual(cut.Find(".first").Id, handle.GetAttribute("aria-controls"));
+        // The bar between side-by-side panels is vertical (APG).
+        Assert.AreEqual("vertical", handle.GetAttribute("aria-orientation"));
+        Assert.AreEqual("horizontal", handle.GetAttribute("data-orientation"));
+        Assert.AreEqual("Resize panels", handle.AccessibleName());
+        Assert.AreEqual("ArrowLeft ArrowRight Home End", handle.GetAttribute("data-bit-bh-keys"));
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_vertical_splitter_has_a_horizontal_bar_moved_by_Up_and_Down()
+    {
+        var cut = Render(
+            @<BitBhSplitter Orientation="BitBhOrientation.Vertical" class="root">
+                <BitBhSplitterPanel>Top</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Bottom</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var handle = cut.Find("[role=separator]");
+        Assert.AreEqual("horizontal", handle.GetAttribute("aria-orientation"));
+        Assert.AreEqual("ArrowUp ArrowDown Home End", handle.GetAttribute("data-bit-bh-keys"));
+        Assert.Contains("flex-direction:column", cut.Find(".root").GetAttribute("style")!);
+
+        handle.Press("ArrowRight");
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+        cut.Find("[role=separator]").Press("ArrowDown");
+        Assert.AreEqual("55", Now(cut.Find("[role=separator]")));
+        cut.Find("[role=separator]").Press("ArrowUp");
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_label_the_consumer_gives_wins()
+    {
+        var cut = Render(
+            @<div>
+                <span id="sidebar-label">Sidebar</span>
+                <BitBhSplitter>
+                    <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                    <BitBhSplitterHandle class="labelled" aria-label="Resize sidebar" />
+                    <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+                    <BitBhSplitterHandle class="by" aria-labelledby="sidebar-label" />
+                    <BitBhSplitterPanel>Three</BitBhSplitterPanel>
+                </BitBhSplitter>
+            </div>);
+        Assert.AreEqual("Resize sidebar", cut.Find(".labelled").AccessibleName());
+        Assert.IsNull(cut.Find(".by").GetAttribute("aria-label"));
+        Assert.AreEqual("Sidebar", cut.Find(".by").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Panels_share_the_space_by_their_defaults()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel class="p" DefaultSize="40">One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel class="p">Two</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel class="p">Three</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var panels = cut.FindAll(".p");
+        Assert.Contains("flex:40 1 0px", panels[0].GetAttribute("style")!);
+        Assert.Contains("flex:30 1 0px", panels[1].GetAttribute("style")!);
+        Assert.Contains("flex:30 1 0px", panels[2].GetAttribute("style")!);
+        Assert.Contains("overflow:hidden", panels[0].GetAttribute("style")!);
+        Assert.AreEqual("expanded", panels[0].GetAttribute("data-state"));
+        var handles = cut.FindAll("[role=separator]");
+        Assert.AreEqual("40", Now(handles[0]));
+        Assert.AreEqual("30", Now(handles[1]));
+        Assert.AreEqual(panels[1].Id, handles[1].GetAttribute("aria-controls"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void DefaultSizes_are_brought_within_constraints_and_to_100()
+    {
+        IReadOnlyList<double>? reported = null;
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 10, 90 })" OnSizesChange="s => reported = s">
+                <BitBhSplitterPanel MinSize="30">One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        Assert.AreEqual("30", Now(cut.Find("[role=separator]")));
+        var splitter = cut.FindComponent<BitBhSplitter>().Instance;
+        Assert.AreSequenceEqual(new[] { 30d, 70d }, splitter.CurrentSizes.ToArray());
+        // Nothing was changed by the user: nothing is reported.
+        Assert.IsNull(reported);
+
+        // A total short of 100 is shared by the panels that can still grow.
+        var shortOf100 = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 20, 10 })">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel MaxSize="40">Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        Assert.AreSequenceEqual(new[] { 60d, 40d }, shortOf100.FindComponent<BitBhSplitter>().Instance.CurrentSizes.ToArray());
+    }
+
+    [TestMethod]
+    public void Arrow_keys_resize_by_the_step_and_Shift_by_the_large_step()
+    {
+        var commits = new List<IReadOnlyList<double>>();
+        var cut = Render(
+            @<BitBhSplitter OnSizesCommit="s => commits.Add(s)">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        IElement Handle() => cut.Find("[role=separator]");
+        Handle().Press("ArrowRight");
+        Assert.AreEqual("55", Now(Handle()));
+        Handle().Press("ArrowLeft");
+        Handle().Press("ArrowLeft");
+        Assert.AreEqual("45", Now(Handle()));
+        Handle().Press("ArrowRight", shift: true);
+        Assert.AreEqual("65", Now(Handle()));
+        Assert.HasCount(4, commits);
+        Assert.AreSequenceEqual(new[] { 65d, 35d }, commits[^1].ToArray());
+    }
+
+    [TestMethod]
+    public void KeyboardStep_and_LargeKeyboardStep_are_configurable()
+    {
+        var cut = Render(
+            @<BitBhSplitter KeyboardStep="1" LargeKeyboardStep="25">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreEqual("51", Now(cut.Find("[role=separator]")));
+        cut.Find("[role=separator]").Press("ArrowLeft", shift: true);
+        Assert.AreEqual("26", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Home_and_End_go_to_the_smallest_and_largest_size()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel MinSize="15" MaxSize="80">One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel MinSize="25">Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        cut.Find("[role=separator]").Press("End");
+        // The panel after keeps its minimum.
+        Assert.AreEqual("75", Now(cut.Find("[role=separator]")));
+        Assert.AreEqual("75", cut.Find("[role=separator]").GetAttribute("aria-valuemax"));
+        cut.Find("[role=separator]").Press("Home");
+        Assert.AreEqual("15", Now(cut.Find("[role=separator]")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Constraints_stop_the_handle()
+    {
+        var cut = Render(
+            @<BitBhSplitter KeyboardStep="10">
+                <BitBhSplitterPanel MaxSize="60">One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel MinSize="45">Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        IElement Handle() => cut.Find("[role=separator]");
+        Handle().Press("ArrowRight");
+        // The panel after can't go below 45.
+        Assert.AreEqual("55", Now(Handle()));
+        Handle().Press("ArrowRight");
+        Assert.AreEqual("55", Now(Handle()));
+        Assert.AreEqual("55", Handle().GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void A_panel_at_its_minimum_passes_the_resize_on_to_the_next()
+    {
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 30, 40, 30 })" KeyboardStep="20">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel MinSize="30">Two</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel MinSize="10">Three</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var splitter = cut.FindComponent<BitBhSplitter>().Instance;
+        cut.FindAll("[role=separator]")[0].Press("ArrowRight");
+        // Two gives 10 down to its minimum, Three the other 10.
+        Assert.AreSequenceEqual(new[] { 50d, 30d, 20d }, splitter.CurrentSizes.ToArray());
+        // Two can't give more; Three can give 10 more.
+        Assert.AreEqual("60", cut.FindAll("[role=separator]")[0].GetAttribute("aria-valuemax"));
+        cut.FindAll("[role=separator]")[0].Press("End");
+        Assert.AreSequenceEqual(new[] { 60d, 30d, 10d }, splitter.CurrentSizes.ToArray());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Right_to_left_mirrors_Left_and_Right()
+    {
+        var cut = Render(
+            @<BitBhSplitter Dir="BitBhDirection.Rtl" class="root">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        Assert.AreEqual("rtl", cut.Find(".root").GetAttribute("dir"));
+        // The first panel is on the right: Left moves the bar left and grows it.
+        cut.Find("[role=separator]").Press("ArrowLeft");
+        Assert.AreEqual("55", Now(cut.Find("[role=separator]")));
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void A_cascaded_direction_is_written_on_the_root_and_mirrors_the_keys()
+    {
+        var cut = Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhSplitter class="root">
+                    <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                    <BitBhSplitterHandle />
+                    <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+                </BitBhSplitter>
+            </BitBhDirectionProvider>);
+
+        Assert.AreEqual("rtl", cut.Find(".root").GetAttribute("dir"));
+        cut.Find("[role=separator]").Press("ArrowLeft");
+        Assert.AreEqual("55", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Enter_collapses_and_restores_a_collapsible_panel()
+    {
+        var changes = new List<bool>();
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 30, 70 })">
+                <BitBhSplitterPanel class="side" MinSize="20" Collapsible="true" OnCollapsedChange="c => changes.Add(c)"><button>Inside</button></BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var handle = cut.Find("[role=separator]");
+        Assert.AreEqual("ArrowLeft ArrowRight Home End Enter", handle.GetAttribute("data-bit-bh-keys"));
+        // Collapsible: the smallest size is the collapsed one.
+        Assert.AreEqual("0", handle.GetAttribute("aria-valuemin"));
+
+        handle.Press("Enter");
+        var side = cut.Find(".side");
+        Assert.AreEqual("collapsed", side.GetAttribute("data-state"));
+        Assert.IsTrue(side.HasAttribute("data-collapsed"));
+        // Nothing in a panel squeezed to nothing is reachable.
+        Assert.IsTrue(side.HasAttribute("inert"));
+        Assert.AreEqual("0", Now(cut.Find("[role=separator]")));
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+
+        cut.Find("[role=separator]").Press("Enter");
+        Assert.AreEqual("expanded", cut.Find(".side").GetAttribute("data-state"));
+        Assert.IsFalse(cut.Find(".side").HasAttribute("inert"));
+        Assert.AreEqual("30", Now(cut.Find("[role=separator]")));
+        Assert.AreSequenceEqual(new[] { true, false }, changes);
+    }
+
+    [TestMethod]
+    public void Enter_collapses_the_panel_after_when_only_it_is_collapsible()
+    {
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 60, 40 })">
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel class="details" MinSize="20" Collapsible="true" CollapsedSize="5">Details</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        cut.Find("[role=separator]").Press("Enter");
+        Assert.AreEqual("95", Now(cut.Find("[role=separator]")));
+        Assert.AreEqual("collapsed", cut.Find(".details").GetAttribute("data-state"));
+        // Collapsed to an icon rail, not to nothing: still reachable.
+        Assert.IsFalse(cut.Find(".details").HasAttribute("inert"));
+        cut.Find("[role=separator]").Press("Enter");
+        Assert.AreEqual("60", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Without_a_collapsible_neighbor_Enter_is_not_handled()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        Assert.DoesNotContain("Enter", cut.Find("[role=separator]").GetAttribute("data-bit-bh-keys")!);
+        cut.Find("[role=separator]").Press("Enter");
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void An_arrow_key_stops_at_the_minimum_then_collapses()
+    {
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 22, 78 })" KeyboardStep="5">
+                <BitBhSplitterPanel class="side" MinSize="20" Collapsible="true">Side</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        IElement Handle() => cut.Find("[role=separator]");
+        Handle().Press("ArrowLeft");
+        Assert.AreEqual("20", Now(Handle()));
+        Handle().Press("ArrowLeft");
+        Assert.AreEqual("0", Now(Handle()));
+        Assert.AreEqual("collapsed", cut.Find(".side").GetAttribute("data-state"));
+        // A step out of the collapsed size opens it to its minimum.
+        Handle().Press("ArrowRight");
+        Assert.AreEqual("20", Now(Handle()));
+    }
+
+    [TestMethod]
+    public void Home_collapses_a_collapsible_panel()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel class="side" MinSize="20" Collapsible="true">Side</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        cut.Find("[role=separator]").Press("Home");
+        Assert.AreEqual("collapsed", cut.Find(".side").GetAttribute("data-state"));
+    }
+
+    [TestMethod]
+    public void Controlled_sizes_follow_the_bound_value()
+    {
+        var commits = new List<IReadOnlyList<double>>();
+        var cut = Render(
+            @<Stateful T="IReadOnlyList<double>" Initial="@(new double[] { 25, 75 })" Context="s">
+                <BitBhSplitter Sizes="s.Value" SizesChanged="s.Set" OnSizesCommit="c => commits.Add(c)">
+                    <BitBhSplitterPanel class="p">One</BitBhSplitterPanel>
+                    <BitBhSplitterHandle />
+                    <BitBhSplitterPanel class="p">Two</BitBhSplitterPanel>
+                </BitBhSplitter>
+            </Stateful>);
+
+        var host = cut.FindComponent<Stateful<IReadOnlyList<double>>>().Instance;
+        Assert.AreEqual("25", Now(cut.Find("[role=separator]")));
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { 30d, 70d }, host.Value!.ToArray());
+        Assert.AreEqual("30", Now(cut.Find("[role=separator]")));
+        Assert.HasCount(1, commits);
+
+        cut.InvokeAsync(() => host.Set(new double[] { 60, 40 }));
+        Assert.AreEqual("60", Now(cut.Find("[role=separator]")));
+        Assert.Contains("flex:60 1 0px", cut.FindAll(".p")[0].GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void Controlled_sizes_the_parent_does_not_update_stay()
+    {
+        IReadOnlyList<double>? asked = null;
+        var cut = Render(
+            @<BitBhSplitter Sizes="@(new double[] { 50, 50 })" SizesChanged="s => asked = s">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { 55d, 45d }, asked!.ToArray());
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Uncontrolled_sizes_are_kept_and_reported()
+    {
+        var changes = new List<IReadOnlyList<double>>();
+        var cut = Render(
+            @<BitBhSplitter OnSizesChange="s => changes.Add(s)">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        cut.Find("[role=separator]").Press("End");
+        Assert.AreEqual("100", Now(cut.Find("[role=separator]")));
+        // At the edge nothing changes, and nothing is reported.
+        cut.Find("[role=separator]").Press("End");
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.HasCount(1, changes);
+        Assert.AreSequenceEqual(new[] { 100d, 0d }, changes[0].ToArray());
+        // A non-collapsible panel dragged to nothing is out of reach too.
+        Assert.IsTrue(cut.FindAll("[data-bit-bh-splitter-panel]")[1].HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    public void Disabled_handles_leave_the_tab_order_and_ignore_keys()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhSplitter class="all" Disabled="true">
+                    <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                    <BitBhSplitterHandle class="h1" />
+                    <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+                </BitBhSplitter>
+                <BitBhSplitter>
+                    <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                    <BitBhSplitterHandle class="h2" Disabled="true" />
+                    <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+                </BitBhSplitter>
+            </div>);
+
+        foreach (var cls in new[] { ".h1", ".h2" })
+        {
+            var handle = cut.Find(cls);
+            Assert.AreEqual("-1", handle.GetAttribute("tabindex"));
+            Assert.AreEqual("true", handle.GetAttribute("aria-disabled"));
+            Assert.IsTrue(handle.HasAttribute("data-disabled"));
+            handle.Press("ArrowRight");
+            Assert.AreEqual("50", Now(cut.Find(cls)));
+        }
+        Assert.IsTrue(cut.Find(".all").HasAttribute("data-disabled"));
+        Assert.IsEmpty(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_handle_that_is_not_between_two_panels_is_a_plain_separator()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel>Alone</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="handle" />
+            </BitBhSplitter>);
+        var handle = cut.Find(".handle");
+        Assert.IsNull(handle.GetAttribute("tabindex"));
+        Assert.IsNull(handle.GetAttribute("aria-valuenow"));
+        Assert.IsEmpty(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    private static MethodInfo PointerMethod(object callbacks, out object target)
+    {
+        target = callbacks.GetType().GetProperty("Value")!.GetValue(callbacks)!;
+        return target.GetType().GetMethod("OnSplitterPointer")!;
+    }
+
+    [TestMethod]
+    public void A_pointer_drag_resizes_live_and_commits_once()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("splitter.attach", _ => true);
+        var changes = new List<IReadOnlyList<double>>();
+        var commits = new List<IReadOnlyList<double>>();
+        var cut = Render(
+            @<BitBhSplitter class="root" OnSizesChange="s => changes.Add(s)" OnSizesCommit="s => commits.Add(s)">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="handle" />
+                <BitBhSplitterPanel MinSize="30">Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        attach.SetResult(1);
+
+        // The runtime gets a callback object, not the component (whose callback would be public API).
+        var callbacks = attach.Invocations.Single().Arguments[0]!;
+        Assert.IsFalse(typeof(BitBhSplitter).GetMethods().Any(m => m.IsDefined(typeof(JSInvokableAttribute), true)));
+        Assert.AreEqual(cut.Find(".root").Id, attach.Invocations.Single().Arguments[1]);
+        Assert.AreEqual("horizontal", ((IDictionary<string, object?>)attach.Invocations.Single().Arguments[2]!)["orientation"]);
+
+        var pointer = PointerMethod(callbacks, out var target);
+        var id = cut.Find(".handle").Id!;
+        void Send(string phase, double delta) => cut.InvokeAsync(() => (Task)pointer.Invoke(target, [phase, id, delta])!).GetAwaiter().GetResult();
+
+        Send("start", 0);
+        Assert.IsTrue(cut.Find(".handle").HasAttribute("data-dragging"));
+        Assert.IsTrue(cut.Find(".root").HasAttribute("data-dragging"));
+        Send("move", 10);
+        Assert.AreEqual("60", Now(cut.Find(".handle")));
+        // Distances are from where the drag started, so the handle follows the pointer back and forth.
+        Send("move", -5);
+        Assert.AreEqual("45", Now(cut.Find(".handle")));
+        Send("move", 40);
+        Assert.AreEqual("70", Now(cut.Find(".handle")));
+        Assert.IsEmpty(commits);
+        Send("end", 40);
+        Assert.IsFalse(cut.Find(".handle").HasAttribute("data-dragging"));
+        Assert.HasCount(3, changes);
+        Assert.ContainsSingle(commits);
+        Assert.AreSequenceEqual(new[] { 70d, 30d }, commits[0].ToArray());
+    }
+
+    [TestMethod]
+    public void Escape_during_a_drag_puts_the_panels_back()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("splitter.attach", _ => true);
+        var commits = 0;
+        var cut = Render(
+            @<BitBhSplitter OnSizesCommit="_ => commits++">
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="handle" />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        attach.SetResult(1);
+
+        var pointer = PointerMethod(attach.Invocations.Single().Arguments[0]!, out var target);
+        var id = cut.Find(".handle").Id!;
+        void Send(string phase, double delta) => cut.InvokeAsync(() => (Task)pointer.Invoke(target, [phase, id, delta])!).GetAwaiter().GetResult();
+
+        Send("start", 0);
+        Send("move", 20);
+        Assert.AreEqual("70", Now(cut.Find(".handle")));
+        Send("cancel", 20);
+        Assert.AreEqual("50", Now(cut.Find(".handle")));
+        Assert.AreEqual(0, commits);
+    }
+
+    [TestMethod]
+    public void A_drag_past_half_the_minimum_collapses_a_collapsible_panel()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("splitter.attach", _ => true);
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 30, 70 })">
+                <BitBhSplitterPanel class="side" MinSize="20" Collapsible="true">Side</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="handle" />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        attach.SetResult(1);
+
+        var pointer = PointerMethod(attach.Invocations.Single().Arguments[0]!, out var target);
+        var id = cut.Find(".handle").Id!;
+        void Send(string phase, double delta) => cut.InvokeAsync(() => (Task)pointer.Invoke(target, [phase, id, delta])!).GetAwaiter().GetResult();
+
+        Send("start", 0);
+        Send("move", -15);
+        // 15 is below the minimum but above half of it: the panel stops at its minimum.
+        Assert.AreEqual("20", Now(cut.Find(".handle")));
+        Send("move", -21);
+        Assert.AreEqual("0", Now(cut.Find(".handle")));
+        Assert.AreEqual("collapsed", cut.Find(".side").GetAttribute("data-state"));
+        Send("move", -15);
+        Assert.AreEqual("20", Now(cut.Find(".handle")));
+        Send("end", -15);
+    }
+
+    [TestMethod]
+    public void A_saved_layout_is_restored_and_commits_are_saved()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var load = module.Setup<double[]?>("splitter.load", _ => true);
+        load.SetResult([35, 65]);
+        IReadOnlyList<double>? bound = null;
+        var cut = Render(
+            @<BitBhSplitter AutoSaveId="editor" SizesChanged="s => bound = s">
+                <BitBhSplitterPanel Key="files">Files</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Editor</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        Assert.AreEqual("bit-bh-splitter:editor:files,1", load.Invocations.Single().Arguments[0]);
+        cut.WaitForAssertion(() => Assert.AreEqual("35", Now(cut.Find("[role=separator]"))));
+        Assert.AreSequenceEqual(new[] { 35d, 65d }, bound!.ToArray());
+
+        cut.Find("[role=separator]").Press("ArrowRight");
+        var save = JSInterop.Invocations.Single(i => i.Identifier == "splitter.save");
+        Assert.AreEqual("bit-bh-splitter:editor:files,1", save.Arguments[0]);
+        Assert.AreSequenceEqual(new[] { 40d, 60d }, (double[])save.Arguments[1]!);
+    }
+
+    [TestMethod]
+    public void A_saved_layout_for_other_panels_is_ignored()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        module.Setup<double[]?>("splitter.load", _ => true).SetResult([10, 20, 70]);
+        var cut = Render(
+            @<BitBhSplitter AutoSaveId="editor">
+                <BitBhSplitterPanel>Files</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Editor</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        Assert.AreEqual("50", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Panels_have_a_programmatic_api()
+    {
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel class="side" MinSize="20" Collapsible="true">Side</BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        var side = cut.FindComponents<BitBhSplitterPanel>()[0].Instance;
+        var main = cut.FindComponents<BitBhSplitterPanel>()[1].Instance;
+        cut.InvokeAsync(() => side.ResizeAsync(35));
+        Assert.AreEqual(35, side.Size);
+        cut.InvokeAsync(() => side.CollapseAsync());
+        Assert.IsTrue(side.IsCollapsed);
+        cut.InvokeAsync(() => side.ExpandAsync());
+        Assert.AreEqual(35, side.Size);
+        // The last panel moves the handle before it.
+        cut.InvokeAsync(() => main.ResizeAsync(80));
+        Assert.AreEqual(20, side.Size);
+
+        var splitter = cut.FindComponent<BitBhSplitter>().Instance;
+        cut.InvokeAsync(() => splitter.SetSizesAsync([90, 10]));
+        Assert.AreSequenceEqual(new[] { 90d, 10d }, splitter.CurrentSizes.ToArray());
+    }
+
+    [TestMethod]
+    public void A_panel_template_receives_the_size_and_the_collapsed_state()
+    {
+        var cut = Render(
+            @<BitBhSplitter DefaultSizes="@(new double[] { 25, 75 })">
+                <BitBhSplitterPanel MinSize="20" Collapsible="true">
+                    <Template Context="p"><span class="state">@p.Size @p.IsCollapsed</span></Template>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle />
+                <BitBhSplitterPanel>Main</BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        Assert.AreEqual("25 False", cut.Find(".state").TextContent);
+        cut.Find("[role=separator]").Press("Enter");
+        Assert.AreEqual("0 True", cut.Find(".state").TextContent);
+    }
+
+    [TestMethod]
+    public void Panels_that_join_take_their_share()
+    {
+        var cut = Render(
+            @<Stateful T="bool" Initial="false" Context="s">
+                <BitBhSplitter>
+                    <BitBhSplitterPanel Key="a" Order="1">A</BitBhSplitterPanel>
+                    <BitBhSplitterHandle />
+                    <BitBhSplitterPanel Key="b" Order="2">B</BitBhSplitterPanel>
+                    @if (s.Value)
+                    {
+                        <BitBhSplitterHandle />
+                        <BitBhSplitterPanel Key="c" Order="3" DefaultSize="20">C</BitBhSplitterPanel>
+                    }
+                </BitBhSplitter>
+            </Stateful>);
+
+        var splitter = cut.FindComponent<BitBhSplitter>().Instance;
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { 55d, 45d }, splitter.CurrentSizes.ToArray());
+
+        var host = cut.FindComponent<Stateful<bool>>().Instance;
+        cut.InvokeAsync(() => host.Set(true));
+        // The newcomer gets its default; the others keep their proportions in what is left.
+        var sizes = splitter.CurrentSizes.ToArray();
+        Assert.HasCount(3, sizes);
+        Assert.AreEqual(44, sizes[0], 0.0001);
+        Assert.AreEqual(36, sizes[1], 0.0001);
+        Assert.AreEqual(20, sizes[2], 0.0001);
+        Assert.HasCount(2, cut.FindAll("[role=separator]"));
+        cut.ShouldBeAccessible();
+
+        cut.InvokeAsync(() => host.Set(false));
+        Assert.AreSequenceEqual(new[] { 55d, 45d }, splitter.CurrentSizes.Select(s => Math.Round(s, 6)).ToArray());
+    }
+
+    [TestMethod]
+    public void Nested_splitters_are_independent()
+    {
+        var cut = Render(
+            @<BitBhSplitter class="outer">
+                <BitBhSplitterPanel>Sidebar</BitBhSplitterPanel>
+                <BitBhSplitterHandle class="outer-handle" aria-label="Resize sidebar" />
+                <BitBhSplitterPanel>
+                    <BitBhSplitter class="inner" Orientation="BitBhOrientation.Vertical">
+                        <BitBhSplitterPanel>Editor</BitBhSplitterPanel>
+                        <BitBhSplitterHandle class="inner-handle" aria-label="Resize terminal" />
+                        <BitBhSplitterPanel>Terminal</BitBhSplitterPanel>
+                    </BitBhSplitter>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>);
+
+        Assert.AreEqual(cut.Find(".outer").Id, cut.Find(".outer-handle").GetAttribute("data-bit-bh-splitter-handle"));
+        Assert.AreEqual(cut.Find(".inner").Id, cut.Find(".inner-handle").GetAttribute("data-bit-bh-splitter-handle"));
+        cut.Find(".inner-handle").Press("ArrowDown");
+        Assert.AreEqual("55", Now(cut.Find(".inner-handle")));
+        Assert.AreEqual("50", Now(cut.Find(".outer-handle")));
+        Assert.HasCount(2, cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_consumer_keydown_handler_still_runs()
+    {
+        var keys = new List<string>();
+        var cut = Render(
+            @<BitBhSplitter>
+                <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                <BitBhSplitterHandle @onkeydown="e => keys.Add(e.Key)" />
+                <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+            </BitBhSplitter>);
+        cut.Find("[role=separator]").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "ArrowRight" }, keys);
+        Assert.AreEqual("55", Now(cut.Find("[role=separator]")));
+    }
+
+    [TestMethod]
+    public void Disposing_detaches_the_runtime()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        module.Setup<int>("splitter.attach", _ => true).SetResult(6);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                @if (s.Value)
+                {
+                    <BitBhSplitter>
+                        <BitBhSplitterPanel>One</BitBhSplitterPanel>
+                        <BitBhSplitterHandle />
+                        <BitBhSplitterPanel>Two</BitBhSplitterPanel>
+                    </BitBhSplitter>
+                }
+            </Stateful>);
+
+        cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(false));
+        cut.WaitForAssertion(() =>
+            Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "splitter.detach" && Equals(i.Arguments[0], 6))));
+    }
+}

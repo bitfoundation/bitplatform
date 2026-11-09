@@ -54,6 +54,13 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
     [Parameter]
     public bool Required { get; set; }
 
+    /// <summary>
+    /// Shows the state without letting it change (<c>aria-readonly</c>, <c>data-readonly</c>): the control stays focusable
+    /// and announced - and posts its value - unlike a disabled one.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
     /// <summary>Marks the control invalid (in addition to EditContext validation).</summary>
     [Parameter]
     public bool Invalid { get; set; }
@@ -190,8 +197,10 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
         if (Field?.DescribedBy is { } describedBy) attrs["aria-describedby"] = describedBy;
         if (IsRequired) attrs["aria-required"] = "true";
         if (IsInvalid) attrs["aria-invalid"] = "true";
+        if (ReadOnly) attrs["aria-readonly"] = "true";
 
         SetDataFlag(attrs, "disabled", IsDisabled);
+        SetDataFlag(attrs, "readonly", ReadOnly);
         SetDataFlag(attrs, "invalid", IsInvalid);
         SetDataFlag(attrs, "required", IsRequired);
         return attrs;
@@ -211,6 +220,7 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
     /// <summary>Toggles the control.</summary>
     public async Task ToggleAsync()
     {
+        if (ReadOnly) return;
         var next = NextChecked();
         await SetCheckedAsync(next);
     }

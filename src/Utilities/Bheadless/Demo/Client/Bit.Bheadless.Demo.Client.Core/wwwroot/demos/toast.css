@@ -85,6 +85,17 @@
 
 .toast[data-variant="success"] .toast-icon { background: #16a34a; }
 .toast[data-variant="error"] .toast-icon   { background: var(--color-danger); }
+.toast[data-variant="loading"] .toast-icon { background: var(--color-muted); }
+
+/* Swipe to dismiss — the viewport's runtime sets data-swipe="move|cancel|end" and the swipe distance */
+.toast[data-swipe="move"]   { transform: translateX(var(--bit-bh-toast-swipe-move-x)); transition: none; }
+.toast[data-swipe="cancel"] { transform: translateX(0); transition: transform 200ms ease-out; }
+.toast[data-state="closed"][data-swipe="end"] { animation: toast-swipe-out 160ms ease-out forwards; }
+
+@keyframes toast-swipe-out {
+    from { transform: translateX(var(--bit-bh-toast-swipe-end-x)); }
+    to   { transform: translateX(110%); opacity: 0; }
+}
 
 .toast-body {
     flex: 1 1 auto;

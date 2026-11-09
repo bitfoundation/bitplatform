@@ -202,6 +202,29 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Server errors"
+           Code="@_serverCode"
+           Css="@_editFormCss">
+    <Description>
+        <code>BitBhServerValidation</code> shows errors a server returned - an API's <code>ValidationProblemDetails</code>, a
+        uniqueness check - on the fields they belong to, through the form's <code>EditContext</code>: the controls get
+        <code>aria-invalid</code>, the field its error message. Each error clears when its field is edited, and all of them
+        on the next submit. The field also exposes <code>data-touched</code> (left once) and <code>data-dirty</code> (changed).
+        Try the name "admin".
+    </Description>
+    <LiveContent>
+        <EditForm Model="account" OnValidSubmit="CheckNameAsync" class="field-form validation-form">
+            <BitBhServerValidation Errors="serverErrors" />
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">User name</BitBhLabel>
+                <BitBhInput @bind-Value="account.UserName" class="field-input" />
+                <BitBhErrorMessage class="validation-message" />
+            </BitBhField>
+            <button type="submit" class="btn btn-primary">Create account</button>
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     // ── EditForm validation ───────────────────────────────────────────────────
 
@@ -234,6 +257,47 @@
     }
 
     // ── Source snippets ───────────────────────────────────────────────────────
+
+    private readonly Account account = new();
+    private IReadOnlyDictionary<string, string[]>? serverErrors;
+
+    private sealed class Account
+    {
+        public string? UserName { get; set; }
+    }
+
+    // Stands for an API call that answers 400 with a ValidationProblemDetails.
+    private async Task CheckNameAsync()
+    {
+        await Task.Delay(300);
+        serverErrors = string.Equals(account.UserName, "admin", StringComparison.OrdinalIgnoreCase)
+            ? new Dictionary<string, string[]> { ["userName"] = ["That name is taken."] }
+            : null;
+    }
+
+    private const string _serverCode = """
+<EditForm Model="account" OnValidSubmit="CreateAsync">
+    <BitBhServerValidation Errors="serverErrors" />
+    <BitBhField>
+        <BitBhLabel>User name</BitBhLabel>
+        <BitBhInput @bind-Value="account.UserName" />
+        <BitBhErrorMessage />
+    </BitBhField>
+    <button type="submit">Create account</button>
+</EditForm>
+
+@code {
+    private IReadOnlyDictionary<string, string[]>? serverErrors;
+
+    private async Task CreateAsync()
+    {
+        var response = await Http.PostAsJsonAsync("api/accounts", account);
+        serverErrors = response.IsSuccessStatusCode
+            ? null
+            : (await response.Content.ReadFromJsonAsync<ValidationProblemDetails>())?.Errors;
+    }
+}
+""";
 
     private const string _editFormCode = """
 @using System.ComponentModel.DataAnnotations

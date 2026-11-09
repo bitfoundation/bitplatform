@@ -1,0 +1,264 @@
+﻿@page "/number-field"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Number Field · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Number Field</h1>
+    <p class="bb-subtitle">A spinbutton for numbers of any type: culture-aware formatting and parsing, steppers that repeat while held, keyboard, wheel and scrub.</p>
+</div>
+
+<SectionSwitcher Slug="number-field" />
+
+<DemoBlock Title="Quantity with steppers" Code="@_basicCode" Css="@_css">
+    <Description>
+        The input is a <code>role="spinbutton"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code> and
+        <code>aria-valuemax</code>. ↑ / ↓ step, Shift steps by <code>LargeStep</code>, Home / End jump to the bounds.
+        The buttons stay out of the tab order, keep the focus in the input, repeat while held (<code>data-pressed</code>)
+        and disable themselves at the bounds. <code>@@bind-Value</code> works with any numeric type - here an <code>int</code>.
+    </Description>
+    <LiveContent>
+        <div>
+            <label class="nf-label" for="nf-quantity">Quantity</label>
+            <BitBhNumberField @bind-Value="quantity" Min="1" Max="20" class="nf">
+                <BitBhNumberFieldDecrement class="nf-btn">−</BitBhNumberFieldDecrement>
+                <BitBhNumberFieldInput Id="nf-quantity" class="nf-input" />
+                <BitBhNumberFieldIncrement class="nf-btn">+</BitBhNumberFieldIncrement>
+            </BitBhNumberField>
+        </div>
+        <span class="demo-output">Value: <strong>@quantity</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Currency, percent and culture" Code="@_formatCode" Css="@_css">
+    <Description>
+        <code>Format</code> is a .NET numeric format string and <code>Culture</code> the culture numbers are written and read
+        in. Type <code>1.234,5</code> in the German field or <code>1,234.5</code> in the American one: both parse, both show the
+        culture's currency. A percent format steps by hundredths. Text that isn't a number reverts when the field is left.
+    </Description>
+    <LiveContent>
+        <div>
+            <label class="nf-label" for="nf-usd">Price (en-US)</label>
+            <BitBhNumberField @bind-Value="price" Format="C" Culture="@_enUs" Min="0" Step="0.5" class="nf">
+                <BitBhNumberFieldInput Id="nf-usd" class="nf-input" />
+            </BitBhNumberField>
+        </div>
+        <div>
+            <label class="nf-label" for="nf-eur">Preis (de-DE)</label>
+            <BitBhNumberField @bind-Value="price" Format="C" Culture="@_deDe" Min="0" Step="0.5" class="nf">
+                <BitBhNumberFieldInput Id="nf-eur" class="nf-input" />
+            </BitBhNumberField>
+        </div>
+        <div>
+            <label class="nf-label" for="nf-discount">Discount</label>
+            <BitBhNumberField @bind-Value="discount" Format="P0" Culture="@_enUs" Min="0" Max="1" class="nf">
+                <BitBhNumberFieldInput Id="nf-discount" class="nf-input" />
+            </BitBhNumberField>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Scrub area and wheel" Code="@_scrubCode" Css="@_css">
+    <Description>
+        Drag the <code>W</code> handle left or right: every two pixels is a step (<code>ScrubPixelSensitivity</code>), Shift
+        makes it a large step, and the value is committed (<code>OnValueCommit</code>) when the pointer is released. With
+        <code>AllowWheelScrub</code> the mouse wheel steps the focused input without scrolling the page.
+    </Description>
+    <LiveContent>
+        <BitBhNumberField TValue="double" @bind-Value="width" Min="0" Max="2000" AllowWheelScrub="true" OnValueCommit="v => committed = v" class="nf">
+            <BitBhNumberFieldScrubArea class="nf-scrub">W</BitBhNumberFieldScrubArea>
+            <BitBhNumberFieldInput aria-label="Width" class="nf-input" />
+        </BitBhNumberField>
+        <span class="demo-output">Committed: <strong>@committed</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="In a form" Code="@_formCode" Css="@_css">
+    <Description>
+        Inside a <code>BitBhField</code> the label, description and validation message are wired to the input; inside an
+        <code>EditForm</code> the field validates. A nullable value can be emptied; a <code>Name</code> posts the
+        culture-invariant value in a hidden input.
+    </Description>
+    <LiveContent>
+        <EditForm Model="order" OnValidSubmit="() => submitted = true">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="nf-label">Guests</BitBhLabel>
+                <BitBhNumberField @bind-Value="order.Guests" Name="guests" class="nf">
+                    <BitBhNumberFieldDecrement class="nf-btn">−</BitBhNumberFieldDecrement>
+                    <BitBhNumberFieldInput class="nf-input" placeholder="—" />
+                    <BitBhNumberFieldIncrement class="nf-btn">+</BitBhNumberFieldIncrement>
+                </BitBhNumberField>
+                <BitBhErrorMessage class="nf-error" />
+            </BitBhField>
+            <button type="submit" class="btn btn-primary" style="margin-top:0.75rem">Book</button>
+            @if (submitted)
+            {
+                <span class="demo-output" style="margin-inline-start:0.75rem">Booked for <strong>@order.Guests</strong>.</span>
+            }
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly CultureInfo _enUs = Culture("en-US", ".", ",", "$", 0);
+    private static readonly CultureInfo _deDe = Culture("de-DE", ",", ".", "€", 3);
+    // The WebAssembly demo runs with InvariantGlobalization, where only the invariant culture exists: the cultures are
+    // built from their number formats there (an app with ICU loaded just uses CultureInfo.GetCultureInfo).
+    private static CultureInfo Culture(string name, string decimalSeparator, string groupSeparator, string currency, int currencyPattern)
+    {
+        try { return CultureInfo.GetCultureInfo(name); }
+        catch (CultureNotFoundException)
+        {
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            var nf = culture.NumberFormat;
+            nf.NumberDecimalSeparator = nf.CurrencyDecimalSeparator = nf.PercentDecimalSeparator = decimalSeparator;
+            nf.NumberGroupSeparator = nf.CurrencyGroupSeparator = nf.PercentGroupSeparator = groupSeparator;
+            nf.CurrencySymbol = currency;
+            nf.CurrencyPositivePattern = currencyPattern;
+            nf.CurrencyNegativePattern = currencyPattern == 0 ? 1 : 8;
+            return CultureInfo.ReadOnly(culture);
+        }
+    }
+
+
+    private int quantity = 1;
+    private decimal price = 1234.5m;
+    private double discount = 0.15;
+    private double width = 320;
+    private double committed = 320;
+    private readonly Booking order = new();
+    private bool submitted;
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "How many guests?"), Range(1, 12, ErrorMessage = "Between 1 and 12 guests.")]
+        public int? Guests { get; set; }
+    }
+
+    private const string _basicCode = """
+<label class="nf-label" for="nf-quantity">Quantity</label>
+<BitBhNumberField @bind-Value="quantity" Min="1" Max="20" class="nf">
+    <BitBhNumberFieldDecrement class="nf-btn">−</BitBhNumberFieldDecrement>
+    <BitBhNumberFieldInput Id="nf-quantity" class="nf-input" />
+    <BitBhNumberFieldIncrement class="nf-btn">+</BitBhNumberFieldIncrement>
+</BitBhNumberField>
+
+@code {
+    private int quantity = 1;
+}
+""";
+
+    private const string _formatCode = """
+<BitBhNumberField @bind-Value="price" Format="C" Culture="@(CultureInfo.GetCultureInfo("en-US"))" Min="0" Step="0.5" class="nf">
+    <BitBhNumberFieldInput aria-label="Price" class="nf-input" />
+</BitBhNumberField>
+
+<BitBhNumberField @bind-Value="price" Format="C" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" Min="0" Step="0.5" class="nf">
+    <BitBhNumberFieldInput aria-label="Preis" class="nf-input" />
+</BitBhNumberField>
+
+@* A percent format shows 0.15 as 15 % and steps by 0.01 *@
+<BitBhNumberField @bind-Value="discount" Format="P0" Min="0" Max="1" class="nf">
+    <BitBhNumberFieldInput aria-label="Discount" class="nf-input" />
+</BitBhNumberField>
+
+@code {
+    private decimal price = 1234.5m;
+    private double discount = 0.15;
+}
+""";
+
+    private const string _scrubCode = """
+<BitBhNumberField TValue="double" @bind-Value="width" Min="0" Max="2000" AllowWheelScrub="true"
+                  OnValueCommit="v => committed = v" class="nf">
+    <BitBhNumberFieldScrubArea class="nf-scrub">W</BitBhNumberFieldScrubArea>
+    <BitBhNumberFieldInput aria-label="Width" class="nf-input" />
+</BitBhNumberField>
+""";
+
+    private const string _formCode = """
+<EditForm Model="order" OnValidSubmit="Book">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="nf-label">Guests</BitBhLabel>
+        <BitBhNumberField @bind-Value="order.Guests" Name="guests" class="nf">
+            <BitBhNumberFieldDecrement class="nf-btn">−</BitBhNumberFieldDecrement>
+            <BitBhNumberFieldInput class="nf-input" placeholder="—" />
+            <BitBhNumberFieldIncrement class="nf-btn">+</BitBhNumberFieldIncrement>
+        </BitBhNumberField>
+        <BitBhErrorMessage class="nf-error" />
+    </BitBhField>
+    <button type="submit">Book</button>
+</EditForm>
+
+@code {
+    private sealed class Booking
+    {
+        [Required, Range(1, 12)]
+        public int? Guests { get; set; }
+    }
+}
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.nf {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+/* data-focused on the root while the input has focus */
+.nf[data-focused] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.nf[data-invalid] { border-color: var(--color-danger); }
+.nf[data-disabled] { opacity: 0.55; }
+
+.nf-input {
+    width: 7rem;
+    padding: 0.45rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    outline: none;
+}
+
+.nf-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    background: var(--color-fill);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.nf-btn:hover:enabled { background: var(--color-fill-strong); }
+/* data-pressed while held (it repeats) */
+.nf-btn[data-pressed] { background: var(--color-accent-muted); color: var(--color-accent-text); }
+.nf-btn:disabled { color: var(--color-disabled); cursor: not-allowed; }
+
+.nf-scrub {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.6rem;
+    background: var(--color-fill);
+    color: var(--color-muted);
+    font-weight: 600;
+    cursor: ew-resize;
+}
+
+.nf-scrub[data-scrubbing] { background: var(--color-accent-subtle); color: var(--color-accent-text); }
+""";
+}

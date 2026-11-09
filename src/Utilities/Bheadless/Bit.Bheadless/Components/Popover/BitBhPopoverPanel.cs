@@ -57,10 +57,13 @@ public class BitBhPopoverPanel : BitBhFloatingContentBase
     protected override BitBhFloatingRequest CreateFloatingRequest()
     {
         var modal = PopoverContext?.Modal ?? false;
+        // Opened by a hover, the panel takes no focus and is a hover layer (Escape closes it first).
+        var hover = PopoverContext?.OpenedByHover ?? false;
         var layer = new BitBhLayerOptions
         {
             FocusOutside = !modal,
             Modal = modal,
+            Hover = hover,
             ParentHandle = ParentLayerHandle,
         };
         layer.BranchIds.Add(PopoverContext?.ButtonId);
@@ -78,7 +81,7 @@ public class BitBhPopoverPanel : BitBhFloatingContentBase
             Focus = new BitBhFocusScopeOptions
             {
                 Trap = modal,
-                AutoFocus = AutoFocus ? "first" : "none",
+                AutoFocus = AutoFocus && !hover ? "first" : "none",
                 RestoreFocus = true,
                 ReturnFocusId = PopoverContext?.ButtonId,
             },
@@ -101,6 +104,11 @@ public class BitBhPopoverPanel : BitBhFloatingContentBase
             builder.AddAttribute(30, "hidden", true);
         builder.AddAttribute(35, "onkeydown",
             On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
+        if (PopoverContext is { OpenOnHover: true } hover)
+        {
+            builder.AddAttribute(37, "onpointerenter", On<PointerEventArgs>("onpointerenter", () => hover.Owner?.HoverEnter()));
+            builder.AddAttribute(38, "onpointerleave", On<PointerEventArgs>("onpointerleave", () => hover.Owner?.HoverLeave()));
+        }
         // While open, keep Escape from also closing an enclosing popover / dialog.
         builder.AddEventStopPropagationAttribute(36, "onkeydown", IsOpen);
         builder.AddElementReferenceCapture(40, CaptureElement);

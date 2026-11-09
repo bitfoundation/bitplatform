@@ -21,7 +21,21 @@ public static class BitBhServiceCollectionExtensions
     /// </para>
     /// </summary>
     public static IServiceCollection AddBitBheadlessServices(this IServiceCollection services)
+        => services.AddBitBheadlessServices(configureStrings: null);
+
+    /// <summary>
+    /// Registers the services used by Bheadless components (see <see cref="AddBitBheadlessServices(IServiceCollection)"/>)
+    /// and the text the components write themselves (<see cref="BitBhStrings"/>): accessible names of parts without
+    /// visible text and announcements, English unless <paramref name="configureStrings"/> changes them.
+    /// </summary>
+    public static IServiceCollection AddBitBheadlessServices(this IServiceCollection services, Action<BitBhStrings>? configureStrings)
     {
+        if (configureStrings is not null)
+        {
+            var strings = new BitBhStrings();
+            configureStrings(strings);
+            services.AddSingleton(strings);
+        }
         services.TryAddScoped<BitBhInterop>();
         services.TryAddScoped<IBitBhAnnouncer, BitBhAnnouncer>();
         services.TryAddScoped<BitBhToaster>();

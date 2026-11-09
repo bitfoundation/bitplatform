@@ -47,6 +47,9 @@ internal sealed class BitBhFieldBinding : IDisposable
         ? _editContext.GetValidationMessages(f)
         : [];
 
+    /// <summary>Whether the bound field was changed since the <see cref="EditContext"/> was created or last marked unmodified.</summary>
+    public bool IsModified => _field is { } f && _editContext is not null && _editContext.IsModified(f);
+
     /// <summary>The EditContext CSS class (<c>valid</c>, <c>invalid</c>, <c>modified</c>) for the field.</summary>
     public string? CssClass => _field is { } f && _editContext is not null ? _editContext.FieldCssClass(f) : null;
 

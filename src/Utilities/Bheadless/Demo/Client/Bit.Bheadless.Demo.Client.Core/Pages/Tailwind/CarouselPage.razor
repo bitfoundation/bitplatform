@@ -1,0 +1,73 @@
+﻿@page "/tw/carousel"
+
+<PageTitle>Carousel (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Carousel</h1>
+    <p class="bb-subtitle">The WAI-ARIA carousel: slides with previous / next buttons, indicators, swiping, and automatic rotation with its rotation control.</p>
+</div>
+
+<SectionSwitcher Slug="carousel" />
+
+<TwDemoBlock Title="Slides" Code="@_code">
+    <Description>
+        An arbitrary-value transform reads <code>--bit-bh-carousel-index</code>; <code>data-current:</code> styles the indicator
+        of the slide in view.
+    </Description>
+    <LiveContent>
+        <BitBhCarousel aria-label="Gallery" Loop="true" class="grid w-full max-w-lg gap-3">
+            <Template Context="c">
+                <div class="overflow-hidden rounded-xl">
+                    <BitBhCarouselSlides class="flex translate-x-[calc(var(--bit-bh-carousel-index)*-100%+var(--bit-bh-carousel-drag,0px))] transition-transform duration-300 data-[dragging]:transition-none">
+                        @foreach (var (name, color) in _slides)
+                        {
+                            <BitBhCarouselSlide class="flex-none basis-full">
+                                <div class="grid h-40 place-items-center text-xl font-semibold text-white" style="background:@color">@name</div>
+                            </BitBhCarouselSlide>
+                        }
+                    </BitBhCarouselSlides>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <BitBhCarouselPrevious class="h-8 w-8 cursor-pointer rounded-full border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100">‹</BitBhCarouselPrevious>
+                    @for (var i = 0; i < c.PageCount; i++)
+                    {
+                        var index = i;
+                        <BitBhCarouselIndicator Index="index" class="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-full before:h-2.5 before:w-2.5 before:rounded-full before:bg-zinc-500 before:content-[''] data-current:before:w-6 data-current:before:bg-blue-600" />
+                    }
+                    <BitBhCarouselNext class="h-8 w-8 cursor-pointer rounded-full border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100">›</BitBhCarouselNext>
+                </div>
+            </Template>
+        </BitBhCarousel>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private static readonly (string Name, string Color)[] _slides =
+    [
+        ("Ocean", "#1d4ed8"), ("Forest", "#15803d"), ("Sunset", "#b45309"),
+    ];
+
+    private const string _code = """
+<BitBhCarousel aria-label="Gallery" Loop="true" class="grid gap-3">
+    <Template Context="c">
+        <div class="overflow-hidden rounded-xl">
+            <BitBhCarouselSlides class="flex translate-x-[calc(var(--bit-bh-carousel-index)*-100%+var(--bit-bh-carousel-drag,0px))]
+                                        transition-transform data-[dragging]:transition-none">
+                @foreach (var slide in slides)
+                {
+                    <BitBhCarouselSlide class="flex-none basis-full">…</BitBhCarouselSlide>
+                }
+            </BitBhCarouselSlides>
+        </div>
+        <BitBhCarouselPrevious class="h-8 w-8 rounded-full border">‹</BitBhCarouselPrevious>
+        @for (var i = 0; i < c.PageCount; i++)
+        {
+            var index = i;
+            <BitBhCarouselIndicator Index="index" class="flex h-6 min-w-6 items-center justify-center before:h-2.5 before:w-2.5 before:rounded-full
+                                                    before:bg-zinc-500 data-current:before:w-6 data-current:before:bg-blue-600" />
+        }
+        <BitBhCarouselNext class="h-8 w-8 rounded-full border">›</BitBhCarouselNext>
+    </Template>
+</BitBhCarousel>
+""";
+}

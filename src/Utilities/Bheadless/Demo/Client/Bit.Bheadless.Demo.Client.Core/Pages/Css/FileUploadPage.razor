@@ -1,0 +1,103 @@
+﻿@page "/file-upload"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>File Upload · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>File Upload</h1>
+    <p class="bb-subtitle">A drop zone that is also a button, picker triggers, validation and a list of the chosen files - on top of Blazor's InputFile.</p>
+</div>
+
+<SectionSwitcher Slug="file-upload" />
+
+<DemoBlock Title="Drop zone with validation" Code="@_code" Css="@_css">
+    <Description>
+        Click the zone (or press Enter / Space on it) to open the picker - straight from the browser, so the click's user
+        activation is never lost to a round trip - or drop files on it (<code>data-dragging</code>). <code>Accept</code>,
+        <code>MaxFileSize</code> and <code>MaxFiles</code> apply to dropped files too; refused ones go to
+        <code>OnFilesRejected</code> with their reasons. Every selection keeps its own hidden input, so the files of earlier
+        selections stay readable with <code>OpenReadStream</code>.
+    </Description>
+    <LiveContent>
+        <BitBhFileUpload @bind-Files="files" Accept="image/*,.pdf,.txt" MaxFileSize="2_000_000" MaxFiles="4" Multiple="true"
+                         OnFilesRejected="r => rejected = r" class="upload">
+            <Template Context="u">
+                <BitBhFileUploadDropzone class="dropzone">
+                    <strong>Drop files here, or click to browse</strong>
+                    <span class="dropzone-hint">Images, PDF or text · up to 2 MB · @(u.Files.Count)/4</span>
+                </BitBhFileUploadDropzone>
+                @if (rejected.Count > 0)
+                {
+                    <p class="upload-error" role="status">@string.Join("; ", rejected.Select(r => $"{r.File.Name}: {r.Reasons}"))</p>
+                }
+                <ul class="upload-list">
+                    @foreach (var file in u.Files)
+                    {
+                        <BitBhFileUploadItem File="file" class="upload-item">
+                            <span class="upload-item-name">@file.Name</span>
+                            <span class="upload-item-size">@FormatSize(file.Size)</span>
+                            <BitBhFileUploadItemRemove class="upload-remove">×</BitBhFileUploadItemRemove>
+                        </BitBhFileUploadItem>
+                    }
+                </ul>
+            </Template>
+        </BitBhFileUpload>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private IReadOnlyList<IBrowserFile> files = [];
+    private IReadOnlyList<BitBhFileRejection> rejected = [];
+
+    private static string FormatSize(long bytes) => bytes < 1024 ? $"{bytes} B" : bytes < 1024 * 1024 ? $"{bytes / 1024.0:0.#} KB" : $"{bytes / 1048576.0:0.#} MB";
+
+    private const string _code = """
+<BitBhFileUpload @bind-Files="files" Accept="image/*,.pdf,.txt" MaxFileSize="2_000_000" MaxFiles="4" Multiple="true"
+                 OnFilesRejected="r => rejected = r" class="upload">
+    <Template Context="u">
+        <BitBhFileUploadDropzone class="dropzone">
+            <strong>Drop files here, or click to browse</strong>
+            <span class="dropzone-hint">Images, PDF or text · up to 2 MB</span>
+        </BitBhFileUploadDropzone>
+        <ul class="upload-list">
+            @foreach (var file in u.Files)
+            {
+                <BitBhFileUploadItem File="file" class="upload-item">
+                    <span class="upload-item-name">@file.Name</span>
+                    <BitBhFileUploadItemRemove class="upload-remove">×</BitBhFileUploadItemRemove>
+                </BitBhFileUploadItem>
+            }
+        </ul>
+    </Template>
+</BitBhFileUpload>
+
+@code {
+    private IReadOnlyList<IBrowserFile> files = [];
+    private IReadOnlyList<BitBhFileRejection> rejected = [];
+}
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.dropzone {
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    border: 2px dashed var(--color-border-strong);
+    border-radius: 0.75rem;
+    background: var(--color-subtle);
+    cursor: pointer;
+}
+
+.dropzone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* data-dragging while files are dragged over the zone */
+.dropzone[data-dragging] { border-color: var(--color-primary); background: var(--color-accent-subtle); }
+
+.upload-list { display: grid; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.upload-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); border-radius: 0.5rem; }
+.upload-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-remove { all: unset; width: 1.5rem; text-align: center; border-radius: 0.375rem; cursor: pointer; }
+.upload-remove:hover { background: var(--color-fill); }
+""";
+}

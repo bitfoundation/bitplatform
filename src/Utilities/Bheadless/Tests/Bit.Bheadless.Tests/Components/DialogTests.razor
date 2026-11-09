@@ -167,4 +167,24 @@
         link.Click();
         Assert.IsFalse(open);
     }
+
+    [TestMethod]
+    public void Nested_dialogs_mark_themselves_and_the_dialog_behind()
+    {
+        var cut = Render(
+            @<BitBhDialog DefaultOpen="true" Portal="false" class="outer">
+                <BitBhDialogPanel class="outer-panel">
+                    <BitBhDialogTitle>Settings</BitBhDialogTitle>
+                    <BitBhDialog DefaultOpen="true" Portal="false" class="inner">
+                        <BitBhDialogPanel class="inner-panel"><BitBhDialogTitle>Confirm</BitBhDialogTitle></BitBhDialogPanel>
+                    </BitBhDialog>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        Assert.IsTrue(cut.Find(".inner").HasAttribute("data-nested"));
+        Assert.IsTrue(cut.Find(".inner-panel").HasAttribute("data-nested"));
+        Assert.IsFalse(cut.Find(".outer").HasAttribute("data-nested"));
+        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find(".outer-panel").HasAttribute("data-nested-dialog-open")));
+        Assert.Contains("--bit-bh-nested-dialogs:1", cut.Find(".outer").GetAttribute("style")!);
+    }
 }

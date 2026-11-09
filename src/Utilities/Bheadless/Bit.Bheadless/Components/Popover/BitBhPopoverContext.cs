@@ -53,6 +53,14 @@ public sealed class BitBhPopoverContext : IBitBhCloseContext
 
     internal void RegisterButton(bool present) => _registerButton(present);
 
+    internal BitBhPopover? Owner { get; init; }
+
+    /// <summary>Whether the popover opens on hover (<c>OpenOnHover</c>).</summary>
+    public bool OpenOnHover => Owner?.OpenOnHover ?? false;
+
+    /// <summary>Whether it is open because of a hover (its panel takes no focus and closes when the pointer leaves).</summary>
+    public bool OpenedByHover => Owner?.OpenedByHover ?? false;
+
     /// <summary>Deterministic id of the popover panel.</summary>
     public string PanelId => $"{BaseId}-panel";
 

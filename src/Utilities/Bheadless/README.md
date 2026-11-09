@@ -28,7 +28,7 @@ Inspired by [Radix UI](https://www.radix-ui.com/), [React Aria](https://react-sp
 - **Accessibility is the feature.** Every widget follows the [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/): roles, states, properties, keyboard interaction, focus management, typeahead and screen-reader announcements.
 - **Composable.** Compound components (`BitBhMenu` → `BitBhMenuButton` + `BitBhMenuItems` + `BitBhMenuItem`) share state through cascading contexts, so you control the markup and nesting.
 - **Controlled or uncontrolled.** Every stateful component works with `@bind-…`, with `Default…` initial values, or with change callbacks (`On…Change`).
-- **Forms built in.** `EditForm` validation, `BitBhField` label / description / error wiring, hidden inputs for plain form posts.
+- **Forms built in.** `EditForm` validation, `BitBhField` label / description / error wiring, touched / dirty / filled state, server-side errors on their fields (`BitBhServerValidation`), hidden inputs for plain form posts.
 - **Polymorphic.** Render any element with `As="…"`; `class`, `style` and any attribute flow through.
 - **Robust overlays.** Layered dismissal (Escape, outside click, focus out) that respects nesting, focus scopes with restore, `inert` / `aria-hidden` for modals, scroll locking, portals that keep the component tree intact, and exit animations.
 - **Positioning engine included.** Anchor panels with flip, shift, size and arrow support — no Popper / Floating UI dependency.
@@ -63,14 +63,14 @@ Targets .NET 10 and 11.
 
 | Area | Components |
 | --- | --- |
-| **Overlays** | `BitBhDialog`, `BitBhAlertDialog`, `BitBhPopover`, `BitBhTooltip` (+ `BitBhTooltipProvider`), `BitBhHoverCard`, `BitBhPortal` |
-| **Menus** | `BitBhMenu` (submenus, checkbox / radio items, groups, labels), `BitBhMenubar`, `BitBhContextMenu` |
-| **Selection** | `BitBhListbox` (single / multi, typeahead, virtualized), `BitBhCombobox` (autocomplete, multi, virtualized), `BitBhCommand` / `BitBhCommandDialog` (command palette with fuzzy ranking and nested pages) |
-| **Hierarchies & data** | `BitBhTree` (single / multi / tri-state checkboxes, lazy loading), `BitBhGrid` (data grid and treegrid with cell navigation and row selection), `BitBhSortable` (pointer and keyboard reordering with announcements) |
-| **Disclosure** | `BitBhTabGroup`, `BitBhAccordion`, `BitBhDisclosure`, `BitBhCollapsible` |
-| **Form controls** | `BitBhField` (`BitBhLabel`, `BitBhDescription`, `BitBhErrorMessage`, `BitBhInput`, `BitBhSelect`, `BitBhTextarea`), `BitBhFieldset`, `BitBhCheckbox` (+ `BitBhCheckboxGroup`, select-all), `BitBhSwitch`, `BitBhRadioGroup`, `BitBhSlider` (range, vertical), `BitBhToggle`, `BitBhToggleGroup` |
-| **Layout & feedback** | `BitBhToolbar`, `BitBhSeparator`, `BitBhProgress`, `BitBhMeter`, `BitBhToaster` / `BitBhToastViewport`, `BitBhAvatar`, `BitBhAspectRatio`, `BitBhButton`, `BitBhCloseButton` |
-| **Accessibility utilities** | `BitBhFocusScope` / `BitBhFocusTrap`, `BitBhRovingFocusGroup`, `BitBhVisuallyHidden`, `BitBhLiveRegion`, `IBitBhAnnouncer`, `BitBhHotkey`, `BitBhDirectionProvider`, `BitBhDataInteractive`, `BitBhTransition` |
+| **Overlays** | `BitBhDialog` (nested-dialog hooks), `BitBhAlertDialog`, `BitBhPopover` (opens on click or hover), `BitBhTooltip` (+ `BitBhTooltipProvider`), `BitBhHoverCard`, `BitBhDrawer` (bottom sheets and side panels, swipe to dismiss, nesting), `BitBhPortal` |
+| **Menus & navigation** | `BitBhMenu` (submenus, checkbox / radio items, groups, labels), `BitBhMenubar`, `BitBhContextMenu`, `BitBhPagination` (page range with gaps, buttons or links), `BitBhBreadcrumbs`, `BitBhStepper` (linear or free, validation per step), `BitBhTableOfContents` (scroll spy), `BitBhNavigationMenu` (site navigation: hover intent, shared viewport, indicator, submenus) |
+| **Selection** | `BitBhListbox` (single / multi, sections, typeahead, virtualized), `BitBhCombobox` (autocomplete, multi, sections, creatable values, clear button, result-count announcements, virtualized), `BitBhCommand` / `BitBhCommandDialog` (command palette with fuzzy ranking and nested pages) |
+| **Hierarchies & data** | `BitBhTree` (single / multi / tri-state checkboxes, lazy loading), `BitBhGrid` (data grid and treegrid with cell navigation, row selection and resizable columns - `BitBhColumnResizer`), `BitBhSortable` (pointer and keyboard reordering with announcements) |
+| **Disclosure** | `BitBhTabGroup` (+ `BitBhSelectionIndicator`), `BitBhAccordion`, `BitBhDisclosure`, `BitBhCollapsible`, `BitBhCarousel` (APG carousel: swipe, indicators, autoplay with rotation control) |
+| **Form controls** | `BitBhField` (`BitBhLabel`, `BitBhDescription`, `BitBhErrorMessage`, `BitBhInput`, `BitBhSelect`, `BitBhTextarea`; touched / dirty / filled hooks), `BitBhFieldset`, `BitBhCheckbox` (+ `BitBhCheckboxGroup`, select-all), `BitBhSwitch`, `BitBhRadioGroup`, `BitBhSlider` (range, vertical, push / swap thumbs, tick marks), `BitBhAngleSlider` (dial), `BitBhToggle`, `BitBhToggleGroup`, `BitBhNumberField` (any numeric type, culture-aware format and parsing, steppers, scrub area), `BitBhPinInput` (one-time codes, paste and SMS autofill), `BitBhTagsInput`, `BitBhRating` (half values), `BitBhEditable` (inline editing), `BitBhPasswordField` (show / hide toggle), `BitBhSearchField`, `BitBhFileUpload` (drop zone, picker triggers, validation), `BitBhColorArea` / `BitBhColorSlider` / `BitBhColorSwatch` / `BitBhColorField` (around `BitBhColor`), `BitBhCalendar` (single / range / multiple dates, several months, min / max / unavailable dates, the culture's own calendar), `BitBhDateField` / `BitBhTimeField` (segmented, culture-ordered), `BitBhDatePicker` (date field + calendar popover) |
+| **Layout & feedback** | `BitBhToolbar`, `BitBhSeparator`, `BitBhProgress`, `BitBhMeter`, `BitBhToaster` / `BitBhToastViewport` (update, promise toasts, stacking, swipe to dismiss), `BitBhAvatar`, `BitBhAspectRatio`, `BitBhButton`, `BitBhCloseButton`, `BitBhClipboard`, `BitBhScrollArea` (custom scrollbars over native scrolling), `BitBhSplitter` (resizable, collapsible, nestable panels) |
+| **Accessibility utilities** | `BitBhFocusScope` / `BitBhFocusTrap`, `BitBhRovingFocusGroup`, `BitBhVisuallyHidden`, `BitBhLiveRegion`, `IBitBhAnnouncer`, `BitBhHotkey`, `BitBhDirectionProvider`, `BitBhDataInteractive`, `BitBhTransition`, `BitBhSelectionIndicator`, `BitBhAccessibleIcon`, `BitBhLandmarkNavigation` (F6 between landmarks), `BitBhStrings` (localizable built-in text) |
 
 ### A taste
 
@@ -171,7 +171,7 @@ Floating parts (`BitBhMenuItems`, `BitBhListboxOptions`, `BitBhComboboxOptions`,
 <BitBhMenuItems Anchor="@("right start")" />   @* a placement string converts implicitly *@
 ```
 
-Placements: `top | right | bottom | left`, optionally with `start` / `end`. Options: `Gap`, `Offset`, `Padding`, `Flip`, `Shift`, `MatchReferenceWidth`, `HideWhenDetached`, `ArrowPadding`. Panels receive `data-anchor="bottom start"` (the resolved side) and the CSS variables `--bit-bh-anchor-width`, `--bit-bh-anchor-height`, `--bit-bh-available-width`, `--bit-bh-available-height`, `--bit-bh-transform-origin`. Arrows (`BitBhPopoverArrow`, `BitBhTooltipArrow`, `BitBhMenuArrow`) are positioned automatically.
+Placements: `top | right | bottom | left`, optionally with `start` / `end` - or `selection`, which lines the selected option up over the button (macOS / Radix item-aligned select; `data-side="none"`). Options: `Gap`, `Offset`, `Padding`, `Flip`, `Shift`, `MatchReferenceWidth`, `HideWhenDetached`, `ArrowPadding`. Panels receive `data-anchor="bottom start"` (the resolved side) and the CSS variables `--bit-bh-anchor-width`, `--bit-bh-anchor-height`, `--bit-bh-available-width`, `--bit-bh-available-height`, `--bit-bh-transform-origin`. Arrows (`BitBhPopoverArrow`, `BitBhTooltipArrow`, `BitBhMenuArrow`) are positioned automatically.
 
 ### Overlays, dismissal and focus
 
@@ -194,6 +194,40 @@ Placements: `top | right | bottom | left`, optionally with `start` / `end`. Opti
 
 Wrap content in `<BitBhDirectionProvider Dir="BitBhDirection.Rtl">` (or set `Dir` per component) and horizontal arrow keys mirror.
 
+### Localization
+
+The few words the components write themselves - names of parts without visible text ("Increase", "Remove react",
+"Next page", "Show password"), announcements ("3 results", "react removed") - come from `BitBhStrings`. They are
+English by default; change them once for every component:
+
+```csharp
+builder.Services.AddBitBheadlessServices(strings =>
+{
+    strings.Increase = "Erhöhen";
+    strings.RemoveTag = tag => $"{tag} entfernen";
+});
+```
+
+For text that follows each request's culture, register your own instance per scope (built from an `IStringLocalizer`,
+say): `services.AddScoped(sp => new BitBhStrings { … })`. An `aria-label` or a message parameter you give a component
+always wins. Numbers (`BitBhNumberField`) are formatted and parsed with a `CultureInfo` - grouping, decimal separators,
+currency and percent signs, native digits.
+
+### Toasts
+
+`BitBhToaster` shows, updates (`Show` with an existing `Id`, or `Update`) and dismisses toasts from anywhere, and
+`PromiseAsync` turns one toast from "loading" into "success" or "error" as a task completes (`data-variant`). The
+viewport lays the toasts out for you in the browser: each gets `--bit-bh-toast-index`, `--bit-bh-toast-offset` and
+`--bit-bh-toast-height`, the newest `data-front`, and the list `data-expanded` while hovered or focused - a collapsed,
+Sonner-style stack is plain CSS. Toasts swipe away (`SwipeDirection`, `data-swipe`, `--bit-bh-toast-swipe-move-x/y`),
+and their timers pause while the stack is expanded or the page is hidden, then resume with the time they had left.
+
+### Selection indicators
+
+`<BitBhSelectionIndicator />` placed in a tab list, a radio group or a toggle group follows the selected item:
+`--bit-bh-indicator-left` / `-top` / `-width` / `-height` and `data-activation-direction` - the sliding underline and the
+segmented-control pill, measured in the browser with no .NET round trip.
+
 ## Styling
 
 Every component exposes state as attributes. The most common hooks:
@@ -204,7 +238,7 @@ Every component exposes state as attributes. The most common hooks:
 [data-state="active"]                                 /* selected tab */
 [data-state="on"]                                     /* pressed toggle */
 [data-active], [data-highlighted]                     /* keyboard / pointer highlight in menus, listboxes */
-[data-selected], [data-disabled], [data-invalid]
+[data-selected], [data-disabled], [data-invalid], [data-touched], [data-dirty], [data-filled]
 [data-orientation="vertical"], [data-anchor^="top"]
 [aria-expanded="true"], [aria-selected="true"], [aria-pressed="true"]
 ```

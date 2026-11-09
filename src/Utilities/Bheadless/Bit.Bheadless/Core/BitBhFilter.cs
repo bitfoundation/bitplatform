@@ -30,6 +30,21 @@ public static class BitBhFilter
             : Fold(text).StartsWith(Fold(query.Trim()), StringComparison.Ordinal)));
 
     /// <summary>True when every whitespace-separated word of <paramref name="query"/> appears in <paramref name="text"/>.</summary>
+    /// <summary>
+    /// <see cref="Contains(string?, string?)"/> with the comparison rules of <paramref name="culture"/> - for languages
+    /// whose case or letters compare differently from the invariant rules (Turkish "İ" / "ı", say).
+    /// </summary>
+    public static bool Contains(string? text, string? query, CultureInfo culture)
+        => string.IsNullOrWhiteSpace(query) || (text is not null && (CultureFoldsAccents
+            ? culture.CompareInfo.IndexOf(text, query.Trim(), Options) >= 0
+            : Fold(text).Contains(Fold(query.Trim()), StringComparison.Ordinal)));
+
+    /// <summary><see cref="StartsWith(string?, string?)"/> with the comparison rules of <paramref name="culture"/>.</summary>
+    public static bool StartsWith(string? text, string? query, CultureInfo culture)
+        => string.IsNullOrWhiteSpace(query) || (text is not null && (CultureFoldsAccents
+            ? culture.CompareInfo.IsPrefix(text, query.Trim(), Options)
+            : Fold(text).StartsWith(Fold(query.Trim()), StringComparison.Ordinal)));
+
     public static bool AllWords(string? text, string? query)
         => string.IsNullOrWhiteSpace(query)
             || query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).All(w => Contains(text, w));

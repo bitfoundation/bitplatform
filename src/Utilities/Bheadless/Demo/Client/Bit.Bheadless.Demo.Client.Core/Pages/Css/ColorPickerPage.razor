@@ -1,0 +1,101 @@
+﻿@page "/color-picker"
+
+<PageTitle>Color Picker · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Color Picker</h1>
+    <p class="bb-subtitle">A color area, channel sliders, swatches and a hex field around one immutable color value.</p>
+</div>
+
+<SectionSwitcher Slug="color-picker" />
+
+<DemoBlock Title="Area, hue, alpha, swatch and field" Code="@_code" Css="@_css">
+    <Description>
+        Every part binds the same <code>BitBhColor</code>. The area picks two channels (saturation and brightness by default) by
+        pointer or with the arrow keys on its thumb - a focusable <code>role="slider"</code> with
+        <code>aria-roledescription="2D slider"</code> announced as "Saturation 80%, Brightness 60%". A
+        <code>BitBhColorSlider</code> is a <code>BitBhSlider</code> for one channel ("120°", "50%"), its track painted with
+        <code>--bit-bh-color-slider-gradient</code>. The color keeps its hue through gray, so the hue slider doesn't jump.
+        The field takes hex, <code>rgb()</code> or <code>hsl()</code>.
+    </Description>
+    <LiveContent>
+        <div class="picker">
+            <BitBhColorArea @bind-Value="color" class="color-area">
+                <BitBhColorAreaThumb aria-label="Color" class="color-thumb" />
+            </BitBhColorArea>
+            <BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Hue" class="color-slider">
+                <BitBhSliderTrack class="color-slider-track" />
+                <BitBhSliderThumb aria-label="Hue" class="color-thumb" />
+            </BitBhColorSlider>
+            <BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Alpha" class="color-slider">
+                <BitBhSliderTrack class="color-slider-track" />
+                <BitBhSliderThumb aria-label="Opacity" class="color-thumb" />
+            </BitBhColorSlider>
+            <div class="picker-row">
+                <BitBhColorSwatch Color="color" class="color-swatch" />
+                <BitBhColorField @bind-Value="field" aria-label="Color code" class="color-field" />
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private BitBhColor color = BitBhColor.Parse("#2563eb");
+
+    private BitBhColor? field
+    {
+        get => color;
+        set { if (value is { } v) color = v; }
+    }
+
+    private const string _code = """
+<BitBhColorArea @bind-Value="color" class="color-area">
+    <BitBhColorAreaThumb aria-label="Color" class="color-thumb" />
+</BitBhColorArea>
+
+<BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Hue" class="color-slider">
+    <BitBhSliderTrack class="color-slider-track" />
+    <BitBhSliderThumb aria-label="Hue" class="color-thumb" />
+</BitBhColorSlider>
+
+<BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Alpha" class="color-slider">
+    <BitBhSliderTrack class="color-slider-track" />
+    <BitBhSliderThumb aria-label="Opacity" class="color-thumb" />
+</BitBhColorSlider>
+
+<BitBhColorSwatch Color="color" class="color-swatch" />
+<BitBhColorField @bind-Value="field" aria-label="Color code" class="color-field" />
+
+@code {
+    private BitBhColor color = BitBhColor.Parse("#2563eb");
+}
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+
+/* BitBhColorArea: --bit-bh-color-area-hue is the pure hue of the color */
+.color-area {
+    height: 10rem;
+    border-radius: 0.5rem;
+    background:
+        linear-gradient(to top, #000, transparent),
+        linear-gradient(to right, #fff, var(--bit-bh-color-area-hue));
+}
+
+.color-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4);
+    background: var(--bit-bh-color);
+}
+
+/* BitBhColorSlider: --bit-bh-color-slider-gradient runs through the channel's range */
+.color-slider { position: relative; display: flex; align-items: center; height: 1.5rem; touch-action: none; }
+.color-slider-track { position: relative; flex: 1; height: 0.75rem; border-radius: 999px; background: var(--bit-bh-color-slider-gradient); }
+
+.color-swatch { display: inline-block; width: 2rem; height: 2rem; border-radius: 0.375rem; }
+""";
+}

@@ -20,6 +20,8 @@ public abstract class BitBhTextControlBase : BitBhComponentBase, IDisposable
 {
     private BitBhFieldBinding? _binding;
     private string? _value;
+    private bool _touched;
+    private bool _changed;
 
     [CascadingParameter]
     private BitBhFieldContext? FieldContext { get; set; }
@@ -68,7 +70,7 @@ public abstract class BitBhTextControlBase : BitBhComponentBase, IDisposable
     protected bool IsRequired => Required || (FieldContext?.Required ?? false);
 
     /// <summary>The control's element id.</summary>
-    protected string ControlId => Id ?? FieldContext?.ControlId ?? ComponentId;
+    protected virtual string ControlId => Id ?? FieldContext?.ControlId ?? ComponentId;
 
     private bool IsBound => IsProvided(nameof(Value)) || ValueChanged.HasDelegate;
 
@@ -92,24 +94,46 @@ public abstract class BitBhTextControlBase : BitBhComponentBase, IDisposable
         StateHasChanged();
     }
 
-    /// <summary>Adds <c>value</c> and the change / input handler when bound.</summary>
+    /// <summary>Adds <c>value</c> and the change / input handler when bound, and the blur handler behind <c>data-touched</c>.</summary>
     protected void AddValueBinding(RenderTreeBuilder builder, int sequence)
     {
-        if (!IsBound) return;
-        builder.AddAttribute(sequence, "value", _value);
-        builder.AddAttribute(sequence + 1, BindOn == BitBhBindOn.Input ? "oninput" : "onchange",
-            EventCallback.Factory.CreateBinder<string?>(this, OnValueChangedAsync, _value));
-        builder.SetUpdatesAttributeName("value");
+        if (IsBound)
+        {
+            builder.AddAttribute(sequence, "value", _value);
+            builder.AddAttribute(sequence + 1, BindOn == BitBhBindOn.Input ? "oninput" : "onchange",
+                EventCallback.Factory.CreateBinder<string?>(this, OnValueChangedAsync, _value));
+            builder.SetUpdatesAttributeName("value");
+        }
+        builder.AddAttribute(sequence + 2, "onblur", On<Microsoft.AspNetCore.Components.Web.FocusEventArgs>("onblur", MarkTouched));
+    }
+
+    /// <summary>Whether the control has been left at least once (<c>data-touched</c>).</summary>
+    public bool IsTouched => _touched;
+
+    /// <summary>
+    /// Whether the value was changed by the user (<c>data-dirty</c>): since the <c>EditContext</c> was created or marked
+    /// unmodified, inside an <c>EditForm</c>; since the control was rendered otherwise.
+    /// </summary>
+    public bool IsDirty => _binding?.Field is not null ? _binding.IsModified : _changed;
+
+    private void MarkTouched()
+    {
+        if (_touched) return;
+        _touched = true;
+        FieldContext?.ReportInteraction(touched: true, dirty: IsDirty);
+        StateHasChanged();
     }
 
     private async Task OnValueChangedAsync(string? value)
     {
         _value = value;
+        _changed = true;
         // Awaited: the field is validated once the consumer stored the value (an async handler included),
         // and a failing handler surfaces instead of being lost.
         await ValueChanged.InvokeAsync(value);
         _binding?.NotifyChanged();
         _binding?.ReportTo(FieldContext);
+        FieldContext?.ReportInteraction(touched: _touched, dirty: IsDirty);
     }
 
     protected override Dictionary<string, object> BuildComponentAttributes()
@@ -130,6 +154,9 @@ public abstract class BitBhTextControlBase : BitBhComponentBase, IDisposable
         SetDataFlag(attrs, "disabled", IsDisabled);
         SetDataFlag(attrs, "invalid", IsInvalid);
         SetDataFlag(attrs, "required", IsRequired);
+        SetDataFlag(attrs, "touched", _touched);
+        SetDataFlag(attrs, "dirty", IsDirty);
+        if (IsBound) SetDataFlag(attrs, "filled", !string.IsNullOrEmpty(_value));
         return attrs;
     }
 

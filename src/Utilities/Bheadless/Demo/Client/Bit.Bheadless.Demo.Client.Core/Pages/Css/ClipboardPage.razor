@@ -1,0 +1,46 @@
+﻿@page "/clipboard"
+
+<PageTitle>Clipboard · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Clipboard</h1>
+    <p class="bb-subtitle">Copy to the clipboard with a "copied" state that lasts a moment and an announcement for screen readers.</p>
+</div>
+
+<SectionSwitcher Slug="clipboard" />
+
+<DemoBlock Title="Copy an API key" Code="@_code" Css="@_css">
+    <Description>
+        The trigger copies <code>Value</code> (with a selection-based fallback where the Clipboard API is unavailable) and every
+        part gets <code>data-copied</code> for <code>Timeout</code> ms; "Copied" is announced politely. A
+        <code>BitBhClipboardInput</code> shows the value read-only and selects it on focus.
+    </Description>
+    <LiveContent>
+        <BitBhClipboard Value="sk_live_51HqLyjWDarjtT1zdp7dc" class="clipboard">
+            <BitBhClipboardInput aria-label="API key" class="ix-input" />
+            <BitBhClipboardTrigger class="ix-icon-btn">
+                <Template Context="copied">@(copied ? "Copied!" : "Copy")</Template>
+            </BitBhClipboardTrigger>
+        </BitBhClipboard>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private const string _code = """
+<BitBhClipboard Value="@apiKey" class="clipboard">
+    <BitBhClipboardInput aria-label="API key" class="ix-input" />
+    <BitBhClipboardTrigger class="ix-icon-btn">
+        <Template Context="copied">@(copied ? "Copied!" : "Copy")</Template>
+    </BitBhClipboardTrigger>
+</BitBhClipboard>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.clipboard { display: inline-flex; align-items: center; gap: 0.4rem; }
+.clipboard .ix-input { width: 14rem; font-family: ui-monospace, monospace; }
+
+/* data-copied while the copied state lasts */
+.ix-icon-btn[data-copied] { color: var(--color-success-text); }
+""";
+}

@@ -1,0 +1,35 @@
+﻿@page "/tw/editable"
+
+<PageTitle>Editable (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Editable</h1>
+    <p class="bb-subtitle">Inline editing: text shown as a preview that turns into an input, committed with Enter or on blur, cancelled with Escape.</p>
+</div>
+
+<SectionSwitcher Slug="editable" />
+
+<TwDemoBlock Title="Edit on focus" Code="@_code">
+    <Description>
+        With the default <code>ActivationMode</code> (<code>Focus</code>) tabbing to - or clicking - the preview edits it.
+        <code>group-data-[empty]:</code> styles the placeholder.
+    </Description>
+    <LiveContent>
+        <BitBhEditable @bind-Value="name" Placeholder="Add a name" class="group inline-flex items-center gap-2">
+            <BitBhEditablePreview class="cursor-text rounded-md px-2 py-1 font-semibold text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-blue-600 group-data-[empty]:italic group-data-[empty]:text-zinc-500" />
+            <BitBhEditableInput aria-label="Board name" class="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-blue-600" />
+        </BitBhEditable>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private string name = "Roadmap";
+
+    private const string _code = """
+<BitBhEditable @bind-Value="name" Placeholder="Add a name" class="group inline-flex items-center gap-2">
+    <BitBhEditablePreview class="rounded-md px-2 py-1 font-semibold hover:bg-zinc-100
+                                 group-data-[empty]:italic group-data-[empty]:text-zinc-500" />
+    <BitBhEditableInput aria-label="Board name" class="h-9 rounded-lg border border-zinc-300 px-2 text-sm" />
+</BitBhEditable>
+""";
+}

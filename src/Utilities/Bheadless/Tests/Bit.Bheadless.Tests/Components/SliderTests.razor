@@ -274,4 +274,54 @@
         Assert.AreEqual("20", cut.Find("[aria-label=Minimum]").GetAttribute("aria-valuenow"));
         Assert.AreEqual(maximum.Id, JSInterop.Invocations.Last(i => i.Identifier == "focus.focus").Arguments[0]);
     }
+
+    [TestMethod]
+    public void Markers_are_positioned_hidden_and_report_their_state()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="50">
+                <BitBhSliderTrack>
+                    <BitBhSliderRange />
+                    <BitBhSliderMarker Value="25">25</BitBhSliderMarker>
+                    <BitBhSliderMarker Value="50">50</BitBhSliderMarker>
+                    <BitBhSliderMarker Value="75">75</BitBhSliderMarker>
+                </BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Zoom" />
+            </BitBhSlider>);
+
+        var markers = cut.FindAll("[data-value]").Where(m => m.TagName == "SPAN" && m.TextContent.Length > 0).ToList();
+        Assert.AreEqual(3, markers.Count);
+        Assert.IsTrue(markers.All(m => m.GetAttribute("aria-hidden") == "true"));
+        StringAssert.Contains(markers[0].GetAttribute("style"), "left:25%");
+        Assert.AreEqual("under-value", markers[0].GetAttribute("data-state"));
+        Assert.IsTrue(markers[0].HasAttribute("data-in-range"));
+        Assert.AreEqual("at-value", markers[1].GetAttribute("data-state"));
+        Assert.AreEqual("over-value", markers[2].GetAttribute("data-state"));
+        Assert.IsFalse(markers[2].HasAttribute("data-in-range"));
+
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual("under-value", cut.FindAll("[data-value]").First(m => m.TextContent == "75").GetAttribute("data-state"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Markers_of_a_range_are_in_range_between_the_thumbs()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 30, 60 })">
+                <BitBhSliderTrack>
+                    <BitBhSliderMarker Value="20">20</BitBhSliderMarker>
+                    <BitBhSliderMarker Value="40">40</BitBhSliderMarker>
+                    <BitBhSliderMarker Value="80">80</BitBhSliderMarker>
+                </BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Low" />
+                <BitBhSliderThumb aria-label="High" />
+            </BitBhSlider>);
+
+        string State(string text) => cut.FindAll("[data-value]").First(m => m.TextContent == text).GetAttribute("data-state")!;
+        Assert.AreEqual("under-value", State("20"));
+        Assert.AreEqual("at-value", State("40"));
+        Assert.AreEqual("over-value", State("80"));
+        Assert.IsTrue(cut.FindAll("[data-value]").First(m => m.TextContent == "40").HasAttribute("data-in-range"));
+    }
 }

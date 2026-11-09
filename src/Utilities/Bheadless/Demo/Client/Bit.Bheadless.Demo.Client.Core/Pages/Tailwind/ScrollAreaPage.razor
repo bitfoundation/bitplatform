@@ -1,0 +1,226 @@
+﻿@page "/tw/scroll-area"
+
+<PageTitle>Scroll Area (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Scroll Area</h1>
+    <p class="bb-subtitle">Native scrolling with custom scrollbars you can style. The content scrolls as in any scrolling element - keyboard, wheel, touch, screen readers, find in page - while thumbs, overflow hooks and fade variables are kept up to date in the browser, with no .NET call per scroll.</p>
+</div>
+
+<SectionSwitcher Slug="scroll-area" />
+
+<TwDemoBlock Title="Vertical list" Code="@_listCode">
+    <Description>
+        <code>BitBhScrollAreaViewport</code> is the native scroll container, its own scrollbars hidden;
+        <code>BitBhScrollAreaScrollbar</code> + <code>BitBhScrollAreaThumb</code> draw the custom one. With the default
+        <code>Type="Hover"</code> the scrollbar shows while the pointer is over the area or the content scrolls, and fades with
+        <code>data-[state=hidden]:opacity-0</code> 600 ms after the pointer leaves. Drag the thumb, press the track to page, or
+        use the wheel over it. The list has nothing focusable, so the viewport becomes a tab stop while it overflows; its
+        <code>role="region"</code> and <code>aria-label</code> say what it is.
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea class="h-60 w-full max-w-72 overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+            <BitBhScrollAreaViewport role="region" aria-label="Release tags"
+                                     class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)]">
+                <div class="px-4 py-3">
+                    <p class="mb-2 text-sm font-semibold">Tags</p>
+                    @foreach (var tag in tags)
+                    {
+                        <div class="border-t border-zinc-100 py-1.5 text-[0.8125rem]">@tag</div>
+                    }
+                </div>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 transition-[opacity,background-color] duration-150 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100 data-[state=hidden]:opacity-0">
+                <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+            </BitBhScrollAreaScrollbar>
+        </BitBhScrollArea>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Both axes and the corner" Code="@_bothCode">
+    <Description>
+        One scrollbar per axis: <code>Orientation="BitBhOrientation.Horizontal"</code> lays one along the bottom
+        (<code>flex-col</code> so its thumb fills the height). <code>Type="Always"</code> keeps both visible.
+        <code>BitBhScrollAreaCorner</code> fills the square where they meet, sized from them.
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea Type="BitBhScrollAreaType.Always" class="h-48 w-full max-w-md overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+            <BitBhScrollAreaViewport role="region" aria-label="Build log"
+                                     class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)]">
+                <pre class="m-0 whitespace-pre px-4 py-3 font-mono text-[0.8125rem] leading-relaxed">@log</pre>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100">
+                <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+            </BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="flex h-2.5 flex-col p-0.5 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100">
+                <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+            </BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaCorner class="bg-zinc-100" />
+        </BitBhScrollArea>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Fading edges, shown while scrolling" Code="@_fadeCode">
+    <Description>
+        <code>Type="Scroll"</code> shows the scrollbar while the content scrolls, and hides it <code>ScrollHideDelay</code>
+        (900 ms here) after. The root carries <code>--bit-bh-scroll-area-overflow-y-start</code> / <code>-end</code>, the pixels
+        hidden past each edge: an arbitrary <code>[mask-image:…]</code> fades an edge only where there is more to see.
+    </Description>
+    <LiveContent>
+        <BitBhScrollArea Type="BitBhScrollAreaType.Scroll" ScrollHideDelay="900" class="h-60 w-full max-w-72 overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+            <BitBhScrollAreaViewport role="region" aria-label="Terms of service"
+                                     class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)] [mask-image:linear-gradient(to_bottom,transparent_0,#000_min(2.5rem,var(--bit-bh-scroll-area-overflow-y-start,0px)),#000_calc(100%_-_min(2.5rem,var(--bit-bh-scroll-area-overflow-y-end,0px))),transparent_100%)]">
+                <div class="px-4 py-3">
+                    @foreach (var paragraph in paragraphs)
+                    {
+                        <p class="mb-3 text-sm leading-relaxed">@paragraph</p>
+                    }
+                </div>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 transition-opacity duration-150 data-[state=hidden]:opacity-0">
+                <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+            </BitBhScrollAreaScrollbar>
+        </BitBhScrollArea>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Focusable content, right to left" Code="@_rtlCode">
+    <Description>
+        The chips take the focus, so the viewport stays out of the tab order. <code>Dir="BitBhDirection.Rtl"</code> writes
+        <code>dir</code> on the root: the content starts on the right and the thumb moves right to left.
+        <code>Type="Auto"</code> shows the scrollbar whenever the content overflows.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-3">
+            <BitBhScrollArea Dir="BitBhDirection.Rtl" Type="BitBhScrollAreaType.Auto" class="w-full max-w-88 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                <BitBhScrollAreaViewport role="region" aria-label="Filters" class="w-full outline-none">
+                    <div class="flex w-max gap-2 px-3 pt-3 pb-4">
+                        @foreach (var filter in filters)
+                        {
+                            <button type="button" aria-pressed="@(selected.Contains(filter) ? "true" : "false")" @onclick="() => Toggle(filter)"
+                                    class="min-h-8 cursor-pointer whitespace-nowrap rounded-full border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100 aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white">@filter</button>
+                        }
+                    </div>
+                </BitBhScrollAreaViewport>
+                <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="flex h-2.5 flex-col p-0.5">
+                    <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+                </BitBhScrollAreaScrollbar>
+            </BitBhScrollArea>
+            <p class="m-0 text-sm text-zinc-500">Filters: <strong class="font-semibold text-zinc-900">@(selected.Count == 0 ? "none" : string.Join(", ", selected))</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private readonly string[] tags = [.. Enumerable.Range(1, 50).Select(i => $"v1.2.0-beta.{51 - i}")];
+
+    private readonly string log = string.Join('\n', Enumerable.Range(1, 40).Select(i =>
+        $"[12:{i / 60:00}:{i % 60:00}] info  step {i:00}/40  Compiling src/Components/Feature{i:00}/Feature{i:00}View.razor -> obj/Release/net11.0/Feature{i:00}View.g.cs"));
+
+    private readonly string[] paragraphs =
+    [
+        "These terms govern your use of the service. By creating an account you agree to them, so please read them in full.",
+        "You are responsible for the content you upload and for keeping your password secret. Tell us at once about any unauthorised use of your account.",
+        "We may change the service at any time. When a change affects you, we will tell you in advance by email or in the product itself.",
+        "Paid plans renew automatically until cancelled. You can cancel at any time; the plan stays active until the end of the period you paid for.",
+        "We keep your data only as long as needed to provide the service, and you can export or delete it whenever you like.",
+        "If a part of these terms turns out to be unenforceable, the rest stays in effect. These terms are the whole agreement between us.",
+    ];
+
+    private readonly string[] filters = ["All", "Design", "Engineering", "Marketing", "Sales", "Support", "Finance", "Legal", "People", "Operations", "Research"];
+    private readonly List<string> selected = [];
+
+    private void Toggle(string filter)
+    {
+        if (!selected.Remove(filter)) selected.Add(filter);
+    }
+
+    private const string _listCode = """
+<BitBhScrollArea class="h-60 w-full max-w-72 overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+    <BitBhScrollAreaViewport role="region" aria-label="Release tags"
+                             class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)]">
+        <div class="px-4 py-3">
+            <p class="mb-2 text-sm font-semibold">Tags</p>
+            @foreach (var tag in tags)
+            {
+                <div class="border-t border-zinc-100 py-1.5 text-[0.8125rem]">@tag</div>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 transition-[opacity,background-color] duration-150 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100 data-[state=hidden]:opacity-0">
+        <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+
+@code {
+    private readonly string[] tags = [.. Enumerable.Range(1, 50).Select(i => $"v1.2.0-beta.{51 - i}")];
+}
+""";
+
+    private const string _bothCode = """
+<BitBhScrollArea Type="BitBhScrollAreaType.Always" class="h-48 w-full max-w-md overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+    <BitBhScrollAreaViewport role="region" aria-label="Build log"
+                             class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)]">
+        <pre class="m-0 whitespace-pre px-4 py-3 font-mono text-[0.8125rem] leading-relaxed">@log</pre>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100">
+        <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+    </BitBhScrollAreaScrollbar>
+    <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="flex h-2.5 flex-col p-0.5 data-hovering:bg-zinc-100 data-dragging:bg-zinc-100">
+        <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+    </BitBhScrollAreaScrollbar>
+    <BitBhScrollAreaCorner class="bg-zinc-100" />
+</BitBhScrollArea>
+
+@code {
+    private readonly string log = string.Join('\n', Enumerable.Range(1, 40).Select(i =>
+        $"[12:{i / 60:00}:{i % 60:00}] info  step {i:00}/40  Compiling src/Components/Feature{i:00}/Feature{i:00}View.razor -> obj/Release/net11.0/Feature{i:00}View.g.cs"));
+}
+""";
+
+    private const string _fadeCode = """
+<BitBhScrollArea Type="BitBhScrollAreaType.Scroll" ScrollHideDelay="900" class="h-60 w-full max-w-72 overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+    <BitBhScrollAreaViewport role="region" aria-label="Terms of service"
+                             class="size-full rounded-[inherit] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-blue-600)] [mask-image:linear-gradient(to_bottom,transparent_0,#000_min(2.5rem,var(--bit-bh-scroll-area-overflow-y-start,0px)),#000_calc(100%_-_min(2.5rem,var(--bit-bh-scroll-area-overflow-y-end,0px))),transparent_100%)]">
+        <div class="px-4 py-3">
+            @foreach (var paragraph in paragraphs)
+            {
+                <p class="mb-3 text-sm leading-relaxed">@paragraph</p>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar class="flex w-2.5 p-0.5 transition-opacity duration-150 data-[state=hidden]:opacity-0">
+        <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+""";
+
+    private const string _rtlCode = """
+<BitBhScrollArea Dir="BitBhDirection.Rtl" Type="BitBhScrollAreaType.Auto" class="w-full max-w-88 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <BitBhScrollAreaViewport role="region" aria-label="Filters" class="w-full outline-none">
+        <div class="flex w-max gap-2 px-3 pt-3 pb-4">
+            @foreach (var filter in filters)
+            {
+                <button type="button" aria-pressed="@(selected.Contains(filter) ? "true" : "false")" @onclick="() => Toggle(filter)"
+                        class="min-h-8 cursor-pointer whitespace-nowrap rounded-full border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100 aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white">@filter</button>
+            }
+        </div>
+    </BitBhScrollAreaViewport>
+    <BitBhScrollAreaScrollbar Orientation="BitBhOrientation.Horizontal" class="flex h-2.5 flex-col p-0.5">
+        <BitBhScrollAreaThumb class="flex-1 rounded-full bg-zinc-500 hover:bg-zinc-600 data-dragging:bg-zinc-600" />
+    </BitBhScrollAreaScrollbar>
+</BitBhScrollArea>
+
+<p class="m-0 text-sm text-zinc-500">Filters: <strong class="font-semibold text-zinc-900">@(selected.Count == 0 ? "none" : string.Join(", ", selected))</strong></p>
+
+@code {
+    private readonly string[] filters = ["All", "Design", "Engineering", "Marketing", "Sales", "Support", "Finance", "Legal", "People", "Operations", "Research"];
+    private readonly List<string> selected = [];
+
+    private void Toggle(string filter)
+    {
+        if (!selected.Remove(filter)) selected.Add(filter);
+    }
+}
+""";
+}

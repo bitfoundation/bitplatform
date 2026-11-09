@@ -1,0 +1,178 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment<BitBhTagsInputContext> Parts => t => @<text>
+        <BitBhTagsInputList aria-label="Keywords">
+            @for (var i = 0; i < t.Values.Count; i++)
+            {
+                var index = i;
+                <BitBhTagsInputTag Index="index">@t.Values[index]<BitBhTagsInputTagRemove>×</BitBhTagsInputTagRemove></BitBhTagsInputTag>
+            }
+        </BitBhTagsInputList>
+        <BitBhTagsInputInput aria-label="Add a keyword" />
+        <BitBhTagsInputClear>Clear</BitBhTagsInputClear>
+    </text>;
+
+    [TestMethod]
+    public void Tags_are_rows_of_a_grid_with_named_remove_buttons()
+    {
+        var cut = Render(@<BitBhTagsInput DefaultValues="@(new[] { "blazor", "aria" })" Template="Parts" />);
+
+        Assert.AreEqual("grid", cut.Find("[aria-label=Keywords]").GetAttribute("role"));
+        var rows = cut.FindAll("[role=row]");
+        Assert.HasCount(2, rows);
+        Assert.AreEqual("-1", rows[0].GetAttribute("tabindex"));
+        Assert.AreEqual("Remove blazor", cut.FindAll("[role=row] button")[0].AccessibleName());
+        Assert.AreEqual("-1", cut.FindAll("[role=row] button")[0].GetAttribute("tabindex"));
+        // The input is the one tab stop.
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Empty_list_is_a_group()
+    {
+        var cut = Render(@<BitBhTagsInput Template="Parts" />);
+        Assert.AreEqual("group", cut.Find("[aria-label=Keywords]").GetAttribute("role"));
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-empty"));
+        Assert.IsTrue(cut.Find("button").HasAttribute("disabled"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Enter_and_delimiters_add_tags()
+    {
+        IReadOnlyList<string>? values = null;
+        var cut = Render(@<BitBhTagsInput ValuesChanged="v => values = v" Template="Parts" />);
+
+        cut.Find("input").Input("css");
+        Assert.AreEqual("Enter", cut.Find("input").GetAttribute("data-bit-bh-keys"));
+        cut.Find("input").Press("Enter");
+        CollectionAssert.AreEqual(new[] { "css" }, values!.ToArray());
+        Assert.AreEqual("", cut.Find("input").GetAttribute("value"));
+        Assert.IsFalse(cut.Find("input").HasAttribute("data-bit-bh-keys"));
+
+        cut.Find("input").Input("html, js, ts");
+        CollectionAssert.AreEqual(new[] { "css", "html", "js" }, values!.ToArray());
+        Assert.AreEqual("ts", cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Duplicates_max_and_validation_refuse_tags()
+    {
+        var rejections = new List<BitBhTagRejection>();
+        IReadOnlyList<string>? values = null;
+        var cut = Render(
+            @<BitBhTagsInput DefaultValues="@(new[] { "a@x.io" })" Max="2" Validate="@(t => t.Contains('@'))"
+                             ValuesChanged="v => values = v" OnTagRejected="r => rejections.Add(r)" Template="Parts" />);
+
+        cut.Find("input").Input("a@x.io");
+        cut.Find("input").Press("Enter");
+        cut.Find("input").Input("nope");
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("nope", cut.Find("input").GetAttribute("value"));
+        cut.Find("input").Input("b@x.io");
+        cut.Find("input").Press("Enter");
+        cut.Find("input").Input("c@x.io");
+        cut.Find("input").Press("Enter");
+
+        CollectionAssert.AreEqual(new[] { "a@x.io", "b@x.io" }, values!.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { BitBhTagRejectionReason.Duplicate, BitBhTagRejectionReason.Invalid, BitBhTagRejectionReason.MaxReached },
+            rejections.Select(r => r.Reason).ToArray());
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-max-reached"));
+    }
+
+    [TestMethod]
+    public void Keyboard_moves_between_input_and_tags_and_removes_with_an_announcement()
+    {
+        IReadOnlyList<string>? values = null;
+        var cut = Render(@<BitBhTagsInput DefaultValues="@(new[] { "one", "two", "three" })" ValuesChanged="v => values = v" Template="Parts" />);
+        var root = cut.Find("div").Id;
+
+        cut.Find("input").Press("Backspace");
+        Assert.AreEqual($"{root}-tag-2", this.LastFocusRequest());
+        cut.FindAll("[role=row]")[2].Press("ArrowLeft");
+        Assert.AreEqual($"{root}-tag-1", this.LastFocusRequest());
+
+        cut.FindAll("[role=row]")[1].Press("Backspace");
+        CollectionAssert.AreEqual(new[] { "one", "three" }, values!.ToArray());
+        Assert.AreEqual($"{root}-tag-0", this.LastFocusRequest());
+        Assert.IsTrue(Announcer.Messages.Contains("two removed"));
+
+        cut.FindAll("[role=row]")[0].Press("Delete");
+        CollectionAssert.AreEqual(new[] { "three" }, values!.ToArray());
+        Assert.AreEqual($"{root}-tag-0", this.LastFocusRequest());
+
+        cut.FindAll("[role=row]")[0].Press("ArrowRight");
+        Assert.AreEqual(cut.Find("input").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Remove_button_and_clear_remove_tags()
+    {
+        IReadOnlyList<string>? values = null;
+        var cut = Render(@<BitBhTagsInput DefaultValues="@(new[] { "one", "two" })" ValuesChanged="v => values = v" Template="Parts" />);
+
+        cut.Find("button[aria-label='Remove one']").Click();
+        CollectionAssert.AreEqual(new[] { "two" }, values!.ToArray());
+        cut.Find("button[aria-label='Clear all tags']").Click();
+        Assert.IsEmpty(values!);
+    }
+
+    [TestMethod]
+    public void Read_only_tags_can_be_focused_not_removed()
+    {
+        IReadOnlyList<string>? values = null;
+        var cut = Render(@<BitBhTagsInput ReadOnly="true" DefaultValues="@(new[] { "one" })" ValuesChanged="v => values = v" Template="Parts" />);
+        cut.Find("[role=row]").Press("Delete");
+        Assert.IsNull(values);
+        Assert.IsTrue(cut.Find("[role=row] button").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void Field_labels_the_input_and_the_tags_and_posts_each_tag()
+    {
+        var model = new Post();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Labels</BitBhLabel>
+                    <BitBhTagsInput @bind-Values="model.Labels" Name="labels">
+                        <Template Context="t">
+                            <BitBhTagsInputList>
+                                @for (var i = 0; i < t.Values.Count; i++)
+                                {
+                                    var index = i;
+                                    <BitBhTagsInputTag Index="index">@t.Values[index]</BitBhTagsInputTag>
+                                }
+                            </BitBhTagsInputList>
+                            <BitBhTagsInputInput />
+                        </Template>
+                    </BitBhTagsInput>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        Assert.AreEqual("Labels", cut.Find("input[type=text]").AccessibleName());
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", cut.Find("input[type=text]").GetAttribute("aria-invalid"));
+
+        cut.Find("input[type=text]").Input("bug,");
+        CollectionAssert.AreEqual(new[] { "bug" }, model.Labels!.ToArray());
+        Assert.AreEqual("Labels", cut.Find("[role=grid]").AccessibleName());
+        Assert.AreEqual("bug", cut.Find("input[type=hidden][name=labels]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find("input[type=text]").HasAttribute("aria-invalid"));
+        cut.ShouldBeAccessible();
+    }
+
+    private sealed class Post
+    {
+        [Required, MinLength(1)]
+        public IReadOnlyList<string>? Labels { get; set; }
+    }
+}

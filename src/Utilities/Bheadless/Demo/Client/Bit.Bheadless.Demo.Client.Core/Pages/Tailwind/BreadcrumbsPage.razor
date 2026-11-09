@@ -1,0 +1,33 @@
+﻿@page "/tw/breadcrumbs"
+
+<PageTitle>Breadcrumbs (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Breadcrumbs</h1>
+    <p class="bb-subtitle">Where the current page sits: a navigation landmark with an ordered list of links and the current page marked.</p>
+</div>
+
+<SectionSwitcher Slug="breadcrumbs" />
+
+<TwDemoBlock Title="Trail" Code="@_code">
+    <Description>
+        <code>data-current:</code> (or <code>aria-[current=page]:</code>) styles the current page.
+    </Description>
+    <LiveContent>
+        <BitBhBreadcrumbs class="text-sm [&_ol]:m-0 [&_ol]:flex [&_ol]:list-none [&_ol]:items-center [&_ol]:gap-1.5 [&_ol]:p-0">
+            <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="tw" class="text-blue-700 hover:underline">Tailwind</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+            <BitBhBreadcrumbSeparator class="text-zinc-500">›</BitBhBreadcrumbSeparator>
+            <BitBhBreadcrumbItem><BitBhBreadcrumbLink Current="true" class="font-semibold text-zinc-900">Breadcrumbs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+        </BitBhBreadcrumbs>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private const string _code = """
+<BitBhBreadcrumbs class="text-sm [&_ol]:flex [&_ol]:list-none [&_ol]:items-center [&_ol]:gap-1.5">
+    <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="/tw" class="text-blue-700 hover:underline">Tailwind</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+    <BitBhBreadcrumbSeparator class="text-zinc-500">›</BitBhBreadcrumbSeparator>
+    <BitBhBreadcrumbItem><BitBhBreadcrumbLink Current="true" class="font-semibold">Breadcrumbs</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+</BitBhBreadcrumbs>
+""";
+}

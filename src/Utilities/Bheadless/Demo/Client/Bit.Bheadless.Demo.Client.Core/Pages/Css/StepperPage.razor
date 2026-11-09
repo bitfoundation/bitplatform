@@ -1,0 +1,119 @@
+﻿@page "/stepper"
+
+<PageTitle>Stepper · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Stepper</h1>
+    <p class="bb-subtitle">Steps of a multi-step flow - a checkout, a wizard - with their triggers, the current step's content and next / previous buttons.</p>
+</div>
+
+<SectionSwitcher Slug="stepper" />
+
+<DemoBlock Title="Linear checkout" Code="@_basicCode" Css="@_css">
+    <Description>
+        The steps are an ordered list; the current step's trigger has <code>aria-current="step"</code> and every part of a step
+        carries <code>data-state="active|completed|inactive"</code>. With <code>Linear</code> a step can only be reached once the
+        steps before it are complete, and <code>CanGoNext</code> validates the current one (here: accept the terms). The
+        content of a step is a region named by its title.
+    </Description>
+    <LiveContent>
+        <BitBhStepper @bind-Step="step" Count="3" Linear="true" CanGoNext="@(s => s != 0 || accepted)" OnComplete="() => done = true" class="stepper">
+            <BitBhStepperList class="stepper-list">
+                @for (var i = 0; i < _titles.Length; i++)
+                {
+                    var index = i;
+                    <BitBhStepperItem Index="index" class="stepper-item">
+                        <BitBhStepperTrigger class="stepper-trigger">
+                            <BitBhStepperIndicator class="stepper-dot">
+                                <Template Context="state">@(state == BitBhStepState.Completed ? "✓" : (index + 1).ToString())</Template>
+                            </BitBhStepperIndicator>
+                            <BitBhStepperTitle>@_titles[index]</BitBhStepperTitle>
+                        </BitBhStepperTrigger>
+                        @if (index < _titles.Length - 1)
+                        {
+                            <BitBhStepperIndicator class="stepper-line" />
+                        }
+                    </BitBhStepperItem>
+                }
+            </BitBhStepperList>
+
+            <BitBhStepperContent Index="0" class="stepper-content">
+                <label><input type="checkbox" @bind="accepted" /> I accept the terms</label>
+            </BitBhStepperContent>
+            <BitBhStepperContent Index="1" class="stepper-content">Shipping address goes here.</BitBhStepperContent>
+            <BitBhStepperContent Index="2" class="stepper-content">@(done ? "Order placed - thank you!" : "Review and pay.")</BitBhStepperContent>
+
+            <div class="stepper-actions">
+                <BitBhStepperPrevious class="btn">Back</BitBhStepperPrevious>
+                <BitBhStepperNext class="btn btn-primary">@(step == 2 ? "Place order" : "Next")</BitBhStepperNext>
+            </div>
+        </BitBhStepper>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly string[] _titles = ["Terms", "Shipping", "Payment"];
+    private int step;
+    private bool accepted;
+    private bool done;
+
+    private const string _basicCode = """
+<BitBhStepper @bind-Step="step" Count="3" Linear="true" CanGoNext="@(s => s != 0 || accepted)" OnComplete="PlaceOrder" class="stepper">
+    <BitBhStepperList class="stepper-list">
+        @for (var i = 0; i < titles.Length; i++)
+        {
+            var index = i;
+            <BitBhStepperItem Index="index" class="stepper-item">
+                <BitBhStepperTrigger class="stepper-trigger">
+                    <BitBhStepperIndicator class="stepper-dot">
+                        <Template Context="state">@(state == BitBhStepState.Completed ? "✓" : (index + 1).ToString())</Template>
+                    </BitBhStepperIndicator>
+                    <BitBhStepperTitle>@titles[index]</BitBhStepperTitle>
+                </BitBhStepperTrigger>
+                @if (index < titles.Length - 1)
+                {
+                    <BitBhStepperIndicator class="stepper-line" />
+                }
+            </BitBhStepperItem>
+        }
+    </BitBhStepperList>
+
+    <BitBhStepperContent Index="0" class="stepper-content">
+        <label><input type="checkbox" @bind="accepted" /> I accept the terms</label>
+    </BitBhStepperContent>
+    <BitBhStepperContent Index="1" class="stepper-content">Shipping address goes here.</BitBhStepperContent>
+    <BitBhStepperContent Index="2" class="stepper-content">Review and pay.</BitBhStepperContent>
+
+    <BitBhStepperPrevious class="btn">Back</BitBhStepperPrevious>
+    <BitBhStepperNext class="btn btn-primary">Next</BitBhStepperNext>
+</BitBhStepper>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.stepper-list { display: flex; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.stepper-item { display: flex; flex: 1; align-items: center; gap: 0.5rem; }
+
+.stepper-trigger { all: unset; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.stepper-trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.stepper-trigger:disabled { cursor: not-allowed; color: var(--color-muted); }
+
+.stepper-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 2px solid var(--color-border-strong);
+    border-radius: 999px;
+}
+
+/* data-state="active|completed|inactive" on every part of a step */
+.stepper-dot[data-state="active"] { border-color: var(--color-primary); color: var(--color-primary-text); }
+.stepper-dot[data-state="completed"] { border-color: var(--color-primary); background: var(--color-primary); color: #fff; }
+.stepper-trigger[data-state="active"] { font-weight: 600; }
+
+.stepper-line { flex: 1; height: 2px; background: var(--color-border); }
+.stepper-line[data-state="completed"] { background: var(--color-primary); }
+""";
+}

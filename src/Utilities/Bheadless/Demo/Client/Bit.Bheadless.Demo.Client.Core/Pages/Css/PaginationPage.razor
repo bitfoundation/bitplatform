@@ -1,0 +1,145 @@
+﻿@page "/pagination"
+
+<PageTitle>Pagination · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Pagination</h1>
+    <p class="bb-subtitle">A navigation landmark with a page range that keeps the ends and the neighbours of the current page, as buttons or as links.</p>
+</div>
+
+<SectionSwitcher Slug="pagination" />
+
+<DemoBlock Title="Buttons" Code="@_basicCode" Css="@_css">
+    <Description>
+        <code>TotalItems</code> and <code>PageSize</code> give the page count; <code>Entries</code> is the range to render -
+        <code>SiblingCount</code> pages around the current one, <code>BoundaryCount</code> at each end, gaps for the rest - and
+        it keeps the same length as the page moves, so the controls don't jump. The current page has
+        <code>aria-current="page"</code>; pages are named "Page 4".
+    </Description>
+    <LiveContent>
+        <div>
+            <BitBhPagination @bind-Page="currentPage" TotalItems="230" PageSize="10" class="pagination">
+                <Template Context="p">
+                    <BitBhPaginationFirst class="page-btn">«</BitBhPaginationFirst>
+                    <BitBhPaginationPrevious class="page-btn">‹</BitBhPaginationPrevious>
+                    @foreach (var entry in p.Entries)
+                    {
+                        if (entry.IsEllipsis)
+                        {
+                            <BitBhPaginationEllipsis @key="entry.Key" class="page-gap" />
+                        }
+                        else
+                        {
+                            <BitBhPaginationItem @key="entry.Key" Page="entry.Page" class="page-btn">@entry.Page</BitBhPaginationItem>
+                        }
+                    }
+                    <BitBhPaginationNext class="page-btn">›</BitBhPaginationNext>
+                    <BitBhPaginationLast class="page-btn">»</BitBhPaginationLast>
+                </Template>
+            </BitBhPagination>
+            <p class="demo-output">Page <strong>@currentPage</strong> of 23</p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Links" Code="@_linkCode" Css="@_css">
+    <Description>
+        With <code>PageHref</code> every part is a link, so pages open in a new tab, are crawlable and work before the page is
+        interactive. The pagination doesn't change the page itself then: bind <code>Page</code> to the route.
+    </Description>
+    <LiveContent>
+        <BitBhPagination Page="2" PageCount="8" SiblingCount="0" PageHref="@(p => $"pagination?page={p}#links")" aria-label="Archive pages" class="pagination">
+            <Template Context="p">
+                <BitBhPaginationPrevious class="page-btn">‹</BitBhPaginationPrevious>
+                @foreach (var entry in p.Entries)
+                {
+                    if (entry.IsEllipsis)
+                    {
+                        <BitBhPaginationEllipsis @key="entry.Key" class="page-gap" />
+                    }
+                    else
+                    {
+                        <BitBhPaginationItem @key="entry.Key" Page="entry.Page" class="page-btn">@entry.Page</BitBhPaginationItem>
+                    }
+                }
+                <BitBhPaginationNext class="page-btn">›</BitBhPaginationNext>
+            </Template>
+        </BitBhPagination>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private int currentPage = 7;
+
+    private const string _basicCode = """
+<BitBhPagination @bind-Page="currentPage" TotalItems="230" PageSize="10" class="pagination">
+    <Template Context="p">
+        <BitBhPaginationFirst class="page-btn">«</BitBhPaginationFirst>
+        <BitBhPaginationPrevious class="page-btn">‹</BitBhPaginationPrevious>
+        @foreach (var entry in p.Entries)
+        {
+            if (entry.IsEllipsis)
+            {
+                <BitBhPaginationEllipsis @key="entry.Key" class="page-gap" />
+            }
+            else
+            {
+                <BitBhPaginationItem @key="entry.Key" Page="entry.Page" class="page-btn">@entry.Page</BitBhPaginationItem>
+            }
+        }
+        <BitBhPaginationNext class="page-btn">›</BitBhPaginationNext>
+        <BitBhPaginationLast class="page-btn">»</BitBhPaginationLast>
+    </Template>
+</BitBhPagination>
+""";
+
+    private const string _linkCode = """
+<BitBhPagination Page="@currentPage" PageCount="8" SiblingCount="0" PageHref="@(p => $"/posts?page={p}")" aria-label="Archive pages" class="pagination">
+    <Template Context="p">
+        <BitBhPaginationPrevious class="page-btn">‹</BitBhPaginationPrevious>
+        @foreach (var entry in p.Entries)
+        {
+            if (entry.IsEllipsis) { <BitBhPaginationEllipsis @key="entry.Key" class="page-gap" /> }
+            else { <BitBhPaginationItem @key="entry.Key" Page="entry.Page" class="page-btn">@entry.Page</BitBhPaginationItem> }
+        }
+        <BitBhPaginationNext class="page-btn">›</BitBhPaginationNext>
+    </Template>
+</BitBhPagination>
+
+@code {
+    [SupplyParameterFromQuery] private int Page { get; set; } = 1;
+}
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
+
+.page-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.page-btn:hover:not([data-disabled]) { background: var(--color-fill); }
+.page-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* aria-current="page" on the current page */
+.page-btn[aria-current="page"] { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+/* data-disabled on Previous / Next at the ends */
+.page-btn[data-disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.page-gap { min-width: 1.5rem; text-align: center; color: var(--color-muted); }
+""";
+}

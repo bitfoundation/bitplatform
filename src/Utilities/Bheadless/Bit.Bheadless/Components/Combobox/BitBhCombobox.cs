@@ -51,6 +51,7 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     private string _query = string.Empty;
     private bool _userTyped;
     private BitBhMenuFocus? _pendingHighlight;
+    private BitBhDelayedAction? _announce;
 
     [CascadingParameter]
     private BitBhFieldContext? FieldContext { get; set; }
@@ -109,6 +110,18 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     [Parameter]
     public EventCallback<bool> OnOpenChange { get; set; }
 
+    /// <summary>
+    /// Whether a pause in typing announces how many options are left (React Aria): the highlight moves
+    /// through <c>aria-activedescendant</c>, so without it a screen reader user does not hear that the
+    /// options changed. Default: true.
+    /// </summary>
+    [Parameter]
+    public bool AnnounceResults { get; set; } = true;
+
+    /// <summary>The text of that announcement. Default: <see cref="BitBhStrings.OptionsAvailable"/> ("3 options available").</summary>
+    [Parameter]
+    public Func<int, string>? ResultsAnnouncement { get; set; }
+
     /// <summary>Converts a value to the text shown in the input. Defaults to <c>ToString()</c>.</summary>
     [Parameter]
     public Func<TValue?, string>? DisplayValue { get; set; }
@@ -120,6 +133,18 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     /// <summary>Allows clearing the selection by emptying the input (single-select).</summary>
     [Parameter]
     public bool Nullable { get; set; }
+
+    /// <summary>
+    /// Lets the typed text become a value that isn't among the options - a new tag, a free-text entry (Ark's
+    /// <c>allowCustomValue</c>, "creatable" selects): Enter with no option highlighted selects <c>CreateValue(text)</c> and
+    /// raises <see cref="OnCreate"/>, where you add it to your options. For strings: <c>CreateValue="@(text =&gt; text)"</c>.
+    /// </summary>
+    [Parameter]
+    public Func<string, TValue>? CreateValue { get; set; }
+
+    /// <summary>Fires with a value made from the typed text by <see cref="CreateValue"/>, before it is selected.</summary>
+    [Parameter]
+    public EventCallback<TValue> OnCreate { get; set; }
 
     /// <summary>Open the options when the input receives focus. Default: false.</summary>
     [Parameter]
@@ -402,6 +427,22 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
             await OnOpenChange.InvokeAsync(true);
         }
         StateHasChanged();
+        ScheduleResultsAnnouncement();
+    }
+
+    // Read after the pause, once the consumer's filtered options have rendered and registered.
+    private void ScheduleResultsAnnouncement()
+    {
+        if (!AnnounceResults) return;
+        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _announce.Schedule(500, async () =>
+        {
+            if (!_open) return;
+            var count = State.Count;
+            var text = ResultsAnnouncement?.Invoke(count) ?? Strings.OptionsAvailable(count);
+            var announcer = GetService<IBitBhAnnouncer>() ?? new BitBhAnnouncer(Interop);
+            await announcer.AnnounceAsync(text);
+        });
     }
 
     private async Task SetQueryAsync(string text, bool userTyped)
@@ -416,6 +457,36 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     internal void ReconcileHighlight() => State.Reconcile(fallbackToFirst: AutoHighlight && _userTyped);
 
     // ── Selection ────────────────────────────────────────────────────────────
+
+    /// <summary>Whether Enter would make a value from the typed text: nothing is highlighted and there is text.</summary>
+    internal bool CanCreate => CreateValue is not null && !IsDisabled && _query.Trim().Length > 0 && State.ActiveId is null;
+
+    /// <summary>Whether there is anything to clear: a value (or values) or typed text.</summary>
+    internal bool CanClear => !IsDisabled && (_query.Length > 0 || (Multiple ? CurrentValues.Count > 0 : HasSingleValue));
+
+    /// <summary>Clears the value (every value of a multiple combobox) and the typed text, and focuses the input.</summary>
+    public async Task ClearAsync()
+    {
+        if (!CanClear) return;
+        if (Multiple)
+        {
+            if (CurrentValues.Count > 0)
+            {
+                var none = new List<TValue>();
+                if (!IsProvided(nameof(Values))) _values = none;
+                await ValuesChanged.InvokeAsync(none);
+                await OnValuesChange.InvokeAsync(none);
+                NotifyFieldChanged();
+            }
+        }
+        else if (HasSingleValue)
+        {
+            await SetSingleAsync(default, hasValue: false);
+        }
+        await SetQueryAsync(string.Empty, userTyped: false);
+        StateHasChanged();
+        await Interop.FocusAsync(InputId);
+    }
 
     internal async Task SelectAsync(TValue value)
     {
@@ -495,6 +566,17 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
             case "Enter":
                 if (_open && State.TryGetActiveValue(out var value) && !State.DisabledAt(State.ActiveIndex))
                     await SelectAsync(value);
+                else if (CanCreate && CreateValue is not null)
+                {
+                    var created = CreateValue(_query.Trim());
+                    // Text that names a value already picked adds nothing (selecting it again would toggle it off).
+                    if (!(Multiple && CurrentValues.Contains(created, EffectiveComparer)))
+                    {
+                        await OnCreate.InvokeAsync(created);
+                        await SelectAsync(created);
+                    }
+                    if (Multiple) await SetQueryAsync(string.Empty, userTyped: false);
+                }
                 break;
 
             case "Escape":
@@ -530,5 +612,9 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     /// </summary>
     public Task FocusAsync() => Interop.FocusAsync(InputId).AsTask();
 
-    public void Dispose() => _binding?.Dispose();
+    public void Dispose()
+    {
+        _announce?.Dispose();
+        _binding?.Dispose();
+    }
 }

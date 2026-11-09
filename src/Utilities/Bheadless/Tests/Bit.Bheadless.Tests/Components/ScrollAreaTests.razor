@@ -1,0 +1,236 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private RenderFragment Area(BitBhScrollAreaType type = BitBhScrollAreaType.Hover, bool? focusable = null) =>
+        @<BitBhScrollArea Type="type" class="area">
+            <BitBhScrollAreaViewport Focusable="focusable" class="viewport" role="region" aria-label="Release notes">
+                <p>Long text</p>
+            </BitBhScrollAreaViewport>
+            <BitBhScrollAreaScrollbar class="bar"><BitBhScrollAreaThumb class="thumb" /></BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaScrollbar class="bar" Orientation="BitBhOrientation.Horizontal"><BitBhScrollAreaThumb class="thumb" /></BitBhScrollAreaScrollbar>
+            <BitBhScrollAreaCorner class="corner" />
+        </BitBhScrollArea>;
+
+    [TestMethod]
+    public void Parts_are_tied_to_the_root_and_the_scrollbars_are_hidden_from_assistive_technology()
+    {
+        var cut = Render(Area());
+        var root = cut.Find(".area");
+        var id = root.Id!;
+
+        Assert.AreEqual(id, cut.Find(".viewport").GetAttribute("data-bit-bh-scroll-area-viewport"));
+        foreach (var bar in cut.FindAll(".bar"))
+        {
+            Assert.AreEqual(id, bar.GetAttribute("data-bit-bh-scroll-area-scrollbar"));
+            Assert.AreEqual("true", bar.GetAttribute("aria-hidden"));
+        }
+        foreach (var thumb in cut.FindAll(".thumb")) Assert.AreEqual(id, thumb.GetAttribute("data-bit-bh-scroll-area-thumb"));
+        Assert.AreEqual(id, cut.Find(".corner").GetAttribute("data-bit-bh-scroll-area-corner"));
+        Assert.AreEqual("true", cut.Find(".corner").GetAttribute("aria-hidden"));
+        Assert.Contains("position:relative", root.GetAttribute("style")!);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void The_viewport_scrolls_natively_without_the_browsers_scrollbars()
+    {
+        var cut = Render(Area());
+        var style = cut.Find(".viewport").GetAttribute("style")!;
+        Assert.Contains("overflow:scroll", style);
+        Assert.Contains("scrollbar-width:none", style);
+        // The region role and name the consumer gave pass through.
+        Assert.AreEqual("region", cut.Find(".viewport").Role());
+        Assert.AreEqual("Release notes", cut.Find(".viewport").AccessibleName());
+    }
+
+    [TestMethod]
+    public void The_viewport_tab_stop_is_left_to_the_runtime_unless_decided()
+    {
+        var auto = Render(Area());
+        Assert.AreEqual("auto", auto.Find(".viewport").GetAttribute("data-bit-bh-focusable"));
+        Assert.IsNull(auto.Find(".viewport").GetAttribute("tabindex"));
+
+        var always = Render(Area(focusable: true));
+        Assert.AreEqual("0", always.Find(".viewport").GetAttribute("tabindex"));
+        Assert.IsNull(always.Find(".viewport").GetAttribute("data-bit-bh-focusable"));
+        Assert.ContainsSingle(always.TabSequence());
+        always.ShouldBeAccessible();
+
+        var never = Render(Area(focusable: false));
+        Assert.IsNull(never.Find(".viewport").GetAttribute("tabindex"));
+        Assert.IsNull(never.Find(".viewport").GetAttribute("data-bit-bh-focusable"));
+        Assert.IsEmpty(never.TabSequence());
+    }
+
+    [TestMethod]
+    public void A_tabindex_the_consumer_sets_wins()
+    {
+        var cut = Render(
+            @<BitBhScrollArea>
+                <BitBhScrollAreaViewport tabindex="-1" class="viewport">Text</BitBhScrollAreaViewport>
+            </BitBhScrollArea>);
+        Assert.AreEqual("-1", cut.Find(".viewport").GetAttribute("tabindex"));
+        Assert.IsNull(cut.Find(".viewport").GetAttribute("data-bit-bh-focusable"));
+    }
+
+    [TestMethod]
+    public void Scrollbars_start_hidden_unless_always_shown()
+    {
+        var hover = Render(Area());
+        Assert.IsTrue(hover.FindAll(".bar").All(b => b.GetAttribute("data-state") == "hidden"));
+        Assert.AreEqual("hidden", hover.Find(".corner").GetAttribute("data-state"));
+
+        var always = Render(Area(BitBhScrollAreaType.Always));
+        Assert.IsTrue(always.FindAll(".bar").All(b => b.GetAttribute("data-state") == "visible"));
+        always.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Scrollbars_and_thumbs_are_laid_out_along_their_axis()
+    {
+        var cut = Render(Area());
+        var bars = cut.FindAll(".bar");
+        var thumbs = cut.FindAll(".thumb");
+
+        Assert.AreEqual("vertical", bars[0].GetAttribute("data-orientation"));
+        Assert.Contains("inset-inline-end:0", bars[0].GetAttribute("style")!);
+        Assert.Contains("bottom:var(--bit-bh-scroll-area-corner-height,0px)", bars[0].GetAttribute("style")!);
+        Assert.Contains("touch-action:none", bars[0].GetAttribute("style")!);
+        Assert.AreEqual("vertical", thumbs[0].GetAttribute("data-orientation"));
+        Assert.AreEqual("height:var(--bit-bh-scroll-area-thumb-height)", thumbs[0].GetAttribute("style"));
+
+        Assert.AreEqual("horizontal", bars[1].GetAttribute("data-orientation"));
+        Assert.Contains("bottom:0", bars[1].GetAttribute("style")!);
+        Assert.Contains("inset-inline-end:var(--bit-bh-scroll-area-corner-width,0px)", bars[1].GetAttribute("style")!);
+        Assert.AreEqual("horizontal", thumbs[1].GetAttribute("data-orientation"));
+        Assert.AreEqual("width:var(--bit-bh-scroll-area-thumb-width)", thumbs[1].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void A_style_the_consumer_passes_comes_after_the_functional_one()
+    {
+        var cut = Render(
+            @<BitBhScrollArea style="height:10rem">
+                <BitBhScrollAreaViewport style="height:100%" class="viewport">Text</BitBhScrollAreaViewport>
+            </BitBhScrollArea>);
+        Assert.AreEqual("overflow:scroll;scrollbar-width:none;-ms-overflow-style:none;height:100%", cut.Find(".viewport").GetAttribute("style"));
+        Assert.EndsWith("height:10rem", cut.Find("[data-bit-bh-scroll-area-viewport]").ParentElement!.GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void The_direction_is_written_on_the_root()
+    {
+        var own = Render(@<BitBhScrollArea Dir="BitBhDirection.Rtl" class="area"><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>);
+        Assert.AreEqual("rtl", own.Find(".area").GetAttribute("dir"));
+
+        // A provider sets no dir attribute of its own, and the direction decides which way the content scrolls.
+        var cascaded = Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhScrollArea class="area"><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>
+            </BitBhDirectionProvider>);
+        Assert.AreEqual("rtl", cascaded.Find(".area").GetAttribute("dir"));
+
+        var none = Render(@<BitBhScrollArea class="area"><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>);
+        Assert.IsNull(none.Find(".area").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void The_runtime_gets_the_type_and_the_hide_delay_and_their_changes()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("scrollArea.attach", _ => true);
+        attach.SetResult(4);
+        var cut = Render(
+            @<Stateful T="BitBhScrollAreaType" Initial="BitBhScrollAreaType.Scroll" Context="s">
+                <BitBhScrollArea Type="s.Value" ScrollHideDelay="900" class="area"><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>
+            </Stateful>);
+
+        var invocation = attach.Invocations.Single();
+        Assert.AreEqual(cut.Find(".area").Id, invocation.Arguments[0]);
+        var options = (IDictionary<string, object?>)invocation.Arguments[1]!;
+        Assert.AreEqual("scroll", options["type"]);
+        Assert.AreEqual(900, options["hideDelay"]);
+
+        var host = cut.FindComponent<Stateful<BitBhScrollAreaType>>().Instance;
+        cut.InvokeAsync(() => host.Set(BitBhScrollAreaType.Always));
+        var update = JSInterop.Invocations.Single(i => i.Identifier == "scrollArea.update");
+        Assert.AreEqual(4, update.Arguments[0]);
+        Assert.AreEqual("always", ((IDictionary<string, object?>)update.Arguments[1]!)["type"]);
+
+        // A render that changes nothing the runtime uses sends nothing.
+        cut.InvokeAsync(() => host.Set(BitBhScrollAreaType.Always));
+        Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "scrollArea.update"));
+    }
+
+    [TestMethod]
+    public void Disposed_while_attaching_detaches_what_the_attach_returns()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var attach = module.Setup<int>("scrollArea.attach", _ => true);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                @if (s.Value)
+                {
+                    <BitBhScrollArea><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>
+                }
+            </Stateful>);
+
+        var host = cut.FindComponent<Stateful<bool>>().Instance;
+        cut.InvokeAsync(() => host.Set(false));
+        attach.SetResult(9);
+
+        cut.WaitForAssertion(() =>
+            Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "scrollArea.detach" && Equals(i.Arguments[0], 9))));
+    }
+
+    [TestMethod]
+    public void Disposing_detaches_the_runtime()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        module.Setup<int>("scrollArea.attach", _ => true).SetResult(3);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                @if (s.Value)
+                {
+                    <BitBhScrollArea><BitBhScrollAreaViewport>Text</BitBhScrollAreaViewport></BitBhScrollArea>
+                }
+            </Stateful>);
+
+        cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(false));
+        cut.WaitForAssertion(() =>
+            Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "scrollArea.detach" && Equals(i.Arguments[0], 3))));
+    }
+
+    [TestMethod]
+    public void Nested_areas_keep_their_parts_apart()
+    {
+        var cut = Render(
+            @<BitBhScrollArea class="outer">
+                <BitBhScrollAreaViewport class="outer-viewport" Focusable="false">
+                    <BitBhScrollArea class="inner">
+                        <BitBhScrollAreaViewport class="inner-viewport" role="region" aria-label="Inner">Text</BitBhScrollAreaViewport>
+                        <BitBhScrollAreaScrollbar class="inner-bar"><BitBhScrollAreaThumb /></BitBhScrollAreaScrollbar>
+                    </BitBhScrollArea>
+                </BitBhScrollAreaViewport>
+                <BitBhScrollAreaScrollbar class="outer-bar"><BitBhScrollAreaThumb /></BitBhScrollAreaScrollbar>
+            </BitBhScrollArea>);
+
+        Assert.AreEqual(cut.Find(".inner").Id, cut.Find(".inner-viewport").GetAttribute("data-bit-bh-scroll-area-viewport"));
+        Assert.AreEqual(cut.Find(".inner").Id, cut.Find(".inner-bar").GetAttribute("data-bit-bh-scroll-area-scrollbar"));
+        Assert.AreEqual(cut.Find(".outer").Id, cut.Find(".outer-bar").GetAttribute("data-bit-bh-scroll-area-scrollbar"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Parts_render_their_own_element_with_As()
+    {
+        var cut = Render(
+            @<BitBhScrollArea As="section" aria-label="Logs" class="area">
+                <BitBhScrollAreaViewport As="ul" class="viewport"><li>One</li></BitBhScrollAreaViewport>
+            </BitBhScrollArea>);
+        Assert.AreEqual("section", cut.Find(".area").LocalName);
+        Assert.AreEqual("ul", cut.Find(".viewport").LocalName);
+        cut.ShouldBeAccessible();
+    }
+}

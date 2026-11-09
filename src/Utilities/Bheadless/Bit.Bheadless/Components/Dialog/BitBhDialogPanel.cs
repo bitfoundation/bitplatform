@@ -85,6 +85,7 @@ public class BitBhDialogPanel : BitBhComponentBase
         // Default stacking above the backdrop. Consumers override via class=/style=.
         if (GetAdditionalAttribute("style") is null && GetAdditionalAttribute("class") is null)
             attrs["style"] = "position:relative;z-index:1;";
+        if (DialogContext is { } dialog) BitBhDialog.AddNestingAttributes(attrs, dialog.IsNested, dialog.NestedDialogs);
 
         return attrs;
     }

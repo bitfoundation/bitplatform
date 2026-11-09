@@ -22,6 +22,9 @@ public enum BitBhDismissReason
     /// dialog). The runtime has already closed it, so cancelling the request only reopens it.
     /// </summary>
     ParentClosed,
+
+    /// <summary>The surface was swiped away (a drawer dragged towards its edge past the threshold).</summary>
+    Swipe,
 }
 
 /// <summary>Layer (dismissal) behaviour of a floating surface.</summary>

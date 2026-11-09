@@ -8,6 +8,19 @@ using Microsoft.JSInterop;
 
 namespace Bit.Bheadless;
 
+/// <summary>What a thumb of a range <see cref="BitBhSlider"/> does when it meets its neighbour.</summary>
+public enum BitBhSliderThumbCollision
+{
+    /// <summary>It stops at the neighbour (keeping <c>MinStepsBetweenThumbs</c> apart).</summary>
+    Stop,
+
+    /// <summary>It pushes the neighbour along (Base UI's default).</summary>
+    Push,
+
+    /// <summary>It passes the neighbour: the two swap places, and the keyboard focus follows the moving value.</summary>
+    Swap,
+}
+
 /// <summary>
 /// A headless Slider for picking a value — or a range, with several thumbs —
 /// within a min / max (WAI-ARIA Slider and Multi-Thumb Slider patterns).
@@ -33,6 +46,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     private readonly List<BitBhSliderThumb> _thumbs = new();
     private double[] _values = [];
     private int _activeThumb = -1;
+    private int _pendingFocus = -1;
     private int _handle;
     private bool _attachTried;
     private string? _sentOptions;
@@ -105,6 +119,10 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     /// <summary>Minimum number of steps between thumbs of a range. Default: 0.</summary>
     [Parameter]
     public int MinStepsBetweenThumbs { get; set; }
+
+    /// <summary>What a thumb does when it meets its neighbour. Default: <see cref="BitBhSliderThumbCollision.Stop"/>.</summary>
+    [Parameter]
+    public BitBhSliderThumbCollision ThumbCollision { get; set; }
 
     /// <summary>Horizontal (default) or vertical.</summary>
     [Parameter]
@@ -192,7 +210,17 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender) => SyncAsync();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A value that swapped thumbs takes the keyboard focus with it.
+        if (_pendingFocus >= 0 && _pendingFocus < _thumbs.Count)
+        {
+            var thumb = _thumbs[_pendingFocus];
+            _pendingFocus = -1;
+            await Interop.FocusAsync(thumb.ThumbId);
+        }
+        await SyncAsync();
+    }
 
     // Renders can arrive while the attach is in flight. One loop applies them in order, and a slider disposed
     // meanwhile detaches what the in-flight call attached: the runtime would otherwise keep its listener and
@@ -363,13 +391,38 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
 
         var next = Snap(value);
         var gap = MinStepsBetweenThumbs * EffectiveStep;
-        if (index > 0) next = Math.Max(next, values[index - 1] + gap);
-        if (index < values.Length - 1) next = Math.Min(next, values[index + 1] - gap);
-        next = Math.Clamp(next, Min, Max);
+        var before = values.ToArray();
+        switch (ThumbCollision)
+        {
+            case BitBhSliderThumbCollision.Push:
+                // The thumb may go as far as leaves room for the ones it pushes.
+                next = Math.Clamp(next, Min + gap * index, Max - gap * (values.Length - 1 - index));
+                values[index] = next;
+                for (var i = index + 1; i < values.Length; i++) values[i] = Math.Max(values[i], values[i - 1] + gap);
+                for (var i = index - 1; i >= 0; i--) values[i] = Math.Min(values[i], values[i + 1] - gap);
+                break;
+            case BitBhSliderThumbCollision.Swap:
+                next = Math.Clamp(next, Min, Max);
+                values[index] = next;
+                // Passing a neighbour swaps them: the values stay in order and the moving value changes thumb.
+                var moved = index;
+                while (moved > 0 && values[moved] < values[moved - 1]) { (values[moved], values[moved - 1]) = (values[moved - 1], values[moved]); moved--; }
+                while (moved < values.Length - 1 && values[moved] > values[moved + 1]) { (values[moved], values[moved + 1]) = (values[moved + 1], values[moved]); moved++; }
+                if (moved != index)
+                {
+                    if (_activeThumb == index) _activeThumb = moved;
+                    _pendingFocus = moved;
+                }
+                break;
+            default:
+                if (index > 0) next = Math.Max(next, values[index - 1] + gap);
+                if (index < values.Length - 1) next = Math.Min(next, values[index + 1] - gap);
+                next = Math.Clamp(next, Min, Max);
+                values[index] = next;
+                break;
+        }
 
-        if (Math.Abs(values[index] - next) <= double.Epsilon) return (values, false);
-
-        values[index] = next;
+        if (values.SequenceEqual(before)) return (values, false);
         if (!IsProvided(nameof(Values)) && !IsProvided(nameof(Value))) _values = values;
         if (IsRange) await ValuesChanged.InvokeAsync(values);
         else await ValueChanged.InvokeAsync(next);

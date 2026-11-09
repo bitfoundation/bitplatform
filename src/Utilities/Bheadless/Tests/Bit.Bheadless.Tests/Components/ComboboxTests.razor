@@ -511,4 +511,16 @@
         await cut.InvokeAsync(() => cut.FindComponent<BitBhCombobox<string>>().Instance.FocusAsync());
         Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "focus.focus" && Equals(i.Arguments[0], cut.Find("input").Id)));
     }
+
+    [TestMethod]
+    public async Task A_pause_in_typing_announces_how_many_options_are_left()
+    {
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+
+        cut.Find("input").Input("ap");
+        await Announcer.WaitForAsync("2 options available");
+        cut.Find("input").Input("ch");
+        await Announcer.WaitForAsync("1 option available");
+    }
 }

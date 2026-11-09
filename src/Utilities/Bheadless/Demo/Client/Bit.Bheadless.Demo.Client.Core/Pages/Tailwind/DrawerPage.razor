@@ -1,0 +1,115 @@
+﻿@page "/tw/drawer"
+
+<PageTitle>Drawer (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Drawer</h1>
+    <p class="bb-subtitle">A modal dialog that slides in from an edge of the screen - a bottom sheet, a side panel - and can be swiped away.</p>
+</div>
+
+<SectionSwitcher Slug="drawer" />
+
+<TwDemoBlock Title="Bottom sheet" Code="@_sheetCode">
+    <Description>
+        The panel follows a swipe through <code>translate-y-[var(--bit-bh-drawer-swipe-movement-y,0px)]</code> and the backdrop fades
+        with <code>--bit-bh-drawer-swipe-progress</code>; <code>data-[swiping]:transition-none</code> keeps the panel under the finger.
+        It slides in with <code>starting:translate-y-full</code> and out with <code>data-[state=closed]:translate-y-full</code> - a
+        transition, so a swiped sheet leaves from where it was let go.
+    </Description>
+    <LiveContent>
+        <BitBhDrawer>
+            <BitBhDrawerTrigger class="inline-flex cursor-pointer items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100">Open sheet</BitBhDrawerTrigger>
+            <BitBhDrawerBackdrop class="@_backdropClass" />
+            <BitBhDrawerPanel class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col gap-3 rounded-t-2xl bg-white p-5 text-zinc-900 shadow-2xl outline-none translate-y-[var(--bit-bh-drawer-swipe-movement-y,0px)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:translate-y-full data-[state=closed]:translate-y-full data-[swiping]:transition-none data-[swiping]:select-none">
+                <BitBhDrawerHandle class="-mt-1 mb-1 h-1.5 w-12 flex-none cursor-grab self-center rounded-full bg-zinc-300" />
+                <BitBhDrawerTitle class="m-0 text-lg font-semibold">Recent activity</BitBhDrawerTitle>
+                <BitBhDrawerDescription class="m-0 text-sm text-zinc-600">Swipe down or press Escape to close.</BitBhDrawerDescription>
+                <ul class="m-0 grid min-h-0 list-none gap-1 overflow-y-auto overscroll-contain p-0">
+                    @for (var i = 1; i <= 20; i++)
+                    {
+                        <li class="rounded-lg bg-zinc-100 px-3 py-2.5 text-sm">Event @i</li>
+                    }
+                </ul>
+                <div class="mt-auto flex justify-end">
+                    <BitBhDrawerClose class="inline-flex cursor-pointer items-center rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Done</BitBhDrawerClose>
+                </div>
+            </BitBhDrawerPanel>
+        </BitBhDrawer>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Side panel" Code="@_sideCode">
+    <Description>
+        <code>Side="BitBhDrawerSide.Left"</code>: a swipe to the left moves it along
+        <code>--bit-bh-drawer-swipe-movement-x</code>. <code>SwipeThreshold="0.4"</code> asks for a longer drag before letting go closes
+        it; a quick flick still does.
+    </Description>
+    <LiveContent>
+        <BitBhDrawer Side="BitBhDrawerSide.Left" SwipeThreshold="0.4">
+            <BitBhDrawerTrigger class="inline-flex cursor-pointer items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100">Open menu</BitBhDrawerTrigger>
+            <BitBhDrawerBackdrop class="@_backdropClass" />
+            <BitBhDrawerPanel class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col gap-3 rounded-r-2xl bg-white p-5 text-zinc-900 shadow-2xl outline-none translate-x-[var(--bit-bh-drawer-swipe-movement-x,0px)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] starting:-translate-x-full data-[state=closed]:-translate-x-full data-[swiping]:transition-none data-[swiping]:select-none">
+                <BitBhDrawerTitle class="m-0 text-lg font-semibold">Navigation</BitBhDrawerTitle>
+                <nav class="grid gap-1" aria-label="Drawer (Tailwind example)">
+                    <a href="tw/drawer#home" class="block rounded-lg px-3 py-2.5 text-zinc-900 no-underline hover:bg-zinc-100">Home</a>
+                    <a href="tw/drawer#projects" class="block rounded-lg px-3 py-2.5 text-zinc-900 no-underline hover:bg-zinc-100">Projects</a>
+                    <a href="tw/drawer#settings" class="block rounded-lg px-3 py-2.5 text-zinc-900 no-underline hover:bg-zinc-100">Settings</a>
+                </nav>
+                <div class="mt-auto flex justify-end">
+                    <BitBhDrawerClose class="inline-flex cursor-pointer items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100">Close</BitBhDrawerClose>
+                </div>
+            </BitBhDrawerPanel>
+        </BitBhDrawer>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private const string _backdropClass =
+        "fixed inset-0 z-50 bg-black/50 opacity-[calc(1_-_var(--bit-bh-drawer-swipe-progress,0))] transition-opacity duration-300 " +
+        "starting:opacity-0 data-[state=closed]:opacity-0 data-[swiping]:transition-none";
+
+    private const string _sheetCode = """
+<BitBhDrawer>
+    <BitBhDrawerTrigger class="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-100">Open sheet</BitBhDrawerTrigger>
+    <BitBhDrawerBackdrop class="fixed inset-0 z-50 bg-black/50 opacity-[calc(1_-_var(--bit-bh-drawer-swipe-progress,0))]
+                                transition-opacity duration-300 starting:opacity-0 data-[state=closed]:opacity-0
+                                data-[swiping]:transition-none" />
+    <BitBhDrawerPanel class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col gap-3 rounded-t-2xl bg-white p-5 shadow-2xl
+                             translate-y-[var(--bit-bh-drawer-swipe-movement-y,0px)] transition-transform duration-300
+                             starting:translate-y-full data-[state=closed]:translate-y-full
+                             data-[swiping]:transition-none data-[swiping]:select-none">
+        <BitBhDrawerHandle class="h-1.5 w-12 self-center rounded-full bg-zinc-300" />
+        <BitBhDrawerTitle class="text-lg font-semibold">Recent activity</BitBhDrawerTitle>
+        <BitBhDrawerDescription class="text-sm text-zinc-600">Swipe down or press Escape to close.</BitBhDrawerDescription>
+        <ul class="grid min-h-0 gap-1 overflow-y-auto">
+            @for (var i = 1; i <= 20; i++)
+            {
+                <li class="rounded-lg bg-zinc-100 px-3 py-2.5 text-sm">Event @i</li>
+            }
+        </ul>
+        <BitBhDrawerClose class="self-end rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Done</BitBhDrawerClose>
+    </BitBhDrawerPanel>
+</BitBhDrawer>
+""";
+
+    private const string _sideCode = """
+<BitBhDrawer Side="BitBhDrawerSide.Left" SwipeThreshold="0.4">
+    <BitBhDrawerTrigger class="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-100">Open menu</BitBhDrawerTrigger>
+    <BitBhDrawerBackdrop class="fixed inset-0 z-50 bg-black/50 opacity-[calc(1_-_var(--bit-bh-drawer-swipe-progress,0))]
+                                transition-opacity duration-300 starting:opacity-0 data-[state=closed]:opacity-0
+                                data-[swiping]:transition-none" />
+    <BitBhDrawerPanel class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col gap-3 rounded-r-2xl bg-white p-5 shadow-2xl
+                             translate-x-[var(--bit-bh-drawer-swipe-movement-x,0px)] transition-transform duration-300
+                             starting:-translate-x-full data-[state=closed]:-translate-x-full
+                             data-[swiping]:transition-none data-[swiping]:select-none">
+        <BitBhDrawerTitle class="text-lg font-semibold">Navigation</BitBhDrawerTitle>
+        <nav class="grid gap-1" aria-label="Drawer">
+            <a href="/" class="rounded-lg px-3 py-2.5 hover:bg-zinc-100">Home</a>
+            <a href="/projects" class="rounded-lg px-3 py-2.5 hover:bg-zinc-100">Projects</a>
+            <a href="/settings" class="rounded-lg px-3 py-2.5 hover:bg-zinc-100">Settings</a>
+        </nav>
+        <BitBhDrawerClose class="mt-auto self-end rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-100">Close</BitBhDrawerClose>
+    </BitBhDrawerPanel>
+</BitBhDrawer>
+""";
+}

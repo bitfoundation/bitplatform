@@ -117,6 +117,37 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Creatable values and a clear button"
+           Code="@_creatableCode"
+           Css="@_comboboxCss">
+    <Description>
+        With <code>CreateValue</code>, Enter on text that matches no option makes a new value of it and raises
+        <code>OnCreate</code> - add it to your options there. A <code>BitBhComboboxClear</code> empties the value and the text
+        and puts the focus back in the input; it is named "Clear", out of the tab order (Escape does the same) and disabled
+        while there is nothing to clear.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="string" @bind-Value="label" OnQueryChange="q => labelQuery = q"
+                       CreateValue="@(t => t)" OnCreate="v => labels.Add(v)" Nullable="true" class="combobox">
+            <div class="combobox-input-wrapper">
+                <BitBhComboboxInput TValue="string" aria-label="Label" Placeholder="Pick or create a label…" class="combobox-input" />
+                <BitBhComboboxClear TValue="string" class="combobox-button">×</BitBhComboboxClear>
+            </div>
+            <BitBhComboboxOptions TValue="string" class="combobox-options">
+                @foreach (var l in labels.Where(l => BitBhFilter.Contains(l, labelQuery)))
+                {
+                    <BitBhComboboxOption TValue="string" Value="@l" class="combobox-option">@l</BitBhComboboxOption>
+                }
+                @if (!string.IsNullOrWhiteSpace(labelQuery) && !labels.Contains(labelQuery.Trim(), StringComparer.OrdinalIgnoreCase))
+                {
+                    <li class="combobox-empty" aria-hidden="true">Enter creates “@labelQuery.Trim()”</li>
+                }
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
+        <span class="demo-output">Label: <strong>@(label ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Object values with rich content"
            Code="@_objectCode"
            Css="@_objectCss">
@@ -325,6 +356,24 @@
 </DemoBlock>
 
 @code {
+    private readonly List<string> labels = ["bug", "feature", "docs"];
+    private string? label;
+    private string labelQuery = "";
+
+    private const string _creatableCode = """
+<BitBhCombobox TValue="string" @bind-Value="label" OnQueryChange="q => query = q"
+               CreateValue="@(t => t)" OnCreate="v => labels.Add(v)" Nullable="true" class="combobox">
+    <BitBhComboboxInput TValue="string" aria-label="Label" Placeholder="Pick or create a label…" class="combobox-input" />
+    <BitBhComboboxClear TValue="string" class="combobox-button">×</BitBhComboboxClear>
+    <BitBhComboboxOptions TValue="string" class="combobox-options">
+        @foreach (var l in labels.Where(l => BitBhFilter.Contains(l, query)))
+        {
+            <BitBhComboboxOption TValue="string" Value="@l" class="combobox-option">@l</BitBhComboboxOption>
+        }
+    </BitBhComboboxOptions>
+</BitBhCombobox>
+""";
+
     // ── Large lists (virtualized) ───────────────────────────────────────────
 
     // 10 adjectives × 10 animals × 100 = 10,000 items.

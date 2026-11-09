@@ -1,0 +1,344 @@
+﻿@page "/tw/calendar"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Calendar (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Calendar</h1>
+    <p class="bb-subtitle">Month grids to pick a date, a range or several dates from — the WAI-ARIA date grid with one tab stop, full keyboard support, limits, unavailable dates and the reader's own calendar.</p>
+</div>
+
+<SectionSwitcher Slug="calendar" />
+
+<TwDemoBlock Title="Single date" Code="@_singleCode">
+    <Description>
+        The grid is a <code>&lt;table role="grid"&gt;</code> named by the heading and one tab stop: ← / → move a day, ↑ / ↓ a
+        week, <kbd>PageUp</kbd> / <kbd>PageDown</kbd> a month (<kbd>Shift</kbd>: a year), <kbd>Home</kbd> / <kbd>End</kbd> to
+        the ends of the week, <kbd>Enter</kbd> or <kbd>Space</kbd> select. The cells are styled with Tailwind's
+        <code>data-*:</code> variants (<code>data-today:</code>, <code>data-selected:</code>, <code>data-hover:</code> …), the
+        week-day headers through the grid (<code>[&amp;_th]:</code>).
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-start gap-6">
+            <BitBhCalendar @bind-Value="date" Culture="DemoDateCultures.EnUs" aria-label="Appointment" class="@Root">
+                <div class="flex items-center gap-2">
+                    <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                    <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="@Grid">
+                    <BitBhCalendarCell Day="context" class="@Cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="m-0 text-sm text-zinc-500">Selected: <strong class="font-semibold text-zinc-900">@(date?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="A range across two months" Code="@_rangeCode">
+    <Description>
+        <code>@@bind-Range</code>: the first press sets one end, the range follows the pointer and the focus until the
+        second press (<code>data-highlighted:</code>), <kbd>Escape</kbd> drops it. The ends get
+        <code>data-selection-start:</code> / <code>data-selection-end:</code>, the days between <code>data-range-middle:</code>.
+        Booked nights are unavailable and a range can't span them.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-start gap-6">
+            <BitBhCalendar @bind-Range="stay" VisibleMonths="2" IsDateUnavailable="IsBooked" Min="today"
+                           Culture="DemoDateCultures.EnUs" aria-label="Stay" class="@Root">
+                <div class="flex items-center gap-2">
+                    <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                    <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                </div>
+                <div class="flex flex-wrap gap-5">
+                    @for (var i = 0; i < 2; i++)
+                    {
+                        var offset = i;
+                        <div>
+                            <BitBhCalendarHeading Offset="offset" As="h4" aria-hidden="true" class="m-0 mb-1 text-center text-sm font-semibold" />
+                            <BitBhCalendarGrid Offset="offset" class="@Grid">
+                                <BitBhCalendarCell Day="context" class="@RangeCell" />
+                            </BitBhCalendarGrid>
+                        </div>
+                    }
+                </div>
+            </BitBhCalendar>
+            <p class="m-0 text-sm text-zinc-500">
+                Stay: <strong class="font-semibold text-zinc-900">@(stay is null ? "none" : $"{stay.Start.ToString("MMM d", DemoDateCultures.EnUs)} – {stay.End.ToString("MMM d", DemoDateCultures.EnUs)} ({stay.Days - 1} nights)")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Limits, weekends and outside days" Code="@_limitsCode">
+    <Description>
+        Dates outside <code>Min</code> / <code>Max</code> are disabled and not focusable (<code>data-disabled:</code>); weekends
+        are unavailable (<code>data-unavailable:</code>); <code>ShowOutsideDays</code> fills the first and last weeks
+        (<code>data-outside-month:</code>), hidden from assistive technology.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-start gap-6">
+            <BitBhCalendar @bind-Value="delivery" Min="today.AddDays(1)" Max="today.AddMonths(2)" ShowOutsideDays="true"
+                           IsDateUnavailable="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday"
+                           Culture="DemoDateCultures.EnUs" aria-label="Delivery date" class="@Root">
+                <div class="flex items-center gap-2">
+                    <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                    <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid WeekdayFormat="BitBhCalendarWeekdayFormat.Abbreviated" class="@Grid">
+                    <BitBhCalendarCell Day="context" class="@Cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="m-0 text-sm text-zinc-500">Delivery: <strong class="font-semibold text-zinc-900">@(delivery?.ToString("D", DemoDateCultures.EnUs) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Cultures, calendars and right to left" Code="@_cultureCode">
+    <Description>
+        <code>Culture</code> sets the names, the first day of the week and the calendar: the German week starts on Monday;
+        the Persian culture shows the Persian calendar's months, right to left, with ← / → mirrored. (This WebAssembly demo
+        runs without ICU, where the Persian calendar isn't available.)
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-start gap-6">
+            <BitBhCalendar @bind-Value="cultureDate" Culture="DemoDateCultures.DeDe" aria-label="Datum" class="@Root">
+                <div class="flex items-center gap-2">
+                    <BitBhCalendarPrevious aria-label="Vorheriger Monat" class="@Nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                    <BitBhCalendarNext aria-label="Nächster Monat" class="@Nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="@Grid">
+                    <BitBhCalendarCell Day="context" class="@Cell" />
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            @if (DemoDateCultures.FaIr is { } persian)
+            {
+                <div dir="rtl" lang="fa">
+                    <BitBhCalendar @bind-Value="cultureDate" Culture="persian" Dir="BitBhDirection.Rtl" aria-label="تاریخ" class="@Root">
+                        <div class="flex items-center gap-2">
+                            <BitBhCalendarPrevious aria-label="ماه قبل" class="@Nav">›</BitBhCalendarPrevious>
+                            <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                            <BitBhCalendarNext aria-label="ماه بعد" class="@Nav">‹</BitBhCalendarNext>
+                        </div>
+                        <BitBhCalendarGrid class="@Grid">
+                            <BitBhCalendarCell Day="context" class="@Cell" />
+                        </BitBhCalendarGrid>
+                    </BitBhCalendar>
+                </div>
+            }
+            <p class="m-0 text-sm text-zinc-500">Value: <strong class="font-semibold text-zinc-900">@(cultureDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "none")</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Several dates" Code="@_multipleCode">
+    <Description>
+        <code>@@bind-Values</code> selects any number of dates; each press toggles one. A cell's <code>Template</code> receives
+        the day's state.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-start gap-6">
+            <BitBhCalendar @bind-Values="shifts" Culture="DemoDateCultures.EnUs" aria-label="Shifts" class="@Root">
+                <div class="flex items-center gap-2">
+                    <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                    <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                    <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                </div>
+                <BitBhCalendarGrid class="@Grid">
+                    <BitBhCalendarCell Day="context" class="@Cell">
+                        <Template Context="day">@day.Text@(day.IsSelected ? "•" : "")</Template>
+                    </BitBhCalendarCell>
+                </BitBhCalendarGrid>
+            </BitBhCalendar>
+            <p class="m-0 text-sm text-zinc-500">Shifts: <strong class="font-semibold text-zinc-900">@(shifts.Count == 0 ? "none" : string.Join(", ", shifts.Select(d => d.ToString("MMM d", DemoDateCultures.EnUs))))</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="In a form" Code="@_formCode">
+    <Description>
+        In a <code>BitBhField</code> the calendar is labelled by <code>BitBhLabel</code>, described by
+        <code>BitBhDescription</code> and <code>BitBhErrorMessage</code>, and validated by <code>EditForm</code>.
+    </Description>
+    <LiveContent>
+        <EditForm Model="booking" OnValidSubmit="() => submitted = booking.CheckIn">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Check-in</BitBhLabel>
+                <BitBhCalendar @bind-Value="booking.CheckIn" Min="today" Name="checkin" Culture="DemoDateCultures.EnUs" class="@Root">
+                    <div class="flex items-center gap-2">
+                        <BitBhCalendarPrevious class="@Nav">‹</BitBhCalendarPrevious>
+                        <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+                        <BitBhCalendarNext class="@Nav">›</BitBhCalendarNext>
+                    </div>
+                    <BitBhCalendarGrid Context="day" class="@Grid">
+                        <BitBhCalendarCell Day="day" class="@Cell" />
+                    </BitBhCalendarGrid>
+                </BitBhCalendar>
+                <BitBhDescription class="mt-1.5 text-xs text-zinc-500">Check-in is from 3 pm.</BitBhDescription>
+                <BitBhErrorMessage class="mt-1.5 text-xs text-red-700" />
+            </BitBhField>
+            <button type="submit" class="mt-3 cursor-pointer rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-blue-700">Book</button>
+            @if (submitted is { } checkIn)
+            {
+                <p class="m-0 mt-2 text-sm text-zinc-500">Booked from <strong class="text-zinc-900">@checkIn.ToString("D", DemoDateCultures.EnUs)</strong>.</p>
+            }
+        </EditForm>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? date = today;
+    private BitBhDateRange? stay;
+    private DateOnly? delivery;
+    private DateOnly? cultureDate = today;
+    private IReadOnlyList<DateOnly> shifts = [];
+    private readonly Booking booking = new();
+    private DateOnly? submitted;
+
+    private static bool IsBooked(DateOnly d) => d.DayNumber % 9 is 4 or 5;
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "Pick a check-in date.")]
+        public DateOnly? CheckIn { get; set; }
+    }
+
+    // The utilities the live samples share (the Razor tabs show them inline).
+    private const string Root = "inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900";
+    private const string Nav = "inline-grid size-8 cursor-pointer place-items-center rounded-lg text-lg text-zinc-700 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:cursor-not-allowed data-disabled:text-zinc-400 data-disabled:hover:bg-transparent";
+    private const string Grid = "border-collapse [&_td]:p-px [&_th]:w-9 [&_th]:pb-1 [&_th]:text-xs [&_th]:font-medium [&_th]:text-zinc-500";
+    private const string Cell = "size-9 cursor-pointer select-none rounded-lg text-center text-sm tabular-nums text-zinc-900 outline-none [&[data-hover]:not([data-selected])]:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-today:font-bold data-today:underline data-today:decoration-2 data-today:underline-offset-4 data-selected:bg-blue-600 data-selected:text-white data-unavailable:cursor-not-allowed data-unavailable:text-zinc-500 data-unavailable:line-through data-disabled:cursor-not-allowed data-disabled:text-zinc-500 data-outside-month:cursor-default data-outside-month:text-zinc-500";
+    private const string RangeCell = "size-9 cursor-pointer select-none rounded-lg text-center text-sm tabular-nums text-zinc-900 outline-none [&[data-hover]:not([data-selected])]:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-today:font-bold data-today:underline data-today:decoration-2 data-today:underline-offset-4 data-selection-start:bg-blue-600 data-selection-start:text-white data-selection-end:bg-blue-600 data-selection-end:text-white data-range-middle:rounded-none data-range-middle:bg-blue-100 data-range-middle:text-blue-800 data-unavailable:cursor-not-allowed data-unavailable:text-zinc-500 data-unavailable:line-through data-disabled:cursor-not-allowed data-disabled:text-zinc-500";
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _header = """
+    <div class="flex items-center gap-2">
+        <BitBhCalendarPrevious class="inline-grid size-8 cursor-pointer place-items-center rounded-lg text-lg text-zinc-700 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:cursor-not-allowed data-disabled:text-zinc-400 data-disabled:hover:bg-transparent">‹</BitBhCalendarPrevious>
+        <BitBhCalendarHeading As="h3" class="m-0 flex-1 text-center text-[0.95rem] font-semibold" />
+        <BitBhCalendarNext class="inline-grid size-8 cursor-pointer place-items-center rounded-lg text-lg text-zinc-700 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:cursor-not-allowed data-disabled:text-zinc-400 data-disabled:hover:bg-transparent">›</BitBhCalendarNext>
+    </div>
+""";
+
+    private const string _grid = """
+    <BitBhCalendarGrid class="border-collapse [&_td]:p-px [&_th]:w-9 [&_th]:pb-1 [&_th]:text-xs [&_th]:font-medium [&_th]:text-zinc-500">
+        <BitBhCalendarCell Day="context"
+                           class="size-9 cursor-pointer select-none rounded-lg text-center text-sm tabular-nums text-zinc-900 outline-none [&[data-hover]:not([data-selected])]:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-today:font-bold data-today:underline data-today:decoration-2 data-today:underline-offset-4 data-selected:bg-blue-600 data-selected:text-white data-unavailable:cursor-not-allowed data-unavailable:text-zinc-500 data-unavailable:line-through data-disabled:cursor-not-allowed data-disabled:text-zinc-500 data-outside-month:cursor-default data-outside-month:text-zinc-500" />
+    </BitBhCalendarGrid>
+""";
+
+    private const string _singleCode = """
+<BitBhCalendar @bind-Value="date" aria-label="Appointment"
+               class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+""" + _header + _grid + """
+</BitBhCalendar>
+
+@code {
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Today);
+}
+""";
+
+    private const string _rangeCode = """
+<BitBhCalendar @bind-Range="stay" VisibleMonths="2" IsDateUnavailable="IsBooked" Min="today" aria-label="Stay"
+               class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+""" + _header + """
+    <div class="flex flex-wrap gap-5">
+        @for (var i = 0; i < 2; i++)
+        {
+            var offset = i;
+            <div>
+                <BitBhCalendarHeading Offset="offset" As="h4" aria-hidden="true" class="m-0 mb-1 text-center text-sm font-semibold" />
+                <BitBhCalendarGrid Offset="offset" class="border-collapse [&_td]:p-px [&_th]:w-9 [&_th]:pb-1 [&_th]:text-xs [&_th]:font-medium [&_th]:text-zinc-500">
+                    <BitBhCalendarCell Day="context"
+                                       class="size-9 cursor-pointer select-none rounded-lg text-center text-sm tabular-nums text-zinc-900 outline-none [&[data-hover]:not([data-selected])]:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-today:font-bold data-today:underline data-today:decoration-2 data-today:underline-offset-4 data-selection-start:bg-blue-600 data-selection-start:text-white data-selection-end:bg-blue-600 data-selection-end:text-white data-range-middle:rounded-none data-range-middle:bg-blue-100 data-range-middle:text-blue-800 data-unavailable:cursor-not-allowed data-unavailable:text-zinc-500 data-unavailable:line-through data-disabled:cursor-not-allowed data-disabled:text-zinc-500" />
+                </BitBhCalendarGrid>
+            </div>
+        }
+    </div>
+</BitBhCalendar>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private BitBhDateRange? stay;
+
+    private static bool IsBooked(DateOnly d) => d.DayNumber % 9 is 4 or 5;
+}
+""";
+
+    private const string _limitsCode = """
+<BitBhCalendar @bind-Value="delivery" Min="today.AddDays(1)" Max="today.AddMonths(2)" ShowOutsideDays="true"
+               IsDateUnavailable="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday" aria-label="Delivery date"
+               class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+""" + _header + _grid + """
+</BitBhCalendar>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? delivery;
+}
+""";
+
+    private const string _cultureCode = """
+<BitBhCalendar @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" aria-label="Datum"
+               class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+    @* the header (with German button names) and the grid as above *@
+</BitBhCalendar>
+
+<div dir="rtl" lang="fa">
+    <BitBhCalendar @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("fa-IR"))" Dir="BitBhDirection.Rtl" aria-label="تاریخ"
+                   class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+        @* the header (with Persian button names) and the grid as above *@
+    </BitBhCalendar>
+</div>
+""";
+
+    private const string _multipleCode = """
+<BitBhCalendar @bind-Values="shifts" aria-label="Shifts"
+               class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+""" + _header + """
+    <BitBhCalendarGrid class="border-collapse [&_td]:p-px [&_th]:w-9 [&_th]:pb-1 [&_th]:text-xs [&_th]:font-medium [&_th]:text-zinc-500">
+        <BitBhCalendarCell Day="context" class="size-9 cursor-pointer select-none rounded-lg text-center text-sm … data-selected:bg-blue-600 data-selected:text-white">
+            <Template Context="day">@day.Text@(day.IsSelected ? "•" : "")</Template>
+        </BitBhCalendarCell>
+    </BitBhCalendarGrid>
+</BitBhCalendar>
+
+@code {
+    private IReadOnlyList<DateOnly> shifts = [];
+}
+""";
+
+    private const string _formCode = """
+<EditForm Model="booking" OnValidSubmit="() => submitted = booking.CheckIn">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="mb-1.5 block text-sm font-semibold text-zinc-900">Check-in</BitBhLabel>
+        <BitBhCalendar @bind-Value="booking.CheckIn" Min="today" Name="checkin"
+                       class="inline-grid gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-900">
+            @* the header and the grid as above *@
+        </BitBhCalendar>
+        <BitBhDescription class="mt-1.5 text-xs text-zinc-500">Check-in is from 3 pm.</BitBhDescription>
+        <BitBhErrorMessage class="mt-1.5 text-xs text-red-700" />
+    </BitBhField>
+    <button type="submit" class="mt-3 cursor-pointer rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-blue-700">Book</button>
+</EditForm>
+
+@code {
+    private static readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly Booking booking = new();
+    private DateOnly? submitted;
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "Pick a check-in date.")]
+        public DateOnly? CheckIn { get; set; }
+    }
+}
+""";
+}

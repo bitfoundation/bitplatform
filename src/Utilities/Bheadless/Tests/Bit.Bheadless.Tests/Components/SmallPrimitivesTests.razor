@@ -1,0 +1,281 @@
+﻿@using Microsoft.JSInterop
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    // ── Editable ─────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Editable_edits_commits_with_Enter_and_cancels_with_Escape()
+    {
+        var commits = new List<string>();
+        var cut = Render(
+            @<BitBhEditable DefaultValue="Draft" OnValueCommit="v => commits.Add(v)" ActivationMode="BitBhEditableActivation.Click">
+                <BitBhEditablePreview />
+                <BitBhEditableInput aria-label="Title" />
+            </BitBhEditable>);
+
+        var preview = cut.Find("span");
+        Assert.AreEqual("button", preview.GetAttribute("role"));
+        Assert.AreEqual("Draft", Text(preview));
+        Assert.IsTrue(cut.Find("input").HasAttribute("hidden"));
+
+        preview.Click();
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-editing"));
+        Assert.IsFalse(cut.Find("input").HasAttribute("hidden"));
+        Assert.AreEqual(cut.Find("input").Id, this.LastFocusRequest());
+
+        cut.Find("input").Input("Final");
+        cut.Find("input").Press("Escape");
+        Assert.AreEqual("Draft", Text(cut.Find("span")));
+        Assert.IsEmpty(commits);
+
+        cut.Find("span").Click();
+        cut.Find("input").Input("Final");
+        cut.Find("input").Press("Enter");
+        CollectionAssert.AreEqual(new[] { "Final" }, commits);
+        Assert.AreEqual("Final", Text(cut.Find("span")));
+        Assert.AreEqual(cut.Find("span").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Editable_shows_its_placeholder_and_validates()
+    {
+        string? value = null;
+        var cut = Render(
+            @<BitBhEditable Placeholder="Untitled" Validate="@(v => v.Trim().Length > 0)" ValueChanged="v => value = v">
+                <BitBhEditablePreview />
+                <BitBhEditableInput aria-label="Title" />
+                <BitBhEditableEditTrigger>Rename</BitBhEditableEditTrigger>
+                <BitBhEditableSubmitTrigger>Save</BitBhEditableSubmitTrigger>
+            </BitBhEditable>);
+
+        Assert.AreEqual("Untitled", Text(cut.Find("span")));
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-empty"));
+        cut.FindAll("button").Single(b => Text(b) == "Rename").Click();
+        cut.Find("input").Input("  ");
+        cut.FindAll("button").Single(b => Text(b) == "Save").Click();
+        Assert.IsNull(value);
+        cut.Find("input").Input("Notes");
+        cut.Find("input").Blur();
+        Assert.AreEqual("Notes", value);
+    }
+
+    // ── PasswordField ────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Password_toggle_shows_and_hides_the_password()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Password</BitBhLabel>
+                <BitBhPasswordField>
+                    <BitBhPasswordFieldInput />
+                    <BitBhPasswordFieldToggle><Template Context="visible">@(visible ? "Hide" : "Show")</Template></BitBhPasswordFieldToggle>
+                </BitBhPasswordField>
+            </BitBhField>);
+
+        var input = cut.Find("input");
+        Assert.AreEqual("password", input.GetAttribute("type"));
+        Assert.AreEqual("current-password", input.GetAttribute("autocomplete"));
+        Assert.AreEqual("Password", input.AccessibleName());
+        var toggle = cut.Find("button");
+        Assert.AreEqual("Show password", toggle.AccessibleName());
+        Assert.AreEqual(input.Id, toggle.GetAttribute("aria-controls"));
+
+        toggle.Click();
+        Assert.AreEqual("text", cut.Find("input").GetAttribute("type"));
+        Assert.AreEqual("Hide password", cut.Find("button").AccessibleName());
+        Assert.IsTrue(cut.Find("input").HasAttribute("data-visible"));
+        cut.ShouldBeAccessible();
+    }
+
+    // ── Clipboard ────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Clipboard_copies_announces_and_shows_the_copied_state()
+    {
+        JSInterop.SetupModule(BitBhInterop.ModulePath).Setup<bool>("dom.copy", _ => true).SetResult(true);
+        var copies = new List<bool>();
+        var cut = Render(
+            @<BitBhClipboard Value="sk-123" Timeout="60000" OnCopy="ok => copies.Add(ok)">
+                <BitBhClipboardInput aria-label="API key" />
+                <BitBhClipboardTrigger />
+                <BitBhClipboardIndicator>Copied!</BitBhClipboardIndicator>
+            </BitBhClipboard>);
+
+        Assert.AreEqual("sk-123", cut.Find("input").GetAttribute("value"));
+        Assert.AreEqual("Copy", cut.Find("button").AccessibleName());
+        Assert.DoesNotContain("Copied!", cut.Markup);
+
+        cut.Find("button").Click();
+        CollectionAssert.AreEqual(new[] { true }, copies);
+        Assert.IsTrue(cut.Find("button").HasAttribute("data-copied"));
+        Assert.Contains("Copied!", cut.Markup);
+        Assert.Contains("Copied", Announcer.Messages);
+        cut.ShouldBeAccessible();
+    }
+
+    // ── Breadcrumbs ──────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Breadcrumbs_are_a_named_landmark_with_the_current_page_marked()
+    {
+        var cut = Render(
+            @<BitBhBreadcrumbs>
+                <BitBhBreadcrumbItem><BitBhBreadcrumbLink Href="/">Home</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+                <BitBhBreadcrumbSeparator>/</BitBhBreadcrumbSeparator>
+                <BitBhBreadcrumbItem><BitBhBreadcrumbLink Current="true">Settings</BitBhBreadcrumbLink></BitBhBreadcrumbItem>
+            </BitBhBreadcrumbs>);
+
+        Assert.AreEqual("Breadcrumbs", cut.Find("nav").AccessibleName());
+        Assert.AreEqual("/", cut.Find("a").GetAttribute("href"));
+        var current = cut.Find("[aria-current=page]");
+        Assert.AreEqual("SPAN", current.TagName);
+        Assert.AreEqual("true", cut.Find("li[role=presentation]").GetAttribute("aria-hidden"));
+        cut.ShouldBeAccessible();
+    }
+
+    // ── Strings ──────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Registered_strings_replace_the_built_in_text()
+    {
+        Services.AddBitBheadlessServices(strings =>
+        {
+            strings.Increase = "Erhöhen";
+            strings.Pagination = "Seitennavigation";
+        });
+        var cut = Render(
+            @<div>
+                <BitBhNumberField TValue="int"><BitBhNumberFieldInput aria-label="Anzahl" /><BitBhNumberFieldIncrement>+</BitBhNumberFieldIncrement></BitBhNumberField>
+                <BitBhPagination PageCount="2"><BitBhPaginationItem Page="1">1</BitBhPaginationItem></BitBhPagination>
+            </div>);
+
+        Assert.AreEqual("Erhöhen", cut.Find("button").AccessibleName());
+        Assert.AreEqual("Seitennavigation", cut.Find("nav").AccessibleName());
+    }
+
+    // ── Field interaction state ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void Text_controls_and_their_field_expose_touched_dirty_and_filled()
+    {
+        string? value = null;
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Name</BitBhLabel>
+                <BitBhInput Value="@value" ValueChanged="v => value = v" />
+            </BitBhField>);
+
+        var input = cut.Find("input");
+        Assert.IsFalse(input.HasAttribute("data-touched"));
+        Assert.IsFalse(input.HasAttribute("data-filled"));
+        cut.Find("input").Change("Ada");
+        Assert.IsTrue(cut.Find("input").HasAttribute("data-dirty"));
+        Assert.IsTrue(cut.Find("input").HasAttribute("data-filled"));
+        cut.Find("input").Blur();
+        Assert.IsTrue(cut.Find("input").HasAttribute("data-touched"));
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-touched"));
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-dirty"));
+    }
+
+    // ── Slider thumb collisions ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void Slider_thumbs_push_or_swap_their_neighbours()
+    {
+        IReadOnlyList<double>? pushed = null;
+        IReadOnlyList<double>? swapped = null;
+        var cut = Render(
+            @<div>
+                <BitBhSlider DefaultValues="@(new double[] { 20, 30 })" ThumbCollision="BitBhSliderThumbCollision.Push" MinStepsBetweenThumbs="5" ValuesChanged="v => pushed = v">
+                    <BitBhSliderThumb aria-label="Push low" /><BitBhSliderThumb aria-label="Push high" />
+                </BitBhSlider>
+                <BitBhSlider DefaultValues="@(new double[] { 20, 30 })" ThumbCollision="BitBhSliderThumbCollision.Swap" Step="5" ValuesChanged="v => swapped = v">
+                    <BitBhSliderThumb aria-label="Swap low" /><BitBhSliderThumb aria-label="Swap high" />
+                </BitBhSlider>
+            </div>);
+
+        cut.Find("[aria-label='Push low']").Press("PageUp");
+        CollectionAssert.AreEqual(new double[] { 30, 35 }, pushed!.ToArray());
+        cut.Find("[aria-label='Push low']").Press("End");
+        CollectionAssert.AreEqual(new double[] { 95, 100 }, pushed!.ToArray());
+
+        cut.Find("[aria-label='Swap low']").Press("PageUp");
+        CollectionAssert.AreEqual(new double[] { 30, 30 }, swapped!.ToArray());
+        cut.Find("[aria-label='Swap low']").Press("ArrowRight");
+        CollectionAssert.AreEqual(new double[] { 30, 35 }, swapped!.ToArray());
+        Assert.AreEqual(cut.Find("[aria-label='Swap high']").Id, this.LastFocusRequest());
+    }
+
+    // ── Server validation ────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Server_errors_show_on_their_fields_and_clear_when_edited()
+    {
+        var model = new SignUp();
+        IReadOnlyDictionary<string, string[]>? errors = new Dictionary<string, string[]> { ["userName"] = ["That name is taken."] };
+        var cut = Render(
+            @<Microsoft.AspNetCore.Components.Forms.EditForm Model="model">
+                <BitBhServerValidation Errors="errors" />
+                <BitBhField>
+                    <BitBhLabel>User name</BitBhLabel>
+                    <BitBhInput @bind-Value="model.UserName" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </Microsoft.AspNetCore.Components.Forms.EditForm>);
+
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-invalid"));
+        Assert.Contains("That name is taken.", cut.Find("input").AccessibleDescription());
+
+        cut.Find("input").Change("ada2");
+        Assert.IsFalse(cut.Find("input").HasAttribute("aria-invalid"));
+        Assert.DoesNotContain("That name is taken.", cut.Markup);
+    }
+
+    // ── Table of contents, accessible icon, landmarks ────────────────────────
+
+    [TestMethod]
+    public async Task Table_of_contents_marks_the_current_section()
+    {
+        var changes = new List<IReadOnlyList<string>>();
+        var cut = Render(
+            @<BitBhTableOfContents Ids="@(new[] { "install", "usage" })" OnActiveChange="ids => changes.Add(ids)">
+                <BitBhTableOfContentsLink Target="install">Install</BitBhTableOfContentsLink>
+                <BitBhTableOfContentsLink Target="usage">Usage</BitBhTableOfContentsLink>
+            </BitBhTableOfContents>);
+
+        Assert.AreEqual("On this page", cut.Find("nav").AccessibleName());
+        Assert.EndsWith("#usage", cut.FindAll("a")[1].GetAttribute("href")!);
+        var toc = cut.FindComponent<BitBhTableOfContents>().Instance;
+        await cut.InvokeAsync(() => toc.SetActiveAsync(["usage"]));
+        Assert.AreEqual("location", cut.FindAll("a")[1].GetAttribute("aria-current"));
+        Assert.IsFalse(cut.FindAll("a")[0].HasAttribute("aria-current"));
+        Assert.HasCount(1, changes);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Accessible_icon_hides_the_icon_and_reads_the_label()
+    {
+        var cut = Render(@<button><BitBhAccessibleIcon Label="Close">✕</BitBhAccessibleIcon></button>);
+        Assert.AreEqual("Close", cut.Find("button").AccessibleName());
+        Assert.AreEqual("true", cut.Find("span span").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public async Task Landmark_navigation_turns_itself_on_and_off()
+    {
+        Render(@<BitBhLandmarkNavigation />);
+        Assert.IsTrue(JSInterop.Invocations.Any(i => i.Identifier == "landmarks.enable"));
+        await DisposeComponentsAsync();
+        Assert.IsTrue(JSInterop.Invocations.Any(i => i.Identifier == "landmarks.disable"));
+    }
+
+    private sealed class SignUp
+    {
+        public string? UserName { get; set; }
+    }
+}
