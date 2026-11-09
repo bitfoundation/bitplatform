@@ -399,7 +399,9 @@ column is dropped one release after the code stops using it. What is left:
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
   has none), browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary,
   which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
-  default.
+  default. Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
+  it. Add that one too, for a `User-Agent` containing `Lighthouse` or `Google`: the app gives them a page without its
+  scripts, and from the edge they would get the visitors' page instead.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
   (section 3), and for the Workbench if the user wants it. Give this project policies of its own: a policy already on the
   account may be shared with WARP or another project, and changing it widens that access too.
