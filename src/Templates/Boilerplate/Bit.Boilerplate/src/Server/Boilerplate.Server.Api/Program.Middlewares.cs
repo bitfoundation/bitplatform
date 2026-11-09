@@ -65,14 +65,10 @@ public static partial class Program
 
         app.MapAppHealthChecks(OAuthEndpoints.AuthorizationFor(OAuthResources.HealthzPath));
 
-        // Production doesn't publish the api's description.
-        if (app.Environment.IsProduction() is false)
-        {
-            app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
-            app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
-            app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
-            app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
-        }
+        app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
+        app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
+        app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
         app.UseHangfireDashboard(options: new()
         {

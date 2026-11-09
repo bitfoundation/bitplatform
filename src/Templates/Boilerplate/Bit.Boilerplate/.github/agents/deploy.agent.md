@@ -393,14 +393,15 @@ column is dropped one release after the code stops using it. What is left:
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
 - Turn Early Hints off on the zone (`PATCH zones/<zone id>/settings/early_hints` with `{"value":"off"}`), and read it
-  back. It has to stay off.
+  back. The app is a PWA whose pages render on the client, so it would only send the server fetches that don't help
+  performance.
 - The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
   follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
   has none), browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary,
   which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
   default. Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
-  it. Add that one too, for a `User-Agent` containing `Lighthouse` or `Google`: the app gives them a page without its
+  it. Add that one too, for a `User-Agent` containing `Lighthouse`, `Google`, `bingbot` or `BingPreview`: the app gives them a page without its
   scripts, and from the edge they would get the visitors' page instead.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
   (section 3), and for the Workbench if the user wants it. Give this project policies of its own: a policy already on the
