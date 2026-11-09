@@ -33,6 +33,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     // added to, which is then the one aria-invalid taken off again once the field is valid.
     private bool _hasAddedAriaInvalid;
 
+    // The classes the cascading EditContext gives the field (UpdateFieldCssClass), as last read.
+    private string? _fieldCssClass;
+
     // What an input that arrives at its value on its own (PublishValueAsync) last wrote into the Value or was last
     // handed from outside, which is how a value the app pushed in is told apart from the one the binding hands back.
     private TValue? _knownValue;
@@ -289,6 +292,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
             UpdateValidationAttributes();
         }
+        else
+        {
+            // Takes off the field classes an input read while it still validated.
+            UpdateFieldCssClass();
+        }
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
         // base through ParametersCache, handed over right before the call and taken by the base as it starts, so a pass
@@ -301,8 +309,26 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     {
         // One class for both kinds of rejection, so an input the app marks invalid never carries it twice.
         ClassBuilder.Register(() => IsInvalid ? "bit-inv" : string.Empty);
+        ClassBuilder.Register(() => _fieldCssClass);
 
         base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Reads the field classes again before every render but the first, which the parameters pass ahead of it has
+    /// read them for, so the root carries the state the field is in as it is drawn, as a framework input's does.
+    /// </summary>
+    /// <remarks>
+    /// The one hook a render passes through that a derived component's markup does not replace: the classes are
+    /// cached in the <see cref="BitComponentBase.ClassBuilder"/> until it is reset, and a change of the field that
+    /// raises no event (<see cref="Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified()"/>) would
+    /// otherwise wait for the next parameters pass, missing a render the input does on its own.
+    /// </remarks>
+    protected override bool ShouldRender()
+    {
+        UpdateFieldCssClass();
+
+        return base.ShouldRender();
     }
 
 
@@ -552,6 +578,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
         EditContext.NotifyFieldChanged(FieldIdentifier);
+
+        // The field is modified now, which a form validating nothing raises no event for.
+        UpdateFieldCssClass();
     }
 
     /// <summary>
@@ -628,6 +657,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         // the lookup would throw out of the validation of every other field of the form.
         if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
+        UpdateFieldCssClass();
+
         // The dictionary is the app's own, possibly shared by several inputs, so the attribute is added to and taken off
         // a copy of it, never the dictionary itself.
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
@@ -658,6 +689,32 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             InputHtmlAttributes = inputHtmlAttributes.Count == 0 ? null : inputHtmlAttributes;
             _hasAddedAriaInvalid = false;
         }
+    }
+
+    /// <summary>
+    /// Reads the classes the cascading EditContext gives the field onto the root, as every input of the framework
+    /// carries them: <c>valid</c> or <c>invalid</c>, with <c>modified</c> once the field has changed - or whatever the
+    /// app's <see cref="FieldCssClassProvider"/> (<see cref="EditContextFieldClassExtensions.SetFieldCssClassProvider"/>)
+    /// names instead - so a stylesheet written for the framework's inputs styles these too.
+    /// </summary>
+    /// <remarks>
+    /// Read on every parameters pass, every change of the validation state, every change the input reports and every
+    /// render (<see cref="ShouldRender"/>), so an
+    /// <see cref="Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified()"/>, which raises no event,
+    /// shows on the input's next render, as it shows on a framework input's. An input that validates nothing or has no
+    /// field to report carries none - nor the classes it read before <see cref="NoValidate"/> was turned on.
+    /// </remarks>
+    private void UpdateFieldCssClass()
+    {
+        var fieldCssClass = EditContext is null || NoValidate || FieldIdentifier.Model is null
+            ? null
+            : EditContext.FieldCssClass(FieldIdentifier);
+
+        if (string.Equals(_fieldCssClass, fieldCssClass, StringComparison.Ordinal)) return;
+
+        _fieldCssClass = fieldCssClass;
+
+        ClassBuilder.Reset();
     }
 
 

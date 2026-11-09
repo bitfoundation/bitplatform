@@ -771,9 +771,13 @@
         <div>
             Inside an <b>EditForm</b> the field joins the cascading <code>EditContext</code> automatically, so the data
             annotations on the model drive it: a failing field gets the <code>bit-inv</code> class and the
-            <code>aria-invalid="true"</code> attribute, and the state is refreshed on every validation pass. Use
-            <b>NoValidate</b> to opt a field out of the EditContext altogether, and <b>DisplayName</b> to control the name used
-            in the generated messages.
+            <code>aria-invalid="true"</code> attribute, and the state is refreshed on every validation pass. Its root also
+            carries the classes the framework's own inputs take from the <code>EditContext</code>: <code>valid</code> or
+            <code>invalid</code>, with <code>modified</code> once the field has changed - or the names of a
+            <code>FieldCssClassProvider</code> set with <code>EditContext.SetFieldCssClassProvider</code> - so a stylesheet
+            written for those styles the field too. They sit on the root, around the label and the messages, rather than on
+            the native input. Use <b>NoValidate</b> to opt a field out of the EditContext altogether, and <b>DisplayName</b>
+            to control the name used in the generated messages.
             <br /><br />
             Not every rejection comes from a data annotation, though - a name a server reports as taken, a rule that needs two
             fields to be compared, a field that lives outside any form at all. <b>Invalid</b> forces the same state from the
