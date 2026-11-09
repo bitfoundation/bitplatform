@@ -52,7 +52,8 @@
         var headers = cut.FindAll("th");
         Assert.HasCount(7, headers);
         Assert.AreEqual("Sunday", headers[0].AccessibleName());
-        Assert.AreEqual("S", Text(headers[0]));
+        // The culture's shortest day name: the ICU data each OS ships tells it ("S" on Windows, "Su" on Linux).
+        Assert.AreEqual(En.DateTimeFormat.GetShortestDayName(DayOfWeek.Sunday), Text(headers[0]));
         Assert.AreEqual("Sunday", headers[0].GetAttribute("abbr"));
 
         // November 2026 starts on a Sunday and ends on a Monday: five weeks, the last filled by December.

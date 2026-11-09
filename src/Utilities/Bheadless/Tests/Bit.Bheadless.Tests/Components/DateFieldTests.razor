@@ -12,8 +12,10 @@
     private static AngleSharp.Dom.IElement Segment(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
         => cut.Find($"[role=spinbutton][aria-label='{name}']");
 
+    // The literals come from the culture's pattern, and the ICU data each OS ships tells en-US's space before AM / PM:
+    // a plain one on Windows, a narrow no-break one (U+202F, CLDR 42+) on Linux.
     private static string Shown(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
-        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent));
+        => string.Concat(cut.FindAll("[data-type]").Select(s => s.TextContent)).Replace(' ', ' ');
 
     // Keys come from the segment that has the focus, as in a browser: a segment is focused before it is typed into.
     private static AngleSharp.Dom.IElement Focused(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
