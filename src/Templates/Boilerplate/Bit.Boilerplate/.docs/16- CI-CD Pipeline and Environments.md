@@ -80,10 +80,12 @@ and gets each public address its certificate, and the runner pulls its jobs from
 Worth knowing:
 
 - **Migrations run while the old version still serves**, so each one has to keep that version working: add a column
-  in one release and drop the old one in a later release, instead of renaming it in one go. A failed migration stops
-  the deployment and leaves the running version alone.
+  in one release and drop the old one in a later release, instead of renaming it in one go. A deployment that fails before
+  the old version stops leaves that version running and runs the `Down` of the migrations it applied, so a migration's
+  `Down` has to really undo it.
 - **The switch takes a few seconds**, while the new containers start.
-- **To roll back**, deploy an earlier commit again; its images are still in the registry. Migrations only go forward.
+- **To roll back**, deploy an earlier commit again; its images are still in the registry. Once it is up, the deployment runs the
+  `Down` of the migrations that commit doesn't have, with the image that was running.
 - **The data** lives in Docker volumes on the server, so back them up off the server.
 - **The database password** takes effect only while its volume is still empty.
 - **The Aspire dashboard and DbGate** run on the server too, reachable only through SSH; the `deploy` skill says how.

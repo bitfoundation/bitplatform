@@ -39,7 +39,10 @@ public static partial class Program
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            await dbContext.Database.MigrateAsync();
+            if (migrateDatabaseAndExit)
+                await DeploymentMigrations.Run(dbContext, app.Configuration["MigrateDatabaseTo"]);
+            else
+                await dbContext.Database.MigrateAsync();
         }
 
         if (migrateDatabaseAndExit)

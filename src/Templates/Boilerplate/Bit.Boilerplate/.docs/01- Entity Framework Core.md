@@ -336,7 +336,7 @@ If the model changes without a migration, `MigrateAsync()` stops the app with a 
 ### Applying Migrations to a Deployed Database
 
 <!--#if (aspire == true)-->
-The CD pipeline applies them. Before each deployment starts the new version, a one-shot `migrations` container runs the api's own image with `MigrateDatabaseAndExit=true` on the server, against the database that deployment uses. A failed migration stops the deployment and the running version keeps serving, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the deployment. To apply them by hand, use a migrations bundle as described below.
+The CD pipeline applies them. Before each deployment starts the new version, a one-shot `migrations` container runs the api's own image with `MigrateDatabaseAndExit=true` on the server, against the database that deployment uses. A failed deployment leaves the running version serving and runs the `Down` of the migrations it applied, so the new version never runs on an old database schema. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the deployment. To apply them by hand, use a migrations bundle as described below.
 <!--#else-->
 Nothing in this project applies them to a deployed database, so apply them before each deployment of the api, for example with a migrations bundle as described below.
 <!--#endif-->

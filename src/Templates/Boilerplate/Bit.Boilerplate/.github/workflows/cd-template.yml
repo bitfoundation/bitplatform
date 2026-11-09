@@ -122,6 +122,9 @@ jobs:
     environment:
       name: ${{ inputs.ENV_NAME }}
       url: ${{ vars.SERVER_ADDRESS }}
+    defaults:
+      run:
+        shell: bash -euo pipefail {0}
     steps:
 
       - name: Retrieve the Docker Compose project
@@ -135,10 +138,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      # Writes the Compose project to ~/deployments/<project> - its .env, the apps' settings files and the AppCertificate,
-      # from this environment's secrets - then pulls the images, runs the migrations on their own so a failure leaves the
-      # running version alone, brings the project up, and fails when a container isn't healthy.
-      - name: Deploy
+      # Writes the Compose project to ~/deployments/<project>: its .env, the apps' settings files and the AppCertificate, from
+      # this environment's secrets. The steps below read them from there, so only this one sees the secrets.
+      - name: Write the Compose project
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
@@ -180,11 +182,10 @@ jobs:
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
 #endif
         run: |
-          set -euo pipefail
-
           project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
           deploy_dir="$HOME/deployments/$project"
-          compose() { docker compose --project-name "$project" --project-directory "$deploy_dir" --file "$deploy_dir/docker-compose.yaml" "$@"; }
+          # Every docker compose command of the steps below finds the project through these.
+          { echo "COMPOSE_PROJECT_NAME=$project"; echo "COMPOSE_FILE=$deploy_dir/docker-compose.yaml"; } >> "$GITHUB_ENV"
 
           umask 077
           mkdir -p "$deploy_dir"
@@ -316,9 +317,11 @@ jobs:
           chmod 0755 "$certificates"
           chmod 0444 "$certificates"/AppCertificate.*
 
+      - name: Pull the images
+        run: |
           # A registry or a network that drops one download shouldn't fail a deployment.
           for attempt in 1 2 3; do
-            if compose pull --quiet; then
+            if docker compose pull --quiet; then
               break
             fi
             if (( attempt == 3 )); then
@@ -328,28 +331,60 @@ jobs:
             sleep 15
           done
 
-          # The new version's migrations first, on their own: if they fail, this step fails and the running version of
-          # the app is left untouched. It keeps serving while they run, so a migration has to leave the database working
-          # for that version too.
-          compose run --rm migrations
+      # A failure leaves the running version alone. It keeps serving while the migrations run, so a migration has to leave
+      # the database working for that version too. The run prints where the database stood, for the two undo steps below.
+      - name: Migrate the database
+        id: migrate
+        run: |
+          status=0
+          docker compose run --rm migrations | tee "$RUNNER_TEMP/migrations.log" || status=$?
+          printed() { sed -n "s/^$1=//p" "$RUNNER_TEMP/migrations.log" | tr -d '\r' | tail -n 1; }
 
-          # Everything but the apps, which are replaced one at a time below.
-          apps=()
+          older_target="$(printed LastMigrationOfThisImage)"
+          if [[ -z "$older_target" ]]; then
+            echo "undo_to=$(printed LastAppliedMigration)" >> "$GITHUB_OUTPUT"
+          else
+            # An older commit is being deployed: only the image running now has the Down of the migrations it doesn't know.
+            api=serverweb
+            if grep -qE '^  serverapi:' "$COMPOSE_FILE"; then
+              api=serverapi
+            fi
+            image="$(docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$api" --format '{{.Image}}' | tail -n 1)"
+            { echo "rollback_to=$older_target"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
+          fi
+          exit "$status"
+
+      - name: Start everything but the apps
+        run: |
           others=()
           while IFS= read -r service; do
             case "$service" in
-              serverapi | serverweb | landingpage) apps+=("$service") ;;
-              migrations) ;;
+              serverapi | serverweb | landingpage | migrations) ;;
               *) others+=("$service") ;;
             esac
-          done < <(compose config --services)
-          compose up --detach --wait --wait-timeout 600 --no-deps --remove-orphans "${others[@]}" || { compose logs --tail 200; exit 1; }
+          done < <(docker compose config --services)
+          docker compose up --detach --wait --wait-timeout 600 --no-deps --remove-orphans "${others[@]}" || { docker compose logs --tail 200; exit 1; }
 
-          containers() { docker ps "$@" --quiet --filter "label=com.docker.compose.project=$project" --filter "label=com.docker.compose.service=$service"; }
+      # No downtime: each new container starts next to the running one, whatever routes to the service's name finds both and
+      # skips the one that isn't listening yet. The old ones are stopped only once every new one is healthy, so all the apps
+      # change together or none does, and stopping lets the requests in flight finish.
+      - name: Replace the apps
+        id: apps
+        run: |
+          apps=()
+          while IFS= read -r service; do
+            case "$service" in
+              serverapi | serverweb | landingpage) apps+=("$service") ;;
+            esac
+          done < <(docker compose config --services)
+          containers() { docker ps "$@" --quiet --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$service"; }
 
-          # No downtime: the new container starts next to the running one, whatever routes to the service's name finds both and
-          # skips the one that isn't listening yet, and the old one is stopped only once the new one is healthy. Stopping lets
-          # the requests in flight finish. A new container that never gets healthy is removed, and the old one keeps serving.
+          old=()
+          new=()
+          replaced=false
+          # Whatever goes wrong before the old containers stop, the new ones go and the old ones keep serving.
+          trap '[[ "$replaced" == true ]] || (( ${#new[@]} == 0 )) || docker rm --force "${new[@]}" > /dev/null' EXIT
+
           for service in "${apps[@]}"; do
             mapfile -t stale < <(containers --all --filter status=created --filter status=exited --filter status=dead)
             if (( ${#stale[@]} > 0 )); then
@@ -357,45 +392,63 @@ jobs:
             fi
 
             mapfile -t running < <(containers)
-            if (( ${#running[@]} == 0 )); then
-              compose up --detach --wait --wait-timeout 600 --no-deps "$service" || { compose logs --tail 200 "$service"; exit 1; }
-              continue
-            fi
-
-            compose up --detach --no-deps --no-recreate --scale "$service=$(( ${#running[@]} + 1 ))" "$service"
+            docker compose up --detach --no-deps --no-recreate --scale "$service=$(( ${#running[@]} + 1 ))" "$service"
             mapfile -t started < <(containers | grep --invert-match --line-regexp --fixed-strings --file <(printf '%s\n' "${running[@]}"))
             if (( ${#started[@]} == 0 )); then
               echo "::error::No new container of $service started."
               exit 1
             fi
-
-            deadline=$(( SECONDS + 600 ))
-            for container in "${started[@]}"; do
-              while true; do
-                health="$(docker inspect --format '{{.State.Health.Status}}' "$container")"
-                if [[ "$health" == healthy ]]; then
-                  break
-                fi
-                if [[ "$health" == unhealthy ]] || (( SECONDS > deadline )); then
-                  docker logs --tail 200 "$container" || true
-                  docker rm --force "${started[@]}" > /dev/null
-                  echo "::error::The new $service never got healthy ($health). The running version keeps serving."
-                  exit 1
-                fi
-                sleep 5
-              done
-            done
-
-            docker stop --time 30 "${running[@]}" > /dev/null
-            docker rm "${running[@]}" > /dev/null
+            old+=("${running[@]}")
+            new+=("${started[@]}")
           done
+
+          deadline=$(( SECONDS + 600 ))
+          for container in "${new[@]}"; do
+            while true; do
+              health="$(docker inspect --format '{{.State.Health.Status}}' "$container")"
+              if [[ "$health" == healthy ]]; then
+                break
+              fi
+              if [[ "$health" == unhealthy ]] || (( SECONDS > deadline )); then
+                docker logs --tail 200 "$container" || true
+                echo "::error::A new container never got healthy ($health). The running version keeps serving."
+                exit 1
+              fi
+              sleep 5
+            done
+          done
+
+          replaced=true
+          echo "replaced=true" >> "$GITHUB_OUTPUT"
+          if (( ${#old[@]} > 0 )); then
+            docker stop --time 30 "${old[@]}" > /dev/null
+            docker rm "${old[@]}" > /dev/null
+          fi
           #if (cloudflare != true)
-          compose exec -T reverse-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+          docker compose exec -T reverse-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
           #endif
 
-          # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
-          # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
-          docker image prune --all --force --filter "until=72h" > /dev/null || echo "::warning::The old images were not pruned."
+      # The deployment failed with the old version still serving, so the database goes back to where it stood for it. It
+      # doesn't run on the first deployment, which has nothing to go back to, or once the old version has stopped.
+      - name: Undo this deployment's migrations
+        if: failure() && steps.migrate.outputs.undo_to != '' && steps.apps.outputs.replaced != 'true'
+        env:
+          UNDO_TO: ${{ steps.migrate.outputs.undo_to }}
+        run: docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations || echo "::error::The migrations could not be undone. The database stays ahead of the running version."
+
+      # After the swap, because the version just stopped needed them, and an older version works on the newer database.
+      - name: Undo the migrations this older version doesn't have
+        if: steps.migrate.outputs.rollback_image != ''
+        env:
+          ROLLBACK_TO: ${{ steps.migrate.outputs.rollback_to }}
+          ROLLBACK_IMAGE: ${{ steps.migrate.outputs.rollback_image }}
+          ROLLBACK_IMAGE_KEY: ${{ steps.migrate.outputs.rollback_image_key }}
+        run: env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations || echo "::warning::The newer migrations could not be undone. This version works on them, but the next deployment finds them applied."
+
+      # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
+      # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
+      - name: Remove old images
+        run: docker image prune --all --force --filter "until=72h" > /dev/null || echo "::warning::The old images were not pruned."
 
       - name: Check the public address
         env:

@@ -348,9 +348,10 @@ The template's CD already works this way (`.github/workflows/cd-template.yml`, d
 `.docs/16- CI-CD Pipeline and Environments.md`): `build_server` builds the images on a GitHub-hosted runner and pushes
 them to GHCR, and `deploy_server` runs on the environment's own runner, migrates the database, brings the Compose
 project up, and fails unless every container is healthy and the public addresses answer. It replaces the apps with no
-downtime: a new container starts next to the running one, and the old one stops only once the new one is healthy. The
+downtime: a new container starts next to the running one, and the old ones stop only once every new one is healthy. The
 old version keeps serving while the migrations run, so a migration has to leave the database working for it, and a
-column is dropped one release after the code stops using it. What is left:
+column is dropped one release after the code stops using it. A deployment that fails before the old version stops runs
+the Down of the migrations it applied, so a migration's Down has to really undo it. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
   the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
@@ -497,7 +498,8 @@ column is dropped one release after the code stops using it. What is left:
   release now, so this is proven before they rely on it, merge it only on their go-ahead, and watch the run. Tell them
   that from then on merging a release into `main` deploys it.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
-  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).
+  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge; the Down of
+  the migrations that commit doesn't have runs once it is up).
 - After the first deployment to Production, unless the database already has a backup, end with a warning the user
   can't miss: nothing in this project backs the database up, so a lost disk or a bad migration can lose every record.
   Ask them to arrange a backup kept off the machine the database runs on, and to restore it once to see it works,
