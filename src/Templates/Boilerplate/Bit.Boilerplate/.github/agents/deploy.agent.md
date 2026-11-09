@@ -170,6 +170,9 @@ domain and the services of section 5. Then go through the steps with them.
 - dev-mcp reads the dashboard's logs and traces inside the Compose network, with the key the deploy job makes on the
   first deployment and keeps in the project's `.env` as `DASHBOARD_API_KEY`. Through the SSH tunnel, the same key lets
   `aspire agent mcp --dashboard-url http://localhost:18888 --api-key <the key>` read them too.
+- These dashboards show the app, not the server. Suggest [Beszel](https://beszel.dev) to the user for that: CPU, memory,
+  disk and each container, with history and alerts, in about 20 MB of memory. Install it only if they want it, in a
+  Compose project of its own, on the VM's loopback, and open it the way these dashboards are opened.
 <!--#if (cloudflare == true)-->
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
