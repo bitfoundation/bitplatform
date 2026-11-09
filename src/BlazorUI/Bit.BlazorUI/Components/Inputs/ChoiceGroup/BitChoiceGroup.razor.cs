@@ -13,7 +13,10 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     private List<TItem> _items = [];
     private string _name = default!;
     private bool _autoFocusDone;
+    private bool _hasLiveRegion;
     private string _labelId = default!;
+    private string _errorId = default!;
+    private string _errorLabelId = default!;
     private bool _optionsOrderDirty;
     private bool _defaultValueApplied;
     private TItem? _inputTargetItem;
@@ -106,6 +109,46 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// A line under the items of the ChoiceGroup saying why its choice was rejected, which marks the group invalid
+    /// in the same way <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the
+    /// next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused the choice, a rule spanning
+    /// two fields. A ChoiceGroup inside an <c>EditForm</c> already gets its messages from the cascading EditContext
+    /// through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the ChoiceGroup the moment the
+    /// rejection shows up - in place of the default "Invalid input" for a template, and only when it is set for
+    /// the forced state, whose reason is usually explained (and announced) elsewhere - and the group references
+    /// it through its aria-describedby attribute, so the same reason is read out whenever the group is entered.
+    /// A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a template
+    /// switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking the
+    /// group invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// It replaces the message for a screen reader as well: a template is free to render anything at all, so the
+    /// live region announces <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when that is not
+    /// set - never the plain <see cref="ErrorMessage"/> it hides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Expands the ChoiceGroup to the full width of its container instead of hugging its widest item.
     /// In the horizontal layout the items also share that width equally.
     /// </summary>
@@ -132,6 +175,20 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Inline { get; set; }
+
+    /// <summary>
+    /// Marks the choice of the ChoiceGroup as invalid, giving a choice rejected by something other than the
+    /// cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute, on the group and on each of its radios, that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A ChoiceGroup failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// On its own it says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a
+    /// reason to announce.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
@@ -356,6 +413,8 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
+        _errorId = $"BitChoiceGroup-{UniqueId}-error";
+        _errorLabelId = $"BitChoiceGroup-{UniqueId}-error-label";
         _descriptionId = $"BitChoiceGroup-{UniqueId}-description";
         _optionsContainerId = $"BitChoiceGroup-{UniqueId}-options-container";
 
@@ -390,6 +449,18 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region is only rendered for a group that is wired to say something through it - one whose
+        // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
+        // so a form full of plain choice groups does not carry an empty live region per group. A label a BitParams
+        // hands down is not written by the markup, yet it is said out of the region the moment Invalid turns on, so
+        // holding one wires the group too. Once there it stays, since it has to be on the page before the text that
+        // is meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || LiveText is not null;
 
         base.OnParametersSet();
 
@@ -539,14 +610,63 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     // the description of the group: aria-describedby is a space separated list of IDREFs, so both are kept.
     internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    // The error line joins it the same way, after the description: they are read in the order they sit on the page,
+    // the description under the label and the error line under the items. A label stands in for an error template,
+    // which may well be a bare icon with no text to describe the group with at all.
     private string? GetAriaDescribedBy()
     {
-        var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
+        var describedBy = string.Join(' ', new[]
+        {
+            GetSplattedAttribute("aria-describedby"),
+            HasDescription ? _descriptionId : null,
+            HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+        }.Where(id => id.HasValue()));
 
-        if (HasDescription is false) return splattedDescribedBy;
-
-        return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
+        return describedBy.HasValue() ? describedBy : null;
     }
+
+    /// <summary>
+    /// Whether the group carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the choice of the group, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the choice is a rejection of it, so it marks the group the same way the
+    /// flag does instead of leaving a red line under radios that still look accepted.
+    /// </remarks>
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// Whether <see cref="ErrorMessageAriaLabel"/> speaks for the rejection on screen: a template, which wins over a
+    /// plain message and is free to render anything at all, or the forced state without a message.
+    /// </summary>
+    /// <remarks>
+    /// A whitespace label is no label - announcing it would leave the group sounding accepted.
+    /// </remarks>
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    /// <summary>
+    /// What the live region carries, which is the rejection on screen and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// It always matches what is shown: a plain message is its own text, while a template - never read out itself,
+    /// since a live region reading out a block of markup is worse than one saying nothing - is announced through its
+    /// label, or as "Invalid input" rather than left in silence. The forced state is the one rejection only announced
+    /// with a label of its own, its reason being explained elsewhere.
+    /// </remarks>
+    private string? LiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                : ErrorMessage.HasValue() ? ErrorMessage
+                                : null;
+
+    // The radios carry the invalid state as well as the group, the way the cascading EditContext marks both: a screen
+    // reader moving between the radios of a group does not read the group out again, so a rejection only the group
+    // said would go unheard after the first step. What the page splatted on the radios is kept while nothing is wrong.
+    internal string? GetInputAriaInvalid() => HasError ? "true" : GetSplattedInputAttribute("aria-invalid");
 
     // The index is used instead of the value, because a value is free-form (it can contain spaces or any
     // other character that is not valid in an id) and is not guaranteed to be unique among the items,

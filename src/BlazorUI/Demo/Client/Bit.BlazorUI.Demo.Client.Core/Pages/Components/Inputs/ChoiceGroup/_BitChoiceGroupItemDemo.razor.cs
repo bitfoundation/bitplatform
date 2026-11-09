@@ -28,6 +28,7 @@ public partial class _BitChoiceGroupItemDemo
 
     private string? successMessage;
     private ChoiceGroupValidationModel validationModel = new();
+    private string? shippingValue = "Express";
 
 
     private readonly List<BitChoiceGroupItem<string>> basicItems =
@@ -131,6 +132,13 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Daily", Value = "Daily", Description = "Backs up every night at 2 AM." },
         new() { Text = "Weekly", Value = "Weekly", Description = "Backs up every Sunday at 2 AM." },
         new() { Text = "Monthly", Value = "Monthly", Description = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> shippingItems =
+    [
+        new() { Text = "Standard", Value = "Standard" },
+        new() { Text = "Express", Value = "Express" },
+        new() { Text = "Pickup", Value = "Pickup" }
     ];
 
     private readonly List<BitChoiceGroupItem<string>> deploymentItems =

@@ -23,6 +23,16 @@ public class BitChoiceGroupClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the error message container of the BitChoiceGroup.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message text of the BitChoiceGroup.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the BitChoiceGroup.
     /// </summary>
     public string? Container { get; set; }
