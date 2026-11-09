@@ -41,10 +41,13 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
 
     private Task<string> ViewBackgroundColor() => View().Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-bg-pri').trim()");
 
-    /// <summary>The theme's color swatches as the screen shows them, as the largest gap between a pixel's red, green and blue: none on a gray picture.</summary>
-    private async Task<int> ColorOfTheSwatches()
+    /// <summary>
+    /// The theme's primary color swatch as the screen shows it, as the largest gap between a pixel's red, green and blue: none on a gray
+    /// picture. The swatch alone, as on a phone the Tools button floats over the corner of the whole list, outside the view's filter.
+    /// </summary>
+    private async Task<int> ColorOfThePrimarySwatch()
     {
-        var picture = await View().Locator(".swatches").First.ScreenshotAsync();
+        var picture = await View().Locator(".swatches .swatch").First.ScreenshotAsync();
 
         return await Page.EvaluateAsync<int>("""
             async picture => {
@@ -275,17 +278,17 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
     {
         await OpenWorkbench("theme");
 
-        var typical = await ColorOfTheSwatches();
+        var typical = await ColorOfThePrimarySwatch();
 
-        Assert.IsGreaterThan(60, typical, "The swatches have color to lose.");
+        Assert.IsGreaterThan(60, typical, "The swatch has color to lose.");
 
         await OpenWorkbench("theme", "?vision=achromatopsia");
 
-        Assert.IsLessThanOrEqualTo(2, await ColorOfTheSwatches(), "No color is left.");
+        Assert.IsLessThanOrEqualTo(2, await ColorOfThePrimarySwatch(), "No color is left.");
 
         await OpenWorkbench("theme", "?vision=tritanopia");
 
-        Assert.AreNotEqual(typical, await ColorOfTheSwatches());
+        Assert.AreNotEqual(typical, await ColorOfThePrimarySwatch());
     }
 
     [TestMethod, EverySurface]
@@ -304,18 +307,19 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-vision", new Regex("."));
         await WaitForViews();
 
-        Assert.IsGreaterThan(60, await ColorOfTheSwatches(), "The colors are back.");
+        Assert.IsGreaterThan(60, await ColorOfThePrimarySwatch(), "The colors are back.");
     }
 
     [TestMethod, EverySurface]
     public async Task ReducedMotion_Should_EndTheTransitionsAtOnce(WorkbenchSurface surface)
     {
-        await OpenWorkbench("theme");
+        // The Theme page shows one tab at a time, and its switches are on the Inputs tab.
+        await OpenWorkbench("theme", "?sw-section=inputs");
 
         Assert.IsGreaterThan(0.01, await LongestTransitionOfASwitch(), "The page's components have transitions to end.");
         Assert.AreEqual(2, await TransitionOfThePagesOwn(), 0.001);
 
-        await OpenWorkbench("theme", "?motion=reduce");
+        await OpenWorkbench("theme", "?sw-section=inputs&motion=reduce");
 
         Assert.IsLessThan(0.001, await LongestTransitionOfASwitch());
         Assert.IsLessThan(0.001, await TransitionOfThePagesOwn());
