@@ -21,7 +21,7 @@
         <PackageReference Include="MSTest" Version="4.5.2" />
         <PackageReference Include="bunit" Version="2.14.0" />
         <!-- DbCommandsTests: what Entity Framework Core really logs for its commands, against an in-memory SQLite database. -->
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.15" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 

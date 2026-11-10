@@ -101,7 +101,7 @@
                 "cases": [
                     {
                         "condition": "(framework == 'net10.0')",
-                        "value": "dotnet-ef@10.0.14"
+                        "value": "dotnet-ef@10.0.15"
                     },
                     {
                         "condition": "",

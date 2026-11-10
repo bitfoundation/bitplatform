@@ -49,27 +49,27 @@
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.3.0" />
         <!-- Not 118.3.1.1: it pulls AndroidX Fragment 1.9, whose classes clash with MAUI's Fragment.Ktx and break the Android build. -->
         <PackageVersion Include="Xamarin.GooglePlayServices.Auth.Api.Phone" Version="118.3.1" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.19.0" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.20.0" />
         <PackageVersion Include="Velopack" Version="1.3.39-g8d2844f" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Include="ModelContextProtocol" Version="2.4.0" />
         <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
         <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.7.4" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.6.4" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.6.5" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.6.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="13.6.4" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="13.6.5" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.PostgreSQL.Extensions" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.MySql.Extensions" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(redis)' == 'true' OR '$(redis)' == '') " Include="CommunityToolkit.Aspire.Hosting.Redis.Extensions" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' != 'Other' OR '$(redis)' == 'true') " Include="CommunityToolkit.Aspire.Hosting.DbGate" Version="13.6.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.6.4" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.6.4" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="13.6.5" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.6.5" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.6.5" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.RustFs" Version="13.6.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.6.4-preview.1.26523.11" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Docker" Version="13.6.4" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.6.5-preview.1.26559.7" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Docker" Version="13.6.5" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(cloudflare)' == 'true' OR '$(cloudflare)' == '') " Include="Shirubasoft.Aspire.CloudflareTunnels" Version="2.5.1" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.11.0" />
@@ -105,9 +105,9 @@
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" Version="10.0.12" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.24" />
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.24" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.19" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.6.4" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.6.4" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.20" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.6.5" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.6.5" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" Version="2.9.0" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="DistributedLock.Redis" Version="1.1.1" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
@@ -182,45 +182,45 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" Version="10.2.0" />
     </ItemGroup>
     <ItemGroup Condition=" '$(framework)' == 'net10.0' ">
-        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.14" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.15" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.15" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.130" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.15" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.130" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.130" />
-        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
-        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
+        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.15" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-        <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.14" />
-        <PackageVersion Condition=" '$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.14" />
-        <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.14" />
+        <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.15" />
+        <PackageVersion Condition=" '$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.15" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" Version="10.1.2" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.Abstractions" Version="10.1.2" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.EntityFrameworkCore" Version="10.1.2" />

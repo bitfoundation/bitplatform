@@ -19,9 +19,9 @@
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.2" />
         <PackageReference Include="bunit" Version="2.14.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.15" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Json" Version="10.0.15" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-rc.3.26522.148" />
         <!-- The OTLP protobuf conformance tests decode Belemetry's hand-written bytes with types generated from the
              vendored official opentelemetry-proto files (v1.11.1). Messages only: the service stubs are not needed. -->
