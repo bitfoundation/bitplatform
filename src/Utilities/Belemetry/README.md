@@ -683,17 +683,29 @@ static readonly ActivitySource Source = new("MyApp.Checkout");
 using var activity = Source.StartActivity("PlaceOrder");
 ```
 
+A span records how it was sampled in `BelemetrySpan.SamplingRatio`. It is `Traces.SamplingRatio` when the ratio
+decided its trace (a trace this process started). It is 1 when the span followed a sampled remote parent, because that
+caller's ratio is not known here. The browser script sends every `traceparent` as sampled, so the server records all of
+its requests. Azure Monitor sends the ratio as each item's `sampleRate`, so Application Insights counts each item it
+gets `1 / SamplingRatio` times and request and dependency counts stay true (see
+[Azure Monitor mapping](#azure-monitor-mapping)).
+
 Sampling at the end of a span (keep every failure and every slow span, a fraction of the rest) is a
 [processor](#processors). `BelemetrySampler` makes the same deterministic, trace-wide decision the ratio sampler
-makes, so the kept fraction is whole traces, not scattered spans:
+makes, so the kept fraction is whole traces, not scattered spans. Multiply `SamplingRatio` by the fraction kept, so
+Application Insights counts each kept span for the ones dropped:
 
 ```csharp
 public sealed class TailSampler : IBelemetryProcessor
 {
-    public bool OnSpan(BelemetrySpan span) =>
-        span.Status == BelemetryStatusCode.Error
-        || span.Duration > TimeSpan.FromSeconds(1)
-        || BelemetrySampler.ShouldSample(span.TraceId, 0.05);
+    public bool OnSpan(BelemetrySpan span)
+    {
+        if (span.Status == BelemetryStatusCode.Error || span.Duration > TimeSpan.FromSeconds(1)) return true;
+        if (BelemetrySampler.ShouldSample(span.TraceId, 0.05) is false) return false;
+
+        span.SamplingRatio *= 0.05;    // each one kept stands for 20
+        return true;
+    }
 }
 ```
 
@@ -796,7 +808,7 @@ services.AddHangfire(configuration => configuration
 | `IgnoreErrorMessages` | `ResizeObserver loop`, `^Script error\.?$` | regexes of errors never recorded (the second is a cross-origin script's error without CORS: no message, no stack, nothing to act on) |
 | `CaptureConsole` / `ConsoleLevels` | `false` / `error`, `warn` | console capture |
 | `SessionInactivityTimeout` / `SessionMaxDuration` | 30 min / 24 h | session rotation |
-| `SessionSampleRatio` | `1.0` | fraction of sessions recorded |
+| `SessionSampleRatio` | `1.0` | fraction of sessions recorded, whole; Azure Monitor sends it as every browser item's `sampleRate` |
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
 | `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
@@ -1429,6 +1441,16 @@ and `ai.device.locale` (browser), `ai.device.type` (`Browser`, `PC` or `Phone`),
 `ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
 `ai.internal.sdkVersion`.
 
+`sampleRate`: the percentage of such items sampling kept, so Application Insights counts each one `100 / sampleRate`
+times (`itemCount`).
+
+- A browser item takes `Browser.SessionSampleRatio`. A relayed one takes the server's configured value, never one the
+  page sends.
+- A span takes `BelemetrySpan.SamplingRatio`, and so do its exception and event items. That is `Traces.SamplingRatio`
+  for a trace this process started, and 1 for one that came with a sampled remote parent.
+- .NET logs (`BelemetryLogRecord.SamplingRatio`) and metrics are not sampled, so they take 100.
+- A processor that samples sets the ratio of what it keeps.
+
 Retried statuses: 408, 429, 439, 500, 502, 503 and 504, and, in a 206 partial success, only the items rejected with
 one of them.
 
@@ -1538,6 +1560,10 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   item, any other event (the document-load span's timings, for one) as a `traces` item - as the Azure Monitor
   OpenTelemetry exporter sends them; they were dropped. Expect more items. An exception also logged under its span
   is still one item, and `belemetry.records.exported` counts them for Azure Monitor.
+- **Azure Monitor items carry their sampling rate** (`sampleRate`, was always 100). With `Traces.SamplingRatio` or
+  `Browser.SessionSampleRatio` below 1, Application Insights now counts each sampled item for the ones dropped, so
+  request, dependency and page view counts and every chart built on `itemCount` rise to the real numbers. A sampling
+  processor sets `BelemetrySpan.SamplingRatio` / `BelemetryLogRecord.SamplingRatio` for the same.
 - **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
   span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
   browser as well, to an exception an app processor adds to a span.
@@ -1582,4 +1608,5 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 **New APIs:** `BelemetryOtlpExporterOptions.BrowserHeaders`, `BelemetryOptions.Errors`, `BelemetryOptions.MaxValueLength`,
 `BelemetryPrivacyOptions.RedactedAttributes`, `BelemetryBrowserOptions.TrackRageClicks`, the `Bit.Belemetry` meter, and
 in the script `addProcessor`, `setAttributes` and `getStats`. Since: `BelemetryOptions.AddSentryExporter`
-(`BelemetrySentryExporterOptions`, `BelemetryOptions.SentryExporters`).
+(`BelemetrySentryExporterOptions`, `BelemetryOptions.SentryExporters`), `BelemetrySpan.SamplingRatio` and
+`BelemetryLogRecord.SamplingRatio`.

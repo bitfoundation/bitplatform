@@ -392,19 +392,28 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         var resource = RelayResource(batch, source);
 
+        // The page kept its session at the configured ratio (the config it was given), and every record of a kept session.
+        // The configuration's, not a ratio the page sends: on a server a page is untrusted, and a tiny one would make each
+        // of its records count as thousands.
+        var ratio = Settings.Options.Browser.SessionSampleRatio;
+
         // Logs first: errors, page views and events are worth more than dependency spans when the budget runs out. A
         // feature the configuration switched off is dropped even though the page says it consented: a page can be
         // anything that speaks the interop protocol.
         foreach (var log in BelemetryRelayConverter.ToLogs(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & log.Feature) != 0) Enqueue(log, resource, relayed: true);
+            if ((Settings.ConfiguredFeatures & log.Feature) == 0) continue;
+            log.SamplingRatio = ratio;
+            Enqueue(log, resource, relayed: true);
         }
 
         foreach (var span in BelemetryRelayConverter.ToSpans(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & span.Feature) != 0) Enqueue(span, resource, relayed: true);
+            if ((Settings.ConfiguredFeatures & span.Feature) == 0) continue;
+            span.SamplingRatio = ratio;
+            Enqueue(span, resource, relayed: true);
         }
     }
 

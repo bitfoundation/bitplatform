@@ -33,6 +33,14 @@
         <code>Microsoft.ApplicationInsights.&lt;Type&gt;</code>, <code>baseType</code> is <code>&lt;Type&gt;Data</code>,
         and the type-specific fields live in <code>baseData</code>.
     </p>
+    <p>
+        <code>sampleRate</code> is the percentage of such items sampling kept, so Application Insights counts each one
+        <code>100 / sampleRate</code> times (<code>itemCount</code>) and request, page view and dependency counts stay
+        true. A browser record carries <code>Browser.SessionSampleRatio</code>. A span carries
+        <code>Traces.SamplingRatio</code> when it belongs to a trace this process started. It carries 100 when it
+        follows a remote parent, because that caller's ratio is not known. Its exceptions and events carry the span's
+        rate. .NET logs and metrics are not sampled (100).
+    </p>
     <CodeSnippet Code="@EnvelopeCode" Language="JSON" Expanded="true" />
 </div>
 

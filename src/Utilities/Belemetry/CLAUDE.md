@@ -372,8 +372,16 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 
 - **Endpoint:** `{IngestionEndpoint}/v2.1/track`. The default is `https://dc.services.visualstudio.com`. Body is a
   JSON array of envelopes, `Content-Type: application/json`.
-- **Envelope:** `{ "ver":1, "name":"Microsoft.ApplicationInsights.<Type>", "time":"<ISO 8601>", "sampleRate":100,
+- **Envelope:** `{ "ver":1, "name":"Microsoft.ApplicationInsights.<Type>", "time":"<ISO 8601>", "sampleRate":<rate>,
   "iKey":"<ikey>", "tags":{...}, "data":{ "baseType":"<Type>Data", "baseData":{ "ver":2, ... } } }`
+- **`sampleRate`** is 100 times the record's sampling ratio when that is above 0 and below 1, else 100 (`SampleRate`,
+  `sampleRate`), so Application Insights counts each item `100 / sampleRate` times (`itemCount`). A browser record's
+  ratio is `sampling.sessionRatio`. In C# a relayed record takes `Browser.SessionSampleRatio`, never a value from
+  the page: a page is untrusted on a server. A .NET span's ratio is `BelemetrySpan.SamplingRatio`. The activity
+  collector sets it to `Traces.SamplingRatio` when the ratio decided the trace: its local root has no parent, it is on
+  an exported source, and `BelemetrySampler.ShouldSample` keeps its trace id. Otherwise the ratio is 1, as for a
+  remote parent's decision (the script sends every `traceparent` as sampled). A span's event items take the span's
+  rate. .NET logs (`BelemetryLogRecord.SamplingRatio`, 1 unless a processor sets it) and metrics are not sampled.
 - **Tags:**
 
   | Tag | Value |

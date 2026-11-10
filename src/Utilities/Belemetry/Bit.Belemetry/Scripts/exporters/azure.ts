@@ -64,6 +64,17 @@ export interface AzureContext {
     iKey: string;
     maskIp: boolean;
     sdkVersion: string;
+    /** `sampling.sessionRatio`: every record the page exports belongs to a session kept at that ratio. Absent means 1. */
+    sessionRatio?: number;
+}
+
+/**
+ * The envelope's `sampleRate`: the percentage of such items kept (the ratio times 100), so Application Insights counts
+ * each one `100 / sampleRate` times (`itemCount`). 100 for a ratio of 1 or more, 0 or less, or not a number, as
+ * `isSessionSampled` reads one: it samples nothing out (or keeps nothing). The same in C# (`SampleRate`).
+ */
+export function sampleRate(ratio: number | undefined): number {
+    return typeof ratio === 'number' && ratio > 0 && ratio < 1 ? ratio * 100 : 100;
 }
 
 type Json = Record<string, unknown>;
@@ -117,7 +128,7 @@ function envelope(type: string, time: number, ctx: AzureContext, tags: Record<st
         ver: 1,
         name: 'Microsoft.ApplicationInsights.' + type,
         time: new Date(time).toISOString(),
-        sampleRate: 100,
+        sampleRate: sampleRate(ctx.sessionRatio),
         iKey: ctx.iKey,
         tags,
         data: { baseType: type + 'Data', baseData },
@@ -301,14 +312,14 @@ export function rebuildPartial(request: OutgoingRequest, responseText: string, p
     return { ...request, body: encodeUtf8(JSON.stringify(retry)), raw: null, contentEncoding: null };
 }
 
-export function createAzureExporter(config: AzureMonitorExporterConfig, transport: Transport, sdkVersion: string): Exporter {
+export function createAzureExporter(config: AzureMonitorExporterConfig, transport: Transport, sdkVersion: string, sessionRatio?: number): Exporter {
     const target = parseConnectionString(config.connectionString);
     if (!target) {
         debug('azureMonitor: invalid connection string');
         return { urls: [], export: () => Promise.resolve() };
     }
     const url = target.endpoint + '/v2.1/track';
-    const ctx: AzureContext = { iKey: target.iKey, maskIp: config.maskIp !== false, sdkVersion };
+    const ctx: AzureContext = { iKey: target.iKey, maskIp: config.maskIp !== false, sdkVersion, sessionRatio };
     const compress = config.compression === 'gzip';
     const signals = signalsOf(config);
     return {

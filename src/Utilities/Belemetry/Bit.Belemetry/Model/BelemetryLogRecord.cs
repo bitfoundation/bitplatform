@@ -79,6 +79,15 @@ public sealed class BelemetryLogRecord
     /// <summary>The consent feature this record belongs to.</summary>
     public BelemetryFeatures Feature { get; set; } = BelemetryFeatures.Logs;
 
+    /// <summary>
+    /// The fraction of records like this one that sampling kept, above 0 and up to 1: each one exported stands for
+    /// <c>1 / SamplingRatio</c> of them. .NET log records are not sampled (1);
+    /// <see cref="BelemetryBrowserOptions.SessionSampleRatio"/> for a record relayed from the browser. A processor that
+    /// samples records itself multiplies it by its own ratio. The Azure Monitor exporter sends it as the envelope's
+    /// <c>sampleRate</c> (a percentage), so Application Insights counts each item that many times. Defaults to 1.
+    /// </summary>
+    public double SamplingRatio { get; set; } = 1;
+
     /// <summary>Whether the record carries an exception (<c>exception.type</c> or <c>exception.message</c>).</summary>
     public bool HasException => Attributes.HasException;
 }

@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 import {
-    createAzureExporter, formatDuration, logToEnvelope, parseConnectionString, rebuildPartial, severityLevel, spanToEnvelope, toEnvelopes,
+    createAzureExporter, formatDuration, logToEnvelope, parseConnectionString, rebuildPartial, sampleRate, severityLevel, spanToEnvelope, toEnvelopes,
 } from '../../Bit.Belemetry/Scripts/exporters/azure.ts';
 import { gunzip } from '../../Bit.Belemetry/Scripts/transport.ts';
 import { encodeUtf8 } from '../../Bit.Belemetry/Scripts/exporters/protobuf.ts';
@@ -253,6 +253,21 @@ describe('envelopes', () => {
         expect(detail.hasFullStack).toBe(true);
     });
 
+    it('sends the session ratio as the sampleRate of every item, as C# does for a relayed record', () => {
+        const s = span({ events: [{ name: 'domInteractive', time: 1700000000100, attributes: {} }, { name: 'exception', time: 1700000000200, attributes: { 'exception.type': 'TypeError' } }] });
+        const logs = [log({ eventName: 'browser.page_view' }), log({ eventName: 'browser.web_vital', attributes: { 'web_vital.name': 'LCP', 'web_vital.value': 1 } }), log()];
+        const envelopes = toEnvelopes({ resource, spans: [s], logs }, { ...ctx, sessionRatio: 0.25 });
+        expect(envelopes).toHaveLength(6);
+        expect(envelopes.map(e => e.sampleRate), 'Every record of a kept session: its spans, their events and its logs.').toEqual([25, 25, 25, 25, 25, 25]);
+        expect(toEnvelopes({ resource, spans: [s], logs }, ctx).map(e => e.sampleRate), 'No ratio samples nothing out.').toEqual([100, 100, 100, 100, 100, 100]);
+    });
+
+    it('reads a ratio that samples nothing out as 100, as C# does', () => {
+        for (const ratio of [undefined, 1, 1.5, 0, -0.5, NaN, Infinity]) expect(sampleRate(ratio)).toBe(100);
+        expect(sampleRate(0.1)).toBeCloseTo(10, 9);
+        expect(sampleRate(0.5)).toBe(50);
+    });
+
     it('names a request with an empty route after its span, as C# does', () => {
         const e = spanToEnvelope(span({ kind: 2, attributes: { 'http.request.method': 'GET', 'http.route': '' } }), resource, ctx);
         expect(e.data.baseData.name).toBe('GET');
@@ -274,6 +289,12 @@ describe('exporter', () => {
         expect(requests).toHaveLength(1);
         expect(requests[0]).toMatchObject({ url: 'https://dc.test/v2.1/track', contentType: 'application/json', contentEncoding: null });
         expect(items(requests[0]).map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.RemoteDependency', 'Microsoft.ApplicationInsights.Event']);
+    });
+
+    it('sends the session ratio it is given as the sampleRate', async () => {
+        const { requests, transport } = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString }, transport, '1.0.0', 0.05).export(batch, false);
+        expect(items(requests[0]).map(e => e.sampleRate)).toEqual([0.05 * 100, 0.05 * 100]);
     });
 
     it('sends only the configured signals', async () => {

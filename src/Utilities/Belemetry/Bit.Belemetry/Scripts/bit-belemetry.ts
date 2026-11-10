@@ -123,7 +123,7 @@ function createExporters(config: ResolvedConfig, transport: Transport): Exporter
     for (const exporter of config.exporters || []) {
         try {
             if (exporter.type === 'otlp') list.push(createOtlpExporter(exporter, transport, config.sdkVersion));
-            else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion));
+            else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion, config.sampling.sessionRatio));
             else if (exporter.type === 'sentry') list.push(createSentryExporter(exporter, transport, config.sdkVersion));
             else if (exporter.type === 'console') list.push(createConsoleExporter());
         } catch (e) {

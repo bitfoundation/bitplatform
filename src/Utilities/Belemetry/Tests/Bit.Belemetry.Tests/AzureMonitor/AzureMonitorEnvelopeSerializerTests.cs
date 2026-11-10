@@ -509,6 +509,56 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void SampleRate_IsTheRecordsSamplingRatio_AsAPercentage()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.SamplingRatio = 0.25;
+        span.Events.Add(new BelemetrySpanEvent { Name = "retry", TimeUnixNano = Records.Start });
+        span.Events.Add(new BelemetrySpanEvent
+        {
+            Name = BelemetrySemanticConventions.ExceptionEvent,
+            TimeUnixNano = Records.Start,
+            Attributes = new BelemetryAttributes().Set(BelemetrySemanticConventions.ExceptionType, "System.TimeoutException"),
+        });
+        var pageView = Records.Log("Checkout", BelemetrySemanticConventions.PageViewEvent);
+        pageView.SamplingRatio = 0.05;
+        var error = Records.Log("failed", severity: BelemetrySeverity.Error);
+        error.Attributes.Set(BelemetrySemanticConventions.ExceptionType, "System.InvalidOperationException");
+        error.SamplingRatio = 0.5;
+        var log = Records.Log();
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span], [pageView, error, log], Otlp.OtlpProtobufConformanceTests.MetricsSample()));
+
+        static double Rate(JsonElement envelope) => envelope.GetProperty("sampleRate").GetDouble();
+        Assert.AreEqual("Microsoft.ApplicationInsights.Request", envelopes[0].GetProperty("name").GetString());
+        Assert.AreEqual(25, Rate(envelopes[0]));
+        Assert.AreEqual("Microsoft.ApplicationInsights.Message", envelopes[1].GetProperty("name").GetString());
+        Assert.AreEqual(25, Rate(envelopes[1]), "The span's events are kept with it.");
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", envelopes[2].GetProperty("name").GetString());
+        Assert.AreEqual(25, Rate(envelopes[2]));
+        Assert.AreEqual("Microsoft.ApplicationInsights.PageView", envelopes[3].GetProperty("name").GetString());
+        Assert.AreEqual(5, Rate(envelopes[3]), 1e-9);
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", envelopes[4].GetProperty("name").GetString());
+        Assert.AreEqual(50, Rate(envelopes[4]));
+        Assert.AreEqual(100, Rate(envelopes[5]), "A record nothing sampled.");
+        Assert.HasCount(10, envelopes);
+        Assert.IsTrue(envelopes.Skip(6).All(e => Rate(e) == 100), "A metric point aggregates every measurement.");
+    }
+
+    [TestMethod]
+    public void SampleRate_Is100_ForARatioThatSamplesNothingOut()
+    {
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(1));
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(1.5));
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(0));
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(-0.5));
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(double.NaN));
+        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(double.PositiveInfinity));
+        Assert.AreEqual(10, AzureMonitorEnvelopeSerializer.SampleRate(0.1), 1e-9);
+        Assert.AreEqual(0.001, AzureMonitorEnvelopeSerializer.SampleRate(0.00001), 1e-12);
+    }
+
+    [TestMethod]
     public void MetricPoints_UseDeltas()
     {
         var envelopes = Serialize(new BelemetryBatch(Records.Resource(), metrics: Otlp.OtlpProtobufConformanceTests.MetricsSample()), true, out var count);

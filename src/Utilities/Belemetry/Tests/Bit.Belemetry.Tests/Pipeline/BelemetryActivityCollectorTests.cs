@@ -86,6 +86,7 @@ public class BelemetryActivityCollectorTests
 
         Assert.AreEqual(BelemetryStatusCode.Error, span.Status);
         Assert.AreEqual("unavailable", span.StatusMessage);
+        Assert.AreEqual(1, span.SamplingRatio, "Nothing sampled it out.");
     }
 
     [TestMethod]
@@ -214,6 +215,74 @@ public class BelemetryActivityCollectorTests
         await host.FlushAsync();
         CollectionAssert.AreEquivalent(expected, host.Memory.Spans.Select(s => s.SpanId).ToList());
         Assert.IsTrue(expected.Count is > 50 and < 150);
+    }
+
+    [TestMethod]
+    public async Task SamplingRatio_IsTheRatio_ForTheTracesItDecided()
+    {
+        var (host, collector, source) = Create(ratio: 0.5);
+        await using var _ = host;
+        using var __ = collector;
+        using var ___ = source;
+
+        var found = false;
+        for (var i = 0; i < 200 && found is false; i++)
+        {
+            Activity.Current = null;
+            using var root = source.StartActivity("root");
+            Assert.IsNotNull(root);
+            if (root.Recorded is false) continue;
+
+            found = true;
+            using var child = source.StartActivity("child");
+            Assert.IsNotNull(child);
+            Assert.IsTrue(child.Recorded);
+        }
+        Assert.IsTrue(found);
+
+        Activity.Current = null;
+        var remote = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded, isRemote: true);
+        using (var server = source.StartActivity("server", ActivityKind.Server, remote))
+        {
+            Assert.IsNotNull(server);
+            using var local = source.StartActivity("local");
+            Assert.IsNotNull(local);
+        }
+
+        await host.FlushAsync();
+        var spans = host.Memory.Spans.ToDictionary(s => s.Name);
+        Assert.AreEqual(0.5, spans["root"].SamplingRatio, "The ratio decided the trace.");
+        Assert.AreEqual(0.5, spans["child"].SamplingRatio, "A local child is kept with its trace.");
+        Assert.AreEqual(1, spans["server"].SamplingRatio, "A remote parent decided: its ratio is not known here.");
+        Assert.AreEqual(1, spans["local"].SamplingRatio, "So did it for the server span's children.");
+    }
+
+    [TestMethod]
+    public async Task SamplingRatio_Is1_ForATraceAnotherListenerRecorded()
+    {
+        var (host, collector, source) = Create(ratio: 0.5);
+        await using var _ = host;
+        using var __ = collector;
+        using var ___ = source;
+        using var listener = RecordEverything(source.Name);
+
+        string? recordedByTheOther = null;
+        for (var i = 0; i < 200 && recordedByTheOther is null; i++)
+        {
+            Activity.Current = null;
+            using var root = source.StartActivity("root");
+            Assert.IsNotNull(root);
+            Assert.IsTrue(root.Recorded);
+            if (BelemetrySampler.ShouldSample(root.TraceId, 0.5) is false) recordedByTheOther = root.SpanId.ToHexString();
+        }
+
+        await host.FlushAsync();
+        Assert.IsNotNull(recordedByTheOther);
+        foreach (var span in host.Memory.Spans)
+        {
+            Assert.AreEqual(BelemetrySampler.ShouldSample(span.TraceId, 0.5) ? 0.5 : 1, span.SamplingRatio);
+        }
+        Assert.AreEqual(1, host.Memory.Spans.Single(s => s.SpanId == recordedByTheOther).SamplingRatio);
     }
 
     [TestMethod]

@@ -78,12 +78,32 @@ internal sealed class BelemetryActivityCollector : IDisposable
 
         try
         {
-            _pipeline.Enqueue(Convert(activity, _settings.Options.Traces));
+            var span = Convert(activity, _settings.Options.Traces);
+            span.SamplingRatio = SamplingRatioOf(activity);
+            _pipeline.Enqueue(span);
         }
         catch
         {
             // Never let telemetry break the instrumented code path.
         }
+    }
+
+    /// <summary>
+    /// The fraction of traces like the one of a recorded <paramref name="activity"/> that are recorded
+    /// (<see cref="BelemetrySpan.SamplingRatio"/>): the ratio when it decided the trace - this process started it (its
+    /// local root has no parent), on a source this listener samples, and the ratio keeps its trace id - else 1. A trace
+    /// that came with a sampled remote parent is recorded whatever the ratio says (parent-based), and the caller's ratio
+    /// is not known here (the browser script marks every request it traces as sampled, so its requests are all
+    /// recorded). A trace the ratio does not keep was recorded by another listener's decision.
+    /// </summary>
+    private double SamplingRatioOf(Activity activity)
+    {
+        if (_ratio >= 1) return 1;
+
+        var root = activity;
+        while (root.Parent is { } parent) root = parent;
+
+        return root.ParentId is null && _settings.ExportsTraceSource(root.Source.Name) && BelemetrySampler.ShouldSample(activity.TraceId, _ratio) ? _ratio : 1;
     }
 
     /// <summary>

@@ -86,6 +86,28 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task RelayedRecords_CarryTheConfiguredSessionSampleRatio()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Browser.SessionSampleRatio = 0.25;
+        });
+
+        host.Pipeline.Relay(new BelemetryRelayBatch
+        {
+            Logs = [new BelemetryRelayLog { Body = "click", EventName = "browser.user_interaction", Feature = (int)BelemetryFeatures.Interactions }],
+            Spans = [new BelemetryRelaySpan { TraceId = Records.TraceId, SpanId = Records.SpanId, Name = "GET", Kind = 3, Feature = (int)BelemetryFeatures.Dependencies }],
+        });
+        host.Pipeline.Enqueue(Log("log", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+
+        Assert.AreEqual(0.25, host.Memory.Logs.Single(l => l.Body == "click").SamplingRatio, "The page kept its session at the configured ratio.");
+        Assert.AreEqual(0.25, host.Memory.Spans.Single().SamplingRatio);
+        Assert.AreEqual(1, host.Memory.Logs.Single(l => l.Body == "log").SamplingRatio, ".NET logs are not sampled.");
+    }
+
+    [TestMethod]
     public async Task Revoking_PurgesRelayedRecordsToo_AndTakesTheUserIdsOffWhatIsLeft()
     {
         await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay, consentDefault: BelemetryFeatures.None);
