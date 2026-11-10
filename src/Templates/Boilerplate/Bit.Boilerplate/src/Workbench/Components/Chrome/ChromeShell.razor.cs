@@ -55,6 +55,16 @@ public partial class ChromeShell
 
     public void SwitchTenant(string tenantKey) => chromeStore.SwitchTenant(tenantKey);
 
+    /// <summary>
+    /// The header's menu button opens the nav panel expanded, the way the app's AppShell does on OPEN_NAV_PANEL, so a panel
+    /// collapsed on a wide screen doesn't open collapsed on a phone.
+    /// </summary>
+    public void OpenNavPanel()
+    {
+        chromeStore.ToggleNavPanel(false);
+        chromeStore.OpenNavPanel(true);
+    }
+
     /// <summary>Rebuilds the nav items when the view's scenario changes, since the sign-in state and the user decide them.</summary>
     private void OnScenarioChanged()
     {
