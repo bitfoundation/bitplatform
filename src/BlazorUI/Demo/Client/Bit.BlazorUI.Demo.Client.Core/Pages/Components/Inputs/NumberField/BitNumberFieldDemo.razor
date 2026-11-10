@@ -443,6 +443,14 @@
         <div>
             Works with <b>EditForm</b> and data annotations. Unparsable text stays in the input with <b>ParsingErrorMessage</b>
             (<b>{0}</b> is the <b>DisplayName</b>). Pair <b>NoClamp</b> with <b>[Range]</b> to report rather than correct.
+            <br /><br />
+            <b>ShowValidationMessage</b> shows the messages of the form - a <b>ParsingErrorMessage</b> among them - under the
+            field, where <b>ErrorMessage</b> goes, so the forms below need no <code>ValidationMessage</code> component. The
+            input is described by them through <code>aria-describedby</code>, so they are read out when it takes the focus,
+            and an <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
+            appear: a submit validates every field at once, and a message from each of them read out in a row would bury
+            the form under its own errors. A <b>BitParams</b> holding a <b>BitNumberFieldParams</b> with
+            <b>ShowValidationMessage</b> turns it on for every field inside it.
         </div>
         <br />
         <div class="example-box">
@@ -451,8 +459,7 @@
                 <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                     <DataAnnotationsValidator />
 
-                    <BitNumberField Label="@($"Age: [{validationModel.Age}]")" @bind-Value="validationModel.Age" />
-                    <ValidationMessage For="@(() => validationModel.Age)" />
+                    <BitNumberField Label="@($"Age: [{validationModel.Age}]")" @bind-Value="validationModel.Age" ShowValidationMessage />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
@@ -468,15 +475,14 @@
                 <BitNumberField Label="Custom ParsingErrorMessage (try typing letters)"
                                 DisplayName="Weight"
                                 ParsingErrorMessage="{0} must be a number."
-                                @bind-Value="parsingErrorValue" />
-                <ValidationMessage For="@(() => parsingErrorValue)" />
+                                @bind-Value="parsingErrorValue"
+                                ShowValidationMessage />
             </EditForm>
             <br />
             <EditForm Model="@rangeModel">
                 <DataAnnotationsValidator />
 
-                <BitNumberField Label="NoClamp & [Range(0, 100)]" NoClamp Min="0" Max="100" @bind-Value="rangeModel.Percentage" />
-                <ValidationMessage For="@(() => rangeModel.Percentage)" />
+                <BitNumberField Label="NoClamp & [Range(0, 100)]" NoClamp Min="0" Max="100" @bind-Value="rangeModel.Percentage" ShowValidationMessage />
             </EditForm>
         </div>
     </DemoExample>

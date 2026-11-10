@@ -389,11 +389,12 @@
         }
     </div>
 
-    @if (HasErrorMessage)
+    @if (HasErrorLine)
     {
         @* What is wrong with the value is the first thing to read under the field, so it sits above the
            description. It carries no live role of its own - the region at the end of the component is what
-           announces it, so it is never read out twice. *@
+           announces the app's message, so it is never read out twice. The messages of the EditContext
+           (ShowValidationMessage) take the same line while the app has none of its own. *@
         <div id="@_errorId"
              style="@Styles?.ErrorMessageContainer"
              class="bit-nfl-erm @Classes?.ErrorMessageContainer">
@@ -403,7 +404,7 @@
             }
             else
             {
-                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(HasErrorMessage ? ErrorMessage : ShownValidationMessage)</span>
             }
         </div>
     }

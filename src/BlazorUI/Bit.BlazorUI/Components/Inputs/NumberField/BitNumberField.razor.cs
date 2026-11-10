@@ -282,7 +282,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// through a polite live region the moment it appears. It is the way to report what a validator outside
     /// of an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/> found - a server-side check, a
     /// business rule - without having to build a form around the field. A failing EditContext validation
-    /// already marks the field on its own, so the two never have to be combined.
+    /// already marks the field on its own, so the two never have to be combined, and its messages are shown in
+    /// this same place by <see cref="ShowValidationMessage"/> - giving way to this message while it is set.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -690,6 +691,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations,
+    /// the <see cref="ParsingErrorMessage"/> of a text that is not a number, or those of any other validator of the
+    /// form - under the number field, where <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no
+    /// <c>ValidationMessage</c> component beside the field. The input (the group of the buttons, with
+    /// <see cref="HideInput"/>) references them through its aria-describedby attribute, so they are read out
+    /// whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the field: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the field that takes the focus says what is wrong with it. A field that validates
+    /// nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type
     /// scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the
     /// other controls of the same size around it (Medium by default).
@@ -835,8 +854,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // The description and the error message are further children of the root flex box, which the row
         // label layouts have to wrap onto a line of their own; the class is what scopes that to the fields
-        // that need it.
-        ClassBuilder.Register(() => HasDescription || HasErrorMessage ? "bit-nfl-hds" : string.Empty);
+        // that need it. The messages of the EditContext take the error line as well (ShowValidationMessage).
+        ClassBuilder.Register(() => HasDescription || HasErrorLine ? "bit-nfl-hds" : string.Empty);
 
         // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-NumberField-* variables restyle the default and never an
@@ -1424,6 +1443,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the field is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
     // A message saying what is wrong with the value is a rejection of it, so it marks the field the same way
     // the forced state does instead of drawing a red line under a field that still looks accepted.
     protected override bool HasError => Invalid || HasErrorMessage;
@@ -1457,8 +1483,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             {
                 GetSplattedInputAttribute("aria-describedby"),
                 // A label stands in for the template on focus as well, which may well be a bare icon with no
-                // text to describe the field with at all.
-                HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+                // text to describe the field with at all. The forced state's label gives way to a message of the
+                // EditContext on screen, which is the text the reader can see.
+                HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                    : HasErrorLine ? _errorId
+                    : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
                 // The unit or the currency sits beside the field rather than inside its value, so without

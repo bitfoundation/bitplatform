@@ -327,6 +327,12 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public bool? ShowClearButton { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the number field, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Sets the preset size (Small, Medium, Large) of the number field.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -629,6 +635,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (ShowClearButton.HasValue)
         {
             bitNumberField.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static n => n.ShowClearButton, static (n, v) => n.ShowClearButton = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitNumberField.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static n => n.ShowValidationMessage, static (n, v) => n.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)
