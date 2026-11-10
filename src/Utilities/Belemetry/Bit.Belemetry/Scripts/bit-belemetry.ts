@@ -123,7 +123,7 @@ function createExporters(config: ResolvedConfig, transport: Transport): Exporter
     for (const exporter of config.exporters || []) {
         try {
             if (exporter.type === 'otlp') list.push(createOtlpExporter(exporter, transport, config.sdkVersion));
-            else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion));
+            else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion, config.sampling.sessionRatio));
             else if (exporter.type === 'sentry') list.push(createSentryExporter(exporter, transport, config.sdkVersion));
             else if (exporter.type === 'console') list.push(createConsoleExporter());
         } catch (e) {
@@ -177,7 +177,7 @@ function updateSink(s: State): void {
     const relay = s.config.transport === 'relay' || (bridge !== null && bridge.relay);
     if (relay) {
         // Without the .NET bridge yet, records wait in the queue.
-        s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch)) : null;
+        s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch, s.config.sampling.sessionRatio)) : null;
     } else {
         s.pipeline.sink = (batch, unload, mark) => Promise.all(s.exporters.map(exporter => {
             try {

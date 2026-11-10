@@ -193,6 +193,63 @@ describe('public API', () => {
         expect(new TextDecoder().decode(calls[1].init.body)).toBe('{"resourceMetrics":[]}');
     });
 
+    it('sends the session sampling ratio to Azure Monitor as every item\'s sampleRate', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        // A session the ratio keeps: the first 32 bits of its id are 0.
+        const now = Date.now();
+        sessionStorage.setItem('bit-belemetry-session', JSON.stringify({ id: '00000000' + 'a'.repeat(24), start: now, last: now }));
+        await load();
+        api.start({
+            ...relayConfig({ transport: 'direct' }),
+            consent: { default: 4095 },
+            sampling: { sessionRatio: 0.25 },
+            exporters: [{ type: 'azureMonitor', connectionString: 'InstrumentationKey=ikey-1;IngestionEndpoint=https://dc.test' }],
+        });
+        api.trackEvent('checkout');
+        await api.flush();
+        await api._getState().transport.idle();
+        const items = fetch.calls.flatMap(c => JSON.parse(new TextDecoder().decode(c.init.body)));
+        expect(items.map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.PageView', 'Microsoft.ApplicationInsights.Event']);
+        expect(items.map(e => e.sampleRate)).toEqual([25, 25]);
+    });
+
+    it('reads a session ratio given as a string as the number it samples by, for the sampleRate too', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        const now = Date.now();
+        sessionStorage.setItem('bit-belemetry-session', JSON.stringify({ id: '00000000' + 'a'.repeat(24), start: now, last: now }));
+        await load();
+        api.start({
+            ...relayConfig({ transport: 'direct' }),
+            consent: { default: 4095 },
+            sampling: { sessionRatio: '0.25' },
+            exporters: [{ type: 'azureMonitor', connectionString: 'InstrumentationKey=ikey-1;IngestionEndpoint=https://dc.test' }],
+        });
+        expect(api._getState().config.sampling.sessionRatio).toBe(0.25);
+        api.trackEvent('checkout');
+        await api.flush();
+        await api._getState().transport.idle();
+        const items = fetch.calls.flatMap(c => JSON.parse(new TextDecoder().decode(c.init.body)));
+        expect(items.map(e => e.sampleRate)).toEqual([25, 25]);
+    });
+
+    it('relays the ratio it sampled its session at, which a repeated start (Auto) does not change', async () => {
+        const now = Date.now();
+        sessionStorage.setItem('bit-belemetry-session', JSON.stringify({ id: '00000000' + 'a'.repeat(24), start: now, last: now }));
+        await load();
+        api.start({ ...relayConfig(), consent: { default: 4095 }, sampling: { sessionRatio: 0.1 } });
+        // The WebAssembly side of an Auto app starting the script the server started, with its own ratio.
+        api.start({ ...relayConfig(), consent: { default: 4095 }, sampling: { sessionRatio: 1 } });
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api.trackEvent('checkout');
+        await api.flush();
+        const relays = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').map(c => c[1]);
+        expect(relays.length).toBeGreaterThan(0);
+        expect(relays.map(r => r.sessionRatio)).toEqual(relays.map(() => 0.1));
+    });
+
     it('sends .NET requests through the transport', async () => {
         const fetch = mockFetch(200);
         vi.stubGlobal('fetch', fetch);

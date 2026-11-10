@@ -392,20 +392,52 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         var resource = RelayResource(batch, source);
 
+        var ratio = RelayedSessionRatio(batch.SessionRatio);
+
         // Logs first: errors, page views and events are worth more than dependency spans when the budget runs out. A
         // feature the configuration switched off is dropped even though the page says it consented: a page can be
         // anything that speaks the interop protocol.
         foreach (var log in BelemetryRelayConverter.ToLogs(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & log.Feature) != 0) Enqueue(log, resource, relayed: true);
+            if ((Settings.ConfiguredFeatures & log.Feature) == 0 || IsSampledOut(log.Attributes, ratio, span: false)) continue;
+            log.SamplingRatio = ratio;
+            Enqueue(log, resource, relayed: true);
         }
 
         foreach (var span in BelemetryRelayConverter.ToSpans(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & span.Feature) != 0) Enqueue(span, resource, relayed: true);
+            if ((Settings.ConfiguredFeatures & span.Feature) == 0 || IsSampledOut(span.Attributes, ratio, span: true)) continue;
+            span.SamplingRatio = ratio;
+            Enqueue(span, resource, relayed: true);
         }
+    }
+
+    /// <summary>
+    /// The ratio relayed records were sampled at: the one the page says it sampled its sessions at (an Auto app's page
+    /// keeps the configuration of the side that started it first), else <see cref="BelemetryBrowserOptions.SessionSampleRatio"/>.
+    /// On a server a page is untrusted, and a tiny ratio would make each of its records count as thousands, so there it
+    /// is never below the configured one.
+    /// </summary>
+    private double RelayedSessionRatio(double? pageRatio)
+    {
+        var configured = Settings.Options.Browser.SessionSampleRatio;
+        var ratio = pageRatio is > 0 and <= 1 ? pageRatio.Value : configured;
+        return Settings.IsServer && configured > ratio ? configured : ratio;
+    }
+
+    /// <summary>
+    /// Whether a relayed record's <c>session.id</c> is one <paramref name="ratio"/> does not keep, counted as
+    /// <c>sampled_out</c>: the page did not sample at that ratio, and its records would count for sessions that were
+    /// never dropped. A record without one (blocked by privacy) is taken as it is.
+    /// </summary>
+    private bool IsSampledOut(BelemetryAttributes attributes, double ratio, bool span)
+    {
+        if (ratio >= 1 || attributes.GetString(BelemetrySemanticConventions.SessionId) is not { } sessionId || BelemetrySampler.IsSessionSampled(sessionId, ratio)) return false;
+
+        Self.Dropped("sampled_out", span);
+        return true;
     }
 
     // The resource keys that say which service a record belongs to.

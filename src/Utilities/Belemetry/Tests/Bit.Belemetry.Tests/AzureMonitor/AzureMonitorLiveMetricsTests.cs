@@ -276,6 +276,84 @@ public class AzureMonitorLiveMetricsTests
     }
 
     [TestMethod]
+    public async Task ASampledRecord_CountsAsTheItemsItStandsFor()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1",
+              "DocumentStreams": [ { "Id": "all", "DocumentFilterGroups": [ { "TelemetryType": "Request", "Filters": { "Filters": [] } } ] } ],
+              "Metrics": [
+                { "Id": "requests", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "BackEndAggregation": "Sum", "FilterGroups": [] },
+                { "Id": "duration", "TelemetryType": "Request", "Projection": "Duration", "Aggregation": "Avg", "BackEndAggregation": "Avg", "FilterGroups": [] },
+                { "Id": "longest", "TelemetryType": "Request", "Projection": "Duration", "Aggregation": "Max", "BackEndAggregation": "Max", "FilterGroups": [] }
+              ] }
+            """);
+
+        var sampled = Request(500, seconds: 1);
+        sampled.SamplingRatio = 0.25;
+        sampled.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException") });
+        live.OnRecord(sampled);
+        live.OnRecord(Request(200, seconds: 6));
+        var dependency = Records.Span();
+        dependency.SamplingRatio = 0.5;
+        live.OnRecord(dependency);
+        var error = Records.Log(severity: BelemetrySeverity.Error);
+        error.Attributes.Set("exception.type", "System.InvalidOperationException");
+        error.SamplingRatio = 0.1;
+        live.OnRecord(error);
+
+        Assert.AreEqual(14, live.Exceptions, 1e-9, "4 for the exception on the span kept at 0.25, 10 for the log record kept at 0.1.");
+
+        var point = Post(live);
+        var metrics = Metrics(point);
+        Assert.AreEqual(5, metrics[@"\ApplicationInsights\Requests/Sec"], 1e-9, "The sampled request stands for 4.");
+        Assert.AreEqual(4, metrics[@"\ApplicationInsights\Requests Failed/Sec"], 1e-9);
+        Assert.AreEqual(1, metrics[@"\ApplicationInsights\Requests Succeeded/Sec"], 1e-9);
+        Assert.AreEqual(2000, metrics[@"\ApplicationInsights\Request Duration"], 1e-6, "(4 x 1 s + 6 s) / 5, in milliseconds.");
+        Assert.AreEqual(2, metrics[@"\ApplicationInsights\Dependency Calls/Sec"], 1e-9);
+        Assert.AreEqual(14, metrics[@"\ApplicationInsights\Exceptions/Sec"], 1e-9);
+
+        Assert.AreEqual(5, metrics["requests"], 1e-9);
+        Assert.AreEqual(2000, metrics["duration"], 1e-6);
+        Assert.AreEqual(6000, metrics["longest"], 1e-6, "The greatest value seen.");
+        Assert.AreEqual(5, Weights(point)["requests"]);
+        Assert.HasCount(2, point.GetProperty("Documents").EnumerateArray().ToList(), "A sample is one item, whatever it stands for.");
+    }
+
+    [TestMethod]
+    public async Task ASampledRecord_CountsAsTheWholeItemsApplicationInsightsCounts_AndATinyRatioCannotPoisonTheCounts()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1", "DocumentStreams": [],
+              "Metrics": [
+                { "Id": "requests", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "BackEndAggregation": "Sum", "FilterGroups": [] },
+                { "Id": "duration", "TelemetryType": "Request", "Projection": "Duration", "Aggregation": "Avg", "BackEndAggregation": "Avg", "FilterGroups": [] }
+              ] }
+            """);
+
+        var third = Request(200, seconds: 1);
+        third.SamplingRatio = 0.3;
+        live.OnRecord(third);
+
+        var point = Post(live);
+        Assert.AreEqual(3, Metrics(point)[@"\ApplicationInsights\Requests/Sec"], 1e-9, "1 / 0.3 rounded, as the envelope's sampleRate makes Application Insights count it.");
+        Assert.AreEqual(3, Metrics(point)["requests"], 1e-9);
+        Assert.AreEqual(3, Weights(point)["requests"]);
+
+        var tiny = Request(200, seconds: 2);
+        tiny.SamplingRatio = 1e-320;
+        live.OnRecord(tiny);
+        live.OnRecord(Request(200, seconds: 2));
+
+        point = Post(live);
+        var metrics = Metrics(point);
+        Assert.AreEqual(2000, metrics[@"\ApplicationInsights\Request Duration"], 1e-3, "Finite: not Inf / Inf.");
+        Assert.AreEqual(2000, metrics["duration"], 1e-3);
+        Assert.AreEqual(int.MaxValue, Weights(point)["duration"]);
+    }
+
+    [TestMethod]
     public async Task ACustomChart_ThatFailsOnAnItem_IsReportedOncePerDataPoint()
     {
         await using var live = Create();

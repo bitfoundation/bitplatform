@@ -86,6 +86,100 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task RelayedRecords_CarryTheConfiguredSessionSampleRatio()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Browser.SessionSampleRatio = 0.25;
+        });
+
+        host.Pipeline.Relay(new BelemetryRelayBatch
+        {
+            Logs = [new BelemetryRelayLog { Body = "click", EventName = "browser.user_interaction", Feature = (int)BelemetryFeatures.Interactions }],
+            Spans = [new BelemetryRelaySpan { TraceId = Records.TraceId, SpanId = Records.SpanId, Name = "GET", Kind = 3, Feature = (int)BelemetryFeatures.Dependencies }],
+        });
+        host.Pipeline.Enqueue(Log("log", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+
+        Assert.AreEqual(0.25, host.Memory.Logs.Single(l => l.Body == "click").SamplingRatio, "The page kept its session at the configured ratio.");
+        Assert.AreEqual(0.25, host.Memory.Spans.Single().SamplingRatio);
+        Assert.AreEqual(1, host.Memory.Logs.Single(l => l.Body == "log").SamplingRatio, ".NET logs are not sampled.");
+    }
+
+    private static BelemetryRelayBatch RelayBatch(double? sessionRatio, params string?[] sessionIds)
+    {
+        // As the page sends it (the wire contract): a page view per session id, and a fetch span for the first.
+        static string Attributes(string? id) => id is null ? "{}" : $$"""{ "session.id": "{{id}}" }""";
+        var logs = string.Join(",", sessionIds.Select((id, i) =>
+            $$"""{ "time": 1700000000000, "severityNumber": 9, "body": "view-{{i}}", "eventName": "browser.page_view", "attributes": {{Attributes(id)}}, "scope": "s", "feature": 2 }"""));
+        var ratio = sessionRatio is { } r ? $$""", "sessionRatio": {{r.ToString(System.Globalization.CultureInfo.InvariantCulture)}}""" : "";
+        var json = $$"""
+            { "resource": {}, "logs": [ {{logs}} ],
+              "spans": [ { "traceId": "{{Records.TraceId}}", "spanId": "{{Records.SpanId}}", "name": "GET", "kind": 3, "startTime": 1700000000000, "endTime": 1700000000100,
+                           "attributes": {{Attributes(sessionIds[0])}}, "status": { "code": 0 }, "events": [], "scope": "s", "feature": 16 } ]{{ratio}} }
+            """;
+        return JsonSerializer.Deserialize(json, BelemetryJsonContext.Default.BelemetryRelayBatch)!;
+    }
+
+    // Sessions isSessionSampled keeps at 0.25 (the first 32 bits below 2^30) and drops.
+    private const string KeptSession = "0000000000000000000000000000000a";
+    private const string DroppedSession = "f000000000000000000000000000000a";
+
+    [TestMethod]
+    public async Task RelayedRecords_CarryTheRatioThePageSampledAt_OutsideAServer()
+    {
+        // An Auto app: the server started the page with its ratio, and the WebAssembly pipeline it now relays to has its own.
+        await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay);
+        Assert.IsFalse(host.Settings.IsServer);
+
+        host.Pipeline.Relay(RelayBatch(0.25, KeptSession));
+        await host.FlushAsync();
+
+        Assert.AreEqual(0.25, host.Memory.Logs.Single().SamplingRatio, "The page's, not the configured 1.");
+        Assert.AreEqual(0.25, host.Memory.Spans.Single().SamplingRatio);
+    }
+
+    [TestMethod]
+    public async Task OnAServer_ARelayedRecord_NeverCountsForMoreThanTheConfiguredRatioAllows()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Host = BelemetryHostKind.Server;
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Browser.SessionSampleRatio = 0.25;
+        });
+
+        host.Pipeline.Relay(RelayBatch(0.0001, KeptSession));
+        host.Pipeline.Relay(RelayBatch(0.5, KeptSession));
+        host.Pipeline.Relay(RelayBatch(null, KeptSession));
+        await host.FlushAsync();
+
+        CollectionAssert.AreEqual(new[] { 0.25, 0.5, 0.25 }, host.Memory.Logs.Select(l => l.SamplingRatio).ToArray(),
+                                  "A page is untrusted on a server: a smaller ratio than the configured one is not taken, a larger one is.");
+    }
+
+    [TestMethod]
+    public async Task RelayedRecords_OfASessionTheRatioDoesNotKeep_AreDropped()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Host = BelemetryHostKind.Server;
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.Browser.SessionSampleRatio = 0.25;
+        });
+
+        host.Pipeline.Relay(RelayBatch(null, DroppedSession, KeptSession, null));
+        host.Pipeline.Relay(RelayBatch(null, DroppedSession));
+        await host.FlushAsync();
+
+        CollectionAssert.AreEqual(new[] { "view-1", "view-2" }, host.Memory.Logs.Select(l => l.Body).ToArray(),
+                                  "The page did not sample the first session: its records would count four times. One without a session id is taken.");
+        Assert.IsEmpty(host.Memory.Spans, "Both spans are of the session the ratio drops.");
+        Assert.IsTrue(host.Memory.Logs.All(l => l.SamplingRatio == 0.25));
+    }
+
+    [TestMethod]
     public async Task Revoking_PurgesRelayedRecordsToo_AndTakesTheUserIdsOffWhatIsLeft()
     {
         await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay, consentDefault: BelemetryFeatures.None);

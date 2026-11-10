@@ -57,4 +57,19 @@ public sealed class BelemetrySpan
 
     /// <summary>The consent feature this span belongs to.</summary>
     public BelemetryFeatures Feature { get; set; } = BelemetryFeatures.Traces;
+
+    /// <summary>
+    /// The fraction of spans like this one that sampling kept, above 0 and up to 1: each one exported stands for
+    /// <c>1 / SamplingRatio</c> of them. For a .NET span it is the ratio its trace was kept at, which the trace carries in
+    /// its <c>tracestate</c> (the <c>belemetry</c> entry). That is <see cref="BelemetryTracingOptions.SamplingRatio"/> for
+    /// a trace this process started, and the caller's for one that came from a Belemetry service, WebAssembly client or
+    /// Hangfire job, but never below this process's own ratio (1 when it does not sample): anyone can send a tracestate.
+    /// It is 1 for a trace whose ratio is not known. For a span relayed from the browser it is the page's session ratio
+    /// (<see cref="BelemetryBrowserOptions.SessionSampleRatio"/>). A processor that samples spans itself lowers it: with
+    /// <see cref="BelemetrySampler"/> to the smaller of it and its own ratio (the decisions nest: a trace one ratio keeps,
+    /// every larger one keeps too), with an independent (random) decision by multiplying it by its ratio. The Azure Monitor
+    /// exporter sends it as the envelope's <c>sampleRate</c> (a percentage of <c>100 / N</c>), so Application Insights
+    /// counts each item <c>1 / SamplingRatio</c> times, rounded. Defaults to 1.
+    /// </summary>
+    public double SamplingRatio { get; set; } = 1;
 }

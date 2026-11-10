@@ -40,6 +40,36 @@ public static class BelemetrySampler
         return BelemetryHex.TryDecode(traceIdHex, bytes) is false || ShouldSample(bytes, ratio);
     }
 
+    /// <summary>
+    /// Whether the browser script keeps a session at <paramref name="ratio"/>, as its <c>isSessionSampled</c> decides
+    /// (<c>Scripts/session.ts</c>): the leading hex digits of the first 8 characters of the (random) id as a fraction of
+    /// 2^32, below the ratio. An id without any is never kept.
+    /// </summary>
+    internal static bool IsSessionSampled(string sessionId, double ratio)
+    {
+        if ((ratio < 1) is false) return true;
+        if ((ratio > 0) is false) return false;
+
+        // parseInt(id.slice(0, 8), 16): the digits up to the first that is not one.
+        long bucket = 0;
+        var digits = 0;
+        foreach (var c in sessionId.AsSpan(0, Math.Min(8, sessionId.Length)))
+        {
+            var digit = c switch
+            {
+                >= '0' and <= '9' => c - '0',
+                >= 'a' and <= 'f' => c - 'a' + 10,
+                >= 'A' and <= 'F' => c - 'A' + 10,
+                _ => -1,
+            };
+            if (digit < 0) break;
+            bucket = (bucket << 4) | (long)digit;
+            digits++;
+        }
+
+        return digits > 0 && bucket / 4294967296.0 < ratio;
+    }
+
     private static bool ShouldSample(ReadOnlySpan<byte> traceId, double ratio)
     {
         // The OpenTelemetry .NET sampler compares the absolute value of the first 8 bytes (big-endian) against

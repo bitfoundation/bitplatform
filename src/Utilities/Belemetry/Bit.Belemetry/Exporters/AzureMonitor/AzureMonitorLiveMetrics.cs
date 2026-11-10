@@ -51,9 +51,11 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     private int _documentCount;
     private int _sampleFailed;
 
-    private long _requests, _requestsFailed, _requestTicks;
-    private long _dependencies, _dependenciesFailed, _dependencyTicks;
-    private long _exceptions;
+    // Each record counts as the items it stands for (AzureMonitorEnvelopeSerializer.ItemCount), as Application Insights
+    // counts its envelope: sampling leaves the rates as they are. A duration counts as many times.
+    private double _requests, _requestsFailed, _requestTicks;
+    private double _dependencies, _dependenciesFailed, _dependencyTicks;
+    private double _exceptions;
     private TimeSpan _lastCpu;
     private long _lastCpuTimestamp;
 
@@ -97,7 +99,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     }
 
     /// <summary>The exceptions counted since the last data point.</summary>
-    internal long Exceptions => Interlocked.Read(ref _exceptions);
+    internal double Exceptions => Volatile.Read(ref _exceptions);
 
     /// <summary>The configuration applied; null while nobody watches.</summary>
     internal AzureMonitorLiveConfiguration? Configuration => _configuration;
@@ -114,17 +116,18 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
             case BelemetrySpan span:
                 var isRequest = AzureMonitorEnvelopeSerializer.IsRequest(span);
                 var failed = AzureMonitorEnvelopeSerializer.IsSuccess(span, isRequest, span.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode)) is false;
+                var items = AzureMonitorEnvelopeSerializer.ItemCount(span.SamplingRatio);
                 if (isRequest)
                 {
-                    Interlocked.Increment(ref _requests);
-                    Interlocked.Add(ref _requestTicks, span.Duration.Ticks);
-                    if (failed) Interlocked.Increment(ref _requestsFailed);
+                    Add(ref _requests, items);
+                    Add(ref _requestTicks, span.Duration.Ticks * items);
+                    if (failed) Add(ref _requestsFailed, items);
                 }
                 else
                 {
-                    Interlocked.Increment(ref _dependencies);
-                    Interlocked.Add(ref _dependencyTicks, span.Duration.Ticks);
-                    if (failed) Interlocked.Increment(ref _dependenciesFailed);
+                    Add(ref _dependencies, items);
+                    Add(ref _dependencyTicks, span.Duration.Ticks * items);
+                    if (failed) Add(ref _dependenciesFailed, items);
                 }
 
                 // The exceptions recorded on it count as the Azure Monitor exporter counts them (a stack trace alone is no
@@ -133,12 +136,12 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
                 {
                     if (spanEvent.IsException && spanEvent.Attributes.HasException && spanEvent.Limited is false && spanEvent.LoggedAs is null)
                     {
-                        Interlocked.Increment(ref _exceptions);
+                        Add(ref _exceptions, items);
                     }
                 }
                 break;
             case BelemetryLogRecord log when log.HasException:
-                Interlocked.Increment(ref _exceptions);
+                Add(ref _exceptions, AzureMonitorEnvelopeSerializer.ItemCount(log.SamplingRatio));
                 break;
         }
 
@@ -181,11 +184,11 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
 
                     if (spanEvent.IsException)
                     {
-                        if (exceptions) Sample(configuration, AzureMonitorLiveItem.FromException(spanEvent.Attributes, null), BelemetryFeatures.Errors);
+                        if (exceptions) Sample(configuration, AzureMonitorLiveItem.FromException(spanEvent.Attributes, null, span.SamplingRatio), BelemetryFeatures.Errors);
                     }
                     else if (traces)
                     {
-                        Sample(configuration, AzureMonitorLiveItem.FromSpanEvent(spanEvent), span.Feature);
+                        Sample(configuration, AzureMonitorLiveItem.FromSpanEvent(spanEvent, span.SamplingRatio), span.Feature);
                     }
                 }
                 break;
@@ -505,17 +508,30 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
         return
         [
             (@"\ApplicationInsights\Requests/Sec", requests / seconds),
-            (@"\ApplicationInsights\Request Duration", requests == 0 ? 0 : TimeSpan.FromTicks(requestTicks / requests).TotalMilliseconds),
+            (@"\ApplicationInsights\Request Duration", requests == 0 ? 0 : requestTicks / requests / TimeSpan.TicksPerMillisecond),
             (@"\ApplicationInsights\Requests Failed/Sec", requestsFailed / seconds),
             (@"\ApplicationInsights\Requests Succeeded/Sec", (requests - requestsFailed) / seconds),
             (@"\ApplicationInsights\Dependency Calls/Sec", dependencies / seconds),
-            (@"\ApplicationInsights\Dependency Call Duration", dependencies == 0 ? 0 : TimeSpan.FromTicks(dependencyTicks / dependencies).TotalMilliseconds),
+            (@"\ApplicationInsights\Dependency Call Duration", dependencies == 0 ? 0 : dependencyTicks / dependencies / TimeSpan.TicksPerMillisecond),
             (@"\ApplicationInsights\Dependency Calls Failed/Sec", dependenciesFailed / seconds),
             (@"\ApplicationInsights\Dependency Calls Succeeded/Sec", (dependencies - dependenciesFailed) / seconds),
             (@"\ApplicationInsights\Exceptions/Sec", exceptions / seconds),
             (@"\Memory\Committed Bytes", Environment.WorkingSet),
             (@"\Processor(_Total)\% Processor Time", CpuPercent()),
         ];
+    }
+
+    /// <summary>Adds <paramref name="value"/> to <paramref name="location"/>, atomically: records come from any thread.</summary>
+    private static void Add(ref double location, double value)
+    {
+        var current = Volatile.Read(ref location);
+        while (true)
+        {
+            var seen = Interlocked.CompareExchange(ref location, current + value, current);
+            // By the bits, as CompareExchange compares them: a NaN never equals itself.
+            if (BitConverter.DoubleToInt64Bits(seen) == BitConverter.DoubleToInt64Bits(current)) return;
+            current = seen;
+        }
     }
 
     /// <summary>The process's share of all processors since the last call, in percent; 0 where process times are unavailable.</summary>

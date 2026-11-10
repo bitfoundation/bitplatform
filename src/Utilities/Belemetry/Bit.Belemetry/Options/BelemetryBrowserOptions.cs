@@ -112,7 +112,11 @@ public sealed class BelemetryBrowserOptions
     /// <summary>The maximum length of a session. Defaults to 24 hours.</summary>
     public TimeSpan SessionMaxDuration { get; set; } = TimeSpan.FromHours(24);
 
-    /// <summary>The fraction of sessions whose browser telemetry is recorded (decided once per session). Defaults to 1.0.</summary>
+    /// <summary>
+    /// The fraction of sessions whose browser telemetry is recorded (decided once per session). Each record of a kept
+    /// session counts for the ones dropped (<see cref="BelemetryLogRecord.SamplingRatio"/>); Application Insights counts an
+    /// item in whole numbers, so <c>1 / N</c> (0.5, 0.25, 0.1, ...) keeps its counts exact. Defaults to 1.0.
+    /// </summary>
     public double SessionSampleRatio { get; set; } = 1.0;
 
     /// <summary>The maximum number of records the script holds; the oldest are dropped past it. Defaults to 1024.</summary>

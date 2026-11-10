@@ -114,8 +114,10 @@ internal static class AzureMonitorEnvelopeSerializer
         var url = GetUrl(attributes);
         var success = IsSuccess(span, isRequest, statusCode);
         var name = isRequest ? GetRequestName(span) : span.Name;
+        // The span's events are items of it: kept with it, at its rate.
+        var sampleRate = SampleRate(span.SamplingRatio);
 
-        BeginEnvelope(w, isRequest ? "Request" : "RemoteDependency", span.StartTimeUnixNano);
+        BeginEnvelope(w, isRequest ? "Request" : "RemoteDependency", span.StartTimeUnixNano, sampleRate);
         WriteTags(w, resource, span.TraceId, span.ParentSpanId, isRequest ? name : null, attributes);
 
         w.WriteStartObject("data");
@@ -155,12 +157,12 @@ internal static class AzureMonitorEnvelopeSerializer
 
             if (spanEvent.Name == BelemetrySemanticConventions.ExceptionEvent)
             {
-                WriteException(w, resource, spanEvent.TimeUnixNano, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
+                WriteException(w, resource, spanEvent.TimeUnixNano, sampleRate, span.TraceId, span.SpanId, isRequest ? name : null, attributes, spanEvent.Attributes, null, BelemetrySeverity.Error);
             }
             else
             {
                 // No severity, as the Azure Monitor OpenTelemetry exporter writes it: an event is not a log level.
-                BeginEnvelope(w, "Message", spanEvent.TimeUnixNano);
+                BeginEnvelope(w, "Message", spanEvent.TimeUnixNano, sampleRate);
                 WriteTags(w, resource, span.TraceId, span.SpanId, isRequest ? name : null, attributes);
                 w.WriteStartObject("data");
                 w.WriteString("baseType", "MessageData");
@@ -178,10 +180,10 @@ internal static class AzureMonitorEnvelopeSerializer
         return written;
     }
 
-    private static void WriteException(Utf8JsonWriter w, ResourceTags resource, long timeUnixNano, string? traceId, string? parentId, string? operationName,
+    private static void WriteException(Utf8JsonWriter w, ResourceTags resource, long timeUnixNano, double sampleRate, string? traceId, string? parentId, string? operationName,
                                        BelemetryAttributes idAttributes, BelemetryAttributes attributes, string? body, BelemetrySeverity severity)
     {
-        BeginEnvelope(w, "Exception", timeUnixNano);
+        BeginEnvelope(w, "Exception", timeUnixNano, sampleRate);
         WriteTags(w, resource, traceId, parentId, operationName, idAttributes);
         w.WriteStartObject("data");
         w.WriteString("baseType", "ExceptionData");
@@ -208,10 +210,11 @@ internal static class AzureMonitorEnvelopeSerializer
     private static void WriteLog(Utf8JsonWriter w, BelemetryLogRecord log, ResourceTags resource)
     {
         var attributes = log.Attributes;
+        var sampleRate = SampleRate(log.SamplingRatio);
 
         if (log.HasException)
         {
-            WriteException(w, resource, log.TimeUnixNano, log.TraceId, log.SpanId, null, attributes, attributes, log.Body, log.Severity);
+            WriteException(w, resource, log.TimeUnixNano, sampleRate, log.TraceId, log.SpanId, null, attributes, attributes, log.Body, log.Severity);
             return;
         }
 
@@ -227,7 +230,7 @@ internal static class AzureMonitorEnvelopeSerializer
                              : attributes.GetString(BelemetrySemanticConventions.UrlTemplate) is { Length: > 0 } template ? template
                              : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? url ?? "page";
 
-                    BeginEnvelope(w, "PageView", log.TimeUnixNano);
+                    BeginEnvelope(w, "PageView", log.TimeUnixNano, sampleRate);
                     WriteTags(w, resource, log.TraceId, log.SpanId, name, attributes);
                     w.WriteStartObject("data");
                     w.WriteString("baseType", "PageViewData");
@@ -249,7 +252,7 @@ internal static class AzureMonitorEnvelopeSerializer
                     var name = attributes.GetString(BelemetrySemanticConventions.WebVitalName) ?? "web_vital";
                     var value = attributes.GetDouble(BelemetrySemanticConventions.WebVitalValue) ?? 0;
 
-                    BeginEnvelope(w, "Metric", log.TimeUnixNano);
+                    BeginEnvelope(w, "Metric", log.TimeUnixNano, sampleRate);
                     WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
                     w.WriteStartObject("data");
                     w.WriteString("baseType", "MetricData");
@@ -274,7 +277,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 {
                     // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply:
                     // its PageName and PageUrl are properties (AzureMonitorProperties.OfLog).
-                    BeginEnvelope(w, "Event", log.TimeUnixNano);
+                    BeginEnvelope(w, "Event", log.TimeUnixNano, sampleRate);
                     WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
                     w.WriteStartObject("data");
                     w.WriteString("baseType", "EventData");
@@ -292,7 +295,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 }
 
             case { Length: > 0 } eventName:
-                BeginEnvelope(w, "Event", log.TimeUnixNano);
+                BeginEnvelope(w, "Event", log.TimeUnixNano, sampleRate);
                 WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
                 w.WriteStartObject("data");
                 w.WriteString("baseType", "EventData");
@@ -306,7 +309,7 @@ internal static class AzureMonitorEnvelopeSerializer
                 return;
 
             default:
-                BeginEnvelope(w, "Message", log.TimeUnixNano);
+                BeginEnvelope(w, "Message", log.TimeUnixNano, sampleRate);
                 WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
                 w.WriteStartObject("data");
                 w.WriteString("baseType", "MessageData");
@@ -349,7 +352,8 @@ internal static class AzureMonitorEnvelopeSerializer
                     break;
             }
 
-            BeginEnvelope(w, "Metric", p.TimeUnixNano);
+            // Never sampled: a point aggregates every measurement.
+            BeginEnvelope(w, "Metric", p.TimeUnixNano, 100);
             WriteTags(w, resource, null, null, null, p.Attributes);
             w.WriteStartObject("data");
             w.WriteString("baseType", "MetricData");
@@ -376,15 +380,32 @@ internal static class AzureMonitorEnvelopeSerializer
         return written;
     }
 
-    private static void BeginEnvelope(Utf8JsonWriter w, string type, long timeUnixNano)
+    private static void BeginEnvelope(Utf8JsonWriter w, string type, long timeUnixNano, double sampleRate)
     {
         w.WriteStartObject();
         w.WriteNumber("ver", 1);
         w.WriteString("name", "Microsoft.ApplicationInsights." + type);
         var time = timeUnixNano > 0 ? BelemetryTime.ToDateTime(timeUnixNano) : DateTime.UtcNow;
         w.WriteString("time", time.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture));
-        w.WriteNumber("sampleRate", 100);
+        w.WriteNumber("sampleRate", sampleRate);
     }
+
+    /// <summary>
+    /// The envelope's <c>sampleRate</c>: the percentage of such items kept, <c>100 / </c><see cref="ItemCount"/>, so
+    /// Application Insights counts each one <c>itemCount</c> times. The same in <c>Scripts/exporters/azure.ts</c>.
+    /// </summary>
+    internal static double SampleRate(double ratio) => 100 / ItemCount(ratio);
+
+    /// <summary>
+    /// How many items one kept at <paramref name="ratio"/> (<see cref="BelemetrySpan.SamplingRatio"/>,
+    /// <see cref="BelemetryLogRecord.SamplingRatio"/>) stands for: <c>1 / ratio</c>, rounded to a whole number, as
+    /// Application Insights counts an item only in whole numbers (it supports sample rates of <c>100 / N</c>), so Live
+    /// Metrics counts the same. 1 for a ratio of 1 or more, 0 or less, or not a number: as the script reads a session
+    /// ratio, it samples nothing out (or keeps nothing, and then no record carries it). At most
+    /// <see cref="int.MaxValue"/>, so a tiny ratio cannot make the counts infinite.
+    /// </summary>
+    internal static double ItemCount(double ratio) =>
+        ratio > 0 && ratio < 1 ? Math.Min(Math.Round(1 / ratio, MidpointRounding.AwayFromZero), int.MaxValue) : 1;
 
     private static void WriteTags(Utf8JsonWriter w, ResourceTags resource, string? traceId, string? parentId, string? operationName, BelemetryAttributes attributes)
     {

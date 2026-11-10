@@ -240,7 +240,10 @@ export function resolveConfig(input?: BelemetryConfig | null): ResolvedConfig {
             target[key] = value;
         }
     }
-    return target as unknown as ResolvedConfig;
+    const config = target as unknown as ResolvedConfig;
+    // A number, as isSessionSampled compares it and the Azure Monitor sampleRate reads it ('0.25' samples a quarter).
+    if (isPlainObject(config.sampling)) config.sampling.sessionRatio = Number(config.sampling.sessionRatio);
+    return config;
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

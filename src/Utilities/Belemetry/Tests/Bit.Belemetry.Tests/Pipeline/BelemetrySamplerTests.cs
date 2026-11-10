@@ -28,6 +28,34 @@ public class BelemetrySamplerTests
     }
 
     [TestMethod]
+    public void TailSampling_NestsInTheHeadRatio()
+    {
+        // Why a tail sampler sets SamplingRatio to the smaller ratio and does not multiply: a trace kept at the
+        // smaller one is kept at the larger one too, so both keep min(head, tail), not head * tail.
+        for (var i = 0; i < 2000; i++)
+        {
+            var id = ActivityTraceId.CreateRandom();
+            if (BelemetrySampler.ShouldSample(id, 0.05)) Assert.IsTrue(BelemetrySampler.ShouldSample(id, 0.25));
+        }
+    }
+
+    [TestMethod]
+    public void IsSessionSampled_DecidesAsTheScriptDoes()
+    {
+        // isSessionSampled: parseInt(id.slice(0, 8), 16) / 2^32 < ratio.
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("00000000" + new string('a', 24), 0.0001));
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("3fffffff" + new string('a', 24), 0.25));
+        Assert.IsFalse(BelemetrySampler.IsSessionSampled("40000000" + new string('a', 24), 0.25));
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("3FFFFFFF", 0.25), "Either case.");
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("1z", 0.25), "The digits up to the first that is not one: 1.");
+        Assert.IsFalse(BelemetrySampler.IsSessionSampled("zz", 0.25), "No digit: NaN, never kept.");
+        Assert.IsFalse(BelemetrySampler.IsSessionSampled("", 0.25));
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("ffffffff", 1), "A ratio of 1 or more keeps every session.");
+        Assert.IsTrue(BelemetrySampler.IsSessionSampled("zz", double.NaN));
+        Assert.IsFalse(BelemetrySampler.IsSessionSampled("00000000", 0), "0 or less keeps none.");
+    }
+
+    [TestMethod]
     public void UsesTheFirstEightBytes_AsTheOTelSdkDoes()
     {
         // abs(0x0000...) = 0 is below any positive threshold; 0x7fff... is above any threshold below 1.
