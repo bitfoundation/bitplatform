@@ -76,7 +76,7 @@ public class BitBhTooltip : BitBhComponentBase, IDisposable
     private int EffectiveDelay => DelayDuration ?? ProviderContext?.DelayDuration ?? 700;
     private bool EffectiveDisableHoverable => DisableHoverableContent ?? ProviderContext?.DisableHoverableContent ?? false;
 
-    private BitBhDelayedAction Timer => _timer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction Timer => _timer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
     protected override void OnInitialized() => _open = DefaultOpen;
 

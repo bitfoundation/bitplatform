@@ -1,4 +1,5 @@
-﻿@inherits TestBase
+﻿@using Microsoft.Extensions.DependencyInjection
+@inherits TestBase
 @attribute [TestClass]
 
 @* BitBhMenu OpenOnHover: the pointer resting on the button opens the menu without moving the focus. What only a
@@ -9,6 +10,68 @@
     private static readonly PointerEventArgs Mouse = new() { PointerType = "mouse" };
 
     private string? _last;
+
+    // The hover delays run on this clock: nothing opens or closes until a test moves it past a delay.
+    private readonly ManualClock _clock = new();
+
+    public MenuHoverTests() => Services.AddSingleton<TimeProvider>(_clock);
+
+    /// <summary>A clock that stands still until <see cref="Advance"/> moves it on, firing the timers then due.</summary>
+    private sealed class ManualClock : TimeProvider
+    {
+        private readonly List<Timer> _timers = [];
+        private TimeSpan _now;
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var timer = new Timer(this, callback, state);
+            timer.Change(dueTime, period);
+            return timer;
+        }
+
+        public void Advance(int milliseconds)
+        {
+            Timer[] due;
+            lock (_timers)
+            {
+                _now += TimeSpan.FromMilliseconds(milliseconds);
+                due = [.. _timers.Where(t => t.Due <= _now)];
+                foreach (var timer in due) _timers.Remove(timer);
+            }
+            foreach (var timer in due) timer.Fire();
+        }
+
+        // One-shot: what the delays need.
+        private sealed class Timer(ManualClock clock, TimerCallback callback, object? state) : ITimer
+        {
+            public TimeSpan Due { get; private set; }
+
+            public bool Change(TimeSpan dueTime, TimeSpan period)
+            {
+                lock (clock._timers)
+                {
+                    clock._timers.Remove(this);
+                    if (dueTime == Timeout.InfiniteTimeSpan) return true;
+                    Due = clock._now + dueTime;
+                    clock._timers.Add(this);
+                }
+                return true;
+            }
+
+            public void Fire() => callback(state);
+
+            public void Dispose()
+            {
+                lock (clock._timers) clock._timers.Remove(this);
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return ValueTask.CompletedTask;
+            }
+        }
+    }
 
     private RenderFragment HoverMenu(int openDelay = 0, int closeDelay = 0) =>
         @<BitBhMenu OpenOnHover="true" HoverOpenDelay="openDelay" HoverCloseDelay="closeDelay">
@@ -49,8 +112,10 @@
     {
         var cut = Render(HoverMenu(openDelay: 60));
         cut.Find("button").PointerEnter(Mouse);
+        _clock.Advance(59);
         Assert.AreEqual("false", Expanded(cut));
 
+        _clock.Advance(1);
         WaitOpen(cut);
         var menu = cut.Find("[role=menu]");
         Assert.AreEqual("open", menu.GetAttribute("data-state"));
@@ -89,17 +154,18 @@
     }
 
     [TestMethod]
-    public async Task A_pointer_that_leaves_before_the_delay_never_opens_it()
+    public void A_pointer_that_leaves_before_the_delay_never_opens_it()
     {
         var cut = Render(HoverMenu(openDelay: 80));
         cut.Find("button").PointerEnter(Mouse);
+        _clock.Advance(79);
         cut.Find("button").PointerLeave(Mouse);
-        await Task.Delay(300);
+        _clock.Advance(1000);
         Assert.AreEqual("false", Expanded(cut));
     }
 
     [TestMethod]
-    public async Task Moving_from_the_button_into_the_menu_keeps_it_open_and_leaving_both_closes_it()
+    public void Moving_from_the_button_into_the_menu_keeps_it_open_and_leaving_both_closes_it()
     {
         var cut = Render(HoverMenu(closeDelay: 150));
         cut.Find("button").PointerEnter(Mouse);
@@ -107,18 +173,22 @@
 
         // The close delay is the grace period that lets the pointer cross the gap to the menu.
         cut.Find("button").PointerLeave(Mouse);
+        _clock.Advance(100);
         cut.Find("[role=menu]").PointerEnter(Mouse);
-        await Task.Delay(400);
+        _clock.Advance(1000);
         Assert.AreEqual("true", Expanded(cut));
 
         // Back on the button and out again: still the same menu.
         cut.Find("[role=menu]").PointerLeave(Mouse);
+        _clock.Advance(100);
         cut.Find("button").PointerEnter(Mouse);
-        await Task.Delay(400);
+        _clock.Advance(1000);
         Assert.AreEqual("true", Expanded(cut));
 
         cut.Find("button").PointerLeave(Mouse);
+        _clock.Advance(149);
         Assert.AreEqual("true", Expanded(cut), "The menu closed before its close delay.");
+        _clock.Advance(1);
         WaitClosed(cut);
         Assert.AreEqual("closed", cut.Find("[role=menu]").GetAttribute("data-state"));
         Assert.AreEqual(0, FocusRequests);
@@ -211,11 +281,11 @@
     [TestMethod]
     [DataRow("touch")]
     [DataRow("pen")]
-    public async Task Touch_and_pen_never_open_it_on_hover(string pointerType)
+    public void Touch_and_pen_never_open_it_on_hover(string pointerType)
     {
-        var cut = Render(HoverMenu());
+        var cut = Render(HoverMenu(openDelay: 100));
         cut.Find("button").PointerEnter(new PointerEventArgs { PointerType = pointerType });
-        await Task.Delay(100);
+        _clock.Advance(1000);
         Assert.AreEqual("false", Expanded(cut));
 
         // Their press is a click.
@@ -249,7 +319,7 @@
     }
 
     [TestMethod]
-    public async Task A_submenu_keeps_a_hover_opened_menu_open_and_is_a_hover_layer_too()
+    public void A_submenu_keeps_a_hover_opened_menu_open_and_is_a_hover_layer_too()
     {
         var cut = Render(HoverMenu(closeDelay: 150));
         cut.Find("button").PointerEnter(Mouse);
@@ -270,12 +340,15 @@
         cut.FindAll("[role=menu]")[0].PointerLeave(Mouse);
         cut.FindAll("[role=menu]")[1].PointerEnter(Mouse);
         cut.FindAll("[role=menu]")[1].QuerySelector("[role=menuitem]")!.PointerEnter(Mouse);
-        await Task.Delay(400);
+        _clock.Advance(1000);
         Assert.AreEqual("true", Expanded(cut));
         Assert.AreEqual(0, FocusRequests);
         cut.ShouldBeAccessible();
 
         cut.FindAll("[role=menu]")[1].PointerLeave(Mouse);
+        _clock.Advance(149);
+        Assert.AreEqual("true", Expanded(cut), "The menu closed before its close delay.");
+        _clock.Advance(1);
         WaitClosed(cut);
         Assert.AreEqual(0, FocusRequests);
     }

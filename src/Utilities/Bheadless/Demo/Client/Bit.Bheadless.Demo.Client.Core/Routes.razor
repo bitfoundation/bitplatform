@@ -31,12 +31,45 @@
 
 @code {
     private bool _navigated;
+    private bool _loading;
+    private IDisposable? _locationChanging;
 
     // Subscribed ahead of the router (a parent initializes before the children it renders), so the
     // flag is already set when the router renders the page the navigation asked for.
     protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
 
+    // Interactive only: a prerender's navigation manager takes no location-changing handler.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _locationChanging = Nav.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _navigated = true;
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    // /strict-csp has a root of its own (StrictCspRoutes, which cascades the strict CSP options) and a policy of its
+    // own, and both come with the document (App.razor, Program.cs): routed to from here, it would render under this root
+    // with neither. It is loaded instead.
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (_loading || IsStrictCsp(context.TargetLocation) is false) return ValueTask.CompletedTask;
+        context.PreventNavigation();
+        // The forced load goes through this handler too.
+        _loading = true;
+        Nav.NavigateTo(context.TargetLocation, forceLoad: true);
+        return ValueTask.CompletedTask;
+    }
+
+    private bool IsStrictCsp(string location)
+    {
+        var uri = Nav.ToAbsoluteUri(location).AbsoluteUri;
+        if (uri.StartsWith(Nav.BaseUri, StringComparison.OrdinalIgnoreCase) is false) return false;
+        var path = uri[Nav.BaseUri.Length..].Split('?', '#')[0];
+        return path.Equals("strict-csp", StringComparison.OrdinalIgnoreCase) || path.StartsWith("strict-csp/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        _locationChanging?.Dispose();
+    }
 }

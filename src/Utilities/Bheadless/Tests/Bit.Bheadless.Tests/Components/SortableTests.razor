@@ -443,12 +443,13 @@
     public async Task Items_move_in_place_in_mutable_lists_without_bindings()
     {
         List<string> left = ["Alpha"], right = [];
+        var transfers = new List<BitBhTransferEventArgs<string>>();
         var cut = Render(
             @<div>
                 <BitBhSortable TItem="string" Id="left" Group="pair" Items="left" ListKey="1" aria-label="Left" Context="item">
                     <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
                 </BitBhSortable>
-                <BitBhSortable TItem="string" Id="right" Group="pair" Items="right" ListKey="2" Context="item">
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="right" ListKey="2" OnTransfer="e => transfers.Add(e)" Context="item">
                     <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
                 </BitBhSortable>
             </div>);
@@ -460,5 +461,37 @@
         cut.Find("#right-handle-0").Press(" ");
         Assert.IsEmpty(left);
         Assert.AreSequenceEqual(new[] { "Alpha" }, right);
+
+        // The event names the lists by their ListKey.
+        var transfer = Assert.ContainsSingle(transfers);
+        Assert.AreEqual(1, transfer.SourceList);
+        Assert.AreEqual(2, transfer.TargetList);
+    }
+
+    [TestMethod]
+    public async Task A_list_that_cannot_be_changed_here_leaves_both_lists_to_OnTransfer()
+    {
+        // An array can't be changed in place and has no binding: moving its item into the other list would copy it.
+        string[] left = ["Alpha"];
+        List<string> right = [];
+        var transfers = new List<BitBhTransferEventArgs<string>>();
+        var cut = Render(
+            @<div>
+                <BitBhSortable TItem="string" Id="left" Group="pair" Items="left" aria-label="Left" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="right" OnTransfer="e => transfers.Add(e)" aria-label="Right" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+            </div>);
+
+        cut.Find("#left-handle-0").Press(" ");
+        cut.Find("#left-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to Right, position 1 of 1.");
+        cut.Find("#right-handle-0").Press(" ");
+
+        Assert.AreSequenceEqual(new[] { "Alpha" }, left);
+        Assert.IsEmpty(right);
+        Assert.AreEqual(new BitBhTransferEventArgs<string>("Alpha", "Alpha", "left", 0, "right", 0), Assert.ContainsSingle(transfers));
     }
 }

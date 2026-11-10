@@ -2493,6 +2493,8 @@ function createRuntime() {
         const drag = {
             item, from, to: from, items, rects, vertical, startX: e.clientX, startY: e.clientY, pointerId: e.pointerId, started: false,
             targets: [] as SortableTarget[], over: null as SortableTarget | null, outside: false,
+            // Where the pointer last was.
+            x: e.clientX, y: e.clientY,
         };
         state.drag = drag;
         // Where the list is: a grouped drag let go outside it, over no list that takes the item, is no reorder.
@@ -2527,9 +2529,21 @@ function createRuntime() {
                         t.el.setAttribute('data-drop-target', '');
                         for (const el of t.items) el.style.transition = 'transform 150ms ease';
                     }
+                    // The pointer may already rest over one of them: placed for where it is, as a move would place it,
+                    // a release without another move drops it there.
+                    track(drag.x, drag.y);
                 }).catch(() => { });
             }
             ev.preventDefault();
+            track(ev.clientX, ev.clientY);
+        };
+
+        // Places the item, and the items it passes, for the pointer at (x, y).
+        const track = (x: number, y: number) => {
+            drag.x = x;
+            drag.y = y;
+            const dx = x - drag.startX;
+            const dy = y - drag.startY;
             item.style.transform = grouped ? `translate(${dx}px, ${dy}px)` : vertical ? `translateY(${dy}px)` : `translateX(${dx}px)`;
 
             const r = drag.rects[from];
@@ -2538,7 +2552,7 @@ function createRuntime() {
                 ? Math.abs((drag.rects[1].top - drag.rects[0].bottom))
                 : Math.abs((drag.rects[1].left - drag.rects[0].right))) : 0;
 
-            const over = grouped ? sortableTargetAt(drag.targets, ev.clientX, ev.clientY) : null;
+            const over = grouped ? sortableTargetAt(drag.targets, x, y) : null;
             if (over !== drag.over) {
                 if (drag.over) leave(drag.over);
                 drag.over = over;
@@ -2567,7 +2581,7 @@ function createRuntime() {
 
             // Over no list that takes it - another list of the group that refuses it, or none: dropped there, it goes
             // back where it was, not to the place in its own list its position along the list's axis would make.
-            drag.outside = !!ownRect && !(ev.clientX >= ownRect.left && ev.clientX <= ownRect.right && ev.clientY >= ownRect.top && ev.clientY <= ownRect.bottom);
+            drag.outside = !!ownRect && !(x >= ownRect.left && x <= ownRect.right && y >= ownRect.top && y <= ownRect.bottom);
             if (drag.outside) {
                 drag.to = from;
                 for (const el of items) if (el !== item) el.style.transform = '';
@@ -4332,7 +4346,8 @@ function createRuntime() {
     // whenever the panel or the viewport changes size. A drag then also opens the drawer further, up to the
     // largest snap point; its movement stays relative to the snap point it started at (negative while opening),
     // and the progress counts from the smallest one. Let go, the drawer settles on the nearest snap point, a
-    // flick moves it on to the next one (all the way when fast, unless options.sequential), and a drag past the
+    // flick moves it on to the next one (all the way when fast; with options.sequential, to the one next to the snap
+    // point it started at), and a drag past the
     // smallest one by the threshold closes it. The new snap point shows at once and .NET is told
     // (OnSnapPointChange); its answer - a controlled owner may keep the old one - is what then shows. Keyboard
     // focus landing in the part of the panel a snap point hides moves the drawer to one that shows it.
@@ -4489,8 +4504,14 @@ function createRuntime() {
         if (Math.abs(velocity) > 0.5 && Math.abs(moved) > 10) {
             const closing = velocity > 0;
             const end = closing ? (dismissible ? -1 : smallest) : largest;
-            // A fast flick carries the drawer all the way, unless it is to stop at every snap point.
-            if (!state.options.sequential && Math.abs(velocity) > 2) return end;
+            // One snap point at a time: the one next to the active snap point, in the flick's direction - however far
+            // the drag went first.
+            if (state.options.sequential) {
+                const adjacent = order[order.indexOf(state.snap.active) + (closing ? -1 : 1)];
+                return adjacent ?? end;
+            }
+            // A fast flick carries the drawer all the way.
+            if (Math.abs(velocity) > 2) return end;
             // Else on to the next snap point past where it was let go.
             let next = -1;
             for (const i of order) {

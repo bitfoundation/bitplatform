@@ -76,13 +76,40 @@ public sealed partial class StrictCspTests : DemoTest
     {
         var page = await NewPageAsync();
         await page.AddInitScriptAsync(RecordViolations);
-        await page.GotoAsync(BaseUrl + Path, new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 90_000 });
+
+        // The app is held back - blazor.web.js, whose script element is the last one the page parses, is not served - until
+        // the styles have been read: the runtime, which loads the same bridge, can't have applied them, the head script
+        // must have. The elements before that script are parsed meanwhile (the reads below wait for them).
+        var held = new List<IRoute>();
+        var released = false;
+        await page.RouteAsync(url => url.Contains("/_framework/blazor.web.", StringComparison.Ordinal), async route =>
+        {
+            lock (held)
+            {
+                if (released is false)
+                {
+                    held.Add(route);
+                    return;
+                }
+            }
+            await route.ContinueAsync();
+        });
+        await page.GotoAsync(BaseUrl + Path, new PageGotoOptions { WaitUntil = WaitUntilState.Commit, Timeout = 90_000 });
 
         // On the elements as the parser inserted them, before anything of the app has run. Read off the elements'
         // styles rather than measured: until its stylesheets have loaded the browser lays the page out empty.
         Assert.AreEqual("1px", await InlineAsync(ByTestId(page, "skip"), "width"));
         Assert.AreEqual("flex", await InlineAsync(ByTestId(page, "splitter"), "display"));
         Assert.AreEqual("40", await InlineAsync(ByTestId(page, "progress"), "--bit-bh-progress"));
+        Assert.IsFalse(await page.EvaluateAsync<bool>("() => !!window.Blazor"), "The app started before the styles were read.");
+
+        IRoute[] waiting;
+        lock (held)
+        {
+            released = true;
+            waiting = [.. held];
+        }
+        foreach (var route in waiting) await route.ContinueAsync();
 
         await WaitForInteractiveAsync(page);
         Assert.AreEqual(1d, await WidthAsync(ByTestId(page, "skip")), 0.5);

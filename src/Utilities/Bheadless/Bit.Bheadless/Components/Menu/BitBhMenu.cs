@@ -126,7 +126,7 @@ public class BitBhMenu : BitBhComponentBase, IBitBhMenuRoot, IDisposable
     private string ButtonId => $"{ComponentId}-button";
     private string ItemsId => $"{ComponentId}-items";
 
-    private BitBhDelayedAction HoverTimer => _hoverTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction HoverTimer => _hoverTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
     /// <summary>The root panel, which the keyboard enters when it takes over a hover-opened menu.</summary>
     internal BitBhMenuItems? Items { get; set; }

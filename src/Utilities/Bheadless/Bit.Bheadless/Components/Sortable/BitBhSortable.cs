@@ -189,7 +189,7 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Fires on the list that receives an item from another list of its <see cref="Group"/>, once the item moved
-    /// (in the bound or mutable lists; otherwise move it in your model here).
+    /// (when both lists are bound or mutable; otherwise neither is changed - move it in your model here).
     /// </summary>
     [Parameter]
     public EventCallback<BitBhTransferEventArgs<TItem>> OnTransfer { get; set; }
@@ -634,20 +634,27 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
     }
 
     // Moves the item at from in source to to in target: through their bindings, else in place in mutable lists. The target
-    // takes it first: if that fails (a throwing handler), the source still has it.
+    // takes it first: if that fails (a throwing handler), the source still has it. Both lists or neither: changed in one
+    // only, the item would be in both or in none - when either can't be changed here, OnTransfer is where it is moved.
     private static async Task TransferAsync(BitBhSortable<TItem> source, int from, BitBhSortable<TItem> target, int to)
     {
         var item = source.Items[from];
         // Where it lands: the event and the focus name that position.
         to = Math.Clamp(to, 0, target.Items.Count);
-        await target.ChangeItemsAsync(list => list.Insert(to, item));
-        await source.ChangeItemsAsync(list => list.RemoveAt(from));
+        if (source.CanChangeItems && target.CanChangeItems)
+        {
+            await target.ChangeItemsAsync(list => list.Insert(to, item));
+            await source.ChangeItemsAsync(list => list.RemoveAt(from));
+        }
         await target.OnTransfer.InvokeAsync(new BitBhTransferEventArgs<TItem>(
             item, target.ItemKey?.Invoke(item) ?? item, source.ListId, from, target.ListId, to));
         target._focusAfterRender ??= target.HandleId(to);
         source.Rerender();
         target.Rerender();
     }
+
+    // Whether the list's items can be changed here: through its binding, else in place.
+    private bool CanChangeItems => ItemsChanged.HasDelegate || !Items.IsReadOnly;
 
     private async Task ChangeItemsAsync(Action<IList<TItem>> change)
     {

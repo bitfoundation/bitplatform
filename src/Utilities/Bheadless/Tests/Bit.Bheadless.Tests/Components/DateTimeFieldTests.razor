@@ -182,6 +182,26 @@
 
         Focused(cut, "hour").Press("ArrowUp");
         Assert.IsFalse(cut.Find("div").HasAttribute("data-invalid"));
+
+        // The upper limit: 17:00 is in, a minute later is not.
+        var atMax = Render(@<BitBhDateTimeField Culture="De" aria-label="Termin" DefaultValue="new DateTime(2026, 11, 8, 17, 0, 0)"
+                                            Min="new DateTime(2026, 11, 8, 9, 0, 0)" Max="new DateTime(2026, 11, 8, 17, 0, 0)" />);
+        Assert.IsFalse(atMax.Find("div").HasAttribute("data-invalid"));
+        Assert.IsFalse(Segment(atMax, "minute").HasAttribute("aria-invalid"));
+
+        var pastMax = Render(@<BitBhDateTimeField Culture="De" aria-label="Termin" DefaultValue="new DateTime(2026, 11, 8, 17, 1, 0)"
+                                              Min="new DateTime(2026, 11, 8, 9, 0, 0)" Max="new DateTime(2026, 11, 8, 17, 0, 0)" />);
+        Assert.IsTrue(pastMax.Find("div").HasAttribute("data-invalid"));
+        Assert.AreEqual("true", Segment(pastMax, "minute").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void A_controlled_value_is_checked_against_the_limits_as_its_segments_show_it()
+    {
+        // 17:00:30 at minute granularity shows as 17:00: no later than a Max of 17:00.
+        var cut = Render(@<BitBhDateTimeField Culture="De" aria-label="Termin" Value="new DateTime(2026, 11, 8, 17, 0, 30)"
+                                          Max="new DateTime(2026, 11, 8, 17, 0, 0)" />);
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-invalid"));
     }
 
     [TestMethod]

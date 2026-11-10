@@ -148,7 +148,9 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     /// <summary>Whether the field is required.</summary>
     public bool IsRequired => Required || (FieldContext?.Required ?? false);
 
-    private bool IsValueInvalid => CurrentValue is { } value
+    // Checked as the segments show it: a controlled value's units below the granularity (seconds at minute granularity)
+    // don't make a time the field shows as 17:00 later than a Max of 17:00.
+    private bool IsValueInvalid => CurrentValue is { } current && Normalize(current) is var value
         && ((Min is { } min && value.CompareTo(min) < 0) || (Max is { } max && value.CompareTo(max) > 0) || IsValueUnavailable(value));
 
     // ── What a date field and a time field differ in ─────────────────────────

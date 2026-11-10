@@ -73,7 +73,7 @@ public class BitBhToast : BitBhComponentBase, IDisposable
     private void StartTimer()
     {
         if (_remaining <= 0 || Paused || Duration <= 0) return;
-        _timer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _timer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
         _clock.Restart();
         _timer.Schedule(_remaining, DismissAsync);
     }

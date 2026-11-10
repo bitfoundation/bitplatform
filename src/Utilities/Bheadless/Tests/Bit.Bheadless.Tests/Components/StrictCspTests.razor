@@ -84,6 +84,8 @@
 
         var styled = cut.FindAll($"[{Strict}]");
         Assert.IsTrue(styled.Count > 20, $"Only {styled.Count} elements have a {Strict}.");
+        // The scroll area's viewport keeps hiding the native scrollbars.
+        Assert.Contains("scrollbar-width:none", cut.Find("[data-bit-bh-scroll-area-viewport]").GetAttribute(Strict)!);
 
         Assert.Contains("clip:rect(0,0,0,0)", cut.Find("span").GetAttribute(Strict)!);
         Assert.AreEqual("--bit-bh-progress:30", cut.Find("[role=progressbar]").GetAttribute(Strict));

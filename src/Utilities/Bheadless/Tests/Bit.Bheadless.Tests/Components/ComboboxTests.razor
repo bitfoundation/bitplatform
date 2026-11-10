@@ -547,9 +547,14 @@
         cut.Find("input").Press("ArrowDown");
         Assert.AreEqual($"0 5 5 {epoch}", Range());
 
-        cut.Find("input").Input("b");
+        cut.Find("input").Input("ap");
         Assert.AreEqual(2, cut.FindAll("[role=option]").Count);
         Assert.AreEqual($"0 2 2 {int.Parse(epoch) + 1}", Range());
+
+        // As many options as before, but other ones: another list all the same.
+        cut.Find("input").Input("b");
+        Assert.AreEqual(2, cut.FindAll("[role=option]").Count);
+        Assert.AreEqual($"0 2 2 {int.Parse(epoch) + 2}", Range());
         Assert.AreEqual("Banana", Text(ActiveOf(cut.Find("input"))));
 
         cut.Find("input").Input("zz");

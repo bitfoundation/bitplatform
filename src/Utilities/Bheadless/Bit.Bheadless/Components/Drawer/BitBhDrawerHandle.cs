@@ -73,6 +73,8 @@ public class BitBhDrawerHandle : BitBhComponentBase
         SetDataState(attrs, DrawerContext?.IsOpen ?? false);
         if (DrawerContext is not null) SetDataValue(attrs, "side", DrawerContext.Side);
         BitBhDrawer.AddSnapPointAttribute(attrs, DrawerContext);
+        // A press on the handle steps the snap point (or does nothing): rendered as a button, it must not submit a form.
+        if (Tag.Equals("button", StringComparison.OrdinalIgnoreCase)) attrs["type"] = "button";
         if (IsAdjustable && DrawerContext is { } drawer)
         {
             // An adjustable widget: the drawer's size, one step per snap point.

@@ -207,9 +207,13 @@
             </Stateful>);
         var month = cut.Find("[role=spinbutton][aria-label='month']").Id;
         int MonthRequests() => JSInterop.Invocations.Count(i => i.Identifier == "focus.focus" && (string?)i.Arguments[0] == month);
+        int FocusRequests() => JSInterop.Invocations.Count(i => i.Identifier == "focus.focus");
 
+        // One focus request, the field's: the calendar's callback is not run as well.
+        var before = FocusRequests();
         cut.Find("label").Click();
         Assert.AreEqual(1, MonthRequests());
+        Assert.AreEqual(before + 1, FocusRequests());
 
         cut.Find("#hide").Click();
         Assert.IsEmpty(cut.FindAll("[role=grid]"));

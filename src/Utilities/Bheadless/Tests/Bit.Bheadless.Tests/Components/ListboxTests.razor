@@ -347,7 +347,7 @@
     }
 
     [TestMethod]
-    public void A_key_pressed_while_the_opening_click_is_still_focusing_the_button_is_kept()
+    public async Task A_key_pressed_while_the_opening_click_is_still_focusing_the_button_is_kept()
     {
         // Over a Blazor Server connection a key pressed right after the click (End) arrives while the click's focus
         // call is still in flight - held here. The click toggles from the state it saw, before that call: otherwise the
@@ -364,10 +364,12 @@
                 </BitBhListboxOptions>
             </BitBhListbox>);
 
-        cut.Find("[role=combobox]").Click();
+        var click = cut.Find("[role=combobox]").ClickAsync(new MouseEventArgs());
         Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
         cut.Find("[role=combobox]").Press("End");
         focus.SetResult(true);
+        // The click's handler is done: nothing it does after its focus landed undoes the key.
+        await click;
 
         cut.WaitForAssertion(() => Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]")))));
         Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
@@ -421,19 +423,26 @@
         Assert.AreEqual("501", options[0].GetAttribute("aria-posinset"));
         Assert.AreEqual("500 512 1000 1", cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range"));
 
-        // A request made for a list since replaced is dropped; one past the end is clamped.
+        // A request made for a list since replaced is dropped.
         await cut.InvokeAsync(() => virtualizer.SetRange(0, 10, 0));
         Assert.AreEqual("501", cut.FindAll("[role=option]")[0].GetAttribute("aria-posinset"));
-        await cut.InvokeAsync(() => virtualizer.SetRange(995, 2000, 1));
-        Assert.AreEqual("995 1000 1000 1", cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range"));
 
-        // End highlights the last of the 1,000 and asks the runtime to reveal it - fully, once it has rendered.
+        // End, with the window far from the end, highlights the last of the 1,000 - not rendered yet - and asks the
+        // runtime to reveal it (fully, once it has rendered).
+        var listbox = cut.Find("[role=listbox]").Id;
         cut.Find("[role=combobox]").Press("End");
-        Assert.AreEqual(cut.Find("[role=listbox]").Id + "-o999", cut.Find("[role=combobox]").GetAttribute("aria-activedescendant"));
+        Assert.AreEqual(listbox + "-o999", cut.Find("[role=combobox]").GetAttribute("aria-activedescendant"));
+        Assert.IsEmpty(cut.FindAll($"[id='{listbox}-o999']"));
         var reveal = JSInterop.Invocations.Last(i => i.Identifier == "dom.scrollToIndex");
-        Assert.AreEqual(cut.Find("[role=listbox]").Id, reveal.Arguments[0]);
+        Assert.AreEqual(listbox, reveal.Arguments[0]);
         Assert.AreEqual(999, reveal.Arguments[1]);
         Assert.AreEqual(48f, reveal.Arguments[2]);
+
+        // The window the scroll then asks for (one past the end is clamped) renders it.
+        await cut.InvokeAsync(() => virtualizer.SetRange(995, 2000, 1));
+        Assert.AreEqual("995 1000 1000 1", cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range"));
+        Assert.AreEqual("Item 1000", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.IsTrue(ActiveOf(cut.Find("[role=combobox]"))!.HasAttribute("data-active"));
     }
 
     [TestMethod]

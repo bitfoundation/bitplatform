@@ -282,10 +282,11 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
         }
     }
 
-    // A calendar inside a date picker takes the picker's value (a range picker's range) unless it is given one of its own
-    // or selects something else than the picker: a range (or dates) in a date picker, one date in a range picker. It then
-    // keeps its selection itself, as a calendar outside a picker does.
+    // A calendar inside a date picker takes the picker's value (a range picker's range) unless it is given one of its own -
+    // a value or an initial one - or selects something else than the picker: a range (or dates) in a date picker, one date
+    // in a range picker. It then keeps its selection itself, as a calendar outside a picker does.
     private bool PickerValue => Picker is { } picker && !IsProvided(nameof(Value)) && !IsProvided(nameof(Range)) && !IsProvided(nameof(Values))
+                                && (picker.Owner.IsRange ? DefaultRange is null : DefaultValue is null)
                                 && EffectiveMode == (picker.Owner.IsRange ? BitBhCalendarSelectionMode.Range : BitBhCalendarSelectionMode.Single);
 
     /// <summary>The selected date (single selection).</summary>

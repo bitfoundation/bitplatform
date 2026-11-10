@@ -201,7 +201,7 @@ public class BitBhCommand : BitBhComponentBase, IDisposable
 
     private void ScheduleAnnouncement()
     {
-        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
         _announce.Schedule(600, async () =>
         {
             var count = Context.VisibleCount;

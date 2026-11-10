@@ -31,6 +31,9 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     private BitBhDelayedAction? _closeTimer;
     private readonly string _baseId = BitBhId.New("bit-bh-sub");
 
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
     [CascadingParameter]
     private BitBhMenuLevel? ParentLevel { get; set; }
 
@@ -131,7 +134,7 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     {
         _closeTimer?.Cancel();
         if (_open) return;
-        _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), Clock);
         _openTimer.Schedule(OpenDelay, () => OpenAsync(BitBhMenuFocus.None));
     }
 
@@ -139,7 +142,7 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     {
         _openTimer?.Cancel();
         if (!_open) return;
-        _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), Clock);
         _closeTimer.Schedule(CloseDelay, () => CloseAsync(focusParent: false));
     }
 
@@ -148,6 +151,9 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     internal void CancelOpen() => _openTimer?.Cancel();
 
     internal BitBhMenuSubContent? Content { get; set; }
+
+    // The clock the hover delays run on, as BitBhComponentBase's components have it.
+    private TimeProvider? Clock => Services.GetService(typeof(TimeProvider)) as TimeProvider;
 
     private void Refresh()
     {

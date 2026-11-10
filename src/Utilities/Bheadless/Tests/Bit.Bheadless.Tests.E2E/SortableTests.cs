@@ -137,6 +137,58 @@ public sealed class SortableTests : DemoTest
     }
 
     /// <summary>
+    /// Holds the runtime's <c>OnPointerDragStart</c> calls to .NET - whose answer names the drop targets - until
+    /// <c>window.__bhReleaseDragStart()</c>, which sends them on and returns how many it held.
+    /// </summary>
+    private const string HoldDragStart =
+        """
+        () => {
+          const proto = window.DotNet.DotNetObject.prototype;
+          const invoke = proto.invokeMethodAsync;
+          const held = [];
+          proto.invokeMethodAsync = function (name, ...args) {
+            if (name !== 'OnPointerDragStart') return invoke.call(this, name, ...args);
+            return new Promise((resolve, reject) => held.push(() => invoke.call(this, name, ...args).then(resolve, reject)));
+          };
+          window.__bhReleaseDragStart = () => {
+            proto.invokeMethodAsync = invoke;
+            held.forEach(send => send());
+            return held.length;
+          };
+        }
+        """;
+
+    [TestMethod]
+    public async Task A_card_let_go_where_the_pointer_waited_for_the_drop_targets_lands_there()
+    {
+        var page = await OpenDemoAsync("/sortable");
+        var board = Sample(page, Board);
+        await board.ScrollIntoViewIfNeededAsync();
+        var todo = Column(board, "To do");
+        var doing = Column(board, "In progress");
+
+        // The drop targets come from .NET a round trip after the drag starts: here, only once the pointer rests over the
+        // top half of "Update dependencies".
+        await page.EvaluateAsync(HoldDragStart);
+        var box = (await Handle(board, "Write release notes").BoundingBoxAsync())!;
+        var target = (await doing.Locator("> li").First.BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(target.X + target.Width / 2, target.Y + target.Height / 4, new MouseMoveOptions { Steps = 12 });
+        await Expect(doing).Not.ToHaveAttributeAsync("data-drop-target", "");
+        Assert.AreEqual(1, await page.EvaluateAsync<int>("() => window.__bhReleaseDragStart()"));
+
+        // No move since: the column under the pointer takes the card as soon as it is named a target.
+        await Expect(doing).ToHaveAttributeAsync("data-drop-target", "");
+        await Expect(doing).ToHaveAttributeAsync("data-drag-over", "");
+        await page.Mouse.UpAsync();
+
+        await PollAsync(() => CardsAsync(doing), cards => cards.SequenceEqual(["Write release notes", "Update dependencies"]), "the card at the top of In progress");
+        Assert.AreSequenceEqual(new[] { "Fix flaky login test", "Review pull requests" }, await CardsAsync(todo));
+        await Expect(page.Locator("[data-bit-bh-live-region]")).ToContainTextAsync("Dropped Write release notes in In progress at position 1 of 2.");
+    }
+
+    /// <summary>
     /// Drags <paramref name="handle"/> to (<paramref name="x"/>, <paramref name="y"/>): starts the drag, waits until
     /// <paramref name="started"/> holds (the runtime learns the drop targets from .NET a round trip later), moves on in
     /// steps, checks <paramref name="arrived"/> and drops.

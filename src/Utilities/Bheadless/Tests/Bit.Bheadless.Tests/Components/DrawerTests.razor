@@ -289,17 +289,28 @@
     [TestMethod]
     public void Snap_point_values_parse_compare_and_print_invariantly()
     {
-        Assert.AreEqual(BitBhDrawerSnapPoint.Fraction(0.5), BitBhDrawerSnapPoint.Parse("50%"));
-        BitBhDrawerSnapPoint fromNumber = 0.5, fromText = "0.5", fromPixels = "160px";
-        Assert.AreEqual(fromNumber, fromText);
-        Assert.AreEqual(BitBhDrawerSnapPoint.Pixels(160), fromPixels);
-        Assert.AreNotEqual(BitBhDrawerSnapPoint.Pixels(1), BitBhDrawerSnapPoint.Fraction(1));
-        Assert.AreEqual("160px", ((BitBhDrawerSnapPoint)" 160 PX ").ToString());
-        Assert.AreEqual("0.25", ((BitBhDrawerSnapPoint)0.25).ToString());
-        Assert.IsTrue(((BitBhDrawerSnapPoint)"12.5px").IsPixels);
-        Assert.AreEqual(12.5, ((BitBhDrawerSnapPoint)"12.5px").Value);
-        Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("half"));
-        Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("1rem"));
+        // A culture whose decimal separator is a comma: the snap points still read and print a dot.
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
+        try
+        {
+            Assert.AreEqual(BitBhDrawerSnapPoint.Fraction(0.5), BitBhDrawerSnapPoint.Parse("50%"));
+            BitBhDrawerSnapPoint fromNumber = 0.5, fromText = "0.5", fromPixels = "160px";
+            Assert.AreEqual(fromNumber, fromText);
+            Assert.AreEqual(BitBhDrawerSnapPoint.Pixels(160), fromPixels);
+            Assert.AreNotEqual(BitBhDrawerSnapPoint.Pixels(1), BitBhDrawerSnapPoint.Fraction(1));
+            Assert.AreEqual("160px", ((BitBhDrawerSnapPoint)" 160 PX ").ToString());
+            Assert.AreEqual("0.25", ((BitBhDrawerSnapPoint)0.25).ToString());
+            Assert.AreEqual("12.5px", BitBhDrawerSnapPoint.Pixels(12.5).ToString());
+            Assert.IsTrue(((BitBhDrawerSnapPoint)"12.5px").IsPixels);
+            Assert.AreEqual(12.5, ((BitBhDrawerSnapPoint)"12.5px").Value);
+            Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("half"));
+            Assert.ThrowsExactly<FormatException>(() => BitBhDrawerSnapPoint.Parse("1rem"));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
     }
 
     [TestMethod]

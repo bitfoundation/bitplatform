@@ -67,6 +67,33 @@
     }
 
     [TestMethod]
+    public void A_calendar_given_a_range_of_its_own_keeps_it_rather_than_the_pickers()
+    {
+        BitBhDateRange? picked = null;
+        BitBhDateRange? value = null;
+        var cut = Render(
+            @<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12" ValueChanged="v => value = v" aria-label="Stay">
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+                <BitBhDatePickerContent class="popover">
+                    <BitBhCalendar DefaultRange="new BitBhDateRange(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 22))"
+                                   OnRangeChange="r => picked = r">
+                        <BitBhCalendarGrid />
+                    </BitBhCalendar>
+                </BitBhDatePickerContent>
+            </BitBhDateRangePicker>);
+
+        cut.Find(".trigger").Click();
+        Assert.AreEqual("true", Cell(cut, "2026-11-21").GetAttribute("aria-selected"));
+        Assert.AreEqual("false", Cell(cut, "2026-11-10").GetAttribute("aria-selected"));
+
+        Cell(cut, "2026-11-24").Click();
+        Cell(cut, "2026-11-26").Click();
+        Assert.AreEqual(new BitBhDateRange(new DateOnly(2026, 11, 24), new DateOnly(2026, 11, 26)), picked);
+        Assert.AreEqual("true", Cell(cut, "2026-11-25").GetAttribute("aria-selected"));
+        Assert.IsNull(value);
+    }
+
+    [TestMethod]
     public void Closed_picker_is_a_labelled_group_with_a_start_an_end_and_a_button()
     {
         var cut = Labelled(@<BitBhDateRangePicker Culture="En" DefaultValue="Nov8To12">@Parts()</BitBhDateRangePicker>);
