@@ -178,6 +178,7 @@ public class BitCheckboxParamsTests : BunitTestContext
             Loading = true,
             NoWrap = true,
             Reversed = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             StopPropagation = true,
             ThreeState = true,
@@ -220,6 +221,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.IsTrue(instance.Loading);
         Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Reversed);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.StopPropagation);
         Assert.IsTrue(instance.ThreeState);
