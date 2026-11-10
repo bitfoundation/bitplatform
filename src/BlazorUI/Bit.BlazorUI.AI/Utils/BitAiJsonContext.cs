@@ -5,7 +5,8 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// The JSON metadata of what the AI package serializes itself - the conversation snapshots and everything they hold,
-/// the JSON Schema it builds for generative UI, a form's values, a tool's text result - generated at compile time
+/// the events, requests and approvals of the wire format (<see cref="BitAiWireSerializer"/>), the JSON Schema it builds
+/// for generative UI, a form's values, a tool's text result - generated at compile time
 /// rather than reflected at run time, so a trimmed or AOT-compiled app keeps every member the JSON is written from.
 /// </summary>
 /// <remarks>
@@ -25,6 +26,22 @@ namespace Bit.BlazorUI;
 /// </para>
 /// </remarks>
 [JsonSerializable(typeof(BitAiConversationSnapshot))]
+[JsonSerializable(typeof(BitAiEvent))]
+[JsonSerializable(typeof(BitAiRequestSnapshot))]
+[JsonSerializable(typeof(BitAiApprovalResponse))]
+[JsonSerializable(typeof(BitAiError))]
+[JsonSerializable(typeof(BitAiCitation))]
+[JsonSerializable(typeof(BitAiAttachment))]
+[JsonSerializable(typeof(BitAiToolDefinition))]
+[JsonSerializable(typeof(BitAiTokenUsage))]
+[JsonSerializable(typeof(BitAiGenerationMetadata))]
+[JsonSerializable(typeof(IReadOnlyList<BitAiCitation>))]
+[JsonSerializable(typeof(IReadOnlyList<string>))]
+[JsonSerializable(typeof(IReadOnlyDictionary<string, object?>))]
+[JsonSerializable(typeof(TimeSpan?))]
+[JsonSerializable(typeof(BitAiFinishReason))]
+[JsonSerializable(typeof(BitAiAgentRunStatus))]
+[JsonSerializable(typeof(BitAiAgentStepStatus))]
 [JsonSerializable(typeof(BitAiPartSnapshot))]
 [JsonSerializable(typeof(BitAiRole))]
 [JsonSerializable(typeof(BitAiArtifactKind))]

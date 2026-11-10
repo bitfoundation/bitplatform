@@ -28,6 +28,10 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
   to fix. The rewriting itself, on the shapes of manifest no publish here produces, is `BitServiceWorkerManifestTests` in
   `Bit.BlazorUI.Tests`.
 
+`AiWireFormatTrimmingTests` publishes `Bit.BlazorUI.Tests.Trimming.AiWire`, a console app, trimmed and as native AOT, and
+runs it: every built-in `BitAiEvent` and a request round-trip through the AI package's wire format, with no trim or AOT
+warning from the packages. The native AOT one is inconclusive on a machine without the platform linker.
+
 `LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
 instead of the bundles, trimmed to what the app can reach, and - with `RUN_BROWSER_TESTS=1` - runs them (the WebAssembly
 one through `wwwroot/index.lazy.html`, the host page without the packages' script tags). It also checks that a bundle-mode

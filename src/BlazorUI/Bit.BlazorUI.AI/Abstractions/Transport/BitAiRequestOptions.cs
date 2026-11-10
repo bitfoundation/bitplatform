@@ -40,6 +40,7 @@ public enum BitAiResponseFormatKind
 /// <summary>
 /// Whether and how the model may call tools.
 /// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(BitAiToolChoiceJsonConverter))]
 public readonly record struct BitAiToolChoice
 {
     /// <summary>The model decides. The default.</summary>

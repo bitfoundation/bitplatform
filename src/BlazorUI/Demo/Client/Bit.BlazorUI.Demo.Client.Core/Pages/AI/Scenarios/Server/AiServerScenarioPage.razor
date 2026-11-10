@@ -1,0 +1,101 @@
+﻿@page "/ai/scenarios/server"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/server"
+            Title="Streaming an AI reply from the server"
+            Keywords="Blazor AI server streaming, IChatClient Blazor, Microsoft.Extensions.AI Blazor, server-sent events AI, SignalR AI streaming, BitAiSseTransport"
+            Description="Stream a Microsoft.Extensions.AI IChatClient reply from an ASP.NET Core server to BitAiChat over server-sent events or SignalR, with the wire format, the adapter and the transports of bit BlazorUI AI and no mapping written by hand." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Streaming from a server"
+             Lead="The model runs on the server, behind an IChatClient. The browser streams its reply over server-sent events or SignalR, and neither side maps a thing by hand."
+             GitHubUrl="AI/Scenarios/Server/AiServerScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Microsoft.Extensions.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Server-sent events" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything: the demo's server streams the reply from a chat client that calls a function on the server - its clock - before it answers.">
+            <DemoExample Title="An IChatClient on the server, BitAiChat in the browser" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask the server"
+                               EmptyBody="The reply is generated on the server and streamed here as server-sent events."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The reply crosses the network in the package's wire format: each <code>BitAiEvent</code> is one JSON object
+                told apart by its <code>type</code> (<code>"text.delta"</code>, <code>"tool_call.started"</code>, ...), and
+                the request is the transcript as the same message snapshots a saved conversation holds.
+                <code>BitAiWireSerializer</code> reads and writes both, through metadata generated at compile time, so it is
+                safe to trim and to compile ahead of time on both ends. A reader skips what it does not know - a property, or
+                a whole event of a newer type - so a server can be updated before its clients.
+            </p>
+            <ol>
+                <li>
+                    The browser's session hands each request to a <code>BitAiSseTransport</code>, which posts it to the server
+                    and reads the events from the <code>text/event-stream</code> response as they arrive.
+                </li>
+                <li>
+                    <code>MapBitAiSse</code> maps that endpoint. It reads the request back into live messages and streams
+                    whatever its handler produces - here <code>StreamBitAiEventsAsync</code> of the server's
+                    <code>IChatClient</code>, which turns the chat client's updates into events: text, reasoning, the function
+                    call and its result, the usage, the model id and the finish reason.
+                </li>
+                <li>
+                    The function here runs on the server, in the chat client's <code>FunctionInvokingChatClient</code>, and the
+                    browser shows its call and its result. A tool registered in the browser (<code>BitAiRequest.Tools</code>)
+                    is declared to the model without being invocable on the server, so its call comes back to the session,
+                    which runs it and asks again with the result.
+                </li>
+            </ol>
+            <p>
+                The request comes from the browser, so it never overrides the server: the chat options the server passes win,
+                and the request only fills in what they leave unset. Pin the model and the limits on the server. A failure on
+                the server ends the stream with a terminal error event and a generic message - the exception is logged, never
+                sent. The model behind this page is scripted, so it costs nothing to call; an app registers its provider's
+                chat client instead, and nothing else changes.
+            </p>
+        </DocSection>
+
+        <DocSection Id="signalr" Title="Over SignalR">
+            <p>
+                The same reply streams over a SignalR connection the app already has: derive a hub from
+                <code>BitAiHub</code> and produce the reply in its <code>StreamAsync</code>, then register
+                <code>UseSignalRTransport</code> in the browser with the connection to it. The <b>AiHub.cs</b> tab shows the
+                hub. The request and the events cross the hub as JSON values the package writes itself, so the hub protocol's
+                settings change nothing.
+            </p>
+        </DocSection>
+
+        <DocSection Id="approvals" Title="Approvals the server holds">
+            <p>
+                Both transports implement <code>IBitAiApprovalTransport</code>: when the server streams a
+                <code>BitAiToolApprovalRequestedEvent</code> for a call it runs, the user's decision is sent back - to the
+                endpoint of <code>MapBitAiApprovals</code>, or to the hub - and handed to the stream waiting for it through a
+                <code>BitAiApprovalBroker</code> (<code>await approvals.WaitAsync(toolCallId, cancellationToken)</code>), in
+                the same reply.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat surface over the session.</li>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the card of the call the server ran.</li>
+                <li><BitLink Href="/components/ai/reasoningpartview"><code>BitAiReasoningPartView</code></BitLink> - the reasoning the chat client streamed.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

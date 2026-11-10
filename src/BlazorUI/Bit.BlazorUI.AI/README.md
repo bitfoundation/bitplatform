@@ -92,3 +92,42 @@ support - is one line:
 ```razor
 <BitAiChat />
 ```
+
+### Streaming from a server with Microsoft.Extensions.AI
+
+With the model behind an `IChatClient` on your server, you write no transport at all. The package carries the reply to
+the browser in its own wire format, and maps the chat client's updates to events for you.
+
+On the server:
+
+```csharp
+builder.Services.AddChatClient(/* your provider's IChatClient */).UseFunctionInvocation();
+
+app.MapBitAiSse("/api/ai/chat", (request, http, cancellationToken) =>
+        http.RequestServices.GetRequiredService<IChatClient>()
+            .StreamBitAiEventsAsync(request, new ChatOptions { ModelId = "my-model" }, cancellationToken))
+   .RequireAuthorization();
+```
+
+In the browser:
+
+```csharp
+builder.Services.AddBitBlazorUIAIServices(ai =>
+    ai.UseSseTransport(sp => sp.GetRequiredService<HttpClient>(), new() { Endpoint = "api/ai/chat" }));
+```
+
+- **Wire format**: each `BitAiEvent` is one JSON object told apart by its `type` (`"text.delta"`,
+  `"tool_call.started"`, ...), and a request is the transcript as the message snapshots a saved conversation holds.
+  `BitAiWireSerializer` reads and writes both, through source-generated metadata, so trimmed and native AOT apps work
+  on both ends. The format is versioned (`BitAiWireSerializer.Version`) and only grows: a reader skips a property it
+  does not know, and reads an event of an unknown `type` as `null`, which the transports drop.
+- **Microsoft.Extensions.AI**: `IChatClient.StreamBitAiEventsAsync` and `ToBitAiEventsAsync` turn a reply into events
+  (text, reasoning, function calls and results, images, files, citations, usage, errors). `ToChatMessagesAsync` and
+  `ToChatOptions` turn a request into chat messages and options. The server's own options always win over what the
+  browser asks for. A tool registered in the browser is declared to the model, and its call comes back for the chat
+  session to run. `UseChatClient()` uses an `IChatClient` right where the components run (Blazor Server, Hybrid).
+- **SignalR**: derive a hub from `BitAiHub`, override its `StreamAsync`, and register `UseSignalRTransport` with a
+  connection to it.
+- **Approvals the server holds**: both transports implement `IBitAiApprovalTransport`. The server streams a
+  `BitAiToolApprovalRequestedEvent` and then awaits `BitAiApprovalBroker.WaitAsync`. The user's decision reaches it
+  through `MapBitAiApprovals` or the hub.

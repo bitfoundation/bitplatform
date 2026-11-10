@@ -84,6 +84,7 @@ public sealed class BitAiConversationSerializerOptions
             new JsonStringEnumConverter<BitAiApprovalDecision>(JsonNamingPolicy.CamelCase),
             new JsonStringEnumConverter<BitAiAgentRunStatus>(JsonNamingPolicy.CamelCase),
             new JsonStringEnumConverter<BitAiAgentStepStatus>(JsonNamingPolicy.CamelCase),
+            new JsonStringEnumConverter<BitAiResponseFormatKind>(JsonNamingPolicy.CamelCase),
         },
         WriteIndented = false,
         TypeInfoResolver = BitAiSnapshotJson.Resolver,
@@ -189,20 +190,7 @@ public static class BitAiConversationSerializer
             Title = conversation.Title,
             CreatedAt = conversation.CreatedAt,
             UpdatedAt = conversation.UpdatedAt,
-            Messages = conversation.Messages.Select(m => m is BitAiMessage typedMessage
-                ? ToSnapshot(typedMessage, options)
-                : new BitAiMessageSnapshot
-                {
-                    MessageId = m.MessageId,
-                    Role = m.Role,
-                    CreatedAt = m.CreatedAt,
-                    Status = m.Status,
-                    Metadata = m.Metadata,
-                    Parts = m.Parts.Select(p => p is BitAiMessagePart part
-                        ? ToSnapshot(part, options)
-                        : new BitAiPartSnapshot { PartId = p.PartId, Kind = p.Kind, Text = (p as IBitAiTextualPart)?.Text }).ToArray(),
-                    Attachments = m.Attachments,
-                }).ToArray(),
+            Messages = conversation.Messages.Select(m => ToMessageSnapshot(m, options)).ToArray(),
         };
     }
 
@@ -258,40 +246,7 @@ public static class BitAiConversationSerializer
 
         foreach (var messageSnapshot in snapshot.Messages)
         {
-            var message = new BitAiMessage(messageSnapshot.Role, messageSnapshot.MessageId)
-            {
-                CreatedAt = messageSnapshot.CreatedAt,
-            };
-
-            foreach (var partSnapshot in messageSnapshot.Parts)
-            {
-                var part = options.RestorePart?.Invoke(partSnapshot) ?? RestoreBuiltIn(partSnapshot, options);
-                if (part is not null) message.AddPart(part);
-            }
-
-            foreach (var attachment in messageSnapshot.Attachments) message.AddAttachment(attachment);
-            foreach (var citation in messageSnapshot.Citations) message.AddCitation(citation);
-            if (messageSnapshot.Extensions is { } extensions)
-            {
-                foreach (var (key, value) in extensions) message.Extensions[key] = value;
-            }
-
-            if (messageSnapshot.FollowUps is { Count: > 0 } followUps) message.SetFollowUps(followUps);
-
-            // A message interrupted mid-stream is restored as cancelled: nothing will ever finish it.
-            var status = messageSnapshot.Status is BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming
-                ? BitAiMessageStatus.Cancelled
-                : messageSnapshot.Status;
-
-            message.Restore(
-                status,
-                messageSnapshot.Metadata,
-                messageSnapshot.Error,
-                messageSnapshot.Feedback,
-                messageSnapshot.FeedbackComment,
-                messageSnapshot.RunId is { } runId ? conversation.FindRun(runId) : null);
-
-            conversation.AddMessage(message);
+            conversation.AddMessage(ToMessage(messageSnapshot, options, conversation));
         }
 
         if (snapshot.Extensions is { } conversationExtensions)
@@ -355,6 +310,68 @@ public static class BitAiConversationSerializer
     /// <returns>The conversation.</returns>
     public static BitAiConversation FromJson(string json, BitAiConversationSerializerOptions? options = null) =>
         ToConversation(SnapshotFromJson(json, options), options);
+
+    /// <summary>
+    /// Takes a snapshot of one message of any <see cref="IBitAiMessage"/> implementation, the way
+    /// <see cref="ToSnapshot(IBitAiConversation, BitAiConversationSerializerOptions?)"/> takes those of a conversation.
+    /// </summary>
+    internal static BitAiMessageSnapshot ToMessageSnapshot(IBitAiMessage message, BitAiConversationSerializerOptions options) =>
+        message is BitAiMessage typed
+            ? ToSnapshot(typed, options)
+            : new BitAiMessageSnapshot
+            {
+                MessageId = message.MessageId,
+                Role = message.Role,
+                CreatedAt = message.CreatedAt,
+                Status = message.Status,
+                Metadata = message.Metadata,
+                Parts = message.Parts.Select(p => p is BitAiMessagePart part
+                    ? ToSnapshot(part, options)
+                    : new BitAiPartSnapshot { PartId = p.PartId, Kind = p.Kind, Text = (p as IBitAiTextualPart)?.Text }).ToArray(),
+                Attachments = message.Attachments,
+            };
+
+    /// <summary>
+    /// Rebuilds one live message from its snapshot, linked to the agent run of <paramref name="conversation"/> it names
+    /// (none without a conversation).
+    /// </summary>
+    internal static BitAiMessage ToMessage(BitAiMessageSnapshot messageSnapshot, BitAiConversationSerializerOptions options, BitAiConversation? conversation)
+    {
+        var message = new BitAiMessage(messageSnapshot.Role, messageSnapshot.MessageId)
+        {
+            CreatedAt = messageSnapshot.CreatedAt,
+        };
+
+        foreach (var partSnapshot in messageSnapshot.Parts)
+        {
+            var part = options.RestorePart?.Invoke(partSnapshot) ?? RestoreBuiltIn(partSnapshot, options);
+            if (part is not null) message.AddPart(part);
+        }
+
+        foreach (var attachment in messageSnapshot.Attachments) message.AddAttachment(attachment);
+        foreach (var citation in messageSnapshot.Citations) message.AddCitation(citation);
+        if (messageSnapshot.Extensions is { } extensions)
+        {
+            foreach (var (key, value) in extensions) message.Extensions[key] = value;
+        }
+
+        if (messageSnapshot.FollowUps is { Count: > 0 } followUps) message.SetFollowUps(followUps);
+
+        // A message interrupted mid-stream is restored as cancelled: nothing will ever finish it.
+        var status = messageSnapshot.Status is BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming
+            ? BitAiMessageStatus.Cancelled
+            : messageSnapshot.Status;
+
+        message.Restore(
+            status,
+            messageSnapshot.Metadata,
+            messageSnapshot.Error,
+            messageSnapshot.Feedback,
+            messageSnapshot.FeedbackComment,
+            messageSnapshot.RunId is { } runId ? conversation?.FindRun(runId) : null);
+
+        return message;
+    }
 
     private static BitAiMessageSnapshot ToSnapshot(BitAiMessage message, BitAiConversationSerializerOptions options) => new()
     {
@@ -572,7 +589,7 @@ public static class BitAiConversationSerializer
         }).ToArray(),
     };
 
-    private static IReadOnlyDictionary<string, JsonElement>? ToJsonDictionary(
+    internal static IReadOnlyDictionary<string, JsonElement>? ToJsonDictionary(
         IReadOnlyDictionary<string, object?>? values,
         JsonSerializerOptions json)
     {
@@ -616,7 +633,7 @@ public static class BitAiConversationSerializer
         return false;
     }
 
-    private static IReadOnlyDictionary<string, object?>? FromJsonDictionary(IReadOnlyDictionary<string, JsonElement>? values)
+    internal static IReadOnlyDictionary<string, object?>? FromJsonDictionary(IReadOnlyDictionary<string, JsonElement>? values)
     {
         if (values is null) return null;
         var result = new Dictionary<string, object?>(values.Count, StringComparer.Ordinal);
@@ -627,14 +644,14 @@ public static class BitAiConversationSerializer
     /// <summary>
     /// The metadata of one of the package's types, from the settings the caller handed over.
     /// </summary>
-    private static JsonTypeInfo<T> TypeInfo<T>(JsonSerializerOptions json) => (JsonTypeInfo<T>)Resolve(json).GetTypeInfo(typeof(T));
+    internal static JsonTypeInfo<T> TypeInfo<T>(JsonSerializerOptions json) => (JsonTypeInfo<T>)Resolve(json).GetTypeInfo(typeof(T));
 
     /// <summary>
     /// The settings themselves when they name a resolver (the default ones name the package's source-generated
     /// context), and otherwise a copy of them that takes its metadata from that context: settings built by hand, with no
     /// resolver, still serialize the package's types the way they ask, as the reflection-based serializer filled one in.
     /// </summary>
-    private static JsonSerializerOptions Resolve(JsonSerializerOptions json) =>
+    internal static JsonSerializerOptions Resolve(JsonSerializerOptions json) =>
         json.TypeInfoResolver is not null
             ? json
             : WithPackageMetadata.GetValue(json, static settings => new JsonSerializerOptions(settings) { TypeInfoResolver = BitAiSnapshotJson.Resolver });

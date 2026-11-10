@@ -62,6 +62,48 @@ public sealed class BitAiBuilder
     }
 
     /// <summary>
+    /// Registers a <see cref="BitAiChatClientTransport"/>: each request goes to an
+    /// <see cref="Microsoft.Extensions.AI.IChatClient"/> where the components run (a Blazor Server circuit, a Hybrid app).
+    /// </summary>
+    /// <param name="chatClient">Gets the chat client; by default the one registered as a service.</param>
+    /// <param name="options">The chat options every request is sent with, which win over what a request asks for.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseChatClient(
+        Func<IServiceProvider, Microsoft.Extensions.AI.IChatClient>? chatClient = null,
+        Microsoft.Extensions.AI.ChatOptions? options = null) =>
+        UseTransport(sp => new BitAiChatClientTransport(
+            chatClient?.Invoke(sp) ?? sp.GetRequiredService<Microsoft.Extensions.AI.IChatClient>(),
+            options));
+
+    /// <summary>
+    /// Registers a <see cref="BitAiSseTransport"/>: each request is posted to a server endpoint
+    /// (<see cref="BitAiSseEndpointRouteBuilderExtensions.MapBitAiSse"/>) and the reply read from its server-sent events.
+    /// </summary>
+    /// <param name="httpClient">Gets the client the requests are sent with, whose base address the endpoints are relative to.</param>
+    /// <param name="options">The endpoints and the serializer settings.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseSseTransport(Func<IServiceProvider, HttpClient> httpClient, BitAiSseTransportOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(httpClient);
+        return UseTransport(sp => new BitAiSseTransport(httpClient(sp), options));
+    }
+
+    /// <summary>
+    /// Registers a <see cref="BitAiSignalRTransport"/>: each reply is streamed from a <see cref="BitAiHub"/> over a
+    /// SignalR connection.
+    /// </summary>
+    /// <param name="connection">Gets the connection to the hub.</param>
+    /// <param name="options">The hub method names and the serializer settings.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseSignalRTransport(
+        Func<IServiceProvider, Microsoft.AspNetCore.SignalR.Client.HubConnection> connection,
+        BitAiSignalRTransportOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        return UseTransport(sp => new BitAiSignalRTransport(connection(sp), options));
+    }
+
+    /// <summary>
     /// Adds a tool the model may call.
     /// </summary>
     /// <param name="tool">The tool.</param>

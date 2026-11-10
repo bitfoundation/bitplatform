@@ -15,6 +15,7 @@
 /// driving several parallel parts addresses each one explicitly.
 /// </para>
 /// </remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(BitAiEventJsonConverter))]
 public abstract record BitAiEvent
 {
     /// <summary>When the event was produced.</summary>

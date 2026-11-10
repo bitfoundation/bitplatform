@@ -204,9 +204,10 @@ its own:
 
 - **Every type is `BitAi*`** (interfaces `IBitAi*`), in the one `Bit.BlazorUI` namespace. The non-UI layers keep a
   folder each - `Abstractions/` (contracts, events, transport), `Core/` (conversation state, the streaming reducer,
-  sessions, tools, persistence), `Markdown/` (the incremental parser and highlighter), `GenerativeUI/` - beside
-  `Components/`, `Rendering/`, `Utils/` and `Extensions/`. Nothing in them references a model provider: an app
-  implements `IBitAiTransport` and registers it through `AddBitBlazorUIAIServices(ai => ai.UseTransport<T>())`.
+  sessions, tools, persistence), `Markdown/` (the incremental parser and highlighter), `GenerativeUI/`, `Transports/`
+  (the `Microsoft.Extensions.AI` adapter, SSE, SignalR) - beside `Components/`, `Rendering/`, `Utils/` and
+  `Extensions/`. Nothing in them references a model provider: an app implements `IBitAiTransport` (or uses one of
+  `Transports/`) and registers it through `AddBitBlazorUIAIServices(ai => ai.UseTransport<T>())`.
 - **The components derive from `BitAiComponentBase`**, a `BitComponentBase` that adds the options in force
   (`BitAiOptionsProvider`, else the registered `BitAiUiOptions`), their `BitAiStrings`, and `RequestRender()` - a
   re-render coalesced to one per frame interval. A component reacting to streamed changes calls that, never
@@ -225,6 +226,14 @@ its own:
   image through `BitAiSafeUrls.Decide`, which asks the `BitAiUiOptions.Images` policy about the address the browser would
   fetch (a relative one resolved against the base address). Markdown images, image parts, image artifacts, attachment
   chip thumbnails and source favicons all follow the policy that way.
+- **What crosses the network is the wire format** (`BitAiWireSerializer`): an event is written member by member by
+  `BitAiEventJsonConverter`, one JSON object told apart by its `type`, and a request is a `BitAiRequestSnapshot` of the
+  same message snapshots a conversation persists. It is a contract between servers and browsers of different versions,
+  so it changes by addition only - a new event or property, never a renamed or removed one - and a reader skips what it
+  does not know (an unknown `type` reads as `null`). `BitAiWireContractTests` pins every event's JSON, and a new event
+  type goes into the converter, `BitAiWireSamples` and the pins together. `Transports/` holds what is built on it - the
+  `Microsoft.Extensions.AI` adapter, the SSE and SignalR transports and their server ends - all in this package, and
+  `AiWireFormatTrimmingTests` (in the trimming suite) round-trips it in a trimmed and a native AOT app.
 - **The demo** has a page per component under `/components/ai/<name>` and the scenario pages under
   `/ai/scenarios/<name>` (prose pages, outside `/components/`, so the catalog does not count them), all driven by
   the scripted transports of `Demo/.../Services/AI`; the E2E host has its own (`E2EAiTransport`, a script per page).
