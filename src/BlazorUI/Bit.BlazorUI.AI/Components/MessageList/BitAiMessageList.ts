@@ -109,8 +109,10 @@
         private _anchorScroll = 0;
         private _holdUntil = 0;
         private _holdTimer = 0;
-        // A wheel left the newest message, and its scroll has not shown yet (see _wheel).
+        // A wheel left the newest message, and its scroll has not shown yet (see _wheel): until when it is waited for,
+        // and where the view was as the wheel was turned - a move up from there is the wheel's scroll showing.
         private _leftUntil = 0;
+        private _leftTop = 0;
         private _leftTimer = 0;
         private _touching = false;
         private _dragging = false;
@@ -124,6 +126,9 @@
         private _pageMoved = false;
         // A callback of the resize observer is running (see _invoke).
         private _resizing = false;
+        // The calls into .NET waiting to be made, in the order they were asked for (see _invoke).
+        private _queue: Promise<void> = Promise.resolve();
+        private _queued = 0;
         private _resize: ResizeObserver;
         private _mutation: MutationObserver;
         private _onScroll: () => void;
@@ -233,8 +238,10 @@
         private _scrolled() {
             if (this._disposed) return;
 
-            // The scroll of a wheel that left the newest message has shown (see _wheel).
-            this._leftUntil = 0;
+            // The scroll of a wheel that left the newest message has shown (see _wheel): the view is above where it was
+            // as the wheel was turned. Any other scroll event - one of a move made here a frame earlier, which WebKit
+            // dispatches late - says nothing of that scroll, and the wheel's is still waited for.
+            if (this._leftUntil !== 0 && this._element.scrollTop < this._leftTop - 1) this._leftUntil = 0;
 
             // A move up while following that neither a gesture nor the page made is the layout's (see the class): the view
             // is taken on to the end rather than read as the reader leaving.
@@ -265,7 +272,9 @@
             this._pageMoved = false;
 
             if (distance <= AiMessageListObserver.END) {
-                this._setPinned(true);
+                // While a wheel's scroll is still to show (see _wheel), the view at the end is not back at the newest
+                // message, unless it was moved down to there.
+                if (this._leaving() === false || moved > 1) this._setPinned(true);
             } else if (moved < -1) {
                 this._setPinned(false);
             } else if (moved > 1 && distance <= this._threshold) {
@@ -310,7 +319,7 @@
             const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
 
             if (distance <= AiMessageListObserver.END) {
-                if (this._leftUntil === 0) this._setPinned(true);
+                if (this._leaving() === false) this._setPinned(true);
             } else if (this._pinned && this._autoScroll === false && distance > this._threshold) {
                 this._setPinned(false);
             }
@@ -320,10 +329,19 @@
             return this._pinned && this._autoScroll;
         }
 
+        // A wheel left the newest message and its scroll is still to show (see _wheel). Read against the clock rather
+        // than left to the timer that ends it, which a background tab can hold back by seconds.
+        private _leaving() {
+            return this._leftUntil !== 0 && performance.now() < this._leftUntil;
+        }
+
         private _setPinned(pinned: boolean) {
             if (pinned === this._pinned) return;
 
             this._pinned = pinned;
+
+            // Back at the newest message, a wheel that left it is over.
+            if (pinned) this._leftUntil = 0;
 
             // From here on, what the reader is looking at is what stays in place.
             if (pinned === false) this._recordAnchor();
@@ -406,6 +424,7 @@
                     }
 
                     this._top += el.scrollTop - top;
+                    this._leftTop += el.scrollTop - top;
                 }
             }
 
@@ -434,11 +453,28 @@
         // In WebAssembly a call into .NET runs - and renders what it changed - before it returns. Made from a callback of
         // the resize observer, that render would lay the page out again while the browser is still delivering the sizes
         // of this frame, and a box another observer watches changing size then is a "ResizeObserver loop completed with
-        // undelivered notifications" error of the page (WebKit). So a call made there waits for the next task.
+        // undelivered notifications" error of the page (WebKit). So a call made there waits for the next task - and every
+        // call asked for while one waits goes after it, or .NET would hear of two transitions in the opposite order and
+        // keep the state of the first.
         private _invoke(method: string, ...args: any[]): Promise<any> {
-            if (this._resizing === false) return this._dotnetObj.invokeMethodAsync(method, ...args);
+            if (this._resizing === false && this._queued === 0) return this._dotnetObj.invokeMethodAsync(method, ...args);
 
-            return new Promise(resolve => window.setTimeout(resolve, 0)).then(() => this._dotnetObj.invokeMethodAsync(method, ...args));
+            const defer = this._resizing;
+
+            this._queued++;
+
+            // The call's own promise is wrapped, so the queue moves on as the call is made rather than as .NET answers.
+            const made = this._queue
+                .then(() => defer ? new Promise<void>(resolve => window.setTimeout(resolve, 0)) : undefined)
+                .then(() => {
+                    this._queued--;
+
+                    return { result: this._dotnetObj.invokeMethodAsync(method, ...args) };
+                });
+
+            this._queue = made.then(() => { }, () => { });
+
+            return made.then(call => call.result);
         }
 
         // A wheel turned up holds the view like any gesture that may scroll it up. One that is sure to move the list
@@ -447,29 +483,39 @@
         // move only a paint or more later - and the move would then read as the layout's and be undone. It is sure
         // when the list can go up, nothing between the pointer and the list scrolls up in its place, the page is not
         // zoomed with it (Ctrl), and no listener of the page cancels it - read once the event has been through all
-        // of them. A turn of a pixel or two (a trackpad) moves the view no further than the end reaches anyway.
+        // of them. A turn of a pixel or two (a trackpad) moves the view no further than the end reaches anyway. A wheel
+        // with Shift scrolls sideways (some engines report it as a vertical delta), and so does one turned mostly
+        // sideways (a trackpad over a wide code block): neither moves the list up.
         private _wheel(e: WheelEvent) {
-            if (e.deltaY >= 0) return;
+            if (e.deltaY >= 0 || e.shiftKey) return;
 
             this._hold();
 
             if (e.ctrlKey || this._element.scrollTop < 1) return;
+            if (Math.abs(e.deltaX) > -e.deltaY) return;
             if (e.deltaMode === WheelEvent.DOM_DELTA_PIXEL && -e.deltaY <= AiMessageListObserver.END) return;
             if (this._nestedScrollerUp(e.target)) return;
+
+            // Read as it is turned: while the hold lasts, nothing here moves the view, so a move up from this position is
+            // the wheel's.
+            const top = this._element.scrollTop;
 
             setTimeout(() => {
                 if (this._disposed || e.defaultPrevented || this._following() === false) return;
 
                 // Until its scroll shows, the view still at the very end is not taken as back at the newest message.
                 this._leftUntil = performance.now() + AiMessageListObserver.LEFT;
+                this._leftTop = top;
                 this._setPinned(false);
 
                 if (this._leftTimer === 0) this._leftTimer = window.setTimeout(this._onLeftEnd, AiMessageListObserver.LEFT);
             }, 0);
         }
 
-        // A wheel's scroll that never showed (something the checks above cannot see took it) leaves the view at the
-        // newest message after all.
+        // A wheel's scroll that never showed (something the checks above cannot see took it) leaves the reader at the
+        // newest message after all. The view was not following meanwhile, so a reply that went on streaming has moved
+        // the end away from it: the view not moved since the wheel was turned (but to keep what is read in place) is
+        // what says the reader is still there, and it is taken on to the end.
         private _leftEnded() {
             this._leftTimer = 0;
 
@@ -484,6 +530,11 @@
             }
 
             this._leftUntil = 0;
+
+            if (this._pinned === false && this._autoScroll && Math.abs(this._element.scrollTop - this._leftTop) <= 1) {
+                this._setPinned(true);
+            }
+
             this._changed();
         }
 
