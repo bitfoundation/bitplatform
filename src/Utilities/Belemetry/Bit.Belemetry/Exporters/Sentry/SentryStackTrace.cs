@@ -24,7 +24,7 @@ internal static partial class SentryStackTrace
     private const string EndOfInnerException = "--- End of inner exception stack trace ---";
 
     /// <summary>A Sentry stack frame.</summary>
-    internal sealed class Frame
+    internal sealed record Frame
     {
         public string? Function { get; init; }
         public string? Module { get; init; }
@@ -40,8 +40,8 @@ internal static partial class SentryStackTrace
         /// <summary>The method's MethodDef row (<c>0x...</c>, its metadata token without the table byte), with a debug image only.</summary>
         public string? FunctionId { get; init; }
 
-        /// <summary>The index of its debug image in the event's <c>debug_meta.images</c>.</summary>
-        public int? Image { get; init; }
+        /// <summary>The PE file of its method, which the event lists in <c>debug_meta.images</c>; with a <see cref="FunctionId"/> only.</summary>
+        public SentryDebugImage? DebugImage { get; init; }
     }
 
     /// <summary>An exception of a .NET stack trace's text: its type and message (null when unknown) and frames, oldest first.</summary>
@@ -50,26 +50,32 @@ internal static partial class SentryStackTrace
     /// <summary>
     /// The frames of <paramref name="exception"/>, oldest first, the newest <see cref="MaxFrames"/> of those
     /// <c>Exception.ToString()</c> shows; each frame whose assembly is a file gets the method token, the IL offset and
-    /// its debug image (added to <paramref name="images"/>). Empty when the runtime has no method for a frame (NativeAOT).
+    /// its debug image. <c>Complete</c> is false when the runtime had no method for a frame (NativeAOT, wholly or in
+    /// part): those frames are missing, and the stack trace's text tells them better.
     /// </summary>
+    /// <param name="exception">The exception.</param>
+    /// <param name="fileInfo">
+    /// Whether the frames get their file and line from the PDB. The stack trace's text holds them already, resolved once
+    /// as the record was made: <see cref="TryAddFileInfo"/> copies them from there instead.
+    /// </param>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The methods on a stack were not trimmed away; a frame without metadata (NativeAOT) has no method, and the exception falls back to its stack trace's text.")]
-    public static List<Frame> FromException(Exception exception, List<SentryDebugImage> images)
+    public static (List<Frame> Frames, bool Complete) FromException(Exception exception, bool fileInfo = false)
     {
         var result = new List<Frame>();
         StackFrame[] frames;
         try
         {
-            frames = new StackTrace(exception, fNeedFileInfo: true).GetFrames();
+            frames = new StackTrace(exception, fileInfo).GetFrames();
         }
         catch (Exception)
         {
-            return result;
+            return (result, false);
         }
 
-        foreach (var stackFrame in frames)
+        var complete = true;
+        for (var i = 0; i < frames.Length && result.Count < MaxFrames; i++)
         {
-            if (result.Count == MaxFrames) break;
-
+            var stackFrame = frames[i];
             MethodBase? method;
             try
             {
@@ -77,30 +83,40 @@ internal static partial class SentryStackTrace
             }
             catch (Exception)
             {
+                method = null;
+            }
+
+            if (method is null)
+            {
+                complete = false;
                 continue;
             }
 
-            if (method is null || IsShown(method) is false) continue;
+            // StackTrace.ToString() never hides the oldest frame.
+            if (IsShown(method) is false && i < frames.Length - 1) continue;
 
             var (module, function) = Normalize(method.DeclaringType is { } type ? TypeName(type) : null, method.Name,
                                                method.DeclaringType?.DeclaringType is { } owner ? TypeName(owner) : null);
 
             string? path = null;
             int? line = null, column = null;
-            try
+            if (fileInfo)
             {
-                path = stackFrame.GetFileName();
-                line = stackFrame.GetFileLineNumber() is var l and > 0 ? l : null;
-                column = stackFrame.GetFileColumnNumber() is var c and > 0 ? c : null;
-            }
-            catch (Exception)
-            {
-                // No file information: the symbolicator adds it from the PDB.
+                try
+                {
+                    path = stackFrame.GetFileName();
+                    line = stackFrame.GetFileLineNumber() is var l and > 0 ? l : null;
+                    column = stackFrame.GetFileColumnNumber() is var c and > 0 ? c : null;
+                }
+                catch (Exception)
+                {
+                    // No file information: the symbolicator adds it from the PDB.
+                }
             }
 
             string? instruction = null, functionId = null;
-            int? image = null;
-            if (DebugImageOf(method) is { } debugImage && stackFrame.GetILOffset() is var offset and >= 0)
+            var debugImage = DebugImageOf(method);
+            if (debugImage is not null && stackFrame.GetILOffset() is var offset and >= 0)
             {
                 try
                 {
@@ -111,7 +127,6 @@ internal static partial class SentryStackTrace
                     {
                         functionId = Hex(token & 0x00FFFFFF);
                         instruction = Hex(offset);
-                        image = IndexOf(images, debugImage);
                     }
                 }
                 catch (InvalidOperationException)
@@ -132,12 +147,30 @@ internal static partial class SentryStackTrace
                 InApp = IsInApp(module, function),
                 InstructionAddress = functionId is null ? null : instruction,
                 FunctionId = functionId,
-                Image = functionId is null ? null : image,
+                DebugImage = functionId is null ? null : debugImage,
             });
         }
 
         result.Reverse();
-        return result;
+        return (result, complete);
+    }
+
+    /// <summary>
+    /// Copies the file and line of the frames of an exception's text (<see cref="ParseDotnet"/>) onto the same frames
+    /// from its object (<see cref="FromException"/>), which both show alike; false, and nothing copied, when the two
+    /// do not line up.
+    /// </summary>
+    internal static bool TryAddFileInfo(List<Frame> frames, List<Frame> text)
+    {
+        if (frames.Count != text.Count) return false;
+        for (var i = 0; i < frames.Count; i++)
+        {
+            var told = text[i];
+            if (told.AbsolutePath is null && told.Line is null) continue;
+            if (told.Function != frames[i].Function || told.Module != frames[i].Module) continue;
+            frames[i] = frames[i] with { FileName = told.FileName, AbsolutePath = told.AbsolutePath, Line = told.Line };
+        }
+        return true;
     }
 
     private static SentryDebugImage? DebugImageOf(MethodBase method)
@@ -150,14 +183,6 @@ internal static partial class SentryStackTrace
         {
             return null;
         }
-    }
-
-    private static int IndexOf(List<SentryDebugImage> images, SentryDebugImage image)
-    {
-        var index = images.IndexOf(image);
-        if (index >= 0) return index;
-        images.Add(image);
-        return images.Count - 1;
     }
 
     /// <summary>As <c>StackTrace.ToString()</c> decides: aggressively inlined methods and <see cref="StackTraceHiddenAttribute"/> are not shown.</summary>
@@ -186,7 +211,8 @@ internal static partial class SentryStackTrace
     /// <summary>
     /// The module and function of a frame, the same from an exception object and from its text, so both group alike: an
     /// async method's or iterator's <c>MoveNext</c> is the method it was written as, on the type that declares it, as
-    /// <c>Exception.ToString()</c> shows it.
+    /// <c>Exception.ToString()</c> shows it - an async lambda's or local function's too (<c>&lt;&lt;Main&gt;b__0&gt;d</c>
+    /// is <c>&lt;Main&gt;b__0</c>).
     /// </summary>
     /// <param name="module">The declaring type.</param>
     /// <param name="function">The method name.</param>
@@ -220,7 +246,8 @@ internal static partial class SentryStackTrace
     /// The exceptions of a .NET stack trace's text (<c>Exception.ToString()</c>), outermost first: the header names them
     /// (<c>Outer: message ---&gt; Inner: message</c>), and their frames follow innermost first, each set closed by
     /// "End of inner exception stack trace". When the two do not line up - a message that spans lines and holds the arrow,
-    /// an <c>AggregateException</c>'s other inner exceptions - only the outermost is told, with its own frames.
+    /// an <c>AggregateException</c>'s other inner exceptions - only the outermost is told, with its own frames. The
+    /// frames start at the first frame line: a message's line may start with "at" too ("at least one item is required").
     /// </summary>
     public static List<TextException> ParseDotnet(string? text)
     {
@@ -232,26 +259,27 @@ internal static partial class SentryStackTrace
         foreach (var raw in text.AsSpan().EnumerateLines())
         {
             var line = raw.Trim().ToString();
-            if (inFrames is false)
-            {
-                if (line.StartsWith("at ", StringComparison.Ordinal) is false && line != EndOfInnerException)
-                {
-                    header.Add(raw.ToString());
-                    continue;
-                }
-                inFrames = true;
-            }
-
             if (line == EndOfInnerException)
             {
+                inFrames = true;
                 segments.Add([]);
                 continue;
             }
 
             // An AggregateException's other inner exceptions follow its own frames: they are not the chain's.
-            if (line.StartsWith("--->", StringComparison.Ordinal)) break;
+            if (inFrames && line.StartsWith("--->", StringComparison.Ordinal)) break;
 
-            if (DotnetFrame(line) is { } frame) segments[^1].Add(frame);
+            if (DotnetFrame(line) is { } frame)
+            {
+                inFrames = true;
+                segments[^1].Add(frame);
+            }
+            else if (inFrames is false)
+            {
+                // A frame without the method's metadata ("at App!<BaseAddress>+0x1a2b", NativeAOT) is one word.
+                if (line.StartsWith("at ", StringComparison.Ordinal) && IsOneWord(line.AsSpan(3))) inFrames = true;
+                else header.Add(raw.ToString());
+            }
         }
 
         foreach (var segment in segments)
@@ -279,6 +307,15 @@ internal static partial class SentryStackTrace
         return result;
     }
 
+    private static bool IsOneWord(ReadOnlySpan<char> text)
+    {
+        foreach (var c in text)
+        {
+            if (char.IsWhiteSpace(c)) return false;
+        }
+        return text.Length > 0;
+    }
+
     private static (string? Type, string? Message) SplitHeader(string part)
     {
         var colon = part.IndexOf(": ", StringComparison.Ordinal);
@@ -287,12 +324,54 @@ internal static partial class SentryStackTrace
         return (type.Length == 0 || type.Contains(' ') ? null : type, string.IsNullOrEmpty(message) ? null : message);
     }
 
-    /// <summary>A frame of a .NET stack trace's text (<c>at Namespace.Type.Method(Args) in path:line 42</c>); null for another line.</summary>
+    /// <summary>
+    /// A frame of a .NET stack trace's text (<c>at Namespace.Type.Method(Args)[ + 0x2a][ in path:line 42]</c>); null for
+    /// another line. The method runs to the first <c>(</c>, with no whitespace before it - which no JavaScript frame
+    /// has - and the arguments close at the first <c>)</c> the rest of the line can follow. Read by hand, in one pass:
+    /// a relayed stack is anyone's text, and a backtracking pattern would cost the square of a long line.
+    /// </summary>
     internal static Frame? DotnetFrame(string line)
     {
-        if (DotnetFrameRegex().Match(line) is not { Success: true } match) return null;
+        if (line.StartsWith("at ", StringComparison.Ordinal) is false) return null;
 
-        var method = match.Groups["method"].Value.Trim();
+        var open = 3;
+        while (open < line.Length && line[open] != '(' && char.IsWhiteSpace(line[open]) is false) open++;
+        if (open == 3 || open == line.Length || line[open] != '(') return null;
+
+        // Where the file ends, when the line ends with ":line {n}".
+        var digits = line.Length;
+        while (digits > 0 && char.IsAsciiDigit(line[digits - 1])) digits--;
+        var fileEnd = digits < line.Length && line.AsSpan(0, digits).EndsWith(":line ", StringComparison.Ordinal) ? digits - 6 : -1;
+
+        string? path = null;
+        var closed = false;
+        for (var close = line.IndexOf(')', open + 1); close >= 0; close = line.IndexOf(')', close + 1))
+        {
+            var rest = close + 1;
+            if (line.AsSpan(rest).StartsWith(" + 0x", StringComparison.Ordinal))
+            {
+                var hex = rest + 5;
+                while (hex < line.Length && char.IsAsciiHexDigit(line[hex])) hex++;
+                if (hex == rest + 5) continue;
+                rest = hex;
+            }
+
+            if (rest == line.Length)
+            {
+                closed = true;
+                break;
+            }
+
+            if (fileEnd > rest + 4 && line.AsSpan(rest).StartsWith(" in ", StringComparison.Ordinal))
+            {
+                path = line[(rest + 4)..fileEnd];
+                closed = true;
+                break;
+            }
+        }
+        if (closed is false) return null;
+
+        var method = line[3..open];
 
         // A generic method's arguments ("Method[T]") are not part of its name.
         if (method.EndsWith(']') && method.IndexOf('[', StringComparison.Ordinal) is var bracket and > 0) method = method[..bracket];
@@ -314,19 +393,25 @@ internal static partial class SentryStackTrace
         var ownerDot = module?.LastIndexOf('.') ?? -1;
         (module, function) = Normalize(module, function, ownerDot > 0 ? module![..ownerDot] : null);
 
-        var path = match.Groups["file"].Success ? match.Groups["file"].Value : null;
         return new Frame
         {
             Function = function,
             Module = module,
             FileName = FileNameOf(path),
             AbsolutePath = path,
-            Line = match.Groups["line"].Success && int.TryParse(match.Groups["line"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var l) ? l : null,
+            Line = path is not null ? ToInt(line.AsSpan(digits)) : null,
             InApp = IsInApp(module, function),
         };
     }
 
-    /// <summary>The frames of a JavaScript stack (V8, SpiderMonkey, JavaScriptCore), oldest first, at most <see cref="MaxFrames"/> of the newest.</summary>
+    /// <summary>The number of ASCII <paramref name="digits"/>; null past <see cref="int.MaxValue"/>, as the script's <c>toInt</c>.</summary>
+    private static int? ToInt(ReadOnlySpan<char> digits) =>
+        int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var value) ? value : null;
+
+    /// <summary>
+    /// The frames of a JavaScript stack (V8, SpiderMonkey, JavaScriptCore), oldest first, at most <see cref="MaxFrames"/>
+    /// of the newest. A .NET frame's line is the message's (a JS interop call's error carries the .NET exception's text).
+    /// </summary>
     public static List<Frame> ParseJavaScript(string? text)
     {
         var result = new List<Frame>();
@@ -335,7 +420,8 @@ internal static partial class SentryStackTrace
         foreach (var raw in text.AsSpan().EnumerateLines())
         {
             if (result.Count == MaxFrames) break;
-            if (JavaScriptFrame(raw.Trim().ToString()) is { } frame) result.Add(frame);
+            var line = raw.Trim().ToString();
+            if (DotnetFrame(line) is null && JavaScriptFrame(line) is { } frame) result.Add(frame);
         }
 
         result.Reverse();
@@ -397,8 +483,8 @@ internal static partial class SentryStackTrace
         if (LocationRegex().Match(location) is { Success: true } parts)
         {
             url = parts.Groups["url"].Value;
-            lineNumber = int.Parse(parts.Groups["line"].ValueSpan, NumberStyles.None, CultureInfo.InvariantCulture);
-            if (parts.Groups["column"].Success) column = int.Parse(parts.Groups["column"].ValueSpan, NumberStyles.None, CultureInfo.InvariantCulture);
+            lineNumber = ToInt(parts.Groups["line"].ValueSpan);
+            if (parts.Groups["column"].Success) column = ToInt(parts.Groups["column"].ValueSpan);
         }
         else
         {
@@ -422,39 +508,45 @@ internal static partial class SentryStackTrace
 
     /// <summary>
     /// Whether a script is the app's: one loaded from a URL (any scheme - a Hybrid app's page is <c>app://</c> on iOS)
-    /// that is not a browser extension's, nor Blazor's runtime (<c>/_framework/</c>) or Belemetry's script.
+    /// that is not a browser extension's, nor Blazor's runtime (<c>/_framework/</c>, and the .NET runtime's WebAssembly
+    /// module, <c>wasm://</c>) or Belemetry's script.
     /// </summary>
     private static bool IsJavaScriptInApp(string url) =>
         url.Contains("://", StringComparison.Ordinal)
+        && url.StartsWith("wasm:", StringComparison.OrdinalIgnoreCase) is false
         && ExtensionSchemeRegex().IsMatch(url) is false
         && url.Contains("/_framework/", StringComparison.Ordinal) is false
         && url.Contains("/_content/Bit.Belemetry/", StringComparison.Ordinal) is false;
 
-    [GeneratedRegex(@"^<([^<>]+)>d(?:__\d+)?$", RegexOptions.CultureInvariant)]
+    // Not anchored inside: an async lambda's or local function's state machine is named after a generated name itself.
+    [GeneratedRegex(@"^<(.+)>d(?:__[0-9]+)?$", RegexOptions.CultureInvariant)]
     private static partial Regex StateMachineRegex();
 
     /// <summary>
-    /// Whether <paramref name="text"/> is a .NET stack trace: a line is a .NET frame. A JavaScript frame never is - V8
-    /// puts a space before the location's parenthesis, the others have no "at " - so a .NET exception the browser script
-    /// recorded (a Blazor Server component's <c>TrackException</c>) is told by its stack, not by who recorded it.
+    /// Whether <paramref name="text"/> is a .NET stack trace: a line is a .NET frame, and no JavaScript frame with a line
+    /// number follows it. A JavaScript frame is never a .NET frame - V8 puts a space before the location's parenthesis,
+    /// the others have no "at " - so a .NET exception the browser script recorded (a Blazor Server component's
+    /// <c>TrackException</c>) is told by its stack, not by who recorded it; and a JS error whose message carries a .NET
+    /// exception's text (a JS interop call's) is still a JavaScript stack, its frames after that text.
     /// </summary>
     public static bool IsDotnet(string? text)
     {
         if (string.IsNullOrEmpty(text)) return false;
+        var dotnet = false;
         foreach (var raw in text.AsSpan().EnumerateLines())
         {
-            if (DotnetFrame(raw.Trim().ToString()) is not null) return true;
+            var line = raw.Trim().ToString();
+            if (DotnetFrame(line) is not null) dotnet = true;
+            else if (dotnet && line.StartsWith("---", StringComparison.Ordinal) is false && JavaScriptFrame(line) is { Line: not null }) return false;
         }
-        return false;
+        return dotnet;
     }
 
-    [GeneratedRegex(@"^at (?<method>[^\s(]+)\((?<args>.*?)\)(?: \+ 0x[0-9a-fA-F]+)?(?: in (?<file>.+):line (?<line>\d+))?$", RegexOptions.CultureInvariant)]
-    private static partial Regex DotnetFrameRegex();
-
-    [GeneratedRegex(@"\(([^()]+:\d+:\d+)\)", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\(([^()]+:[0-9]+:[0-9]+)\)", RegexOptions.CultureInvariant)]
     private static partial Regex EvalLocationRegex();
 
-    [GeneratedRegex(@"^(?<url>.*?):(?<line>\d+)(?::(?<column>\d+))?$", RegexOptions.CultureInvariant)]
+    // ASCII digits, as the script reads them: \d would take any script's digits.
+    [GeneratedRegex(@"^(?<url>.*?):(?<line>[0-9]+)(?::(?<column>[0-9]+))?$", RegexOptions.CultureInvariant)]
     private static partial Regex LocationRegex();
 
     [GeneratedRegex(@"^(?:chrome|moz|safari|safari-web|ms-browser)-extension:", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]

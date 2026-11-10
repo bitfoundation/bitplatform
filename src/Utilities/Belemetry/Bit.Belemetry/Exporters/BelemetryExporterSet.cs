@@ -50,16 +50,11 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
             }
         }
 
+        // An invalid DSN was left out, with a startup warning, as the settings resolved the options.
         for (var i = 0; i < settings.SentryExporters.Count; i++)
         {
-            try
-            {
-                _httpExporters.Add(new BelemetrySentryExporter(settings.SentryExporters[i], $"sentry{(i == 0 ? string.Empty : i.ToString(System.Globalization.CultureInfo.InvariantCulture))}"));
-            }
-            catch (FormatException ex)
-            {
-                pipeline.LogDiagnostic(ex, "The Sentry exporter is skipped: its DSN is invalid.");
-            }
+            var sentry = settings.SentryExporters[i];
+            _httpExporters.Add(new BelemetrySentryExporter(sentry.Options, sentry.Dsn, $"sentry{(i == 0 ? string.Empty : i.ToString(System.Globalization.CultureInfo.InvariantCulture))}"));
         }
 
         if (options.ConsoleExporter is { } console) _exporters.Add(new BelemetryConsoleExporter(console));
@@ -107,8 +102,19 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 continue;
             }
 
+            // A request that failed holds back the rest of the batch's requests to its URL (a Sentry exporter makes one
+            // per event): that backend is unreachable or rate-limited, and each would wait out its own retries and
+            // timeouts in turn, with the export lock held and every later batch of every exporter waiting. They are
+            // stored as they are, for the next retry pass - as RetryStoredAsync holds back a failed URL's backlog.
+            HashSet<string>? unreachable = null;
             foreach (var created in exporter.CreateRequests(exported))
             {
+                if (unreachable?.Contains(created.Url) is true)
+                {
+                    _pipeline.Self.Exported(exporter.Name, await StoreAsync(exporter, created, mark, cancellationToken), created.Count);
+                    continue;
+                }
+
                 var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, mark, cancellationToken);
                 _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
                 _pipeline.Self.Exported(exporter.Name, "rejected", sent.Rejected);
@@ -118,6 +124,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 // After a partial success only the items to retry are left to store: the accepted ones are in.
                 var request = sent.Remaining;
                 _pipeline.Self.Exported(exporter.Name, await StoreAsync(exporter, request, mark, cancellationToken), request.Count);
+                (unreachable ??= new(StringComparer.Ordinal)).Add(request.Url);
             }
         }
 

@@ -93,13 +93,7 @@ internal sealed class BelemetryLogger : ILogger
             if (eventId.Id != 0) record.Attributes.Set(BelemetrySemanticConventions.LogEventId, eventId.Id);
             if (string.IsNullOrEmpty(eventId.Name) is false) record.Attributes.Set(BelemetrySemanticConventions.LogEventName, eventId.Name);
 
-            if (exception is not null)
-            {
-                record.Exception = exception;
-                record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
-                record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
-                record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
-            }
+            if (exception is not null) record.SetException(exception);
 
             if (_options.IncludeScopes && _provider.ScopeProvider is { } scopes)
             {

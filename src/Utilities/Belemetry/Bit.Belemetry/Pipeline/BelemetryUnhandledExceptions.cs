@@ -124,12 +124,9 @@ internal sealed class BelemetryUnhandledExceptions(BelemetryPipeline pipeline) :
                 EventName = BelemetrySemanticConventions.ExceptionEvent,
                 Scope = _scope,
                 Feature = BelemetryFeatures.Errors,
-                Exception = exception,
             };
 
-            record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
-            record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
-            record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
+            record.SetException(exception);
 
             // AppDomain.UnhandledException is raised on the thread that threw: the span it threw in, if any. A task's
             // exception is reported by the finalizer thread, which carries none of the task's context.

@@ -167,14 +167,15 @@ public class BelemetrySettingsTests
     }
 
     [TestMethod]
-    public void SentryDsn_TurnsTheSentryExporterOn_AndFillsUnsetDsns()
+    public void SentryDsn_FillsUnsetDsns_ButNeverAddsAnExporterByItself()
     {
         const string envDsn = "https://env@o1.ingest.sentry.io/1";
         Environment.SetEnvironmentVariable("SENTRY_DSN", envDsn);
 
+        // An app sets SENTRY_DSN for a Sentry SDK of its own, which would then get every error a second time.
         var alone = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
-        Assert.AreEqual(envDsn, alone.SentryExporters.Single().Dsn);
-        Assert.IsTrue(alone.HasExporters);
+        Assert.IsEmpty(alone.SentryExporters);
+        Assert.IsFalse(alone.HasExporters);
 
         var configured = TestHost.CreateSettings(o =>
         {
@@ -182,11 +183,53 @@ public class BelemetrySettingsTests
             o.AddSentryExporter("https://explicit@o1.ingest.sentry.io/2");
             o.AddSentryExporter(s => s.Release = "web@1");
         });
-        CollectionAssert.AreEqual(new[] { "https://explicit@o1.ingest.sentry.io/2", envDsn }, configured.SentryExporters.Select(s => s.Dsn).ToArray());
+        CollectionAssert.AreEqual(new[] { "https://explicit@o1.ingest.sentry.io/2", envDsn }, configured.SentryExporters.Select(s => s.Options.Dsn).ToArray());
+        Assert.AreEqual("1", configured.SentryExporters[1].Dsn.ProjectId, "Parsed once, here.");
 
-        Assert.IsEmpty(TestHost.CreateSettings(o => o.UseEnvironmentVariables = false).SentryExporters);
+        Assert.IsEmpty(TestHost.CreateSettings(o => o.AddSentryExporter()).SentryExporters, "Without the variables nothing fills it in.");
         Environment.SetEnvironmentVariable("SENTRY_DSN", null);
         Assert.IsEmpty(TestHost.CreateSettings(o => o.AddSentryExporter()).SentryExporters, "Without a DSN there is nothing to export to.");
+    }
+
+    [TestMethod]
+    public void AnInvalidSentryDsn_IsSkipped_WithAStartupWarning()
+    {
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.AddSentryExporter("https//abc@o1.ingest.sentry.io/42");
+            o.AddSentryExporter("https://def@o1.ingest.sentry.io/43");
+        });
+
+        Assert.AreEqual("43", settings.SentryExporters.Single().Dsn.ProjectId);
+        var warning = settings.StartupWarnings.Single();
+        StringAssert.Contains(warning, "Sentry exporter #0");
+        StringAssert.Contains(warning, "DSN is invalid");
+        Assert.DoesNotContain("abc", warning, "The key stays out of the logs.");
+    }
+
+    [TestMethod]
+    public void SentryAlone_SendsErrorsOnly()
+    {
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.AddSentryExporter("https://abc@o1.ingest.sentry.io/42");
+            o.AddSentryExporter("https://def@o1.ingest.sentry.io/43", s => s.MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Warning);
+        });
+        Assert.IsTrue(settings.ExportsSentryOnly);
+        Assert.AreEqual(BelemetrySeverity.Warn, settings.SentryMinimumSeverity, "The least severe of their levels.");
+        Assert.IsNull(TestHost.CreateSettings(o => o.AddSentryExporter("https://abc@o1.ingest.sentry.io/42", s => s.MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Trace)).SentryMinimumSeverity);
+
+        Assert.IsFalse(TestHost.CreateSettings(o =>
+        {
+            o.AddSentryExporter("https://abc@o1.ingest.sentry.io/42");
+            o.AddOtlpExporter("http://collector:4318");
+        }).ExportsSentryOnly);
+        Assert.IsFalse(TestHost.CreateSettings(o =>
+        {
+            o.AddSentryExporter("https://abc@o1.ingest.sentry.io/42");
+            o.AddExporter(new BelemetryInMemoryExporter());
+        }).ExportsSentryOnly);
+        Assert.IsFalse(TestHost.CreateSettings().ExportsSentryOnly);
     }
 
     [TestMethod]

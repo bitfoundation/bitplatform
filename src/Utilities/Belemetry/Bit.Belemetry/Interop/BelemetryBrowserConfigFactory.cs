@@ -181,19 +181,9 @@ internal static class BelemetryBrowserConfigFactory
                 });
             }
 
-            foreach (var sentry in settings.SentryExporters.Where(s => s.IncludeInBrowser))
+            // An invalid DSN was left out as the settings resolved the options, with a startup warning.
+            foreach (var (sentry, dsn) in settings.SentryExporters.Where(s => s.Options.IncludeInBrowser))
             {
-                SentryDsn dsn;
-                try
-                {
-                    dsn = SentryDsn.Parse(sentry.Dsn!);
-                }
-                catch (FormatException)
-                {
-                    // An invalid DSN has no exporter on the .NET side either.
-                    continue;
-                }
-
                 config.Exporters.Add(new()
                 {
                     Type = "sentry",
@@ -273,17 +263,7 @@ internal static class BelemetryBrowserConfigFactory
             }
         }
 
-        foreach (var sentry in settings.SentryExporters)
-        {
-            try
-            {
-                Add(SentryDsn.Parse(sentry.Dsn!).EnvelopeEndpoint);
-            }
-            catch (FormatException)
-            {
-                // An invalid DSN has no exporter (and so no traffic) to ignore.
-            }
-        }
+        foreach (var sentry in settings.SentryExporters) Add(sentry.Dsn.EnvelopeEndpoint);
     }
 
     public static string ToJson(BelemetryBrowserConfig config) => JsonSerializer.Serialize(config, BelemetryJsonContext.Default.BelemetryBrowserConfig);

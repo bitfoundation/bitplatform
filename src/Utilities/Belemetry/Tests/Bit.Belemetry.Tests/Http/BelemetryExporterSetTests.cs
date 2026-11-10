@@ -100,4 +100,53 @@ public class BelemetryExporterSetTests
         Assert.AreEqual("Fail", frame.GetProperty("function").GetString());
         Assert.IsTrue(frame.TryGetProperty("function_id", out _), "The ILogger record kept the exception object for its frames.");
     }
+
+    [TestMethod]
+    public async Task AFailedRequest_HoldsBackTheRestOfTheBatchToItsUrl()
+    {
+        // Sentry makes a request per event: once its endpoint failed, the batch's other events do not each wait out
+        // their own retries and timeouts in turn, with the export lock held.
+        var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.ServiceUnavailable };
+        for (var i = 0; i < 3; i++) handler.Enqueue(HttpStatusCode.ServiceUnavailable, r => r.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.Zero));
+        await using var host = TestHost.Create(o => o.AddSentryExporter("https://abc123@o1.ingest.sentry.io/42"),
+                                               configureServices: s => s.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler)));
+
+        var logger = host.StartLogging().CreateLogger("Tests");
+        logger.LogError("one");
+        logger.LogError("two");
+        logger.LogError("three");
+        await host.FlushAsync();
+
+        Assert.HasCount(3, handler.Requests, "The first event's three attempts, and none for the other two.");
+        Assert.IsTrue(handler.Requests.All(r => System.Text.Encoding.UTF8.GetString(r.Body).Contains("\"one\"", StringComparison.Ordinal)));
+        Assert.HasCount(3, host.Memory.Logs, "The other exporters still get the batch.");
+    }
+
+    [TestMethod]
+    public async Task SentryAlone_QueuesOnlyWhatItSends()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Exporters.Clear();
+            o.AddSentryExporter("https://abc123@o1.ingest.sentry.io/42");
+        });
+        var accepted = new List<object>();
+        host.Pipeline.RecordAccepted += accepted.Add;
+
+        var info = Records.Log("fine", severity: BelemetrySeverity.Info);
+        var pageView = Records.Log("Home", BelemetrySemanticConventions.PageViewEvent, BelemetrySeverity.Error);
+        var span = Records.Span();
+        var error = Records.Log("broken", severity: BelemetrySeverity.Error);
+        var failed = Records.Span();
+        failed.Events.Add(new BelemetrySpanEvent
+        {
+            Name = BelemetrySemanticConventions.ExceptionEvent,
+            TimeUnixNano = Records.Start,
+            Attributes = new BelemetryAttributes().Set(BelemetrySemanticConventions.ExceptionType, "System.Exception").Set(BelemetrySemanticConventions.ExceptionMessage, "boom"),
+        });
+        foreach (var log in new[] { info, pageView, error }) host.Pipeline.Enqueue(log);
+        foreach (var s in new[] { span, failed }) host.Pipeline.Enqueue(s);
+
+        CollectionAssert.AreEqual(new object[] { error, failed }, accepted, "Sentry sends neither a span without an exception, a page view nor a log below its level.");
+    }
 }

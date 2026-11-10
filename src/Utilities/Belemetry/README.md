@@ -397,20 +397,31 @@ Sentry takes OTLP traces and logs (point an OTLP exporter at its OTLP endpoint),
 becomes an **Issue**. The Sentry exporter posts each error as a Sentry event to the project's envelope endpoint, so one
 pipeline carries traces, logs and metrics over OTLP and errors as Sentry events, without a Sentry SDK in the app.
 
+`SENTRY_DSN` fills in the DSN of an exporter added without one (`options.AddSentryExporter()`), but never adds an
+exporter by itself: an app that sets it for a Sentry SDK of its own would get every error twice. An invalid DSN skips
+the exporter, with a startup warning.
+
 - **What becomes an event.** A record carrying an exception - an `ILogger` entry with one, `TrackException`, an
   [unhandled .NET exception](#unhandled-exceptions), a JS error, an exception recorded on a span
   (`Activity.AddException`) - becomes an error event with its exception chain and stack trace, and a plain log record
   a message event, both at or above `MinimumEventLevel` (`Error` by default, as with Sentry's own logging
   integration). Page views, custom events and web vitals do not. An exception logged under a span and recorded on it
   too is one event. Each event is an envelope of its own.
+- **Sentry alone.** With no other exporter, Belemetry collects no metric and queues only what Sentry sends: a span
+  without an exception, a page view, a web vital, a custom event or a log below the level goes no further (spans are
+  still recorded, for their exceptions and the logs' trace ids). The browser script still records what
+  `Options.Features` turns on - consent covers those features - so leave out the ones nothing reads (`PageViews`,
+  `Interactions`, `Performance`, `Dependencies`, `Events`, `Metrics`) to spare the page their work too.
 - **Symbolication.** Neither Relay nor Sentry parses a stack string, so Belemetry sends frames. A .NET frame carries the
   method's metadata token and its IL offset, and the event lists the assembly's `pe_dotnet` debug image (its PDB id,
   as Sentry's .NET SDK writes it): upload the PDBs with `sentry-cli debug-files upload`, and Sentry's symbolicator adds
   the file and the line. That needs the assembly as a file - servers and desktop apps, MAUI on Windows; in
   WebAssembly, on Android and iOS, in single-file and NativeAOT apps the frames carry what the stack trace's text tells
-  (the file and the line when the PDBs ship with the app). An async method's frame is the method as written, so the
-  same failure groups alike either way. JavaScript stacks are parsed for V8, SpiderMonkey and JavaScriptCore; upload
-  the source maps for the release.
+  (the file and the line when the PDBs ship with the app), each exception of the chain on its own. An async method's,
+  lambda's or local function's frame is the method as written, so the same failure groups alike either way.
+  JavaScript stacks are parsed for V8, SpiderMonkey and JavaScriptCore; upload the source maps for the release. A JS
+  interop call's error, whose message carries the .NET exception's text, keeps its JavaScript frames, and the .NET
+  runtime's WebAssembly frames (`wasm://`) are not the app's code.
 - **Traces.** Each event carries its record's trace and span ids (`contexts.trace`), so the Issue links to the trace
   Sentry received over OTLP.
 - **What an event carries.** The level, the logger (the instrumentation scope), the release, the environment
@@ -418,11 +429,12 @@ pipeline carries traces, logs and metrics over OTLP and errors as Sentry events,
   with `UserTracking`), `session.id` as a tag, the browser's user agent (Sentry tells the browser and the OS from it),
   the runtime and the OS, the resource (`contexts.otel`), and the record's other attributes as `extra`. All of it is
   what the [privacy rules](#privacy) and the [processors](#processors) left - the exception's type, message and stack
-  trace included: a stack trace they removed is not sent, not even from the exception object, and an inner
-  exception's message only when the stack text still holds it. The mechanism is `handled: false` for what nothing
-  caught: the browser's `error` and `unhandledrejection`, Belemetry's unhandled .NET exceptions, and what the
-  framework's renderers and hosts log. A .NET exception the browser script records - a Blazor Server component's
-  `TrackException` goes through the page - keeps its .NET frames.
+  trace included: the exception object's frames are read only while the stack trace is still the text the record was
+  made with, so one they changed, redacted or removed is all that is sent - no frame, path or inner exception comes
+  from the object then - and an inner exception's message only when the stack text still holds it. The mechanism is
+  `handled: false` for what nothing caught: the browser's `error` and `unhandledrejection`, Belemetry's unhandled .NET
+  exceptions, and what the framework's renderers and hosts log. A .NET exception the browser script records - a Blazor
+  Server component's `TrackException` goes through the page - keeps its .NET frames.
 - **The browser.** The DSN's public key is public by design - Sentry's browser SDK puts it in every page - so the
   script sends its errors itself (`IncludeInBrowser`, on by default), to `https://<host>/api/<project>/envelope/?sentry_key=...`,
   which Sentry's CORS allows. A legacy secret key in the DSN is never used, nor handed to the page. With the
@@ -431,8 +443,10 @@ pipeline carries traces, logs and metrics over OTLP and errors as Sentry events,
   SDK there as the crash reporter only - the core `Sentry` package rather than `Sentry.Maui`, with tracing off - and
   set `IncludeUnhandledExceptions = false`, as that SDK reports the .NET crashes too; Belemetry sends the rest.
 - **Delivery.** A rate limit (429, with `Retry-After`), 502, 503 and 504 are retried and kept by the
-  [offline persistence](#offline-persistence); any other error is final. An event keeps its id across retries, so
-  Sentry drops a duplicate. `Compression = Gzip` compresses the envelopes, from the browser too.
+  [offline persistence](#offline-persistence); any other error is final. Once an event's request has failed, the
+  batch's other events are not tried one by one - each would wait out its own retries - but kept for the retry pass
+  (dropped without persistence). An event keeps its id across retries, so Sentry drops a duplicate.
+  `Compression = Gzip` compresses the envelopes, from the browser too.
 
 ### Console, in-memory and custom exporters
 
@@ -1361,7 +1375,7 @@ always wins, as in the OpenTelemetry SDKs (headers merge per key):
 | `OTEL_EXPORTER_OTLP_COMPRESSION` | `gzip` or `none`, for exporters whose `Compression` is not set in code |
 | `OTEL_EXPORTER_OTLP_TIMEOUT` | the request timeout in milliseconds, for exporters whose `Timeout` is not set in code |
 | `APPLICATIONINSIGHTS_CONNECTION_STRING` | adds an Azure Monitor exporter when none is configured |
-| `SENTRY_DSN` | adds a Sentry exporter when none is configured, and fills unset DSNs |
+| `SENTRY_DSN` | the DSN of a Sentry exporter added without one (`options.AddSentryExporter()`); it adds no exporter by itself |
 | `WEBSITE_*`, `REGION_NAME`, `CONTAINER_APP_*` | the Azure App Service / Functions / Container Apps resource attributes and instance id of a server (see [the server pipeline](#the-server-pipeline)) |
 
 ---
@@ -1530,9 +1544,6 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 - **The script's `trackException` has a scope of its own**, `bit.belemetry.exceptions` (it was `bit.belemetry.errors`,
   the scope of the `error` and `unhandledrejection` handlers), so an exporter tells an exception the app caught from
   one nothing caught. A Blazor Server component's `IBelemetry.TrackException` goes through it too.
-- **`SENTRY_DSN` adds a [Sentry exporter](#sentry)** when none is configured (outside the browser, with
-  `UseEnvironmentVariables`). An app that sets it for a Sentry SDK of its own would get each error twice: set
-  `UseEnvironmentVariables = false`, or let Belemetry report the errors and keep the SDK as a crash reporter only.
 - **An aborted fetch/XHR is not an error span** (it keeps `error.type = AbortError`); unknown HTTP methods are
   `_OTHER`.
 - **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new

@@ -73,10 +73,17 @@ const EVAL_LOCATION = /\(([^()]+:\d+:\d+)\)/;
 
 /**
  * Whether a script is the app's: one loaded from a URL (any scheme - a Hybrid app's page is `app://` on iOS) that is
- * not a browser extension's, nor Blazor's runtime (`/_framework/`) or Belemetry's script.
+ * not a browser extension's, nor Blazor's runtime (`/_framework/`, and the .NET runtime's WebAssembly module,
+ * `wasm://`) or Belemetry's script.
  */
 function isInApp(url: string): boolean {
-    return url.indexOf('://') >= 0 && !EXTENSION_SCHEME.test(url) && url.indexOf('/_framework/') < 0 && url.indexOf('/_content/Bit.Belemetry/') < 0;
+    return url.indexOf('://') >= 0 && !/^wasm:/i.test(url) && !EXTENSION_SCHEME.test(url) && url.indexOf('/_framework/') < 0 && url.indexOf('/_content/Bit.Belemetry/') < 0;
+}
+
+/** The number of ASCII digits; undefined past 2147483647, as C# SentryStackTrace.ToInt (an int there). */
+function toInt(digits: string): number | undefined {
+    const value = Number(digits);
+    return value <= 2147483647 ? value : undefined;
 }
 
 /** A frame of a JavaScript stack (V8, SpiderMonkey, JavaScriptCore); null for a line that is not one. */
@@ -123,8 +130,8 @@ export function parseFrame(line: string): SentryFrame | null {
     const parts = LOCATION.exec(location);
     if (parts) {
         url = parts[1];
-        lineno = Number(parts[2]);
-        if (parts[3] !== undefined) colno = Number(parts[3]);
+        lineno = toInt(parts[2]);
+        if (parts[3] !== undefined) colno = toInt(parts[3]);
     } else {
         url = location;
     }
@@ -137,13 +144,17 @@ export function parseFrame(line: string): SentryFrame | null {
     return frame;
 }
 
-/** The frames of a JavaScript stack, oldest first as Sentry orders them, at most MAX_FRAMES of the newest. */
+/**
+ * The frames of a JavaScript stack, oldest first as Sentry orders them, at most MAX_FRAMES of the newest. A .NET
+ * frame's line is the message's (a JS interop call's error carries the .NET exception's text).
+ */
 export function parseStack(stack: string | null | undefined): SentryFrame[] {
     const frames: SentryFrame[] = [];
     if (!stack) return frames;
-    for (const line of stack.split(/\r?\n/)) {
+    for (const raw of stack.split(/\r?\n/)) {
         if (frames.length === MAX_FRAMES) break;
-        const frame = parseFrame(line.trim());
+        const line = raw.trim();
+        const frame = dotnetFrame(line) ? null : parseFrame(line);
         if (frame) frames.push(frame);
     }
     return frames.reverse();
@@ -153,8 +164,11 @@ export function parseStack(stack: string | null | undefined): SentryFrame[] {
 // component's TrackException, forwarded to the page - has a .NET stack, told by its lines rather than by who recorded it.
 
 const END_OF_INNER = '--- End of inner exception stack trace ---';
-const DOTNET_FRAME = /^at ([^\s(]+)\((.*?)\)(?: \+ 0x[0-9a-fA-F]+)?(?: in (.+):line (\d+))?$/;
-const STATE_MACHINE = /^<([^<>]+)>d(?:__\d+)?$/;
+// Not anchored inside: an async lambda's or local function's state machine is named after a generated name itself.
+const STATE_MACHINE = /^<(.+)>d(?:__\d+)?$/;
+const WHITESPACE = /\s/;
+const HEX = /[0-9a-fA-F]/;
+const DIGIT = /[0-9]/;
 
 /**
  * Whether a .NET frame is framework or runtime code (C# BelemetryExceptionFingerprint.IsFrameworkFrame): System.*,
@@ -171,11 +185,45 @@ function fileNameOf(path: string): string {
     return slash >= 0 ? path.slice(slash + 1) : path;
 }
 
-/** A frame of a .NET stack trace's text (`at Namespace.Type.Method(Args) in path:line 42`); null for another line. */
+/**
+ * A frame of a .NET stack trace's text (`at Namespace.Type.Method(Args)[ + 0x2a][ in path:line 42]`); null for
+ * another line. Read by hand in one pass, as C# SentryStackTrace.DotnetFrame: the method runs to the first `(`, with no
+ * whitespace before it (which no JavaScript frame has), and the arguments close at the first `)` the rest can follow.
+ */
 export function dotnetFrame(line: string): SentryFrame | null {
-    const match = DOTNET_FRAME.exec(line);
-    if (!match) return null;
-    let method = match[1].trim();
+    if (line.indexOf('at ') !== 0) return null;
+    let open = 3;
+    while (open < line.length && line.charAt(open) !== '(' && !WHITESPACE.test(line.charAt(open))) open++;
+    if (open === 3 || line.charAt(open) !== '(') return null;
+
+    // Where the file ends, when the line ends with ":line {n}".
+    let digits = line.length;
+    while (digits > 0 && DIGIT.test(line.charAt(digits - 1))) digits--;
+    const fileEnd = digits < line.length && digits >= 6 && line.slice(digits - 6, digits) === ':line ' ? digits - 6 : -1;
+
+    let path: string | undefined;
+    let closed = false;
+    for (let close = line.indexOf(')', open + 1); close >= 0; close = line.indexOf(')', close + 1)) {
+        let rest = close + 1;
+        if (line.slice(rest, rest + 5) === ' + 0x') {
+            let hex = rest + 5;
+            while (hex < line.length && HEX.test(line.charAt(hex))) hex++;
+            if (hex === rest + 5) continue;
+            rest = hex;
+        }
+        if (rest === line.length) {
+            closed = true;
+            break;
+        }
+        if (fileEnd > rest + 4 && line.slice(rest, rest + 4) === ' in ') {
+            path = line.slice(rest + 4, fileEnd);
+            closed = true;
+            break;
+        }
+    }
+    if (!closed) return null;
+
+    let method = line.slice(3, open);
     // A generic method's arguments ("Method[T]") are not part of its name.
     const bracket = method.indexOf('[');
     if (method.charAt(method.length - 1) === ']' && bracket > 0) method = method.slice(0, bracket);
@@ -202,21 +250,31 @@ export function dotnetFrame(line: string): SentryFrame | null {
     }
     const frame: SentryFrame = { function: fn, in_app: !isFrameworkFrame(module ? module + '.' + fn : fn) };
     if (module) frame.module = module;
-    if (match[3] !== undefined) {
-        frame.filename = fileNameOf(match[3]);
-        frame.abs_path = match[3];
+    if (path !== undefined) {
+        frame.filename = fileNameOf(path);
+        frame.abs_path = path;
+        const lineno = toInt(line.slice(digits));
+        if (lineno !== undefined) frame.lineno = lineno;
     }
-    if (match[4] !== undefined) frame.lineno = Number(match[4]);
     return frame;
 }
 
-/** Whether a stack is .NET's: a line is a .NET frame, which a JavaScript frame never is. */
+/**
+ * Whether a stack is .NET's: a line is a .NET frame, which a JavaScript frame never is, and no JavaScript frame with a
+ * line number follows it - a JS error whose message carries a .NET exception's text (a JS interop call's) is not.
+ */
 export function isDotnetStack(stack: string | null | undefined): boolean {
     if (!stack) return false;
-    for (const line of stack.split(/\r?\n/)) {
-        if (dotnetFrame(line.trim())) return true;
+    let dotnet = false;
+    for (const raw of stack.split(/\r?\n/)) {
+        const line = raw.trim();
+        if (dotnetFrame(line)) dotnet = true;
+        else if (dotnet && line.indexOf('---') !== 0) {
+            const frame = parseFrame(line);
+            if (frame && frame.lineno !== undefined) return false;
+        }
     }
-    return false;
+    return dotnet;
 }
 
 export interface DotnetException {
@@ -235,7 +293,8 @@ function splitHeader(part: string): { type?: string; message?: string } {
 /**
  * The exceptions of a .NET stack trace's text, outermost first (C# SentryStackTrace.ParseDotnet): the header names
  * them (`Outer: message ---> Inner: message`), and their frames follow innermost first, each set closed by "End of
- * inner exception stack trace". When the two do not line up, only the outermost is told, with its own frames.
+ * inner exception stack trace". When the two do not line up, only the outermost is told, with its own frames. The
+ * frames start at the first frame line: a message's line may start with "at" too ("at least one item is required").
  */
 export function parseDotnetStack(stack: string | null | undefined): DotnetException[] {
     if (!stack) return [];
@@ -244,21 +303,22 @@ export function parseDotnetStack(stack: string | null | undefined): DotnetExcept
     let inFrames = false;
     for (const raw of stack.split(/\r?\n/)) {
         const line = raw.trim();
-        if (!inFrames) {
-            if (line.indexOf('at ') !== 0 && line !== END_OF_INNER) {
-                header.push(raw);
-                continue;
-            }
-            inFrames = true;
-        }
         if (line === END_OF_INNER) {
+            inFrames = true;
             segments.push([]);
             continue;
         }
         // An AggregateException's other inner exceptions follow its own frames: they are not the chain's.
-        if (line.indexOf('--->') === 0) break;
+        if (inFrames && line.indexOf('--->') === 0) break;
         const frame = dotnetFrame(line);
-        if (frame) segments[segments.length - 1].push(frame);
+        if (frame) {
+            inFrames = true;
+            segments[segments.length - 1].push(frame);
+        } else if (!inFrames) {
+            // A frame without the method's metadata ("at App!<BaseAddress>+0x1a2b", NativeAOT) is one word.
+            if (line.indexOf('at ') === 0 && line.length > 3 && !WHITESPACE.test(line.slice(3))) inFrames = true;
+            else header.push(raw);
+        }
     }
     for (const segment of segments) {
         if (segment.length > MAX_FRAMES) segment.length = MAX_FRAMES;
@@ -301,8 +361,9 @@ export function releaseOf(ctx: SentryContext, resource: Attributes): string | un
     return name ? name + '@' + version : version;
 }
 
-function isHex(value: string | null | undefined, length: number): value is string {
-    return typeof value === 'string' && value.length === length && /^[0-9a-fA-F]+$/.test(value);
+/** Whether an id is valid hex of its length and not all zeros, which W3C says is no id (C# BelemetryHex.IsValidId). */
+function isValidId(value: string | null | undefined, length: number): value is string {
+    return typeof value === 'string' && value.length === length && /^[0-9a-fA-F]+$/.test(value) && !/^0+$/.test(value);
 }
 
 /** What an event is made of (C# `Source`). */
@@ -381,9 +442,9 @@ export function toEvent(source: Source, resource: Attributes, ctx: SentryContext
 
     const contexts: Json = {};
     // The trace the record was produced in: Sentry links the Issue to it.
-    if (isHex(source.traceId, 32) && isHex(source.spanId, 16)) {
+    if (isValidId(source.traceId, 32) && isValidId(source.spanId, 16)) {
         const trace: Json = { trace_id: source.traceId, span_id: source.spanId };
-        if (isHex(source.parentSpanId, 16)) trace.parent_span_id = source.parentSpanId;
+        if (isValidId(source.parentSpanId, 16)) trace.parent_span_id = source.parentSpanId;
         trace.type = 'trace';
         contexts.trace = trace;
     }

@@ -250,7 +250,8 @@ Notes on the fields:
 - A Sentry exporter's `dsn` is the public DSN (`SentryDsn.PublicDsn`): a legacy secret key is never handed over, on any
   host. The public key is public by design (Sentry's browser SDK publishes it in every page), so a server renders it.
   `minimumSeverity` is always a number (0 for all, from `LogLevel.Trace`): the script reads an absent one as 17 (ERROR),
-  the C# default. An invalid DSN is left out (no exporter on the .NET side either).
+  the C# default. An invalid DSN is left out as `BelemetrySettings` resolves the options (with a startup warning; no
+  exporter on the .NET side either). The DSN is parsed there once (`BelemetrySentryExporterSettings`).
 - `retryIntervalMs` is `Persistence.RetryInterval` (non-positive falls back to 60000, floor 1000): how often the page
   resends its stored requests, besides on start and on the `online` event.
 - A resend pass is the same on both sides (`transport.ts resendPersisted`, `BelemetryExporterSet.RetryStoredAsync`):
@@ -428,13 +429,21 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   (.NET: not under `Bit.Belemetry.UnhandledExceptions` without `IncludeUnhandledExceptions`), (2) a plain log record (no
   `eventName`) with a body, (3) an `exception` span event with a type or message, as ERROR, unless `Limited`/`limited` or
   (.NET) a log record this exporter sends is the same exception (`LoggedAs`, not dropped, at the minimum severity).
+  When every .NET exporter is a Sentry exporter (`BelemetrySettings.ExportsSentryOnly`), the pipeline queues nothing
+  else: no meter collector runs, a span without an exception event and a log record that is no candidate
+  (`SentryEnvelopeSerializer.IsCandidate` at `SentryMinimumSeverity`, the least severe level) are not enqueued for the
+  export (the diagnostic timeline still sees them). The script is not narrowed (its `features` are consent's too).
+- **Delivery (.NET):** `BelemetryExporterSet.ExportAsync` holds back the rest of a batch's requests to a URL once one
+  failed (stored, as `RetryStoredAsync` holds back a failed URL's backlog): a Sentry exporter makes one per event, and
+  each would otherwise wait out its own retries with the export lock held. A record whose event cannot be written is
+  skipped alone (`Serialize` catches per envelope).
 - **Event:** `event_id`, `timestamp` (seconds, millisecond precision: `floor(ms) / 1000`), `platform` (`javascript` when
   the resource's `telemetry.sdk.language` is `webjs`, else `csharp`), `level` (21+ fatal, 17+ error, 13+ warning, 9+ info,
   else debug), `logger` (the scope), `transaction` (span events: the span name), `release` (configured, else
   `{service.name}@{service.version}`, else `{service.version}`; none without a version), `environment`
   (`deployment.environment.name`), `server_name` (`host.name`), `message.formatted` (the body, unless it equals
   `exception.message`), `exception.values` (innermost first; the outermost carries `mechanism {type: generic, handled}`),
-  `contexts` (`trace` {trace_id, span_id, parent_span_id for span events, type} when both ids are valid hex; `runtime`
+  `contexts` (`trace` {trace_id, span_id, parent_span_id for span events, type} when both ids are valid, non-zero hex; `runtime`
   from `process.runtime.*`; `os` {name: `os.type`, raw_description: `os.description`}; `culture` {locale:
   `browser.language`}; `otel` {resource: every resource attribute}), `tags` {`session.id`}, `user` {id: `user.id`, else
   `enduser.pseudo.id`}, `request.headers.User-Agent` (`user_agent.original`), `extra` (the record's attributes but
@@ -445,22 +454,36 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   `bit.belemetry.exceptions`) and where `BelemetryDiagnosticEventFactory.OriginOf` says `unhandled`; true otherwise.
 - **A .NET stack in a browser record** (a Blazor Server circuit's `TrackException`, forwarded to the script): a stack is
   .NET's when a line is a .NET frame (`IsDotnet`, `isDotnetStack`: `at` and a method with no whitespace before its `(`,
-  which no JavaScript frame is). It is parsed as .NET text on both sides (`ParseDotnet`, `parseDotnetStack`), and the
-  event's `platform` is `csharp`; `sdk.name` stays the recorder's.
+  which no JavaScript frame is) and no JavaScript frame with a line number follows it (a line starting `---` is not
+  checked): a JS interop error whose message carries the .NET text, its JS frames after, stays a JavaScript stack, and
+  the JavaScript parsers skip its .NET frame lines. A .NET stack is parsed as .NET text on both sides (`ParseDotnet`,
+  `parseDotnetStack`), and the event's `platform` is `csharp`; `sdk.name` stays the recorder's. `IsDotnet` runs once per event.
+- **Reading the text** (both sides, the same cases in the tests): a .NET frame is read by hand in one pass
+  (`DotnetFrame`, `dotnetFrame`), never by a backtracking pattern - a relayed stack is anyone's text: `at {method}(`
+  with no whitespace in the method, then the first `)` after which the rest is nothing, ` + 0x{hex}`, and/or
+  ` in {file}:line {n}` (the file runs to the last `:line ` before the trailing digits). Numbers are ASCII digits only,
+  and one past 2147483647 is no number (`ToInt`, `toInt`): no line, never a failure.
 - **Frames** (oldest first, the newest 100 per exception, at most 16 exceptions): JavaScript (`SentryStackTrace.ParseJavaScript`,
   `parseStack`; the same cases in `SentryStackTraceTests` and `sentry.test.js`): V8 `at fn (url:l:c)` / `at url:l:c` /
   `async` / `new` / `eval at fn (url:l:c), ...` (the inner location); SpiderMonkey and JavaScriptCore `fn@url:l:c`
   (the first `@`; `async*` dropped; `url line N > eval` is the url at line N; `[native code]`); a line with neither, or
   an `@` line without a line number, `://` or `[native code]`, is not a frame. `function` `?` when anonymous;
-  `filename` = `abs_path` = the URL; `in_app` unless no `://`, a browser extension's scheme, `/_framework/` or
-  `/_content/Bit.Belemetry/`. .NET from the exception object (`log.Exception`, only when the record still has
-  `exception.stacktrace`): the frames `StackTrace.ToString()` shows, `function`/`module` as the text names them (an
-  async or iterator `MoveNext` is the method it was written as, on its declaring type; `+` is `.`; no generic arguments),
-  file and line when the runtime has them, and with a debug image `instruction_addr` (IL offset), `function_id` (the MethodDef
-  row: the metadata token without its table byte, as Sentry's .NET SDK sends it), `addr_mode` `rel:{image}`; the outer exception's type and message are the attributes', an inner one's message
-  only when the stack text holds it as it is. Without frames from the object (none, NativeAOT) the text is parsed
-  (`ParseDotnet`): the header's ` ---> ` parts against the frame sets the end-of-inner markers close, else the outermost
-  only; an `AggregateException`'s other inner exceptions (`---> (Inner Exception #n)`) are not the chain's.
+  `filename` = `abs_path` = the URL; `in_app` unless no `://`, a `wasm:` URL (the .NET runtime's module), a browser
+  extension's scheme, `/_framework/` or `/_content/Bit.Belemetry/`. .NET from the exception object (`log.Exception`, only
+  while `exception.stacktrace` is still `log.ExceptionStacktrace`, the text `SetException` made: a stack trace privacy or
+  a processor changed, redacted or removed is all there is): the frames `StackTrace.ToString()` shows (the oldest
+  always), `function`/`module` as the text names them (an async or iterator `MoveNext` is the method it was written as,
+  on its declaring type - an async lambda's or local function's too, `<<Main>b__0>d` is `<Main>b__0`; `+` is `.`; no
+  generic arguments), and with a debug image `instruction_addr` (IL offset), `function_id` (the MethodDef row: the
+  metadata token without its table byte, as Sentry's .NET SDK sends it), `addr_mode` `rel:{index}` (an image is listed
+  once, by the first frame that names it); the outer exception's type and message are the attributes', an inner one's
+  message only when the stack text holds it as it is. Each exception of the chain on its own, against the text's
+  exception at its index (`ParseDotnet`: the header's ` ---> ` parts against the frame sets the end-of-inner markers
+  close, else the outermost only): its file and line come from the text's frames (`TryAddFileInfo`, when the frames
+  line up; else from the PDB), and an exception whose object lacks a frame's method (NativeAOT, wholly or in part)
+  takes the text's frames. Without the object the text alone is parsed. The frames start at the first frame line (a
+  message line starting "at " is the header's; a one-word `at App!<BaseAddress>+0x..` starts them too); an
+  `AggregateException`'s other inner exceptions (`---> (Inner Exception #n)`) are not the chain's.
 - **Debug image** (`SentryDebugImage`, read by hand from the PE file: System.Reflection.Metadata would weigh on every
   WebAssembly app, which has no file): `pe_dotnet`, `code_file` (the path), `code_id` (`{COFF stamp:X8}{SizeOfImage:x}`),
   `debug_id` (CodeView GUID + `-{entry stamp:x8}` for a portable PDB, `-{age:x}` otherwise), `debug_file`,

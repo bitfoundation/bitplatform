@@ -39,7 +39,8 @@ public sealed class BelemetryOptions
     /// <summary>
     /// Whether the standard <c>OTEL_*</c> environment variables (<c>OTEL_SERVICE_NAME</c>, <c>OTEL_RESOURCE_ATTRIBUTES</c>,
     /// <c>OTEL_EXPORTER_OTLP_ENDPOINT</c>, <c>OTEL_EXPORTER_OTLP_HEADERS</c>, <c>OTEL_EXPORTER_OTLP_PROTOCOL</c>) and
-    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> and <c>SENTRY_DSN</c> fill in unset values, and whether <c>OTEL_SDK_DISABLED=true</c> - an
+    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> and <c>SENTRY_DSN</c> (the DSN of a Sentry exporter added without one; it adds none
+    /// by itself) fill in unset values, and whether <c>OTEL_SDK_DISABLED=true</c> - an
     /// operator's kill switch, which wins over code - turns Belemetry off. Ignored in the browser. Defaults to <see langword="true"/>.
     /// </summary>
     public bool UseEnvironmentVariables { get; set; } = true;

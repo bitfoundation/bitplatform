@@ -38,11 +38,7 @@ public class SentryEnvelopeSerializerTests
         log.Feature = BelemetryFeatures.Errors;
         log.TraceId = Records.TraceId;
         log.SpanId = Records.SpanId;
-        var ex = exception ?? SentryStackTraceTests.Thrower.Catch(SentryStackTraceTests.Thrower.Wrapped);
-        log.Exception = ex;
-        log.Attributes.Set(BelemetrySemanticConventions.ExceptionType, ex.GetType().FullName)
-                      .Set(BelemetrySemanticConventions.ExceptionMessage, ex.Message)
-                      .Set(BelemetrySemanticConventions.ExceptionStacktrace, ex.ToString());
+        log.SetException(exception ?? SentryStackTraceTests.Thrower.Catch(SentryStackTraceTests.Thrower.Wrapped));
         return log;
     }
 
@@ -116,7 +112,12 @@ public class SentryEnvelopeSerializerTests
         StringAssert.StartsWith(Str(frame, "function_id"), "0x");
         StringAssert.StartsWith(Str(frame, "addr_mode"), "rel:");
 
+        // The line from the stack text, which the record resolved once.
+        StringAssert.EndsWith(Str(frame, "filename"), ".cs");
+        Assert.IsGreaterThan(0, frame.GetProperty("lineno").GetInt32());
+
         var images = e.GetProperty("debug_meta").GetProperty("images").EnumerateArray().ToList();
+        Assert.HasCount(images.Select(i => Str(i, "debug_id")).Distinct().Count(), images, "An image is listed once.");
         var image = images[int.Parse(Str(frame, "addr_mode")!["rel:".Length..])];
         Assert.AreEqual("pe_dotnet", Str(image, "type"));
         Assert.AreEqual(typeof(SentryStackTraceTests.Thrower).Assembly.Location, Str(image, "code_file"));
@@ -158,12 +159,80 @@ public class SentryEnvelopeSerializerTests
         Assert.IsFalse(value.TryGetProperty("stacktrace", out _));
         Assert.IsFalse(e.TryGetProperty("debug_meta", out _));
 
-        // An inner message the privacy rules changed in the stack text is not taken from the object.
+        // A stack text the privacy rules changed is all there is: the object's frames, paths and messages are not sent.
         var scrubbed = Error();
         scrubbed.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, scrubbed.Exception!.ToString().Replace("late", "{scrubbed}"));
-        var inner = Single(scrubbed).GetProperty("exception").GetProperty("values")[0];
+        var scrubbedEvent = Single(scrubbed);
+        var inner = scrubbedEvent.GetProperty("exception").GetProperty("values")[0];
         Assert.AreEqual("System.TimeoutException", Str(inner, "type"));
-        Assert.IsFalse(inner.TryGetProperty("value", out _));
+        Assert.AreEqual("{scrubbed}", Str(inner, "value"));
+        Assert.AreEqual("Fail", Str(inner.GetProperty("stacktrace").GetProperty("frames").EnumerateArray().Last(), "function"));
+        Assert.DoesNotContain("function_id", scrubbedEvent.GetRawText());
+        Assert.IsFalse(scrubbedEvent.TryGetProperty("debug_meta", out _));
+
+        // A redacted stack trace (Privacy.RedactedAttributes), or one a processor stripped of its paths, sends no frame
+        // from the object either.
+        var redacted = Error();
+        redacted.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, "REDACTED");
+        var redactedEvent = Single(redacted);
+        var values = redactedEvent.GetProperty("exception").GetProperty("values").EnumerateArray().ToList();
+        Assert.AreEqual("System.InvalidOperationException", Str(values.Single(), "type"));
+        Assert.IsFalse(values.Single().TryGetProperty("stacktrace", out _));
+        Assert.IsFalse(redactedEvent.TryGetProperty("debug_meta", out _));
+
+        var stripped = Error();
+        stripped.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, BelemetryExceptionFingerprint.StripPaths(stripped.Exception!.ToString()));
+        var strippedEvent = Single(stripped);
+        var paths = strippedEvent.GetProperty("exception").GetProperty("values").EnumerateArray()
+            .SelectMany(v => v.GetProperty("stacktrace").GetProperty("frames").EnumerateArray()).Select(f => Str(f, "abs_path")).OfType<string>().ToList();
+        Assert.IsNotEmpty(paths);
+        Assert.IsTrue(paths.All(p => p.IndexOfAny(['/', '\\']) < 0), string.Join(" | ", paths));
+        Assert.IsFalse(strippedEvent.TryGetProperty("debug_meta", out _));
+    }
+
+    [TestMethod]
+    public void ANeverThrownOuterException_KeepsItsInnerExceptionsObjectFrames()
+    {
+        // LogError(new OrderException("failed", caught)): the outer exception has no frames, the thrown inner one has.
+        var log = Error(new InvalidOperationException("failed", SentryStackTraceTests.Thrower.Catch(SentryStackTraceTests.Thrower.Fail)));
+
+        var e = Single(log);
+        var values = e.GetProperty("exception").GetProperty("values").EnumerateArray().ToList();
+        Assert.HasCount(2, values);
+        Assert.IsFalse(values[1].TryGetProperty("stacktrace", out _), "Never thrown.");
+        var frame = values[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray().Last();
+        Assert.AreEqual("Fail", Str(frame, "function"));
+        StringAssert.StartsWith(Str(frame, "function_id"), "0x");
+        Assert.IsGreaterThan(0, frame.GetProperty("lineno").GetInt32());
+        Assert.IsTrue(e.TryGetProperty("debug_meta", out _));
+    }
+
+    [TestMethod]
+    public void AnInvalidTraceId_IsNoTrace()
+    {
+        var log = Error();
+        log.TraceId = new string('0', 32);
+        log.SpanId = new string('0', 16);
+        Assert.IsFalse(Single(log).GetProperty("contexts").TryGetProperty("trace", out _), "W3C: an all-zero id is no id.");
+
+        log.TraceId = Records.TraceId;
+        log.SpanId = "not-hex-at-all!!";
+        Assert.IsFalse(Single(log).GetProperty("contexts").TryGetProperty("trace", out _));
+    }
+
+    [TestMethod]
+    public void ARecordThatCannotBeWritten_CostsItsOwnEventOnly()
+    {
+        var resource = new BelemetryResource(new BelemetryAttributes().Set("service.name", "shop").Set("telemetry.sdk.language", "webjs"));
+        var bad = Records.Log("bad", severity: BelemetrySeverity.Error);
+        bad.Attributes.Set("exception.type", "TypeError").Set("exception.message", "boom")
+           .Set("exception.stacktrace", "TypeError: boom\n    at f (https://x/a.js:99999999999:1)\n    at g (https://x/a.js:١:٢)");
+        var lone = Records.Log("lone \ud800 surrogate", severity: BelemetrySeverity.Error);
+        var good = Records.Log("good", severity: BelemetrySeverity.Error);
+
+        var events = Events(new BelemetryBatch(resource, logs: [bad, lone, good]));
+        Assert.AreEqual("good", Str(events[^1], "message", "formatted"), "The rest of the batch is written.");
+        Assert.AreEqual("bad", Str(events[0], "message", "formatted"), "A line number out of range is no line, not a failure.");
     }
 
     [TestMethod]
@@ -343,6 +412,23 @@ public class SentryEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void AJsInteropErrorCarryingDotnetText_IsAJavaScriptEvent()
+    {
+        // The same record as sentry.test.js ("keeps the frames of a JS interop error that carries .NET text").
+        var resource = new BelemetryResource(new BelemetryAttributes().Set("service.name", "shop").Set("telemetry.sdk.language", "webjs"));
+        var log = Records.Log("unhandled", BelemetrySemanticConventions.ExceptionEvent, BelemetrySeverity.Error);
+        log.Scope = new BelemetryScope(SentryEnvelopeSerializer.BrowserErrorsScope);
+        log.Attributes.Set("exception.type", "Error").Set("exception.message", "System.InvalidOperationException: boom")
+            .Set("exception.stacktrace", "Error: System.InvalidOperationException: boom\n   at Shop.Interop.Save() in /src/Shop/Interop.cs:line 9\n" +
+                                         "    at Object.invokeMethodAsync (https://shop.test/_framework/blazor.webassembly.js:1:3000)\n    at save (https://shop.test/app.js:10:15)");
+
+        var e = Single(log, resource: resource);
+        Assert.AreEqual("javascript", Str(e, "platform"));
+        var frames = e.GetProperty("exception").GetProperty("values")[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray().ToList();
+        CollectionAssert.AreEqual(new[] { "save", "Object.invokeMethodAsync" }, frames.Select(f => Str(f, "function")).ToArray());
+    }
+
+    [TestMethod]
     public void TheReleaseAndTheIpInference_AreConfigurable()
     {
         var e = Single(Error(), Context(release: "web@9", maskIp: false));
@@ -356,7 +442,7 @@ public class SentryEnvelopeSerializerTests
     [TestMethod]
     public void TheExporter_PostsOneRequestPerEvent()
     {
-        var exporter = new BelemetrySentryExporter(new BelemetrySentryExporterOptions { Dsn = "https://abc123:s3cr3t@o1.ingest.sentry.io/42", Compression = BelemetryCompression.Gzip }, "sentry");
+        var exporter = Exporter(new BelemetrySentryExporterOptions { Dsn = "https://abc123:s3cr3t@o1.ingest.sentry.io/42", Compression = BelemetryCompression.Gzip });
         var batch = new BelemetryBatch(Records.Resource(), logs: [Error(), Records.Log(), Error(body: "second")]);
 
         var requests = exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)).ToList();
@@ -381,8 +467,10 @@ public class SentryEnvelopeSerializerTests
         Assert.IsFalse(exporter.IsRetryable(400));
         Assert.IsFalse(exporter.IsRetryable(413));
         Assert.AreEqual(BelemetrySeverity.Error, exporter.MinimumSeverity);
-        Assert.IsNull(new BelemetrySentryExporter(new() { Dsn = Dsn, MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Trace }, "sentry").MinimumSeverity);
+        Assert.IsNull(Exporter(new() { Dsn = Dsn, MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Trace }).MinimumSeverity);
     }
+
+    private static BelemetrySentryExporter Exporter(BelemetrySentryExporterOptions options) => new(options, SentryDsn.Parse(options.Dsn!), "sentry");
 
     [TestMethod]
     public void Dsn_NamesTheEnvelopeEndpoint()

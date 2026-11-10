@@ -11,7 +11,9 @@ public sealed class BelemetrySentryExporterOptions
     /// <summary>
     /// The project's DSN (<c>https://{public key}@{host}/{project id}</c>). The public key is public by design - Sentry's
     /// browser SDK puts it in every page - so the browser script gets it too; a legacy secret key in the DSN is never
-    /// used or handed to the page. Defaults to <c>SENTRY_DSN</c> when set (outside the browser).
+    /// used or handed to the page. Defaults to <c>SENTRY_DSN</c> when set (outside the browser, with
+    /// <see cref="BelemetryOptions.UseEnvironmentVariables"/>) - which never adds an exporter by itself. An invalid DSN
+    /// skips the exporter, with a startup warning.
     /// </summary>
     public string? Dsn { get; set; }
 

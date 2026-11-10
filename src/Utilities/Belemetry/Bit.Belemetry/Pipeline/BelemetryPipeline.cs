@@ -112,7 +112,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         if (Settings.CollectDotnet)
         {
             if ((Settings.ConfiguredFeatures & BelemetryFeatures.Traces) != 0) _activities = new BelemetryActivityCollector(Settings, this);
-            if ((Settings.ConfiguredFeatures & BelemetryFeatures.Metrics) != 0) _meters = new BelemetryMeterCollector(Settings);
+            // No Sentry exporter sends a metric: with nothing else, every interval's collection would be thrown away.
+            if ((Settings.ConfiguredFeatures & BelemetryFeatures.Metrics) != 0 && Settings.ExportsSentryOnly is false) _meters = new BelemetryMeterCollector(Settings);
 
             if (_activities is not null && Settings.IsServer && CanRecord(BelemetryFeatures.Traces))
             {
@@ -218,7 +219,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             // as in Relay: a page can be anything that speaks the interop protocol.
             else if ((Settings.ConfiguredFeatures & BelemetryFeatures.Errors) == 0) RemoveExceptionEvents(span);
 
-            Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
+            // Sentry alone sends only the exceptions recorded on a span: one without any goes nowhere.
+            if (Settings.ExportsSentryOnly is false || HasExceptionEvents(span)) Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
         }
         if (diagnose) Diagnostics.OnSpan(span, relayed);
     }
@@ -344,6 +346,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 ReportProcessorFailure(processor, ex);
             }
         }
+
+        // Sentry alone sends only an exception or a plain log at its level: a page view, a web vital, a custom event or a
+        // lower log goes nowhere.
+        if (export && Settings.ExportsSentryOnly && SentryEnvelopeSerializer.IsCandidate(log, Settings.SentryMinimumSeverity) is false) export = false;
 
         if (export)
         {

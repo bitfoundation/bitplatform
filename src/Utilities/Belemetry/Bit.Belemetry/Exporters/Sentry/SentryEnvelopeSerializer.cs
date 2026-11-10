@@ -32,10 +32,17 @@ internal static class SentryEnvelopeSerializer
     /// </summary>
     public static bool IsEvent(BelemetryLogRecord log, Context context)
     {
-        if (context.Passes(log.Severity) is false) return false;
-        if (log.HasException) return context.IncludeUnhandled || log.Scope.Name != BelemetryUnhandledExceptions.ScopeName;
-        return log.EventName is null && string.IsNullOrEmpty(log.Body) is false;
+        if (IsCandidate(log, context.MinimumSeverity) is false) return false;
+        return log.HasException is false || context.IncludeUnhandled || log.Scope.Name != BelemetryUnhandledExceptions.ScopeName;
     }
+
+    /// <summary>
+    /// Whether a log record may be an event to an exporter of the <paramref name="minimum"/> level (null for all): one
+    /// carrying an exception, or a plain log record with a body, at or above it.
+    /// </summary>
+    public static bool IsCandidate(BelemetryLogRecord log, BelemetrySeverity? minimum) =>
+        (minimum is null || log.Severity >= minimum.Value)
+        && (log.HasException || (log.EventName is null && string.IsNullOrEmpty(log.Body) is false));
 
     /// <summary>
     /// Whether an exception recorded on a span is an event of its own: not when the error limits dropped it, nor when a
@@ -64,7 +71,10 @@ internal static class SentryEnvelopeSerializer
         return count;
     }
 
-    /// <summary>The envelope of every event of <paramref name="batch"/>.</summary>
+    /// <summary>
+    /// The envelope of every event of <paramref name="batch"/>. A record that cannot be written - none should, but a
+    /// relayed one is anyone's data - costs its own event, never the rest of the batch or the other exporters' export.
+    /// </summary>
     public static IEnumerable<byte[]> Serialize(BelemetryBatch batch, Context context)
     {
         var resource = batch.Resource.Attributes;
@@ -73,15 +83,45 @@ internal static class SentryEnvelopeSerializer
             foreach (var spanEvent in span.Events)
             {
                 if (IsEvent(spanEvent, context) is false) continue;
-                yield return Envelope(context, resource, new Source(spanEvent.Attributes, span.Attributes, BelemetrySeverity.Error, Body: null,
-                                                                   span.Scope.Name, spanEvent.TimeUnixNano, span.TraceId, span.SpanId, span.ParentSpanId, span.Name, Exception: null));
+                if (TryEnvelope(context, resource, new Source(spanEvent.Attributes, span.Attributes, BelemetrySeverity.Error, Body: null, span.Scope.Name,
+                                                              spanEvent.TimeUnixNano, span.TraceId, span.SpanId, span.ParentSpanId, span.Name, Exception: null)) is { } body)
+                {
+                    yield return body;
+                }
             }
         }
         foreach (var log in batch.Logs)
         {
             if (IsEvent(log, context) is false) continue;
-            yield return Envelope(context, resource, new Source(log.Attributes, log.Attributes, log.Severity, log.Body, log.Scope.Name,
-                                                               log.TimeUnixNano, log.TraceId, log.SpanId, ParentSpanId: null, Transaction: null, log.Exception));
+            if (TryEnvelope(context, resource, new Source(log.Attributes, log.Attributes, log.Severity, log.Body, log.Scope.Name, log.TimeUnixNano,
+                                                          log.TraceId, log.SpanId, ParentSpanId: null, Transaction: null, ObjectOf(log))) is { } body)
+            {
+                yield return body;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The exception object of a log record, while its <c>exception.stacktrace</c> is still the text it was made with:
+    /// once privacy or a processor changed or removed it, the object's frames - their names, paths and the inner
+    /// exceptions - are not sent either, and the text they left is all there is.
+    /// </summary>
+    private static Exception? ObjectOf(BelemetryLogRecord log) =>
+        log.Exception is { } exception && log.ExceptionStacktrace is { } original
+        && log.Attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace) is { } stack
+        && (ReferenceEquals(stack, original) || string.Equals(stack, original, StringComparison.Ordinal))
+            ? exception
+            : null;
+
+    private static byte[]? TryEnvelope(Context context, BelemetryAttributes resource, Source source)
+    {
+        try
+        {
+            return Envelope(context, resource, source);
+        }
+        catch (Exception)
+        {
+            return null;
         }
     }
 
@@ -96,7 +136,7 @@ internal static class SentryEnvelopeSerializer
     /// <param name="SpanId">The span it happened in.</param>
     /// <param name="ParentSpanId">That span's parent, for an exception recorded on a span.</param>
     /// <param name="Transaction">The span's name, for an exception recorded on a span.</param>
-    /// <param name="Exception">The .NET exception object of a log record, for its frames' method tokens and IL offsets.</param>
+    /// <param name="Exception">The .NET exception object of a log record, for its frames' method tokens and IL offsets (<see cref="ObjectOf"/>).</param>
     private sealed record Source(BelemetryAttributes Attributes, BelemetryAttributes Ids, BelemetrySeverity Severity, string? Body, string Scope,
                                  long TimeUnixNano, string? TraceId, string? SpanId, string? ParentSpanId, string? Transaction, Exception? Exception);
 
@@ -146,12 +186,14 @@ internal static class SentryEnvelopeSerializer
         var a = source.Attributes;
         var exceptionMessage = a.GetString(BelemetrySemanticConventions.ExceptionMessage);
 
+        // The frames' platform: a .NET exception the browser script recorded (TrackException on a Blazor Server
+        // circuit) has .NET frames.
+        var javascript = browser && SentryStackTrace.IsDotnet(a.GetString(BelemetrySemanticConventions.ExceptionStacktrace)) is false;
+
         w.WriteStartObject();
         w.WriteString("event_id", eventId);
         w.WriteNumber("timestamp", source.TimeUnixNano / 1_000_000 / 1000.0);
-        // The frames' platform: a .NET exception the browser script recorded (TrackException on a Blazor Server
-        // circuit) has .NET frames.
-        w.WriteString("platform", browser && SentryStackTrace.IsDotnet(a.GetString(BelemetrySemanticConventions.ExceptionStacktrace)) is false ? "javascript" : "csharp");
+        w.WriteString("platform", javascript ? "javascript" : "csharp");
         w.WriteString("level", Level(source.Severity));
         if (string.IsNullOrEmpty(source.Scope) is false) w.WriteString("logger", source.Scope);
         if (source.Transaction is { Length: > 0 } transaction) w.WriteString("transaction", transaction);
@@ -168,7 +210,7 @@ internal static class SentryEnvelopeSerializer
         }
 
         List<SentryDebugImage> images = [];
-        if (a.HasException) WriteExceptions(w, a, source, browser, images);
+        if (a.HasException) WriteExceptions(w, a, source, javascript, images);
 
         WriteContexts(w, resource, source);
 
@@ -259,33 +301,37 @@ internal static class SentryEnvelopeSerializer
 
     private sealed record ExceptionValue(string? Type, string? Value, List<SentryStackTrace.Frame> Frames);
 
-    private static void WriteExceptions(Utf8JsonWriter w, BelemetryAttributes a, Source source, bool browser, List<SentryDebugImage> images)
+    /// <param name="w">The writer.</param>
+    /// <param name="a">The record's attributes.</param>
+    /// <param name="source">What the event is made of.</param>
+    /// <param name="javascript">Whether the stack is a JavaScript one (a browser record's, unless it is .NET text).</param>
+    /// <param name="images">Collects the debug images the frames name, for <c>debug_meta</c>.</param>
+    private static void WriteExceptions(Utf8JsonWriter w, BelemetryAttributes a, Source source, bool javascript, List<SentryDebugImage> images)
     {
         var type = a.GetString(BelemetrySemanticConventions.ExceptionType);
         var message = a.GetString(BelemetrySemanticConventions.ExceptionMessage);
         var stack = a.GetString(BelemetrySemanticConventions.ExceptionStacktrace);
 
         // Outermost first. The record's attributes are what privacy and the processors left: the outer exception's type
-        // and message are theirs, and a stack trace they removed is not sent - not even from the exception object.
+        // and message are theirs, and a stack trace they changed or removed is not taken from the exception object.
         var chain = new List<ExceptionValue>();
         if (stack is null)
         {
             chain.Add(new(type, message, []));
         }
-        else if (browser && SentryStackTrace.IsDotnet(stack) is false)
+        else if (javascript)
         {
             chain.Add(new(type, message, SentryStackTrace.ParseJavaScript(stack)));
         }
         else
         {
-            if (source.Exception is { } exception) AddFromObject(chain, exception, type, message, stack, images);
-
-            // NativeAOT has no method of a frame: the text tells what the runtime printed.
-            if (chain.Count == 0 || chain[0].Frames.Count == 0)
+            var parsed = SentryStackTrace.ParseDotnet(stack);
+            if (source.Exception is { } exception)
             {
-                chain.Clear();
-                images.Clear();
-                var parsed = SentryStackTrace.ParseDotnet(stack);
+                AddFromObject(chain, exception, type, message, stack, parsed);
+            }
+            else
+            {
                 chain.Add(new(type ?? (parsed.Count > 0 ? parsed[0].Type : null), message, parsed.Count > 0 ? parsed[0].Frames : []));
                 for (var i = 1; i < parsed.Count; i++) chain.Add(new(parsed[i].Type, parsed[i].Message, parsed[i].Frames));
             }
@@ -306,7 +352,7 @@ internal static class SentryEnvelopeSerializer
             {
                 w.WriteStartObject("stacktrace");
                 w.WriteStartArray("frames");
-                foreach (var frame in value.Frames) WriteFrame(w, frame);
+                foreach (var frame in value.Frames) WriteFrame(w, frame, images);
                 w.WriteEndArray();
                 w.WriteEndObject();
             }
@@ -324,15 +370,25 @@ internal static class SentryEnvelopeSerializer
     }
 
     /// <summary>
-    /// The chain from the exception object, for its frames' method tokens and IL offsets. An inner exception's message is
-    /// told only when the record's stack text still holds it as it is (the privacy rules left it alone).
+    /// The chain from the exception object, for its frames' method tokens and IL offsets, each exception on its own: the
+    /// file and line come from the stack text's frames of the same exception (<paramref name="parsed"/>, its index in the
+    /// chain: the text tells the chain when its parts line up, and the outermost's frames always), resolved once when the
+    /// record was made; and an exception whose object lacks frames' methods (NativeAOT, wholly or in part) takes the
+    /// text's frames instead. An inner exception's message is told only when the record's stack text holds it as it is.
     /// </summary>
-    private static void AddFromObject(List<ExceptionValue> chain, Exception exception, string? type, string? message, string stack, List<SentryDebugImage> images)
+    private static void AddFromObject(List<ExceptionValue> chain, Exception exception, string? type, string? message, string stack, List<SentryStackTrace.TextException> parsed)
     {
         var current = exception;
         while (current is not null && chain.Count < SentryStackTrace.MaxExceptions)
         {
-            var frames = SentryStackTrace.FromException(current, images);
+            var told = chain.Count < parsed.Count ? parsed[chain.Count].Frames : null;
+            var (frames, complete) = SentryStackTrace.FromException(current, fileInfo: told is null);
+            if (told is not null)
+            {
+                if (complete is false) frames = told;
+                else if (SentryStackTrace.TryAddFileInfo(frames, told) is false) frames = SentryStackTrace.FromException(current, fileInfo: true).Frames;
+            }
+
             if (chain.Count == 0)
             {
                 chain.Add(new(type ?? current.GetType().FullName, message, frames));
@@ -346,7 +402,7 @@ internal static class SentryEnvelopeSerializer
         }
     }
 
-    private static void WriteFrame(Utf8JsonWriter w, SentryStackTrace.Frame frame)
+    private static void WriteFrame(Utf8JsonWriter w, SentryStackTrace.Frame frame, List<SentryDebugImage> images)
     {
         w.WriteStartObject();
         if (frame.Function is not null) w.WriteString("function", frame.Function);
@@ -356,11 +412,19 @@ internal static class SentryEnvelopeSerializer
         if (frame.Line is { } line) w.WriteNumber("lineno", line);
         if (frame.Column is { } column) w.WriteNumber("colno", column);
         w.WriteBoolean("in_app", frame.InApp);
-        if (frame.FunctionId is not null)
+        if (frame.FunctionId is not null && frame.DebugImage is { } image)
         {
+            // An image is listed once, by the first frame that names it.
+            var index = images.IndexOf(image);
+            if (index < 0)
+            {
+                index = images.Count;
+                images.Add(image);
+            }
+
             w.WriteString("instruction_addr", frame.InstructionAddress);
             w.WriteString("function_id", frame.FunctionId);
-            w.WriteString("addr_mode", "rel:" + frame.Image!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            w.WriteString("addr_mode", "rel:" + index.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
         w.WriteEndObject();
     }
@@ -369,13 +433,13 @@ internal static class SentryEnvelopeSerializer
     {
         w.WriteStartObject("contexts");
 
-        // The trace the record was produced in: Sentry links the Issue to it.
-        if (IsHex(source.TraceId, 32) && IsHex(source.SpanId, 16))
+        // The trace the record was produced in: Sentry links the Issue to it. An all-zero id is no trace (W3C).
+        if (BelemetryHex.IsValidId(source.TraceId, 16) && BelemetryHex.IsValidId(source.SpanId, 8))
         {
             w.WriteStartObject("trace");
             w.WriteString("trace_id", source.TraceId);
             w.WriteString("span_id", source.SpanId);
-            if (IsHex(source.ParentSpanId, 16)) w.WriteString("parent_span_id", source.ParentSpanId);
+            if (BelemetryHex.IsValidId(source.ParentSpanId, 8)) w.WriteString("parent_span_id", source.ParentSpanId);
             w.WriteString("type", "trace");
             w.WriteEndObject();
         }
@@ -488,15 +552,5 @@ internal static class SentryEnvelopeSerializer
                 break;
             default: w.WriteString(key, BelemetryAttributes.ToInvariantString(value)); break;
         }
-    }
-
-    private static bool IsHex(string? value, int length)
-    {
-        if (value is null || value.Length != length) return false;
-        foreach (var c in value)
-        {
-            if (char.IsAsciiHexDigit(c) is false) return false;
-        }
-        return true;
     }
 }

@@ -5,11 +5,14 @@ internal sealed class BelemetrySentryExporter : IBelemetryHttpExporter
 {
     private readonly BelemetrySentryExporterOptions _options;
 
-    public BelemetrySentryExporter(BelemetrySentryExporterOptions options, string name)
+    /// <param name="options">The options.</param>
+    /// <param name="dsn">Their DSN, parsed (<see cref="BelemetrySentryExporterSettings"/>).</param>
+    /// <param name="name">The exporter's name: <c>sentry</c>, <c>sentry1</c>, ...</param>
+    public BelemetrySentryExporter(BelemetrySentryExporterOptions options, SentryDsn dsn, string name)
     {
         _options = options;
         Name = name;
-        Dsn = SentryDsn.Parse(options.Dsn!);
+        Dsn = dsn;
         MinimumSeverity = BelemetryLogger.ToMinimumSeverity(options.MinimumEventLevel);
         Context = new SentryEnvelopeSerializer.Context(Dsn, string.IsNullOrWhiteSpace(options.Release) ? null : options.Release.Trim(),
                                                        MinimumSeverity, options.IncludeUnhandledExceptions, options.MaskIp);

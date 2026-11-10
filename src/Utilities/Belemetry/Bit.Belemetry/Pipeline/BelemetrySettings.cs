@@ -64,6 +64,7 @@ internal sealed class BelemetrySettings
         OtlpExporters = ResolveOtlp(options, useEnv);
         AzureMonitorExporters = ResolveAzure(options, useEnv);
         SentryExporters = ResolveSentry(options, useEnv);
+        SentryMinimumSeverity = LeastSevere(SentryExporters);
 
         if (Host is BelemetryHostKind.Server && options.Browser.Enabled && BrowserTransport == BelemetryBrowserTransport.Direct)
         {
@@ -140,7 +141,14 @@ internal sealed class BelemetrySettings
 
     public IReadOnlyList<BelemetryAzureMonitorExporterOptions> AzureMonitorExporters { get; }
 
-    public IReadOnlyList<BelemetrySentryExporterOptions> SentryExporters { get; }
+    /// <summary>The Sentry exporters with a valid DSN, which is parsed once here.</summary>
+    public IReadOnlyList<BelemetrySentryExporterSettings> SentryExporters { get; }
+
+    /// <summary>
+    /// The least severe log record any Sentry exporter makes an event of (null for all): what <see cref="ExportsSentryOnly"/>
+    /// lets into the queue.
+    /// </summary>
+    public BelemetrySeverity? SentryMinimumSeverity { get; }
 
     public List<string> TraceSources { get; }
 
@@ -223,6 +231,15 @@ internal sealed class BelemetrySettings
     }
 
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || SentryExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
+
+    /// <summary>
+    /// Whether every exporter is a Sentry exporter, which sends error and log events alone: then no metric is collected,
+    /// and no record Sentry would not send is queued - a span without an exception, a page view, a web vital, a custom
+    /// event, a log below <see cref="SentryMinimumSeverity"/>. Spans are still recorded, for their exceptions and the
+    /// trace ids of the logs.
+    /// </summary>
+    public bool ExportsSentryOnly => SentryExporters.Count > 0 && OtlpExporters.Count == 0 && AzureMonitorExporters.Count == 0
+                                     && Options.ConsoleExporter is null && Options.Exporters.Count == 0;
 
     /// <summary>The runtime feature switch behind the <c>MetricsSupport</c> MSBuild property.</summary>
     public const string MetricsSupportSwitch = "System.Diagnostics.Metrics.Meter.IsSupported";
@@ -401,41 +418,69 @@ internal sealed class BelemetrySettings
     private static Uri? GetEnvUri(string name) =>
         GetEnv(name) is { } value && Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null;
 
-    private static List<BelemetryAzureMonitorExporterOptions> ResolveAzure(BelemetryOptions options, bool useEnv)
+    /// <summary>
+    /// The configured exporters, with <paramref name="envValue"/> (an environment variable's) filling in the setting the
+    /// code left unset - and, when <paramref name="addAlone"/>, making an exporter of its own when the code configured
+    /// none. Those still without the setting are left out.
+    /// </summary>
+    private static List<T> ResolveFromEnvironment<T>(List<T> configured, string? envValue, bool addAlone, Func<T> create,
+                                                     Func<T, string?> get, Action<T, string> set)
     {
-        var list = options.AzureMonitorExporters.ToList();
-        var envConnectionString = useEnv ? GetEnv("APPLICATIONINSIGHTS_CONNECTION_STRING") : null;
-
-        if (list.Count == 0 && envConnectionString is not null)
+        var list = configured.ToList();
+        if (envValue is not null)
         {
-            list.Add(new BelemetryAzureMonitorExporterOptions { ConnectionString = envConnectionString });
+            if (addAlone && list.Count == 0) list.Add(create());
+            foreach (var exporter in list)
+            {
+                if (get(exporter) is null) set(exporter, envValue);
+            }
         }
 
-        foreach (var exporter in list)
-        {
-            exporter.ConnectionString ??= envConnectionString;
-        }
-
-        return list.Where(e => string.IsNullOrWhiteSpace(e.ConnectionString) is false).ToList();
+        return list.Where(e => string.IsNullOrWhiteSpace(get(e)) is false).ToList();
     }
 
-    private static List<BelemetrySentryExporterOptions> ResolveSentry(BelemetryOptions options, bool useEnv)
+    private static List<BelemetryAzureMonitorExporterOptions> ResolveAzure(BelemetryOptions options, bool useEnv) =>
+        ResolveFromEnvironment(options.AzureMonitorExporters, useEnv ? GetEnv("APPLICATIONINSIGHTS_CONNECTION_STRING") : null, addAlone: true,
+                               static () => new BelemetryAzureMonitorExporterOptions(), static e => e.ConnectionString, static (e, value) => e.ConnectionString = value);
+
+    /// <summary>
+    /// The Sentry exporters with a valid DSN, parsed once; an invalid one is left out with a startup warning. Unlike
+    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c>, <c>SENTRY_DSN</c> never adds an exporter by itself - an app sets it
+    /// for a Sentry SDK of its own, which would then report every error a second time - it only fills in the DSN of one
+    /// the code added without.
+    /// </summary>
+    private List<BelemetrySentryExporterSettings> ResolveSentry(BelemetryOptions options, bool useEnv)
     {
-        var list = options.SentryExporters.ToList();
-        var envDsn = useEnv ? GetEnv("SENTRY_DSN") : null;
+        var list = ResolveFromEnvironment(options.SentryExporters, useEnv ? GetEnv("SENTRY_DSN") : null, addAlone: false,
+                                          static () => new BelemetrySentryExporterOptions(), static e => e.Dsn, static (e, value) => e.Dsn = value);
 
-        // As with Application Insights: the variable alone turns the exporter on, and fills in a DSN the code left unset.
-        if (list.Count == 0 && envDsn is not null)
+        var resolved = new List<BelemetrySentryExporterSettings>(list.Count);
+        for (var i = 0; i < list.Count; i++)
         {
-            list.Add(new BelemetrySentryExporterOptions { Dsn = envDsn });
+            try
+            {
+                resolved.Add(new(list[i], SentryDsn.Parse(list[i].Dsn!)));
+            }
+            catch (FormatException ex)
+            {
+                StartupWarnings.Add($"The Sentry exporter #{i} is skipped: its DSN is invalid ({ex.Message}) - expected https://<public key>@<host>/<project id>, as the project's Client Keys page shows it. No error reaches Sentry through it.");
+            }
         }
 
-        foreach (var exporter in list)
-        {
-            exporter.Dsn ??= envDsn;
-        }
+        return resolved;
+    }
 
-        return list.Where(e => string.IsNullOrWhiteSpace(e.Dsn) is false).ToList();
+    private static BelemetrySeverity? LeastSevere(IReadOnlyList<BelemetrySentryExporterSettings> exporters)
+    {
+        // Without an exporter nothing passes.
+        var least = BelemetryLogger.ToMinimumSeverity(Microsoft.Extensions.Logging.LogLevel.None);
+        foreach (var exporter in exporters)
+        {
+            var minimum = BelemetryLogger.ToMinimumSeverity(exporter.Options.MinimumEventLevel);
+            if (minimum is null) return null;
+            if (minimum < least) least = minimum;
+        }
+        return least;
     }
 
     private static string? GetEnv(string name)

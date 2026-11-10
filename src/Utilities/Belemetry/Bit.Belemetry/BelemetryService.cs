@@ -104,10 +104,7 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
         var record = CreateRecord(BelemetryFeatures.Errors, BelemetrySeverity.Error, exception.Message, attributes);
         record.EventName = BelemetrySemanticConventions.ExceptionEvent;
         record.SeverityText = "Error";
-        record.Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
-        record.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
-        record.Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, exception.ToString());
-        record.Exception = exception;
+        record.SetException(exception);
         Enqueue(record);
     }
 

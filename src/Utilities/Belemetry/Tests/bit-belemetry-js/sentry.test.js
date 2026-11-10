@@ -104,6 +104,39 @@ describe('stack parsing', () => {
         expect(parseFrame('TypeError: x is undefined')).toBeNull();
     });
 
+    it('drops a line number out of range rather than failing (SentryStackTraceTests)', () => {
+        expect(parseFrame('at f (https://shop.test/app.js:99999999999:1)')).toEqual({ function: 'f', filename: 'https://shop.test/app.js', abs_path: 'https://shop.test/app.js', colno: 1, in_app: true });
+        expect(parseFrame('at f (https://shop.test/app.js:١:٢)').filename).toBe('https://shop.test/app.js:١:٢');
+        expect(parseFrame('f@shop:99999999999')).toBeNull();
+        expect(dotnetFrame('at X.Y.Z() in /src/a.cs:line ١')).toBeNull();
+        expect(dotnetFrame('at X.Y.Z() in /src/a.cs:line 99999999999').lineno).toBeUndefined();
+    });
+
+    it('does not count the .NET runtime\'s WebAssembly as the app\'s', () => {
+        const frames = parseStack('Error: boom\n    at wasm://wasm/00a8e8e6:wasm-function[8519]:0x1d1d5d\n    at render (https://shop.test/app.js:10:15)');
+        expect(frames.map(f => f.in_app)).toEqual([true, false]);
+    });
+
+    it('keeps the frames of a JS interop error that carries .NET text', () => {
+        const stack = [
+            'Error: System.InvalidOperationException: boom',
+            '   at Shop.Interop.Save() in /src/Shop/Interop.cs:line 9',
+            '   at Shop.Interop.<>c.<Run>b__0_0()',
+            '    at Object.invokeMethodAsync (https://shop.test/_framework/blazor.webassembly.js:1:3000)',
+            '    at save (https://shop.test/app.js:10:15)',
+        ].join('\n');
+        expect(isDotnetStack(stack)).toBe(false);
+        expect(parseStack(stack).map(f => [f.function, f.lineno, f.in_app])).toEqual([['save', 10, true], ['Object.invokeMethodAsync', 1, false]]);
+        expect(isDotnetStack('System.Exception: mail me@example.com:25\n   at X.Y.Z()')).toBe(true);
+
+        const record = error({
+            attributes: { 'exception.type': 'Error', 'exception.message': 'System.InvalidOperationException: boom', 'exception.stacktrace': stack },
+        });
+        const [event] = toEvents({ resource, spans: [], logs: [record] }, context(), nextId);
+        expect(event.platform).toBe('javascript');
+        expect(event.exception.values[0].stacktrace.frames.map(f => f.function)).toEqual(['save', 'Object.invokeMethodAsync']);
+    });
+
     it('keeps the newest frames of a deep stack', () => {
         const stack = Array.from({ length: MAX_FRAMES + 20 }, (_, i) => `    at f${i} (https://shop.test/app.js:${i + 1}:1)`).join('\n');
         const frames = parseStack(stack);
@@ -163,6 +196,53 @@ describe('.NET stacks', () => {
             ['System.Exception', 'a', ['A']],
         ]);
         expect(dotnetFrame('at App.Program.Main(String[] args) + 0x5a').function).toBe('Main');
+    });
+
+    it('leave a message line that starts with "at" in the header', () => {
+        const chain = parseDotnetStack([
+            'System.InvalidOperationException: Validation failed:',
+            'at least one item is required',
+            ' ---> System.ArgumentException: empty',
+            '   at Shop.Cart.Check() in /src/Shop/Cart.cs:line 5',
+            '   --- End of inner exception stack trace ---',
+            '   at Shop.Cart.Save() in /src/Shop/Cart.cs:line 9',
+        ].join('\n'));
+        expect(chain.map(e => [e.type, e.message, e.frames.map(f => f.function)])).toEqual([
+            ['System.InvalidOperationException', 'Validation failed:\nat least one item is required', ['Save']],
+            ['System.ArgumentException', 'empty', ['Check']],
+        ]);
+        expect(parseDotnetStack('System.Exception: boom\n   at App!<BaseAddress>+0x1a2b\n   at App!<BaseAddress>+0x3c4d')).toEqual([{ type: 'System.Exception', message: 'boom', frames: [] }]);
+    });
+
+    it('name an async lambda\'s or local function\'s state machine as the method it was written as', () => {
+        expect(dotnetFrame('at Shop.Cart.<>c__DisplayClass0_0.<<BuildRenderTree>b__0>d.MoveNext() in /src/Cart.razor:line 3'))
+            .toMatchObject({ module: 'Shop.Cart.<>c__DisplayClass0_0', function: '<BuildRenderTree>b__0', lineno: 3 });
+        expect(dotnetFrame('at Shop.Program.<<Main>g__Local|0_0>d.MoveNext()')).toMatchObject({ module: 'Shop.Program', function: '<Main>g__Local|0_0' });
+        expect(dotnetFrame('at Shop.Orders.<Items>d__7.MoveNext()')).toMatchObject({ module: 'Shop.Orders', function: 'Items' });
+    });
+
+    it('read a frame as C# does, in one pass', () => {
+        // The same lines as SentryStackTraceTests.Dotnet_Frame_IsReadAsThePatternReadsIt_InOnePass, against the pattern
+        // the hand-written reader replaced.
+        const pattern = /^at ([^\s(]+)\((.*?)\)(?: \+ 0x[0-9a-fA-F]+)?(?: in (.+):line (\d+))?$/;
+        const lines = [
+            'at A.B.C()', 'at A.B.C(String a, Int32 b)', 'at A.B.C(Func`1 f) + 0x2a', 'at A.B.C() + 0x', 'at A.B.C() + 0x2a in /x.cs:line 4',
+            'at A.B.C() in C:\\src\\x.cs:line 12', 'at A.B.C(a) in x:line 1) in y:line 2', 'at A.B.C((x)) in /p (1)/x.cs:line 3', 'at A.B.C() in :line 3',
+            'at A.B.C() in x.cs:line ', 'at A.B.C() trailing', 'at A.B.C ()', 'at (x)', 'at A.B.C(', 'at A..ctor()', 'at A.B.C[T](T x) in x.cs:line 9',
+            'at A.B.C(x) + 0x1 + 0x2', 'at A.B.C()) in x.cs:line 5', 'at f (https://a/b.js:1:2)', 'at https://a/b.js:1:2',
+        ];
+        for (const line of lines) {
+            const match = pattern.exec(line);
+            const frame = dotnetFrame(line);
+            expect(frame !== null, line).toBe(match !== null);
+            if (!frame) continue;
+            expect(frame.abs_path, line).toBe(match[3]);
+            expect(frame.lineno, line).toBe(match[4] === undefined ? undefined : Number(match[4]));
+        }
+        const adversarial = 'at a(' + ') in x:line 1'.repeat(2500) + '!';
+        const start = Date.now();
+        for (let i = 0; i < 10; i++) expect(dotnetFrame(adversarial)).toBeNull();
+        expect(Date.now() - start).toBeLessThan(2000);
     });
 
     it('make a csharp event when the script recorded a .NET exception', () => {
@@ -278,6 +358,11 @@ describe('events', () => {
         expect(event.user).toEqual({ id: 'alice' });
         expect(event.extra).toEqual({ extra: 1 });
         expect(event.exception.values[0].mechanism.handled).toBe(true);
+    });
+
+    it('links no trace for an all-zero id (SentryEnvelopeSerializerTests)', () => {
+        const record = error({ traceId: '0'.repeat(32), spanId: '0'.repeat(16) });
+        expect(toEvents({ resource, spans: [], logs: [record] }, context(), nextId)[0].contexts.trace).toBeUndefined();
     });
 
     it('tells Sentry to infer the IP address only when asked', () => {
