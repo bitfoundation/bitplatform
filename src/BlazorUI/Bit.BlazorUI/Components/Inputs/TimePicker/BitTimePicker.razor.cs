@@ -33,6 +33,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private ElementReference _inputSecondRef = default!;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private Func<Task>? _startHold;
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private int? _typedDigit;
     private int _typedDigitCount;
@@ -1054,6 +1055,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_startHold is { } startHold)
+        {
+            _startHold = null;
+            _ = startHold();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
@@ -1975,7 +1982,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
         // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
         // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, unit, _cancellationTokenSource);
+        var cts = _cancellationTokenSource;
+        _startHold = () => ContinuousChangeTimeAfterDelay(isNext, unit, cts);
     }
 
     /// <summary>

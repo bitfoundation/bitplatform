@@ -42,6 +42,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private Func<Task>? _startHold;
 
     // One grid, one title and one (year, month) pair per rendered month: a calendar showing a quarter at a
     // time is the same day picker three times over, and everything each of them draws is read out of these
@@ -834,6 +835,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_startHold is { } startHold)
+        {
+            _startHold = null;
+            _ = startHold();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
@@ -2682,7 +2689,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
         // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
         // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, isHour, _cancellationTokenSource);
+        var cts = _cancellationTokenSource;
+        _startHold = () => ContinuousChangeTimeAfterDelay(isNext, isHour, cts);
     }
 
     /// <summary>

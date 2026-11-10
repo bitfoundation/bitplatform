@@ -51,6 +51,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private Func<Task>? _startHold;
     private DotNetObjectReference<BitDateRangePicker>? _dotnetObj;
 
     // The closest excluded day on each side of the picked start date, which bounds how far the range
@@ -1481,6 +1482,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_startHold is { } startHold)
+        {
+            _startHold = null;
+            _ = startHold();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
@@ -4030,7 +4037,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // so awaiting it would leave the pointerdown event handler (and the render it drives) pending
         // for the whole duration of the press. Its lifetime is owned by the cancellation token source
         // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, isHour, isStartTime, _cancellationTokenSource);
+        var cts = _cancellationTokenSource;
+        _startHold = () => ContinuousChangeTimeAfterDelay(isNext, isHour, isStartTime, cts);
     }
 
     // A press of a spin button that came from the keyboard rather than from a pointer: Enter and the space bar fire a

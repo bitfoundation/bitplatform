@@ -2378,6 +2378,19 @@ public class BitTimePickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Click_OnAPageThatRendersSlowly_StepsOnce()
+    {
+        await OpenAsync(Url);
+
+        var callout = StandaloneCallout("continuous-slow");
+        await Spin(callout, "Increase minute").ClickAsync();
+        await Expect(Out("continuous-slow-value")).ToHaveTextAsync("10:01:00");
+
+        await Page.WaitForTimeoutAsync(1500);
+        await Expect(Out("continuous-slow-value")).ToHaveTextAsync("10:01:00");
+    }
+
+    [TestMethod]
     public async Task PressAndHold_PointerLeavingTheButton_StopsTheSpin()
     {
         await OpenAsync(Url);

@@ -67,6 +67,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private int _selfValueChangeVersion;
     private Task _pendingKeyDown = Task.CompletedTask;
     private CancellationTokenSource _continuousChangeValueCts = new();
+    private Func<Task>? _startHold;
 
 
 
@@ -950,6 +951,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_startHold is { } startHold)
+        {
+            _startHold = null;
+            _ = startHold();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         // A step the component took itself has reached the input by now, so reading the live text is
@@ -2059,7 +2066,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // so awaiting it would leave the pointerdown event handler (and the render it drives) pending
         // for the whole duration of the press. Its lifetime is owned by the cancellation token source
         // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeValueAfterDelay(isIncrement, _continuousChangeValueCts);
+        var cts = _continuousChangeValueCts;
+        _startHold = () => ContinuousChangeValueAfterDelay(isIncrement, cts);
     }
 
     /// <summary>

@@ -50,6 +50,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private Func<Task>? _startHold;
     private DotNetObjectReference<BitDatePicker>? _dotnetObj;
     private DateTime?[][,] _daysOfMonths = [new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK]];
 
@@ -1357,6 +1358,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_startHold is { } startHold)
+        {
+            _startHold = null;
+            _ = startHold();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
@@ -3587,7 +3594,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
         // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
         // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, unit, _cancellationTokenSource);
+        var cts = _cancellationTokenSource;
+        _startHold = () => ContinuousChangeTimeAfterDelay(isNext, unit, cts);
     }
 
     // A press of a spin button that came from the keyboard rather than from a pointer: Enter and the space bar

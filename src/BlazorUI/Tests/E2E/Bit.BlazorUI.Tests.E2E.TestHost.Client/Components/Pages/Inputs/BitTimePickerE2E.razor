@@ -714,6 +714,11 @@
     <span id="continuous-bounded-value">@Show(_continuousBounded)</span>
 </E2ESection>
 
+<E2ESection Id="continuous-slow" Title="A click on a page that renders slowly">
+    <BitTimePicker Label="Slow page" Standalone ContinuousSpinDelay="300" Culture="_en" @bind-Value="_continuousSlow" />
+    <span id="continuous-slow-value">@ShowSlowly(_continuousSlow)</span>
+</E2ESection>
+
 <E2ESection Id="paste" Title="Paste">
     <BitTimePicker Label="Paste" Standalone ShowSeconds Culture="_en" @bind-Value="_paste" />
     <span id="paste-value">@Show(_paste)</span>
@@ -854,6 +859,7 @@
     private TimeSpan? _continuous = new(10, 0, 0);
     private int _syncs;
     private TimeSpan? _continuousBounded = new(10, 0, 0);
+    private TimeSpan? _continuousSlow = new(10, 0, 0);
     private TimeSpan? _paste;
     private bool _modalOpen;
     private int _modalPickerCloses;
@@ -874,6 +880,17 @@
     private string Saved() => $"Saved {++_submits}";
 
     private string Rejected() => $"Rejected {++_submits}";
+
+    private static string ShowSlowly(TimeSpan? value)
+    {
+        if (value != new TimeSpan(10, 0, 0))
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            while (watch.ElapsedMilliseconds < 700) { }
+        }
+
+        return Show(value);
+    }
 
     private static string Show(TimeSpan? value) => value?.ToString(@"hh\:mm\:ss") ?? "null";
 
