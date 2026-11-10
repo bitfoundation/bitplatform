@@ -343,7 +343,9 @@ jobs:
             echo "::warning::The database has migrations this version doesn't know and shares none with it, so they stay applied."
           else
             # An older commit, or another branch on Test, is being deployed: only the image running now has the Down of the
-            # migrations this one doesn't know, and it goes back to the last migration both know.
+            # migrations this one doesn't know, and it goes back to the last migration both know. That is also where this
+            # image goes back to if the deployment fails before any new container starts, undoing only what it applied.
+            echo "undo_to=$shared" >> "$GITHUB_OUTPUT"
             #if (api == "Standalone")
             api=serverapi
             #else

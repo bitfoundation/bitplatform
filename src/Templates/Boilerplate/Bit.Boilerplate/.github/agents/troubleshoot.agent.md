@@ -17,11 +17,14 @@ there too.
 - Settle which tenant too, since the data the user saw belongs to it.
 <!--#endif-->
 - Read the code that environment runs, not your working tree, at the commit deployed there: for Production a commit of
-  `main`, and for Test whichever branch was deployed to it last, which may not be merged yet. The CD run that deployed
-  it names the branch and the commit (`gh run list --workflow cd-test.yml --status success --limit 1 --json
-  headBranch,headSha,createdAt`, or `cd-production.yml`), and dev-mcp's `GetDeploymentInfo` the version. Check it out
-  in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is touched, and a change
-  that isn't deployed yet can't pass for the cause.
+  `main`, and for Test whichever branch was deployed to it last, which may not be merged yet. That is the newest CD run
+  whose `Replace the apps` step succeeded, whatever the run's own result, since a check after that step can fail with
+  the new version already serving: list the runs (`gh run list --workflow cd-test.yml --limit 10 --json
+  databaseId,headBranch,headSha,status,conclusion,createdAt`, or `cd-production.yml`) and read their steps (`gh run view
+  <id> --json jobs`). The running containers' image tags, `<environment>-<commit>` (`docker compose ps` in the deploy
+  folder on the VM), settle it when the runs leave a doubt, and dev-mcp's `GetDeploymentInfo` gives the version. Check
+  it out in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is touched, and a
+  change that isn't deployed yet can't pass for the cause.
 - Use that environment's dev-mcp server, `dev-mcp-test` or `dev-mcp-production` in the MCP files, where the deploy
   skill put their addresses. Its title and instructions name the environment it reads: check that they say the one the
   problem was seen in before you rely on an answer.
