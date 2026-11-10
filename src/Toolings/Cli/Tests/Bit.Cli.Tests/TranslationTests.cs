@@ -207,6 +207,7 @@ public class TranslationTests
         Assert.AreEqual(CliApp.ExitFailed, exitCode);
         Assert.IsEmpty(client.Batches);
         StringAssert.Contains(host.Output, "OpenAI__ApiKey");
+        StringAssert.Contains(host.Output, "AI agent");
     }
 
     [TestMethod]

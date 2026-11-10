@@ -77,7 +77,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (request.Check)
         {
-            cli.Console.Fail($"{totalMissing} translation{(totalMissing == 1 ? " is" : "s are")} missing. Run bit translate to fill them in.");
+            cli.Console.Fail($"{totalMissing} translation{(totalMissing == 1 ? " is" : "s are")} missing. Run bit translate with an API key to fill them in, or have your AI agent add them to the .resx files above, or add them any other way. Every translation has to be there.");
             return CliApp.ExitCheckFailed;
         }
 
@@ -89,7 +89,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (string.IsNullOrWhiteSpace(settings.OpenAI.ApiKey))
         {
-            cli.Console.Fail($"{totalMissing} translation{(totalMissing == 1 ? " is" : "s are")} missing and there's no API key to translate {(totalMissing == 1 ? "it" : "them")}. Set the OpenAI__ApiKey environment variable (or OpenAI:ApiKey in {ResxTranslatorSettings.FileName}).");
+            cli.Console.Fail($"{totalMissing} translation{(totalMissing == 1 ? " is" : "s are")} missing and there's no API key to translate {(totalMissing == 1 ? "it" : "them")}. Set the OpenAI__ApiKey environment variable (or OpenAI:ApiKey in {ResxTranslatorSettings.FileName}), or have your AI agent add the missing entries to the .resx files above, or add them any other way. Every translation has to be there.");
             return CliApp.ExitFailed;
         }
 
@@ -146,7 +146,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (skippedKeys > 0)
         {
-            cli.Console.Fail($"{skippedKeys} translation{(skippedKeys == 1 ? " is" : "s are")} still missing: the model's placeholders didn't match. Run bit translate again.");
+            cli.Console.Fail($"{skippedKeys} translation{(skippedKeys == 1 ? " is" : "s are")} still missing: the model's placeholders didn't match. Run bit translate again, or have your AI agent add them to the .resx files, or add them any other way. Every translation has to be there.");
             return CliApp.ExitFailed;
         }
 
