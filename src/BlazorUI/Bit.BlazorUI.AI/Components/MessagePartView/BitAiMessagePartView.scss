@@ -18,6 +18,11 @@
     box-sizing: border-box;
 }
 
+// A view that draws nothing at the moment - a tool call the options hide - takes no room, and no gap, in its message.
+.bit-aimpv:empty {
+    display: none;
+}
+
 // A part of a kind no view knows is shown as the text it carries, the way it was written.
 .bit-aimpv-fbk {
     margin: 0;

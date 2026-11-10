@@ -93,6 +93,12 @@ public sealed class BitAiMessage : IBitAiMessage
     public string? FeedbackComment { get; private set; }
 
     /// <summary>
+    /// The prompts a reader might send next, offered under the reply (<see cref="BitAiFollowUpsEvent"/>), or
+    /// <see langword="null"/> when it offers none.
+    /// </summary>
+    public IReadOnlyList<string>? FollowUps { get; private set; }
+
+    /// <summary>
     /// The agent run that produced this message, when it came from a multi-step agent.
     /// </summary>
     public BitAiAgentRun? Run { get; internal set; }
@@ -337,6 +343,10 @@ public sealed class BitAiMessage : IBitAiMessage
     /// Merges generation metadata, keeping existing values wherever the incoming record leaves a
     /// field null. Providers report metadata piecemeal, so replacing wholesale loses information.
     /// </summary>
+    /// <remarks>
+    /// <see cref="BitAiGenerationMetadata.Extra"/> is merged key by key the same way: an incoming value replaces the one
+    /// of its key, and the keys the incoming record does not name keep theirs.
+    /// </remarks>
     /// <param name="metadata">The metadata to merge.</param>
     public void MergeMetadata(BitAiGenerationMetadata metadata)
     {
@@ -354,9 +364,63 @@ public sealed class BitAiMessage : IBitAiMessage
             TimeToFirstToken = metadata.TimeToFirstToken ?? Metadata.TimeToFirstToken,
             Temperature = metadata.Temperature ?? Metadata.Temperature,
             ContextWindow = metadata.ContextWindow ?? Metadata.ContextWindow,
-            Extra = metadata.Extra ?? Metadata.Extra,
+            Extra = MergeExtra(Metadata.Extra, metadata.Extra),
         };
         NotifyChanged();
+    }
+
+    /// <summary>
+    /// Reads a value of <see cref="Extensions"/> as a type of the app, with the JSON metadata of the app's own
+    /// <see cref="System.Text.Json.Serialization.JsonSerializerContext"/>. Safe to trim.
+    /// </summary>
+    /// <remarks>
+    /// The value the app put there is handed back as it is. A message restored from JSON
+    /// (<see cref="BitAiConversationSerializer.FromJson"/>) holds every value as the <see cref="JsonElement"/> it was
+    /// written as, which this reads as <typeparamref name="T"/> - so the same call works before and after a reload.
+    /// </remarks>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The key of the value.</param>
+    /// <param name="typeInfo">The metadata of <typeparamref name="T"/>, whose options the reading follows.</param>
+    /// <param name="value">The value, when there is one of that type.</param>
+    /// <returns>
+    /// <see langword="true"/> when the key holds a <typeparamref name="T"/>, or JSON that reads as one; otherwise
+    /// <see langword="false"/>.
+    /// </returns>
+    public bool TryGetExtension<T>(string key, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value) =>
+        BitAiExtensionValues.TryGet(Extensions, key, typeInfo, out value);
+
+    /// <summary>
+    /// Reads a value of <see cref="Extensions"/> as a type of the app, with the reflection-based System.Text.Json
+    /// serializer.
+    /// </summary>
+    /// <remarks>
+    /// The value the app put there is handed back as it is. A message restored from JSON
+    /// (<see cref="BitAiConversationSerializer.FromJson"/>) holds every value as the <see cref="JsonElement"/> it was
+    /// written as, which this reads as <typeparamref name="T"/> - so the same call works before and after a reload.
+    /// </remarks>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The key of the value.</param>
+    /// <param name="value">The value, when there is one of that type.</param>
+    /// <param name="options">Serializer options. Defaults to web defaults.</param>
+    /// <returns>
+    /// <see langword="true"/> when the key holds a <typeparamref name="T"/>, or JSON that reads as one; otherwise
+    /// <see langword="false"/>.
+    /// </returns>
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
+    public bool TryGetExtension<T>(string key, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value, JsonSerializerOptions? options = null) =>
+        BitAiExtensionValues.TryGet(Extensions, key, options, out value);
+
+    // Extra is reported piecemeal like the rest of the metadata, so a record naming some keys keeps the others.
+    private static IReadOnlyDictionary<string, object?>? MergeExtra(IReadOnlyDictionary<string, object?>? existing, IReadOnlyDictionary<string, object?>? incoming)
+    {
+        if (incoming is null || incoming.Count == 0) return existing ?? incoming;
+        if (existing is null || existing.Count == 0) return incoming;
+
+        var merged = new Dictionary<string, object?>(existing, (existing as Dictionary<string, object?>)?.Comparer);
+        foreach (var (key, value) in incoming) merged[key] = value;
+
+        return merged;
     }
 
     /// <summary>
@@ -371,6 +435,17 @@ public sealed class BitAiMessage : IBitAiMessage
         Feedback = feedback;
         FeedbackComment = feedbackComment;
         Run = run;
+        NotifyChanged();
+    }
+
+    /// <summary>Sets the prompts offered under the reply.</summary>
+    /// <param name="followUps">The prompts, or <see langword="null"/> (or an empty list) to offer none.</param>
+    public void SetFollowUps(IReadOnlyList<string>? followUps)
+    {
+        // Blank prompts would be buttons that send nothing.
+        var kept = followUps?.Where(f => string.IsNullOrWhiteSpace(f) is false).ToArray();
+
+        FollowUps = kept is { Length: > 0 } ? kept : null;
         NotifyChanged();
     }
 

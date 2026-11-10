@@ -23,6 +23,7 @@ public class BitAiChatParamsTests : BitAiTestBase
     private static readonly string[] _notCascaded =
     [
         nameof(BitAiChat.CascadingParameters),
+        nameof(BitAiChat.AttachmentUploader),
         nameof(BitAiChat.Commands),
         nameof(BitAiChat.ComposerHintTemplate),
         nameof(BitAiChat.ComposerPrefixTemplate),
@@ -35,6 +36,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.ListFooterTemplate),
         nameof(BitAiChat.ListHeaderTemplate),
         nameof(BitAiChat.Mentions),
+        nameof(BitAiChat.MessageActionsTemplate),
         nameof(BitAiChat.MessageTemplate),
         nameof(BitAiChat.OnAttachmentRejected),
         nameof(BitAiChat.OnCitationClick),

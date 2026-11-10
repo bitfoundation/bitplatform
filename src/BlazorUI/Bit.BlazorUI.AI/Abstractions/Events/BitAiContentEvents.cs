@@ -22,6 +22,31 @@ public sealed record BitAiCitationEvent : BitAiEvent
 }
 
 /// <summary>
+/// The prompts a reader might send next, offered under the reply. Put on the message as
+/// <see cref="BitAiMessage.FollowUps"/>; a later one replaces an earlier one.
+/// </summary>
+/// <remarks>
+/// A <see cref="BitAiChatMessage"/> offers them under the newest reply only, once it has finished and while no turn is in
+/// flight, and sends the one picked as the next prompt. An empty list takes them away.
+/// </remarks>
+public sealed record BitAiFollowUpsEvent : BitAiEvent
+{
+    /// <summary>Creates the event.</summary>
+    /// <param name="followUps">The prompts to offer, in the order they are shown.</param>
+    public BitAiFollowUpsEvent(IReadOnlyList<string> followUps)
+    {
+        ArgumentNullException.ThrowIfNull(followUps);
+        FollowUps = followUps;
+    }
+
+    /// <summary>The prompts to offer, in the order they are shown.</summary>
+    public IReadOnlyList<string> FollowUps { get; }
+
+    /// <inheritdoc />
+    public override string Type => "follow_ups";
+}
+
+/// <summary>
 /// An image is part of the response.
 /// </summary>
 public sealed record BitAiImageEvent : BitAiPartScopedEvent

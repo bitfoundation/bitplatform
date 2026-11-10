@@ -64,6 +64,90 @@ public class BitAiToolApprovalTests : BitAiTestBase
         Assert.AreEqual(BitAiApprovalDecision.ApprovedAlways, raised);
     }
 
+    [TestMethod]
+    public void AllowingAlwaysCanBeLeftOutForEveryCall()
+    {
+        var call = AwaitingApproval();
+
+        var component = RenderComponent<BitAiToolApproval>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.ShowApproveAlways, false));
+
+        var buttons = component.FindAll("button");
+        Assert.AreEqual(2, buttons.Count);
+        Assert.AreEqual(BitAiStrings.Default.Reject, buttons[0].TextContent.Trim());
+        Assert.AreEqual(BitAiStrings.Default.Approve, buttons[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void AllowingAlwaysIsLeftOutForACallThatMustBeConfirmedEveryTime()
+    {
+        var call = AwaitingApproval(BitAiToolRisk.Destructive);
+        call.AllowApproveAlways = false;
+
+        var component = RenderComponent<BitAiToolApproval>(p => p.Add(c => c.Call, call));
+
+        Assert.AreEqual(2, component.FindAll("button").Count);
+        Assert.IsFalse(component.Markup.Contains(BitAiStrings.Default.ApproveAlways));
+    }
+
+    [TestMethod]
+    public void TheButtonsSayWhatTheAppAsks()
+    {
+        var call = AwaitingApproval();
+
+        var component = RenderComponent<BitAiToolApproval>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.RejectText, "Keep the files")
+            .Add(c => c.ApproveAlwaysText, "Always clear")
+            .Add(c => c.ApproveText, "Clear them"));
+
+        var buttons = component.FindAll("button");
+        Assert.AreEqual("Keep the files", buttons[0].TextContent.Trim());
+        Assert.AreEqual("Always clear", buttons[1].TextContent.Trim());
+        Assert.AreEqual("Clear them", buttons[2].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void TheDetailIsShownUnderTheQuestionGivenTheCall()
+    {
+        var call = AwaitingApproval();
+
+        var component = RenderComponent<BitAiToolApproval>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.DetailTemplate, (RenderFragment<BitAiToolCallPart>)(c => builder => builder.AddContent(0, $"About to run {c.ToolName}"))));
+
+        var detail = component.Find(".bit-aitap-dtl");
+        Assert.AreEqual("About to run delete_everything", detail.TextContent.Trim());
+        // Under the question, above the buttons.
+        Assert.HasCount(1, component.FindAll(".bit-aitap-txt + .bit-aitap-dtl + .bit-aitap-act"));
+    }
+
+    [TestMethod]
+    public void TheDetailAndTheTextsCascadeFromBitParams()
+    {
+        var call = AwaitingApproval();
+
+        var component = RenderComponent<BitParams>(p =>
+        {
+            p.Add(x => x.Parameters, new List<IBitComponentParams>
+            {
+                new BitAiToolApprovalParams
+                {
+                    ShowApproveAlways = false,
+                    ApproveText = "Yes",
+                    DetailTemplate = c => builder => builder.AddContent(0, c.ToolName),
+                },
+            });
+            p.AddChildContent<BitAiToolApproval>(a => a.Add(c => c.Call, call));
+        });
+
+        var buttons = component.FindAll("button");
+        Assert.AreEqual(2, buttons.Count);
+        Assert.AreEqual("Yes", buttons[1].TextContent.Trim());
+        Assert.AreEqual("delete_everything", component.Find(".bit-aitap-dtl").TextContent.Trim());
+    }
+
     // As a session refuses a decision on a call no longer waiting for one, so does the prompt without a session: a
     // declined call never moves back to pending.
     [TestMethod]

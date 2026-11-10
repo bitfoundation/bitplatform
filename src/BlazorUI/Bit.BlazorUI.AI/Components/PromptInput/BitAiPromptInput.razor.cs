@@ -42,6 +42,8 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private readonly Dictionary<string, StagedResources> _staged = [];
     private readonly List<BitAiAttachmentRejection> _rejections = [];
     private readonly List<MenuEntry> _menuItems = [];
+    // The uploads in flight (AttachmentUploader), by the attachment they are for, each cancelled as its file is taken off.
+    private readonly Dictionary<string, CancellationTokenSource> _uploads = [];
 
     private BitAiIconClassesCache<BitButtonClassStyles> _attachButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _sendButtonClasses;
@@ -123,6 +125,21 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// <see cref="BitAiModelCapabilities.Audio"/>.
     /// </remarks>
     [Parameter] public bool AllowDictation { get; set; }
+
+    /// <summary>
+    /// Uploads each file as it is staged, given the attachment, a progress to report the fraction sent (0 to 1) to, and a
+    /// token cancelled when the file is taken off; it returns the attachment to send in its place - typically
+    /// <c>attachment with { Url = ..., Data = null }</c>, the bytes now held by the app's storage.
+    /// </summary>
+    /// <remarks>
+    /// While a file uploads its chip shows how far it has got, and when the upload fails - the uploader throws, or returns
+    /// the attachment with a <see cref="BitAiAttachmentStatus.Failed"/> status and an <see cref="BitAiAttachment.Error"/>
+    /// to show - the chip says so in the error color. Either holds the send back until the file is uploaded or taken off,
+    /// so a prompt never goes without a file the user meant to send. The text of an exception is not shown, since it may
+    /// say more about the server than a reader should see: return a failed attachment to explain. When null, the files
+    /// are handed over as they were staged.
+    /// </remarks>
+    [Parameter] public Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>? AttachmentUploader { get; set; }
 
     /// <summary>
     /// The capabilities to assume, when there is no <see cref="Model"/> record or its capabilities should be overridden.
@@ -234,7 +251,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// Raised when the user submits. Receives the text and the attachments staged in the composer.
     /// </summary>
     /// <remarks>
-    /// When it is not set, the submission goes to the <see cref="Session"/>.
+    /// When it is not set, the submission goes to the <see cref="Session"/>. The composer is cleared as the submission is
+    /// made; a handler that could not send it calls <see cref="BitAiPromptSubmission.Reject"/>, and the text and the
+    /// attachments are put back once it returns. A submission the session does not take is put back the same way.
     /// </remarks>
     [Parameter] public EventCallback<BitAiPromptSubmission> OnSubmit { get; set; }
 
@@ -336,6 +355,8 @@ public partial class BitAiPromptInput : BitAiComponentBase
                 // A buffered file has released its stream already; a lazy one still needs it.
                 _staged[attachment.AttachmentId] = new StagedResources(attachment.ContentFactory is not null ? file.Content : null,
                                                                        file.PreviewUrl);
+
+                StartUpload(attachment);
             }
             catch (Exception exception) when (IsReadFailure(exception))
             {
@@ -549,9 +570,23 @@ public partial class BitAiPromptInput : BitAiComponentBase
                                    ? "bit-aipri-ctr bit-aipri-ctn bit-aipri-cto"
                                    : NearLimit ? "bit-aipri-ctr bit-aipri-ctn" : "bit-aipri-ctr";
 
+    private bool HasContent => string.IsNullOrWhiteSpace(Value) is false || _attachments.Count > 0;
+
+    // Whether a prompt sent while a turn is in flight stops that turn and goes in its place
+    // (BitAiChatSessionOptions.InterruptOnSubmit), rather than waiting for the turn to end.
+    private bool InterruptsOnSubmit => Session?.Options.InterruptOnSubmit is true;
+
+    // The one button is a stop button while a turn is in flight - unless the session takes a new prompt in place of the
+    // turn and there is one to send, which it then sends.
+    private bool ShowStop => IsGenerating && (InterruptsOnSubmit is false || HasContent is false);
+
+    // A file still uploading, or whose upload failed, holds the send back: the prompt would go without it.
+    private bool AttachmentsReady => _attachments.TrueForAll(a => a.Status is not (BitAiAttachmentStatus.Uploading or BitAiAttachmentStatus.Failed));
+
     private bool CanSubmit => Disabled is false
-                              && IsGenerating is false
-                              && (string.IsNullOrWhiteSpace(Value) is false || _attachments.Count > 0)
+                              && (IsGenerating is false || InterruptsOnSubmit)
+                              && HasContent
+                              && AttachmentsReady
                               && (MaxLength is not { } max || Value.Length <= max);
 
     // Whether a plain Escape pressed in the text does something - closing the menu, or else stopping the turn in flight -
@@ -685,13 +720,15 @@ public partial class BitAiPromptInput : BitAiComponentBase
     // submit key keeps from .NET altogether (registerSubmitKey).
     private static bool IsComposing(KeyboardEventArgs e) => e.IsComposing || e.Key is "Process";
 
-    private Task SendOrStopAsync() => IsGenerating ? StopAsync() : SubmitAsync();
+    private Task SendOrStopAsync() => ShowStop ? StopAsync() : SubmitAsync();
 
     private async Task SubmitAsync()
     {
         if (CanSubmit is false) return;
 
+        var text = Value;
         var submission = new BitAiPromptSubmission(Value.Trim(), _attachments.ToArray());
+        var staged = new Dictionary<string, StagedResources>(_staged);
 
         Value = string.Empty;
         _attachments.Clear();
@@ -708,12 +745,49 @@ public partial class BitAiPromptInput : BitAiComponentBase
             await _js.BitAiPromptInputClearDraft(DraftKey);
         }
 
-        await OnSubmit.InvokeAsync(submission);
-
-        if (Session is not null && OnSubmit.HasDelegate is false)
+        if (OnSubmit.HasDelegate)
         {
-            await Session.SubmitAsync(submission.Text, submission.Attachments);
+            await OnSubmit.InvokeAsync(submission);
         }
+        else if (Session is not null && await Session.SubmitAsync(submission.Text, submission.Attachments) is null)
+        {
+            // The session took nothing - a turn it could not interrupt was in flight - so the prompt is still the user's.
+            submission.Reject();
+        }
+
+        if (submission.IsRejected)
+        {
+            await RestoreAsync(text, submission.Attachments, staged);
+        }
+    }
+
+    // Puts back what a submission that was turned down took out of the composer, ahead of anything added since, so the user
+    // can send it again. The resources of its files are the composer's to release again.
+    private async Task RestoreAsync(string text, IReadOnlyList<BitAiAttachment> attachments, Dictionary<string, StagedResources> staged)
+    {
+        if (IsDisposing)
+        {
+            foreach (var resources in staged.Values)
+            {
+                await ReleaseAsync(resources);
+            }
+
+            return;
+        }
+
+        Value = Value.Length == 0 ? text : $"{text}\n{Value}";
+
+        _attachments.InsertRange(0, attachments.Where(a => _attachments.Any(b => b.AttachmentId == a.AttachmentId) is false));
+
+        foreach (var (id, resources) in staged)
+        {
+            _staged[id] = resources;
+        }
+
+        await ValueChanged.InvokeAsync(Value);
+        await SaveDraftAsync();
+
+        StateHasChanged();
     }
 
     private async Task StopAsync()
@@ -821,7 +895,10 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
     private async Task RemoveAttachmentAsync(BitAiAttachment attachment)
     {
-        _attachments.Remove(attachment);
+        // The chip may hand back the attachment as it was rendered, which an upload has replaced since: it is taken off by
+        // its id.
+        _attachments.RemoveAll(a => a.AttachmentId == attachment.AttachmentId);
+        CancelUpload(attachment.AttachmentId);
         _focusText = true;
 
         if (_staged.Remove(attachment.AttachmentId, out var staged))
@@ -841,6 +918,7 @@ public partial class BitAiPromptInput : BitAiComponentBase
             if (ShowAttachments && IsAccepted(attachment.Name, contentType)) continue;
 
             _attachments.Remove(attachment);
+            CancelUpload(attachment.AttachmentId);
 
             if (_staged.Remove(attachment.AttachmentId, out var staged))
             {
@@ -882,6 +960,112 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
         _attachments.Add(attachment);
         _staged[attachment.AttachmentId] = new StagedResources(owner, previewUrl);
+
+        StartUpload(attachment);
+    }
+
+    // Hands a staged file to the AttachmentUploader, if there is one: its chip shows the upload from now on, and the
+    // attachment the uploader returns takes its place.
+    private void StartUpload(BitAiAttachment attachment)
+    {
+        if (AttachmentUploader is not { } upload) return;
+
+        var cts = new CancellationTokenSource();
+        _uploads[attachment.AttachmentId] = cts;
+
+        ReplaceAttachment(attachment.AttachmentId, attachment with { Status = BitAiAttachmentStatus.Uploading, Progress = 0 });
+
+        _ = UploadAsync(upload, attachment, cts);
+    }
+
+    private async Task UploadAsync(Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>> upload,
+                                   BitAiAttachment attachment,
+                                   CancellationTokenSource cts)
+    {
+        var id = attachment.AttachmentId;
+        BitAiAttachment? uploaded = null;
+
+        try
+        {
+            uploaded = await upload(attachment, new UploadProgress(this, id, cts), cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            // Taken off, or the composer is gone: nothing is left to show the upload on.
+            return;
+        }
+        catch (Exception)
+        {
+            // Shown on the chip as failed, without the text of the exception (see AttachmentUploader).
+        }
+
+        // Taken off, or the composer gone, while the uploader was finishing.
+        if (cts.IsCancellationRequested) return;
+
+        await InvokeAsync(() =>
+        {
+            // Only the upload still in flight for the file may finish it: one cancelled meanwhile has no file any more.
+            if (_uploads.TryGetValue(id, out var current) is false || ReferenceEquals(current, cts) is false) return;
+
+            _uploads.Remove(id);
+            cts.Dispose();
+
+            if (IsDisposing) return;
+
+            var result = uploaded is null
+                         ? attachment with { Status = BitAiAttachmentStatus.Failed, Progress = null }
+                         // An uploader that returns the attachment it was given, changed, keeps its uploading status unless
+                         // it says otherwise: it has finished all the same.
+                         : uploaded.Status is BitAiAttachmentStatus.Uploading or BitAiAttachmentStatus.Pending
+                           ? uploaded with { Status = BitAiAttachmentStatus.Ready, Progress = null }
+                           : uploaded;
+
+            ReplaceAttachment(id, result);
+
+            // An uploader may hand back an attachment of its own: the browser resources of the file follow it.
+            if (result.AttachmentId != id && _staged.Remove(id, out var resources))
+            {
+                _staged[result.AttachmentId] = resources;
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private void ReplaceAttachment(string attachmentId, BitAiAttachment attachment)
+    {
+        var index = _attachments.FindIndex(a => a.AttachmentId == attachmentId);
+        if (index >= 0) _attachments[index] = attachment;
+    }
+
+    private void CancelUpload(string attachmentId)
+    {
+        if (_uploads.Remove(attachmentId, out var cts) is false) return;
+
+        cts.Cancel();
+        cts.Dispose();
+    }
+
+    // Reported on whatever thread the uploader reports on: the chip is brought up to date on the renderer's.
+    private sealed class UploadProgress(BitAiPromptInput owner, string attachmentId, CancellationTokenSource cts) : IProgress<double>
+    {
+        public void Report(double value)
+        {
+            if (cts.IsCancellationRequested || double.IsNaN(value)) return;
+
+            var fraction = Math.Clamp(value, 0, 1);
+
+            _ = owner.InvokeAsync(() =>
+            {
+                if (owner._uploads.TryGetValue(attachmentId, out var current) is false || ReferenceEquals(current, cts) is false) return;
+
+                var index = owner._attachments.FindIndex(a => a.AttachmentId == attachmentId);
+                if (index < 0 || owner._attachments[index].Status is not BitAiAttachmentStatus.Uploading) return;
+
+                owner._attachments[index] = owner._attachments[index] with { Progress = fraction };
+                owner.RequestRender();
+            });
+        }
     }
 
     private BitAiAttachmentRejectionReason? Check(string name, string contentType, long size)
@@ -1236,6 +1420,11 @@ public partial class BitAiPromptInput : BitAiComponentBase
         catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
         finally
         {
+            foreach (var id in _uploads.Keys.ToArray())
+            {
+                CancelUpload(id);
+            }
+
             foreach (var staged in _staged.Values)
             {
                 await ReleaseAsync(staged);

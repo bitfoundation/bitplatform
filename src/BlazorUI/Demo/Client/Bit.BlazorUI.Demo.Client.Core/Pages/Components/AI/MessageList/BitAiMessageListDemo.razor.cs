@@ -54,6 +54,15 @@ public partial class BitAiMessageListDemo
         },
         new()
         {
+            Name = "MessageActionsTemplate",
+            Type = "RenderFragment<BitAiMessage>?",
+            DefaultValue = "null",
+            Description = "The buttons of the app appended to the actions of each message, given the message. Not used by a MessageTemplate.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/chatmessage",
+        },
+        new()
+        {
             Name = "MessageTemplate",
             Type = "RenderFragment<BitAiMessage>?",
             DefaultValue = "null",
@@ -78,6 +87,13 @@ public partial class BitAiMessageListDemo
             Description = "The callback for when the user records feedback on a reply, so a host can persist it. The message's Feedback is already updated when it is raised.",
             LinkType = LinkType.Link,
             Href = "/components/ai/chatmessage#message-feedback",
+        },
+        new()
+        {
+            Name = "OnFollowUp",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "The callback for when the user picks one of the follow-up prompts the newest reply offers. Handle it to send the prompt yourself; leave it unset and the prompt is submitted to the Session.",
         },
         new()
         {

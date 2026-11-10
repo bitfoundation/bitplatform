@@ -5,7 +5,9 @@
 /// </summary>
 /// <remarks>
 /// Three choices rather than two: allowing once and allowing always are meaningfully different, and collapsing them
-/// into one button forces users to either re-approve constantly or grant more than they meant to.
+/// into one button forces users to either re-approve constantly or grant more than they meant to. A call that must be
+/// confirmed every time is offered the two others only (<see cref="ShowApproveAlways"/>, or the call's own
+/// <see cref="BitAiToolCallPart.AllowApproveAlways"/>), and a <see cref="DetailTemplate"/> shows what the call will do.
 /// <br />
 /// The prompt follows the risk the tool declares (<see cref="BitAiToolDefinition.Risk"/>): the allow button of a
 /// <see cref="BitAiToolRisk.Destructive"/> tool is drawn in the error role and the prompt is washed with it, so the
@@ -36,6 +38,17 @@ public partial class BitAiToolApproval : BitAiComponentBase
 
 
     /// <summary>
+    /// The text of the button that allows every later call of the tool as well. When null, the ApproveAlways of the
+    /// strings is used.
+    /// </summary>
+    [Parameter] public string? ApproveAlwaysText { get; set; }
+
+    /// <summary>
+    /// The text of the button that allows the call once. When null, the Approve of the strings is used.
+    /// </summary>
+    [Parameter] public string? ApproveText { get; set; }
+
+    /// <summary>
     /// The call awaiting a decision.
     /// </summary>
     [Parameter, EditorRequired]
@@ -48,10 +61,21 @@ public partial class BitAiToolApproval : BitAiComponentBase
     public BitAiToolApprovalClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// What is shown under the question and above the buttons, given the call: what the call will do, read from its
+    /// arguments, so the reader decides on more than the name of the tool.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAiToolCallPart>? DetailTemplate { get; set; }
+
+    /// <summary>
     /// Raised after a decision, whether or not a session was supplied. A decision on a call that is no longer awaiting
     /// one - which the session refuses, and the prompt without a session ignores - raises nothing.
     /// </summary>
     [Parameter] public EventCallback<BitAiApprovalDecision> OnDecision { get; set; }
+
+    /// <summary>
+    /// The text of the button that declines the call. When null, the Reject of the strings is used.
+    /// </summary>
+    [Parameter] public string? RejectText { get; set; }
 
     /// <summary>
     /// The session that is waiting. Required for the decision to take effect.
@@ -61,6 +85,14 @@ public partial class BitAiToolApproval : BitAiComponentBase
     /// drives its own tool loop reads it from.
     /// </remarks>
     [Parameter] public BitAiChatSession? Session { get; set; }
+
+    /// <summary>
+    /// Offers to allow every later call of the tool as well. A call that does not allow it
+    /// (<see cref="BitAiToolCallPart.AllowApproveAlways"/>) is never offered it, whatever this says.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    [Parameter] public bool ShowApproveAlways { get; set; } = true;
 
     /// <summary>
     /// Custom CSS styles for different parts of the tool approval.
@@ -104,6 +136,8 @@ public partial class BitAiToolApproval : BitAiComponentBase
 
     private string _DisplayName => Call.Definition?.DisplayName ?? Call.ToolName;
 
+    private bool _ShowApproveAlways => ShowApproveAlways && Call.AllowApproveAlways;
+
     private Task HandleOnReject() => DecideAsync(BitAiApprovalDecision.Rejected);
 
     private Task HandleOnApproveAlways() => DecideAsync(BitAiApprovalDecision.ApprovedAlways);
@@ -113,6 +147,11 @@ public partial class BitAiToolApproval : BitAiComponentBase
     private async Task DecideAsync(BitAiApprovalDecision decision)
     {
         if (Disabled) return;
+
+        if (decision is BitAiApprovalDecision.ApprovedAlways && _ShowApproveAlways is false)
+        {
+            decision = BitAiApprovalDecision.Approved;
+        }
 
         if (Session is null)
         {

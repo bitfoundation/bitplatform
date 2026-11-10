@@ -61,6 +61,71 @@ public class BitAiToolCallViewTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void ACallTheOptionsShowAsAStatusLineIsOneLineWithNothingToExpand()
+    {
+        var call = new BitAiToolCallPart("c1", "search_products") { Definition = new BitAiToolDefinition("search_products") { Title = "Search products" } };
+        call.CompleteArguments(JsonDocument.Parse("{}").RootElement);
+        call.SetStatus(BitAiToolCallStatus.Running);
+
+        var component = RenderComponent<BitAiToolCallView>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { ToolCallDisplay = _ => BitAiToolCallDisplay.Status }));
+
+        Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-lin"));
+        Assert.IsEmpty(component.FindAll(".bit-aitcv-hdr"));
+        Assert.IsEmpty(component.FindAll("button"));
+        StringAssert.Contains(component.Find(".bit-aitcv-lnr").TextContent, "Calling Search products");
+        Assert.HasCount(1, component.FindComponents<BitBouncingDotsLoading>());
+
+        call.SetResult(BitAiToolOutcome.FromText("3 found"));
+
+        component.WaitForAssertion(() =>
+        {
+            StringAssert.Contains(component.Find(".bit-aitcv-lnr").TextContent, "Used Search products");
+            Assert.IsEmpty(component.FindComponents<BitBouncingDotsLoading>());
+        }, TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void ACallTheOptionsHideLeavesNoElementUntilItNeedsTheReader()
+    {
+        var call = CompletedArguments("lookup");
+        call.SetStatus(BitAiToolCallStatus.Running);
+
+        var component = RenderComponent<BitAiToolCallView>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
+
+        Assert.AreEqual(string.Empty, component.Markup.Trim());
+
+        // A call waiting for a decision asks its question whatever the options say.
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindComponents<BitAiToolApproval>()), TimeSpan.FromSeconds(2));
+        Assert.IsFalse(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-lin"));
+    }
+
+    [TestMethod]
+    public void TheDisplayFollowsTheCallAsItGoesOn()
+    {
+        var call = CompletedArguments("lookup");
+        call.SetStatus(BitAiToolCallStatus.Running);
+
+        var component = RenderComponent<BitAiToolCallView>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with
+            {
+                ToolCallDisplay = c => c.Status is BitAiToolCallStatus.Completed ? BitAiToolCallDisplay.Hidden : BitAiToolCallDisplay.Status,
+            }));
+
+        Assert.HasCount(1, component.FindAll(".bit-aitcv-lnr"));
+
+        call.SetResult(BitAiToolOutcome.FromText("done"));
+
+        component.WaitForAssertion(() => Assert.AreEqual(string.Empty, component.Markup.Trim()), TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
     public void PartialArgumentsAreShownWhileTheyStream()
     {
         var call = new BitAiToolCallPart("c1", "search");

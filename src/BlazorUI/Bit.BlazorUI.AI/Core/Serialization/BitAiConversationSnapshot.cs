@@ -76,6 +76,9 @@ public sealed record BitAiMessageSnapshot
     /// <summary>Free-text feedback.</summary>
     public string? FeedbackComment { get; init; }
 
+    /// <summary>The prompts offered under the reply (<see cref="BitAiMessage.FollowUps"/>).</summary>
+    public IReadOnlyList<string>? FollowUps { get; init; }
+
     /// <summary>Identifier of the agent run that produced the message, if any.</summary>
     public string? RunId { get; init; }
 

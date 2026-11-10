@@ -23,6 +23,9 @@
 /// <br />
 /// <see cref="BitComponentBase.Disabled"/> turns the expander and the approval buttons off, and leaves the card as it is:
 /// the arguments and the result of an open card stay readable, and a collapsed card stays collapsed.
+/// <br />
+/// <see cref="BitAiUiOptions.ToolCallDisplay"/> may show a call as one status line instead, or not at all - except a call
+/// waiting for a decision or one that failed, which is always a card.
 /// </remarks>
 public partial class BitAiToolCallView : BitAiComponentBase
 {
@@ -41,6 +44,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private BitAiToolDefinition? _registeredDefinition;
 
     private bool _open;
+    private BitAiToolCallDisplay _display;
     private bool _initialized;
     private bool _focusHeader;
     private ElementReference _header;
@@ -153,7 +157,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
         {
             _focusHeader = false;
 
-            if (_custom is null && Call.Status is not BitAiToolCallStatus.AwaitingApproval)
+            if (_custom is null && _display is BitAiToolCallDisplay.Card && Call.Status is not BitAiToolCallStatus.AwaitingApproval)
             {
                 await FocusHeaderAsync();
             }
@@ -276,10 +280,15 @@ public partial class BitAiToolCallView : BitAiComponentBase
             }
         }
 
+        // How the options in force show the call, read on every render since it may follow the call's status.
+        _display = BitAiToolCallDisplays.Resolve(Options, Call);
+
         // A declined call is outlined as a failed one (the call did not happen, and the reader may want to know why);
-        // a cancelled one, stopped by the user, goes back to the outline at rest.
+        // a cancelled one, stopped by the user, goes back to the outline at rest. A status line has no outline at all.
         var stateClasses = _custom is not null
             ? "bit-aitcv-cst"
+            : _display is BitAiToolCallDisplay.Status
+            ? "bit-aitcv-lin"
             : string.Join(' ', Call.Status switch
             {
                 BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming => "bit-aitcv-run",

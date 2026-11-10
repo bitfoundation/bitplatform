@@ -73,6 +73,12 @@ public partial class BitAiChatMessage : BitAiComponentBase
     [Parameter, EditorRequired, ResetClassBuilder] public BitAiMessage Message { get; set; } = default!;
 
     /// <summary>
+    /// The buttons of the app appended to the actions of the message, given the message: after copy, regenerate and
+    /// feedback under a reply, after copy and edit beside a user message.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAiMessage>? MessageActionsTemplate { get; set; }
+
+    /// <summary>
     /// The callback for when the user activates a citation.
     /// </summary>
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
@@ -81,6 +87,13 @@ public partial class BitAiChatMessage : BitAiComponentBase
     /// The callback for when the user records feedback on this message, so a host can persist it.
     /// </summary>
     [Parameter] public EventCallback<BitAiMessageFeedback> OnFeedback { get; set; }
+
+    /// <summary>
+    /// The callback for when the user picks one of the follow-up prompts the reply offers
+    /// (<see cref="BitAiMessage.FollowUps"/>). Handle it to send the prompt yourself; leave it unset and the prompt is
+    /// submitted to the <see cref="Session"/>.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnFollowUp { get; set; }
 
     /// <summary>
     /// The callback for when the user activates a source card.
@@ -158,6 +171,13 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
 
 
+    // The follow-ups of the newest reply, once it has finished, and only where picking one goes somewhere.
+    private bool _ShowFollowUps => IsLatest
+                                   && Message.Role.IsAssistant
+                                   && Message.IsBusy is false
+                                   && Message.FollowUps is { Count: > 0 }
+                                   && (OnFollowUp.HasDelegate || Session is not null);
+
     // The sources a reply cites are listed under it, unless one of its parts lists them already.
     private bool _ShowSourceList => Options.ShowSourceList
                                     && Message.Citations.Count > 0
@@ -180,7 +200,10 @@ public partial class BitAiChatMessage : BitAiComponentBase
     // delta costs a field read.
     private void OnPartChanged(BitAiMessage message, BitAiMessagePart part)
     {
-        if (_awaitingContent && IsAwaitingContent() is false)
+        // A hidden tool call coming to be shown (a policy following its status) is content reaching the reply too, and
+        // one going hidden may leave the reply with nothing to show again - which only a tool call's change can do, so a
+        // text delta never asks.
+        if (_awaitingContent ? IsAwaitingContent() is false : part is BitAiToolCallPart && IsAwaitingContent())
         {
             RequestRender();
         }
@@ -197,15 +220,23 @@ public partial class BitAiChatMessage : BitAiComponentBase
         if (_subscribedSession is { } session && session.IsGenerating != _generating) RequestRender();
     }
 
-    // Whether the reply is being generated and has nothing to show yet: no part, or only prose no text has reached. A
-    // reasoning part, a code block, a tool call, an image and the rest draw something of their own from the start, and
-    // so does an agent run, which shows its own progress.
+    // Whether the reply is being generated and has nothing to show yet: no part, or only prose no text has reached, or
+    // tool calls the options hide (BitAiUiOptions.ToolCallDisplay). A reasoning part, a code block, a tool call shown, an
+    // image and the rest draw something of their own from the start, and so does an agent run, which shows its own
+    // progress.
     private bool IsAwaitingContent()
     {
         if (Message.IsBusy is false || Message.Run is not null) return false;
 
         foreach (var part in Message.Parts)
         {
+            if (part is BitAiToolCallPart call)
+            {
+                if (BitAiToolCallDisplays.Resolve(Options, call) is BitAiToolCallDisplay.Hidden) continue;
+
+                return false;
+            }
+
             if (part is not BitAiTextPart { IsEmpty: true } || part is BitAiReasoningPart or BitAiCodePart) return false;
         }
 
@@ -296,6 +327,22 @@ public partial class BitAiChatMessage : BitAiComponentBase
         catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
         catch (OperationCanceledException) { }
         catch (JSException) { } // a message taken off the page in the meantime has nothing to focus
+    }
+
+    // A follow-up is a prompt like any other: the host's to send when it listens, else the session's. The session takes it
+    // only while it is free, as it takes any prompt.
+    private async Task SendFollowUpAsync(string followUp)
+    {
+        if (Disabled) return;
+
+        if (OnFollowUp.HasDelegate)
+        {
+            await OnFollowUp.InvokeAsync(followUp);
+        }
+        else if (Session is not null)
+        {
+            await Session.SubmitAsync(followUp);
+        }
     }
 
     private async Task RetryAsync()

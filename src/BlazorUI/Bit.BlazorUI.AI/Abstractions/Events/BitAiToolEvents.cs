@@ -28,6 +28,18 @@ public sealed record BitAiToolCallStartedEvent : BitAiEvent
     /// </summary>
     public JsonElement? Arguments { get; init; }
 
+    /// <summary>
+    /// How the call is presented - its title, icon and risk - when the tool is one the transport runs (a server-side
+    /// tool, with <see cref="BitAiChatSessionOptions.ExecuteTools"/> off), so the app has no registered tool to describe
+    /// it. Put on the call as <see cref="BitAiToolCallPart.Definition"/>; <see langword="null"/> leaves the call to the
+    /// tool registered under its name, if any.
+    /// </summary>
+    /// <remarks>
+    /// Only presentation is read from it: a session never runs a call because of it, and never sends it to the model.
+    /// The <see cref="BitAiToolDefinition.Name"/> should be <see cref="ToolName"/>.
+    /// </remarks>
+    public BitAiToolDefinition? Definition { get; init; }
+
     /// <inheritdoc />
     public override string Type => "tool_call.started";
 }
@@ -145,7 +157,8 @@ public sealed record BitAiToolResultEvent : BitAiEvent
 /// </summary>
 /// <remarks>
 /// Emitted by the framework when the approval policy demands it, and emittable by a transport whose
-/// server side enforces its own policy.
+/// server side enforces its own policy. Such a transport implements <see cref="IBitAiApprovalTransport"/> as well, to
+/// be sent the decision the user makes.
 /// </remarks>
 public sealed record BitAiToolApprovalRequestedEvent : BitAiEvent
 {
@@ -162,6 +175,13 @@ public sealed record BitAiToolApprovalRequestedEvent : BitAiEvent
 
     /// <summary>An explanation shown in the approval prompt.</summary>
     public string? Reason { get; init; }
+
+    /// <summary>
+    /// Whether the prompt offers to allow every later call of the tool as well. Put on the call as
+    /// <see cref="BitAiToolCallPart.AllowApproveAlways"/>; turn it off for a call that must be confirmed every time,
+    /// such as one that deletes data. The default is <see langword="true"/>.
+    /// </summary>
+    public bool AllowApproveAlways { get; init; } = true;
 
     /// <inheritdoc />
     public override string Type => "tool_call.approval_requested";

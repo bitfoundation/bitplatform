@@ -82,6 +82,17 @@ public sealed record BitAiChatSessionOptions
     public bool AutoTitle { get; init; } = true;
 
     /// <summary>
+    /// Whether a prompt submitted while a turn is in flight stops that turn and is answered in its place, rather than
+    /// being turned away. The default is <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// The stopped reply keeps what it had said, marked cancelled, as <see cref="BitAiChatSession.Stop"/> leaves it. A
+    /// <see cref="BitAiPromptInput"/> driven by the session follows it: while a turn is in flight, its button sends the
+    /// text typed - and stops the turn when there is none - and Enter sends.
+    /// </remarks>
+    public bool InterruptOnSubmit { get; init; }
+
+    /// <summary>
     /// Whether a failed turn leaves a retryable error on the assistant message rather than throwing.
     /// </summary>
     /// <remarks>

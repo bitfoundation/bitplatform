@@ -84,6 +84,17 @@ public sealed class BitAiToolCallPart : BitAiMessagePart, IBitAiStreamablePart
     /// <summary>Why approval was requested, shown in the prompt.</summary>
     public string? ApprovalReason { get; set; }
 
+    /// <summary>
+    /// Whether the call may be allowed for every later call of its tool as well
+    /// (<see cref="BitAiApprovalDecision.ApprovedAlways"/>). When <see langword="false"/>, the approval prompt does not
+    /// offer it and a session records such a decision as <see cref="BitAiApprovalDecision.Approved"/>. The default is
+    /// <see langword="true"/>.
+    /// </summary>
+    /// <remarks>
+    /// A transport sets it per call through <see cref="BitAiToolApprovalRequestedEvent.AllowApproveAlways"/>.
+    /// </remarks>
+    public bool AllowApproveAlways { get; set; } = true;
+
     /// <summary>The most recent progress report from the running tool.</summary>
     public BitAiToolProgress? Progress { get; private set; }
 
