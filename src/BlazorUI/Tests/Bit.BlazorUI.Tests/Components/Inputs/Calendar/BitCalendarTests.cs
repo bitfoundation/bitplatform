@@ -1635,6 +1635,27 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCalendarShouldStepOnceForAClickReleasedWhileItsStepIsRendering()
+    {
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero);
+        using var slowRender = new SpinButtonSlowRender();
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            // Far shorter than the render of the step, which is what a click on a slow page is up against.
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.FooterTemplate, slowRender.Content);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await slowRender.ClickAsync(component.FindAll(".bit-cal-tbt")[0], 50);
+
+        Assert.AreEqual(11, value!.Value.Hour);
+    }
+
+    [TestMethod]
     public void BitCalendarMinuteStepShouldLayAGridOverTheHour()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

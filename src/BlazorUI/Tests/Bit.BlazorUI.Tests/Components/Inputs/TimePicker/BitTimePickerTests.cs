@@ -850,6 +850,25 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTimePickerShouldStepOnceForAClickReleasedWhileItsStepIsRendering()
+    {
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+        using var slowRender = new SpinButtonSlowRender();
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            // Far shorter than the render of the step, which is what a click on a slow page is up against.
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.LabelTemplate, slowRender.Content);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await slowRender.ClickAsync(component.Find("button[title='Increase hour']"), 50);
+
+        Assert.AreEqual(new TimeSpan(11, 30, 0), value);
+    }
+
+    [TestMethod]
     public void BitTimePickerShouldRespectCustomSpinButtonTitles()
     {
         var component = RenderComponent<BitTimePicker>(parameters =>

@@ -3604,13 +3604,23 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     }
 
     /// <summary>
-    /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
-    /// button was released (or the component went away) in the meantime.
+    /// Waits out the <see cref="ContinuousSpinDelay"/>, counted from the render of the step the press took,
+    /// and then starts the continuous spin, unless the button was released (or the component went away) in
+    /// the meantime.
     /// </summary>
     private async Task ContinuousChangeTimeAfterDelay(bool isNext, TimeUnit unit, CancellationTokenSource cts)
     {
         try
         {
+            // On WebAssembly the render of the step runs in the browser task of the pointerdown, so a page that
+            // takes longer to render than the delay would have it run out before the pointerup of a plain click
+            // is even handled - and Firefox runs that timer first, stepping a second time. Yielding lets the
+            // handler and its render finish before the delay starts, by when the release is already queued.
+            await Task.Yield();
+
+            // A release handled before this point has cancelled (and disposed) the source already.
+            if (cts.IsCancellationRequested) return;
+
             await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
 
             await InvokeAsync(() => ContinuousChangeTime(isNext, unit, cts));
