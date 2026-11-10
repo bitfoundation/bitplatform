@@ -382,6 +382,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   an exported source, and `BelemetrySampler.ShouldSample` keeps its trace id. Otherwise the ratio is 1, as for a
   remote parent's decision (the script sends every `traceparent` as sampled). A span's event items take the span's
   rate. .NET logs (`BelemetryLogRecord.SamplingRatio`, 1 unless a processor sets it) and metrics are not sampled.
+  Live Metrics (.NET only) counts a record as `ItemCount` (`100 / sampleRate`) in its rates, its average durations
+  and its custom charts' sums and averages; min, max and the samples it streams are not weighted.
 - **Tags:**
 
   | Tag | Value |

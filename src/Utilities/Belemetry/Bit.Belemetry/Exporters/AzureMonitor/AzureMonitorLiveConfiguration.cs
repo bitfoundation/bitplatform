@@ -237,7 +237,7 @@ internal sealed class AzureMonitorLiveConfiguration
         {
             if (metric.Matches(item) is false) continue;
 
-            if (metric.TryProject(item, out var value, out var error)) metric.Add(value);
+            if (metric.TryProject(item, out var value, out var error)) metric.Add(value, item.ItemCount);
             else _failures.TryAdd(metric.Id, error);
         }
     }
@@ -249,11 +249,12 @@ internal sealed class AzureMonitorLiveConfiguration
         {
             w.WriteStartObject();
             w.WriteString("Name", metric.Id);
-            var (value, count) = metric.Take();
+            var (value, items) = metric.Take();
             w.WriteNumber("Value", double.IsFinite(value) ? value : 0);
             // Weighed by the items it aggregated, as the Application Insights SDK weighs a derived metric's point: 0 for a
-            // data point without any, which the service's own aggregation across instances then leaves out.
-            w.WriteNumber("Weight", (int)Math.Min(count, int.MaxValue));
+            // data point without any, which the service's own aggregation across instances then leaves out. A sampled
+            // item counts as the items it stands for (at least 1, so a point with any weighs 1 or more).
+            w.WriteNumber("Weight", (int)Math.Min(Math.Round(items), int.MaxValue));
             w.WriteEndObject();
         }
     }
@@ -511,7 +512,7 @@ internal sealed class AzureMonitorLiveConfiguration
                                        Aggregation aggregation)
     {
         private readonly object _lock = new();
-        private double _sum, _min, _max;
+        private double _sum, _min, _max, _items;
         private long _count;
 
         public string Id => id;
@@ -561,35 +562,40 @@ internal sealed class AzureMonitorLiveConfiguration
             return true;
         }
 
-        /// <summary>Adds a projected value to the data point's aggregate.</summary>
-        public void Add(double value)
+        /// <summary>
+        /// Adds a projected value to the data point's aggregate, for the <paramref name="items"/> it stands for
+        /// (<see cref="AzureMonitorLiveItem.ItemCount"/>): a sum and an average weigh it by them, as if every item
+        /// sampling dropped were there. The least and greatest values are the ones seen.
+        /// </summary>
+        public void Add(double value, double items)
         {
             lock (_lock)
             {
                 _min = _count == 0 ? value : Math.Min(_min, value);
                 _max = _count == 0 ? value : Math.Max(_max, value);
-                _sum += value;
+                _sum += value * items;
+                _items += items;
                 _count++;
             }
         }
 
-        /// <summary>The aggregate since the last call (0 without any item) and the number of items in it, and starts over.</summary>
-        public (double Value, long Count) Take()
+        /// <summary>The aggregate since the last call (0 without any item) and the items in it, and starts over.</summary>
+        public (double Value, double Items) Take()
         {
             lock (_lock)
             {
-                var count = _count;
-                var value = count == 0 ? 0 : aggregation switch
+                var items = _items;
+                var value = _count == 0 ? 0 : aggregation switch
                 {
                     Aggregation.Sum => _sum,
                     Aggregation.Min => _min,
                     Aggregation.Max => _max,
-                    _ => _sum / count,
+                    _ => _sum / items,
                 };
 
-                _sum = _min = _max = 0;
+                _sum = _min = _max = _items = 0;
                 _count = 0;
-                return (value, count);
+                return (value, items);
             }
         }
     }

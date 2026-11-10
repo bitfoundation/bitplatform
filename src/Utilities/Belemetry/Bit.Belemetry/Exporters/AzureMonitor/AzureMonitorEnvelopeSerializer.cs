@@ -399,6 +399,12 @@ internal static class AzureMonitorEnvelopeSerializer
     /// </summary>
     internal static double SampleRate(double ratio) => ratio > 0 && ratio < 1 ? ratio * 100 : 100;
 
+    /// <summary>
+    /// How many items one kept at <paramref name="ratio"/> stands for, as Application Insights counts it from
+    /// <see cref="SampleRate"/> (<c>itemCount</c>): Live Metrics counts the same.
+    /// </summary>
+    internal static double ItemCount(double ratio) => 100 / SampleRate(ratio);
+
     private static void WriteTags(Utf8JsonWriter w, ResourceTags resource, string? traceId, string? parentId, string? operationName, BelemetryAttributes attributes)
     {
         w.WriteString("iKey", resource.InstrumentationKey);

@@ -374,7 +374,9 @@ provider is never handed to the browser script.
 > and session ids or the attributes the item's own fields hold, plus what the item adds (a page visit's `PageName`, an
 > event's `message`, ...) - and `CustomDimensions.{key}` filters and charts read the same. Samples and custom charts
 > only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in request,
-> dependency and exception rates count every span and exception the pipeline accepts, whatever these settings. A sample
+> dependency and exception rates count every span and exception the pipeline accepts, whatever these settings. The
+> rates and the custom charts' sums and averages count a sampled record as the items it stands for (`1 / SamplingRatio`,
+> as Application Insights counts its `sampleRate`), so sampling leaves them true; a sample is one item. A sample
 > waiting for the next data point is not sent once the user revokes its feature, even if they grant it again first.
 > When the portal changes the configuration, the streams and charts it leaves as they were keep their quotas and the
 > values they gathered. What Belemetry cannot apply (performance counters, custom metrics, an unknown field, filters
@@ -1562,8 +1564,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   is still one item, and `belemetry.records.exported` counts them for Azure Monitor.
 - **Azure Monitor items carry their sampling rate** (`sampleRate`, was always 100). With `Traces.SamplingRatio` or
   `Browser.SessionSampleRatio` below 1, Application Insights now counts each sampled item for the ones dropped, so
-  request, dependency and page view counts and every chart built on `itemCount` rise to the real numbers. A sampling
-  processor sets `BelemetrySpan.SamplingRatio` / `BelemetryLogRecord.SamplingRatio` for the same.
+  request, dependency and page view counts and every chart built on `itemCount` rise to the real numbers. Live Metrics'
+  rates and custom charts count them the same. A sampling processor sets `BelemetrySpan.SamplingRatio` /
+  `BelemetryLogRecord.SamplingRatio` for the same.
 - **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
   span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
   browser as well, to an exception an app processor adds to a span.

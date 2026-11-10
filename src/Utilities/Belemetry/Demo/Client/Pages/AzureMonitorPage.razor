@@ -71,6 +71,11 @@
         WebAssembly it reports the app running in that one browser, so it is most useful with the
         <a href="/server-pipeline">server pipeline</a> and in Hybrid apps.
     </p>
+    <p>
+        With sampling on, the rates and custom charts count each kept record as the items it stands for, as
+        Application Insights counts its <code>sampleRate</code>. So a request kept at <code>Traces.SamplingRatio</code>
+        0.25 counts as four, and the numbers match what really happened. A sample in a stream is still one item.
+    </p>
     <CodeSnippet Code="@LiveMetricsCode" Language="C#" />
 </div>
 
