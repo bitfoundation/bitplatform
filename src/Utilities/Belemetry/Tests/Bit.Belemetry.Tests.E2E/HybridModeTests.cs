@@ -1,4 +1,7 @@
-﻿using Bit.Belemetry.Tests.E2E.Infrastructure;
+﻿using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
+using Bit.Belemetry.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
@@ -99,6 +102,23 @@ public class HybridModeTests : HarnessTest
         StringAssert.StartsWith(frame.GetProperty("function_id").GetString(), "0x");
         StringAssert.StartsWith(frame.GetProperty("instruction_addr").GetString(), "0x");
         Assert.AreEqual($"rel:{images.IndexOf(harness)}", frame.GetProperty("addr_mode").GetString());
+
+        // What the symbolicator will look up, read back from the assembly file without Belemetry: the image is that build's
+        // PDB id, the frame's row is the method itself, and its IL offset is inside the method's body.
+        using (var pe = new PEReader(File.OpenRead(harness.GetProperty("code_file").GetString()!)))
+        {
+            var codeView = pe.ReadDebugDirectory().First(e => e.Type == DebugDirectoryEntryType.CodeView);
+            var pdb = pe.ReadCodeViewDebugDirectoryData(codeView);
+            Assert.AreEqual(codeView.IsPortableCodeView ? $"{pdb.Guid}-{codeView.Stamp:x8}" : $"{pdb.Guid}-{pdb.Age:x}", harness.GetProperty("debug_id").GetString());
+
+            var metadata = pe.GetMetadataReader();
+            var row = Convert.ToInt32(frame.GetProperty("function_id").GetString(), 16);
+            Assert.IsGreaterThan(0, row);
+            var method = metadata.GetMethodDefinition(MetadataTokens.MethodDefinitionHandle(row));
+            Assert.AreEqual("TrackException", metadata.GetString(method.Name));
+            var offset = Convert.ToInt32(frame.GetProperty("instruction_addr").GetString(), 16);
+            Assert.IsLessThan(pe.GetMethodBody(method.RelativeVirtualAddress).Size, offset);
+        }
 
         // A JS error, relayed to .NET: the C# exporter parses its stack as the script would.
         AllowConsoleError("Harness JS error");

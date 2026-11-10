@@ -79,10 +79,14 @@ internal sealed record SentryDebugImage(string CodeFile, string? CodeId, string 
         var directories = magic switch { 0x10B => 96, 0x20B => 112, _ => -1 };
         if (directories < 0) return null;
 
+        // The header must hold the debug directory's entry - and so the directory count before it - to be read at all:
+        // a PE32+ header can claim fewer bytes than its fixed fields take.
+        const int debugDirectory = 6;
+        if (directories + (debugDirectory + 1) * 8 > optionalHeaderSize) return null;
+
         var sizeOfImage = BinaryPrimitives.ReadUInt32LittleEndian(optionalHeader.AsSpan(56));
         var directoryCount = BinaryPrimitives.ReadUInt32LittleEndian(optionalHeader.AsSpan(directories - 4));
-        const int debugDirectory = 6;
-        if (directoryCount <= debugDirectory || directories + (debugDirectory + 1) * 8 > optionalHeaderSize) return null;
+        if (directoryCount <= debugDirectory) return null;
 
         var debugRva = BinaryPrimitives.ReadUInt32LittleEndian(optionalHeader.AsSpan(directories + debugDirectory * 8));
         var debugSize = BinaryPrimitives.ReadUInt32LittleEndian(optionalHeader.AsSpan(directories + debugDirectory * 8 + 4));

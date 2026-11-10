@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata;
+﻿using System.Buffers.Binary;
+using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -397,6 +398,23 @@ public class SentryStackTraceTests
     {
         Assert.IsNull(SentryDebugImage.Read(new MemoryStream([]), "empty.dll"));
         Assert.IsNull(SentryDebugImage.Read(new MemoryStream("MZ not really a PE file, just some text that is long enough"u8.ToArray()), "text.dll"));
+    }
+
+    [TestMethod]
+    public void DebugImage_OfAPe32PlusHeaderTooShortForItsDataDirectories_IsNone()
+    {
+        // A PE32+ optional header whose size (100) is past the PE32 minimum but short of where its directory count is.
+        const int peOffset = 64, optionalHeaderSize = 100;
+        var bytes = new byte[peOffset + 24 + optionalHeaderSize + 40];
+        bytes[0] = (byte)'M';
+        bytes[1] = (byte)'Z';
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(0x3C), peOffset);
+        "PE\0\0"u8.CopyTo(bytes.AsSpan(peOffset));
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(peOffset + 6), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(peOffset + 20), optionalHeaderSize);
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(peOffset + 24), 0x20B);
+
+        Assert.IsNull(SentryDebugImage.Read(new MemoryStream(bytes), "short.dll"));
     }
 
     internal static class Thrower

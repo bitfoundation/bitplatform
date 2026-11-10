@@ -43,11 +43,12 @@ public static class HarnessCollectorEndpoints
         });
 
         // Sentry's envelope endpoint, as the DSN {origin}/test-collector/{project} names it; the key is in the query.
+        // Relay answers with the accepted event's id.
         collector.MapPost("api/{project}/envelope", async (string project, HttpRequest request, HarnessCollector store) =>
         {
             var decoded = store.AddSentry(request.Path, request.Query["sentry_key"], request.ContentType, request.Headers.ContentEncoding, request.Headers.UserAgent,
                                           await ReadBodyAsync(request));
-            return decoded ? Results.Json(new { id = project }) : Results.BadRequest();
+            return decoded is not null ? Results.Json(new { id = decoded.EventId }) : Results.BadRequest();
         });
 
         collector.MapGet("received", ([FromQuery] string? session, [FromQuery] string? marker, HarnessCollector store) =>

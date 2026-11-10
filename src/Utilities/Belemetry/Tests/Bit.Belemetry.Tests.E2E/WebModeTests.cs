@@ -208,6 +208,7 @@ public abstract partial class WebModeTests : HarnessTest
         Assert.AreEqual("error", sentry.Level);
         Assert.AreEqual("bit.belemetry.errors", sentry.Logger);
         Assert.AreEqual("bit.belemetry.javascript", sentry.SdkName);
+        StringAssert.Matches(sentry.EventId, EventIdPattern(), "A Sentry event id is 32 lowercase hex characters.");
         Assert.AreEqual(sentry.EnvelopeEventId, sentry.EventId);
         Assert.AreEqual("harnesssentrykey", sentry.Key);
         Assert.IsFalse(sentry.Handled);
@@ -333,6 +334,9 @@ public abstract partial class WebModeTests : HarnessTest
 
     [GeneratedRegex("^00-(?<trace>[0-9a-f]{32})-(?<span>[0-9a-f]{16})-0[0-9a-f]$")]
     private static partial Regex TraceparentPattern();
+
+    [GeneratedRegex("^[0-9a-f]{32}$")]
+    private static partial Regex EventIdPattern();
 }
 
 /// <summary>A mode with a .NET runtime in the page: <c>IBelemetry</c> calls from C#.</summary>

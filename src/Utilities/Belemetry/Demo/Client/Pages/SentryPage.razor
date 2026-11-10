@@ -110,14 +110,15 @@
                 o.TracesEndpoint = new Uri(builder.Configuration["Sentry:OtlpTracesEndpoint"]!);
                 o.LogsEndpoint = new Uri(builder.Configuration["Sentry:OtlpLogsEndpoint"]!);
                 o.Signals = BelemetrySignals.Traces | BelemetrySignals.Logs;
-                o.BrowserHeaders["x-sentry-auth"] = "sentry sentry_key=<public key>";   // public, like the DSN's key
+                o.Headers["x-sentry-auth"] = "sentry sentry_key=<public key>";          // .NET's exports
+                o.BrowserHeaders["x-sentry-auth"] = "sentry sentry_key=<public key>";   // the page's: public, like the DSN's key
             });
         });
         """;
 
     private const string UploadCode = """
-        dotnet publish -c Release
-        sentry-cli debug-files upload --org <org> --project <project> --include-sources bin/Release/net10.0/publish
+        dotnet publish -c Release -o publish
+        sentry-cli debug-files upload --org <org> --project <project> --include-sources publish
         """;
 
     private const string MobileCode = """
@@ -137,7 +138,7 @@
             sentry.Release = "shop@2.0.0+4f1c2e9";
             sentry.MaskIp = true;                          // the default
             sentry.Compression = BelemetryCompression.Gzip;
-            sentry.IncludeInBrowser = false;               // only .NET's errors
+            sentry.IncludeInBrowser = false;               // the script does not post to Sentry itself (Relay still forwards its errors)
         });
         """;
 }

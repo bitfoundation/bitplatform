@@ -132,6 +132,8 @@ public class McpControllerTests
             var result = _mcp.GenerateBelemetryConfiguration(host, "otlp,azure,sentry,console", "opt-in", "Diagnostics,PageViews", "Relay");
             var code = string.Join("\n", result.Files.Select(f => f.Content));
 
+            StringAssert.Contains(code, "options.AddSentryExporter(", $"{host}: the Sentry exporter asked for was not generated.");
+
             var review = _mcp.ReviewBelemetryConfiguration(code);
 
             Assert.IsFalse(review.Findings.Any(f => f.Severity is "error" or "warning"),

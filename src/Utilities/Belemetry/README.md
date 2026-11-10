@@ -18,7 +18,8 @@ exports to:
 - **Azure Monitor / Application Insights**, natively (`/v2.1/track`): page views, requests, dependencies, exceptions,
   events and metrics land in their usual tables, with Live Metrics on top.
 - **Sentry**: errors become Sentry Issues, with .NET frames Sentry symbolicates from the uploaded PDBs and JS frames
-  parsed for every browser engine, each linked to its trace - no Sentry SDK in the app.
+  parsed for every browser engine, each linked to the trace it was recorded in - no Sentry SDK in the app for the .NET
+  and JavaScript errors (native crashes on mobile still need one, see [Sentry](#sentry)).
 - **Console**, **in-memory**, or your own `IBelemetryExporter`.
 
 When a user reports a problem, **production diagnostics** turn what the app did - routes, components, event
@@ -422,8 +423,8 @@ the exporter, with a startup warning.
   JavaScript stacks are parsed for V8, SpiderMonkey and JavaScriptCore; upload the source maps for the release. A JS
   interop call's error, whose message carries the .NET exception's text, keeps its JavaScript frames, and the .NET
   runtime's WebAssembly frames (`wasm://`) are not the app's code.
-- **Traces.** Each event carries its record's trace and span ids (`contexts.trace`), so the Issue links to the trace
-  Sentry received over OTLP.
+- **Traces.** An event recorded under a span carries its trace and span ids (`contexts.trace`), so the Issue links to
+  the trace Sentry received over OTLP; an error logged outside any span has no trace to link to.
 - **What an event carries.** The level, the logger (the instrumentation scope), the release, the environment
   (`deployment.environment.name`), `server_name` (`host.name`), the user (`user.id`, else `enduser.pseudo.id` - only
   with `UserTracking`), `session.id` as a tag, the browser's user agent (Sentry tells the browser and the OS from it),

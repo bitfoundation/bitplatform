@@ -69,12 +69,24 @@ public sealed class HarnessCollector
     }
 
     /// <summary>
-    /// Decodes and keeps one Sentry envelope (<c>{header}\n{item header}\n{event}\n</c>). Returns false when it is not
-    /// one: the answer is then a 400, as Relay's.
+    /// Decodes and keeps one Sentry envelope (<c>{header}\n{item header}\n{event}\n</c>). Returns the event, whose id
+    /// Relay answers with, or null when the body is not such an envelope (or not valid gzip): the answer is then a 400,
+    /// as Relay's.
     /// </summary>
-    public bool AddSentry(string path, string? key, string? contentType, string? contentEncoding, string? userAgent, byte[] body)
+    public CollectedSentryEvent? AddSentry(string path, string? key, string? contentType, string? contentEncoding, string? userAgent, byte[] body)
     {
-        if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase)) body = Gunzip(body);
+        var readable = true;
+        if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                body = Gunzip(body);
+            }
+            catch (InvalidDataException)
+            {
+                readable = false;
+            }
+        }
 
         var request = new CollectedRequest
         {
@@ -90,13 +102,17 @@ public sealed class HarnessCollector
         CollectedSentryEvent? collected = null;
         try
         {
+            if (readable is false) throw new InvalidOperationException("The body is not valid gzip.");
+
             var lines = System.Text.Encoding.UTF8.GetString(body).Split('\n');
             using var header = JsonDocument.Parse(lines[0]);
             using var itemHeader = JsonDocument.Parse(lines[1]);
             using var sentryEvent = JsonDocument.Parse(lines[2]);
             var e = sentryEvent.RootElement;
+            // One event item, then at most the trailing newline: another item would not be decoded.
             if (String(itemHeader.RootElement, "type") == "event"
-                && Int(itemHeader.RootElement, "length") == System.Text.Encoding.UTF8.GetByteCount(lines[2]))
+                && Int(itemHeader.RootElement, "length") == System.Text.Encoding.UTF8.GetByteCount(lines[2])
+                && lines.Skip(3).All(line => line.Length == 0))
             {
                 collected = new CollectedSentryEvent
                 {
@@ -135,7 +151,11 @@ public sealed class HarnessCollector
                 foreach (var name in new[] { "tags", "extra" })
                 {
                     if (e.TryGetProperty(name, out var map) is false || map.ValueKind != JsonValueKind.Object) continue;
-                    foreach (var property in map.EnumerateObject()) (name == "tags" ? collected.Tags : collected.Extra)[property.Name] = ValueToString(property.Value);
+                    foreach (var property in map.EnumerateObject())
+                    {
+                        if (name == "tags") collected.Tags[property.Name] = ValueToString(property.Value);
+                        else collected.Extra[property.Name] = property.Value.ValueKind == JsonValueKind.Object ? property.Value.GetRawText() : ValueToString(property.Value);
+                    }
                 }
             }
         }
@@ -151,7 +171,7 @@ public sealed class HarnessCollector
             if (collected is not null) _all.SentryEvents.Add(collected);
         }
 
-        return collected is not null;
+        return collected;
     }
 
     public void AddEcho(CollectedEcho echo)
