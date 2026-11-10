@@ -37,7 +37,7 @@
         "sdkVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
+            "replaces": "\"version\": \"11.0.100\"",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -48,26 +48,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
-                    }
-                ]
-            }
-        },
-        "sdkRollForward": {
-            "type": "generated",
-            "generator": "switch",
-            "replaces": "\"rollForward\": \"disable\"",
-            "parameters": {
-                "evaluator": "C++",
-                "datatype": "string",
-                "cases": [
-                    {
-                        "condition": "(framework == 'net10.0')",
-                        "value": "\"rollForward\": \"latestFeature\""
-                    },
-                    {
-                        "condition": "",
-                        "value": "\"rollForward\": \"disable\""
+                        "value": "\"version\": \"11.0.100\""
                     }
                 ]
             }
@@ -75,18 +56,18 @@
         "devContainerImage": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
                 "cases": [
                     {
                         "condition": "(framework == 'net10.0')",
-                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.403"
+                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.404"
                     },
                     {
                         "condition": "",
-                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100"
                     }
                 ]
             }
@@ -101,30 +82,11 @@
                 "cases": [
                     {
                         "condition": "(framework == 'net10.0')",
-                        "value": "dotnet-ef@10.0.14"
+                        "value": "dotnet-ef@10.0.15"
                     },
                     {
                         "condition": "",
                         "value": "dotnet-ef@11.0.0-rc.3.26522.148"
-                    }
-                ]
-            }
-        },
-        "xcodeVersion": {
-            "type": "generated",
-            "generator": "switch",
-            "replaces": "xcode-version: '27.0'",
-            "parameters": {
-                "evaluator": "C++",
-                "datatype": "string",
-                "cases": [
-                    {
-                        "condition": "(framework == 'net10.0')",
-                        "value": "xcode-version: '27.1'"
-                    },
-                    {
-                        "condition": "",
-                        "value": "xcode-version: '27.0'"
                     }
                 ]
             }

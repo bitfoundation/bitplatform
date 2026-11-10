@@ -14,7 +14,7 @@
     <ItemGroup>
         <!-- The provider the migration is written for. Bit.Bsqlite takes any EF Core 11 it accepts and would pick its
              lowest; naming the one the rest of the sample builds on keeps every EF Core assembly the same version. -->
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="11.0.0" />
     </ItemGroup>
 
 </Project>
