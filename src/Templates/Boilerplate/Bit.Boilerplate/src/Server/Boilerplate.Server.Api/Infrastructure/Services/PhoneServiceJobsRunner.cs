@@ -16,12 +16,13 @@ public partial class PhoneServiceJobsRunner
         CancellationToken cancellationToken = default)
 
     {
+        SmsSendResult? result = null;
         try
         {
-            var result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
+            result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
 
             if (result.Success is false)
-                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode } });
+                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode }, { "IsTransient", result.IsTransientFailure } });
         }
         catch (Exception exp)
         {
@@ -30,7 +31,7 @@ public partial class PhoneServiceJobsRunner
                 { "PhoneNumber", phoneNumber },
                 { "JobId", context.BackgroundJob.Id }
             });
-            if (cancellationToken.IsCancellationRequested || exp is not KnownException)
+            if (cancellationToken.IsCancellationRequested || (exp is not KnownException && result?.IsTransientFailure is not false))
                 throw; // To retry the job
         }
     }
