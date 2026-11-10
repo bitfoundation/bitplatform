@@ -559,15 +559,21 @@
             a server response) and <b>Invalid</b> marks the field without a message. Both are tied to the input
             through <code>aria-describedby</code>, the error is announced as it appears, and
             <b>AriaDescription</b> adds text for screen readers alone.
+            <br /><br />
+            <b>ShowValidationMessage</b> shows the messages of the form under the picker, where <b>ErrorMessage</b>
+            goes, so the form below needs no <code>ValidationMessage</code> component. The input is described by them
+            through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
+            <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they appear:
+            a submit validates every field at once, and a message from each of them read out in a row would bury the
+            form under its own errors. A <b>BitParams</b> holding a <b>BitDatePickerParams</b> with
+            <b>ShowValidationMessage</b> turns it on for every picker inside it.
         </div>
         <br />
         <div class="example-content">
             <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
 
-                <BitDatePicker Label="Required date" @bind-Value="validationModel.Date" />
-
-                <ValidationMessage For="@(() => validationModel.Date)" />
+                <BitDatePicker Label="Required date" @bind-Value="validationModel.Date" ShowValidationMessage />
                 <br />
                 <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
