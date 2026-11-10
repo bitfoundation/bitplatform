@@ -3658,6 +3658,32 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDateRangePickerShouldStepOnceForAClickReleasedWhileItsStepIsRendering()
+    {
+        var value = new BitDateRangePickerValue
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 10, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 11, 0, 0, TimeSpan.Zero)
+        };
+        using var slowRender = new SpinButtonSlowRender();
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            // Far shorter than the render of the step, which is what a click on a slow page is up against.
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.LabelTemplate, slowRender.Content);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await slowRender.ClickAsync(component.Instance, component.Find("button[title='Increase start hour']"), 50);
+
+        Assert.AreEqual(11, value.StartDate!.Value.Hour);
+    }
+
+    [TestMethod]
     public void BitDateRangePickerHourStepShouldStayOnTheGridWhenItDoesNotDivideTheDay()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

@@ -2424,6 +2424,24 @@ public class BitTimePickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Click_OnAPageSlowToRender_StepsOnce()
+    {
+        await OpenAsync(Url);
+
+        await Page.ClickAsync("#slow-page-on");
+
+        // The render of the step outlasts the press-and-hold delay, so on WebAssembly a delay counted from the press
+        // has run out before the release of the click is handled - and Firefox runs it first, stepping again.
+        await Spin(StandaloneCallout("slow-page"), "Increase minute").ClickAsync();
+
+        await Expect(Out("slow-page-value")).ToHaveTextAsync("10:01:00");
+        // The page settles only once it has gone past the delay without rendering again, so a spin that had started
+        // would have moved the minute (and kept the page from settling) by then.
+        await Expect(Out("slow-page-settled")).ToHaveTextAsync("settled", new() { Timeout = 30_000 });
+        await Expect(Out("slow-page-value")).ToHaveTextAsync("10:01:00");
+    }
+
+    [TestMethod]
     public async Task Paste_AWholeTimeIntoATimeInput_SetsEveryPart()
     {
         await OpenAsync(Url);

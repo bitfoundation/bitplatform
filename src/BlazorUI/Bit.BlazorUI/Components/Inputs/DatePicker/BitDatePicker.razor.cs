@@ -49,7 +49,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool _showMonthPickerAsOverlayInternal;
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private readonly BitSpinPress _spinPress = new();
     private DotNetObjectReference<BitDatePicker>? _dotnetObj;
     private DateTime?[][,] _daysOfMonths = [new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK]];
 
@@ -3577,17 +3577,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (ReadOnly) return;
         if (Disabled) return;
 
+        // Recorded before the step is taken, so a release handled while the step is pending keeps the hold
+        // below from starting (see BitSpinPress).
+        _spinPress.Press();
+
         await ChangeTime(isNext, unit);
 
         if (IsDisposed) return;
 
-        ResetCts();
-
-        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held, so
-        // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
-        // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
-        // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, unit, _cancellationTokenSource);
+        _spinPress.Hold(ContinuousSpinDelay, token => InvokeAsync(() => ContinuousChangeTime(isNext, unit, token)));
     }
 
     // A press of a spin button that came from the keyboard rather than from a pointer: Enter and the space bar
@@ -3603,34 +3601,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         await ChangeTime(isNext, unit);
     }
 
-    /// <summary>
-    /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
-    /// button was released (or the component went away) in the meantime.
-    /// </summary>
-    private async Task ContinuousChangeTimeAfterDelay(bool isNext, TimeUnit unit, CancellationTokenSource cts)
-    {
-        try
-        {
-            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
-
-            await InvokeAsync(() => ContinuousChangeTime(isNext, unit, cts));
-        }
-        catch (OperationCanceledException) { } // the button was released before the continuous spin started
-        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
-    }
-
     // A loop rather than a call that ends in another one of itself: a button held for a few seconds is
     // hundreds of ticks, and every one of them would otherwise leave a frame of its own alive until the whole
     // chain unwinds at the end of the press.
-    private async Task ContinuousChangeTime(bool isNext, TimeUnit unit, CancellationTokenSource cts)
+    private async Task ContinuousChangeTime(bool isNext, TimeUnit unit, CancellationToken token)
     {
-        while (cts.IsCancellationRequested is false && IsDisposed is false)
+        while (token.IsCancellationRequested is false && IsDisposed is false)
         {
             var partBeforeStep = GetTimePart(unit);
 
             await ChangeTime(isNext, unit);
 
-            if (cts.IsCancellationRequested || IsDisposed) return;
+            if (token.IsCancellationRequested || IsDisposed) return;
 
             // A tick that moved nothing will not move anything on the next one either - a step of a whole
             // range leaves a single value on the grid - so the held button has run out of room. Without this
@@ -3641,7 +3623,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
             try
             {
-                await Task.Delay(Math.Max(1, ContinuousSpinInterval), cts.Token);
+                await Task.Delay(Math.Max(1, ContinuousSpinInterval), token);
             }
             catch (OperationCanceledException)
             {
@@ -3677,16 +3659,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void HandleOnPointerUpOrOut()
     {
-        ResetCts();
-    }
-
-    private void ResetCts()
-    {
-        if (IsDisposed) return;
-
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new();
+        _spinPress.Release();
     }
 
     // The step lays a grid over the day rather than adding itself to whatever the hour happens to be, so every
@@ -4277,8 +4250,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         await base.DisposeAsync(disposing);
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        _spinPress.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
         try

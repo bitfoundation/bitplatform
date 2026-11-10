@@ -78,6 +78,13 @@
     <div>Value: <span id="spin-value">@Fmt(_spinValue)</span></div>
 </E2ESection>
 
+@* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
+<E2ESection Id="t-slow-page" Title="A click on a page slow to render">
+    <BitDatePicker Id="dp-slow-page" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_slowPageValue" />
+    <div>Value: <span id="slow-page-value">@Fmt(_slowPageValue)</span></div>
+    <E2ESlowRender Id="slow-page" Watch="_slowPageValue" />
+</E2ESection>
+
 <E2ESection Id="t-titles" Title="Titles of the time picker">
     <BitDatePicker Id="dp-time-titles"
                    ShowTimePicker
@@ -153,6 +160,7 @@
     private DateTimeOffset? _allowedValue = Local(2024, 6, 12, 10, 30);
     private DateTimeOffset? _maxNowValue;
     private DateTimeOffset? _spinValue = Local(2024, 6, 12, 10, 0);
+    private DateTimeOffset? _slowPageValue = Local(2024, 6, 12, 10, 0);
     private DateTimeOffset? _readOnlyValue = Local(2024, 6, 12, 10, 30);
 
     private readonly DateModel _model = new();

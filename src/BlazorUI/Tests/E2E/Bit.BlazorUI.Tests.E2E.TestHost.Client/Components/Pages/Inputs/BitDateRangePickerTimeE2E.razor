@@ -70,6 +70,13 @@
     <div>Value: <span id="ro-value">@Fmt(_readOnlyValue)</span></div>
 </E2ESection>
 
+@* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
+<E2ESection Id="t-slow-page" Title="A click on a page slow to render">
+    <BitDateRangePicker Id="drp-slow-page" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_slowPageValue" />
+    <div>Value: <span id="slow-page-value">@Fmt(_slowPageValue)</span></div>
+    <E2ESlowRender Id="slow-page" Watch="Fmt(_slowPageValue)" />
+</E2ESection>
+
 @* The pickers whose spin buttons are clicked once carry a ContinuousSpinDelay longer than any click: the delay runs on
    the server from the pointerdown to the pointerup, which a busy machine can stretch past the default 400ms and turn
    a click into the start of a press-and-hold spin. The press-and-hold itself is driven on a picker of its own. *@
@@ -93,4 +100,5 @@
 
     private BitDateRangePickerValue? _timeValue, _twelveValue, _startingPicked;
     private BitDateRangePickerValue? _readOnlyValue = new() { StartDate = Local(2024, 6, 10, 8, 30), EndDate = Local(2024, 6, 14, 17, 45) };
+    private BitDateRangePickerValue? _slowPageValue = new() { StartDate = Local(2024, 6, 10, 10, 0), EndDate = Local(2024, 6, 14, 17, 0) };
 }

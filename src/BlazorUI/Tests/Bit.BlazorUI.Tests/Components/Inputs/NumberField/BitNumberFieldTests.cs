@@ -1434,6 +1434,24 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitNumberFieldShouldStepOnceForAClickReleasedWhileItsStepIsRendering()
+    {
+        using var slowRender = new SpinButtonSlowRender();
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            // Far shorter than the render of the step, which is what a click on a slow page is up against.
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.LabelTemplate, slowRender.Content);
+        });
+
+        await slowRender.ClickAsync(component.Instance, component.Find("button.bit-nfl-aup"), 50);
+
+        Assert.AreEqual(1, component.Instance.Value);
+    }
+
+    [TestMethod]
     public async Task BitNumberFieldContinuousIncrementOnPointerDownTest()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>

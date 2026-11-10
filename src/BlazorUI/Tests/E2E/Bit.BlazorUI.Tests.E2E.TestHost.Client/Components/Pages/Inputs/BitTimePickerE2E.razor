@@ -714,6 +714,13 @@
     <span id="continuous-bounded-value">@Show(_continuousBounded)</span>
 </E2ESection>
 
+@* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
+<E2ESection Id="slow-page" Title="A click on a page slow to render">
+    <BitTimePicker Label="Slow page" Standalone Culture="_en" @bind-Value="_slowPage" />
+    <span id="slow-page-value">@Show(_slowPage)</span>
+    <E2ESlowRender Id="slow-page" Watch="_slowPage" />
+</E2ESection>
+
 <E2ESection Id="paste" Title="Paste">
     <BitTimePicker Label="Paste" Standalone ShowSeconds Culture="_en" @bind-Value="_paste" />
     <span id="paste-value">@Show(_paste)</span>
@@ -854,6 +861,7 @@
     private TimeSpan? _continuous = new(10, 0, 0);
     private int _syncs;
     private TimeSpan? _continuousBounded = new(10, 0, 0);
+    private TimeSpan? _slowPage = new(10, 0, 0);
     private TimeSpan? _paste;
     private bool _modalOpen;
     private int _modalPickerCloses;

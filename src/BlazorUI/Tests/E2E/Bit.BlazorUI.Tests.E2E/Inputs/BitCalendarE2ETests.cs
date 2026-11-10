@@ -671,6 +671,24 @@ public class BitCalendarE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task TimePicker_ClickOnAPageSlowToRender_StepsOnce()
+    {
+        await OpenAsync(Url);
+
+        await Page.ClickAsync("#slow-page-on");
+
+        // The render of the step outlasts the press-and-hold delay, so on WebAssembly a delay counted from the press
+        // has run out before the release of the click is handled - and Firefox runs it first, stepping again.
+        await TimeButton("cal-slow-page", 0).ClickAsync();
+
+        await Expect(Span("slow-page-value")).ToHaveTextAsync("2024-03-20 11:00 +00:00");
+        // The page settles only once it has gone past the delay without rendering again, so a spin that had started
+        // would have moved the hour (and kept the page from settling) by then.
+        await Expect(Span("slow-page-settled")).ToHaveTextAsync("settled", new() { Timeout = 30_000 });
+        await Expect(Span("slow-page-value")).ToHaveTextAsync("2024-03-20 11:00 +00:00");
+    }
+
+    [TestMethod]
     public async Task Events_MarkTheDayAndOpenADialogListingThem()
     {
         await OpenAsync(Url);

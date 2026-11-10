@@ -60,13 +60,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private int _liveTextKey;
     private bool _wasRejected;
     private TValue? _rejectedValue;
-    private bool _isSpinButtonPressed;
     private bool _isSpinButtonClick;
     private bool _isSelfValueChangePending;
     private string? _uncommittedImmediateText;
     private int _selfValueChangeVersion;
     private Task _pendingKeyDown = Task.CompletedTask;
-    private CancellationTokenSource _continuousChangeValueCts = new();
+    private readonly BitSpinPress _spinPress = new();
 
 
 
@@ -2030,10 +2029,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // The release is what ends the press, and it can arrive before this handler is done: everything
         // below awaits at least one interop round trip, and the pointerup event is dispatched in that
-        // gap. Recording the press here - and clearing it in HandleOnPointerUpOrOut - is what lets the
-        // continuous spin below see a release that has already happened. Without it a quick click
-        // cancels a token source that is then replaced by a fresh one, leaving a spin nothing can stop.
-        _isSpinButtonPressed = true;
+        // gap. Recording the press before anything is awaited is what lets the hold below see a release
+        // that has already happened.
+        _spinPress.Press();
 
         // Focus belongs on the input: it is the element carrying the spinbutton role and its value, so
         // keeping it focused is what lets a screen reader announce each change and lets the user carry
@@ -2079,39 +2077,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (IsDisposed) return;
 
         // A click short enough to be released while the awaits above were pending is over: the single
-        // step it asked for has been taken and there is nothing left to hold down.
-        if (_isSpinButtonPressed is false) return;
-
-        ResetCts();
-
-        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held,
-        // so awaiting it would leave the pointerdown event handler (and the render it drives) pending
-        // for the whole duration of the press. Its lifetime is owned by the cancellation token source
-        // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeValueAfterDelay(isIncrement, _continuousChangeValueCts);
-    }
-
-    /// <summary>
-    /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
-    /// button was released (or the component went away) in the meantime.
-    /// </summary>
-    private async Task ContinuousChangeValueAfterDelay(bool isIncrement, CancellationTokenSource cts)
-    {
-        try
-        {
-            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
-
-            await InvokeAsync(() => ContinuousChangeValue(isIncrement, cts));
-        }
-        catch (OperationCanceledException) { } // the button was released before the continuous spin started
-        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
+        // step it asked for has been taken, and the hold does not start (see BitSpinPress).
+        _spinPress.Hold(ContinuousSpinDelay, token => InvokeAsync(() => ContinuousChangeValue(isIncrement, token)));
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _isSpinButtonPressed = false;
-
-        ResetCts();
+        _spinPress.Release();
     }
 
     private async Task HandleOnMouseWheel(WheelEventArgs e)
@@ -2175,9 +2147,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// loop rather than a self-recursive call so that a long press cannot pile up an ever growing
     /// chain of pending async continuations.
     /// </summary>
-    private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
+    private async Task ContinuousChangeValue(bool isIncrement, CancellationToken token)
     {
-        while (cts.IsCancellationRequested is false && IsDisposed is false)
+        while (token.IsCancellationRequested is false && IsDisposed is false)
         {
             // A held button that has run the value into its bound has nothing left to do; stopping the
             // loop keeps it from spending the rest of the press re-raising OnIncrement/OnDecrement for
@@ -2188,7 +2160,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             await ChangeValueAndInvokeEvents(isIncrement);
 
-            if (cts.IsCancellationRequested || IsDisposed) return;
+            if (token.IsCancellationRequested || IsDisposed) return;
 
             // A step that moved nothing will not move anything on the next pass either, so the press
             // has run out of room even though no explicit bound reports it. That happens whenever the
@@ -2201,7 +2173,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             try
             {
-                await Task.Delay(Math.Max(1, ContinuousSpinInterval), cts.Token);
+                await Task.Delay(Math.Max(1, ContinuousSpinInterval), token);
             }
             catch (OperationCanceledException)
             {
@@ -2323,15 +2295,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         StateHasChanged();
 
         await NotifyBoundReached(previousValue);
-    }
-
-    private void ResetCts()
-    {
-        if (IsDisposed) return;
-
-        _continuousChangeValueCts?.Cancel();
-        _continuousChangeValueCts?.Dispose();
-        _continuousChangeValueCts = new();
     }
 
     /// <summary>
@@ -2829,8 +2792,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         OnValueChanged -= HandleOnValueChanged;
 
-        _continuousChangeValueCts?.Cancel();
-        _continuousChangeValueCts?.Dispose();
+        _spinPress.Dispose();
 
         await base.DisposeAsync(disposing);
     }

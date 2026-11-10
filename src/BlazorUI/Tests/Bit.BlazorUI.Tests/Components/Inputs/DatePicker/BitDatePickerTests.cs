@@ -3276,6 +3276,27 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDatePickerShouldStepOnceForAClickReleasedWhileItsStepIsRendering()
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+        using var slowRender = new SpinButtonSlowRender();
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            // Far shorter than the render of the step, which is what a click on a slow page is up against.
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.LabelTemplate, slowRender.Content);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await slowRender.ClickAsync(component.Instance, component.FindAll(".bit-dtp-tbt")[0], 50);
+
+        Assert.AreEqual(11, value!.Value.Hour);
+    }
+
+    [TestMethod]
     public void BitDatePickerMinuteStepShouldLayAGridOverTheHour()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

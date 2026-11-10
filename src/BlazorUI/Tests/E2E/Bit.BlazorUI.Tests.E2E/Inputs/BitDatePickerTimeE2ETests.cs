@@ -352,6 +352,26 @@ public class BitDatePickerTimeE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
+    public async Task Time_AClickOnAPageSlowToRenderStepsOnce()
+    {
+        await OpenAsync(Route);
+
+        await Page.ClickAsync("#slow-page-on");
+
+        var pid = await OpenPickerAsync("dp-slow-page");
+
+        // The render of the step outlasts the press-and-hold delay, so on WebAssembly a delay counted from the press
+        // has run out before the release of the click is handled - and Firefox runs it first, stepping again.
+        await Spin(pid, "Increase hour").ClickAsync();
+
+        await Expect(Page.Locator("#slow-page-value")).ToHaveTextAsync("2024-06-12 11:00");
+        // The page settles only once it has gone past the delay without rendering again, so a spin that had started
+        // would have moved the hour (and kept the page from settling) by then.
+        await Expect(Page.Locator("#slow-page-settled")).ToHaveTextAsync("settled", new() { Timeout = 30_000 });
+        await Expect(Page.Locator("#slow-page-value")).ToHaveTextAsync("2024-06-12 11:00");
+    }
+
+    [TestMethod]
     public async Task Time_EveryTitleOfTheTimePickerIsThePagesOwn()
     {
         await OpenAsync(Route);
