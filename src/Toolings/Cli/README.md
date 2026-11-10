@@ -293,10 +293,10 @@ It reads `Bit.ResxTranslator.json` from the current folder or the nearest one ab
 ```
 
 - `ResxPaths` are globs relative to the config file's folder, for the base `.resx` files.
-- Put the key in the `OpenAI__ApiKey` environment variable rather than in the file. `OpenAI__Model` and `OpenAI__Endpoint` work too. Without a key it translates nothing and says so, without failing a pipeline.
+- Put the key in the `OpenAI__ApiKey` environment variable rather than in the file. `OpenAI__Model` and `OpenAI__Endpoint` work too. Without a key it fails when a translation is missing, and succeeds when none is.
 - Any OpenAI-compatible endpoint works: OpenAI, Azure AI Foundry (`https://YOUR_AZURE_FOUNDRY.services.ai.azure.com/openai/v1`), Google AI Studio (`https://generativelanguage.googleapis.com/v1beta/openai`), xAI (`https://api.x.ai/v1`).
 - An optional `ChatOptions` section sets the model's options, such as `"Temperature": "0"`. If the model doesn't support that temperature, bit translate asks again without it.
-- Strings go in batches of 250. A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it's still wrong, so the next run tries it again. Characters XML can't hold are removed from each translation.
+- Strings go in batches of 250. A translation that drops or renumbers a `{0}` placeholder is asked for once more, and left out if it's still wrong, which fails the run; the next run tries it again. Characters XML can't hold are removed from each translation.
 - `--check` calls no model and exits with code 3 when anything is missing, for CI.
 
 In a pipeline:

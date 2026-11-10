@@ -113,14 +113,14 @@ public class TranslationTests
     }
 
     [TestMethod]
-    public async Task APlaceholderMismatch_Should_BeRetriedOnceThenLeftOut()
+    public async Task APlaceholderMismatch_Should_BeRetriedOnceThenLeftOutAndFail()
     {
         using var host = CreateProject(new() { ["Hello"] = "Hello", ["Bye"] = "Bye {0}" });
         var client = new FakeTranslationClient { BreakPlaceholders = int.MaxValue };
 
         var exitCode = await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
 
-        Assert.AreEqual(CliApp.ExitOk, exitCode, host.Output);
+        Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
         Assert.HasCount(2, client.Batches);
         Assert.IsTrue(client.Batches[1].Reminder);
         CollectionAssert.AreEqual(new[] { "Bye {0}" }, client.Batches[1].Values.ToArray());
@@ -129,6 +129,7 @@ public class TranslationTests
         Assert.AreEqual("fa:Hello", values["Hello"]);
         Assert.IsFalse(values.ContainsKey("Bye"));
         StringAssert.Contains(host.Output, "kept out");
+        StringAssert.Contains(host.Output, "still missing");
     }
 
     [TestMethod]
@@ -196,16 +197,17 @@ public class TranslationTests
     }
 
     [TestMethod]
-    public async Task NoApiKey_Should_TranslateNothingWithoutFailing()
+    public async Task NoApiKey_Should_FailWhenATranslationIsMissing()
     {
         using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("\"test-key\"", "null", StringComparison.Ordinal));
         var client = new FakeTranslationClient();
 
         var exitCode = await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, [], false, false), CancellationToken.None);
 
-        Assert.AreEqual(CliApp.ExitOk, exitCode);
+        Assert.AreEqual(CliApp.ExitFailed, exitCode);
         Assert.IsEmpty(client.Batches);
         StringAssert.Contains(host.Output, "OpenAI__ApiKey");
+        StringAssert.Contains(host.Output, "AI agent");
     }
 
     [TestMethod]
