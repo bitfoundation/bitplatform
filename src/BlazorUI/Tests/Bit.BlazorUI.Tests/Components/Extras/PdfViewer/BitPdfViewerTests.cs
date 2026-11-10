@@ -2971,14 +2971,6 @@ public class BitPdfViewerTests : BunitTestContext
     [TestMethod]
     public void BitPdfViewerShouldMoveThumbnailFocusBeforeNavigating()
     {
-        var component = RenderComponent<BitPdfViewer>(parameters =>
-        {
-            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
-            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
-        });
-
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
-
         // bUnit records the invocations grouped by identifier, not in call order, so the order is read at the moment the
         // jump's scroll is sent: the matcher that sees that call notes which thumbnail held the focus then.
         var scrolled = false;
@@ -2990,6 +2982,14 @@ public class BitPdfViewerTests : BunitTestContext
             scrolled = true;
             return true;
         }).SetVoidResult();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
 
         component.Find("[data-thumb='1']").KeyDown(new KeyboardEventArgs { Key = "End" });
 

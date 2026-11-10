@@ -260,9 +260,9 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         using var handler = new RangeHandler(SpacedPages());
         Services.AddSingleton(new HttpClient(handler));
         var errors = new List<string>();
+        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, Definition()).Add(v => v.OnError, errors.Add));
         component.WaitForPages(3);
-        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var work = component.InvokeAsync(() => component.Instance.Download());
         component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
         var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
