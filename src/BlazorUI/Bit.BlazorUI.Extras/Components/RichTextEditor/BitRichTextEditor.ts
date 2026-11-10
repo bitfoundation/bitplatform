@@ -200,12 +200,28 @@
                 editor._fullScreenRoot = root;
                 editor._onRootKeyDown = (e: KeyboardEvent) => RichTextEditor.containFullScreenTab(root, e);
                 root.addEventListener('keydown', editor._onRootKeyDown);
+
+                editor._onPanelEnter = (e: KeyboardEvent) => RichTextEditor.claimPanelEnter(e);
+                root.addEventListener('keydown', editor._onPanelEnter, true);
             }
 
             RichTextEditor.enableImageResize(editor);
             RichTextEditor.enableTableResize(editor);
             RichTextEditor.enableTaskToggle(editor);
             RichTextEditor.updateEmpty(editor);
+        }
+
+        // Enter in a field of a panel (a link's or an image's address, the find box) is the panel's to answer - apply, step
+        // to the next match - and has no default of its own to keep, but one that does harm: the answer can put the focus
+        // back in the text while the key is still being dispatched (selecting the range a link is made on focuses the
+        // surface, and in WebAssembly the whole answer runs inside the key's dispatch), and the engine then types the
+        // Enter there, splitting the paragraph over the link it just made. In a form, it would submit the form as well.
+        private static claimPanelEnter(e: KeyboardEvent) {
+            if (e.key !== 'Enter' || e.defaultPrevented || Utils.isComposingKey(e)) return;
+            const target = e.target as HTMLElement | null;
+            if (!(target instanceof HTMLInputElement) || !target.closest('.bit-rte-bar')) return;
+            if (['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'color'].includes(target.type)) return;
+            e.preventDefault();
         }
 
         // Refreshes the bridge options that can change after initialization (debounce, policy,
@@ -248,7 +264,10 @@
             editor.removeEventListener('beforeinput', editor._onBeforeInput);
             document.removeEventListener('selectionchange', editor._onSelection);
             document.removeEventListener('fullscreenchange', editor._onFullScreenChange);
-            if (editor._fullScreenRoot) editor._fullScreenRoot.removeEventListener('keydown', editor._onRootKeyDown);
+            if (editor._fullScreenRoot) {
+                editor._fullScreenRoot.removeEventListener('keydown', editor._onRootKeyDown);
+                editor._fullScreenRoot.removeEventListener('keydown', editor._onPanelEnter, true);
+            }
             editor._fullScreenRoot = null;
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;

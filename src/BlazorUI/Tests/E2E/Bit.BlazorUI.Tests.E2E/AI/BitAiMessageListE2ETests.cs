@@ -170,6 +170,52 @@ public class BitAiMessageListE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Pinned_AWheelWhoseScrollShowsLate_LeavesTheNewestMessageAsItIsTurned()
+    {
+        await OpenAsync(Route);
+
+        var list = List("msl-pin");
+        var log = await SettledLogAsync();
+
+        // A wheel turned up, whose scroll reaches the position only well after the moment a gesture holds the view for -
+        // Firefox scrolls on its compositor, and a busy page learns of the move a paint or more later. The event is
+        // dispatched by hand, which scrolls nothing itself (but in WebKit), and the move is made through the element's
+        // own setter of the position, which no script of the page calls.
+        await list.EvaluateAsync("e => e.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, deltaMode: 0, bubbles: true, cancelable: true }))");
+        await Expect(Pinned).ToHaveTextAsync("False");
+        await Page.WaitForTimeoutAsync(400);
+        await list.EvaluateAsync("e => Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop').set.call(e, e.scrollTop - 400)");
+        await NextFramesAsync();
+        await Page.WaitForTimeoutAsync(1200);
+
+        var state = await list.ScrollStateAsync();
+        Assert.IsTrue(state.FromBottom > 300, $"The view stays where the wheel took it: {state.FromBottom}px from the bottom.");
+        await Expect(Pinned).ToHaveTextAsync("False");
+        await Expect(PinButton).ToBeVisibleAsync();
+        await Expect(PinLog).ToHaveTextAsync(Log(log, "False"));
+    }
+
+    [TestMethod]
+    public async Task Pinned_AWheelWhoseScrollNeverShows_LeavesTheViewAtTheNewestMessageAfterAll()
+    {
+        if (IsWebKit) Assert.Inconclusive("WebKit scrolls by a wheel event a script dispatches, so no wheel can be turned that scrolls nothing.");
+
+        await OpenAsync(Route);
+
+        var list = List("msl-pin");
+        var log = await SettledLogAsync();
+
+        // Something the list cannot see took the wheel's scroll: the newest message is left as it is turned, and the view
+        // still at the end is taken back to it a moment later.
+        await list.EvaluateAsync("e => e.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, deltaMode: 0, bubbles: true, cancelable: true }))");
+        await Expect(Pinned).ToHaveTextAsync("False");
+        await Expect(Pinned).ToHaveTextAsync("True");
+        await Expect(PinButton).ToHaveCountAsync(0);
+        await Expect(PinLog).ToHaveTextAsync(Log(log, "False", "True"));
+        await list.WaitForScrolledToBottomAsync();
+    }
+
+    [TestMethod]
     public async Task Pinned_WhilePinned_TheViewFollowsTheStream()
     {
         await OpenAsync(Route);

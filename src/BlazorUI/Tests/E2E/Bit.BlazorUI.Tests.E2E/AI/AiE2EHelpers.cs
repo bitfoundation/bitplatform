@@ -125,13 +125,36 @@ internal static class AiE2EHelpers
     /// <summary>
     /// Scrolls a container up by the wheel of the mouse over it, the way a reader scrolls away from the newest message.
     /// The container is brought into the viewport first: a wheel turned where the page shows nothing scrolls nothing.
+    /// Returns once the scroll has begun to show in the position - a move the way the wheel turned, since a list that
+    /// follows a stream moves on its own as well - or after a couple of seconds, for a wheel the container could not
+    /// move with (none at all when it is already at the end the wheel turns towards): Firefox scrolls on its compositor,
+    /// and the page reads the move a paint or more after the wheel - after what the page does as the wheel is turned (a
+    /// transcript leaves its newest message then) - so the position read right after the wheel can still be the one
+    /// before it.
     /// </summary>
     public static async Task WheelOverAsync(this IPage page, ILocator scroller, double deltaY)
     {
         await scroller.ScrollIntoViewIfNeededAsync();
         var box = await scroller.BoundingBoxAsync();
         await page.Mouse.MoveAsync((float)(box!.X + box.Width / 2), (float)(box.Y + box.Height / 2));
+        var before = await scroller.EvaluateAsync<double[]>("e => [e.scrollTop, e.scrollHeight - e.clientHeight]");
+        var (top, max) = (before[0], before[1]);
         await page.Mouse.WheelAsync(0, (float)deltaY);
+
+        if (deltaY == 0 || (deltaY < 0 && top < 1) || (deltaY > 0 && top > max - 1)) return;
+
+        await scroller.EvaluateAsync(
+            """
+            (e, [before, up]) => new Promise(resolve => {
+                const started = performance.now();
+                const check = () => {
+                    const moved = e.scrollTop - before;
+                    if ((up ? moved < -1 : moved > 1) || performance.now() - started > 2000) return resolve();
+                    requestAnimationFrame(check);
+                };
+                check();
+            })
+            """, new object[] { top, deltaY < 0 });
     }
 
     /// <summary>

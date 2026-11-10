@@ -55,8 +55,9 @@
     <BitTagsInput Id="tgi-restrict" Label="Only suggestions" Suggestions="_frameworks" RestrictToSuggestions ShowInvalidMessage Comparison="StringComparison.OrdinalIgnoreCase" @bind-Value="_restrict" />
     <span id="restrict-value">@J(_restrict)</span>
     <BitTagsInput Id="tgi-max-suggest" Label="Five at a time" Suggestions="_countries" MaxSuggestions="5" />
-    <BitTagsInput Id="tgi-async" Label="Fetched while you type" Suggestions="_asyncSuggestions" IsLoading="_asyncLoading" LoadingAriaLabel="Fetching countries" DebounceTime="300" OnInput="HandleAsyncInput" />
+    <BitTagsInput Id="tgi-async" Label="Fetched while you type" Suggestions="_asyncSuggestions" IsLoading="_asyncLoading" LoadingAriaLabel="Fetching countries" DebounceTime="600" OnInput="HandleAsyncInput" />
     <span id="async-calls">@_asyncCalls</span>
+    <button id="btn-async-release" @onclick="() => _asyncFetch?.TrySetResult()">Finish the fetch</button>
 </E2ESection>
 
 <E2ESection Id="limits" Title="Limits & counter">
@@ -377,6 +378,7 @@
     private IEnumerable<string> _asyncSuggestions = [];
     private bool _asyncLoading;
     private int _asyncCalls;
+    private TaskCompletionSource? _asyncFetch;
     private ICollection<string>? _max = new List<string> { "one", "two" };
     private ICollection<string>? _minMax;
     private ICollection<string>? _hashtags;
@@ -486,7 +488,11 @@
         _asyncCalls++;
         _asyncLoading = true;
         StateHasChanged();
-        await Task.Delay(400);
+        // The fetch lasts until the test finishes it (btn-async-release), so the loading indicator is there to be seen
+        // however loaded the machine. The debounce above is long enough that keys typed 40ms apart never reach the fetch
+        // between two of them, even on a busy runner.
+        _asyncFetch = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _asyncFetch.Task;
         _asyncSuggestions = _countries.Where(c => c.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList();
         _asyncLoading = false;
     }
