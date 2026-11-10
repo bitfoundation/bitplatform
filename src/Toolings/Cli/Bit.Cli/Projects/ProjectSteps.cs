@@ -1136,6 +1136,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
 
         var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        await Gh(["api", "repos/{owner}/{repo}", .. Pipelines.PipelineSetup.CollaboratorsOnly], cancellationToken);
         await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
         var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";

@@ -1319,6 +1319,7 @@ public class ProjectStepTests
         var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
         var remoteHead = calls.IndexOf("git remote set-head origin develop");
 
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "gh" && string.Join(' ', c.Arguments) is "api repos/{owner}/{repo} -X PATCH -f pull_request_creation_policy=collaborators_only --silent"), string.Join(Environment.NewLine, calls));
         Assert.IsTrue(create >= 0 && create < pushDevelop && pushDevelop < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
         Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
     }

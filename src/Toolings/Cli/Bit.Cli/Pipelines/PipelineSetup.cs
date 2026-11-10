@@ -107,12 +107,28 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             cli.Console.Warn($"No workflow deploys to the environment {unknown}. The workflows deploy to {(scan.Environments.Count == 0 ? "no environment" : string.Join(", ", scan.Environments))}.");
         }
 
+        var settings = await ReadSettingsAsync(cancellationToken);
+        var settingsOff = settings.Where(s => s.On is false).ToList();
+        ShowSettings(settings);
+        WarnIfPublicWithSelfHostedRunner();
+
+        if (options.Check is false && settingsOff.Count > 0)
+        {
+            if (options.Yes is false && cli.IsInteractive is false)
+                return cli.UsageError("confirmation-needed", $"bit pipeline changes the settings of {repository}, and without a terminal it can't ask first. Pass --yes to go ahead.");
+
+            if (options.Yes || cli.Prompter.Confirm($"Let only collaborators open pull requests in {repository}, and make its workflows' token read-only?", true))
+            {
+                await ApplySettingsAsync(settingsOff, cancellationToken);
+            }
+        }
+
         var wanted = scan.Secrets.Where(s => s.Environment is null || options.Environments.Count == 0 || options.Environments.Contains(s.Environment, StringComparer.Ordinal)).ToList();
 
         if (wanted.Count == 0)
         {
             cli.Console.Out.MarkupLine("The workflows use no secrets.");
-            return CliApp.ExitOk;
+            return options.Check && settingsOff.Count > 0 ? CliApp.ExitCheckFailed : failed ? CliApp.ExitFailed : CliApp.ExitOk;
         }
 
         if (await ListSecretsAsync(null, cancellationToken) is not { } listed)
@@ -145,14 +161,14 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         Show(wanted, IsSet);
 
         if (options.Check)
-            return missing.Any(s => IsOptional(s.Name) is false) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
+            return missing.Any(s => IsOptional(s.Name) is false) || settingsOff.Count > 0 ? CliApp.ExitCheckFailed : CliApp.ExitOk;
 
         var rotating = options.RotateCertificate ? wanted.Where(s => s.Name is AppCertificate && IsSet(s)).ToList() : [];
 
         if (missing.All(s => IsOptional(s.Name)) && rotating.Count == 0)
         {
             cli.Console.Out.MarkupLine($"Every secret the workflows use is set in {Markup.Escape(repository)}.");
-            return CliApp.ExitOk;
+            return failed ? CliApp.ExitFailed : CliApp.ExitOk;
         }
 
         if (options.Yes is false && cli.IsInteractive is false)

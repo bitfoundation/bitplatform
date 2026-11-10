@@ -314,6 +314,71 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task Pipeline_Should_LockDownAPrivateRepositorysPullRequestsAndToken()
+    {
+        using var host = Repository();
+        Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "write\ntrue\n");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
+
+        var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.Contains(commands, "api repos/contoso/shop -X PATCH -f pull_request_creation_policy=collaborators_only --silent", host.Output);
+        CollectionAssert.Contains(commands, "api -X PUT repos/contoso/shop/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false --silent", host.Output);
+        Assert.IsFalse(commands.Any(c => c.Contains("fork-pr-contributor-approval", StringComparison.Ordinal)), host.Output);
+        StringAssert.Contains(host.FlatOutput, "Only collaborators can open pull requests");
+    }
+
+    [TestMethod]
+    public async Task OnAPublicRepository_Pipeline_Should_RequireApprovalForOutsideContributorsAndWarnAboutTheRunner()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: [self-hosted, Production]\n    steps:\n      - run: echo hi\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "public\ncollaborators_only\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/fork-pr-contributor-approval --jq", 0, "first_time_contributors\n");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
+
+        var changes = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).Where(c => c.Contains("PATCH", StringComparison.Ordinal) || c.Contains("PUT", StringComparison.Ordinal)).ToList();
+        CollectionAssert.AreEqual(new[] { "api -X PUT repos/contoso/shop/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors --silent" }, changes, host.Output);
+        StringAssert.Contains(host.FlatOutput, "keep the deploy jobs in a separate private repository");
+    }
+
+    [TestMethod]
+    public async Task Check_Should_FailOnASettingThatIsOffAndChangeNothing()
+    {
+        using var host = Repository();
+        Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
+
+        Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"));
+
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT")));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Pull requests from collaborators only off"));
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Read-only GITHUB_TOKEN that can't approve pull requests on"));
+
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\n");
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"));
+    }
+
+    [TestMethod]
+    public async Task WithoutATerminal_Pipeline_Should_NeedYesBeforeItChangesASetting()
+    {
+        using var host = Repository();
+        Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
+
+        StringAssert.Contains(host.FlatOutput, "--yes");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT")));
+    }
+
+    [TestMethod]
     public async Task Pipeline_Should_RefuseARepositoryWithoutGitHubWorkflows()
     {
         using var host = Repository();
