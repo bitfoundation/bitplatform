@@ -280,7 +280,11 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-text-item-background, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec})));
 }
 
+// Kept from shrinking: in the label's flex row a wide item content would otherwise take the room from
+// this empty box, and while the absolutely sized ring keeps its size, the dot centers in the shrunken box
+// and drifts off center, and each item's content starts at a different x.
 .bit-chg-rad {
+    flex-shrink: 0;
     aspect-ratio: 1;
     position: relative;
     width: var(--bit-chg-circle-side);
