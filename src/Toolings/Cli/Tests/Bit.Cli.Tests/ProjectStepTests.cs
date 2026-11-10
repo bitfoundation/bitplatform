@@ -1343,6 +1343,45 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AFailedPushAndLockDown_Should_ReportBoth()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("gh", "api repos/contoso-dev/Contoso -X PATCH", 1, "HTTP 403");
+        host.Runner.On("git", "push", 1, "rejected");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        StringAssert.Contains(result.Title, "lock down");
+        StringAssert.Contains(result.FollowUp, "git push -u origin develop");
+        StringAssert.EndsWith(result.FollowUp, "&& bit pipeline");
+    }
+
+    [TestMethod]
+    public async Task GhRepo_Should_NotRedirectTheLockDown()
+    {
+        using var host = new TestHost(variables: new Dictionary<string, string> { ["GH_REPO"] = "contoso/unrelated" });
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+
+        await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        var api = host.Runner.Calls.Where(c => c.FileName is "gh" && c.Arguments is ["api", _, ..] && c.Arguments[1] is not "user").Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.AreEqual(new[]
+        {
+            "api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent",
+            "api -X PUT repos/contoso-dev/Contoso/vulnerability-alerts --silent"
+        }, api, string.Join(Environment.NewLine, api));
+    }
+
+    [TestMethod]
     public async Task ARepoThatCouldNotBeLockedDown_Should_WarnAndPointAtBitPipeline()
     {
         using var host = new TestHost();
@@ -1419,6 +1458,7 @@ public class ProjectStepTests
         project.GitReady = true;
         host.Runner.Executables["gh"] = "/usr/bin/gh";
         host.Runner.On("git", "push -u origin develop", 1, "fatal: unable to access");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 

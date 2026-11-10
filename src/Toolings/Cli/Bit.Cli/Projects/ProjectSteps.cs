@@ -1125,6 +1125,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.FromProcess(create, "", title, followUp);
 
         var lockedDown = await LockDownRepositoryAsync(cancellationToken);
+        var lockDown = lockedDown ? "" : " && bit pipeline";
         await Gh(["auth", "setup-git"], cancellationToken);
         var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
 
@@ -1134,13 +1135,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
 
         if (pushed.Succeeded is false)
-            return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
+            return StepResult.FromProcess(pushed, "", lockedDown ? "Couldn't push to the GitHub repo" : "Couldn't push to the GitHub repo or lock down its pull requests and Dependabot alerts", $"cd {ProcessSpec.Quote(project.Directory)} && {push}{lockDown}");
 
         var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
         await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
         var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
-        var lockDown = lockedDown ? "" : " && bit pipeline";
 
         if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
             return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop{lockDown}", resultCode: "github.default-branch");
