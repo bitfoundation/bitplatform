@@ -658,6 +658,14 @@
                 an error state when the field is invalid, and works with <b>ValidationMessage</b>. Set <b>NoValidate</b> to
                 opt out of that integration.
                 <br /><br />
+                <b>ShowValidationMessage</b> puts the messages of the form under the field instead, where
+                <b>ErrorMessage</b> goes, so the form below needs no <b>ValidationMessage</b> component. The input is
+                described by them through <code>aria-describedby</code>, so they are read out when it takes the focus,
+                and an <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
+                appear: a submit validates every field at once, and a message from each of them read out in a row would
+                bury the form under its own errors. A <b>BitParams</b> holding a <b>BitSearchBoxParams</b> with
+                <b>ShowValidationMessage</b> turns it on for every search box inside it.
+                <br /><br />
                 Outside a form, <b>ErrorMessage</b> (or <b>ErrorMessageTemplate</b>) reports a rejection the app itself
                 knows about: a server response, or a rule spanning two fields. It marks the field invalid on its own, is
                 referenced by the input through <code>aria-describedby</code>, and is announced by the live region of the
@@ -670,8 +678,8 @@
                     <BitSearchBox Placeholder="Search" Immediate
                                   Label="Search term"
                                   DefaultValue="This is default value"
-                                  @bind-Value="validationModel.Text" />
-                    <ValidationMessage For="() => validationModel.Text" />
+                                  @bind-Value="validationModel.Text"
+                                  ShowValidationMessage />
                 </EditForm>
                 <br /><br /><br />
                 <BitSearchBox Immediate

@@ -11,6 +11,7 @@
                   DefaultValue="@DefaultValue"
                   FixedIcon="ShowIcon"
                   OnChange="HandleChange"
+                  ShowValidationMessage="ShowValidationMessage"
                   Autocomplete="@AutoComplete">
     </BitSearchBox>
 </EditForm>
@@ -26,6 +27,7 @@
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Immediate { get; set; }
     [Parameter] public string? AutoComplete { get; set; }
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     public int CurrentCount { get; set; }
     public int ValidCount { get; set; }
