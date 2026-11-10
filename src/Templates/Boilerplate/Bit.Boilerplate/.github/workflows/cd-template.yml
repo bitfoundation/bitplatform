@@ -355,7 +355,8 @@ jobs:
             { echo "rollback_to=$shared"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
             echo "rollback_keeps=$(printed RunningImageKeeps)" >> "$GITHUB_OUTPUT"
           fi
-          # Going back to a migration leaves those applied before it, which each image names, for the two undo steps to say so.
+          # Going back to a migration leaves those applied before it, which each image names, for the two undo steps to say so
+          # (DeploymentMigrations has an example).
           echo "undo_keeps=$(printed ThisImageKeeps)" >> "$GITHUB_OUTPUT"
           exit "$status"
 
@@ -475,7 +476,7 @@ jobs:
           if ! docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations; then
             echo "::error::The migrations could not be undone. The database stays ahead of the running version."
           elif [[ -n "$UNDO_KEEPS" ]]; then
-            echo "::warning::$UNDO_KEEPS of this version come before $UNDO_TO, so going back to it left them applied. The running version works on them, but undo them by hand if they get in the way."
+            echo "::warning::Migrations of this version that come before $UNDO_TO stay applied, since going back to it undoes only those after it: $UNDO_KEEPS. The running version works on them, but undo them by hand if they get in the way."
           fi
 
       # After the swap, because the version just stopped needed them, and this version works on that database meanwhile.
@@ -490,7 +491,7 @@ jobs:
           if ! env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations; then
             echo "::warning::The migrations this version doesn't have could not be undone. It works on them, but the next deployment finds them applied."
           elif [[ -n "$ROLLBACK_KEEPS" ]]; then
-            echo "::warning::$ROLLBACK_KEEPS, which this version doesn't have, come before $ROLLBACK_TO, so going back to it left them applied. This version works on them, but the next deployment finds them applied."
+            echo "::warning::Migrations this version doesn't have that come before $ROLLBACK_TO stay applied, since going back to it undoes only those after it: $ROLLBACK_KEEPS. This version works on them, but the next deployment finds them applied."
           fi
 
       # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
