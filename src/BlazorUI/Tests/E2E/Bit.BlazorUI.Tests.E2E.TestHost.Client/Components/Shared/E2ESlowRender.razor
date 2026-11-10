@@ -1,0 +1,68 @@
+﻿@*
+    Makes the page it is on slow to render, as a page with a lot on it is on a slow machine: once switched on, every
+    render of the page that reaches it (it re-renders whenever the page does, through Watch) takes RenderMs longer -
+    on WebAssembly in the browser task of the event that caused it. It is what a click on a spin button is up against
+    when the render of its step outlasts the press-and-hold delay.
+
+    It also says when the page has settled: "settled" once Settle milliseconds have passed since the last render
+    without another one, timed by the page itself. A press-and-hold spin is due within its delay of the press, so a
+    Settle past that delay means a spin that was going to start has started, and has rendered, by the time the page
+    reads "settled" - which a test waits for instead of a fixed time that a slow machine can outrun.
+*@
+<button id="@($"{Id}-on")" type="button" @onclick="() => _on = true">Slow the page down</button>
+<span id="@($"{Id}-settled")">@(_settled ? "settled" : "busy")</span>
+@{ HoldUpTheRender(); }
+
+@code {
+    private bool _on;
+    private bool _settled;
+    private int _renders;
+    private object? _watched;
+
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+
+    /// <summary>
+    /// What the page shows of the component under test; a change of it is what the page re-renders for.
+    /// </summary>
+    [Parameter] public object? Watch { get; set; }
+
+    [Parameter] public int RenderMs { get; set; } = 700;
+
+    [Parameter] public int Settle { get; set; } = 1000;
+
+    protected override void OnParametersSet()
+    {
+        if (Equals(_watched, Watch)) return;
+
+        _watched = Watch;
+        _settled = false;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_on is false || _settled) return;
+
+        _ = SettleAfterThisRender(++_renders);
+    }
+
+    private async Task SettleAfterThisRender(int render)
+    {
+        await Task.Delay(Settle);
+
+        if (render != _renders || _settled) return;
+
+        _settled = true;
+
+        StateHasChanged();
+    }
+
+    // A busy wait rather than a sleep: it is the thread rendering the page that has to be held up, as a heavy render
+    // holds it up, and a WebAssembly app has no other thread to put to sleep.
+    private void HoldUpTheRender()
+    {
+        if (_on is false) return;
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        while (watch.ElapsedMilliseconds < RenderMs) { }
+    }
+}

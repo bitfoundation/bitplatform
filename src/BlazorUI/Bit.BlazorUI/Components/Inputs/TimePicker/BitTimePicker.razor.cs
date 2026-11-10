@@ -32,7 +32,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private ElementReference _inputMinuteRef = default!;
     private ElementReference _inputSecondRef = default!;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private readonly BitSpinPress _spinPress = new();
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private int? _typedDigit;
     private int _typedDigitCount;
@@ -1965,43 +1965,15 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsInteractive is false) return;
 
+        // Recorded before the step is taken: the step awaits the OnSelectTime of the consumer, and a release
+        // handled while that is pending has to keep the hold below from starting (see BitSpinPress).
+        _spinPress.Press();
+
         await ChangeTime(isNext, unit);
 
         if (IsDisposed) return;
 
-        ResetCts();
-
-        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held, so
-        // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
-        // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
-        // HandleOnPointerUpOrOut and DisposeAsync cancel.
-        _ = ContinuousChangeTimeAfterDelay(isNext, unit, _cancellationTokenSource);
-    }
-
-    /// <summary>
-    /// Waits out the <see cref="ContinuousSpinDelay"/>, counted from the render of the step the press took,
-    /// and then starts the continuous spin, unless the button was released (or the component went away) in
-    /// the meantime.
-    /// </summary>
-    private async Task ContinuousChangeTimeAfterDelay(bool isNext, TimeUnit unit, CancellationTokenSource cts)
-    {
-        try
-        {
-            // On WebAssembly the render of the step runs in the browser task of the pointerdown, so a page that
-            // takes longer to render than the delay would have it run out before the pointerup of a plain click
-            // is even handled - and Firefox runs that timer first, stepping a second time. Yielding lets the
-            // handler and its render finish before the delay starts, by when the release is already queued.
-            await Task.Yield();
-
-            // A release handled before this point has cancelled (and disposed) the source already.
-            if (cts.IsCancellationRequested) return;
-
-            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
-
-            await InvokeAsync(() => ContinuousChangeTime(isNext, unit, cts));
-        }
-        catch (OperationCanceledException) { } // the button was released before the continuous spin started
-        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
+        _spinPress.Hold(ContinuousSpinDelay, token => InvokeAsync(() => ContinuousChangeTime(isNext, unit, token)));
     }
 
     // The keyboard fires no pointer events on a button, only the click - which a pointer press also fires
@@ -2018,9 +1990,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // A loop rather than a call that ends in another one of itself: a button held for a few seconds is
     // hundreds of ticks, and every one of them would otherwise leave a frame of its own alive until the whole
     // chain unwinds at the end of the press.
-    private async Task ContinuousChangeTime(bool isNext, TimeUnit unit, CancellationTokenSource cts)
+    private async Task ContinuousChangeTime(bool isNext, TimeUnit unit, CancellationToken token)
     {
-        while (cts.IsCancellationRequested is false && IsDisposed is false)
+        while (token.IsCancellationRequested is false && IsDisposed is false)
         {
             if (IsInteractive is false) return;
 
@@ -2028,7 +2000,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
             await ChangeTime(isNext, unit);
 
-            if (cts.IsCancellationRequested || IsDisposed) return;
+            if (token.IsCancellationRequested || IsDisposed) return;
 
             // A tick that moved nothing will not move anything on the next one either - the constraints of
             // the picker can leave a part with a single selectable value, or with none - so the held button
@@ -2040,7 +2012,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
             try
             {
-                await Task.Delay(Math.Max(1, ContinuousSpinInterval), cts.Token);
+                await Task.Delay(Math.Max(1, ContinuousSpinInterval), token);
             }
             catch (OperationCanceledException)
             {
@@ -2060,16 +2032,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private void HandleOnPointerUpOrOut()
     {
-        ResetCts();
-    }
-
-    private void ResetCts()
-    {
-        if (IsDisposed) return;
-
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new();
+        _spinPress.Release();
     }
 
     // Whether the picker currently accepts a change, which is what every pointer, keyboard and button path is
@@ -2372,8 +2335,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         await base.DisposeAsync(disposing);
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        _spinPress.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
         try

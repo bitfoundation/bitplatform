@@ -85,6 +85,13 @@
     </div>
 </E2ESection>
 
+@* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
+<E2ESection Id="slow-page" Title="A click on a page slow to render">
+    <BitNumberField Id="nf-slow-page" Label="Slow page" Mode="BitSpinButtonMode.Spread" @bind-Value="_slowPageValue" />
+    <span id="slow-page-value">@_slowPageValue</span>
+    <E2ESlowRender Id="slow-page" Watch="_slowPageValue" />
+</E2ESection>
+
 @* ---------- Min and Max ---------- *@
 
 <E2ESection Id="minmax" Title="Min and Max">
@@ -554,6 +561,7 @@
     private int _spreadValue;
     private int _continuousValue;
     private int _hideInputValue;
+    private int _slowPageValue;
 
     private int _minValue;
     private int _minMaxValue;

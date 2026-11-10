@@ -2435,8 +2435,9 @@ public class BitTimePickerE2ETests : E2ETestBase
         await Spin(StandaloneCallout("slow-page"), "Increase minute").ClickAsync();
 
         await Expect(Out("slow-page-value")).ToHaveTextAsync("10:01:00");
-        // Past the delay and a render more: a spin that had started would have moved the minute again by now.
-        await Page.WaitForTimeoutAsync(1500);
+        // The page settles only once it has gone past the delay without rendering again, so a spin that had started
+        // would have moved the minute (and kept the page from settling) by then.
+        await Expect(Out("slow-page-settled")).ToHaveTextAsync("settled", new() { Timeout = 30_000 });
         await Expect(Out("slow-page-value")).ToHaveTextAsync("10:01:00");
     }
 

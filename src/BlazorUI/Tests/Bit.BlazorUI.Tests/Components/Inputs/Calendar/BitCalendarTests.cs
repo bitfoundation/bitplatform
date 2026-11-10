@@ -1650,7 +1650,7 @@ public class BitCalendarTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        await slowRender.ClickAsync(component.FindAll(".bit-cal-tbt")[0], 50);
+        await slowRender.ClickAsync(component.Instance, component.FindAll(".bit-cal-tbt")[0], 50);
 
         Assert.AreEqual(11, value!.Value.Hour);
     }

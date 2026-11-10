@@ -3678,7 +3678,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        await slowRender.ClickAsync(component.Find("button[title='Increase start hour']"), 50);
+        await slowRender.ClickAsync(component.Instance, component.Find("button[title='Increase start hour']"), 50);
 
         Assert.AreEqual(11, value.StartDate!.Value.Hour);
     }

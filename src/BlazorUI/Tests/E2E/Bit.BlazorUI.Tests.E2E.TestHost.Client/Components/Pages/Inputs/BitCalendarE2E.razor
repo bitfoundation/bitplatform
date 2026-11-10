@@ -90,6 +90,13 @@
         <span id="time-spin-value">@Fmt(_timeSpinValue)</span>
     </E2ESection>
 
+    @* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
+    <E2ESection Id="slow-page" Title="A click on a page slow to render">
+        <BitCalendar Today="_today" Id="cal-slow-page" ShowTimePicker @bind-Value="_slowPageValue" />
+        <span id="slow-page-value">@Fmt(_slowPageValue)</span>
+        <E2ESlowRender Id="slow-page" Watch="_slowPageValue" />
+    </E2ESection>
+
     <E2ESection Id="events" Title="Events">
         <BitCalendar Today="_today" Id="cal-events" Events="@_events" @bind-Value="_eventsValue" />
         <span id="events-value">@Fmt(_eventsValue)</span>
@@ -321,6 +328,7 @@
     private DateTimeOffset? _time12Value;
     private DateTimeOffset? _timeStepValue;
     private DateTimeOffset? _timeSpinValue;
+    private DateTimeOffset? _slowPageValue = new DateTimeOffset(2024, 3, 20, 10, 0, 0, TimeSpan.Zero);
     private DateTimeOffset? _eventsValue;
     private string _eventsOfDay = "-";
     private string? _openedEvent;

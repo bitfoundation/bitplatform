@@ -714,15 +714,11 @@
     <span id="continuous-bounded-value">@Show(_continuousBounded)</span>
 </E2ESection>
 
-@*
-    Once switched on, every render of the page takes longer than the press-and-hold delay (400ms by default), as a
-    page with a lot on it does on a slow machine - on WebAssembly in the browser task of the event that caused it.
-*@
+@* Once switched on, every render of the section takes longer than the press-and-hold delay (400ms by default). *@
 <E2ESection Id="slow-page" Title="A click on a page slow to render">
     <BitTimePicker Label="Slow page" Standalone Culture="_en" @bind-Value="_slowPage" />
     <span id="slow-page-value">@Show(_slowPage)</span>
-    <button id="slow-page-on" type="button" @onclick="() => _slowPageRenderMs = 700">Slow the page down</button>
-    @{ HoldUpTheRender(); }
+    <E2ESlowRender Id="slow-page" Watch="_slowPage" />
 </E2ESection>
 
 <E2ESection Id="paste" Title="Paste">
@@ -866,7 +862,6 @@
     private int _syncs;
     private TimeSpan? _continuousBounded = new(10, 0, 0);
     private TimeSpan? _slowPage = new(10, 0, 0);
-    private int _slowPageRenderMs;
     private TimeSpan? _paste;
     private bool _modalOpen;
     private int _modalPickerCloses;
@@ -889,16 +884,6 @@
     private string Rejected() => $"Rejected {++_submits}";
 
     private static string Show(TimeSpan? value) => value?.ToString(@"hh\:mm\:ss") ?? "null";
-
-    // A busy wait rather than a sleep: it is the thread rendering the page that has to be held up, as a heavy render
-    // holds it up, and a WebAssembly app has no other thread to put to sleep.
-    private void HoldUpTheRender()
-    {
-        if (_slowPageRenderMs == 0) return;
-
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-        while (watch.ElapsedMilliseconds < _slowPageRenderMs) { }
-    }
 
     private sealed class FormModel
     {

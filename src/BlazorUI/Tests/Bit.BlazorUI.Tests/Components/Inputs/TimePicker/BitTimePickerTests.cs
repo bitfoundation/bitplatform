@@ -863,7 +863,39 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        await slowRender.ClickAsync(component.Find("button[title='Increase hour']"), 50);
+        await slowRender.ClickAsync(component.Instance, component.Find("button[title='Increase hour']"), 50);
+
+        Assert.AreEqual(new TimeSpan(11, 30, 0), value);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerShouldStepOnceForAClickReleasedWhileItsStepIsPending()
+    {
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+        var selectTime = new TaskCompletionSource();
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ContinuousSpinDelay, 50);
+            parameters.Add(p => p.ContinuousSpinInterval, 10);
+            // A handler that awaits something leaves the step of the press pending, and the release is handled in
+            // that gap - before the press has asked for its hold.
+            parameters.Add(p => p.OnSelectTime, (TimeSpan? _) => selectTime.Task);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var button = component.Find("button[title='Increase hour']");
+
+        var press = button.TriggerEventAsync("onpointerdown", new PointerEventArgs());
+
+        await button.TriggerEventAsync("onpointerup", new PointerEventArgs());
+
+        selectTime.SetResult();
+
+        await press;
+
+        // Long enough for a continuous spin that did start to have stepped a few times.
+        await Task.Delay(300);
 
         Assert.AreEqual(new TimeSpan(11, 30, 0), value);
     }

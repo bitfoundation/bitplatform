@@ -1446,7 +1446,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, slowRender.Content);
         });
 
-        await slowRender.ClickAsync(component.Find("button.bit-nfl-aup"), 50);
+        await slowRender.ClickAsync(component.Instance, component.Find("button.bit-nfl-aup"), 50);
 
         Assert.AreEqual(1, component.Instance.Value);
     }
