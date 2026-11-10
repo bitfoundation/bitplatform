@@ -57,4 +57,20 @@ public class BitColorPickerStylesheetTests
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-clp {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-clp-sm {", System.StringComparison.Ordinal),
                       "The size classes come before the root that resets what they publish.");
     }
+
+    [TestMethod]
+    public void BitColorPickerShouldColorTheErrorMessageLikeTheInvalidBordersEvenWhileDisabled()
+    {
+        var stylesheet = ReadStylesheet();
+        var declarations = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-clp-erm {");
+
+        // The message follows the variable the invalid borders and focus ring do, and the caption size - which an
+        // explicit Size wins over.
+        StringAssert.Contains(declarations, "color: var(--bit-ColorPicker-invalid-color, #{$clr-err});");
+        StringAssert.Contains(declarations, "font-size: var(--bit-clp-fs-sub-sz, var(--bit-ColorPicker-caption-font-size, #{$tg-fs-xs}));");
+
+        // Nothing else styles it - the disabled picker only dims its controls - so a message gone grey never stops
+        // reading as the reason.
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-clp-erm\b").Count, "Another rule restyles the error message.");
+    }
 }
