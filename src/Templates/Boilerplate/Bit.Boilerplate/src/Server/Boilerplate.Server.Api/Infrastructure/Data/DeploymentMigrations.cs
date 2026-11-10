@@ -2,7 +2,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Data;
 
 /// <summary>
 /// What a deployment's one-shot <c>migrations</c> service does. It prints where the database stands for the deploy job, which
-/// needs that to take the database back when the deployment fails or an older version is deployed (See cd-template.yml).
+/// needs that to take the database back when the deployment fails, or when an older commit or another branch is deployed
+/// (See cd-template.yml).
 /// </summary>
 public static class DeploymentMigrations
 {
@@ -17,10 +18,12 @@ public static class DeploymentMigrations
 
         Console.WriteLine($"LastAppliedMigration={applied.LastOrDefault()}");
 
-        // An older version is being deployed: this image doesn't have the Down of the migrations it never knew.
+        // An older commit, or another branch on Test, is being deployed: only the image running now has the Down of the
+        // applied migrations this one doesn't know, and it can take the database back only to a migration both images know.
+        // EF Core skips the applied migrations an image doesn't know, so each image's MigrateAsync leaves the other's alone.
         if (applied.Except(ofThisImage).Any())
         {
-            Console.WriteLine($"LastMigrationOfThisImage={ofThisImage.LastOrDefault()}");
+            Console.WriteLine($"LastSharedMigration={applied.Intersect(ofThisImage).LastOrDefault()}");
         }
 
         await dbContext.Database.MigrateAsync(targetMigration);

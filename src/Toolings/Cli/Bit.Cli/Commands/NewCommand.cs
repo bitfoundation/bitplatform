@@ -93,7 +93,7 @@ public static class NewCommand
         var noTrust = new Option<bool>("--no-trust") { Description = "Don't mark the folder as trusted for VS Code and the AI coding tools." };
         var noOpen = new Option<bool>("--no-open") { Description = "Don't open an IDE." };
         var noUpdate = new Option<bool>("--no-update") { Description = "Create it with this bit even when a newer one is out." };
-        var gitHubRepo = new Option<bool>("--github-repo") { Description = "Create a private GitHub repository and push develop and main to it. Needs the GitHub pipeline; installs the GitHub CLI and signs in when needed." };
+        var gitHubRepo = new Option<bool>("--github-repo") { Description = "Create a private GitHub repository and push main to it. Needs the GitHub pipeline; installs the GitHub CLI and signs in when needed." };
 
         var command = new Command("new", "Create a bit Boilerplate project and get it ready to run: tools, workloads, packages, build, git, migration, trust and IDE.")
         {

@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - `develop` for Test, `main` for Production - and reads that environment's own state through its dev-mcp server: its errors, logs, traces, data and background jobs, and Sentry or Application Insights when the project reports to one. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
+description: Finds and fixes a problem reported in the Test or Production environment. It works from the code that environment runs - the branch last deployed to Test, `main` for Production - and reads that environment's own state through its dev-mcp server: its errors, logs, traces, data and background jobs, and Sentry or Application Insights when the project reports to one. It reproduces the problem before changing anything, with an automated test as far as one can reach it, and fixes it through ai-dlc with that test guarding the fix.
 ---
 
 # Troubleshoot: find and fix a problem reported in Test or Production
@@ -16,10 +16,12 @@ there too.
 <!--#if (multitenant == true)-->
 - Settle which tenant too, since the data the user saw belongs to it.
 <!--#endif-->
-- Read the code that environment runs, not your working tree: `develop` for Test and `main` for Production, at the
-  commit deployed there (the CD run that deployed it names the commit, and dev-mcp's `GetDeploymentInfo` the version).
-  Check it out in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is touched,
-  and a change that isn't deployed yet can't pass for the cause.
+- Read the code that environment runs, not your working tree, at the commit deployed there: for Production a commit of
+  `main`, and for Test whichever branch was deployed to it last, which may not be merged yet. The CD run that deployed
+  it names the branch and the commit (`gh run list --workflow cd-test.yml --status success --limit 1 --json
+  headBranch,headSha,createdAt`, or `cd-production.yml`), and dev-mcp's `GetDeploymentInfo` the version. Check it out
+  in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is touched, and a change
+  that isn't deployed yet can't pass for the cause.
 - Use that environment's dev-mcp server, `dev-mcp-test` or `dev-mcp-production` in the MCP files, where the deploy
   skill put their addresses. Its title and instructions name the environment it reads: check that they say the one the
   problem was seen in before you rely on an answer.
@@ -98,11 +100,13 @@ without one of them, knowing what it hides.
   `src/Tests` for what the server does, a UI test for what the user saw. Write it before the fix and see it fail the way
   the environment does. Only then fix the cause rather than the symptom, and see the test pass; it's what keeps the
   problem from coming back. When no test can reach it, say why in your report.
-- The fix goes through ai-dlc's short track, or its full track when it turns out bigger, on a branch of its own off
-  `develop`, and reaches Test with ai-dlc's phase 7. Check it there against the same evidence that showed the problem.
-- A Production problem that can't wait for the next release gets its branch off `main` instead: a PR into `main`,
-  merged only on the user's go-ahead, then `main` merged back into `develop` so the fix isn't lost. Any other
-  Production fix reaches `main` with the next release.
+- A problem seen on Test while it runs a branch that isn't merged yet belongs to that branch: fix it there, through the
+  ai-dlc work that branch is part of.
+- Any other fix goes through ai-dlc's short track, or its full track when it turns out bigger, on a branch of its own
+  off `main`. Ai-dlc's phase 7 deploys that branch to Test, where you check it against the same evidence that showed
+  the problem, and merges it into `main`, Production, on the user's go-ahead.
+- A Production problem that can't wait is a hotfix and takes the same way, only ahead of other work: say so when its
+  phase 7 checks the open work, so it isn't held behind changes that aren't ready.
 
 ## 5. Report
 

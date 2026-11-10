@@ -337,18 +337,20 @@ jobs:
           docker compose run --rm migrations | tee "$RUNNER_TEMP/migrations.log" || status=$?
           printed() { sed -n "s/^$1=//p" "$RUNNER_TEMP/migrations.log" | tr -d '\r' | tail -n 1; }
 
-          older_target="$(printed LastMigrationOfThisImage)"
-          if [[ -z "$older_target" ]]; then
+          if ! grep -q '^LastSharedMigration=' "$RUNNER_TEMP/migrations.log"; then
             echo "undo_to=$(printed LastAppliedMigration)" >> "$GITHUB_OUTPUT"
+          elif shared="$(printed LastSharedMigration)"; [[ -z "$shared" ]]; then
+            echo "::warning::The database has migrations this version doesn't know and shares none with it, so they stay applied."
           else
-            # An older commit is being deployed: only the image running now has the Down of the migrations it doesn't know.
+            # An older commit, or another branch on Test, is being deployed: only the image running now has the Down of the
+            # migrations this one doesn't know, and it goes back to the last migration both know.
             #if (api == "Standalone")
             api=serverapi
             #else
             api=serverweb
             #endif
             image="$(docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$api" --format '{{.Image}}' | tail -n 1)"
-            { echo "rollback_to=$older_target"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
+            { echo "rollback_to=$shared"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
           fi
           exit "$status"
 
@@ -465,14 +467,14 @@ jobs:
           UNDO_TO: ${{ steps.migrate.outputs.undo_to }}
         run: docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations || echo "::error::The migrations could not be undone. The database stays ahead of the running version."
 
-      # After the swap, because the version just stopped needed them, and an older version works on the newer database.
-      - name: Undo the migrations this older version doesn't have
+      # After the swap, because the version just stopped needed them, and this version works on that database meanwhile.
+      - name: Undo the migrations this version doesn't have
         if: steps.migrate.outputs.rollback_image != ''
         env:
           ROLLBACK_TO: ${{ steps.migrate.outputs.rollback_to }}
           ROLLBACK_IMAGE: ${{ steps.migrate.outputs.rollback_image }}
           ROLLBACK_IMAGE_KEY: ${{ steps.migrate.outputs.rollback_image_key }}
-        run: env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations || echo "::warning::The newer migrations could not be undone. This version works on them, but the next deployment finds them applied."
+        run: env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations || echo "::warning::The migrations this version doesn't have could not be undone. It works on them, but the next deployment finds them applied."
 
       # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
       # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.

@@ -25,20 +25,26 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 | Workflow | Runs on | Does |
 | --- | --- | --- |
 | `ci.yml` | every pull request that isn't a draft, and by hand | builds the whole solution and runs every test |
-| `cd-test.yml` | by hand, and once its `push` trigger is on, every push to `develop` that changes the app | deploys the Test environment |
+| `cd-test.yml` | by hand, on any branch | deploys that branch to the Test environment |
 | `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
 
-A new project's CDs run only by hand, so the merges made before there is anywhere to deploy to spend none of the plan's
-Actions minutes, and leave no run waiting for a runner that doesn't exist yet. Their `push` block is commented out, and
-the **deploy** skill uncomments each one once the first deployment to that environment has worked. A project that was
+`main` is the project's only long-lived branch. Every change, a feature or a hotfix, is made on a branch of its own off
+`main`, deployed to Test by hand to try it there (`gh workflow run cd-test.yml --ref <branch>`), and merged into `main`
+through a pull request, which updates Production. Test runs whichever branch was deployed to it last. When that branch
+has migrations the one deployed next doesn't, the deployment undoes them with the image that was running, the way it
+does for an older commit (`Infrastructure/Data/DeploymentMigrations.cs` in the api).
+
+A new project's Production CD runs only by hand, so the merges made before there is anywhere to deploy to spend none of
+the plan's Actions minutes, and leave no run waiting for a runner that doesn't exist yet. Its `push` block is commented
+out, and the **deploy** skill uncomments it once the first deployment to Production has worked. A project that was
 already deploying keeps its `push` block when it takes this from a newer template, or its merges stop deploying.
 
-From then on, merging a pull request into `develop` updates Test, and a release into `main` updates Production. Only a change under
+From then on, merging a pull request into `main` updates Production. Only a change under
 `src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Neither CD
-waits for the tests, so protect `develop` and `main` with a required `ci.yml` check, which a private repository has with GitHub Pro
+waits for the tests, so protect `main` with a required `ci.yml` check, which a private repository has with GitHub Pro
 or Team.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which

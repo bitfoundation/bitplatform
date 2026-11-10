@@ -93,7 +93,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> GitAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string title = "Couldn't set up git";
-        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && git init -b develop && git add -A && git commit -m \"Create {project.Name} with bit new\" && git branch main";
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && git init -b main && git add -A && git commit -m \"Create {project.Name} with bit new\"";
 
         if (Runner.FindExecutable("git") is null)
             return StepResult.Failed(title, "git isn't installed", followUp, resultCode: "tool.git.missing");
@@ -108,7 +108,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (parentRepository.Succeeded)
             return StepResult.Skipped("Skipped git", $"the project is inside {parentRepository.Output.Trim()}, an existing repository");
 
-        var init = await Git(["init", "-b", "develop"], cancellationToken);
+        var init = await Git(["init", "-b", "main"], cancellationToken);
 
         if (init.Succeeded is false)
         {
@@ -116,7 +116,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
             if (init.Succeeded)
             {
-                await Git(["symbolic-ref", "HEAD", "refs/heads/develop"], cancellationToken);
+                await Git(["symbolic-ref", "HEAD", "refs/heads/main"], cancellationToken);
             }
         }
 
@@ -140,12 +140,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (commit.Succeeded is false)
             return StepResult.FromProcess(commit, "", title, followUp);
 
-        await Git(["branch", "main"], cancellationToken);
         project.GitReady = true;
 
         return identity is null
-            ? StepResult.Succeeded("Initialized git", "develop and main")
-            : StepResult.Succeeded("Initialized git", $"develop and main, committed as {identity}", "git didn't know your name, so this repository uses your user name; change it with git config user.name and user.email");
+            ? StepResult.Succeeded("Initialized git", "main")
+            : StepResult.Succeeded("Initialized git", $"main, committed as {identity}", "git didn't know your name, so this repository uses your user name; change it with git config user.name and user.email");
     }
 
     public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -1107,7 +1106,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string title = "Couldn't create the GitHub repo";
-        var push = "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop";
+        var push = "git push -u origin main && gh repo edit --default-branch main";
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && gh repo create {ProcessSpec.Quote(project.Name)} --private --source . --remote origin && gh auth setup-git && {push}";
 
         if (project.GitReady is false)
@@ -1127,23 +1126,18 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var lockedDown = await LockDownRepositoryAsync(cancellationToken);
         var lockDown = lockedDown ? "" : " && bit pipeline";
         await Gh(["auth", "setup-git"], cancellationToken);
-        var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
-
-        if (pushed.Succeeded)
-        {
-            pushed = await Git(["push", "-u", "origin", "main"], cancellationToken);
-        }
+        var pushed = await Git(["push", "-u", "origin", "main"], cancellationToken);
 
         if (pushed.Succeeded is false)
             return StepResult.FromProcess(pushed, "", lockedDown ? "Couldn't push to the GitHub repo" : "Couldn't push to the GitHub repo or lock down its pull requests and Dependabot alerts", $"cd {ProcessSpec.Quote(project.Directory)} && {push}{lockDown}");
 
-        var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
-        await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
+        var defaultBranch = await Gh(["repo", "edit", "--default-branch", "main"], cancellationToken);
+        await Git(["remote", "set-head", "origin", "main"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
-        var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
+        var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "main pushed";
 
-        if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
-            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop{lockDown}", resultCode: "github.default-branch");
+        if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "main")
+            return StepResult.Warning("Created a private GitHub repo, but main isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch main{lockDown}", resultCode: "github.default-branch");
 
         if (lockedDown is false)
             return StepResult.Warning("Created a private GitHub repo, but couldn't lock down its pull requests and Dependabot alerts", detail, $"cd {ProcessSpec.Quote(project.Directory)}{lockDown}", resultCode: "github.settings");

@@ -292,7 +292,7 @@ public static partial class ToolCatalog
 
         public override string Name => "Git";
 
-        public override string Why(ToolContext context) => "version control, and the develop and main branches of the new project";
+        public override string Why(ToolContext context) => "version control, and the main branch of the new project";
 
         public override bool IsNeeded(ToolContext context) => true;
 
@@ -320,7 +320,7 @@ public static partial class ToolCatalog
 
         public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo;
 
-        public override string Why(ToolContext context) => "creates the project's private GitHub repository and pushes develop and main to it";
+        public override string Why(ToolContext context) => "creates the project's private GitHub repository and pushes main to it";
 
         public override bool IsNeeded(ToolContext context) => true;
 
