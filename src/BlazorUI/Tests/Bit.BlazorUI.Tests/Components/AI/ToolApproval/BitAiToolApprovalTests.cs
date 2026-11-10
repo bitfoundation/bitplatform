@@ -136,6 +136,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
                 {
                     ShowApproveAlways = false,
                     ApproveText = "Yes",
+                    RejectText = "No",
                     DetailTemplate = c => builder => builder.AddContent(0, c.ToolName),
                 },
             });
@@ -144,8 +145,32 @@ public class BitAiToolApprovalTests : BitAiTestBase
 
         var buttons = component.FindAll("button");
         Assert.AreEqual(2, buttons.Count);
+        Assert.AreEqual("No", buttons[0].TextContent.Trim());
         Assert.AreEqual("Yes", buttons[1].TextContent.Trim());
         Assert.AreEqual("delete_everything", component.Find(".bit-aitap-dtl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void TheApproveAlwaysTextCascadesFromBitParams()
+    {
+        var call = AwaitingApproval();
+
+        var component = RenderComponent<BitParams>(p =>
+        {
+            p.Add(x => x.Parameters, new List<IBitComponentParams>
+            {
+                new BitAiToolApprovalParams
+                {
+                    ShowApproveAlways = true,
+                    ApproveAlwaysText = "Always yes",
+                },
+            });
+            p.AddChildContent<BitAiToolApproval>(a => a.Add(c => c.Call, call));
+        });
+
+        var buttons = component.FindAll("button");
+        Assert.AreEqual(3, buttons.Count);
+        Assert.AreEqual("Always yes", buttons[1].TextContent.Trim());
     }
 
     // As a session refuses a decision on a call no longer waiting for one, so does the prompt without a session: a
