@@ -18,7 +18,7 @@
              band whose Microsoft.AspNetCore.SignalR.Common is not affected by CVE-2026-70159 (GHSA-334f-vvp4-7g6p),
              which NuGet audit would otherwise report on every restore. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[10.0.13,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="[11.0.0,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

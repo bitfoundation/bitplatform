@@ -37,7 +37,7 @@
         "sdkVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
+            "replaces": "\"version\": \"11.0.100\"",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -48,26 +48,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
-                    }
-                ]
-            }
-        },
-        "sdkRollForward": {
-            "type": "generated",
-            "generator": "switch",
-            "replaces": "\"rollForward\": \"disable\"",
-            "parameters": {
-                "evaluator": "C++",
-                "datatype": "string",
-                "cases": [
-                    {
-                        "condition": "(framework == 'net10.0')",
-                        "value": "\"rollForward\": \"latestFeature\""
-                    },
-                    {
-                        "condition": "",
-                        "value": "\"rollForward\": \"disable\""
+                        "value": "\"version\": \"11.0.100\""
                     }
                 ]
             }
@@ -75,7 +56,7 @@
         "devContainerImage": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -86,7 +67,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100"
                     }
                 ]
             }
@@ -113,7 +94,7 @@
         "xcodeVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "xcode-version: '27.0'",
+            "replaces": "xcode-version: '27.2'",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -124,7 +105,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "xcode-version: '27.0'"
+                        "value": "xcode-version: '27.2'"
                     }
                 ]
             }

@@ -23,7 +23,7 @@
         <!-- The full SQLite provider, native engine included: the EF Core tests compare what the stock
              provider does on desktop with what UseBitBsqlite does through the in-process transport. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.15" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0" />
     </ItemGroup>
 
     <ItemGroup>
