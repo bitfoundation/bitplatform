@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace Bit.Cli.Infrastructure;
 
@@ -36,6 +38,8 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
     public string BulletSymbol => Unicode ? "◆" : "*";
 
     public ConsoleTitle Title { get; set; } = ConsoleTitle.None;
+
+    public AgentIdeas? Ideas { get; set; }
 
     public static CliConsole Create()
     {
@@ -124,16 +128,15 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
         try
         {
+            if (Ideas is { } ideas && Unicode && Out.Profile.Width >= 64 && Out.Profile.Height >= 20)
+                return await RunWithIdeasAsync(title, work, ideas);
+
             await Out.Status()
                 .Spinner(Unicode ? Spinner.Known.Dots : Spinner.Known.Line)
                 .SpinnerStyle(new Style(Color.Blue))
                 .StartAsync(Markup.Escape(title), async context =>
                 {
-                    result = await work(line =>
-                    {
-                        var text = Truncate(PlainText(line).Trim(), Math.Max(10, Width - title.Length - 10));
-                        context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
-                    });
+                    result = await work(line => context.Status(StatusMarkup(title, line)));
                 });
         }
         finally
@@ -142,6 +145,45 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
         }
 
         return result;
+    }
+
+    private async Task<T> RunWithIdeasAsync<T>(string title, Func<Action<string>, Task<T>> work, AgentIdeas ideas)
+    {
+        var spinner = Spinner.Known.Dots;
+        var status = Markup.Escape(title);
+        var clock = Stopwatch.StartNew();
+        var last = TimeSpan.Zero;
+        T result = default!;
+
+        IRenderable View()
+        {
+            var now = clock.Elapsed;
+            var frame = spinner.Frames[(int)(now / spinner.Interval) % spinner.Frames.Count];
+            ideas.Advance(now - last);
+            last = now;
+            return new Rows(new Markup($"[blue]{frame}[/] {status}"), new Text(""), ideas.Render(Width, frame));
+        }
+
+        await Out.Live(View()).AutoClear(true).Overflow(VerticalOverflow.Ellipsis).StartAsync(async context =>
+        {
+            var task = work(line => status = StatusMarkup(title, line));
+
+            while (task.IsCompleted is false)
+            {
+                context.UpdateTarget(View());
+                await Task.WhenAny(task, Task.Delay(40));
+            }
+
+            result = await task;
+        });
+
+        return result;
+    }
+
+    private string StatusMarkup(string title, string line)
+    {
+        var text = Truncate(PlainText(line).Trim(), Math.Max(10, Width - title.Length - 10));
+        return $"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]";
     }
 
     public static string FormatDuration(TimeSpan duration)
