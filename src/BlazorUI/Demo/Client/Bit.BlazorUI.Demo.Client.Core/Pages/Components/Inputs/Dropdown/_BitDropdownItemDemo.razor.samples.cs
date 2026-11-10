@@ -552,28 +552,21 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     private readonly string example12RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
-<style>
-    .validation-message {
-        color: #A4262C;
-        font-size: 0.75rem;
-    }
-</style>
-
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Value=""validationModel.Category""
                  Label=""Select 1 item""
                  Items=""GetBasicItems()""
-                 Placeholder=""Select an item"" />
-    <ValidationMessage For=""@(() => validationModel.Category)"" />
+                 Placeholder=""Select an item""
+                 ShowValidationMessage />
 
     <BitDropdown @bind-Values=""validationModel.Products""
                  MultiSelect
                  Items=""GetBasicItems()""
                  Placeholder=""Select items""
-                 Label=""Select min 1 and max 2 items"" />
-    <ValidationMessage For=""@(() => validationModel.Products)"" />
+                 Label=""Select min 1 and max 2 items""
+                 ShowValidationMessage />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
