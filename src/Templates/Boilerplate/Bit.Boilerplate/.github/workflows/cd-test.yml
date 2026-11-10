@@ -1,13 +1,9 @@
 name: Boilerplate Test CD
 
 on:
+  # By hand only, on the branch to try: `gh workflow run cd-test.yml --ref <branch>`. `main` is the only long-lived branch
+  # and Production deploys from it, so Test runs whichever branch was deployed to it last, before that branch is merged.
   workflow_dispatch:
-  # The deploy skill uncomments this once the first deployment to Test has worked. Until then this runs only by hand,
-  # so a project with nowhere to deploy to yet spends no Actions minutes on it. Uncomment all of it: `paths` without
-  # `branches` would run this on every branch. This file is in its own `paths`, so the merge that turns it on deploys.
-  # push:
-  #   branches: [ "develop" ]
-  #   paths: [ ".github/workflows/cd-test.yml", "src/Shared/**", "src/Server/**", "src/Client/**", "src/LandingPage/**", "src/Directory.Build.props", "src/Directory.Packages.props" ]
 
 # `environment:` gates approval but does NOT serialize runs, so without this two pushes in quick
 # succession can finish out of order and leave the OLDER commit deployed. Queue instead of cancelling:

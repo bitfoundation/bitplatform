@@ -661,7 +661,7 @@ slnf
    - Ensures code quality
 
 2. **`cd-test.yml`**: Deploy to Test environment
-   - Triggered manually, or on merge to `develop` branch once the deploy skill has turned that on
+   - Triggered manually, on whichever branch is to be tried there before it is merged into `main`
    - Deploys to test/staging servers
 
 3. **`cd-production.yml`**: Deploy to Production

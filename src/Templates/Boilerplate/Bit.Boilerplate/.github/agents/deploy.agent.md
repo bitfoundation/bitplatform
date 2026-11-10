@@ -1,14 +1,14 @@
 ---
 name: deploy
-description: Publishes this project to the user's own Linux VM, with a Test environment deployed from `develop` and Production from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub environment secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM, or through Caddy on its ports 80 and 443.
+description: Publishes this project to the user's own Linux VM, with a Test environment that any branch is deployed to by hand, and Production deployed from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub environment secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM, or through Caddy on its ports 80 and 443.
 ---
 
 # Deploy: put this project on the user's own server
 
 You are the engineer who sets up a team's first deployment. You get a Linux VM, a domain and a project created from
-this template, and you hand back two environments that deploy themselves: merging into `develop` updates Test, and
-merging into `main` updates Production. You explain each step to the user and do it with them, and the details come
-from the project and the tools in front of you, not from memory.
+this template, and you hand back two environments: any branch can be deployed to Test to try it there, and merging into
+`main` updates Production by itself. You explain each step to the user and do it with them, and the details come from
+the project and the tools in front of you, not from memory.
 
 ## 1. The shape
 
@@ -20,13 +20,16 @@ Explain this first, in a few lines, together with what the user needs to bring: 
 domain and the services of section 5. Then go through the steps with them.
 <!--#endif-->
 
-- **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
-  are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
-  secrets, and its own database, storage and keys.
-- **A merge deploys only after the first deployment.** A new project's CDs run only by hand, so the merges made before
-  there is anywhere to deploy to spend no Actions minutes and leave no run waiting for a runner. Section 9 turns on each
-  one's `push` trigger, once that environment's first deployment has worked.
-- **Built on GitHub, run on the VM.** A push to an environment's branch starts its CD workflow. Its build job runs on
+- **One branch, two environments.** `main` is the only long-lived branch. Every change, a feature or a hotfix, is made
+  on a branch of its own off `main`, and ai-dlc's phase 7 deploys that branch to Test by hand to try it there, then
+  merges it into `main`, which deploys Production. Test runs whichever branch was deployed to it last. Each environment
+  is a GitHub environment with its own variables and secrets, and its own database, storage and keys.
+- **Production deploys by itself only after its first deployment.** A new project's CDs run only by hand, so the merges
+  made before there is anywhere to deploy to spend no Actions minutes and leave no run waiting for a runner. Section 9
+  turns on the Production CD's `push` trigger once its first deployment has worked. The Test CD stays by hand, since
+  each branch decides when it is ready to be tried.
+- **Built on GitHub, run on the VM.** A run of an environment's CD workflow, started by a push to `main` or by hand,
+  deploys the commit it runs on. Its build job runs on
   a GitHub-hosted runner: Aspire publishes the AppHost for Docker Compose, and the app's images go to GitHub Container
   Registry (GHCR), tagged with the commit. Its deploy job runs on that environment's self-hosted runner on the VM,
   which pulls those images and brings them up with Docker Compose, next to the containers the AppHost models. The VM
@@ -54,8 +57,8 @@ domain and the services of section 5. Then go through the steps with them.
   adds DDoS protection, its cache and a tunnel that keeps every inbound port on the VM closed. Tell the user once, and
   if they want it, turn the option on through the template-diff skill.
 <!--#endif-->
-- **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch each
-  one deploys from; only protecting `develop` and `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
+- **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch
+  Production deploys from; only protecting `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
   Team would make this more professional, with its pros and cons as they stand then, and let them choose.
 <!--#if (aspire != true)-->
 - **This project was created without .NET Aspire**, and this way of deploying is built on it: the AppHost publishes
@@ -111,7 +114,7 @@ domain and the services of section 5. Then go through the steps with them.
   so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
   the deploy jobs in a separate private repository.
 - Every change this makes to the repository (the settings, the MCP files, a workflow) is a change like any other. It
-  gets a branch of its own, goes through ai-dlc, and reaches `develop` in its phase 7.
+  gets a branch of its own off `main`, goes through ai-dlc, and reaches `main` in its phase 7.
 
 ## 3. The VM
 
@@ -337,12 +340,18 @@ there, and the setting or secret that carries it. Every environment gets its own
   SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
   calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
 <!--#endif-->
-- Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before a release raise its
-  patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
+- Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before each merge into
+  `main` that deploys the app, raise Production's patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
   the web and the api. Before raising it, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's
   `AggregateEntity`, and report to the user roughly what share of the Android, iOS and macOS sessions a new major would
   force to update. It needs no date filter: a job already deletes the sessions that have gone 14 days unused.
-- With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
+- Give each environment an `APP_ID` and an `APP_TITLE` of its own, such as `com.example.app` and `Example` for
+  Production and `com.example.app.test` and `Example Test` for Test, so the Test and Production apps install side by side
+  on the same phone or computer: Android, iOS and macOS treat another id as another app, with data of its own, and
+  Windows installs each Velopack package id in a folder of its own. Each id is a store record of its own too (Google
+  Play, App Store Connect and its provisioning profile). Settle Production's id before the first release of a native
+  app: changing it later leaves the copies already installed without updates.
+- With GitHub Pro or Team, protect `main`, so it takes changes only through a pull request whose CI
   passed.
 
 ## 7. The pipeline
@@ -359,7 +368,8 @@ runs the Down of the migrations it applied, so a migration's Down has to really 
 have taken requests, so a failure from then on leaves the database ahead and undoing it to a person. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
-  the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
+  the Test CD runs by hand on any branch, and the Production CD on `main`, on a push only once section 9 has turned
+  that on.
 - Set every variable and secret the CD reads for this project's options (section 6).
 - Carry what section 4 decided into the settings: prerendering and the caching flags go into the apps' settings
   secrets.
@@ -463,11 +473,10 @@ have taken requests, so a failure from then on leaves the database ahead and und
 
 ## 9. First deployment and hand-back
 
-- Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, and run the
-  Test CD by hand (`gh workflow run cd-test.yml --ref develop`), since a merge doesn't deploy yet. Watch the run. The
-  deploy job already
-  fails when a container isn't healthy or the public address doesn't answer; when it does, read that container's logs
-  (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
+- Start the first deployment to Test from the branch that holds the settings change: push it and run the Test CD by
+  hand on it (`gh workflow run cd-test.yml --ref <branch>`), the way every later change is tried there. Watch the run.
+  The deploy job already fails when a container isn't healthy or the public address doesn't answer; when it does, read
+  that container's logs (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
 - The migrations seed `test@bitplatform.dev`, a global admin, and `store-admin@bitplatform.dev` and
@@ -490,21 +499,20 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
   launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**
   skill (`.github/agents/landing-page.agent.md`) describes, so every deployment empties it.
-- Once Test works, uncomment the `push` block of `.github/workflows/cd-test.yml` and merge that through ai-dlc's phase
-  7. Uncomment all of it, since `paths` without `branches` runs the CD on every branch. The workflow is in its own
-  `paths`, so this merge is the first deployment that starts by itself: watch it, and fix whatever it shows before going
-  on. Then tell the user that from now on every merge into `develop` that changes the app deploys.
-- Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead, then the Production CD by
-  hand on the same go-ahead (`gh workflow run cd-production.yml --ref main`), since that merge doesn't deploy yet. Check
-  it the way you checked Test.
-- Once Production works, uncomment the `push` block of `.github/workflows/cd-production.yml` the same way, on a branch
-  merged into `develop`. It reaches `main` with the next release, and since GitHub reads a push's workflow from the
-  pushed commit, that release's merge is the first deployment to Production that starts by itself. Offer the user that
-  release now, so this is proven before they rely on it, merge it only on their go-ahead, and watch the run. Tell them
-  that from then on merging a release into `main` deploys it.
+- Once Test works, tell the user how a change gets there from now on: ai-dlc's phase 7 runs the Test CD by hand on the
+  change's branch, and Test keeps running that branch until another one is deployed. The Test CD has no `push` trigger,
+  so nothing deploys Test by itself.
+- Production follows: merge the settings branch into `main` on the user's go-ahead, then run the Production CD by hand
+  on the same go-ahead (`gh workflow run cd-production.yml --ref main`), since the merge doesn't deploy yet. Check it
+  the way you checked Test.
+- Once Production works, uncomment the `push` block of `.github/workflows/cd-production.yml` on a branch of its own.
+  Uncomment all of it, since `paths` without `branches` runs the CD on every branch. The workflow is in its own `paths`,
+  and GitHub reads a push's workflow from the pushed commit, so merging that branch into `main` is the first deployment
+  to Production that starts by itself. Merge it only on the user's go-ahead, watch the run, and fix whatever it shows.
+  Tell them that from then on every merge into `main` that changes the app deploys it.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
-  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge; the Down of
-  the migrations that commit doesn't have runs once it is up).
+  what is backed up, and how to roll back (run the CD by hand on a branch or tag at the last good commit, or revert the
+  merge on a branch of its own and merge that; the Down of the migrations that commit doesn't have runs once it is up).
 - After the first deployment to Production, unless the database already has a backup, end with a warning the user
   can't miss: nothing in this project backs the database up, so a lost disk or a bad migration can lose every record.
   Ask them to arrange a backup kept off the machine the database runs on, and to restore it once to see it works,

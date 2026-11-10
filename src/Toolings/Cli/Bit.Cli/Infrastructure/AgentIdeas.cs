@@ -53,7 +53,7 @@ public sealed class AgentIdeas
             new AgentSays("One thing I need from you: a Cloudflare token for a few days"),
             new AgentSays("Here's which permissions to give it, step by step"),
             new YouSay("Done, here it is"),
-            new AgentWorks("deploying Test from develop and Production from main", "Test and Production are live on shop.example.com", 2.6),
+            new AgentWorks("deploying Test from any branch and Production from main", "Test and Production are live on shop.example.com", 2.6),
             new AgentSays("Your dashboard, with logs and traces: dashboard.shop.example.com"),
             new AgentSays("You can delete the Cloudflare token now", Done: true),
         ]),

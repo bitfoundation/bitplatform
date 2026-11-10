@@ -11,7 +11,7 @@ Do **not** modify code. Report findings with a file path, a line reference, and 
 
 ## Scope
 
-Review the branch against the branch it goes into: `git diff develop...HEAD`, or `gh pr diff <number>` for a pull request. The working tree joins it only when the user asks about their uncommitted changes, or when ai-dlc runs you before it commits. Read each hunk together with the whole method or component around it, not the changed lines alone.
+Review the branch against the branch it goes into: `git diff origin/main...HEAD`, or `gh pr diff <number>` for a pull request. The working tree joins it only when the user asks about their uncommitted changes, or when ai-dlc runs you before it commits. Read each hunk together with the whole method or component around it, not the changed lines alone.
 
 ## Method
 
