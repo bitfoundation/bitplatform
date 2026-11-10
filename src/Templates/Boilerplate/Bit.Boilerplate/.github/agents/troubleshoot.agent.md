@@ -21,10 +21,11 @@ there too.
   whose `Replace the apps` step succeeded, whatever the run's own result, since a check after that step can fail with
   the new version already serving: list the runs (`gh run list --workflow cd-test.yml --limit 10 --json
   databaseId,headBranch,headSha,status,conclusion,createdAt`, or `cd-production.yml`) and read their steps (`gh run view
-  <id> --json jobs`). The running containers' image tags, `<environment>-<commit>` (`docker compose ps` in the deploy
-  folder on the VM), settle it when the runs leave a doubt, and dev-mcp's `GetDeploymentInfo` gives the version. Check
-  it out in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is touched, and a
-  change that isn't deployed yet can't pass for the cause.
+  <id> --json jobs`). A newer run that failed in `Replace the apps` itself leaves a doubt, since the step's last commands,
+  after its new containers took over, can fail too. The running containers' image tags, `<environment>-<commit>`
+  (`docker compose ps` in the deploy folder on the VM), settle that and any other doubt, and dev-mcp's
+  `GetDeploymentInfo` gives the version. Check it out in a worktree of its own (`git worktree add`), so nothing
+  uncommitted on the current branch is touched, and a change that isn't deployed yet can't pass for the cause.
 - Use that environment's dev-mcp server, `dev-mcp-test` or `dev-mcp-production` in the MCP files, where the deploy
   skill put their addresses. Its title and instructions name the environment it reads: check that they say the one the
   problem was seen in before you rely on an answer.

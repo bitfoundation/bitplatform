@@ -344,7 +344,7 @@ jobs:
           else
             # An older commit, or another branch on Test, is being deployed: only the image running now has the Down of the
             # migrations this one doesn't know, and it goes back to the last migration both know. That is also where this
-            # image goes back to if the deployment fails before any new container starts, undoing only what it applied.
+            # image goes back to if the deployment fails before any new container starts, undoing what it applied after it.
             echo "undo_to=$shared" >> "$GITHUB_OUTPUT"
             #if (api == "Standalone")
             api=serverapi
@@ -353,7 +353,10 @@ jobs:
             #endif
             image="$(docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$api" --format '{{.Image}}' | tail -n 1)"
             { echo "rollback_to=$shared"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
+            echo "rollback_keeps=$(printed RunningImageKeeps)" >> "$GITHUB_OUTPUT"
           fi
+          # Going back to a migration leaves those applied before it, which each image names, for the two undo steps to say so.
+          echo "undo_keeps=$(printed ThisImageKeeps)" >> "$GITHUB_OUTPUT"
           exit "$status"
 
       - name: Start everything but the apps
@@ -467,7 +470,13 @@ jobs:
         if: failure() && steps.migrate.outputs.undo_to != '' && steps.apps.outcome == 'skipped'
         env:
           UNDO_TO: ${{ steps.migrate.outputs.undo_to }}
-        run: docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations || echo "::error::The migrations could not be undone. The database stays ahead of the running version."
+          UNDO_KEEPS: ${{ steps.migrate.outputs.undo_keeps }}
+        run: |
+          if ! docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations; then
+            echo "::error::The migrations could not be undone. The database stays ahead of the running version."
+          elif [[ -n "$UNDO_KEEPS" ]]; then
+            echo "::warning::$UNDO_KEEPS of this version come before $UNDO_TO, so going back to it left them applied. The running version works on them, but undo them by hand if they get in the way."
+          fi
 
       # After the swap, because the version just stopped needed them, and this version works on that database meanwhile.
       - name: Undo the migrations this version doesn't have
@@ -476,7 +485,13 @@ jobs:
           ROLLBACK_TO: ${{ steps.migrate.outputs.rollback_to }}
           ROLLBACK_IMAGE: ${{ steps.migrate.outputs.rollback_image }}
           ROLLBACK_IMAGE_KEY: ${{ steps.migrate.outputs.rollback_image_key }}
-        run: env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations || echo "::warning::The migrations this version doesn't have could not be undone. It works on them, but the next deployment finds them applied."
+          ROLLBACK_KEEPS: ${{ steps.migrate.outputs.rollback_keeps }}
+        run: |
+          if ! env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations; then
+            echo "::warning::The migrations this version doesn't have could not be undone. It works on them, but the next deployment finds them applied."
+          elif [[ -n "$ROLLBACK_KEEPS" ]]; then
+            echo "::warning::$ROLLBACK_KEEPS, which this version doesn't have, come before $ROLLBACK_TO, so going back to it left them applied. This version works on them, but the next deployment finds them applied."
+          fi
 
       # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
       # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
@@ -610,10 +625,13 @@ jobs:
           subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
 
       - name: Publish
+        env:
+          # Read from the environment, so no character of the title is read as part of the script.
+          APP_TITLE: ${{ vars.APP_TITLE }}
         run: |
           cd src\Client\Boilerplate.Client.Windows\
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle $env:APP_TITLE
 
       - name: Upload artifact
         id: artifact
@@ -681,7 +699,11 @@ jobs:
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
 
       - name: Publish aab
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:ApplicationTitle="${{ vars.APP_TITLE }}" -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
+        env:
+          # Read from the environment, so no character of the title is read as part of the script, and passed to MSBuild in
+          # quotes of its own, so a comma in it doesn't end the property.
+          APP_TITLE: ${{ vars.APP_TITLE }}
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
 
       - name: Upload artifact
         id: artifact
@@ -761,7 +783,10 @@ jobs:
           api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
       - name: Build ipa
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} -p:ApplicationTitle="${{ vars.APP_TITLE }}" -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
+        env:
+          # As for Android.
+          APP_TITLE: ${{ vars.APP_TITLE }}
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
 
       - name: Upload artifact
         id: artifact
