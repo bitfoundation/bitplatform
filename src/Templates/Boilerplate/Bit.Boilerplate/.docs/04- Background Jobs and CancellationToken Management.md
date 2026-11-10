@@ -366,12 +366,13 @@ public partial class PhoneServiceJobsRunner
         PerformContext context = null!,
         CancellationToken cancellationToken = default)
     {
+        SmsSendResult? result = null;
         try
         {
-            var result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
+            result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
 
             if (result.Success is false)
-                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode } });
+                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode }, { "IsTransient", result.IsTransientFailure } });
         }
         catch (Exception exp)
         {
@@ -380,9 +381,13 @@ public partial class PhoneServiceJobsRunner
                 { "PhoneNumber", phoneNumber },
                 { "JobId", context.BackgroundJob.Id }
             });
-            if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
+            if (cancellationToken.IsCancellationRequested || (exp is not KnownException && result?.IsTransientFailure is not false))
                 throw; // To retry the job
         }
+    }
+}
+```
+
 **Key features:**
 
 1. **AutomaticRetry**: If the job fails, Hangfire automatically retries it
@@ -398,7 +403,8 @@ public partial class PhoneServiceJobsRunner
 3. **Exception Handling**:
    - Logs the error with context (`PhoneNumber`, `JobId`)
    - For unknown exceptions, re-throws to trigger retry
-   - For known exceptions (business logic errors), doesn't retry
+   - For known exceptions (business logic errors) and failures the provider reports as permanent (such as an invalid number), doesn't retry
+   - On cancellation, always re-throws, so the job runs again
 
 4. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
 
