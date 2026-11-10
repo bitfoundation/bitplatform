@@ -513,6 +513,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the search box, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The input references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",

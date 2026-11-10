@@ -534,8 +534,8 @@ private BitSearchBox searchBoxRef = default!;";
     <BitSearchBox Placeholder=""Search"" Immediate
                   Label=""Search term""
                   DefaultValue=""This is default value""
-                  @bind-Value=""validationBoxModel.Text"" />
-    <ValidationMessage For=""() => validationBoxModel.Text"" />
+                  @bind-Value=""validationBoxModel.Text""
+                  ShowValidationMessage />
 </EditForm>
 
 <BitSearchBox Immediate
