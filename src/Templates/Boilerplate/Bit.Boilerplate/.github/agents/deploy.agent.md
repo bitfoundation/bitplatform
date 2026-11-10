@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Publishes this project to the user's own Linux VM, with a Test environment deployed from `develop` and Production from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub environment secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM.
+description: Publishes this project to the user's own Linux VM, with a Test environment deployed from `develop` and Production from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub environment secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM, or through Caddy on its ports 80 and 443.
 ---
 
 # Deploy: put this project on the user's own server
@@ -12,8 +12,13 @@ from the project and the tools in front of you, not from memory.
 
 ## 1. The shape
 
+<!--#if (cloudflare == true)-->
 Explain this first, in a few lines, together with what the user needs to bring: a Linux VM (one for both environments,
 or one each), a domain, a Cloudflare account and the services of section 5. Then go through the steps with them.
+<!--#else-->
+Explain this first, in a few lines, together with what the user needs to bring: a Linux VM for each environment, a
+domain and the services of section 5. Then go through the steps with them.
+<!--#endif-->
 
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
   are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
@@ -27,14 +32,28 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   which pulls those images and brings them up with Docker Compose, next to the containers the AppHost models. The VM
   holds Docker and the runner, and no SDK or source code: the job that has the source never reaches the server, and
   the one that reaches the server builds nothing.
+<!--#if (cloudflare == true)-->
 - **Nothing reaches the VM from outside.** The runner pulls its jobs from GitHub and cloudflared dials out to
   Cloudflare, so every inbound port on the VM stays closed. Visitors reach the app on the user's domain through a
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
+<!--#else-->
+- **Only 80 and 443 reach the VM.** Caddy, in the Compose project, takes them, gets each public address its
+  certificate and sends it to its app. The runner pulls its jobs from GitHub, so no other inbound port is open but
+  SSH's (section 2).
+<!--#endif-->
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
   the `LANDINGPAGE_SETTINGS` secret.
-- **Cloudflare is the recommendation, and it is free.** Its free plan covers the tunnel, the DNS, the certificates and
-  the cache this needs, so tell the user they need no paid plan to start.
+<!--#if (cloudflare == true)-->
+- **Cloudflare is strongly recommended, and it is free.** Its free plan covers the tunnel, the DNS, the certificates,
+  the cache and DDoS protection, so tell the user they need no paid plan to start. If they still don't want it, Caddy
+  on the VM's ports 80 and 443 is the good alternative: the template-diff skill, with the `cloudflare` option off,
+  shows what it takes.
+<!--#else-->
+- **This project was created without the `cloudflare` option**, which is strongly recommended: Cloudflare's free plan
+  adds DDoS protection, its cache and a tunnel that keeps every inbound port on the VM closed. Tell the user once, and
+  if they want it, turn the option on through the template-diff skill.
+<!--#endif-->
 - **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch each
   one deploys from; only protecting `develop` and `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
   Team would make this more professional, with its pros and cons as they stand then, and let them choose.
@@ -61,17 +80,30 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
   too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
   log.
+<!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
   VM's SSH, and an Access policy that lets in only the people the user names, with a one-time PIN sent to their email
-  or their Google, GitHub or Microsoft sign-in and its own second factor. You connect with `cloudflared access ssh`
-  once the user approves the first sign-in, and Access's browser-rendered terminal lets the user in with nothing
-  installed. Close 22, 80 and 443, in the VM's own firewall and in the provider's, only once a new session got in
+  or their Google, GitHub or Microsoft sign-in and its own second factor. Have the Access application issue short-lived
+  certificates, so nobody keeps a key on their machine: create its CA through the API (`POST
+  accounts/<id>/access/apps/<app id>/ca`), put the public key in `/etc/ssh/ca.pub`, and add `TrustedUserCAKeys
+  /etc/ssh/ca.pub` to `sshd_config`. A certificate signs in as the part of the person's email before the `@`, so create
+  that user on the VM, and without a certificate the browser-rendered terminal asks for a key. Run SSH's route on a
+  tunnel of its own, with its connector installed on the VM as a service rather than in the Compose project, so a
+  deployment or a stopped Compose project never locks you out. You connect with `cloudflared access ssh` once the user
+  approves the first sign-in, and Access's browser-rendered terminal lets the user in with nothing installed. Close
+  22, 80 and 443, in the VM's own firewall and in the provider's, only once a new session got in
   through the tunnel. The provider's web console stays the way back in if everything else fails; tell the user where
   it is.
 - If the user would rather keep a port, move SSH off 22, keep it key-only and rate-limited (fail2ban), and add a TOTP
   code as a second factor (`libpam-google-authenticator`) if they want one. A moved port only quiets the scanners;
   the key and the second factor are what keep others out.
+<!--#else-->
+- **SSH stays open, so lock it.** Key only, with password and root sign-in off, moved off 22 and rate-limited
+  (fail2ban), and a TOTP code as a second factor (`libpam-google-authenticator`) if the user wants one. A moved port
+  only quiets the scanners; the key and the second factor are what keep others out. Of the other inbound ports, only
+  80 and 443 stay open, for Caddy (section 8).
+<!--#endif-->
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
   the deploy jobs. CI and every workflow a pull request starts stay on GitHub-hosted runners, so a pull request never
   runs code on the VM.
@@ -86,12 +118,18 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
 - Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
   openssl.
+- Point the VM at public DNS resolvers (`1.1.1.1` and `9.9.9.9`, through `systemd-resolved`) when the provider's own
+  time out, which shows up as image pulls and `curl` failing now and then.
 - Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
   than the rest of the setup takes.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
-  `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
-  environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
-  touch Production.
+  `Test` or `Production`, the label the deploy job runs on, and install it as a service.
+<!--#if (cloudflare == true)-->
+  One VM can host both environments, each with its own runner and its own Compose project. Separate VMs mean a Test
+  deployment can never touch Production.
+<!--#else-->
+  Each environment needs a VM of its own: its Caddy takes 80 and 443.
+<!--#endif-->
 - The deploy job keeps the environment's Compose files in `~/deployments/<project>-<environment>` of the runner's
   user. Leave that folder in place: every later deployment, and every `docker compose` command by hand, works from it.
 <!--#if (database == "PostgreSQL" || database == "SqlServer" || database == "MySql" || redis == true)-->
@@ -99,32 +137,48 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   Redis containers of the Compose project, run on the VM too and listen on its loopback only: `127.0.0.1` for
   Production and `127.0.0.2` for Test, on ports `18888` and `3000`. Show the user how to open them through SSH, for
   Production `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
-  `http://localhost:3000`; the dashboard's sign-in link is in `docker compose logs compose-dashboard`. DbGate has no
-  sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in front of it.
+  `http://localhost:3000`.
+<!--#if (cloudflare == true)-->
+  DbGate has no sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in
+  front of it.
+<!--#else-->
+  DbGate has no sign-in of its own, so neither gets a site in Caddy.
+<!--#endif-->
 <!--#if (database == "Sqlite")-->
 - Published, DbGate reaches Redis only: the Sqlite file sits in the app's volume, outside it.
 <!--#endif-->
-- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them both
-  on the web instead: DbGate to manage those containers, and the Aspire dashboard to read the logs, traces and
-  metrics, each on a hostname of its own for each environment, behind an Access policy that lets in only the people
-  they name (section 8). The tunnel reaches them inside the Compose network, at `http://dbgate:3000` and
-  `http://compose-dashboard:18888`, so their loopback ports and SSH stay as they are.
+<!--#if (cloudflare == true)-->
+- Give both a hostname of their own for each environment, behind an Access policy that lets in only the people the
+  user names (section 8). The tunnel reaches them at `http://dbgate:3000` and `http://compose-dashboard:18888`.
+<!--#endif-->
 <!--#else-->
 - The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, runs on the VM too and listens on
   its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on port `18888`. Show the user how to open it
-  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`; its sign-in link is
-  in `docker compose logs compose-dashboard`. It gets no route on the tunnel unless a Cloudflare Access policy stands
-  in front of it.
-- When the user is a developer or otherwise technical and the tunnel is guarded by Cloudflare Access, offer them the
-  dashboard on the web instead, to read the logs, traces and metrics, on a hostname of its own for each environment,
-  behind an Access policy that lets in only the people they name (section 8). The tunnel reaches it inside the Compose
-  network, at `http://compose-dashboard:18888`, so its loopback port and SSH stay as they are.
+  through SSH, for Production `ssh -L 18888:127.0.0.1:18888 <vm>`, then `http://localhost:18888`.
+<!--#if (cloudflare == true)-->
+  It gets no route on the tunnel unless a Cloudflare Access policy stands in front of it.
+<!--#else-->
+  It gets no site in Caddy.
 <!--#endif-->
-- The link in the dashboard's logs names the container's own address, so on its hostname give the user
-  `https://<its hostname>/login?t=<the token from that link>`. Or, since Access already guards it, set
-  `DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS` to `true` on the dashboard, and it opens without a token.
+<!--#if (cloudflare == true)-->
+- Give it a hostname of its own for each environment, behind an Access policy that lets in only the people the user
+  names (section 8). The tunnel reaches it at `http://compose-dashboard:18888`.
+<!--#endif-->
+<!--#endif-->
+- The dashboard's sign-in token is the one the deploy job makes on the first deployment and keeps in the project's
+  `.env` as `DASHBOARD_BROWSER_TOKEN`: give the user `<the dashboard's address>/login?t=<that token>`.
+- dev-mcp reads the dashboard's logs and traces inside the Compose network, with the key the deploy job makes on the
+  first deployment and keeps in the project's `.env` as `DASHBOARD_API_KEY`. Through the SSH tunnel, the same key lets
+  `aspire agent mcp --dashboard-url http://localhost:18888 --api-key <the key>` read them too.
+- These dashboards show the app, not the server. Suggest [Beszel](https://beszel.dev) to the user for that: CPU, memory,
+  disk and each container, with history and alerts, in about 20 MB of memory. Install it only if they want it, in a
+  Compose project of its own, on the VM's loopback, and open it the way these dashboards are opened.
+- For what watches the app from outside - health checks and monitoring, SLA tracking, accessibility and performance checks,
+  a status page and more - suggest that the user registers the project at [bitfabric.co](https://bitfabric.co).
+<!--#if (cloudflare == true)-->
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
+<!--#endif-->
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:
   the database's, and the files' if they stay on disk.
 
@@ -148,33 +202,37 @@ business, and only what the project doesn't answer by itself.
 - **Needed**: prerendering on (`WebAppRender:PrerenderEnabled`), so crawlers and link previews get each page's title,
   description and structured data, and visitors see the page before the app has loaded. It costs server work on every
   first visit, so cache the public pages:
+<!--#if (cloudflare == true)-->
     - **Cloudflare's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`), the recommendation when traffic is large or
       far from the VM, since the app sits behind Cloudflare anyway. It needs the runtime `Cloudflare` token and zone to
-      purge, and the zone rules `.docs/14- Response Caching System.md` lists.
+      purge, and the cache rule of section 8.
+<!--#else-->
+    - **A CDN's edge cache** (`ResponseCaching:EnableCdnEdgeCaching`). This project was created without the
+      `cloudflare` option, so nothing would purge it when data changes. Prefer the output cache, or edge-cache only
+      what may stay stale for its whole lifetime.
+<!--#endif-->
     - **ASP.NET Core's output cache** (`ResponseCaching:EnableOutputCaching`), on the server itself: enough for one
       server and moderate traffic.
     - One of them, never both: a page cached in two places goes stale in two, and a stale page is hard to trace to the
       layer that served it. A static host is out here, since it can't prerender.
 <!--#if (api == "Standalone")-->
 - The app host already points `ServerSideHttpClientBaseAddress` at the api inside the Compose network, so prerendering
-  never goes out through the tunnel and back.
+  never goes out to its public address and back.
 <!--#else-->
 - With prerendering, set `ServerSideHttpClientBaseAddress` to `http://localhost:8080`, the app itself inside its
-  container, so prerendering doesn't go out through the tunnel and back.
-<!--#endif-->
-<!--#if (cloudflare != true)-->
-- This project was created without the `cloudflare` option, so nothing would purge the edge cache when data changes.
-  Prefer the output cache, or edge-cache only what may stay stale for its whole lifetime.
+  container, so prerendering doesn't go out to its public address and back.
 <!--#endif-->
 <!--#if (multitenant == true)-->
 - Pages that differ per tenant stay out of the edge cache (`UserAgnostic` in `.docs/14- Response Caching System.md`).
 <!--#endif-->
 - The landing page (`src/LandingPage`), when the user deploys it, runs as Blazor WebAssembly (`WebAppRender:BlazorMode`
   in its settings) whatever this decides for the app, so a visitor holds no connection to the server. It is always
-  prerendered, since being found is what it is for. Its pages set no cookies and a short
-  shared cache lifetime, so a Cloudflare cache rule for its hostname can serve them from the edge.
+  prerendered, since being found is what it is for.
+<!--#if (cloudflare == true)-->
+  Its pages set no cookies and a short shared cache lifetime, so the cache rule of section 8 serves them from the edge.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
+<!--#endif-->
 - Apart from the Workbench, Blazor Server is for development only in this template, and so is Auto, which runs on
   Blazor Server until WebAssembly has loaded: offer neither for the app or the landing page.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
@@ -201,8 +259,11 @@ there, and the setting or secret that carries it. Every environment gets its own
   encodes, where a `/`, `?`, `#` or `%` breaks it (`specs/workarounds.md`).
 <!--#endif-->
 <!--#if (filesStorage == "S3")-->
-- **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
-  same Cloudflare account as the tunnel. The others work the same way, and `appsettings.json` has a sample connection
+- **File storage**: S3-compatible object storage. Recommend Cloudflare R2, which has no egress fees.
+<!--#if (cloudflare == true)-->
+  It lives in the same Cloudflare account as the tunnel.
+<!--#endif-->
+  The others work the same way, and `appsettings.json` has a sample connection
   string for R2 and for Hetzner Object Storage, DigitalOcean Spaces and Contabo. RustFS, the S3 server the app runs
   in development, can be self-hosted too; on the app's own VM it needs the same backups as the database. With R2, the
   setup token of section 8 lets you create the bucket and its keys yourself.
@@ -212,7 +273,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: the files stay on disk, in a volume of the app's container. Once they outgrow the VM, suggest
   S3-compatible storage such as Cloudflare R2.
 <!--#endif-->
-- **Email**: a real SMTP provider. Mailpit is for development only.
+- **Email**: a real SMTP provider. Mailpit is for development only. `Email__DefaultFromEmail` in the api's settings
+  secret has to be an address that provider has verified. Left at its default, the provider rejects the mail or it lands
+  in spam.
 - **SMS**: a Twilio account, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
@@ -266,6 +329,17 @@ there, and the setting or secret that carries it. Every environment gets its own
   variable to its public address, and the deployment checks that it answers.
 - The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
   to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
+<!--#if (api == "Standalone")-->
+- `SERVER_ADDRESS` is the web app's public address and `SERVER_API_ADDRESS` is the api's, and they are never the same.
+  Every app is built with `SERVER_API_ADDRESS` as its `ServerAddress`, which is where the clients call the api, the
+  SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
+  calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
+<!--#endif-->
+- Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before a release raise its
+  patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
+  the web and the api. Before raising it, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's
+  `AggregateEntity`, and report to the user roughly what share of the Android, iOS and macOS sessions a new major would
+  force to update. It needs no date filter: a job already deletes the sessions that have gone 14 days unused.
 - With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
   passed.
 
@@ -275,7 +349,12 @@ there, and the setting or secret that carries it. Every environment gets its own
 The template's CD already works this way (`.github/workflows/cd-template.yml`, described in
 `.docs/16- CI-CD Pipeline and Environments.md`): `build_server` builds the images on a GitHub-hosted runner and pushes
 them to GHCR, and `deploy_server` runs on the environment's own runner, migrates the database, brings the Compose
-project up, and fails unless every container is healthy and the public address answers. What is left:
+project up, and fails unless every container is healthy and the public addresses answer. It replaces the apps with no
+downtime: a new container starts next to the running one, and the old ones stop only once every new one is healthy. The
+old version keeps serving while the migrations run, so a migration has to leave the database working for it, and a
+column is dropped one release after the code stops using it. A deployment that fails before any new container starts
+runs the Down of the migrations it applied, so a migration's Down has to really undo it. Once one has started it may
+have taken requests, so a failure from then on leaves the database ahead and undoing it to a person. What is left:
 
 - Check that the workflows still do this, since a team may have changed them since the project was created, and that
   the Test CD is for `develop` and the Production CD for `main`, on a push only once section 9 has turned that on.
@@ -290,23 +369,33 @@ project up, and fails unless every container is healthy and the public address a
   (section 1), the template's CD builds and deploys the server the way section 1 describes.
 <!--#endif-->
 
+<!--#if (cloudflare == true)-->
 ## 8. The domain and the tunnel
+<!--#else-->
+## 8. The domain and Caddy
+<!--#endif-->
 
+<!--#if (cloudflare == true || filesStorage == "S3")-->
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
-  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS with Edit and
-  Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do everything below
-  yourself through Cloudflare's API, for each environment, and mint every token that runs with it. Tell the user
-  Account API Tokens lets it mint any token on the account, so it is as strong as the account until they delete it.
+  Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS, Cache
+  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
+  everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
+  Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
+  delete it. Before anything else, try one read with it for each permission (tunnels, Access applications, R2 buckets,
+  DNS records, zone settings, rulesets and the token list), so a missing one shows now and not halfway through.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
   the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
   dashboard, since a token can't delete itself. More environments later get a new one.
+<!--#endif-->
+<!--#if (cloudflare == true)-->
 - Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
   domain is already in use, for mail or another site, first bring its existing DNS records into the zone and check
   them against the current provider, and have DNSSEC turned off at the registrar and wait out its old DS record's TTL,
   so nothing breaks on the switch.
 - Create a named tunnel for each environment, with its configuration kept in Cloudflare: its ingress for the hostnames
   below, a proxied CNAME for each hostname to the tunnel, and its connector token for the Compose project.
+<!--#endif-->
 <!--#if (filesStorage == "S3")-->
 - For R2, create the environment's bucket, then mint an account API token with Object Read & Write on that bucket only.
   Its id is the S3 Access Key ID and the SHA-256 of its value is the Secret Access Key, so `S3_CONNECTION_STRING` needs
@@ -315,37 +404,60 @@ project up, and fails unless every container is healthy and the public address a
 <!--#if (cloudflare == true)-->
 - Mint the token for `CLOUDFLARE_TOKEN`, with Cache Purge on the environment's zone only, and check that it purges
   before you store it.
-<!--#endif-->
-- Create the Access applications and policies for SSH through the tunnel (section 2), for the Workbench if the user
-  wants it, and for the web routes of section 3 if the user took them.
+- Turn Speed Brain and Early Hints off on the zone before the first deployment (`PATCH
+  zones/<zone id>/settings/speed_brain` and `.../early_hints` with `{"value":"off"}`), and read them back. The app is a
+  PWA whose pages render on the client, so Speed Brain's prefetches only send the server fetches that don't help
+  performance.
+- The app (origin) decides what is cached and for how long, through the `Cache-Control` it sends, and Cloudflare only
+  follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
+  cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
+  has none), browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary,
+  which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
+  default. Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
+  it. Add that one too, for a `User-Agent` containing `Lighthouse`, `Google`, `bingbot` or `BingPreview`: the app gives them a page without its
+  scripts, and from the edge they would get the visitors' page instead.
+- Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
+  (section 3), and for the Workbench if the user wants it. Give this project policies of its own: a policy already on the
+  account may be shared with WARP or another project, and changing it widens that access too.
 - Name every hostname one level under the domain, such as `app-test.example.com` rather than `app.test.example.com`:
   the free plan's certificate covers one level of subdomain only.
+<!--#endif-->
+<!--#if (cloudflare == true)-->
 - The Workbench isn't deployed by default. If the user wants it on Test, never Production, deploy it as Blazor Server
   (section 4), put its hostname behind Cloudflare Access, Cloudflare's own sign-in, and let `/alive` through for the
   deploy job's check. Its screenshots need a base
-  image with a browser, such as Playwright's.
+  image with a browser, such as Playwright's. Without Cloudflare Access, it isn't deployed.
+<!--#else-->
+- The Workbench isn't deployed: it needs Cloudflare Access in front of it, which comes with the `cloudflare` option.
+<!--#endif-->
 <!--#if (cloudflare == true)-->
 - The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
   point the tunnel's public hostname at `http://serverweb:8080`, and the landing page's hostname at
   `http://landingpage:8080`.
 <!--#if (api == "Standalone")-->
-- The api gets a hostname of its own, pointed at `http://serverapi:8080`.
+- The api gets a hostname of its own, pointed at `http://serverapi:8080`, and that address goes into `SERVER_API_ADDRESS`
+  (section 6).
 <!--#endif-->
+- On the landing page's hostname, ahead of its own rule, send `/v1/traces`, `/v1/logs` and `/v1/metrics` to
+  `http://compose-dashboard:18890`, where its browser posts its telemetry, and give those paths a rate limiting rule.
+  Only those paths: the rest of that port is the dashboard's own.
 <!--#else-->
-- This project was created without the `cloudflare` option, so add cloudflared to the Compose project through the app
-  host, with the tunnel's token as a secret, and point the tunnel's public hostname at the web app's service and the
-  landing page's hostname at the `landingpage` service.
+- This project was created without the `cloudflare` option, so Caddy takes the place of the tunnel: point each
+  hostname's DNS at the VM. The deploy job writes Caddy's sites from the environment's addresses, the landing page's
+  `/v1/` paths to the dashboard included.
 <!--#if (api == "Standalone")-->
-- The web app and the api each get a hostname of their own.
+- The api gets a hostname of its own, in the `SERVER_API_ADDRESS` variable.
 <!--#endif-->
 <!--#endif-->
-- Update the settings that carry the app's own address: `ServerAddress`, `TrustedOrigins`, the forwarded headers it
+- Update the settings that carry the app's own address: `TrustedOrigins`, the forwarded headers it
+<!--#if (cloudflare == true)-->
   takes from Cloudflare, and the address each provider of section 5 was registered with.
+<!--#else-->
+  takes from Caddy, and the address each provider of section 5 was registered with.
+<!--#endif-->
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.
-- If the user doesn't want Cloudflare, keep the same rule, that the VM only dials out, with another production-ready
-  tunnel, such as ngrok on a paid plan with the user's own domain.
 
 ## 9. First deployment and hand-back
 
@@ -356,9 +468,11 @@ project up, and fails unless every container is healthy and the public address a
   (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
   address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
-- The migrations seed `test@bitplatform.dev`, a global admin whose password is in this repository, in every
-  environment, and anyone can sign in with it until that changes. As soon as the environment's first deployment is
-  up, before the checks above, change its password in the app and give the new one to the user to keep. Then open
+- The migrations seed `test@bitplatform.dev`, a global admin, and `store-admin@bitplatform.dev` and
+  `store-user@bitplatform.dev`, all with a password that is in this repository, in every environment, and anyone can sign
+  in with them until that changes. As soon as the environment's first deployment is up, before the checks above, change
+  the admin's password in the app and give the new one to the user to keep, and delete the other two or change theirs.
+  Then open
   `<the web app's address>/settings/tfa` for them to turn two-factor sign-in on, since dev-mcp takes an account with
   it, have them put their own email and phone number on the account, where its reset links and codes go, and connect
   that environment's dev-mcp with this account.
@@ -368,7 +482,8 @@ project up, and fails unless every container is healthy and the public address a
   whose settings are missing reports that they are not configured. Go through them with the user: configure each one
   (section 5), or, for a service they don't want, remove the code that uses it.
 <!--#if (signalR == true)-->
-- Check the AI chat and a voice call there too.
+- A deployment isn't finished because `/alive` and `/health` answer. Sign in on the public address and try what depends
+  on the api's real address: the AI chat and a voice call, the Operations page, and signing out and back in.
 <!--#endif-->
 - Check the landing page at its address too: a page in each language, the waitlist form and `/sitemap.xml`. Before
   launch, tell the user that its waitlist is kept in memory until it gets a home of its own, as the **landing-page**
@@ -386,7 +501,8 @@ project up, and fails unless every container is healthy and the public address a
   release now, so this is proven before they rely on it, merge it only on their go-ahead, and watch the run. Tell them
   that from then on merging a release into `main` deploys it.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
-  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).
+  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge; the Down of
+  the migrations that commit doesn't have runs once it is up).
 - After the first deployment to Production, unless the database already has a backup, end with a warning the user
   can't miss: nothing in this project backs the database up, so a lost disk or a bad migration can lose every record.
   Ask them to arrange a backup kept off the machine the database runs on, and to restore it once to see it works,

@@ -297,6 +297,73 @@ public class PageTests
     }
 
     [TestMethod]
+    [DataRow("http/protobuf", "https://otlp.example.invalid:4318", true)]
+    [DataRow("HTTP/JSON", "https://otlp.example.invalid:4318", true)]
+    [DataRow(null, "https://otlp.example.invalid:4318", false)]
+    [DataRow("grpc", "https://otlp.example.invalid:4318", false)]
+    [DataRow("http/protobuf", "https://user:password@otlp.example.invalid:4318", false)]
+    public async Task TheOtlpEndpoint_Should_ReachTheBrowserOnlyOverHttp(string? protocol, string endpoint, bool reachesTheBrowser)
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production", before: builder =>
+        {
+            builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint;
+            builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] = protocol;
+            builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"] = "x-otlp-api-key=k3y-n0t-for-pages";
+        });
+        using var productionClient = production.CreateClient();
+
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
+        var html = await response.Content.ReadAsStringAsync();
+        var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
+
+        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"{protocol?.ToLowerInvariant()}\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("k3y-n0t-for-pages", html);
+    }
+
+    [TestMethod]
+    [DataRow("https://landing.example.invalid", true)]
+    [DataRow("https://user:password@landing.example.invalid", false)]
+    [DataRow("ftp://landing.example.invalid", false)]
+    public async Task TheBelemetryOtlpEndpoint_Should_ReachTheBrowserWhileTheServerSendsOverGrpc(string endpoint, bool reachesTheBrowser)
+    {
+        await using var production = await new LandingTestServer().Start(environment: "Production", before: builder =>
+        {
+            builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://compose-dashboard:18889";
+            builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] = "grpc";
+            builder.Configuration["Belemetry:OtlpEndpoint"] = endpoint;
+        });
+        using var productionClient = production.CreateClient();
+
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
+        var html = await response.Content.ReadAsStringAsync();
+        var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
+
+        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"http/protobuf\"", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, html.Contains($"{{\"type\":\"otlp\",\"endpoint\":\"{endpoint}/\",\"protocol\":\"http/protobuf\"", StringComparison.Ordinal), "The browser script posts there too, before WebAssembly starts and for what only JavaScript sees.");
+        Assert.DoesNotContain("compose-dashboard", html);
+    }
+
+    [TestMethod]
+    public async Task TheOtlpEndpoint_Should_ReachTheWebAssemblyRuntime()
+    {
+        await using var landing = await new LandingTestServer().Start(before: builder => builder.Configuration["Belemetry:OtlpEndpoint"] = "https://landing.example.invalid");
+
+        using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+        await using var chromium = await playwright.Chromium.LaunchAsync();
+        var page = await chromium.NewPageAsync();
+
+        await page.GotoAsync(new Uri(landing.Address, LandingSites.All[0].Path).ToString());
+        await page.WaitForFunctionAsync("() => globalThis.getDotnetRuntime?.(0) !== undefined", null, new() { Timeout = 60_000 });
+
+        var runtimeVariables = await page.EvaluateAsync<Dictionary<string, string>>("() => globalThis.getDotnetRuntime(0).getConfig().environmentVariables");
+
+        Assert.AreEqual("https://landing.example.invalid", runtimeVariables.GetValueOrDefault("OTEL_EXPORTER_OTLP_ENDPOINT"), "Belemetry reads the endpoint from the runtime's own variables, not from the page.");
+        Assert.AreEqual("http/protobuf", runtimeVariables.GetValueOrDefault("OTEL_EXPORTER_OTLP_PROTOCOL"));
+    }
+
+    [TestMethod]
     public async Task ThePublicAddress_Should_ComeFromTheRequest()
     {
         await using var indexed = await new LandingTestServer().Start(before: builder =>

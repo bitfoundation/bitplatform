@@ -2,23 +2,28 @@
 
 Thank you for creating a new project with bit platform! We appreciate your trust in our platform and are excited to see what you'll build.
 
-## ⚠️ Seeded accounts - remove them before you deploy
+## Seeded accounts
 
 So that the app is usable and testable the moment it is generated, the database seed
-(`src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserConfiguration.cs`) creates real,
+(`src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserConfiguration.cs`) creates
 pre-confirmed accounts whose password is **`12345678`**:
 
 | E-mail | Password | Role |
 |---|---|---|
-| `test@bitplatform.dev` | `12345678` | `g-admin` - **global administrator, holds every feature** |
+| `test@bitplatform.dev` | `12345678` | `g-admin` - global administrator |
 <!--#if (multitenant == true)-->
 | `store-admin@bitplatform.dev` | `12345678` | `t-admin` of the seeded `store` tenant |
 | `store-user@bitplatform.dev` | `12345678` | `demo` member of the seeded `store` tenant |
 <!--#endif-->
 
-These credentials, their password hash and their primary keys are all part of the public bit platform template,
-so **anyone** can sign in as a global administrator on a deployment that still carries them.
+These passwords are for development and are not for Production: the first deployment still creates the accounts, so
+change the passwords right after it.
 
+
+## Monitoring your project
+
+Register your project at [bitfabric.co](https://bitfabric.co) for health checks and monitoring, SLA tracking, accessibility
+and performance checks, a status page and more.
 
 ## Documentation
 

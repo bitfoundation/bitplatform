@@ -236,6 +236,8 @@ public static partial class Program
             if (Uri.TryCreate(serverApiAddress, UriKind.Absolute, out _) is false)
                 throw new InvalidOperationException($"'{serverApiAddress}' is not an absolute address. Set ServerAddress (or ServerSideHttpClientBaseAddress) in appsettings.json.");
 
+            // /api is here mostly for the two endpoints that set and remove the pre-rendering http cookie, which the client sends to this host.
+            // If you're changing this to forward more, first check whether the client is connecting straight to the server api's address: that is faster.
             foreach (var pattern in new[] { "/api/{**catch-all}", "/hangfire/{**catch-all}" })
             {
                 // The api trusts this host's X-Forwarded-* headers: drop whatever the caller sent and set the client's ip alone,

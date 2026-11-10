@@ -70,7 +70,9 @@ public partial class DevMcpDiagnosticTools
             {
                 settings.ResponseCaching?.EnableOutputCaching,
                 settings.ResponseCaching?.EnableCdnEdgeCaching,
-                CloudflareZoneConfigured = ReadCloudflareConfigured()
+                //#if (cloudflare == true)
+                CloudflareZoneConfigured = settings.Cloudflare?.Configured is true
+                //#endif
             },
             Identity = new
             {
@@ -93,11 +95,11 @@ public partial class DevMcpDiagnosticTools
             Capabilities = ReadCapabilities(),
             ForceUpdate = new
             {
-                settings.SupportedAppVersions?.MinimumSupportedAndroidAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedIosAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedMacOSAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedWindowsAppVersion,
-                settings.SupportedAppVersions?.MinimumSupportedWebAppVersion
+                MinimumSupportedAndroidAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Android),
+                MinimumSupportedIosAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Ios),
+                MinimumSupportedMacOSAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.MacOS),
+                MinimumSupportedWindowsAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Windows),
+                MinimumSupportedWebAppVersion = settings.GetEnforcedMinimumAppVersion(AppPlatformType.Web)
             }
         });
     }
@@ -231,6 +233,7 @@ public partial class DevMcpDiagnosticTools
             //#endif
             OtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
                            || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false,
+            AspireDashboard = settings.AspireDashboard?.Url is not null,
             Sentry = string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false,
             Smtp = string.IsNullOrWhiteSpace(configuration.GetConnectionString("smtp")) is false,
             Google = string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false,
@@ -241,14 +244,5 @@ public partial class DevMcpDiagnosticTools
             Keycloak = string.IsNullOrWhiteSpace(configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"]) is false,
             AzureAD = string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false
         };
-    }
-
-    private bool ReadCloudflareConfigured()
-    {
-        //#if (cloudflare == true)
-        return settings.Cloudflare?.Configured is true;
-        //#else
-        return false;
-        //#endif
     }
 }

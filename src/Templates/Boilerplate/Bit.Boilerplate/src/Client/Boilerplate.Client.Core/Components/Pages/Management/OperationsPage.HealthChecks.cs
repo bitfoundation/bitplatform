@@ -32,7 +32,9 @@ public partial class OperationsPage
         ["StackExchange.Redis_redis-persistent"] = ("Redis (persistent)", "Platform", BitIconName.Server, "Hangfire storage and distributed locks."),
         ["StackExchange.Redis_redis-cache"] = ("Redis (cache)", "Platform", BitIconName.ServerProcesses, "The distributed cache and backplane. Memory keeps serving without it."),
         ["userProfileImages"] = ("File storage", "Platform", BitIconName.Photo2, "The storage container of the uploaded files."),
+        //#if (cloudflare == true)
         ["cloudflare"] = ("Cloudflare", "Platform", BitIconName.Globe, "The zones whose edge cache the app purges."),
+        //#endif
 
         //#if (api == "Standalone")
         // Server.Web's own checks (See AddWebAppChecks).

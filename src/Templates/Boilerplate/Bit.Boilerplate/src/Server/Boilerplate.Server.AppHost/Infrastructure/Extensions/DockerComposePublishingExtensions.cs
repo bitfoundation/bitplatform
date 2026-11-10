@@ -17,7 +17,8 @@ public static class DockerComposePublishingExtensions
         /// Publish mode only. Sends the images to the registry the CD names, fixes the apps on port 8080 with no host
         /// port, runs them in the environment they are published for, gives every long-running service a restart policy
         /// and a health check, adds the one-shot <c>migrations</c> service, keeps the Aspire dashboard and DbGate on the
-        /// server's loopback, and wires in the settings the deploy job supplies: the connection strings and parameters of
+        /// server's loopback, puts Caddy on ports 80 and 443 when there is no Cloudflare Tunnel, and wires in the settings
+        /// the deploy job supplies: the connection strings and parameters of
         /// the generated <c>.env</c>, the <c>serverweb.env</c> (and <c>serverapi.env</c>) files, and the environment's own
         /// <c>AppCertificate</c>.
         /// </summary>
@@ -58,7 +59,11 @@ public static class DockerComposePublishingExtensions
             foreach (var project in projects)
             {
                 project
+                    //#if (cloudflare == true)
                     // A fixed port, because cloudflared reaches the apps at http://serverweb:8080 (and http://serverapi:8080).
+                    //#else
+                    // A fixed port, because Caddy reaches the apps at http://serverweb:8080 (and http://serverapi:8080).
+                    //#endif
                     .WithEndpoint("http", endpoint => endpoint.TargetPort = 8080)
                     // The environment `aspire publish --environment` names (Test or Production). Without it the apps run as
                     // Production everywhere, and AppEnvironment takes its value from it on the server.
@@ -66,7 +71,11 @@ public static class DockerComposePublishingExtensions
                     .WithRemoteImageTag(imageTag)
                     .PublishAsDockerComposeService((_, service) =>
                     {
+                        //#if (cloudflare == true)
                         // No host port: the server keeps every inbound port closed, and cloudflared dials out instead.
+                        //#else
+                        // No host port: Caddy is the only way in from outside.
+                        //#endif
                         service.Ports.Clear();
                         service.Restart = "unless-stopped";
                         // The app's own settings that no parameter carries (AI keys, Sentry, external sign-in...), which the
@@ -117,19 +126,49 @@ public static class DockerComposePublishingExtensions
             // Production can share a server.
             var loopback = builder.Environment.EnvironmentName switch { "Production" => "127.0.0.1", "Test" => "127.0.0.2", _ => "127.0.0.3" };
 
+            var dashboardApiKey = builder.AddParameter("dashboard-api-key", secret: true);
+            var dashboardBrowserToken = builder.AddParameter("dashboard-browser-token", secret: true);
+
             // The dashboard keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it. Aspire's
             // default image comes from the nightly feed, so the release one is named here.
-            compose.WithDashboard(dashboard => dashboard
-                .WithImage("aspire/dashboard", "13.6")
-                .WithImageRegistry("mcr.microsoft.com")
-                .WithVolume(VolumeNameGenerator.Generate(dashboard, "data"), "/home/app")
-                .WithEnvironment("ASPIRE_DASHBOARD_APPLICATION_NAME", "Boilerplate")
-                .WithEnvironment("ASPIRE_DASHBOARD_PERSISTENCE_MODE", "Resume")
-                .WithEnvironment("ASPIRE_DASHBOARD_DATA_DIRECTORY", "/home/app/dashboard-data"));
+            compose.WithDashboard(dashboard =>
+            {
+                dashboard
+                    .WithImage("aspire/dashboard", "13.6")
+                    .WithImageRegistry("mcr.microsoft.com")
+                    .WithVolume(VolumeNameGenerator.Generate(dashboard, "data"), "/home/app")
+                    .WithEnvironment("ASPIRE_DASHBOARD_APPLICATION_NAME", "Boilerplate")
+                    .WithEnvironment("ASPIRE_DASHBOARD_PERSISTENCE_MODE", "Resume")
+                    .WithEnvironment("ASPIRE_DASHBOARD_DATA_DIRECTORY", "/home/app/dashboard-data")
+                    .WithEnvironment("Dashboard__Api__PrimaryApiKey", dashboardApiKey)
+                    .WithEnvironment("Dashboard__Frontend__BrowserToken", dashboardBrowserToken);
+
+                apiProject.WithEnvironment("AspireDashboard__Url", dashboard.Resource.PrimaryEndpoint)
+                    .WithEnvironment("AspireDashboard__ApiKey", dashboardApiKey);
+            });
+            //#if (cloudflare != true)
+
+            var reverseProxy = builder.AddContainer("reverse-proxy", "caddy", "2.11-alpine")
+                .WithImageRegistry("docker.io");
+            reverseProxy.WithVolume(VolumeNameGenerator.Generate(reverseProxy, "data"), "/data")
+                .PublishAsDockerComposeService((_, service) =>
+                {
+                    service.Ports.Clear();
+                    service.Ports.Add("80:80");
+                    service.Ports.Add("443:443");
+                    service.Ports.Add("443:443/udp");
+                    service.Restart = "unless-stopped";
+                    service.AddVolume(new Volume { Name = "caddyfile", Type = "bind", Source = "./Caddyfile", Target = "/etc/caddy/Caddyfile", ReadOnly = true });
+                });
+            //#endif
             //#if (database != "Other" || redis == true)
 
-            // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard. It has no sign-in of
-            // its own: a route on the tunnel to it needs Cloudflare Access in front.
+            // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard.
+            //#if (cloudflare == true)
+            // It has no sign-in of its own: a route on the tunnel to it needs Cloudflare Access in front.
+            //#else
+            // It has no sign-in of its own, so it stays on the loopback.
+            //#endif
             if (builder.Resources.OfType<DbGateContainerResource>().SingleOrDefault() is { } dbGate)
             {
                 foreach (var exclusion in dbGate.Annotations.OfType<ManifestPublishingCallbackAnnotation>().ToArray())

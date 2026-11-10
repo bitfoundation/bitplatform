@@ -93,11 +93,15 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
     {
         if (Version.TryParse(context.Request.Headers["X-App-Version"].FirstOrDefault(), out var appVersion)
             && Enum.TryParse<AppPlatformType>(context.Request.Headers["X-App-Platform"].FirstOrDefault(), ignoreCase: true, out var appPlatformType)
-            && Enum.IsDefined(appPlatformType) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
-            && settings.SupportedAppVersions?.GetMinimumSupportedAppVersion(appPlatformType) is { } minVersion
-            && appVersion < minVersion)
+            && Enum.IsDefined(appPlatformType)) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
         {
-            throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
+            // A minimum set for the platform wins. Without one, a client is supported unless its major version is behind the server's.
+            var minVersion = settings.GetMinimumSupportedAppVersion(appPlatformType);
+
+            if (appVersion < minVersion)
+            {
+                throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
+            }
         }
 
         await next(context);
@@ -108,24 +112,24 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
 ### How It Works:
 
 1. Extracts the `X-App-Version` and `X-App-Platform` headers
-2. Gets the minimum supported version for that platform from configuration
-3. Compares the client's version with the minimum supported version
+2. Gets the minimum supported version for that platform from configuration, or, when none is set, the server's major version
+3. Compares the client's version with it
 4. If the client version is **less than** the minimum, throws a `ClientNotSupportedException`
 5. Otherwise, allows the request to proceed
 
 ### Configuration
 
-The minimum supported versions are configured in **appsettings.json**:
+The minimum supported versions are configured in **appsettings.json**, and all of them are empty by default. A value wins for its platform; without one, a client is supported unless its major version is behind the server's:
 
 **File**: [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
 
 ```json
 "SupportedAppVersions": {
-    "MinimumSupportedAndroidAppVersion": "1.0.0",
-    "MinimumSupportedIosAppVersion": "1.0.0",
-    "MinimumSupportedMacOSAppVersion": "1.0.0",
-    "MinimumSupportedWindowsAppVersion": "1.0.0",
-    "MinimumSupportedWebAppVersion": "1.0.0"
+    "MinimumSupportedAndroidAppVersion": null,
+    "MinimumSupportedIosAppVersion": null,
+    "MinimumSupportedMacOSAppVersion": null,
+    "MinimumSupportedWindowsAppVersion": null,
+    "MinimumSupportedWebAppVersion": null
 }
 ```
 

@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using System.IO.Compression;
 using System.Threading.RateLimiting;
+using Bit.Belemetry;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,21 @@ public static partial class Program
 
             // The client's services, for prerendering; the server registers its direct clients after it
             services.AddLandingPageClientServices(configuration);
+
+            // The page's script gets the browser's endpoint too, as it can't post to the server's gRPC one. Without the OTEL_
+            // variables, which Aspire sets, the server posts there as well, rather than to Belemetry's localhost:4318.
+            if (configuration.GetBrowserOtlpEndpoint() is { } browserOtlp)
+            {
+                var serverEndpointConfigured = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
+                services.Configure<BelemetryOptions>(options => options.AddOtlpExporter(otlp =>
+                {
+                    otlp.BrowserEndpoint = browserOtlp.Endpoint;
+                    if (serverEndpointConfigured is false)
+                    {
+                        otlp.Endpoint = browserOtlp.Endpoint;
+                    }
+                }));
+            }
 
             services.AddRazorComponents()
                 .AddInteractiveServerComponents()

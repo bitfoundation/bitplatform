@@ -67,17 +67,26 @@ The server is a Docker Compose project that .NET Aspire publishes from the app h
 3. **Purge** Cloudflare's cache, so users get the new version at once.
 <!--#endif-->
 
+<!--#if (cloudflare == true)-->
 The server holds only Docker and the runner, no SDK and no source code, and it keeps every inbound port closed: the
 runner pulls its jobs from GitHub and the Cloudflare Tunnel dials out. The `deploy` skill
 (`.github/agents/deploy.agent.md`) sets it all up: the server, the runner, the tunnel and the secrets.
+<!--#else-->
+The server holds only Docker and the runner, no SDK and no source code, and only 80 and 443 reach it: Caddy takes them
+and gets each public address its certificate, and the runner pulls its jobs from GitHub. The `deploy` skill
+(`.github/agents/deploy.agent.md`) sets it all up: the server, the runner, the DNS and the secrets.
+<!--#endif-->
 
 Worth knowing:
 
 - **Migrations run while the old version still serves**, so each one has to keep that version working: add a column
-  in one release and drop the old one in a later release, instead of renaming it in one go. A failed migration stops
-  the deployment and leaves the running version alone.
+  in one release and drop the old one in a later release, instead of renaming it in one go. A deployment that fails before
+  any new container starts runs the `Down` of the migrations it applied, so a migration's `Down` has to really undo it.
+  Once one has started it may have taken requests, so a failure from then on leaves the old version running on the
+  newer database, and undoing the migrations is left to a person.
 - **The switch takes a few seconds**, while the new containers start.
-- **To roll back**, deploy an earlier commit again; its images are still in the registry. Migrations only go forward.
+- **To roll back**, deploy an earlier commit again; its images are still in the registry. Once it is up, the deployment runs the
+  `Down` of the migrations that commit doesn't have, with the image that was running.
 - **The data** lives in Docker volumes on the server, so back them up off the server.
 - **The database password** takes effect only while its volume is still empty.
 - **The Aspire dashboard and DbGate** run on the server too, reachable only through SSH; the `deploy` skill says how.
@@ -120,7 +129,10 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 
 | Name | Kind | Holds |
 | --- | --- | --- |
-| `SERVER_ADDRESS` | variable | The environment's public address, which the deployment adds to the app's `TrustedOrigins` |
+| `SERVER_ADDRESS` | variable | The web app's public address, which the deployment adds to the app's `TrustedOrigins` |
+<!--#if (api == "Standalone")-->
+| `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if it is missing |
+<!--#endif-->
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with; without it a missing translation fails the deploy |
 <!--#if (aspire == true)-->

@@ -59,7 +59,7 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+          ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
@@ -122,6 +122,9 @@ jobs:
     environment:
       name: ${{ inputs.ENV_NAME }}
       url: ${{ vars.SERVER_ADDRESS }}
+    defaults:
+      run:
+        shell: bash -euo pipefail {0}
     steps:
 
       - name: Retrieve the Docker Compose project
@@ -135,10 +138,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      # Writes the Compose project to ~/deployments/<project> - its .env, the apps' settings files and the AppCertificate,
-      # from this environment's secrets - then pulls the images, runs the migrations on their own so a failure leaves the
-      # running version alone, brings the project up, and fails when a container isn't healthy.
-      - name: Deploy
+      # Writes the Compose project to ~/deployments/<project>: its .env, the apps' settings files and the AppCertificate, from
+      # this environment's secrets. The steps below read them from there, so only this one sees the secrets.
+      - name: Write the Compose project
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
@@ -172,20 +174,40 @@ jobs:
 #if (cloudflare == true)
           CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
 #endif
+#if (api == "Standalone")
+          SERVER_API_ADDRESS: ${{ vars.SERVER_API_ADDRESS }}
+#endif
 #if (notification == true)
           VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
 #endif
         run: |
-          set -euo pipefail
-
           project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
           deploy_dir="$HOME/deployments/$project"
-          compose() { docker compose --project-name "$project" --project-directory "$deploy_dir" --file "$deploy_dir/docker-compose.yaml" "$@"; }
+          # Every docker compose command of the steps below finds the project through these.
+          { echo "COMPOSE_PROJECT_NAME=$project"; echo "COMPOSE_FILE=$deploy_dir/docker-compose.yaml"; } >> "$GITHUB_ENV"
 
           umask 077
           mkdir -p "$deploy_dir"
           cp compose/docker-compose.yaml "$deploy_dir/docker-compose.yaml"
+
+          # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries and Caddy's sites are matched.
+          origin() { printf '%s' "$1" | grep -oE '^https?://[^/]+' || true; }
+          #if (api == "Standalone")
+
+          # A standalone api is reached at its own address: the apps were built with it as ServerAddress. Given the web app's
+          # address instead, the SignalR hub, the discovery document and everything else only the api serves are missing.
+          api_origin="$(origin "$SERVER_API_ADDRESS")"
+          if [[ -z "$api_origin" ]]; then
+            echo "::error::Set SERVER_API_ADDRESS, the api's public address. The clients call the api there."
+            exit 1
+          fi
+          #endif
+
+          DASHBOARD_API_KEY="$(sed -n "s/^DASHBOARD_API_KEY='\([0-9a-f]*\)'$/\1/p" "$deploy_dir/.env" 2>/dev/null || true)"
+          DASHBOARD_API_KEY="${DASHBOARD_API_KEY:-$(openssl rand -hex 32)}"
+          DASHBOARD_BROWSER_TOKEN="$(sed -n "s/^DASHBOARD_BROWSER_TOKEN='\([0-9a-f]*\)'$/\1/p" "$deploy_dir/.env" 2>/dev/null || true)"
+          DASHBOARD_BROWSER_TOKEN="${DASHBOARD_BROWSER_TOKEN:-$(openssl rand -hex 32)}"
 
           # The .env that aspire publish wrote lists every value the Compose project reads: the images and ports, and the
           # parameters this step's env carries. Single quotes keep Compose from expanding a $ inside a secret.
@@ -222,8 +244,7 @@ jobs:
             if [[ "$file" == "landingpage.env" ]]; then
               address="$LANDING_PAGE_ADDRESS"
             fi
-            # An origin is scheme://host[:port] with no path, which is how TrustedOrigins entries are matched.
-            origin="$(printf '%s' "$address" | grep -oE '^https?://[^/]+' || true)"
+            origin="$(origin "$address")"
             # Without it the app would refuse its own address, so stop here rather than deploy one that answers 400.
             if [[ -z "$origin" ]]; then
               echo "::error::$file has no public address to trust: set SERVER_ADDRESS, and LANDING_PAGE_ADDRESS for the landing page."
@@ -236,6 +257,15 @@ jobs:
             # takes the consent page's address from WebAppUrl. Without it, the client lands on the api's own host.
             if [[ "$file" == "serverapi.env" ]]; then
               printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
+              printf "TrustedOrigins__101='%s'\n" "$api_origin" >> "$deploy_dir/$file"
+            fi
+            #if (cloudflare == true)
+            # The landing page's browser posts its telemetry to its own address, where the tunnel sends /v1/ to the dashboard.
+            #else
+            # The landing page's browser posts its telemetry to its own address, where Caddy sends /v1/ to the dashboard.
+            #endif
+            if [[ "$file" == "landingpage.env" ]]; then
+              printf "Belemetry__OtlpEndpoint='%s'\n" "$origin" >> "$deploy_dir/$file"
             fi
 
             while IFS= read -r line; do
@@ -250,6 +280,18 @@ jobs:
               printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
             done <<< "${!settings:-}"
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+          #if (cloudflare != true)
+
+          # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
+          # build with a plugin, so without Cloudflare nothing limits how often.
+          {
+            printf '%s {\n\treverse_proxy serverweb:8080\n}\n\n' "$(origin "$SERVER_ADDRESS")"
+          #if (api == "Standalone")
+            printf '%s {\n\treverse_proxy serverapi:8080\n}\n\n' "$(origin "$SERVER_API_ADDRESS")"
+          #endif
+            printf '%s {\n\t@otlp path_regexp ^/v1/(traces|logs|metrics)$\n\thandle @otlp {\n\t\trequest_body {\n\t\t\tmax_size 2MB\n\t\t}\n\t\treverse_proxy compose-dashboard:18890\n\t}\n\thandle {\n\t\treverse_proxy landingpage:8080\n\t}\n}\n' "$(origin "$LANDING_PAGE_ADDRESS")"
+          } > "$deploy_dir/Caddyfile"
+          #endif
 
           # The environment's own AppCertificate, and the retired one it replaced while that one still validates tokens
           # (See AppCertificate.md), in the folder the api mounts. Each secret is a .crt and its .key in one PEM, which openssl
@@ -272,30 +314,188 @@ jobs:
           chmod 0755 "$certificates"
           chmod 0444 "$certificates"/AppCertificate.*
 
-          compose pull --quiet
+      - name: Pull the images
+        run: |
+          # A registry or a network that drops one download shouldn't fail a deployment.
+          for attempt in 1 2 3; do
+            if docker compose pull --quiet; then
+              break
+            fi
+            if (( attempt == 3 )); then
+              echo "::error::The images could not be pulled."
+              exit 1
+            fi
+            sleep 15
+          done
 
-          # The new version's migrations first, on their own: if they fail, this step fails and the running version of
-          # the app is left untouched. `up` would replace the app's container before finding out.
-          compose run --rm migrations
+      # A failure leaves the running version alone. It keeps serving while the migrations run, so a migration has to leave
+      # the database working for that version too. The run prints where the database stood, for the two undo steps below.
+      - name: Migrate the database
+        id: migrate
+        run: |
+          status=0
+          docker compose run --rm migrations | tee "$RUNNER_TEMP/migrations.log" || status=$?
+          printed() { sed -n "s/^$1=//p" "$RUNNER_TEMP/migrations.log" | tr -d '\r' | tail -n 1; }
 
-          compose up --detach --wait --wait-timeout 600 --remove-orphans || { compose logs --tail 200; exit 1; }
+          older_target="$(printed LastMigrationOfThisImage)"
+          if [[ -z "$older_target" ]]; then
+            echo "undo_to=$(printed LastAppliedMigration)" >> "$GITHUB_OUTPUT"
+          else
+            # An older commit is being deployed: only the image running now has the Down of the migrations it doesn't know.
+            #if (api == "Standalone")
+            api=serverapi
+            #else
+            api=serverweb
+            #endif
+            image="$(docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$api" --format '{{.Image}}' | tail -n 1)"
+            { echo "rollback_to=$older_target"; echo "rollback_image=$image"; echo "rollback_image_key=${api^^}_IMAGE"; } >> "$GITHUB_OUTPUT"
+          fi
+          exit "$status"
 
-          # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
-          # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
-          docker image prune --all --force --filter "until=72h" > /dev/null || echo "::warning::The old images were not pruned."
+      - name: Start everything but the apps
+        run: |
+          # migrations and container-volume-init are one-shot: the migrate step has run them, and --wait fails on a container
+          # that exited.
+          others=()
+          while IFS= read -r service; do
+            case "$service" in
+              serverapi | serverweb | landingpage | migrations | container-volume-init) ;;
+              *) others+=("$service") ;;
+            esac
+          done < <(docker compose config --services)
+          docker compose up --detach --wait --wait-timeout 600 --no-deps --remove-orphans "${others[@]}" || { docker compose logs --tail 200; exit 1; }
+
+      # No downtime: each new container starts next to the running one, whatever routes to the service's name finds both and
+      # skips the one that isn't listening yet. The old ones are stopped only once every new one is healthy, so all the apps
+      # change together or none does, and stopping lets the requests in flight finish. Healthy is Docker's health check of
+      # the container, its /alive.
+      - name: Replace the apps
+        id: apps
+        run: |
+          apps=()
+          while IFS= read -r service; do
+            case "$service" in
+              serverapi | serverweb | landingpage) apps+=("$service") ;;
+            esac
+          done < <(docker compose config --services)
+          containers() { docker ps "$@" --quiet --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter "label=com.docker.compose.service=$service"; }
+
+          old=()
+          new=()
+          replaced=false
+          # Whatever goes wrong before the old containers stop, the new ones go and the old ones keep serving. Anything that
+          # wasn't running before this step counts as new, so a container that a failed `up` started goes too.
+          before=()
+          for service in "${apps[@]}"; do
+            mapfile -t -O "${#before[@]}" before < <(containers)
+          done
+          remove_new() {
+            [[ "$replaced" != true ]] || return 0
+            for service in "${apps[@]}"; do
+              mapfile -t current < <(containers --all)
+              for id in "${current[@]}"; do
+                [[ " ${before[*]} " == *" $id "* ]] || docker rm --force "$id" > /dev/null || true
+              done
+            done
+          }
+          trap remove_new EXIT
+
+          for service in "${apps[@]}"; do
+            mapfile -t stale < <(containers --all --filter status=created --filter status=exited --filter status=dead)
+            if (( ${#stale[@]} > 0 )); then
+              docker rm --force "${stale[@]}" > /dev/null
+            fi
+
+            mapfile -t running < <(containers)
+            docker compose up --detach --no-deps --no-recreate --scale "$service=$(( ${#running[@]} + 1 ))" "$service"
+            mapfile -t started < <(containers | grep --invert-match --line-regexp --fixed-strings --file <(printf '%s\n' "${running[@]}"))
+            if (( ${#started[@]} == 0 )); then
+              echo "::error::No new container of $service started."
+              exit 1
+            fi
+            old+=("${running[@]}")
+            new+=("${started[@]}")
+          done
+
+          deadline=$(( SECONDS + 600 ))
+          for container in "${new[@]}"; do
+            while true; do
+              health="$(docker inspect --format '{{.State.Health.Status}}' "$container")"
+              if [[ "$health" == healthy ]]; then
+                break
+              fi
+              if [[ "$health" == unhealthy ]] || (( SECONDS > deadline )); then
+                docker logs --tail 200 "$container" || true
+                echo "::error::A new container never got healthy ($health). The running version keeps serving, on the new database schema. Undoing the migrations is left to a person, as the new containers may have taken requests."
+                exit 1
+              fi
+              sleep 5
+            done
+          done
+
+          # /alive only says the process runs. /health also runs every dependency's check, so a 503 there says the new
+          # version can't reach one. It doesn't stop the swap: a dependency both versions share, such as an outside service
+          # that is down, would then also block the deployment that fixes it.
+          for container in "${new[@]}"; do
+            name="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$container")"
+            status="$(timeout 40 docker exec "$container" bash -c "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && head -n 1 <&3" || true)"
+            read -r _ code _ <<< "$status"
+            if [[ "$code" != 200 ]]; then
+              echo "::warning::/health of the new $name answered ${code:-nothing}. The swap goes on. The health checks page, or GetHealth on dev-mcp for the api, says which check fails."
+            fi
+          done
+
+          replaced=true
+          echo "replaced=true" >> "$GITHUB_OUTPUT"
+          if (( ${#old[@]} > 0 )); then
+            docker stop --time 30 "${old[@]}" > /dev/null
+            docker rm "${old[@]}" > /dev/null
+          fi
+          #if (cloudflare != true)
+          docker compose exec -T reverse-proxy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+          #endif
+
+      # The deployment failed before any new container started, so nobody has used the new schema and the database goes
+      # back to where it stood. Once one has started it may have taken requests, and a Down would delete what they wrote:
+      # the database then stays ahead, which the running version works on. It doesn't run on the first deployment, which
+      # has nothing to go back to.
+      - name: Undo this deployment's migrations
+        if: failure() && steps.migrate.outputs.undo_to != '' && steps.apps.outcome == 'skipped'
+        env:
+          UNDO_TO: ${{ steps.migrate.outputs.undo_to }}
+        run: docker compose run --rm --env "MigrateDatabaseTo=$UNDO_TO" migrations || echo "::error::The migrations could not be undone. The database stays ahead of the running version."
+
+      # After the swap, because the version just stopped needed them, and an older version works on the newer database.
+      - name: Undo the migrations this older version doesn't have
+        if: steps.migrate.outputs.rollback_image != ''
+        env:
+          ROLLBACK_TO: ${{ steps.migrate.outputs.rollback_to }}
+          ROLLBACK_IMAGE: ${{ steps.migrate.outputs.rollback_image }}
+          ROLLBACK_IMAGE_KEY: ${{ steps.migrate.outputs.rollback_image_key }}
+        run: env "$ROLLBACK_IMAGE_KEY=$ROLLBACK_IMAGE" docker compose run --rm --env "MigrateDatabaseTo=$ROLLBACK_TO" migrations || echo "::warning::The newer migrations could not be undone. This version works on them, but the next deployment finds them applied."
+
+      # Every deployment pulls images tagged with its commit, so the old ones would fill the disk. Those of the running
+      # containers stay, and a rollback pulls its images again. A failed prune isn't worth failing a deployment that is up.
+      - name: Remove old images
+        run: docker image prune --all --force --filter "until=72h" > /dev/null || echo "::warning::The old images were not pruned."
 
       - name: Check the public address
         env:
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+#if (api == "Standalone")
+          SERVER_API_ADDRESS: ${{ vars.SERVER_API_ADDRESS }}
+#endif
         run: |
-          for _ in $(seq 1 30); do
-            if curl --fail --silent --show-error --max-time 10 "${SERVER_ADDRESS%/}/alive"; then
-              exit 0
-            fi
-            sleep 10
+          for address in "$SERVER_ADDRESS" ${SERVER_API_ADDRESS:+"$SERVER_API_ADDRESS"}; do
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent --show-error --max-time 10 "${address%/}/alive"; then
+                continue 2
+              fi
+              sleep 10
+            done
+            echo "::error::${address%/}/alive did not answer for five minutes."
+            exit 1
           done
-          echo "::error::${SERVER_ADDRESS%/}/alive did not answer for five minutes."
-          exit 1
 
       - name: Check the landing page's public address
         env:
@@ -312,18 +512,26 @@ jobs:
 
       # /alive only says the process runs. /health runs every check, and a 503 there is a dependency failing, for which a
       # load balancer or a monitor takes the instance for dead. Degraded, such as a service with no settings yet, still
-      # answers 200. A warning rather than a failure: the new version is already up.
-      - name: Check health
+      # answers 200. A report rather than a gate: the old version has already stopped, so there is nothing to go back to.
+      # The swap's gate is each new container's /alive, in Replace the apps.
+      - name: Report the dependencies' health
         env:
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
           LANDING_PAGE_ADDRESS: ${{ vars.LANDING_PAGE_ADDRESS }}
+#if (api == "Standalone")
+          SERVER_API_ADDRESS: ${{ vars.SERVER_API_ADDRESS }}
+#endif
         run: |
-          for address in "$SERVER_ADDRESS" "$LANDING_PAGE_ADDRESS"; do
+          for address in "$SERVER_ADDRESS" "$LANDING_PAGE_ADDRESS" ${SERVER_API_ADDRESS:+"$SERVER_API_ADDRESS"}; do
             status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "${address%/}/health" || true)"
             if [[ "$status" != 200 ]]; then
               echo "::warning::${address%/}/health answered $status. The health checks page, or GetHealth on dev-mcp for the api, says which check fails."
             fi
           done
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 --request POST --header 'Content-Type: application/x-protobuf' --data-binary '' "${LANDING_PAGE_ADDRESS%/}/v1/logs" || true)"
+          if [[ "$status" != 200 ]]; then
+            echo "::warning::${LANDING_PAGE_ADDRESS%/}/v1/logs answered $status, so the landing page's browser telemetry doesn't reach the Aspire dashboard."
+          fi
 #if (cloudflare == true)
 
       - name: Purge Cloudflare cache
@@ -382,7 +590,7 @@ jobs:
         with:
           files: 'src\**\appsettings*json'
         env:
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+          ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
@@ -466,7 +674,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+          ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
 
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
@@ -532,7 +740,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+          ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0

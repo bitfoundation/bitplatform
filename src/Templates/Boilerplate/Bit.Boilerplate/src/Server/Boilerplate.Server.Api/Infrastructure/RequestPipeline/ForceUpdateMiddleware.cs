@@ -9,11 +9,15 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
     {
         if (Version.TryParse(context.Request.Headers["X-App-Version"].FirstOrDefault(), out var appVersion)
             && Enum.TryParse<AppPlatformType>(context.Request.Headers["X-App-Platform"].FirstOrDefault(), ignoreCase: true, out var appPlatformType)
-            && Enum.IsDefined(appPlatformType) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
-            && settings.SupportedAppVersions?.GetMinimumSupportedAppVersion(appPlatformType) is { } minVersion
-            && appVersion < minVersion)
+            && Enum.IsDefined(appPlatformType)) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
         {
-            throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
+            // A minimum set for the platform wins. Without one, a client is supported unless its major version is behind the server's.
+            var minVersion = settings.GetMinimumSupportedAppVersion(appPlatformType);
+
+            if (appVersion < minVersion)
+            {
+                throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
+            }
         }
 
         await next(context);

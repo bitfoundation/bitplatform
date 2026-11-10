@@ -44,9 +44,9 @@
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
         <script>
             (() => {
-                @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options *@
+                @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options, and the OTLP endpoint to the runtime's variables *@
                 const start = Blazor.start;
-                Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
+                Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name', configureRuntime: runtime => { options?.webAssembly?.configureRuntime?.(runtime); runtime.withEnvironmentVariables(@((MarkupString)WebAssemblyEnvironmentVariables)); } } });
 
                 @* A first install and an update both start at once: the browser keeps the scroll position, and these pages have little to lose *@
                 window.bitBswupHandler = (message, data) => {

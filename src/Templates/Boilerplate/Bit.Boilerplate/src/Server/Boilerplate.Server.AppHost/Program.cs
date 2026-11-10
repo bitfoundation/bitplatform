@@ -58,7 +58,8 @@ var landingPageProject = builder.AddProject("landingpage", "../../LandingPage/Bo
 
 if (builder.ExecutionContext.IsRunMode)
 {
-    landingPageProject.WithExplicitStart();
+    landingPageProject.WithExplicitStart()
+        .WithOtlpExporter(OtlpProtocol.HttpProtobuf);
 }
 
 if (builder.Environment.IsDevelopment())
@@ -105,6 +106,7 @@ if (embedding is not null)
 //#if (redis == true)
 serverApiProject.WithReference(redisCache).WaitFor(redisCache);
 serverWebProject.WithReference(redisCache).WaitFor(redisCache);
+serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent); // Its Data Protection keys
 serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#else
@@ -179,7 +181,8 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     landingPageProject.WithReference(mailpit);
 
     var workbench = builder.AddProject("workbench", "../../Workbench/Boilerplate.Workbench.csproj")
-        .WithExplicitStart();
+        .WithExplicitStart()
+        .WithOtlpExporter(OtlpProtocol.HttpProtobuf);
 
     //#if (cloudflare == true)
     builder.AddCloudflareQuickTunnel("cloudflare-tunnel-workbench")

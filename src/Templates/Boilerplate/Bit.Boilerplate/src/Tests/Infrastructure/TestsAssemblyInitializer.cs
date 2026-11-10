@@ -54,7 +54,11 @@ public partial class TestsAssemblyInitializer
             aspireAppBuilder.Resources.Remove(res);
 
         // The following resources are not that much useful in tests and just add to the startup time, so we remove them from the application.
+        //#if (cloudflare == true)
         // Matched by name because some of them (OtlpLoopbackResource, CloudflareTunnelInstallerResource) are internal types.
+        //#else
+        // Matched by name because some of them (OtlpLoopbackResource) are internal types.
+        //#endif
         string[] typeNamesToBeRemoved = [
             "OtlpLoopbackResource",
             //#if (cloudflare == true)

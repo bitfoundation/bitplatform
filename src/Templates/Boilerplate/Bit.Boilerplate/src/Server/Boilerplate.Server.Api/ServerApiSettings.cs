@@ -74,7 +74,28 @@ public partial class ServerApiSettings : ServerSharedSettings
 
     public HangfireOptions? Hangfire { get; set; }
 
+    public AspireDashboardOptions? AspireDashboard { get; set; }
+
     public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
+
+    /// <summary>The build's own version, which the major-version rule of <see cref="GetMinimumSupportedAppVersion"/> compares against.</summary>
+    public Version ServerVersion { get; set; } = typeof(ServerApiSettings).Assembly.GetName().Version!;
+
+    /// <summary>
+    /// The lowest client version the api serves: the minimum set for the platform, otherwise the start of the server's major version.
+    /// </summary>
+    public Version GetMinimumSupportedAppVersion(AppPlatformType platformType)
+    {
+        return SupportedAppVersions?.GetMinimumSupportedAppVersion(platformType) ?? new Version(ServerVersion.Major, 0);
+    }
+
+    /// <summary>The minimum to report to an operator, or null when no client can be below it.</summary>
+    public string? GetEnforcedMinimumAppVersion(AppPlatformType platformType)
+    {
+        var minimum = GetMinimumSupportedAppVersion(platformType);
+
+        return minimum > new Version(0, 0) ? minimum.ToString() : null;
+    }
 
     /// <summary>
     /// The root ConnectionStrings section. Bound so <see cref="Validate"/> can reject the shared development
@@ -319,6 +340,13 @@ public class HangfireOptions
     public TimeSpan JobExpiration { get; set; }
 }
 
+public class AspireDashboardOptions
+{
+    public Uri? Url { get; set; }
+
+    public string? ApiKey { get; set; }
+}
+
 public class SupportedAppVersionsOptions
 {
     public Version? MinimumSupportedAndroidAppVersion { get; set; }
@@ -340,7 +368,7 @@ public class SupportedAppVersionsOptions
             AppPlatformType.MacOS => MinimumSupportedMacOSAppVersion,
             AppPlatformType.Windows => MinimumSupportedWindowsAppVersion,
             AppPlatformType.Web => MinimumSupportedWebAppVersion,
-            AppPlatformType.Linux => null, // No Linux client ships a minimum version, so there is nothing to enforce.
+            AppPlatformType.Linux => null, // No Linux client ships a minimum version.
             _ => throw new ArgumentOutOfRangeException(nameof(platformType), platformType, null)
         };
     }

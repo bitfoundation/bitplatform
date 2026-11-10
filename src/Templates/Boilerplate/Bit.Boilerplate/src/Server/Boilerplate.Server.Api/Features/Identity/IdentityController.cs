@@ -454,9 +454,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 userSession.PreviousRenewedOn = lastRotatedOn;
                 userSession.RenewedOn = TimeProvider.GetUtcNow().ToUnixTimeSeconds();
             }
+            //#if (cloudflare == true)
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             (userSession.IP, userSession.Address) = (HttpContext.Connection.RemoteIpAddress?.ToString(), $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}");
+            //#else
+            userSession.IP = HttpContext.Connection.RemoteIpAddress?.ToString();
+            //#endif
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
 

@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="MSTest" />
+        <PackageReference Include="Microsoft.Playwright" />
     </ItemGroup>
 
     <ItemGroup>

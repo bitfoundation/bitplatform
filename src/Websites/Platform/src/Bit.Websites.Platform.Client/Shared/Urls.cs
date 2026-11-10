@@ -45,7 +45,7 @@ public static class Urls
     public const string SourceGenerators = "/toolings/source-generators";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
-    public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";
+    public const string PlatformPageSpeed = "https://pagespeed.web.dev/report?url=bitplatform.dev&utm_source=search_console&form_factor=mobile&hl=en";
 
     public const string BlazorUiPwa = "https://blazorui.bitplatform.dev/";
     public const string BlazorUiGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo";

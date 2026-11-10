@@ -3996,6 +3996,15 @@
     <data name="ThemeExtrasOrders" xml:space="preserve">
         <value>Beställningar</value>
     </data>
+    <data name="ThemeExtrasDashboard" xml:space="preserve">
+        <value>Översikt</value>
+    </data>
+    <data name="ThemeExtrasCategories" xml:space="preserve">
+        <value>Kategorier</value>
+    </data>
+    <data name="ThemeExtrasProducts" xml:space="preserve">
+        <value>Produkter</value>
+    </data>
     <data name="ThemeExtrasThisYear" xml:space="preserve">
         <value>I år</value>
     </data>

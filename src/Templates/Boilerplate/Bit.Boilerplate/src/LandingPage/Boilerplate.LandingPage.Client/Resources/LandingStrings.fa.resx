@@ -723,6 +723,9 @@
     <data name="GalleryScoreSource" xml:space="preserve">
         <value>منبع:</value>
     </data>
+    <data name="GalleryScoreTestYourself" xml:space="preserve">
+        <value>خودتان تست کنید</value>
+    </data>
     <data name="GalleryScoreTested" xml:space="preserve">
         <value>، موبایل، سنجیده‌شده در {0}</value>
     </data>

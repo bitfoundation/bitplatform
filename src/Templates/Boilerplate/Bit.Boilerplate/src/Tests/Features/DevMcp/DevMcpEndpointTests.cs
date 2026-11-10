@@ -88,7 +88,9 @@ public class DevMcpEndpointTests
         Assert.Contains("GetDeploymentInfo", devTools);
         Assert.Contains("GetDiagnosticReport", devTools);
         Assert.Contains("QueryEntity", devTools);
+        Assert.Contains("AggregateEntity", devTools);
         Assert.Contains("ListHangfireJobs", devTools);
+        Assert.Contains("ListLogs", devTools);
         Assert.DoesNotContain("GetCurrentDateTime", devTools,
             "/dev-mcp must not leak chatbot tools.");
 
@@ -99,6 +101,7 @@ public class DevMcpEndpointTests
         Assert.DoesNotContain("QueryEntity", chatbotTools,
             "/mcp must not leak Dev MCP tools.");
         Assert.DoesNotContain("GetDeploymentInfo", chatbotTools);
+        Assert.DoesNotContain("ListLogs", chatbotTools);
         // The chatbot answers anonymous visitors, and this one reports the caller's own request back to it.
         Assert.DoesNotContain("GetDiagnosticReport", chatbotTools);
         //#endif

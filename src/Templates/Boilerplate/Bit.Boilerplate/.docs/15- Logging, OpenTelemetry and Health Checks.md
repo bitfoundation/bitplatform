@@ -291,6 +291,24 @@ https://localhost:2030
 - **Trace Visualization**: See how requests flow through your system
 - **Performance Analysis**: Identify slow operations and bottlenecks
 
+### In a Deployment
+
+A Docker Compose deployment runs the dashboard next to the apps, on the server's loopback (`.github/agents/deploy.agent.md`
+says how to open it). It keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it, and
+holds 100,000 logs and 100,000 traces at most. Outside Development the server sends it about 5% of its ordinary logs and
+fast successful spans, and every unexpected error and every span slower than a second, though not always the rest of its
+trace (`AppLoggingSampler` and `AppOpenTelemetryProcessor`).
+
+The landing page's browser sends the dashboard its errors, and its logs and traces once the visitor consents. It can't
+reach the gRPC endpoint the apps use inside the Compose network, so the deploy job gives it the landing page's own
+address as `Belemetry:OtlpEndpoint`, and the tunnel (or Caddy, without Cloudflare) sends `/v1/traces`, `/v1/logs` and
+`/v1/metrics` there to the dashboard's OTLP/HTTP port. Anyone can post telemetry to it, as with an Application Insights
+connection string or a Sentry DSN in a page; the dashboard's pages and its API keep their token and key.
+
+dev-mcp's `ListLogs`, `ListTraces` and `GetTrace` read it through the dashboard's telemetry API, at `AspireDashboard:Url`
+with the key in `AspireDashboard:ApiKey`. The app host's publish sets both, and the deploy job makes the key, and the
+token the dashboard's sign-in page asks for, on the first deployment.
+
 ---
 
 ## 8. Health Checks
@@ -362,7 +380,9 @@ provider outage does not take an otherwise healthy instance out of the load bala
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
 - **`sms`**: fetches the Twilio account and requires it to be active.
 - **`keycloakIdentity`**: reads Keycloak's discovery document.
+<!--#if (cloudflare == true)-->
 - **`cloudflare`**: purges a cache tag nothing carries, through the same call content changes use.
+<!--#endif-->
 - **`entraId`**: reads the tenant's discovery document, then asks for an app-only token, sending the secret only to an
   https token endpoint on the authority's own origin. Only a token, `invalid_scope` or `invalid_resource` passes, so
   `unauthorized_client` (unknown client id), `invalid_client` (wrong secret) and throttling all fail the check.
@@ -389,7 +409,11 @@ Every AI check sends a real, minimal request through the same client the feature
 quota problem therefore shows up in the check the same way it would in the feature. Providers reject an invalid key
 (401) before they look at the rest of the request.
 
-In development, `sms`, `keycloakIdentity`, `cloudflare`, `entraId`, `appleSignIn`, `azureSignalR`, `firebase`, `apns`
+In development, `sms`, `keycloakIdentity`,
+<!--#if (cloudflare == true)-->
+`cloudflare`,
+<!--#endif-->
+`entraId`, `appleSignIn`, `azureSignalR`, `firebase`, `apns`
 and the AI checks are registered only when their settings are present. In any other environment they are always
 registered, and one without settings reports Degraded with "... is not configured". A deployment that ships the code
 for a dependency but leaves it unconfigured is most likely a mistake. If your project doesn't use one of them, remove
@@ -399,7 +423,11 @@ Google, GitHub, Twitter and Facebook sign-in can't be verified without a user si
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
 missing, reporting Degraded the same way.
 
-`smtp`, `firebase`, `apns`, `cloudflare`, the sign-in checks, `reCaptcha` and the AI checks are registered with
+`smtp`, `firebase`, `apns`,
+<!--#if (cloudflare == true)-->
+`cloudflare`,
+<!--#endif-->
+the sign-in checks, `reCaptcha` and the AI checks are registered with
 `AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins.

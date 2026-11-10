@@ -189,11 +189,11 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         configuration.AiChatImagesRetention = AppSettings.AiChatImagesRetention;
         //#endif
 
-        configuration.MinimumSupportedAndroidAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedAndroidAppVersion?.ToString();
-        configuration.MinimumSupportedIosAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedIosAppVersion?.ToString();
-        configuration.MinimumSupportedMacOSAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedMacOSAppVersion?.ToString();
-        configuration.MinimumSupportedWindowsAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedWindowsAppVersion?.ToString();
-        configuration.MinimumSupportedWebAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedWebAppVersion?.ToString();
+        configuration.MinimumSupportedAndroidAppVersion = AppSettings.GetEnforcedMinimumAppVersion(AppPlatformType.Android);
+        configuration.MinimumSupportedIosAppVersion = AppSettings.GetEnforcedMinimumAppVersion(AppPlatformType.Ios);
+        configuration.MinimumSupportedMacOSAppVersion = AppSettings.GetEnforcedMinimumAppVersion(AppPlatformType.MacOS);
+        configuration.MinimumSupportedWindowsAppVersion = AppSettings.GetEnforcedMinimumAppVersion(AppPlatformType.Windows);
+        configuration.MinimumSupportedWebAppVersion = AppSettings.GetEnforcedMinimumAppVersion(AppPlatformType.Web);
 
         return configuration;
     }

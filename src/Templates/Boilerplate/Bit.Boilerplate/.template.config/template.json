@@ -148,6 +148,25 @@
                 ]
             }
         },
+        "clientServerAddress": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(api == 'Standalone')",
+                        "value": "vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS"
+                    },
+                    {
+                        "condition": "",
+                        "value": "vars.SERVER_ADDRESS"
+                    }
+                ]
+            }
+        },
         "aspNetCoreVersionName": {
             "type": "generated",
             "generator": "switch",
@@ -652,6 +671,16 @@
                 "fallback": 2032
             },
             "replaces": "2032"
+        },
+        "aspirePortGenerated_4": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 2001,
+                "high": 2300,
+                "fallback": 2033
+            },
+            "replaces": "2033"
         },
         "serveApiPortGenerated": {
             "type": "generated",

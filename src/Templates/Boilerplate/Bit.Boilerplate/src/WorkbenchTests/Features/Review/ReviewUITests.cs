@@ -482,6 +482,7 @@ public class ReviewUITests : ReviewPageTest
     {
         var text = Unique("Just resolved");
         var other = Unique("Something else");
+        var answer = Unique("An answer");
 
         await SeedComment("settings", text);
 
@@ -499,9 +500,9 @@ public class ReviewUITests : ReviewPageTest
         await Expect(ThreadWith(other)).ToBeVisibleAsync();
 
         // Any change to the review draws the page again.
-        await Server.Agent.Reply("Claude Code", otherId, Unique("An answer"), CancellationToken.None);
+        await Server.Agent.Reply("Claude Code", otherId, answer, CancellationToken.None);
 
-        await Expect(Tools.Locator(".from-agent").Filter(new() { HasText = "An answer" })).ToBeVisibleAsync();
+        await Expect(Tools.Locator(".from-agent").Filter(new() { HasText = answer })).ToBeVisibleAsync();
         await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
