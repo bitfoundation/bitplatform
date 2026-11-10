@@ -53,7 +53,7 @@ public class CommandTests
 
         StringAssert.Contains(host.Output, BuildInfo.Version);
         StringAssert.Contains(host.Output, "github.com/bitfoundation/bitplatform");
-        StringAssert.Contains(host.Output, "MIT");
+        StringAssert.Contains(host.Output, "PolyForm Perimeter License 1.0.0");
     }
 
     [TestMethod]

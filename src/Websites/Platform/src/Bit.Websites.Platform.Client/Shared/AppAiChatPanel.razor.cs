@@ -21,7 +21,7 @@ public partial class AppAiChatPanel
     private AiChatMessage? lastAssistantMessage;
     private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
-    private string AiChatPanelPrompt1 = "What does bitplatform MIT license mean? Is it free to use?";
+    private string AiChatPanelPrompt1 = "What does bitplatform PolyForm Perimeter license mean? Is it free to use?";
     private string AiChatPanelPrompt2 = "What are the benefits of dedicated support?";
     private string AiChatPanelPrompt3 = "What does bit Butil do?";
 

@@ -97,9 +97,9 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
@@ -135,7 +135,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform open source contributions report"")";
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform source available contributions report"")";
 
     private DateTimeOffset? parsingDateTime;
     private DateTimeOffset? parsedDateTime;
@@ -206,9 +206,9 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
@@ -244,7 +244,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform source available contributions report"""")"";";
 
     private readonly string example3RazorCode = @"
 <BitMarkdownViewerLegacy Markdown=""@(""# Events of the BitMarkdownViewerLegacy:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""

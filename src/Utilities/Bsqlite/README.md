@@ -251,5 +251,5 @@ for the browser matrix, the soak suite and the benchmark page.
 
 ## License
 
-MIT, as is the bundled wa-sqlite, whose license ships next to the engine under `_content/Bit.Bsqlite/engine`. See
-[LICENSE](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
+PolyForm Perimeter License 1.0.0, see [LICENSE](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE). The bundled
+wa-sqlite is MIT, and its license ships next to the engine under `_content/Bit.Bsqlite/engine`.

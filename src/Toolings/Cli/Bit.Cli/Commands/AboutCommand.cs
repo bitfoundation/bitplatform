@@ -27,7 +27,7 @@ public static class AboutCommand
         void Row(string name, string value) => grid.AddRow($"[grey]{Markup.Escape(name)}[/]", Markup.Escape(value));
 
         Row("Version", BuildInfo.Commit is null ? BuildInfo.Version : $"{BuildInfo.Version} (commit {BuildInfo.ShortCommit})");
-        Row("Source", $"{BuildInfo.SourceUrl}  (MIT license)");
+        Row("Source", $"{BuildInfo.SourceUrl}  (PolyForm Perimeter License 1.0.0)");
         Row("Built by", BuildInfo.RunUrl is { } runUrl ? $"GitHub Actions {runUrl}" : "a local build, not GitHub Actions");
         Row("Package", BuildInfo.PackageUrl);
 

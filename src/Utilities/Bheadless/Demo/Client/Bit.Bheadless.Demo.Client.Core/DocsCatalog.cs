@@ -44,7 +44,7 @@ public static class SiteInfo
         "management, positioning, dismissal and WAI-ARIA semantics as plain Razor components, styled with your " +
         "own CSS or Tailwind. This site is itself a Blazor app built on it.";
 
-    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
+    public static readonly string[] Badges = ["PolyForm Perimeter", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["dialog", "menu", "combobox", "keyboard", "tailwind"];
