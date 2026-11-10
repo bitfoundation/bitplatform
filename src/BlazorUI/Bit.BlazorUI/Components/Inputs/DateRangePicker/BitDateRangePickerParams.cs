@@ -686,6 +686,12 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
     public string? ShowTimePickerTitle { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the DateRangePicker, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     public bool? ShowWeekNumbers { get; set; }
@@ -1437,6 +1443,11 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
         if (ShowTimePickerTitle.HasValue())
         {
             bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerTitle), ShowTimePickerTitle!, static d => d.ShowTimePickerTitle, static (d, v) => d.ShowTimePickerTitle = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitDateRangePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static d => d.ShowValidationMessage, static (d, v) => d.ShowValidationMessage = v);
         }
 
         if (ShowWeekNumbers.HasValue)

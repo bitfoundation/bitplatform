@@ -995,10 +995,11 @@
 
 @code {
     // What is wrong with the range, under the field it is about (or under the calendar, standalone), which the
-    // input - or the standalone calendar - is described by.
+    // input - or the standalone calendar - is described by. The messages of the EditContext (ShowValidationMessage)
+    // take the same line while the app has none of its own.
     private RenderFragment RenderErrorMessage() => __builder =>
     {
-        @if (HasErrorMessage)
+        @if (HasErrorLine)
         {
             <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetStandaloneStyles(Styles?.ErrorMessageContainer)" class="bit-dtrp-erm @Classes?.ErrorMessageContainer">
                 @if (ErrorMessageTemplate is not null)
@@ -1007,7 +1008,7 @@
                 }
                 else
                 {
-                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(HasErrorMessage ? ErrorMessage : ShownValidationMessage)</span>
                 }
             </div>
         }
