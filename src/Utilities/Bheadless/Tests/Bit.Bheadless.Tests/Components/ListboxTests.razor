@@ -345,4 +345,113 @@
         cut.Find("[role=combobox]").Press("ArrowDown", shift: true);
         CollectionAssert.AreEquivalent(new[] { "blue", "cyan" }, values!.ToArray());
     }
+
+    [TestMethod]
+    public async Task A_key_pressed_while_the_opening_click_is_still_focusing_the_button_is_kept()
+    {
+        // Over a Blazor Server connection a key pressed right after the click (End) arrives while the click's focus
+        // call is still in flight - held here. The click toggles from the state it saw, before that call: otherwise the
+        // key opened the panel and the click, once its focus landed, closed it again.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var focus = module.Setup<bool>("focus.focus", _ => true);
+        var cut = Render(
+            @<BitBhListbox TValue="int">
+                <BitBhListboxButton TValue="int" aria-label="Count">Count</BitBhListboxButton>
+                <BitBhListboxOptions TValue="int">
+                    <BitBhListboxOption TValue="int" Value="1">One</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="2">Two</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="3">Three</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        var click = cut.Find("[role=combobox]").ClickAsync(new MouseEventArgs());
+        Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+        cut.Find("[role=combobox]").Press("End");
+        focus.SetResult(true);
+        // The click's handler is done: nothing it does after its focus landed undoes the key.
+        await click;
+
+        cut.WaitForAssertion(() => Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]")))));
+        Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+    }
+
+    private static readonly string[] Thousand = Enumerable.Range(1, 1000).Select(i => $"Item {i}").ToArray();
+
+    private RenderFragment VariableListbox(bool variable = true) =>
+        @<BitBhListbox TValue="string">
+            <BitBhListboxButton TValue="string" aria-label="Item" Placeholder="Pick" />
+            <BitBhListboxOptions TValue="string" Items="Thousand" Virtualize="true" VariableItemSize="variable" ItemSize="48" Context="o">
+                <ItemTemplate>@o.Value</ItemTemplate>
+            </BitBhListboxOptions>
+        </BitBhListbox>;
+
+    [TestMethod]
+    public void Options_of_different_heights_render_a_window_between_spacers_the_runtime_sizes()
+    {
+        var cut = Render(VariableListbox());
+        cut.Find("[role=combobox]").Press("ArrowDown");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.AreEqual(BitBhVirtualizer<string>.InitialCount, options.Count);
+        Assert.AreEqual("1000", options[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("20", options[19].GetAttribute("aria-posinset"));
+        Assert.AreEqual("Item 1", Text(ActiveOf(cut.Find("[role=combobox]"))));
+
+        var spacers = cut.FindAll("[data-bit-bh-spacer]");
+        Assert.AreEqual(2, spacers.Count);
+        Assert.AreEqual("LI", spacers[0].TagName);
+        Assert.AreEqual("0 20 1000 1", spacers[0].GetAttribute("data-bit-bh-range"));
+        // Sized by the runtime through the CSSOM: no inline style attribute, which a strict style-src would refuse.
+        Assert.IsTrue(spacers.All(s => s.GetAttribute("aria-hidden") == "true" && !s.HasAttribute("style")));
+
+        var attach = JSInterop.Invocations.Single(i => i.Identifier == "dom.attachVirtualList");
+        Assert.AreEqual(48f, attach.Arguments[3]);
+        Assert.AreEqual(5, attach.Arguments[4]);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public async Task A_range_set_as_the_runtime_would_renders_its_window_and_End_asks_the_runtime_to_reveal_the_last_option()
+    {
+        var cut = Render(VariableListbox());
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        var virtualizer = cut.FindComponent<BitBhVirtualizer<string>>().Instance;
+
+        await cut.InvokeAsync(() => virtualizer.SetRange(500, 512, 1));
+        var options = cut.FindAll("[role=option]");
+        Assert.AreEqual(12, options.Count);
+        Assert.AreEqual("501", options[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("500 512 1000 1", cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range"));
+
+        // A request made for a list since replaced is dropped.
+        await cut.InvokeAsync(() => virtualizer.SetRange(0, 10, 0));
+        Assert.AreEqual("501", cut.FindAll("[role=option]")[0].GetAttribute("aria-posinset"));
+
+        // End, with the window far from the end, highlights the last of the 1,000 - not rendered yet - and asks the
+        // runtime to reveal it (fully, once it has rendered).
+        var listbox = cut.Find("[role=listbox]").Id;
+        cut.Find("[role=combobox]").Press("End");
+        Assert.AreEqual(listbox + "-o999", cut.Find("[role=combobox]").GetAttribute("aria-activedescendant"));
+        Assert.IsEmpty(cut.FindAll($"[id='{listbox}-o999']"));
+        var reveal = JSInterop.Invocations.Last(i => i.Identifier == "dom.scrollToIndex");
+        Assert.AreEqual(listbox, reveal.Arguments[0]);
+        Assert.AreEqual(999, reveal.Arguments[1]);
+        Assert.AreEqual(48f, reveal.Arguments[2]);
+
+        // The window the scroll then asks for (one past the end is clamped) renders it.
+        await cut.InvokeAsync(() => virtualizer.SetRange(995, 2000, 1));
+        Assert.AreEqual("995 1000 1000 1", cut.Find("[data-bit-bh-spacer=before]").GetAttribute("data-bit-bh-range"));
+        Assert.AreEqual("Item 1000", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.IsTrue(ActiveOf(cut.Find("[role=combobox]"))!.HasAttribute("data-active"));
+    }
+
+    [TestMethod]
+    public void Options_of_one_height_keep_Blazors_virtualization()
+    {
+        var cut = Render(VariableListbox(variable: false));
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.IsEmpty(cut.FindAll("[data-bit-bh-spacer]"));
+        Assert.IsEmpty(JSInterop.Invocations.Where(i => i.Identifier == "dom.attachVirtualList"));
+        Assert.AreEqual("Item 1", Text(ActiveOf(cut.Find("[role=combobox]"))));
+    }
 }

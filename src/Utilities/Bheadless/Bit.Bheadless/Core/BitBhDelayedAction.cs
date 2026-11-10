@@ -2,14 +2,20 @@
 
 /// <summary>
 /// A cancellable, restartable delayed action (hover intent, close grace periods).
-/// The callback runs through the owner's dispatcher (<c>InvokeAsync</c>).
+/// The callback runs through the owner's dispatcher (<c>InvokeAsync</c>). The delays run on the
+/// <see cref="TimeProvider"/> registered in the services, else on the system clock.
 /// </summary>
 internal sealed class BitBhDelayedAction : IDisposable
 {
     private readonly Func<Func<Task>, Task> _dispatch;
+    private readonly TimeProvider _clock;
     private CancellationTokenSource? _cts;
 
-    public BitBhDelayedAction(Func<Func<Task>, Task> dispatch) => _dispatch = dispatch;
+    public BitBhDelayedAction(Func<Func<Task>, Task> dispatch, TimeProvider? clock = null)
+    {
+        _dispatch = dispatch;
+        _clock = clock ?? TimeProvider.System;
+    }
 
     /// <summary>Whether a run is scheduled.</summary>
     public bool IsPending => _cts is { IsCancellationRequested: false };
@@ -30,7 +36,7 @@ internal sealed class BitBhDelayedAction : IDisposable
     private async Task RunAsync(int delayMs, CancellationTokenSource cts, Func<Task> action)
     {
         // Wait off the dispatcher: a cancelled delay (every restart) must not queue work on the renderer.
-        await Task.Delay(delayMs, cts.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await Task.Delay(TimeSpan.FromMilliseconds(delayMs), _clock, cts.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (cts.IsCancellationRequested) return;
         await _dispatch(() =>
         {

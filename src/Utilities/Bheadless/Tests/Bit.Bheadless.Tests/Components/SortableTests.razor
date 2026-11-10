@@ -130,4 +130,368 @@
         cut.WaitForAssertion(() =>
             Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "sortable.detach" && Equals(i.Arguments[0], 5))));
     }
+
+    // ── Between lists (Group) ────────────────────────────────────────────────
+
+    public sealed record Board(List<string> Todo, List<string> Doing, List<string> Done);
+
+    private sealed class BoardOptions
+    {
+        // (the list that raised it, the event)
+        public Action<string, BitBhTransferEventArgs<string>>? OnTransfer { get; init; }
+        public Action<BitBhReorderEventArgs<string>>? OnReorder { get; init; }
+        public bool TodoGives { get; init; } = true;
+        public bool DoingTakes { get; init; } = true;
+        public Func<string, object, bool>? DoneAccepts { get; init; }
+        public string DoneGroup { get; init; } = "board";
+    }
+
+    private IRenderedComponent<Bunit.Rendering.ContainerFragment> RenderBoard(BoardOptions? options = null)
+    {
+        var o = options ?? new BoardOptions();
+        return Render(
+            @<Stateful T="Board" Initial="@(new Board(["Alpha", "Beta"], ["Gamma"], []))" Context="s">
+                <BitBhSortable TItem="string" Id="todo" Group="board" Items="s.Value!.Todo" AllowDragOut="o.TodoGives"
+                               ItemsChanged="items => s.Set(s.Value! with { Todo = items.ToList() })"
+                               OnTransfer='e => o.OnTransfer?.Invoke("todo", e)' OnReorder="e => o.OnReorder?.Invoke(e)"
+                               aria-label="To do" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
+                    @item.Item
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="doing" Group="board" Items="s.Value!.Doing" AllowDropIn="o.DoingTakes"
+                               ItemsChanged="items => s.Set(s.Value! with { Doing = items.ToList() })"
+                               OnTransfer='e => o.OnTransfer?.Invoke("doing", e)' ListLabel="In progress" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
+                    @item.Item
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="done" Group="@o.DoneGroup" Items="s.Value!.Done" CanAccept="o.DoneAccepts"
+                               ItemsChanged="items => s.Set(s.Value! with { Done = items.ToList() })"
+                               OnTransfer='e => o.OnTransfer?.Invoke("done", e)' aria-label="Done" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@($"Move {item.Item}")">⠿</BitBhSortableHandle>
+                    @item.Item
+                </BitBhSortable>
+            </Stateful>);
+    }
+
+    private static string[] Order(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string list)
+        => cut.FindAll($"#{list} > li").Select(li => li.TextContent.Replace("⠿", "").Trim()).ToArray();
+
+    private static Board Bound(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.FindComponent<Stateful<Board>>().Instance.Value!;
+
+    [TestMethod]
+    public void Handles_of_grouped_lists_are_described_by_instructions_that_name_the_keys_between_lists()
+    {
+        var cut = RenderBoard();
+        var handle = cut.Find("#todo-handle-0");
+        Assert.AreEqual("Move Alpha", handle.AccessibleName());
+        Assert.Contains("the left and right arrow keys to move it to another list", handle.AccessibleDescription());
+        // An empty list says so, for a drop zone's styles.
+        Assert.IsTrue(cut.Find("#done").HasAttribute("data-empty"));
+        Assert.IsFalse(cut.Find("#todo").HasAttribute("data-empty"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public async Task Keyboard_moves_an_item_to_the_next_lists_and_drops_it_in_an_empty_one()
+    {
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)) });
+
+        cut.Find("#todo-handle-0").Press(" ");
+        await Announcer.WaitForAsync("Picked up Alpha. Position 1 of 2.");
+
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to In progress, position 1 of 2.");
+        Assert.AreSequenceEqual(new[] { "Beta" }, Order(cut, "todo"));
+        Assert.AreSequenceEqual(new[] { "Alpha", "Gamma" }, Order(cut, "doing"));
+        Assert.AreEqual("doing-handle-0", this.LastFocusRequest());
+        Assert.AreEqual("true", cut.Find("#doing-handle-0").GetAttribute("aria-pressed"));
+        Assert.IsTrue(cut.Find("#doing").HasAttribute("data-dragging"));
+        cut.ShouldBeAccessible();
+
+        cut.Find("#doing-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to Done, position 1 of 1.");
+        Assert.AreSequenceEqual(new[] { "Gamma" }, Order(cut, "doing"));
+        Assert.AreSequenceEqual(new[] { "Alpha" }, Order(cut, "done"));
+        Assert.IsFalse(cut.Find("#done").HasAttribute("data-empty"));
+
+        // The last list: nothing further.
+        cut.Find("#done-handle-0").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "Alpha" }, Order(cut, "done"));
+
+        cut.Find("#done-handle-0").Press(" ");
+        await Announcer.WaitForAsync("Dropped Alpha in Done at position 1 of 1.");
+        var board = Bound(cut);
+        Assert.AreSequenceEqual(new[] { "Beta" }, board.Todo);
+        Assert.AreSequenceEqual(new[] { "Gamma" }, board.Doing);
+        Assert.AreSequenceEqual(new[] { "Alpha" }, board.Done);
+        Assert.AreEqual("false", cut.Find("#done-handle-0").GetAttribute("aria-pressed"));
+
+        // One event, raised by the list that received the item, with what a model needs to move it.
+        var transfer = Assert.ContainsSingle(transfers);
+        Assert.AreEqual("done", transfer.List);
+        Assert.AreEqual(new BitBhTransferEventArgs<string>("Alpha", "Alpha", "todo", 0, "done", 0), transfer.Args);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public async Task Escape_returns_an_item_moved_to_another_list_to_where_it_was()
+    {
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)) });
+
+        cut.Find("#todo-handle-1").Press(" ");
+        cut.Find("#todo-handle-1").Press("ArrowRight");
+        await Announcer.WaitForAsync("Beta moved to In progress, position 2 of 2.");
+        cut.Find("#doing-handle-1").Press("ArrowUp");
+        await Announcer.WaitForAsync("Beta moved to position 1 of 2.");
+        Assert.AreSequenceEqual(new[] { "Beta", "Gamma" }, Order(cut, "doing"));
+
+        cut.Find("#doing-handle-0").Press("Escape");
+        await Announcer.WaitForAsync("Moving cancelled. Beta returned to To do, position 2.");
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta" }, Order(cut, "todo"));
+        Assert.AreSequenceEqual(new[] { "Gamma" }, Order(cut, "doing"));
+        Assert.AreEqual("todo-handle-1", this.LastFocusRequest());
+        Assert.AreEqual(0, cut.FindComponent<Stateful<Board>>().Instance.Changes);
+        Assert.IsEmpty(transfers);
+        Assert.IsTrue(cut.FindAll("[data-bit-bh-sortable-handle]").All(h => h.GetAttribute("aria-pressed") == "false"));
+    }
+
+    [TestMethod]
+    public async Task Moving_back_to_its_own_list_and_dropping_reorders_it()
+    {
+        BitBhReorderEventArgs<string>? reorder = null;
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)), OnReorder = e => reorder = e });
+
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        cut.Find("#doing-handle-0").Press("ArrowDown");
+        cut.Find("#doing-handle-1").Press("ArrowLeft");
+        await Announcer.WaitForAsync("Alpha moved to To do, position 2 of 2.");
+        Assert.AreSequenceEqual(new[] { "Beta", "Alpha" }, Order(cut, "todo"));
+
+        cut.Find("#todo-handle-1").Press("Enter");
+        await Announcer.WaitForAsync("Dropped Alpha at position 2 of 2.");
+        Assert.AreSequenceEqual(new[] { "Beta", "Alpha" }, Bound(cut).Todo);
+        Assert.AreEqual(new BitBhReorderEventArgs<string>("Alpha", 0, 1), reorder);
+        Assert.IsEmpty(transfers);
+    }
+
+    [TestMethod]
+    public async Task Keys_from_the_list_the_item_left_still_drive_the_grab()
+    {
+        var cut = RenderBoard();
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+
+        // Until the focus reaches the item in its new list (a round trip later on Blazor Server), keys come from the
+        // handle it left - now Beta's - and every handle of the group owns the arrows meanwhile.
+        Assert.AreEqual("ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape Tab", cut.Find("#todo-handle-0").GetAttribute("data-bit-bh-keys"));
+        cut.Find("#todo-handle-0").Press("ArrowDown");
+        await Announcer.WaitForAsync("Alpha moved to position 2 of 2.");
+        cut.Find("#todo-handle-0").Press(" ");
+
+        Assert.AreSequenceEqual(new[] { "Beta" }, Bound(cut).Todo);
+        Assert.AreSequenceEqual(new[] { "Gamma", "Alpha" }, Bound(cut).Doing);
+        Assert.AreEqual("Space Enter", cut.Find("#todo-handle-0").GetAttribute("data-bit-bh-keys"));
+    }
+
+    [TestMethod]
+    public async Task The_keyboard_skips_a_list_that_takes_no_items()
+    {
+        var cut = RenderBoard(new() { DoingTakes = false });
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to Done, position 1 of 1.");
+        Assert.AreSequenceEqual(new[] { "Gamma" }, Order(cut, "doing"));
+    }
+
+    [TestMethod]
+    public async Task The_keyboard_skips_a_list_whose_predicate_refuses_the_item()
+    {
+        var cut = RenderBoard(new() { DoneAccepts = (item, source) => !Equals(source, "todo") });
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to In progress, position 1 of 2.");
+        cut.Find("#doing-handle-0").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "Alpha", "Gamma" }, Order(cut, "doing"));
+        Assert.IsEmpty(Order(cut, "done"));
+    }
+
+    [TestMethod]
+    public void Lists_of_other_groups_never_exchange_items()
+    {
+        var cut = RenderBoard(new() { DoneGroup = "elsewhere", DoingTakes = false });
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        cut.Find("#todo-handle-0").Press("ArrowLeft");
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta" }, Order(cut, "todo"));
+        Assert.IsEmpty(Order(cut, "done"));
+        Assert.AreEqual("true", cut.Find("#todo-handle-0").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void An_accept_only_list_never_lets_an_item_out_and_an_ungrouped_list_ignores_the_arrows_across_it()
+    {
+        var cut = RenderBoard(new() { TodoGives = false });
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta" }, Order(cut, "todo"));
+        Assert.AreEqual("true", cut.Find("#todo-handle-0").GetAttribute("aria-pressed"));
+
+        var list = RenderList();
+        list.FindAll("[data-bit-bh-sortable-handle]")[0].Press(" ");
+        list.FindAll("[data-bit-bh-sortable-handle]")[0].Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta", "Gamma" }, Order(list));
+        Assert.StartsWith("To pick up an item, press Space or Enter. While dragging, use the arrow keys", list.Find("[data-bit-bh-sortable-handle]").AccessibleDescription());
+    }
+
+    [TestMethod]
+    public async Task The_arrow_keys_across_a_list_follow_the_page_order_of_the_lists()
+    {
+        // The page's order (document order, reversed for horizontal keys in a right-to-left layout) wins over the order
+        // the lists were rendered in.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        module.Setup<string[]?>("sortable.order", _ => true).SetResult(["done", "todo", "doing"]);
+        var cut = RenderBoard();
+
+        cut.Find("#todo-handle-0").Press(" ");
+        cut.Find("#todo-handle-0").Press("ArrowLeft");
+        await Announcer.WaitForAsync("Alpha moved to Done, position 1 of 1.");
+        var order = JSInterop.Invocations.Last(i => i.Identifier == "sortable.order");
+        Assert.AreEqual("todo", order.Arguments[0]);
+        Assert.AreSequenceEqual(new[] { "todo", "doing", "done" }, (string[])order.Arguments[1]!);
+        Assert.AreEqual(true, order.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task A_pointer_drop_in_another_list_moves_the_item_there()
+    {
+        var transfers = new List<(string List, BitBhTransferEventArgs<string> Args)>();
+        var cut = RenderBoard(new() { OnTransfer = (list, e) => transfers.Add((list, e)), DoneAccepts = (item, _) => item != "Beta" });
+        var todo = cut.FindComponents<BitBhSortable<string>>()[0].Instance;
+
+        // The runtime learns which lists take the item when the drag starts.
+        var targets = await cut.InvokeAsync(() => todo.HandlePointerDragStartAsync(1));
+        Assert.AreSequenceEqual(new[] { "doing" }, targets!);
+        await cut.InvokeAsync(() => todo.HandlePointerDragEndAsync(1, 0, false, "doing"));
+        await Announcer.WaitForAsync("Dropped Beta in In progress at position 1 of 2.");
+        Assert.AreSequenceEqual(new[] { "Alpha" }, Bound(cut).Todo);
+        Assert.AreSequenceEqual(new[] { "Beta", "Gamma" }, Bound(cut).Doing);
+        Assert.AreEqual(("doing", new BitBhTransferEventArgs<string>("Beta", "Beta", "todo", 1, "doing", 0)), Assert.ContainsSingle(transfers));
+        Assert.AreEqual("doing-handle-0", this.LastFocusRequest());
+
+        // Into the empty list, past its end.
+        targets = await cut.InvokeAsync(() => todo.HandlePointerDragStartAsync(0));
+        Assert.AreSequenceEqual(new[] { "doing", "done" }, targets!);
+        await cut.InvokeAsync(() => todo.HandlePointerDragEndAsync(0, 3, false, "done"));
+        await Announcer.WaitForAsync("Dropped Alpha in Done at position 1 of 1.");
+        Assert.IsEmpty(Bound(cut).Todo);
+        Assert.AreSequenceEqual(new[] { "Alpha" }, Bound(cut).Done);
+        Assert.IsTrue(cut.Find("#todo").HasAttribute("data-empty"));
+    }
+
+    [TestMethod]
+    public async Task A_pointer_drop_in_a_list_that_refuses_the_item_is_cancelled()
+    {
+        var cut = RenderBoard(new() { DoneAccepts = (_, _) => false });
+        var todo = cut.FindComponents<BitBhSortable<string>>()[0].Instance;
+        await cut.InvokeAsync(() => todo.HandlePointerDragStartAsync(0));
+        await cut.InvokeAsync(() => todo.HandlePointerDragEndAsync(0, 0, false, "done"));
+        await Announcer.WaitForAsync("Reordering cancelled. Alpha returned to position 1.");
+        Assert.AreEqual(0, cut.FindComponent<Stateful<Board>>().Instance.Changes);
+    }
+
+    [TestMethod]
+    public async Task An_accept_only_list_names_no_drop_target_to_the_runtime()
+    {
+        // The runtime drags its items along its axis only, and learns of no other list.
+        var cut = RenderBoard(new() { TodoGives = false });
+        var todo = cut.FindComponents<BitBhSortable<string>>()[0].Instance;
+        Assert.IsNull(await cut.InvokeAsync(() => todo.HandlePointerDragStartAsync(0)));
+        await cut.InvokeAsync(() => todo.HandlePointerDragEndAsync(0, 0, false, "doing"));
+        Assert.AreEqual(0, cut.FindComponent<Stateful<Board>>().Instance.Changes);
+        var attach = JSInterop.Invocations.Where(i => i.Identifier == "sortable.attach").ToList();
+        Assert.IsTrue(attach.Any(i => Equals(i.Arguments[1], "doing") && Equals(((IDictionary<string, object?>)i.Arguments[2]!)["grouped"], true)));
+        Assert.IsTrue(attach.Any(i => Equals(i.Arguments[1], "todo") && Equals(((IDictionary<string, object?>)i.Arguments[2]!)["grouped"], false)));
+    }
+
+    [TestMethod]
+    public void A_list_that_already_has_the_items_key_takes_no_copy_of_it()
+    {
+        // Two items with one @key would break the list's rendering: the keyboard skips it.
+        var cut = Render(
+            @<div>
+                <BitBhSortable TItem="string" Id="left" Group="pair" Items="@(new List<string> { "Alpha" })" aria-label="Left" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="@(new List<string> { "Alpha" })" aria-label="Right" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+            </div>);
+
+        cut.Find("#left-handle-0").Press(" ");
+        cut.Find("#left-handle-0").Press("ArrowRight");
+        Assert.HasCount(1, cut.FindAll("#right > li"));
+        Assert.HasCount(1, cut.FindAll("#left > li"));
+        Assert.AreEqual("true", cut.Find("#left-handle-0").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public async Task Items_move_in_place_in_mutable_lists_without_bindings()
+    {
+        List<string> left = ["Alpha"], right = [];
+        var transfers = new List<BitBhTransferEventArgs<string>>();
+        var cut = Render(
+            @<div>
+                <BitBhSortable TItem="string" Id="left" Group="pair" Items="left" ListKey="1" aria-label="Left" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="right" ListKey="2" OnTransfer="e => transfers.Add(e)" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+            </div>);
+
+        cut.Find("#left-handle-0").Press(" ");
+        cut.Find("#left-handle-0").Press("ArrowRight");
+        // No label: the list is named by its place in the group.
+        await Announcer.WaitForAsync("Alpha moved to list 2, position 1 of 1.");
+        cut.Find("#right-handle-0").Press(" ");
+        Assert.IsEmpty(left);
+        Assert.AreSequenceEqual(new[] { "Alpha" }, right);
+
+        // The event names the lists by their ListKey.
+        var transfer = Assert.ContainsSingle(transfers);
+        Assert.AreEqual(1, transfer.SourceList);
+        Assert.AreEqual(2, transfer.TargetList);
+    }
+
+    [TestMethod]
+    public async Task A_list_that_cannot_be_changed_here_leaves_both_lists_to_OnTransfer()
+    {
+        // An array can't be changed in place and has no binding: moving its item into the other list would copy it.
+        string[] left = ["Alpha"];
+        List<string> right = [];
+        var transfers = new List<BitBhTransferEventArgs<string>>();
+        var cut = Render(
+            @<div>
+                <BitBhSortable TItem="string" Id="left" Group="pair" Items="left" aria-label="Left" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+                <BitBhSortable TItem="string" Id="right" Group="pair" Items="right" OnTransfer="e => transfers.Add(e)" aria-label="Right" Context="item">
+                    <BitBhSortableHandle TItem="string" aria-label="@item.Item">⠿</BitBhSortableHandle>
+                </BitBhSortable>
+            </div>);
+
+        cut.Find("#left-handle-0").Press(" ");
+        cut.Find("#left-handle-0").Press("ArrowRight");
+        await Announcer.WaitForAsync("Alpha moved to Right, position 1 of 1.");
+        cut.Find("#right-handle-0").Press(" ");
+
+        Assert.AreSequenceEqual(new[] { "Alpha" }, left);
+        Assert.IsEmpty(right);
+        Assert.AreEqual(new BitBhTransferEventArgs<string>("Alpha", "Alpha", "left", 0, "right", 0), Assert.ContainsSingle(transfers));
+    }
 }

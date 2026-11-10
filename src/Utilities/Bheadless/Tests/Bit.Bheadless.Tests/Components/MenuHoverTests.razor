@@ -1,0 +1,418 @@
+﻿@using Microsoft.Extensions.DependencyInjection
+@inherits TestBase
+@attribute [TestClass]
+
+@* BitBhMenu OpenOnHover: the pointer resting on the button opens the menu without moving the focus. What only a
+   browser shows - the focus staying put, the first key press moving it in, the pointer crossing the gap - is in
+   the E2E suite (PointerAndScrollTests); this covers the state, the ARIA and what the runtime is asked to do. *@
+
+@code {
+    private static readonly PointerEventArgs Mouse = new() { PointerType = "mouse" };
+
+    private string? _last;
+
+    // The hover delays run on this clock: nothing opens or closes until a test moves it past a delay.
+    private readonly ManualClock _clock = new();
+
+    public MenuHoverTests() => Services.AddSingleton<TimeProvider>(_clock);
+
+    private RenderFragment HoverMenu(int openDelay = 0, int closeDelay = 0) =>
+        @<BitBhMenu OpenOnHover="true" HoverOpenDelay="openDelay" HoverCloseDelay="closeDelay">
+            <BitBhMenuButton>Products</BitBhMenuButton>
+            <BitBhMenuItems>
+                <BitBhMenuItem OnClick="@(() => _last = "Analytics")">Analytics</BitBhMenuItem>
+                <BitBhMenuItem OnClick="@(() => _last = "Automation")">Automation</BitBhMenuItem>
+                <BitBhMenuSub OpenDelay="0" CloseDelay="0">
+                    <BitBhMenuSubTrigger>Integrations</BitBhMenuSubTrigger>
+                    <BitBhMenuSubContent>
+                        <BitBhMenuItem OnClick="@(() => _last = "Slack")">Slack</BitBhMenuItem>
+                        <BitBhMenuItem OnClick="@(() => _last = "GitHub")">GitHub</BitBhMenuItem>
+                    </BitBhMenuSubContent>
+                </BitBhMenuSub>
+            </BitBhMenuItems>
+        </BitBhMenu>;
+
+    private static string? Expanded(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut) => cut.Find("button").GetAttribute("aria-expanded");
+
+    private static void WaitOpen(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.WaitForAssertion(() => Assert.AreEqual("true", Expanded(cut)), TimeSpan.FromSeconds(3));
+
+    private static void WaitClosed(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.WaitForAssertion(() => Assert.AreEqual("false", Expanded(cut)), TimeSpan.FromSeconds(3));
+
+    /// <summary>The options the runtime was last asked to open the surface <paramref name="contentId"/> with.</summary>
+    private IDictionary<string, object?> OpenOptions(string? contentId)
+        => (IDictionary<string, object?>)JSInterop.Invocations
+            .Last(i => i.Identifier == "floating.open" && (string?)i.Arguments[1] == contentId).Arguments[2]!;
+
+    private static IDictionary<string, object?> Part(IDictionary<string, object?> options, string name)
+        => (IDictionary<string, object?>)options[name]!;
+
+    private int FocusRequests => JSInterop.Invocations.Count(i => i.Identifier == "focus.focus");
+
+    [TestMethod]
+    public void A_hover_opens_the_menu_after_the_delay_without_moving_the_focus()
+    {
+        var cut = Render(HoverMenu(openDelay: 60));
+        cut.Find("button").PointerEnter(Mouse);
+        _clock.Advance(59);
+        Assert.AreEqual("false", Expanded(cut));
+
+        _clock.Advance(1);
+        WaitOpen(cut);
+        var menu = cut.Find("[role=menu]");
+        Assert.AreEqual("open", menu.GetAttribute("data-state"));
+        Assert.AreEqual("open", cut.Find("button").GetAttribute("data-state"));
+        Assert.AreEqual(menu.Id, cut.Find("button").GetAttribute("aria-controls"));
+
+        // No focus moves now, and none is given back on close unless the focus went in; Escape closes it from anywhere.
+        cut.WaitForAssertion(() => Assert.IsNotNull(JSInterop.Invocations.LastOrDefault(i => i.Identifier == "floating.open" && (string?)i.Arguments[1] == menu.Id)));
+        var options = OpenOptions(menu.Id);
+        Assert.AreEqual("none", Part(options, "focus")["autoFocus"]);
+        Assert.IsTrue((bool)Part(options, "focus")["restoreIfEntered"]!);
+        Assert.IsTrue((bool)Part(options, "layer")["hover"]!);
+        Assert.AreEqual(0, FocusRequests);
+
+        // The runtime hands the panel the first key pressed with nothing focused.
+        Assert.IsTrue(menu.HasAttribute("data-bit-bh-key-entry"));
+        Assert.IsNull(ActiveOf(menu));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_click_opens_it_as_always()
+    {
+        var cut = Render(HoverMenu());
+        cut.Find("button").Click();
+        var menu = cut.Find("[role=menu]");
+        Assert.AreEqual("true", Expanded(cut));
+        cut.WaitForAssertion(() => Assert.AreEqual("container", Part(OpenOptions(menu.Id), "focus")["autoFocus"]));
+        Assert.IsFalse((bool)Part(OpenOptions(menu.Id), "focus")["restoreIfEntered"]!);
+        Assert.IsFalse((bool)Part(OpenOptions(menu.Id), "layer")["hover"]!);
+        Assert.IsFalse(cut.Find("[role=menu]").HasAttribute("data-bit-bh-key-entry"));
+
+        // Not opened by the pointer, it stays open when the pointer leaves.
+        cut.Find("button").PointerLeave(Mouse);
+        Assert.AreEqual("true", Expanded(cut));
+    }
+
+    [TestMethod]
+    public void A_pointer_that_leaves_before_the_delay_never_opens_it()
+    {
+        var cut = Render(HoverMenu(openDelay: 80));
+        cut.Find("button").PointerEnter(Mouse);
+        _clock.Advance(79);
+        cut.Find("button").PointerLeave(Mouse);
+        _clock.Advance(1000);
+        Assert.AreEqual("false", Expanded(cut));
+    }
+
+    [TestMethod]
+    public void Moving_from_the_button_into_the_menu_keeps_it_open_and_leaving_both_closes_it()
+    {
+        var cut = Render(HoverMenu(closeDelay: 150));
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+
+        // The close delay is the grace period that lets the pointer cross the gap to the menu.
+        cut.Find("button").PointerLeave(Mouse);
+        _clock.Advance(100);
+        cut.Find("[role=menu]").PointerEnter(Mouse);
+        _clock.Advance(1000);
+        Assert.AreEqual("true", Expanded(cut));
+
+        // Back on the button and out again: still the same menu.
+        cut.Find("[role=menu]").PointerLeave(Mouse);
+        _clock.Advance(100);
+        cut.Find("button").PointerEnter(Mouse);
+        _clock.Advance(1000);
+        Assert.AreEqual("true", Expanded(cut));
+
+        cut.Find("button").PointerLeave(Mouse);
+        _clock.Advance(149);
+        Assert.AreEqual("true", Expanded(cut), "The menu closed before its close delay.");
+        _clock.Advance(1);
+        WaitClosed(cut);
+        Assert.AreEqual("closed", cut.Find("[role=menu]").GetAttribute("data-state"));
+        Assert.AreEqual(0, FocusRequests);
+    }
+
+    [TestMethod]
+    public void Hovering_its_items_highlights_them_without_focusing_the_menu()
+    {
+        var cut = Render(HoverMenu());
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+
+        cut.FindAll("[role=menuitem]")[1].PointerEnter(Mouse);
+        var menu = cut.Find("[role=menu]");
+        Assert.AreEqual("Automation", Text(ActiveOf(menu)));
+        Assert.IsTrue(cut.FindAll("[role=menuitem]")[1].HasAttribute("data-highlighted"));
+        Assert.AreEqual(0, FocusRequests);
+        cut.ShouldBeAccessible();
+
+        // A click on an item still runs it and closes the menu.
+        cut.FindAll("[role=menuitem]")[1].Click();
+        Assert.AreEqual("Automation", _last);
+        Assert.AreEqual("false", Expanded(cut));
+        Assert.AreEqual(0, FocusRequests);
+    }
+
+    [TestMethod]
+    public void A_click_on_the_button_of_a_hover_opened_menu_keeps_it_open_and_gives_it_the_focus()
+    {
+        var cut = Render(HoverMenu());
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+
+        cut.Find("button").Click();
+        var menu = cut.Find("[role=menu]");
+        Assert.AreEqual("true", Expanded(cut));
+        Assert.AreEqual(menu.Id, this.LastFocusRequest());
+        Assert.IsNull(ActiveOf(menu));
+        Assert.IsFalse(menu.HasAttribute("data-bit-bh-key-entry"));
+
+        // Taken over, it no longer closes when the pointer leaves; the next click closes it.
+        cut.Find("button").PointerLeave(Mouse);
+        Assert.AreEqual("true", Expanded(cut));
+        cut.Find("button").Click();
+        Assert.AreEqual("false", Expanded(cut));
+    }
+
+    [TestMethod]
+    [DataRow("ArrowDown", "Analytics")]
+    [DataRow("Enter", "Analytics")]
+    [DataRow(" ", "Analytics")]
+    [DataRow("ArrowUp", "Integrations")]
+    public void A_key_on_the_button_moves_the_focus_into_a_hover_opened_menu(string key, string highlighted)
+    {
+        var cut = Render(HoverMenu());
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+
+        cut.Find("button").Press(key);
+        var menu = cut.Find("[role=menu]");
+        Assert.AreEqual("true", Expanded(cut), "The key closed the menu instead of entering it.");
+        Assert.AreEqual(menu.Id, this.LastFocusRequest());
+        Assert.AreEqual(highlighted, Text(ActiveOf(menu)));
+        cut.ShouldBeAccessible();
+
+        // The keyboard has it now: the pointer leaving does not close it.
+        cut.Find("button").PointerLeave(Mouse);
+        Assert.AreEqual("true", Expanded(cut));
+    }
+
+    [TestMethod]
+    public void The_focus_moving_into_the_panel_takes_the_menu_over()
+    {
+        // The runtime moves the focus into the panel and replays the key there when it is pressed with nothing focused.
+        var cut = Render(HoverMenu());
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+
+        cut.Find("[role=menu]").Focus();
+        cut.Find("[role=menu]").Press("ArrowDown");
+        Assert.AreEqual("Analytics", Text(ActiveOf(cut.Find("[role=menu]"))));
+        Assert.IsFalse(cut.Find("[role=menu]").HasAttribute("data-bit-bh-key-entry"));
+
+        cut.Find("button").PointerLeave(Mouse);
+        Assert.AreEqual("true", Expanded(cut));
+        cut.Find("[role=menu]").Press("Escape");
+        Assert.AreEqual("false", Expanded(cut));
+    }
+
+    [TestMethod]
+    [DataRow("touch")]
+    [DataRow("pen")]
+    public void Touch_and_pen_never_open_it_on_hover(string pointerType)
+    {
+        var cut = Render(HoverMenu(openDelay: 100));
+        cut.Find("button").PointerEnter(new PointerEventArgs { PointerType = pointerType });
+        _clock.Advance(1000);
+        Assert.AreEqual("false", Expanded(cut));
+
+        // Their press is a click.
+        cut.Find("button").Click();
+        Assert.AreEqual("true", Expanded(cut));
+    }
+
+    [TestMethod]
+    public async Task A_disabled_menu_never_opens_on_hover()
+    {
+        var cut = Render(
+            @<BitBhMenu OpenOnHover="true" HoverOpenDelay="0" Disabled="true">
+                <BitBhMenuButton>Products</BitBhMenuButton>
+                <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+            </BitBhMenu>);
+        cut.Find("button").PointerEnter(Mouse);
+        await Task.Delay(100);
+        Assert.AreEqual("false", Expanded(cut));
+    }
+
+    [TestMethod]
+    public void Without_OpenOnHover_hovering_the_button_does_nothing()
+    {
+        var cut = Render(
+            @<BitBhMenu HoverOpenDelay="0">
+                <BitBhMenuButton>Products</BitBhMenuButton>
+                <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+            </BitBhMenu>);
+        Assert.IsFalse(cut.Find("button").Attributes.Any(a => a.Name.Contains("onpointerenter", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(cut.Find("[role=menu]").Attributes.Any(a => a.Name.Contains("onpointerleave", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void A_submenu_keeps_a_hover_opened_menu_open_and_is_a_hover_layer_too()
+    {
+        var cut = Render(HoverMenu(closeDelay: 150));
+        cut.Find("button").PointerEnter(Mouse);
+        WaitOpen(cut);
+        cut.Find("button").PointerLeave(Mouse);
+        cut.FindAll("[role=menu]")[0].PointerEnter(Mouse);
+
+        var trigger = cut.Find("[aria-haspopup=menu][role=menuitem]");
+        trigger.PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("[aria-haspopup=menu][role=menuitem]").GetAttribute("aria-expanded")));
+        var sub = cut.FindAll("[role=menu]")[1];
+        cut.WaitForAssertion(() => Assert.IsTrue((bool)Part(OpenOptions(sub.Id), "layer")["hover"]!));
+        Assert.AreEqual("none", Part(OpenOptions(sub.Id), "focus")["autoFocus"]);
+        // Closing it must not give the focus to the parent menu (which would take the menu over) unless it went in.
+        Assert.IsTrue((bool)Part(OpenOptions(sub.Id), "focus")["restoreIfEntered"]!);
+
+        // Into a submenu portalled out of the panel: the panel's leave, then the submenu's enter.
+        cut.FindAll("[role=menu]")[0].PointerLeave(Mouse);
+        cut.FindAll("[role=menu]")[1].PointerEnter(Mouse);
+        cut.FindAll("[role=menu]")[1].QuerySelector("[role=menuitem]")!.PointerEnter(Mouse);
+        _clock.Advance(1000);
+        Assert.AreEqual("true", Expanded(cut));
+        Assert.AreEqual(0, FocusRequests);
+        cut.ShouldBeAccessible();
+
+        cut.FindAll("[role=menu]")[1].PointerLeave(Mouse);
+        _clock.Advance(149);
+        Assert.AreEqual("true", Expanded(cut), "The menu closed before its close delay.");
+        _clock.Advance(1);
+        WaitClosed(cut);
+        Assert.AreEqual(0, FocusRequests);
+    }
+
+    [TestMethod]
+    public void In_a_menubar_a_hover_opened_menu_hands_over_to_the_next_without_moving_the_focus()
+    {
+        var cut = Render(
+            @<BitBhMenubar aria-label="Site">
+                <BitBhMenu OpenOnHover="true" HoverOpenDelay="0" HoverCloseDelay="10000">
+                    <BitBhMenuButton>Products</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <BitBhMenu OpenOnHover="true" HoverOpenDelay="10000" HoverCloseDelay="0">
+                    <BitBhMenuButton>Resources</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Blog</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>);
+        AngleSharp.Dom.IElement Trigger(int i) => cut.FindAll("[role=menubar] > div > [aria-haspopup=menu]")[i];
+
+        Trigger(0).PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(0).GetAttribute("aria-expanded")));
+
+        // Once one is open the next opens at once, whatever its delay, and the same way: no focus, no tab stop moved.
+        Trigger(0).PointerLeave(Mouse);
+        Trigger(1).PointerEnter(Mouse);
+        Assert.AreEqual("false", Trigger(0).GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Trigger(1).GetAttribute("aria-expanded"));
+        var menu = cut.FindAll("[role=menu]")[1];
+        cut.WaitForAssertion(() => Assert.AreEqual("none", Part(OpenOptions(menu.Id), "focus")["autoFocus"]));
+        Assert.AreEqual(0, FocusRequests);
+        Assert.AreEqual("0", Trigger(0).GetAttribute("tabindex"));
+        Assert.AreEqual("-1", Trigger(1).GetAttribute("tabindex"));
+        cut.ShouldBeAccessible();
+
+        Trigger(1).PointerLeave(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("false", Trigger(1).GetAttribute("aria-expanded")));
+    }
+
+    [TestMethod]
+    public void A_hover_opened_menu_hands_over_without_the_focus_to_a_menu_that_does_not_open_on_hover()
+    {
+        // The focus is elsewhere (a text field) while the pointer crosses the bar: a hover opened the first menu, so the
+        // next one opens the same way, OpenOnHover or not - the focus stays where it is.
+        var cut = Render(
+            @<BitBhMenubar aria-label="Site">
+                <BitBhMenu OpenOnHover="true" HoverOpenDelay="0" HoverCloseDelay="10000">
+                    <BitBhMenuButton>Products</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <BitBhMenu HoverCloseDelay="0">
+                    <BitBhMenuButton>Resources</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Blog</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>);
+        AngleSharp.Dom.IElement Trigger(int i) => cut.FindAll("[role=menubar] > div > [aria-haspopup=menu]")[i];
+
+        Trigger(0).PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(0).GetAttribute("aria-expanded")));
+        Trigger(0).PointerLeave(Mouse);
+        Trigger(1).PointerEnter(Mouse);
+
+        Assert.AreEqual("false", Trigger(0).GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Trigger(1).GetAttribute("aria-expanded"));
+        var menu = cut.FindAll("[role=menu]")[1];
+        cut.WaitForAssertion(() => Assert.AreEqual("none", Part(OpenOptions(menu.Id), "focus")["autoFocus"]));
+        Assert.AreEqual(0, FocusRequests);
+        Assert.AreEqual("0", Trigger(0).GetAttribute("tabindex"));
+
+        // Opened by the hover, it closes when the pointer leaves it, as the menu it took over from would have.
+        Trigger(1).PointerLeave(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("false", Trigger(1).GetAttribute("aria-expanded")));
+    }
+
+    [TestMethod]
+    public void A_touch_on_another_menubar_trigger_does_not_switch_to_it_before_its_click()
+    {
+        // A touch enters the trigger right before its click: switching on it would open the menu and the click shut it.
+        var cut = Render(
+            @<BitBhMenubar aria-label="App">
+                <BitBhMenu>
+                    <BitBhMenuButton>File</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>New</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <BitBhMenu>
+                    <BitBhMenuButton>Edit</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Undo</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>);
+        AngleSharp.Dom.IElement Trigger(int i) => cut.FindAll("[role=menubar] > div > [aria-haspopup=menu]")[i];
+
+        Trigger(0).Click();
+        Trigger(1).PointerEnter(new PointerEventArgs { PointerType = "touch" });
+        Assert.AreEqual("false", Trigger(1).GetAttribute("aria-expanded"));
+        Trigger(1).Click();
+        Assert.AreEqual("true", Trigger(1).GetAttribute("aria-expanded"));
+        Assert.AreEqual("false", Trigger(0).GetAttribute("aria-expanded"));
+
+        // A mouse switches as before.
+        Trigger(0).PointerEnter(Mouse);
+        Assert.AreEqual("true", Trigger(0).GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_controlled_menu_opened_by_hover_reports_it_and_closes_from_its_parent()
+    {
+        var cut = Render(
+            @<Stateful T="bool" Context="s">
+                <BitBhMenu Open="s.Value" OpenChanged="s.Set" OpenOnHover="true" HoverOpenDelay="0">
+                    <BitBhMenuButton>Products</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Analytics</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <button id="close" @onclick="() => s.Set(false)">Close</button>
+            </Stateful>);
+
+        cut.Find("[aria-haspopup=menu]").PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("[aria-haspopup=menu]").GetAttribute("aria-expanded")));
+        Assert.IsTrue(cut.Find("[role=menu]").HasAttribute("data-bit-bh-key-entry"));
+
+        cut.Find("#close").Click();
+        Assert.AreEqual("false", cut.Find("[aria-haspopup=menu]").GetAttribute("aria-expanded"));
+        Assert.IsFalse(cut.Find("[role=menu]").HasAttribute("data-bit-bh-key-entry"));
+    }
+}

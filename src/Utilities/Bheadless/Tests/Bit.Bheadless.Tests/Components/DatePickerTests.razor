@@ -38,6 +38,29 @@
             </BitBhField>);
 
     [TestMethod]
+    public void A_range_calendar_in_a_date_picker_keeps_its_own_range()
+    {
+        // The calendar selects something else than the picker: it keeps it itself, as outside a picker.
+        BitBhDateRange? range = null;
+        DateOnly? value = Nov8;
+        var cut = Render(
+            @<BitBhDatePicker Culture="En" DefaultValue="Nov8" ValueChanged="v => value = v" aria-label="Departure">
+                <BitBhDatePickerTrigger class="trigger">▾</BitBhDatePickerTrigger>
+                <BitBhDatePickerContent>
+                    <BitBhCalendar DefaultFocusedDate="Nov8" OnRangeChange="r => range = r"><BitBhCalendarGrid /></BitBhCalendar>
+                </BitBhDatePickerContent>
+            </BitBhDatePicker>);
+
+        cut.Find(".trigger").Click();
+        Cell(cut, "2026-11-10").Click();
+        Cell(cut, "2026-11-12").Click();
+
+        Assert.AreEqual(new BitBhDateRange(new DateOnly(2026, 11, 10), new DateOnly(2026, 11, 12)), range);
+        Assert.IsTrue(Cell(cut, "2026-11-11").HasAttribute("data-selected"));
+        Assert.AreEqual(Nov8, value);
+    }
+
+    [TestMethod]
     public void Closed_picker_is_a_labelled_group_with_a_choose_date_button()
     {
         var cut = Labelled(@<BitBhDatePicker Culture="En" DefaultValue="Nov8">@Parts()</BitBhDatePicker>);

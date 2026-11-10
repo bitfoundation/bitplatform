@@ -62,7 +62,7 @@ public class BitBhHoverCard : BitBhComponentBase, IDisposable
 
     private bool IsOpen => IsProvided(nameof(Open)) ? Open : _open;
 
-    private BitBhDelayedAction Timer => _timer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction Timer => _timer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
     protected override void OnInitialized() => _open = DefaultOpen;
 

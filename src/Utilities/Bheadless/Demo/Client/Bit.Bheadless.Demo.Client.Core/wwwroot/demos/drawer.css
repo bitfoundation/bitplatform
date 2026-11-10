@@ -74,6 +74,51 @@
 .drawer-panel[data-side="left"][data-state="closed"]   { transform: translateX(-100%); }
 .drawer-panel[data-side="right"][data-state="closed"]  { transform: translateX(100%); }
 
+/* ---- Snap points: a tall panel the runtime rests at the active one ------ */
+.drawer-panel-snap[data-side="bottom"] {
+    height: calc(100dvh - 2rem);
+    max-height: none;
+    transform: translateY(calc(var(--bit-bh-drawer-snap-point-offset-y, 0px) + var(--bit-bh-drawer-swipe-movement-y, 0px)));
+}
+
+.drawer-panel-snap[data-side="left"],
+.drawer-panel-snap[data-side="right"] {
+    width: min(36rem, calc(100vw - 2rem));
+    transform: translateX(calc(var(--bit-bh-drawer-snap-point-offset-x, 0px) + var(--bit-bh-drawer-swipe-movement-x, 0px)));
+}
+
+.drawer-panel-snap[data-side="right"] { padding-left: 2.25rem; }
+.drawer-panel-snap[data-side="left"]  { padding-right: 2.25rem; }
+
+/* --bit-bh-drawer-fade follows FadeFromIndex (here: dimmed at every snap point). */
+.drawer-backdrop-snap { opacity: var(--bit-bh-drawer-fade, 1); }
+
+/* With snap points the handle is a slider: a target big enough to press, and a focus ring. */
+.drawer-handle[role="slider"] {
+    box-sizing: content-box;
+    padding: 0.6rem 1rem;
+    margin: -0.95rem 0 -0.35rem;
+    background-clip: content-box;
+}
+
+.drawer-handle[role="slider"][data-side="left"],
+.drawer-handle[role="slider"][data-side="right"] {
+    position: absolute;
+    top: 50%;
+    width: 0.35rem;
+    height: 3rem;
+    padding: 1rem 0.6rem;
+    margin: -2.5rem 0 0;
+}
+
+.drawer-handle[role="slider"][data-side="right"] { left: 0; }
+.drawer-handle[role="slider"][data-side="left"]  { right: 0; }
+
+.drawer-handle[role="slider"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; }
+
+/* A list that scrolls is a tab stop of its own, so the keyboard can scroll it. */
+.drawer-body[tabindex]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
 /* ---- Nested drawers: the one behind steps back ------------------------- */
 .drawer-panel[data-nested-drawer-open] {
     filter: brightness(0.85);

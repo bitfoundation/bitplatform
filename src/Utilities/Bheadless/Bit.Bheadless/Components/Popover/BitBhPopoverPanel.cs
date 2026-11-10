@@ -83,6 +83,8 @@ public class BitBhPopoverPanel : BitBhFloatingContentBase
                 Trap = modal,
                 AutoFocus = AutoFocus && !hover ? "first" : "none",
                 RestoreFocus = true,
+                // A panel a hover opened took no focus: closing it pulls the focus to the button only if it went in.
+                RestoreFocusIfEntered = hover,
                 ReturnFocusId = PopoverContext?.ButtonId,
             },
         };

@@ -147,6 +147,82 @@
     }
 
     [TestMethod]
+    public void Keys_pressed_before_a_focus_move_lands_go_to_the_date_it_is_moving_to()
+    {
+        // On Blazor Server the focus move an arrow key asks for is a round trip: the keys pressed meanwhile still
+        // come from the cell left behind.
+        DateOnly? value = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date" ValueChanged="v => value = v">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Press("ArrowDown");
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-16", Focused(cut));
+
+        // The overtaken move landing late does not pull the focused date back.
+        Cell(cut, "2026-11-15").Focus();
+        Assert.AreEqual("2026-11-16", Focused(cut));
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Assert.AreEqual(new DateOnly(2026, 11, 16), value);
+
+        // Once the focus has landed, a cell the reader moves to is theirs again.
+        Cell(cut, "2026-11-16").Focus();
+        Cell(cut, "2026-11-20").Focus();
+        Assert.AreEqual("2026-11-20", Focused(cut));
+    }
+
+    [TestMethod]
+    public void A_focus_back_on_the_cell_a_key_left_is_the_readers_while_the_move_is_on_its_way()
+    {
+        // Only a cell the calendar asked to focus, and moved on from since, sends an echo: the cell the key was pressed
+        // on gets the focus back from the reader (a click), even before the move has landed.
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-09", Focused(cut));
+        Cell(cut, "2026-11-08").Focus();
+        Assert.AreEqual("2026-11-08", Focused(cut));
+
+        // Its keys are its own again, not redirected to the 9th.
+        Cell(cut, "2026-11-08").Press("ArrowDown");
+        Assert.AreEqual("2026-11-15", Focused(cut));
+    }
+
+    [TestMethod]
+    public void A_calendar_beside_the_fields_control_leaves_the_label_to_it()
+    {
+        // Two controls in one field: the first keeps the label, and the second going away takes only its own
+        // registration with it.
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                <BitBhField>
+                    <BitBhLabel>Day</BitBhLabel>
+                    <BitBhDateField Culture="En" />
+                    @if (s.Value)
+                    {
+                        <BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Day">@Parts()</BitBhCalendar>
+                    }
+                </BitBhField>
+                <button id="hide" @onclick="() => s.Set(false)">Hide</button>
+            </Stateful>);
+        var month = cut.Find("[role=spinbutton][aria-label='month']").Id;
+        int MonthRequests() => JSInterop.Invocations.Count(i => i.Identifier == "focus.focus" && (string?)i.Arguments[0] == month);
+        int FocusRequests() => JSInterop.Invocations.Count(i => i.Identifier == "focus.focus");
+
+        // One focus request, the field's: the calendar's callback is not run as well.
+        var before = FocusRequests();
+        cut.Find("label").Click();
+        Assert.AreEqual(1, MonthRequests());
+        Assert.AreEqual(before + 1, FocusRequests());
+
+        cut.Find("#hide").Click();
+        Assert.IsEmpty(cut.FindAll("[role=grid]"));
+        Assert.IsFalse(cut.Find("label").HasAttribute("for"));
+        cut.Find("label").Click();
+        Assert.AreEqual(2, MonthRequests());
+    }
+
+    [TestMethod]
     public void Enter_space_and_click_select_a_date_and_announce_it()
     {
         DateOnly? value = null;

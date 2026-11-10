@@ -31,6 +31,9 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     private BitBhDelayedAction? _closeTimer;
     private readonly string _baseId = BitBhId.New("bit-bh-sub");
 
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
     [CascadingParameter]
     private BitBhMenuLevel? ParentLevel { get; set; }
 
@@ -116,6 +119,8 @@ public class BitBhMenuSub : ComponentBase, IDisposable
         if (!_open) return;
         _open = false;
         if (ParentLevel?.OpenSub == this) ParentLevel.OpenSub = null;
+        // Hidden under the pointer, the panel may get no pointerleave: a menu that opens on hover stops counting it.
+        if (ParentLevel?.Root is { TracksHover: true } root) root.PanelHoverChanged(ContentId, inside: false);
         await OnOpenChange.InvokeAsync(false);
         Refresh();
         if (focusParent && ParentLevel is not null)
@@ -129,7 +134,7 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     {
         _closeTimer?.Cancel();
         if (_open) return;
-        _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), Clock);
         _openTimer.Schedule(OpenDelay, () => OpenAsync(BitBhMenuFocus.None));
     }
 
@@ -137,7 +142,7 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     {
         _openTimer?.Cancel();
         if (!_open) return;
-        _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), Clock);
         _closeTimer.Schedule(CloseDelay, () => CloseAsync(focusParent: false));
     }
 
@@ -146,6 +151,9 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     internal void CancelOpen() => _openTimer?.Cancel();
 
     internal BitBhMenuSubContent? Content { get; set; }
+
+    // The clock the hover delays run on, as BitBhComponentBase's components have it.
+    private TimeProvider? Clock => Services.GetService(typeof(TimeProvider)) as TimeProvider;
 
     private void Refresh()
     {
@@ -164,5 +172,8 @@ public class BitBhMenuSub : ComponentBase, IDisposable
         _openTimer?.Dispose();
         _closeTimer?.Dispose();
         if (ParentLevel?.OpenSub == this) ParentLevel.OpenSub = null;
+        // Removed while open (the application's state): its panel goes without a pointerleave - as when it closes, a menu
+        // that opens on hover stops counting it.
+        if (_open && ParentLevel?.Root is { TracksHover: true } root) root.PanelHoverChanged(ContentId, inside: false);
     }
 }

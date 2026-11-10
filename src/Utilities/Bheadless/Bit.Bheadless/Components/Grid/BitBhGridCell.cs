@@ -120,7 +120,7 @@ public class BitBhGridCell : BitBhComponentBase, IBitBhCollectionItem, IDisposab
         return attrs;
     }
 
-    private void HandleFocus() => ParentRow?.Grid?.SetFocus(this);
+    private void HandleFocus() => ParentRow?.Grid?.FocusReceived(this);
 
     private bool Owns(string? ownerId) => ownerId == ItemId;
 

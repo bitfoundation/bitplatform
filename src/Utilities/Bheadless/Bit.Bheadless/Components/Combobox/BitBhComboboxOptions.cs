@@ -11,7 +11,7 @@ namespace Bit.Bheadless;
 /// <para>Options come from <see cref="BitBhComboboxOption{TValue}"/> children, or from
 /// <see cref="Items"/> + <see cref="ItemTemplate"/> (optionally <see cref="Virtualize"/>d —
 /// give the panel a fixed height with <c>overflow:auto</c> and options a fixed
-/// <see cref="ItemSize"/>).</para>
+/// <see cref="ItemSize"/>, or set <see cref="VariableItemSize"/> for options of any height).</para>
 /// </summary>
 /// <typeparam name="TValue">The option value type.</typeparam>
 public class BitBhComboboxOptions<TValue> : BitBhFloatingContentBase
@@ -45,9 +45,26 @@ public class BitBhComboboxOptions<TValue> : BitBhFloatingContentBase
     [Parameter]
     public bool Virtualize { get; set; }
 
-    /// <summary>Height (px) of each option when virtualized. Default: 36.</summary>
+    /// <summary>
+    /// Height (px) of each option when virtualized - with <see cref="VariableItemSize"/>, the height assumed for an
+    /// option until it has rendered and been measured. Default: 36.
+    /// </summary>
     [Parameter]
     public float ItemSize { get; set; } = 36;
+
+    /// <summary>
+    /// Whether virtualized options differ in height (wrapping text, a second line, a group of details). They are
+    /// measured as they render and whenever they resize, the scroll position stays where it is as the measurements
+    /// arrive, and an option the keyboard moves to (Home, End, Page Up, Page Down) scrolls fully into view;
+    /// <see cref="ItemSize"/> is then only the estimate for the options not rendered yet. Default: false - every
+    /// option is exactly <see cref="ItemSize"/> tall.
+    /// </summary>
+    /// <remarks>
+    /// In strict CSP mode (<see cref="BitBhOptions.StrictCsp"/>) virtualized options are always measured this way:
+    /// Blazor's <c>Virtualize</c>, which the fixed-height lists use otherwise, sizes its spacers with style attributes.
+    /// </remarks>
+    [Parameter]
+    public bool VariableItemSize { get; set; }
 
     /// <summary>Extra options rendered above / below the viewport when virtualized. Default: 5.</summary>
     [Parameter]
@@ -142,7 +159,18 @@ public class BitBhComboboxOptions<TValue> : BitBhFloatingContentBase
             return;
         }
 
-        if (Virtualize)
+        // Strict CSP mode too: Virtualize sizes its spacers with style attributes, the virtualizer through the CSSOM.
+        if (Virtualize && (VariableItemSize || Options.StrictCsp))
+        {
+            builder.OpenComponent<BitBhVirtualizer<TValue>>(7);
+            builder.AddComponentParameter(8, nameof(BitBhVirtualizer<TValue>.Items), Items);
+            builder.AddComponentParameter(9, nameof(BitBhVirtualizer<TValue>.ItemSize), ItemSize);
+            builder.AddComponentParameter(10, nameof(BitBhVirtualizer<TValue>.OverscanCount), OverscanCount);
+            builder.AddComponentParameter(11, nameof(BitBhVirtualizer<TValue>.SpacerElement), Tag.Equals("ul", StringComparison.OrdinalIgnoreCase) ? "li" : "div");
+            builder.AddComponentParameter(12, nameof(BitBhVirtualizer<TValue>.ItemContent), (RenderFragment<BitBhIndexed<TValue>>)(entry => b => RenderDataOption(b, entry.Index, entry.Value)));
+            builder.CloseComponent();
+        }
+        else if (Virtualize)
         {
             builder.OpenComponent<Virtualize<BitBhIndexed<TValue>>>(1);
             builder.AddComponentParameter(2, nameof(Virtualize<BitBhIndexed<TValue>>.Items), new BitBhIndexedList<TValue>(Items));

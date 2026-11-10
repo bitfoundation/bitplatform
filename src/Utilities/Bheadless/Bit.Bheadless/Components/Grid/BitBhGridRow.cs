@@ -129,6 +129,8 @@ public class BitBhGridRow : BitBhComponentBase, IBitBhCollectionItem, IDisposabl
         if (GridContext is not null)
         {
             attrs["data-bit-bh-item"] = GridContext.Rows.Key;
+            // The key its cells carry, for the runtime's arrow-key navigation.
+            attrs["data-bit-bh-cells"] = _cells.Key;
             if (GridContext.IsTreeGrid)
             {
                 if (Level is { } level)

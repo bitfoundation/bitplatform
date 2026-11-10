@@ -73,7 +73,8 @@ public class BitBhAspectRatio : BitBhComponentBase
         // ── Outer wrapper: reserves space at the requested ratio ──────────────
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "data-radix-aspect-ratio-wrapper", "");
-        builder.AddAttribute(2, "style",
+        if (Options.StrictCsp) RequestStrictStyles();
+        builder.AddAttribute(2, StyleAttribute,
             $"position:relative;width:100%;padding-bottom:{PaddingBottom}");
 
         // ── Inner element: fills the reserved space, hosts the content ────────
@@ -99,7 +100,14 @@ public class BitBhAspectRatio : BitBhComponentBase
     {
         var attrs = GetFinalAttributes();
 
-        if (attrs.TryGetValue("style", out var existing)
+        if (Options.StrictCsp)
+        {
+            // Applied through the CSSOM after the consumer's style attribute, so the positioning wins here too.
+            var strict = BitBhAttributeUtilities.StrictStyleAttribute;
+            attrs[strict] = attrs.TryGetValue(strict, out var own) ? BitBhAttributeUtilities.JoinStyles(own?.ToString(), InnerPositionStyle) : InnerPositionStyle;
+            RequestStrictStyles();
+        }
+        else if (attrs.TryGetValue("style", out var existing)
             && existing?.ToString() is { Length: > 0 } userStyle
             && !string.IsNullOrWhiteSpace(userStyle))
         {

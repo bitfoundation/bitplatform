@@ -13,7 +13,9 @@ namespace Bit.Bheadless;
 /// neighbour when a menu is already open), Home / End jump to the ends, Enter /
 /// Space / ArrowDown open the focused menu, ArrowRight / ArrowLeft inside an open
 /// menu move to the adjacent one (unless the item opens a submenu).</para>
-/// <para><b>Pointer:</b> once a menu is open, hovering another trigger switches to it.</para>
+/// <para><b>Pointer:</b> once a menu is open, hovering another trigger switches to it. Menus with
+/// <see cref="BitBhMenu.OpenOnHover"/> open on hover even when none is (menubar-style navigation); one the
+/// pointer opened hands over to the next without moving the focus.</para>
 ///
 /// <code>
 /// &lt;BitBhMenubar&gt;
@@ -117,9 +119,10 @@ public sealed class BitBhMenubarContext
 
     private BitBhMenu? OpenMenu => _menus.FirstOrDefault(m => m.IsOpen);
 
-    internal async Task OnMenuOpenedAsync(BitBhMenu menu)
+    internal async Task OnMenuOpenedAsync(BitBhMenu menu, bool byHover = false)
     {
-        SetTabStop(menu);
+        // A hover leaves the focus - and so the bar's tab stop - where it is.
+        if (!byHover) SetTabStop(menu);
         foreach (var other in _menus.Where(m => m != menu && m.IsOpen).ToArray())
             await other.CloseAsync();
     }
@@ -128,7 +131,10 @@ public sealed class BitBhMenubarContext
     {
         if (OpenMenu is { } open && open != menu && !menu.IsDisabled)
         {
-            await menu.OpenAsync(BitBhMenuFocus.Container);
+            // A menu the pointer opened hands over to the next one the same way, whether that one opens on hover or
+            // not: the focus stays where it is (a hover never moves it), and the next one closes when the pointer leaves.
+            if (open.OpenedByHover) await menu.OpenByHoverAsync();
+            else await menu.OpenAsync(BitBhMenuFocus.Container);
         }
     }
 

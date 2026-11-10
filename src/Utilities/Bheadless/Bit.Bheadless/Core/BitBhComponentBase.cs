@@ -41,10 +41,27 @@ public abstract class BitBhComponentBase : ComponentBase
     private string? _componentId;
     private BitBhInterop? _interop;
     private BitBhStrings? _strings;
+    private BitBhOptions? _registeredOptions;
     private readonly HashSet<string> _providedParameters = new(StringComparer.Ordinal);
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>Settings cascaded to this part of the page, which take precedence over the registered ones.</summary>
+    [CascadingParameter] private BitBhOptions? CascadingOptions { get; set; }
+
+    /// <summary>
+    /// The library-wide settings in effect here: a cascaded <see cref="BitBhOptions"/>, else the registered one,
+    /// else the defaults.
+    /// </summary>
+    protected BitBhOptions Options => CascadingOptions ?? (_registeredOptions ??= Services.GetService<BitBhOptions>() ?? BitBhOptions.Defaults);
+
+    /// <summary>
+    /// The attribute a style the component sets itself goes in: <c>style</c>, or <c>data-bit-bh-style</c> when
+    /// <see cref="BitBhOptions.StrictCsp"/> is on (the JS runtime applies it through the CSSOM). Only needed for an
+    /// element that does not get its attributes from <see cref="GetFinalAttributes"/>, which does this itself.
+    /// </summary>
+    protected string StyleAttribute => Options.StrictCsp ? BitBhAttributeUtilities.StrictStyleAttribute : "style";
 
     /// <summary>
     /// The JS runtime wrapper. Uses the registered <see cref="BitBhInterop"/> service
@@ -162,8 +179,13 @@ public abstract class BitBhComponentBase : ComponentBase
     /// <see cref="AdditionalAttributes"/>: <c>class</c> and <c>style</c>
     /// are concatenated; all other user-supplied values take precedence.
     /// </summary>
+    /// <remarks>
+    /// With <see cref="BitBhOptions.StrictCsp"/> on, the internal <c>style</c> is rendered as
+    /// <c>data-bit-bh-style</c> instead (see <see cref="StyleAttribute"/>), and the consumer's <c>style</c> stays a
+    /// <c>style</c> attribute of its own.
+    /// </remarks>
     protected Dictionary<string, object> GetFinalAttributes()
-        => BitBhAttributeUtilities.Merge(BuildComponentAttributes(), AdditionalAttributes);
+        => MergeAttributes(BuildComponentAttributes());
 
     /// <summary>
     /// Merges <paramref name="internalAttributes"/> with
@@ -171,7 +193,47 @@ public abstract class BitBhComponentBase : ComponentBase
     /// combined with <see cref="BuildComponentAttributes"/> for new components.
     /// </summary>
     protected Dictionary<string, object> MergeAttributes(Dictionary<string, object> internalAttributes)
-        => BitBhAttributeUtilities.Merge(internalAttributes, AdditionalAttributes);
+    {
+        if (Options.StrictCsp && internalAttributes.ContainsKey("style"))
+        {
+            // A copy: the caller's dictionary (one a derived component keeps and reuses) keeps its style.
+            internalAttributes = new Dictionary<string, object>(internalAttributes, internalAttributes.Comparer);
+            internalAttributes.Remove("style", out var style);
+            if (style?.ToString() is { Length: > 0 } declarations)
+            {
+                internalAttributes[BitBhAttributeUtilities.StrictStyleAttribute] =
+                    internalAttributes.TryGetValue(BitBhAttributeUtilities.StrictStyleAttribute, out var own)
+                        ? BitBhAttributeUtilities.JoinStyles(own?.ToString(), declarations)
+                        : declarations;
+                RequestStrictStyles();
+            }
+        }
+        return BitBhAttributeUtilities.Merge(internalAttributes, AdditionalAttributes);
+    }
+
+    /// <summary>
+    /// Makes sure the JS runtime applies the <c>data-bit-bh-style</c> of this page (see <see cref="BitBhOptions.StrictCsp"/>).
+    /// Cheap after the first call of a scope; does nothing while prerendering, where the runtime picks the attribute up
+    /// from the markup itself.
+    /// </summary>
+    protected void RequestStrictStyles()
+    {
+        var interop = Interop;
+        if (interop.StrictStylesRequested is false && IsInteractiveRenderer()) interop.RequestStrictStyles();
+    }
+
+    /// <summary>Whether this render runs in the browser. A renderer that does not say (a test renderer) counts as one.</summary>
+    private bool IsInteractiveRenderer()
+    {
+        try
+        {
+            return RendererInfo.IsInteractive;
+        }
+        catch (Exception)
+        {
+            return true;
+        }
+    }
 
     // ── DOM event handlers ───────────────────────────────────────────────────
 

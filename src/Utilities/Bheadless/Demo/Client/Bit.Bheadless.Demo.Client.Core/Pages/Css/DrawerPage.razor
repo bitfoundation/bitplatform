@@ -107,6 +107,41 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Snap points" Code="@_snapCode" Css="@_css">
+    <Description>
+        <code>SnapPoints</code> let the drawer rest part open - here a 160px peek, half the screen and all of it (Vaul-style
+        fractions of the viewport, or pixels). Drag it and it settles on the nearest one; flick it and it moves on to the next; drag
+        it below the smallest and it closes. The runtime rests the panel through <code>--bit-bh-drawer-snap-point-offset-y</code>
+        (<code>-x</code> for a side panel), added to the swipe movement, and every part gets <code>data-snap-point</code>, which
+        <code>@@bind-ActiveSnapPoint</code> follows. Without a pointer, the <code>BitBhDrawerHandle</code> is a slider - arrow
+        keys, Home / End, Enter to cycle - and Tab into the part of the panel a snap point hides opens it far enough to show it.
+    </Description>
+    <LiveContent>
+        <div class="demo-row">
+            <button type="button" class="btn" @onclick="() => OpenSnap(BitBhDrawerSide.Bottom)">Bottom sheet</button>
+            <button type="button" class="btn" @onclick="() => OpenSnap(BitBhDrawerSide.End)">Side panel</button>
+        </div>
+        <BitBhDrawer @bind-Open="snapOpen" Side="snapSide" SnapPoints="SnapPointsFor(snapSide)" @bind-ActiveSnapPoint="snapPoint">
+            <BitBhDrawerBackdrop class="drawer-backdrop drawer-backdrop-snap" />
+            <BitBhDrawerPanel class="drawer-panel drawer-panel-snap">
+                <BitBhDrawerHandle class="drawer-handle" />
+                <BitBhDrawerTitle class="drawer-title">Trip details</BitBhDrawerTitle>
+                <BitBhDrawerDescription class="drawer-description">Drag or flick the handle, or focus it and use the arrow keys.</BitBhDrawerDescription>
+                <ul class="drawer-body" tabindex="0" aria-label="Stops">
+                    @for (var i = 1; i <= 12; i++)
+                    {
+                        <li>Stop @i</li>
+                    }
+                </ul>
+                <div class="drawer-actions">
+                    <BitBhDrawerClose class="btn btn-primary">Done</BitBhDrawerClose>
+                </div>
+            </BitBhDrawerPanel>
+        </BitBhDrawer>
+        <span class="demo-output">Snap point: <strong>@(snapPoint?.ToString() ?? "none")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     private bool sideOpen;
     private BitBhDrawerSide side = BitBhDrawerSide.Start;
@@ -116,6 +151,22 @@
     {
         side = value;
         sideOpen = true;
+    }
+
+    private bool snapOpen;
+    private BitBhDrawerSide snapSide = BitBhDrawerSide.Bottom;
+    private BitBhDrawerSnapPoint? snapPoint;
+
+    private static readonly BitBhDrawerSnapPoint[] _sheetPoints = ["160px", 0.5, 1];
+    private static readonly BitBhDrawerSnapPoint[] _sidePoints = ["160px", "360px", 1];
+
+    private static BitBhDrawerSnapPoint[] SnapPointsFor(BitBhDrawerSide value) => value == BitBhDrawerSide.Bottom ? _sheetPoints : _sidePoints;
+
+    private void OpenSnap(BitBhDrawerSide value)
+    {
+        snapSide = value;
+        snapPoint = SnapPointsFor(value)[0];
+        snapOpen = true;
     }
 
     private const string _sheetCode = """
@@ -206,6 +257,49 @@
 }
 """;
 
+    private const string _snapCode = """
+<button type="button" class="btn" @onclick="() => OpenSnap(BitBhDrawerSide.Bottom)">Bottom sheet</button>
+<button type="button" class="btn" @onclick="() => OpenSnap(BitBhDrawerSide.End)">Side panel</button>
+
+<BitBhDrawer @bind-Open="snapOpen" Side="snapSide" SnapPoints="SnapPointsFor(snapSide)" @bind-ActiveSnapPoint="snapPoint">
+    <BitBhDrawerBackdrop class="drawer-backdrop drawer-backdrop-snap" />
+    <BitBhDrawerPanel class="drawer-panel drawer-panel-snap">
+        <BitBhDrawerHandle class="drawer-handle" />
+        <BitBhDrawerTitle class="drawer-title">Trip details</BitBhDrawerTitle>
+        <BitBhDrawerDescription class="drawer-description">Drag or flick the handle, or focus it and use the arrow keys.</BitBhDrawerDescription>
+        <ul class="drawer-body" tabindex="0" aria-label="Stops">
+            @for (var i = 1; i <= 12; i++)
+            {
+                <li>Stop @i</li>
+            }
+        </ul>
+        <div class="drawer-actions">
+            <BitBhDrawerClose class="btn btn-primary">Done</BitBhDrawerClose>
+        </div>
+    </BitBhDrawerPanel>
+</BitBhDrawer>
+
+<span>Snap point: @(snapPoint?.ToString() ?? "none")</span>
+
+@code {
+    private bool snapOpen;
+    private BitBhDrawerSide snapSide = BitBhDrawerSide.Bottom;
+    private BitBhDrawerSnapPoint? snapPoint;
+
+    private static readonly BitBhDrawerSnapPoint[] _sheetPoints = ["160px", 0.5, 1];
+    private static readonly BitBhDrawerSnapPoint[] _sidePoints = ["160px", "360px", 1];
+
+    private static BitBhDrawerSnapPoint[] SnapPointsFor(BitBhDrawerSide value) => value == BitBhDrawerSide.Bottom ? _sheetPoints : _sidePoints;
+
+    private void OpenSnap(BitBhDrawerSide value)
+    {
+        snapSide = value;
+        snapPoint = SnapPointsFor(value)[0];
+        snapOpen = true;
+    }
+}
+""";
+
     // ── CSS (mirrors wwwroot/demos/drawer.css) ──────────────────────────────────
 
     private const string _css = """
@@ -284,6 +378,51 @@
 .drawer-panel[data-side="top"][data-state="closed"]    { transform: translateY(-100%); }
 .drawer-panel[data-side="left"][data-state="closed"]   { transform: translateX(-100%); }
 .drawer-panel[data-side="right"][data-state="closed"]  { transform: translateX(100%); }
+
+/* ---- Snap points: a tall panel the runtime rests at the active one ------ */
+.drawer-panel-snap[data-side="bottom"] {
+    height: calc(100dvh - 2rem);
+    max-height: none;
+    transform: translateY(calc(var(--bit-bh-drawer-snap-point-offset-y, 0px) + var(--bit-bh-drawer-swipe-movement-y, 0px)));
+}
+
+.drawer-panel-snap[data-side="left"],
+.drawer-panel-snap[data-side="right"] {
+    width: min(36rem, calc(100vw - 2rem));
+    transform: translateX(calc(var(--bit-bh-drawer-snap-point-offset-x, 0px) + var(--bit-bh-drawer-swipe-movement-x, 0px)));
+}
+
+.drawer-panel-snap[data-side="right"] { padding-left: 2.25rem; }
+.drawer-panel-snap[data-side="left"]  { padding-right: 2.25rem; }
+
+/* --bit-bh-drawer-fade follows FadeFromIndex (here: dimmed at every snap point). */
+.drawer-backdrop-snap { opacity: var(--bit-bh-drawer-fade, 1); }
+
+/* With snap points the handle is a slider: a target big enough to press, and a focus ring. */
+.drawer-handle[role="slider"] {
+    box-sizing: content-box;
+    padding: 0.6rem 1rem;
+    margin: -0.95rem 0 -0.35rem;
+    background-clip: content-box;
+}
+
+.drawer-handle[role="slider"][data-side="left"],
+.drawer-handle[role="slider"][data-side="right"] {
+    position: absolute;
+    top: 50%;
+    width: 0.35rem;
+    height: 3rem;
+    padding: 1rem 0.6rem;
+    margin: -2.5rem 0 0;
+}
+
+.drawer-handle[role="slider"][data-side="right"] { left: 0; }
+.drawer-handle[role="slider"][data-side="left"]  { right: 0; }
+
+.drawer-handle[role="slider"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; }
+
+/* A list that scrolls is a tab stop of its own, so the keyboard can scroll it. */
+.drawer-body[tabindex]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ---- Nested drawers: the one behind steps back ------------------------- */
 .drawer-panel[data-nested-drawer-open] {

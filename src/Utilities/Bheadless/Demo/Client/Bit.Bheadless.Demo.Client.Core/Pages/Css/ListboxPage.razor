@@ -332,6 +332,43 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Options of different heights (virtualized)"
+           Code="@_variableCode"
+           Css="@_variableCss">
+    <Description>
+        Virtualized options don't have to share a height. With <code>VariableItemSize="true"</code> the panel
+        measures every option as it renders - and again whenever one resizes - so text can wrap and an option can
+        carry details. <code>ItemSize</code> is then only the estimate for the options not rendered yet (56px
+        here); the scroll position stays put as measurements replace estimates, and Home, End, Page Up and Page
+        Down scroll the highlighted option fully into view. The runtime sizes the spacers through the CSSOM, so
+        nothing renders an inline <code>style</code> attribute.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="Issue" @bind-Value="issue" class="listbox-anchored">
+            <BitBhListboxButton aria-label="Issue" TValue="Issue" Placeholder="Pick one of 5,000 issues…"
+                             class="listbox-button listbox-button-auto" />
+            <BitBhListboxOptions TValue="Issue"
+                              Items="@Issues"
+                              ItemText="@(i => $"{i.Title} (#{i.Number})")"
+                              Virtualize="true"
+                              VariableItemSize="true"
+                              ItemSize="56"
+                              Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                              class="listbox-variable">
+                <ItemTemplate Context="o">
+                    <span class="listbox-variable-title">#@(o.Value.Number) · @o.Value.Title</span>
+                    @if (o.Value.Details.Length > 0)
+                    {
+                        <span class="listbox-variable-details">@o.Value.Details</span>
+                    }
+                </ItemTemplate>
+            </BitBhListboxOptions>
+        </BitBhListbox>
+
+        <span class="demo-output">Selected: <strong>@(issue is null ? "(none)" : $"#{issue.Number}")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     private static readonly string[] Sizes = ["Extra small", "Small", "Medium", "Large", "Extra large"];
     private string? size = "Large";
@@ -378,6 +415,27 @@
         string[] animals = ["Badger", "Crane", "Dingo", "Falcon", "Gecko", "Heron", "Ibis", "Jaguar", "Koala", "Lynx"];
         return Enumerable.Range(0, 10_000)
             .Select(i => $"{adjectives[i / 1000]} {animals[i / 100 % 10]} {i % 100 + 1}")
+            .ToArray();
+    }
+
+    // 5,000 issues whose details run from nothing to a few lines: options of different heights.
+    private sealed record Issue(int Number, string Title, string Details);
+    private static readonly Issue[] Issues = BuildIssues();
+    private Issue? issue;
+
+    private static Issue[] BuildIssues()
+    {
+        string[] areas = ["Build", "Docs", "Forms", "Grid", "Menus", "Overlays", "Routing", "Theming"];
+        string[] problems = ["fails on CI", "flickers", "is slow", "loses focus", "misaligns", "needs a test", "throws", "wraps badly"];
+        string[] details =
+        [
+            "",
+            "Seen on narrow screens only.",
+            "Happens after the second render, not the first. A reload hides it until the next navigation.",
+            "Reported by three teams. Open the page, resize the window, then press Tab twice: the focus ring lands on the wrong element and stays there until the page is scrolled.",
+        ];
+        return Enumerable.Range(1, 5_000)
+            .Select(n => new Issue(n, $"{areas[n % 8]} {problems[n / 8 % 8]}", details[n * 7 % 4]))
             .ToArray();
     }
 
@@ -511,6 +569,74 @@
 .listbox-virtual > [role="option"][data-selected] { font-weight: 600; }
 
 .listbox-virtual-check { width: 1rem; color: #2563eb; font-weight: 700; }
+""";
+
+    private const string _variableCode = """
+<BitBhListbox TValue="Issue" @bind-Value="issue" class="listbox-anchored">
+    <BitBhListboxButton aria-label="Issue" TValue="Issue" Placeholder="Pick one of 5,000 issues…"
+                     class="listbox-button listbox-button-auto" />
+
+    @* Measured as they render: ItemSize is the estimate for the rest *@
+    <BitBhListboxOptions TValue="Issue"
+                      Items="@Issues"
+                      ItemText="@(i => $"{i.Title} (#{i.Number})")"
+                      Virtualize="true"
+                      VariableItemSize="true"
+                      ItemSize="56"
+                      Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                      class="listbox-variable">
+        <ItemTemplate Context="o">
+            <span class="listbox-variable-title">#@(o.Value.Number) · @o.Value.Title</span>
+            @if (o.Value.Details.Length > 0)
+            {
+                <span class="listbox-variable-details">@o.Value.Details</span>
+            }
+        </ItemTemplate>
+    </BitBhListboxOptions>
+</BitBhListbox>
+
+@code {
+    private sealed record Issue(int Number, string Title, string Details);
+    private static readonly Issue[] Issues = …; // 5,000 issues, details from none to a few lines
+    private Issue? issue;
+}
+""";
+
+    private const string _variableCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.listbox-anchored { display: inline-block; min-width: 14rem; }
+
+/* The scroll container: a fixed height, positioned by Anchor */
+.listbox-variable {
+    z-index: 9999;
+    width: 20rem;
+    height: 18rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.listbox-variable[hidden] { display: none; }
+
+/* No height: every option is as tall as its content */
+.listbox-variable > [role="option"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.listbox-variable > [role="option"][data-active] { background: #eff6ff; }
+.listbox-variable > [role="option"][data-selected] .listbox-variable-title { color: #1d4ed8; }
+
+.listbox-variable-title   { font-weight: 600; }
+.listbox-variable-details { color: #52525b; font-size: 0.8rem; line-height: 1.35; }
 """;
 
     private const string _basicCode = """

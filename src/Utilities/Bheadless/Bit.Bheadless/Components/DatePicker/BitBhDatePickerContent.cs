@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Bit.Bheadless;
 
 /// <summary>
-/// The calendar popover of a <see cref="BitBhDatePicker"/>: a non-modal <c>role="dialog"</c> named by the field's label
-/// (else "Choose date"), anchored below the <see cref="BitBhDatePickerGroup"/> (<c>"bottom start"</c> unless
+/// The calendar popover of a <see cref="BitBhDatePicker"/>, <see cref="BitBhDateTimePicker"/> or
+/// <see cref="BitBhDateRangePicker"/>: a non-modal <c>role="dialog"</c> named by the field's label (else "Choose date",
+/// or "Choose date range"), anchored below the <see cref="BitBhDatePickerGroup"/> (<c>"bottom start"</c> unless
 /// <see cref="BitBhFloatingContentBase.Anchor"/> says otherwise). Put a <see cref="BitBhCalendar"/> in it.
 ///
 /// <para><b>Behaviour:</b> on open the focus moves to the calendar's focused date; Escape, a press outside and the focus
@@ -37,22 +38,22 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
 
     protected override BitBhAnchorOptions? EffectiveAnchor => Anchor ?? DefaultAnchor;
 
-    private string ContentId => Picker?.Owner.ContentId ?? ComponentId;
+    private string ContentId => Picker?.ContentId ?? ComponentId;
 
     protected override BitBhFloatingRequest CreateFloatingRequest()
     {
-        var owner = Picker?.Owner;
+        var picker = Picker;
         var layer = new BitBhLayerOptions
         {
             FocusOutside = true,
             ParentHandle = ParentLayerHandle,
         };
-        layer.BranchIds.Add(owner?.TriggerId);
+        layer.BranchIds.Add(picker?.TriggerId);
 
         return new BitBhFloatingRequest
         {
             ContentId = ContentId,
-            ReferenceId = owner is null ? null : owner.HasGroup ? owner.GroupId : owner.TriggerId,
+            ReferenceId = picker is null ? null : picker.HasGroup ? picker.GroupId : picker.TriggerId,
             Anchor = EffectiveAnchor,
             ArrowId = ArrowId,
             Portal = EffectivePortal,
@@ -63,7 +64,7 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
                 // The calendar marks its focused date data-bit-bh-autofocus: "first" lands on it.
                 AutoFocus = "first",
                 RestoreFocus = true,
-                ReturnFocusId = owner?.TriggerId,
+                ReturnFocusId = picker?.TriggerId,
             },
         };
     }
@@ -100,7 +101,7 @@ public class BitBhDatePickerContent : BitBhFloatingContentBase
         if (!named)
         {
             if (Picker?.Owner.LabelledBy is { } label) attrs["aria-labelledby"] = label;
-            else attrs["aria-label"] = Strings.ChooseDate;
+            else attrs["aria-label"] = Picker?.ChooseLabel(Strings) ?? Strings.ChooseDate;
         }
         SetDataState(attrs, IsOpen);
         return attrs;

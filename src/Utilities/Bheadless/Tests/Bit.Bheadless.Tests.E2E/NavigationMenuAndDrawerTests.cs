@@ -135,4 +135,194 @@ public sealed class NavigationMenuAndDrawerTests : DemoTest
         await Expect(panel).ToBeHiddenAsync();
         await Expect(trigger).ToBeFocusedAsync();
     }
+
+    // ── Drawer snap points ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// How much of the panel shows: a bottom sheet's from the bottom of the screen; a side panel's from where it rests when
+    /// fully open (its width less how far it is moved towards its edge) - the demo's scroll lock keeps a scrollbar's gutter.
+    /// </summary>
+    private static Task<double> ShownAsync(ILocator panel) => panel.EvaluateAsync<double>(
+        """
+        el => {
+          const r = el.getBoundingClientRect();
+          const moved = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+          switch (el.dataset.side) {
+            case 'bottom': return innerHeight - r.top;
+            case 'top': return r.bottom;
+            default: return r.width - Math.abs(moved.m41);
+          }
+        }
+        """);
+
+    /// <summary>axe-core finds nothing in the open drawer, which is portalled out of the page's content.</summary>
+    private static async Task ExpectDrawerAccessibleAsync(IPage page)
+    {
+        await ExpectAccessibleAsync(page);
+        var violations = await Axe.ViolationsAsync(page, "[role=dialog]");
+        Assert.IsEmpty(violations, $"axe-core found {violations.Length} violation(s) in the drawer on {page.Url}:{Environment.NewLine}{string.Join(Environment.NewLine + Environment.NewLine, violations)}");
+    }
+
+    private static Task<double> ShowsAboutAsync(ILocator panel, double size, string expectation)
+        => PollAsync(() => ShownAsync(panel), shown => Math.Abs(shown - size) < 2, $"{expectation} ({size}px) showing");
+
+    private static async Task<(double X, double Y)> CenterAsync(ILocator element)
+    {
+        var box = (await element.BoundingBoxAsync())!;
+        return (box.X + box.Width / 2, box.Y + box.Height / 2);
+    }
+
+    /// <summary>A drag in frames apart, held still before it is let go: never a flick.</summary>
+    private static async Task DragAsync(IPage page, ILocator from, double dx, double dy)
+    {
+        var (x, y) = await CenterAsync(from);
+        await page.Mouse.MoveAsync((float)x, (float)y);
+        await page.Mouse.DownAsync();
+        for (var i = 1; i <= 10; i++)
+        {
+            await page.Mouse.MoveAsync((float)(x + dx * i / 10), (float)(y + dy * i / 10));
+            await page.WaitForTimeoutAsync(20);
+        }
+        await page.WaitForTimeoutAsync(250);
+        await page.Mouse.UpAsync();
+    }
+
+    /// <summary>A short, quick move let go at once.</summary>
+    private static async Task FlickAsync(IPage page, ILocator from, double dx, double dy)
+    {
+        var (x, y) = await CenterAsync(from);
+        await page.Mouse.MoveAsync((float)x, (float)y);
+        await page.Mouse.DownAsync();
+        for (var i = 1; i <= 3; i++)
+        {
+            await page.Mouse.MoveAsync((float)(x + dx * i / 3), (float)(y + dy * i / 3));
+            await page.WaitForTimeoutAsync(16);
+        }
+        await page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task Drawer_snap_points_follow_drags_flicks_the_keyboard_and_the_focus()
+    {
+        var page = await OpenDemoAsync("/drawer");
+        var trigger = page.Locator($"{Content} button", new PageLocatorOptions { HasTextRegex = new Regex("^Bottom sheet$") });
+        var output = page.Locator($"{Content} .demo-output", new PageLocatorOptions { HasTextString = "Snap point:" });
+        var viewport = page.ViewportSize!.Height;
+        await trigger.ClickAsync();
+
+        // It opens at the smallest snap point, a 160px peek of a sheet as tall as the screen.
+        var panel = page.Locator("[role=dialog]");
+        var handle = panel.Locator("[role=slider]");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await Expect(handle).ToHaveAttributeAsync("aria-valuenow", "1");
+        await Expect(handle).ToHaveAttributeAsync("aria-valuetext", "1 of 3");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await ExpectDrawerAccessibleAsync(page);
+
+        // A drag settles on the nearest snap point: 20px short of half the screen is half the screen.
+        await DragAsync(page, handle, 0, -(viewport / 2.0 - 160 - 20));
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "0.5");
+        await Expect(output).ToHaveTextAsync("Snap point: 0.5");
+        await ShowsAboutAsync(panel, viewport / 2.0, "half the screen");
+
+        // The handle is a slider: the arrow pointing away from the edge opens the sheet further, Enter cycles.
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("End");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "1");
+        await Expect(handle).ToHaveAttributeAsync("aria-valuetext", "3 of 3");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "0.5");
+        await page.Keyboard.PressAsync("Home");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "0.5");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "1");
+        await ExpectDrawerAccessibleAsync(page);
+
+        // Tab into what the peek hides: the sheet opens far enough to show it.
+        await page.Keyboard.PressAsync("Home");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(panel).Not.ToHaveAttributeAsync("data-snap-point", "160px");
+        await PollAsync(() => page.EvaluateAsync<bool>(
+            "() => { const r = document.activeElement.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; }"),
+            true, "the focused element on screen");
+        await Expect(output).Not.ToHaveTextAsync("Snap point: 160px");
+
+        // A flick moves on past the snap point a drag of that length would settle back on.
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("Home");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await FlickAsync(page, handle, 0, -90);
+        await Expect(panel).Not.ToHaveAttributeAsync("data-snap-point", "160px");
+
+        // Dragged below the smallest snap point, past a quarter of it, the sheet closes.
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("Home");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await DragAsync(page, handle, 0, 100);
+        await Expect(panel).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task Drawer_snap_points_work_from_the_side_too()
+    {
+        var page = await OpenDemoAsync("/drawer");
+        var trigger = page.Locator($"{Content} button", new PageLocatorOptions { HasTextRegex = new Regex("^Side panel$") });
+        await trigger.ClickAsync();
+
+        var panel = page.Locator("[role=dialog]");
+        var handle = panel.Locator("[role=slider]");
+        await Expect(panel).ToHaveAttributeAsync("data-side", "right");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await Expect(handle).ToHaveAttributeAsync("aria-orientation", "horizontal");
+        await ShowsAboutAsync(panel, 160, "the peek");
+
+        // Left - away from the right edge - opens it further; a drag to the left settles on the nearest snap point.
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "360px");
+        await ShowsAboutAsync(panel, 360, "the second snap point");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await DragAsync(page, handle, -180, 0);
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "360px");
+        await ShowsAboutAsync(panel, 360, "the second snap point");
+        await ExpectDrawerAccessibleAsync(page);
+
+        // Escape still closes it from any snap point.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(panel).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task Drawer_snap_points_in_the_Tailwind_demo()
+    {
+        var page = await OpenDemoAsync("/tw/drawer");
+        var trigger = page.Locator($"{Content} button", new PageLocatorOptions { HasTextRegex = new Regex("^Open trip$") });
+        await trigger.ClickAsync();
+
+        var panel = page.Locator("[role=dialog]");
+        var handle = panel.Locator("[role=slider]");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "160px");
+        await ShowsAboutAsync(panel, 160, "the peek");
+        await ExpectDrawerAccessibleAsync(page);
+
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "0.5");
+        await ShowsAboutAsync(panel, page.ViewportSize!.Height / 2.0, "half the screen");
+        await page.Keyboard.PressAsync("End");
+        await Expect(panel).ToHaveAttributeAsync("data-snap-point", "1");
+        await ExpectDrawerAccessibleAsync(page);
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(panel).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
 }

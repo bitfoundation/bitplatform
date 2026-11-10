@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Bit.Bheadless;
 
 /// <summary>
-/// Renders every segment of the enclosing <see cref="BitBhDateField"/>, <see cref="BitBhTimeField"/> or
-/// <see cref="BitBhDatePicker"/>, separators included, in the order the culture writes them. It renders no element of its
+/// Renders every segment of the enclosing <see cref="BitBhDateField"/>, <see cref="BitBhTimeField"/>,
+/// <see cref="BitBhDateTimeField"/>, picker or <see cref="BitBhDateRangePickerInput"/>, separators included, in the order the culture writes them. It renders no element of its
 /// own. Give it content to render the segments yourself (to style them); its context is the <see cref="BitBhDateSegment"/>:
 /// <code>
 /// &lt;BitBhDateFieldSegments&gt;

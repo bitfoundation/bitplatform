@@ -84,6 +84,20 @@ public sealed class BitBhGridContext
             foreach (var c in row.Cells) c.Refresh();
     }
 
+    /// <summary>The cell the browser's focus last went to (its focus event), if any.</summary>
+    internal BitBhGridCell? DomFocusedCell { get; private set; }
+
+    /// <summary>How many focus events the cells have had: a key handler tells from it whether the focus moved meanwhile.</summary>
+    internal int FocusEvents { get; private set; }
+
+    /// <summary>A cell got the browser's focus: it holds the tab stop.</summary>
+    internal void FocusReceived(BitBhGridCell cell)
+    {
+        DomFocusedCell = cell;
+        FocusEvents++;
+        SetFocus(cell);
+    }
+
     internal void SetFocus(BitBhGridCell cell)
     {
         if (ReferenceEquals(FocusedCell, cell)) return;

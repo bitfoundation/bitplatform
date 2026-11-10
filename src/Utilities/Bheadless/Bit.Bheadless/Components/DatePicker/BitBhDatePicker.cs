@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Bheadless;
 
@@ -36,11 +35,9 @@ namespace Bit.Bheadless;
 /// <para><b>Styling hooks:</b> <c>data-state="open|closed"</c>, <c>data-disabled</c>, <c>data-readonly</c>,
 /// <c>data-invalid</c>, <c>data-required</c>, <c>data-focused</c> on the root and the group.</para>
 /// </summary>
-public class BitBhDatePicker : BitBhDateField
+public class BitBhDatePicker : BitBhDateField, IBitBhDatePickerOwner
 {
     private BitBhDatePickerContext? _picker;
-    private bool _open;
-    private bool _hasGroup;
 
     /// <summary>Whether the calendar popover is open. Supplying it makes it controlled (use <c>@bind-Open</c>).</summary>
     [Parameter]
@@ -73,7 +70,7 @@ public class BitBhDatePicker : BitBhDateField
     public bool CloseOnSelect { get; set; } = true;
 
     /// <summary>Whether the calendar popover is open.</summary>
-    public bool IsOpen => IsProvided(nameof(Open)) ? Open : _open;
+    public bool IsOpen => PickerContext.IsOpen;
 
     private protected override bool IsGroupRoot => false;
 
@@ -81,27 +78,14 @@ public class BitBhDatePicker : BitBhDateField
 
     internal BitBhDatePickerContext PickerContext => _picker ??= new BitBhDatePickerContext(this);
 
-    internal string GroupId => $"{ComponentId}-group";
-    internal string TriggerId => $"{ComponentId}-trigger";
-    internal string ContentId => $"{ComponentId}-content";
-    internal bool HasGroup => _hasGroup;
-    internal string? LabelledBy => Field?.LabelledBy;
-
     protected override void OnInitialized()
     {
-        _open = DefaultOpen;
+        // Created once the parameters are in: the popover starts from DefaultOpen.
+        _picker = new BitBhDatePickerContext(this);
         base.OnInitialized();
     }
 
-    private protected override RenderFragment RootContent => builder =>
-    {
-        builder.OpenComponent<CascadingValue<BitBhDatePickerContext>>(0);
-        builder.AddComponentParameter(1, "Value", PickerContext);
-        // Not fixed: the parts render the open state and the value, which change without new parameters.
-        builder.AddComponentParameter(2, "IsFixed", false);
-        builder.AddComponentParameter(3, "ChildContent", ChildContent);
-        builder.CloseComponent();
-    };
+    private protected override RenderFragment RootContent => PickerContext.Cascade(ChildContent);
 
     protected override Dictionary<string, object> BuildComponentAttributes()
     {
@@ -110,41 +94,39 @@ public class BitBhDatePicker : BitBhDateField
         return attrs;
     }
 
-    internal void RegisterGroup(bool present)
-    {
-        if (_hasGroup == present) return;
-        _hasGroup = present;
-        StateHasChanged();
-    }
-
-    internal void AddGroupState(Dictionary<string, object> attrs, Dictionary<string, object>? own)
-    {
-        AddGroupAttributes(attrs, own);
-        AddStateAttributes(attrs);
-        SetDataState(attrs, IsOpen);
-    }
-
     /// <summary>Opens the calendar popover.</summary>
-    public Task OpenAsync() => IsOpen || IsDisabled ? Task.CompletedTask : SetOpenAsync(true);
+    public Task OpenAsync() => PickerContext.OpenAsync();
 
     /// <summary>Closes the calendar popover.</summary>
-    public Task CloseAsync() => IsOpen ? SetOpenAsync(false) : Task.CompletedTask;
-
-    internal Task ToggleAsync() => IsOpen ? CloseAsync() : OpenAsync();
-
-    private async Task SetOpenAsync(bool open)
-    {
-        if (!IsProvided(nameof(Open))) _open = open;
-        await OpenChanged.InvokeAsync(open);
-        await OnOpenChange.InvokeAsync(open);
-        StateHasChanged();
-    }
+    public Task CloseAsync() => PickerContext.CloseAsync();
 
     /// <summary>A date picked in the calendar.</summary>
-    internal async Task SelectDateAsync(DateOnly date)
+    private async Task SelectDateAsync(DateOnly date)
     {
         if (IsDisabled || IsReadOnly) return;
         await SetValueAsync(date);
-        if (CloseOnSelect) await CloseAsync();
+        await PickerContext.PickedAsync();
+    }
+
+    // ── What the popover and the calendar read ───────────────────────────────
+
+    bool IBitBhDatePickerOwner.IsOpenControlled => IsProvided(nameof(Open));
+    string IBitBhDatePickerOwner.RootId => ComponentId;
+    void IBitBhDatePickerOwner.Render() => StateHasChanged();
+    bool IBitBhDatePickerOwner.IsRange => false;
+    string? IBitBhDatePickerOwner.LabelledBy => Field?.LabelledBy;
+    DateOnly? IBitBhDatePickerOwner.SelectedDate => CurrentValue;
+    BitBhDateRange? IBitBhDatePickerOwner.SelectedRange => null;
+    DateOnly? IBitBhDatePickerOwner.MinDate => Min;
+    DateOnly? IBitBhDatePickerOwner.MaxDate => Max;
+    bool IBitBhDatePickerOwner.AllowsNonContiguousRanges => false;
+    BitBhDirection IBitBhDatePickerOwner.EffectiveDir => EffectiveDir;
+    Task IBitBhDatePickerOwner.SelectDateAsync(DateOnly date) => SelectDateAsync(date);
+    Task IBitBhDatePickerOwner.SelectRangeAsync(BitBhDateRange range) => Task.CompletedTask;
+
+    void IBitBhDatePickerOwner.AddGroupState(Dictionary<string, object> attrs, Dictionary<string, object>? own)
+    {
+        AddGroupAttributes(attrs, own);
+        AddStateAttributes(attrs);
     }
 }

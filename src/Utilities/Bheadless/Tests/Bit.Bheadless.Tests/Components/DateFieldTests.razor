@@ -425,4 +425,20 @@
         Segment(cut, "year").Focus();
         Assert.AreEqual(Nov8, value);
     }
+
+    [TestMethod]
+    public void A_focus_back_on_the_segment_typing_left_is_the_readers_while_the_move_is_on_its_way()
+    {
+        // Only a segment the field asked to focus, and moved on from since, sends an echo: the segment typed into gets
+        // the focus back from the reader (a click), even before the move to the next one has landed.
+        var cut = Render(@<BitBhDateField Culture="En" aria-label="Date" DefaultValue="Nov8" />);
+        Segment(cut, "month").Focus();
+        Segment(cut, "month").Press("1");
+        Segment(cut, "month").Press("2");
+
+        Segment(cut, "month").Focus();
+        Segment(cut, "month").Press("ArrowDown");
+        Assert.AreEqual("11", Segment(cut, "month").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("8", Segment(cut, "day").GetAttribute("aria-valuenow"));
+    }
 }

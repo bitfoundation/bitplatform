@@ -66,6 +66,15 @@ public sealed class BitBhDrawerContext : IBitBhCloseContext
     /// <summary>How many drawers nested in this one are open in front of it.</summary>
     public int NestedDrawers { get; init; }
 
+    /// <summary>The drawer's snap points, from the smallest to the largest; empty without any.</summary>
+    public IReadOnlyList<BitBhDrawerSnapPoint> SnapPoints { get; init; } = [];
+
+    /// <summary>The index in <see cref="SnapPoints"/> of the snap point the drawer rests at; -1 without snap points.</summary>
+    public int ActiveSnapPointIndex { get; init; } = -1;
+
+    /// <summary>The snap point the drawer rests at; null without snap points.</summary>
+    public BitBhDrawerSnapPoint? ActiveSnapPoint => ActiveSnapPointIndex >= 0 && ActiveSnapPointIndex < SnapPoints.Count ? SnapPoints[ActiveSnapPointIndex] : (BitBhDrawerSnapPoint?)null;
+
     /// <summary>The deterministic id of the trigger.</summary>
     public string TriggerId => $"{BaseId}-trigger";
 
@@ -90,9 +99,14 @@ public sealed class BitBhDrawerContext : IBitBhCloseContext
     /// <summary>Requests dismissal (respects the <c>DismissOn…</c> parameters and <c>OnDismissRequest</c>).</summary>
     public Task DismissAsync(BitBhDismissReason reason) => Owner.DismissAsync(reason);
 
+    /// <summary>Moves the drawer to one of its <see cref="SnapPoints"/>.</summary>
+    public Task SetActiveSnapPointAsync(BitBhDrawerSnapPoint? snapPoint) => Owner.SetActiveSnapPointAsync(snapPoint);
+
     internal void Register(BitBhDrawerPart part, bool present) => Owner.Register(part, present);
 
     internal void RegisterPanel(Func<ElementReference>? initialFocus, bool dismissOnEscape) => Owner.RegisterPanel(initialFocus, dismissOnEscape);
+
+    internal void PanelMounted() => Owner.PanelMounted();
 }
 
 /// <summary>Render-fragment context exposed by drawer parts for state-driven rendering.</summary>

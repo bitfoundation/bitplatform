@@ -31,10 +31,20 @@ public class BitBhMenuItems : BitBhMenuContentBase
 
     private protected override BitBhMenuFocus PeekFocusIntent() => MenuContext?.Menu.PeekFocusIntent() ?? BitBhMenuFocus.Container;
 
+    protected override void OnInitialized()
+    {
+        if (MenuContext is not null) MenuContext.Menu.Items = this;
+    }
+
     protected override BitBhFloatingRequest CreateFloatingRequest()
     {
-        var layer = new BitBhLayerOptions { ParentHandle = ParentLayerHandle };
+        // Opened by a hover, the panel takes no focus, is a hover layer (Escape closes it from anywhere) and gives the
+        // focus back on close only if the focus went into it - a pointer leaving it never pulls the focus to the button.
+        var hover = MenuContext?.OpenedByHover ?? false;
+        var layer = new BitBhLayerOptions { Hover = hover, ParentHandle = ParentLayerHandle };
         layer.BranchIds.Add(MenuContext?.ButtonId);
+        var focus = CreateFocusOptions(MenuContext?.ButtonId);
+        focus.RestoreFocusIfEntered = hover;
         return new BitBhFloatingRequest
         {
             ContentId = ContentId,
@@ -44,12 +54,27 @@ public class BitBhMenuItems : BitBhMenuContentBase
             Portal = EffectivePortal,
             PortalTarget = PortalTarget,
             Layer = layer,
-            Focus = CreateFocusOptions(MenuContext?.ButtonId),
+            Focus = focus,
         };
+    }
+
+    protected override Dictionary<string, object> BuildComponentAttributes()
+    {
+        var attrs = base.BuildComponentAttributes();
+        // Opened by a hover, the panel has no focus: the runtime gives it the first of its keys pressed with nothing focused.
+        if (MenuContext?.OpenedByHover == true)
+            attrs["data-bit-bh-key-entry"] = "";
+        return attrs;
     }
 
     protected override Task OnDismissAsync(BitBhDismissReason reason)
         => MenuContext?.CloseAsync() ?? Task.CompletedTask;
+
+    public override ValueTask DisposeAsync()
+    {
+        if (MenuContext?.Menu.Items == this) MenuContext.Menu.Items = null;
+        return base.DisposeAsync();
+    }
 }
 
 /// <summary>Root used when a menu panel is rendered outside of a menu (design-time / tests).</summary>

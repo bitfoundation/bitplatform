@@ -181,6 +181,14 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     public ValueTask<bool> FocusAsync(string id, bool preventScroll = true, bool select = false)
         => InvokeAsync<bool>("focus.focus", id, preventScroll, select);
 
+    /// <summary>
+    /// Focuses the element with the given id - only while the focus is still on <paramref name="from"/> (or on nothing):
+    /// a key the runtime handled as it was pressed may have moved it on already, and over a Blazor Server connection
+    /// this move lands a round trip later.
+    /// </summary>
+    internal ValueTask<bool> FocusFromAsync(string id, string from)
+        => InvokeAsync<bool>("focus.focus", id, true, false, from);
+
     /// <summary>Focuses the first tabbable element inside the element with the given id.</summary>
     public ValueTask<bool> FocusFirstAsync(string containerId, bool preventScroll = true)
         => InvokeAsync<bool>("focus.focusFirst", containerId, preventScroll);
@@ -227,9 +235,23 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     public ValueTask ScrollIntoViewAsync(string id)
         => InvokeVoidAsync("dom.scrollIntoView", id, "nearest");
 
-    /// <summary>Scrolls a virtualized container so the item at <paramref name="index"/> becomes visible.</summary>
+    /// <summary>
+    /// Scrolls a virtualized container so the item at <paramref name="index"/> becomes visible - fully, once it has
+    /// rendered. <paramref name="itemSize"/> is the height of every item, or for a list of items that differ in height
+    /// (which the runtime measures) the estimate.
+    /// </summary>
     public ValueTask ScrollToIndexAsync(string containerId, int index, float itemSize, string? itemId)
         => InvokeVoidAsync("dom.scrollToIndex", containerId, index, itemSize, itemId);
+
+    // Virtualized lists of items that differ in height (BitBhVirtualizer).
+    internal ValueTask<int> VirtualListAttachAsync(object dotNetRef, ElementReference before, ElementReference after, float itemSize, int overscan)
+        => InvokeAsync<int>("dom.attachVirtualList", dotNetRef, before, after, itemSize, overscan);
+
+    internal ValueTask VirtualListUpdateAsync(int handle, float itemSize, int overscan)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("dom.updateVirtualList", handle, itemSize, overscan);
+
+    internal ValueTask VirtualListDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("dom.detachVirtualList", handle);
 
     /// <summary>Clicks the element (keyboard activation of link-like items).</summary>
     public ValueTask ClickAsync(string id) => InvokeVoidAsync("dom.click", id);
@@ -301,6 +323,13 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
 
     internal ValueTask SortableDetachAsync(int handle)
         => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("sortable.detach", handle);
+
+    /// <summary>
+    /// The sortable lists <paramref name="containerIds"/> in the order the arrow keys across <paramref name="currentId"/>
+    /// walk them: document order, reversed for horizontal keys in a right-to-left layout. Null without a browser.
+    /// </summary>
+    internal ValueTask<string[]?> SortableOrderAsync(string currentId, string[] containerIds, bool horizontal)
+        => InvokeAsync<string[]?>("sortable.order", currentId, containerIds, horizontal);
 
     internal ValueTask<int> SliderAttachAsync(object dotNetRef, string rootId, string? trackId, IDictionary<string, object?> options)
         => InvokeAsync<int>("slider.attach", dotNetRef, rootId, trackId, options);
@@ -435,6 +464,55 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     internal ValueTask SplitterSaveAsync(string key, double[] sizes)
         => InvokeVoidAsync("splitter.save", key, sizes);
 
+    // ── Strict Content-Security-Policy ───────────────────────────────────────
+
+    /// <summary>How many times a runtime that answered it could not load the style bridge is asked again.</summary>
+    private const int StrictStylesAttempts = 3;
+
+    private bool _strictStylesEnabled;
+    private bool _strictStylesPending;
+    private int _strictStylesFailures;
+
+    /// <summary>
+    /// Whether there is nothing to ask the runtime about the strict CSP styles: it applies them, is being asked to,
+    /// or failed to load the style bridge too many times to keep asking.
+    /// </summary>
+    internal bool StrictStylesRequested => _strictStylesEnabled || _strictStylesPending || _strictStylesFailures >= StrictStylesAttempts;
+
+    /// <summary>
+    /// Has the runtime apply the <c>data-bit-bh-style</c> of the page through the CSSOM (see
+    /// <see cref="BitBhOptions.StrictCsp"/>). Sent once per scope; a call that did not reach the browser (a circuit
+    /// that went away) is sent again by the next one, and so is one the runtime answered with a bridge it could not
+    /// load (a network error), up to <see cref="StrictStylesAttempts"/> times.
+    /// </summary>
+    internal void RequestStrictStyles()
+    {
+        if (_disposed || StrictStylesRequested) return;
+        _strictStylesPending = true;
+        _ = EnableStrictStylesAsync();
+    }
+
+    private async Task EnableStrictStylesAsync()
+    {
+        try
+        {
+            var (answered, enabled) = await TryInvokeAsync<bool>("styles.enable");
+            if (answered is false) return;
+            // No module to call (a test double of the JS runtime) has no bridge to load: nothing failed.
+            var noBrowser = _module is { IsCompletedSuccessfully: true, Result: null };
+            if (enabled || noBrowser) _strictStylesEnabled = true;
+            else _strictStylesFailures++;
+        }
+        catch (Exception)
+        {
+            // Nobody awaits this call: a failure leaves the next request to try again.
+        }
+        finally
+        {
+            _strictStylesPending = false;
+        }
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -497,6 +575,12 @@ public sealed class BitBhFocusScopeOptions
     /// <summary>Optional element to receive focus when the scope is destroyed (takes precedence over <see cref="ReturnFocusId"/>).</summary>
     public ElementReference? ReturnFocusElement { get; set; }
 
+    /// <summary>
+    /// Restore focus only if it went into the scope (or its layer) while the scope was alive: a surface opened without
+    /// taking the focus - a menu the pointer opened - never pulls it to <see cref="ReturnFocusId"/> when it closes.
+    /// </summary>
+    internal bool RestoreFocusIfEntered { get; set; }
+
     internal Dictionary<string, object?> ToJs() => new()
     {
         ["trap"] = Trap,
@@ -504,6 +588,7 @@ public sealed class BitBhFocusScopeOptions
         ["autoFocus"] = AutoFocusElement is { Id: not null } af ? af : AutoFocus,
         ["restore"] = RestoreFocus,
         ["returnFocusId"] = ReturnFocusElement is { Id: not null } rf ? rf : ReturnFocusId,
+        ["restoreIfEntered"] = RestoreFocusIfEntered,
     };
 }
 

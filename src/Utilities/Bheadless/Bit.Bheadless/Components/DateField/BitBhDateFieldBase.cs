@@ -9,10 +9,11 @@ namespace Bit.Bheadless;
 
 /// <summary>
 /// The shared behaviour of the segmented fields (<see cref="BitBhDateField"/>, <see cref="BitBhTimeField"/>,
-/// <see cref="BitBhDatePicker"/>): the value, its limits, the segments the culture's pattern makes, their keyboard
+/// <see cref="BitBhDateTimeField"/>, <see cref="BitBhDatePicker"/>, <see cref="BitBhDateTimePicker"/> and the inputs of a
+/// <see cref="BitBhDateRangePicker"/>): the value, its limits, the segments the culture's pattern makes, their keyboard
 /// model, <c>EditForm</c> / <see cref="BitBhField"/> wiring and the hidden input.
 /// </summary>
-/// <typeparam name="TValue"><see cref="DateOnly"/> or <see cref="TimeOnly"/>.</typeparam>
+/// <typeparam name="TValue"><see cref="DateOnly"/>, <see cref="TimeOnly"/> or <see cref="DateTime"/>.</typeparam>
 public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDateFieldOwner, IDisposable
     where TValue : struct, IComparable<TValue>
 {
@@ -27,8 +28,9 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     // come from the segment left behind - or one asked for but not reached yet - before the focus lands: they are
     // meant for the segment the focus is on its way to (_focusIntent), so they go there.
     private BitBhDateSegmentType? _focusIntent;
-    private long _focusIntentAt;
-    private readonly List<BitBhDateSegmentType> _leftBehind = new();
+    // The same across the start and end fields of a range picker: the field the focus left this one for.
+    private BitBhDateFieldBase<TValue>? _focusIntentField;
+    private readonly BitBhFocusMoves<BitBhDateSegmentType> _focusMoves = new();
     private IReadOnlyList<BitBhDateSegment> _segments = [];
 
     [CascadingParameter]
@@ -146,7 +148,9 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     /// <summary>Whether the field is required.</summary>
     public bool IsRequired => Required || (FieldContext?.Required ?? false);
 
-    private bool IsValueInvalid => CurrentValue is { } value
+    // Checked as the segments show it: a controlled value's units below the granularity (seconds at minute granularity)
+    // don't make a time the field shows as 17:00 later than a Max of 17:00.
+    private bool IsValueInvalid => CurrentValue is { } current && Normalize(current) is var value
         && ((Min is { } min && value.CompareTo(min) < 0) || (Max is { } max && value.CompareTo(max) > 0) || IsValueUnavailable(value));
 
     // ── What a date field and a time field differ in ─────────────────────────
@@ -160,6 +164,12 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     private protected abstract string ToIso(TValue value);
 
+    /// <summary>
+    /// <paramref name="value"/> without the units the segments don't edit (a time field's seconds at minute granularity):
+    /// what the field stores and posts, so a unit no segment shows never comes along unseen.
+    /// </summary>
+    private protected virtual TValue Normalize(TValue value) => value;
+
     /// <summary>The value of a segment in <see cref="PlaceholderValue"/> (or its default).</summary>
     private protected abstract int PlaceholderPart(BitBhDateSegmentType type);
 
@@ -170,6 +180,15 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     /// <summary>Whether the root is the field's group (<c>role="group"</c>, labelled by the field's label).</summary>
     private protected virtual bool IsGroupRoot => true;
+
+    /// <summary>Whether the field is its <see cref="BitBhField"/>'s control (its label focuses it): not a range picker's end.</summary>
+    private protected virtual bool IsFieldControl => true;
+
+    /// <summary>The field the focus moves on to past the last segment (a range picker's end field, from its start).</summary>
+    private protected virtual BitBhDateFieldBase<TValue>? NextField => null;
+
+    /// <summary>The field the focus moves back to before the first segment (a range picker's start field, from its end).</summary>
+    private protected virtual BitBhDateFieldBase<TValue>? PreviousField => null;
 
     /// <summary>The root's content: the child content, or the segments.</summary>
     private protected virtual RenderFragment RootContent => ChildContent ?? (b =>
@@ -182,8 +201,8 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     protected override void OnInitialized()
     {
-        _value = DefaultValue;
-        FieldContext?.SetControlFocus(FocusAsync);
+        _value = DefaultValue is { } initial ? Normalize(initial) : null;
+        if (IsFieldControl) FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     protected override void OnParametersSet()
@@ -339,13 +358,16 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
 
     void IBitBhDateFieldOwner.HandleFocus(BitBhDateSegmentType type)
     {
-        if (_focusIntent is { } intent && type != intent && _leftBehind.Contains(type) && IsFocusInFlight())
+        if (((_focusIntent is { } intent && type != intent) || _focusIntentField is not null) && _focusMoves.IsEcho(type))
         {
-            // The echo of a focus move already overtaken by the next one: typing goes on in the segment ahead.
+            // The echo of a focus move already overtaken by the next one: typing goes on in the segment ahead. A focus
+            // event on any other segment - the one typed into included - is the user's (a click).
             return;
         }
-        _focusIntent = null;
-        _leftBehind.Clear();
+        ForgetFocusIntent();
+        // The focus has arrived from the other field of a range: the keys still on their way are all in.
+        if (PreviousField is { } previous && previous._focusIntentField == this) previous.ForgetFocusIntent();
+        if (NextField is { } next && next._focusIntentField == this) next.ForgetFocusIntent();
         if (State.TypingSegment is { } typing && typing != type) State.EndTyping();
         _focusedSegment = type;
         StateHasChanged();
@@ -362,7 +384,14 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     async Task IBitBhDateFieldOwner.HandleKeyDownAsync(BitBhDateSegmentType type, KeyboardEventArgs e)
     {
         if (IsDisabled || e.CtrlKey || e.MetaKey || e.AltKey) return;
-        if (_focusIntent is { } intent && intent != type && _leftBehind.Contains(type) && IsFocusInFlight()) type = intent;
+        if (_focusIntentField is { } field && _focusMoves.IsLeftBehind(type))
+        {
+            // Meant for the other field of the range, which the focus is on its way to.
+            if ((field._focusIntent ?? field._focusedSegment) is { } target)
+                await ((IBitBhDateFieldOwner)field).HandleKeyDownAsync(target, e);
+            return;
+        }
+        if (_focusIntent is { } intent && intent != type && _focusMoves.IsLeftBehind(type)) type = intent;
         var rtl = EffectiveDir == BitBhDirection.Rtl;
         var editable = !IsReadOnly;
         switch (e.Key)
@@ -444,26 +473,52 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
         _ => 1,
     };
 
-    /// <summary>Moves the focus to the editable segment <paramref name="step"/> places away, in reading order.</summary>
+    /// <summary>
+    /// Moves the focus to the editable segment <paramref name="step"/> places away, in reading order - past the ends, to
+    /// the other field of a range picker.
+    /// </summary>
     private async Task MoveFocusAsync(BitBhDateSegmentType from, int step)
     {
         var editable = State.Editable.ToList();
         var index = editable.IndexOf(from);
         var target = index + step;
-        if (index < 0 || target < 0 || target >= editable.Count) return;
+        var field = target < 0 ? PreviousField : target >= editable.Count ? NextField : this;
+        if (index < 0 || field is null) return;
         if (State.TypingSegment == from)
         {
             State.EndTyping();
             await CommitAsync();
         }
-        if (!_leftBehind.Contains(from)) _leftBehind.Add(from);
+        _focusMoves.Leaving(from);
+        if (field != this)
+        {
+            _focusIntent = null;
+            _focusIntentField = field;
+            await field.FocusEdgeAsync(last: step < 0);
+            return;
+        }
         _focusIntent = editable[target];
-        _focusIntentAt = Environment.TickCount64;
+        _focusMoves.Requesting(editable[target]);
         await Interop.FocusAsync(SegmentId(editable[target]));
     }
 
-    // A focus move that has not landed within a second never will (the element went away): stop redirecting.
-    private bool IsFocusInFlight() => Environment.TickCount64 - _focusIntentAt < 1000;
+    /// <summary>Focuses the first (or the last) segment, the focus coming from the other field of a range picker.</summary>
+    private async Task FocusEdgeAsync(bool last)
+    {
+        var editable = State.Editable.ToList();
+        if (IsDisabled || editable.Count == 0) return;
+        ForgetFocusIntent();
+        _focusIntent = last ? editable[^1] : editable[0];
+        _focusMoves.Requesting(_focusIntent.Value);
+        await Interop.FocusAsync(SegmentId(_focusIntent.Value));
+    }
+
+    private void ForgetFocusIntent()
+    {
+        _focusIntent = null;
+        _focusIntentField = null;
+        _focusMoves.Clear();
+    }
 
     /// <summary>
     /// Takes the value the segments make once they are all filled (and nothing is being typed), or null when one was
@@ -507,6 +562,7 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     /// <summary>Sets the value from code other than the segments (a picker's calendar), firing the change callbacks.</summary>
     private protected async Task SetValueAsync(TValue? value)
     {
+        if (value is { } given) value = Normalize(given);
         if (value is { } v) Load(v);
         else State.Clear();
         if (Nullable.Equals(value, CurrentValue))
@@ -526,6 +582,6 @@ public abstract class BitBhDateFieldBase<TValue> : BitBhComponentBase, IBitBhDat
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        if (IsFieldControl) FieldContext?.ReleaseControlFocus(this);
     }
 }

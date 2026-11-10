@@ -20,8 +20,8 @@
     ];
 
     private RenderFragment Grid(FileRow[] rows, bool tree = false, BitBhGridSelectionMode mode = BitBhGridSelectionMode.None,
-        Action<IReadOnlyCollection<string>>? onSelect = null, Action<string>? onActivate = null) =>
-        @<BitBhGrid As="table" aria-label="Files" TreeGrid="tree" SelectionMode="mode"
+        Action<IReadOnlyCollection<string>>? onSelect = null, Action<string>? onActivate = null, int pageSize = 10) =>
+        @<BitBhGrid As="table" aria-label="Files" TreeGrid="tree" SelectionMode="mode" PageSize="pageSize"
                  SelectedKeysChanged="k => onSelect?.Invoke(k)" OnRowActivate="k => onActivate?.Invoke(k)">
             <BitBhGridRowGroup As="thead">
                 <BitBhGridRow As="tr" IsHeaderRow="true">
@@ -307,5 +307,65 @@
         cut.Find("[role=separator]").Press("Home");
         Assert.AreEqual("80", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
         cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_cell_asks_for_the_focus_only_while_it_is_still_on_the_cell_the_key_was_pressed_on()
+    {
+        // The runtime moves the focus as an arrow key is pressed (grid navigation in bit-bheadless.ts). The grid's own
+        // move lands a round trip later over Blazor Server - after the next keys, maybe - so it names the cell the key
+        // came from, and the runtime makes it only while the focus is still there.
+        var cut = Render(Grid(Flat));
+        var alpha = Cell(cut, "alpha.txt");
+        alpha.Press("ArrowDown");
+        var request = JSInterop.Invocations.Last(i => i.Identifier == "focus.focus");
+        Assert.AreEqual(Cell(cut, "beta.txt").Id, request.Arguments[0]);
+        Assert.AreEqual(alpha.Id, request.Arguments[3]);
+
+        // What the runtime reads: the rows' collection, each row's cells' collection, the page size, the direction.
+        var grid = cut.Find("table");
+        var row = cut.FindAll("tbody [role=row]")[0];
+        Assert.AreEqual(row.GetAttribute("data-bit-bh-item"), grid.GetAttribute("data-bit-bh-grid"));
+        Assert.AreEqual(Cell(cut, "alpha.txt").GetAttribute("data-bit-bh-item"), row.GetAttribute("data-bit-bh-cells"));
+        Assert.AreEqual("10", grid.GetAttribute("data-bit-bh-page-size"));
+        Assert.IsNull(grid.GetAttribute("data-bit-bh-dir"));
+
+        var rtl = Render(@<BitBhDirectionProvider Dir="BitBhDirection.Rtl">@Grid(Flat)</BitBhDirectionProvider>);
+        Assert.AreEqual("rtl", rtl.Find("table").GetAttribute("data-bit-bh-dir"));
+    }
+
+    [TestMethod]
+    public void A_key_handled_after_the_focus_moved_on_leaves_the_tab_stop_on_the_focused_cell()
+    {
+        // Over Blazor Server a key's handler can wait on a round trip (the rows' order here) while the runtime already moved
+        // the focus for the keys pressed after it: the late handler's move is not made, and the tab stop stays with the
+        // cell the focus is on.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var order = module.Setup<string[][]?>("collection.order", _ => true);
+        var cut = Render(Grid(Flat));
+
+        Cell(cut, "alpha.txt").Press("ArrowDown");
+        Cell(cut, "beta.txt").Focus();
+        Cell(cut, "gamma.txt").Focus();
+        order.SetResult(null);
+
+        cut.WaitForAssertion(() => Assert.AreEqual("0", Cell(cut, "gamma.txt").GetAttribute("tabindex")));
+        Assert.AreEqual("gamma.txt", cut.TabSequence().Single().Element.TextContent);
+        // The late move was asked for only while the focus is still on the cell the key came from.
+        var request = JSInterop.Invocations.Last(i => i.Identifier == "focus.focus");
+        Assert.AreEqual(Cell(cut, "beta.txt").Id, request.Arguments[0]);
+        Assert.AreEqual(Cell(cut, "alpha.txt").Id, request.Arguments[3]);
+    }
+
+    [TestMethod]
+    public void A_page_size_of_zero_or_less_moves_no_row_here_or_in_the_runtime()
+    {
+        // The runtime moves by the page size the grid renders, 0 included: the same rows the grid itself moves by.
+        var cut = Render(Grid(Flat, pageSize: -3));
+        Assert.AreEqual("0", cut.Find("table").GetAttribute("data-bit-bh-page-size"));
+
+        Cell(cut, "alpha.txt").Press("PageDown");
+        Assert.AreEqual("0", Cell(cut, "alpha.txt").GetAttribute("tabindex"));
+        Assert.AreEqual(Cell(cut, "alpha.txt").Id, this.LastFocusRequest());
     }
 }

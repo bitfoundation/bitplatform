@@ -36,6 +36,12 @@ public sealed class BitBhMenuContext : IBitBhCloseContext
     /// <summary>Deterministic id of the menu items panel.</summary>
     public string ItemsId { get; }
 
+    /// <summary>Whether the menu opens on hover (<c>OpenOnHover</c>).</summary>
+    public bool OpenOnHover => Menu.OpenOnHover;
+
+    /// <summary>Whether it is open because of a hover (its panel takes no focus and closes when the pointer leaves).</summary>
+    public bool OpenedByHover => Menu.OpenedByHover;
+
     /// <summary>Opens the menu.</summary>
     public Task OpenAsync(BitBhMenuFocus focus = BitBhMenuFocus.Container) => Menu.OpenAsync(focus);
 

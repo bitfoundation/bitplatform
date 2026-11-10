@@ -110,12 +110,15 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
     protected override void OnInitialized()
     {
         _checked = DefaultChecked;
-        // A <label for> can only target a native button; other tags are focused by the label.
-        if (!IsNativeButton) Field?.SetControlFocus(() => Interop.FocusAsync(ControlId).AsTask());
     }
 
     protected override void OnParametersSet()
     {
+        // A <label for> can only target a native button; other tags are focused by the label. Kept in step with the tag
+        // (As can change), so a control that became a button leaves no focus callback ahead of another control's.
+        if (IsNativeButton) Field?.ReleaseControlFocus(this);
+        else Field?.SetControlFocus(this, () => Interop.FocusAsync(ControlId).AsTask());
+
         if (CheckedExpression is not null || _binding is not null)
         {
             _binding ??= new BitBhFieldBinding(() => InvokeAsync(OnValidationStateChanged));
@@ -240,6 +243,7 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        if (!IsNativeButton) Field?.SetControlFocus(null);
+        // Whatever the tag is now: the registration was made for the tag it had then.
+        Field?.ReleaseControlFocus(this);
     }
 }

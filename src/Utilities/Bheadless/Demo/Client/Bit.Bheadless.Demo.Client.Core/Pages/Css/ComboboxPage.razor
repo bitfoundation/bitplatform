@@ -355,6 +355,53 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Options of different heights (virtualized)"
+           Code="@_variableCode"
+           Css="@_variableCss">
+    <Description>
+        With <code>VariableItemSize="true"</code> the options of a virtualized panel can differ in height - here
+        each article shows an excerpt of one to three lines. Every option is measured as it renders and again when
+        it resizes; <code>ItemSize</code> (60px here) is only the estimate for the options not rendered yet, and a
+        new query starts over with the matches it found. The scroll position holds still as measurements arrive,
+        and the arrow keys and Page Up / Page Down keep the highlighted option fully in view.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="Article"
+                    @bind-Value="article"
+                    OnQueryChange="HandleArticleQuery"
+                    DisplayValue="a => a?.Title ?? string.Empty"
+                    class="combobox-anchored">
+            <div class="combobox-input-wrapper">
+                <BitBhComboboxInput TValue="Article" aria-label="Article" Placeholder="Search 3,000 articles…" class="combobox-input" />
+                <BitBhComboboxButton TValue="Article" class="combobox-button">
+                    <Template Context="b">
+                        <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="Article"
+                               Items="@articleMatches"
+                               Virtualize="true"
+                               VariableItemSize="true"
+                               ItemSize="60"
+                               Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                               class="combobox-variable">
+                <ItemTemplate Context="o">
+                    <span class="combobox-variable-title">@o.Value.Title</span>
+                    <span class="combobox-variable-excerpt">@o.Value.Excerpt</span>
+                </ItemTemplate>
+                <ChildContent>
+                    <BitBhComboboxEmpty TValue="Article" class="combobox-empty">No articles match.</BitBhComboboxEmpty>
+                </ChildContent>
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
+
+        <span class="demo-output">
+            @articleMatches.Count.ToString("N0") matches · Selected: <strong>@(article?.Title ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     private readonly List<string> labels = ["bug", "feature", "docs"];
     private string? label;
@@ -392,6 +439,32 @@
 
     private void HandleVirtualQuery(string query) =>
         virtualMatches = VirtualItems.Where(item => BitBhFilter.Contains(item, query)).ToArray();
+
+    // ── Options of different heights (virtualized) ──────────────────────────
+
+    // 3,000 articles whose excerpts run from one line to three.
+    private sealed record Article(int Number, string Title, string Excerpt);
+    private static readonly Article[] Articles = BuildArticles();
+    private IReadOnlyList<Article> articleMatches = Articles;
+    private Article? article;
+
+    private static Article[] BuildArticles()
+    {
+        string[] topics = ["Accessibility", "Animations", "Caching", "Forms", "Keyboard", "Layout", "Routing", "Testing", "Theming", "Virtualization"];
+        string[] kinds = ["basics", "deep dive", "checklist", "pitfalls", "recipes", "FAQ"];
+        string[] excerpts =
+        [
+            "A short read.",
+            "What changes between versions, and what to update first in an existing app.",
+            "A complete example, from the first render to the last test, with the trade-offs of every step and the mistakes that are easy to make along the way.",
+        ];
+        return Enumerable.Range(0, 3_000)
+            .Select(n => new Article(n, $"{topics[n % 10]} {kinds[n / 10 % 6]} {n / 60 + 1}", excerpts[n * 5 % 3]))
+            .ToArray();
+    }
+
+    private void HandleArticleQuery(string query) =>
+        articleMatches = Articles.Where(a => BitBhFilter.Contains(a.Title, query)).ToArray();
 
     // ── Single-select (fruits) ──────────────────────────────────────────────
 
@@ -632,6 +705,84 @@
 
 .combobox-empty { padding: 0.6rem 0.65rem; color: #71717a; font-size: 0.85rem; font-style: italic; }
 .combobox-tick  { color: #2563eb; font-weight: 700; }
+""";
+
+    private const string _variableCode = """
+<BitBhCombobox TValue="Article"
+            @bind-Value="article"
+            OnQueryChange="HandleArticleQuery"
+            DisplayValue="a => a?.Title ?? string.Empty"
+            class="combobox-anchored">
+    <div class="combobox-input-wrapper">
+        <BitBhComboboxInput TValue="Article" aria-label="Article" Placeholder="Search 3,000 articles…" class="combobox-input" />
+        <BitBhComboboxButton TValue="Article" class="combobox-button">…</BitBhComboboxButton>
+    </div>
+
+    @* Measured as they render: ItemSize is the estimate for the rest *@
+    <BitBhComboboxOptions TValue="Article"
+                       Items="@articleMatches"
+                       Virtualize="true"
+                       VariableItemSize="true"
+                       ItemSize="60"
+                       Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                       class="combobox-variable">
+        <ItemTemplate Context="o">
+            <span class="combobox-variable-title">@o.Value.Title</span>
+            <span class="combobox-variable-excerpt">@o.Value.Excerpt</span>
+        </ItemTemplate>
+        <ChildContent>
+            <BitBhComboboxEmpty TValue="Article" class="combobox-empty">No articles match.</BitBhComboboxEmpty>
+        </ChildContent>
+    </BitBhComboboxOptions>
+</BitBhCombobox>
+
+@code {
+    private sealed record Article(int Number, string Title, string Excerpt);
+    private static readonly Article[] Articles = …; // 3,000 articles, excerpts of one to three lines
+    private IReadOnlyList<Article> articleMatches = Articles;
+    private Article? article;
+
+    private void HandleArticleQuery(string query) =>
+        articleMatches = Articles.Where(a => BitBhFilter.Contains(a.Title, query)).ToArray();
+}
+""";
+
+    private const string _variableCss = """
+/* All styles are consumer-authored — the library ships zero CSS
+   (.combobox-anchored, .combobox-input-wrapper, .combobox-input, .combobox-button,
+   .combobox-chevron and .combobox-empty as in "Large lists (virtualized)") */
+
+/* The scroll container: a bounded height, positioned by Anchor */
+.combobox-variable {
+    z-index: 9999;
+    width: 20rem;
+    max-height: 18rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.combobox-variable[hidden] { display: none; }
+
+/* No height: every option is as tall as its content */
+.combobox-variable > [role="option"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.combobox-variable > [role="option"][data-active] { background: #eff6ff; }
+.combobox-variable > [role="option"][data-selected] .combobox-variable-title { color: #1d4ed8; }
+
+.combobox-variable-title   { font-weight: 600; }
+.combobox-variable-excerpt { color: #52525b; font-size: 0.8rem; line-height: 1.35; }
 """;
 
     private const string _basicCode = """

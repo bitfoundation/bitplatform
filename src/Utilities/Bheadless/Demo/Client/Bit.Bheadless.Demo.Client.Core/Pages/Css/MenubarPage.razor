@@ -358,6 +358,63 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Open on hover"
+           Code="@_hoverCode"
+           Css="@_hoverCss">
+    <Description>
+        Site navigation in a menubar: <code>OpenOnHover</code> on each <code>BitBhMenu</code> opens it when the
+        pointer rests on its trigger (after <code>HoverOpenDelay</code>, 100 ms by default) and closes it once the
+        pointer has left the trigger and the menu (after <code>HoverCloseDelay</code>, 300 ms) - the grace period
+        that lets the pointer cross the gap to the menu, diagonally too, submenus included. Once one is open,
+        hovering the next trigger switches at once. A hover never takes the focus: the first key press (↓, ↑,
+        Enter, Space - on the trigger, or with nothing focused) moves it into the menu, a click on the trigger
+        keeps the menu open, and Escape closes it from anywhere. Touch and pen taps are plain clicks.
+    </Description>
+    <LiveContent>
+        <BitBhMenubar class="menubar" aria-label="Site">
+            <BitBhMenu OpenOnHover="true">
+                <BitBhMenuButton class="menubar-trigger">Products</BitBhMenuButton>
+                <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Analytics"))' class="menubar-item">Analytics</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Automation"))' class="menubar-item">Automation</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Security"))' class="menubar-item">Security</BitBhMenuItem>
+                    <BitBhMenuSeparator class="menubar-separator" />
+                    <BitBhMenuSub>
+                        <BitBhMenuSubTrigger class="menubar-item">
+                            Integrations <span class="menubar-chevron" aria-hidden="true">›</span>
+                        </BitBhMenuSubTrigger>
+                        <BitBhMenuSubContent class="menubar-content">
+                            <BitBhMenuItem OnClick='@(() => Log("Slack"))' class="menubar-item">Slack</BitBhMenuItem>
+                            <BitBhMenuItem OnClick='@(() => Log("GitHub"))' class="menubar-item">GitHub</BitBhMenuItem>
+                            <BitBhMenuItem OnClick='@(() => Log("Jira"))' class="menubar-item">Jira</BitBhMenuItem>
+                        </BitBhMenuSubContent>
+                    </BitBhMenuSub>
+                </BitBhMenuItems>
+            </BitBhMenu>
+
+            <BitBhMenu OpenOnHover="true">
+                <BitBhMenuButton class="menubar-trigger">Resources</BitBhMenuButton>
+                <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Documentation"))' class="menubar-item">Documentation</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Blog"))' class="menubar-item">Blog</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Changelog"))' class="menubar-item">Changelog</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+
+            <BitBhMenu OpenOnHover="true">
+                <BitBhMenuButton class="menubar-trigger">Company</BitBhMenuButton>
+                <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("About"))' class="menubar-item">About</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Careers"))' class="menubar-item">Careers</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Contact"))' class="menubar-item">Contact</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+        </BitBhMenubar>
+
+        <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
+
 @code {
     private string? lastAction;
 
@@ -737,6 +794,57 @@
 }
 """;
 
+    private const string _hoverCode = """
+<BitBhMenubar class="menubar" aria-label="Site">
+    @* OpenOnHover: HoverOpenDelay (100 ms) and HoverCloseDelay (300 ms) tune the timing *@
+    <BitBhMenu OpenOnHover="true">
+        <BitBhMenuButton class="menubar-trigger">Products</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Analytics"))' class="menubar-item">Analytics</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Automation"))' class="menubar-item">Automation</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Security"))' class="menubar-item">Security</BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuSub>
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Integrations <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Slack"))' class="menubar-item">Slack</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("GitHub"))' class="menubar-item">GitHub</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Jira"))' class="menubar-item">Jira</BitBhMenuItem>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu OpenOnHover="true">
+        <BitBhMenuButton class="menubar-trigger">Resources</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Documentation"))' class="menubar-item">Documentation</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Blog"))' class="menubar-item">Blog</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Changelog"))' class="menubar-item">Changelog</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu OpenOnHover="true">
+        <BitBhMenuButton class="menubar-trigger">Company</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("About"))' class="menubar-item">About</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Careers"))' class="menubar-item">Careers</BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Contact"))' class="menubar-item">Contact</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+</BitBhMenubar>
+
+<span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
+""";
+
     // ── Styles (the same rules live in wwwroot/demos/menubar.css) ──────────────
 
     private const string _baseStyles = """
@@ -922,4 +1030,5 @@
     private const string _editorCss = _baseStyles + "\n\n" + _checkableStyles + "\n\n" + _editorStyles;
     private const string _submenusCss = _baseStyles;
     private const string _disabledCss = _baseStyles;
+    private const string _hoverCss = _baseStyles;
 }

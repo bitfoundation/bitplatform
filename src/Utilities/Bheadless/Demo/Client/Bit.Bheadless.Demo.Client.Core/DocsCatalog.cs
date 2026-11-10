@@ -125,7 +125,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the services and put a first accessible component on a page.",
-                "install setup nuget package AddBitBheadlessServices quick start program.cs using render mode interactive prerender",
+                "install setup nuget package AddBitBheadlessServices quick start program.cs using render mode interactive prerender csp content security policy strict style-src StrictCsp",
                 typeof(GettingStarted), styling),
             new("/tw", "Styling with Tailwind",
                 "The same components styled with Tailwind v4 utilities and custom data-* variants.",
@@ -222,6 +222,7 @@ public static class DocsCatalog
         "data-interactive" => (typeof(Css.DataInteractivePage), typeof(Tw.DataInteractivePage)),
         "date-field" => (typeof(Css.DateFieldPage), typeof(Tw.DateFieldPage)),
         "date-picker" => (typeof(Css.DatePickerPage), typeof(Tw.DatePickerPage)),
+        "date-range-picker" => (typeof(Css.DateRangePickerPage), typeof(Tw.DateRangePickerPage)),
         "dialog" => (typeof(Css.DialogPage), typeof(Tw.DialogPage)),
         "disclosure" => (typeof(Css.DisclosurePage), typeof(Tw.DisclosurePage)),
         "drawer" => (typeof(Css.DrawerPage), typeof(Tw.DrawerPage)),

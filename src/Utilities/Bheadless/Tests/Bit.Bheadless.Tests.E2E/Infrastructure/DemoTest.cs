@@ -96,6 +96,22 @@ public abstract partial class DemoTest
     /// </summary>
     protected async Task<IPage> OpenDemoAsync(string path)
     {
+        var page = await NewPageAsync();
+
+        var response = await page.GotoAsync(BaseUrl + path, new PageGotoOptions { Timeout = 90_000 });
+        if (response is not { Ok: true })
+            Assert.Fail($"{path} responded {response?.Status}.{Environment.NewLine}Recent demo server output:{Environment.NewLine}{Session.Host?.RecentOutput}");
+
+        await WaitForInteractiveAsync(page);
+        return page;
+    }
+
+    /// <summary>
+    /// A blank page in the test's context whose script errors fail the test, for a test that has to prepare it before
+    /// it opens a demo page (an init script) or open one itself (see <see cref="OpenDemoAsync"/>).
+    /// </summary>
+    protected async Task<IPage> NewPageAsync()
+    {
         var page = await _context!.NewPageAsync();
 
         page.PageError += (_, error) => { lock (_errors) _errors.Add("page error: " + error); };
@@ -106,11 +122,6 @@ public abstract partial class DemoTest
                 lock (_errors) _errors.Add("console: " + message.Text);
         };
 
-        var response = await page.GotoAsync(BaseUrl + path, new PageGotoOptions { Timeout = 90_000 });
-        if (response is not { Ok: true })
-            Assert.Fail($"{path} responded {response?.Status}.{Environment.NewLine}Recent demo server output:{Environment.NewLine}{Session.Host?.RecentOutput}");
-
-        await WaitForInteractiveAsync(page);
         return page;
     }
 

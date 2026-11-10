@@ -66,6 +66,9 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     private DateOnly? _lastFocusedParameter;
     private Calendar? _lastCalendar;
     private bool _focusPending;
+    // The arrow keys move the focus from here, which on Blazor Server is a round trip: keys pressed before it lands are
+    // meant for the date the focus is on its way to (_focused).
+    private readonly BitBhFocusMoves<DateOnly> _focusMoves = new();
     private bool _hasHeading;
     // Read once per render: every cell asks.
     private DateOnly _today;
@@ -95,7 +98,8 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     /// <summary>
     /// What the calendar selects. Default: <see cref="BitBhCalendarSelectionMode.Single"/>, or
     /// <see cref="BitBhCalendarSelectionMode.Range"/> / <see cref="BitBhCalendarSelectionMode.Multiple"/> when a
-    /// <c>Range…</c> / <c>Values…</c> parameter is supplied.
+    /// <c>Range…</c> / <c>Values…</c> parameter is supplied (<see cref="BitBhCalendarSelectionMode.Range"/> in a
+    /// <see cref="BitBhDateRangePicker"/>).
     /// </summary>
     [Parameter]
     public BitBhCalendarSelectionMode? SelectionMode { get; set; }
@@ -191,8 +195,9 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     public Func<DateOnly, bool>? IsDateUnavailable { get; set; }
 
     /// <summary>
-    /// Lets a range span unavailable dates. Default: false — while a range is being picked, the dates beyond the first
-    /// unavailable date on either side of its first end are disabled.
+    /// Lets a range span unavailable dates. Default: false, or the <see cref="BitBhDateRangePicker"/>'s (a value supplied
+    /// here wins over it) — while a range is being picked, the dates beyond the first unavailable date on either side of
+    /// its first end are disabled.
     /// </summary>
     [Parameter]
     public bool AllowsNonContiguousRanges { get; set; }
@@ -271,24 +276,33 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
                 return BitBhCalendarSelectionMode.Range;
             if (IsProvided(nameof(Values)) || DefaultValues is not null || ValuesChanged.HasDelegate || OnValuesChange.HasDelegate || ValuesExpression is not null)
                 return BitBhCalendarSelectionMode.Multiple;
+            // In a date range picker the calendar picks the picker's range.
+            if (Picker is { Owner.IsRange: true } && !IsProvided(nameof(Value))) return BitBhCalendarSelectionMode.Range;
             return BitBhCalendarSelectionMode.Single;
         }
     }
 
-    // A calendar inside a date picker takes the picker's value unless it is given one of its own.
-    private bool PickerValue => Picker is not null && !IsProvided(nameof(Value)) && !IsProvided(nameof(Range)) && !IsProvided(nameof(Values));
+    // A calendar inside a date picker takes the picker's value (a range picker's range) unless it is given one of its own -
+    // a value or an initial one - or selects something else than the picker: a range (or dates) in a date picker, one date
+    // in a range picker. It then keeps its selection itself, as a calendar outside a picker does.
+    private bool PickerValue => Picker is { } picker && !IsProvided(nameof(Value)) && !IsProvided(nameof(Range)) && !IsProvided(nameof(Values))
+                                && (picker.Owner.IsRange ? DefaultRange is null : DefaultValue is null)
+                                && EffectiveMode == (picker.Owner.IsRange ? BitBhCalendarSelectionMode.Range : BitBhCalendarSelectionMode.Single);
 
     /// <summary>The selected date (single selection).</summary>
-    public DateOnly? CurrentValue => IsProvided(nameof(Value)) ? Value : PickerValue ? Picker!.Owner.CurrentValue : _value;
+    public DateOnly? CurrentValue => IsProvided(nameof(Value)) ? Value : PickerValue ? Picker!.Owner.SelectedDate : _value;
 
     /// <summary>The selected range (range selection).</summary>
-    public BitBhDateRange? CurrentRange => IsProvided(nameof(Range)) ? Range : _range;
+    public BitBhDateRange? CurrentRange => IsProvided(nameof(Range)) ? Range : PickerValue ? Picker!.Owner.SelectedRange : _range;
 
     /// <summary>The selected dates (multiple selection).</summary>
     public IReadOnlyList<DateOnly> CurrentValues => IsProvided(nameof(Values)) ? Values ?? [] : _values;
 
-    internal DateOnly? EffectiveMin => Min ?? Picker?.Owner.Min;
-    internal DateOnly? EffectiveMax => Max ?? Picker?.Owner.Max;
+    internal DateOnly? EffectiveMin => Min ?? Picker?.Owner.MinDate;
+    internal DateOnly? EffectiveMax => Max ?? Picker?.Owner.MaxDate;
+    private bool EffectiveAllowsNonContiguousRanges => IsProvided(nameof(AllowsNonContiguousRanges)) || Picker is null
+        ? AllowsNonContiguousRanges
+        : Picker.Owner.AllowsNonContiguousRanges;
     private Func<DateOnly, bool>? EffectiveUnavailable => IsDateUnavailable ?? Picker?.Owner.IsDateUnavailable;
     internal DayOfWeek EffectiveFirstDayOfWeek => FirstDayOfWeek ?? Picker?.Owner.FirstDayOfWeek ?? System.Format.FirstDayOfWeek;
     internal BitBhDirection EffectiveDir => Dir ?? Picker?.Owner.EffectiveDir ?? CascadedDir;
@@ -326,25 +340,16 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     private bool ComputeValueInvalid() => EffectiveMode switch
     {
         BitBhCalendarSelectionMode.Single => CurrentValue is { } v && !IsSelectableValue(v),
-        BitBhCalendarSelectionMode.Range => CurrentRange is { } r && (!IsSelectableValue(r.Start) || !IsSelectableValue(r.End)
-                                            || (!AllowsNonContiguousRanges && EffectiveUnavailable is not null && SpansUnavailable(r))),
+        BitBhCalendarSelectionMode.Range => CurrentRange is { } r
+                                            && !r.IsSelectable(LowerBound, UpperBound, EffectiveUnavailable, EffectiveAllowsNonContiguousRanges),
         _ => CurrentValues.Any(v => !IsSelectableValue(v)),
     };
-
-    private bool SpansUnavailable(BitBhDateRange range)
-    {
-        // Long ranges are not walked day by day: only what a person could pick by hand is checked.
-        if (range.Days > 3700 || EffectiveUnavailable is not { } unavailable) return false;
-        for (var d = range.Start; d <= range.End; d = d.AddDays(1))
-            if (unavailable(d)) return true;
-        return false;
-    }
 
     private bool IsInBounds(DateOnly date) => date >= LowerBound && date <= UpperBound;
 
     private bool IsUnavailable(DateOnly date) => EffectiveUnavailable?.Invoke(date) ?? false;
 
-    private bool IsSelectableValue(DateOnly date) => IsInBounds(date) && !IsUnavailable(date);
+    private bool IsSelectableValue(DateOnly date) => BitBhDateRange.IsSelectable(date, LowerBound, UpperBound, EffectiveUnavailable);
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -353,7 +358,7 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
         _value = DefaultValue;
         _range = DefaultRange;
         _values = DefaultValues ?? [];
-        FieldContext?.SetControlFocus(FocusAsync);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     protected override void OnParametersSet()
@@ -642,8 +647,8 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     /// <summary>The nearest unavailable dates before and after <paramref name="anchor"/> (a range can't span them).</summary>
     private (DateOnly? Low, DateOnly? High)? BoundsAround(DateOnly anchor)
     {
-        if (AllowsNonContiguousRanges || EffectiveUnavailable is not { } unavailable) return null;
-        const int Limit = 3700;
+        if (EffectiveAllowsNonContiguousRanges || EffectiveUnavailable is not { } unavailable) return null;
+        const int Limit = BitBhDateRange.MaxCheckedDays;
         DateOnly? low = null, high = null;
         for (var (d, i) = (anchor, 0); d > LowerBound && i < Limit; i++)
         {
@@ -704,6 +709,8 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
         target = Constrain(target);
         // Pinned at Min / Max (or already there): the focus stays where it is.
         if (target == _focused) return;
+        _focusMoves.Leaving(_focused);
+        _focusMoves.Requesting(target);
         Reveal(target);
         if (_anchor is not null) _previewEnd = _focused;
         _focusPending = true;
@@ -734,6 +741,7 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     internal async Task HandleKeyDownAsync(DateOnly date, KeyboardEventArgs e)
     {
         if (IsDisabled || e.CtrlKey || e.MetaKey || e.AltKey) return;
+        if (date != _focused && _focusMoves.IsLeftBehind(date)) date = _focused;
         var system = System;
         var rtl = EffectiveDir == BitBhDirection.Rtl;
         var weekStart = ((int)date.DayOfWeek - (int)EffectiveFirstDayOfWeek + 7) % 7;
@@ -749,17 +757,28 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
             case "End": await MoveFocusAsync(system.AddDays(date, 6 - weekStart)); break;
             case "Enter" or " ": await SelectAsync(date); break;
             case "Escape" when _anchor is not null:
-                _anchor = null;
-                _previewEnd = null;
-                _anchorBounds = null;
-                StateHasChanged();
+                // The cell keeps this Escape from a popover around the calendar (stopPropagation while picking). On
+                // WebAssembly the browser's dispatch reads that flag only after this handler has run - and rendered the
+                // cell without it - so the pick is dropped once the dispatch is over.
+                await Task.Yield();
+                CancelPicking();
                 break;
         }
     }
 
     internal async Task HandleFocusAsync(DateOnly date)
     {
-        if (date == _focused || IsDisabled || !IsInBounds(date)) return;
+        if (date == _focused)
+        {
+            // The focus has landed where it was sent.
+            _focusMoves.Clear();
+            return;
+        }
+        // The echo of a focus move the next key already overtook: the focus is on its way further. A focus event on any
+        // other cell - the one the keys came from included - is the user's (a click).
+        if (_focusMoves.IsEcho(date)) return;
+        _focusMoves.Clear();
+        if (IsDisabled || !IsInBounds(date)) return;
         _focused = date;
         if (_anchor is not null) _previewEnd = date;
         StateHasChanged();
@@ -843,6 +862,13 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
         var changed = CurrentRange != range;
         _lastSelection = range.Start;
         var message = Strings.SelectedRange(System.LongDate(range.Start), System.LongDate(range.End));
+        if (PickerValue)
+        {
+            StateHasChanged();
+            await AnnounceAsync(message);
+            await Picker!.Owner.SelectRangeAsync(range);
+            return;
+        }
         if (!IsProvided(nameof(Range))) _range = range;
         if (changed)
         {
@@ -887,6 +913,6 @@ public class BitBhCalendar : BitBhComponentBase, IDisposable
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
     }
 }

@@ -165,7 +165,8 @@ public class BitBhCommand : BitBhComponentBase, IDisposable
             builder.OpenElement(40, "label");
             builder.AddAttribute(41, "id", Context.LabelId);
             builder.AddAttribute(42, "for", Context.InputId);
-            builder.AddAttribute(43, "style", BitBhVisuallyHidden.Style);
+            if (Options.StrictCsp) RequestStrictStyles();
+            builder.AddAttribute(43, StyleAttribute, BitBhVisuallyHidden.Style);
             builder.AddContent(44, Label);
             builder.CloseElement();
         }
@@ -200,7 +201,7 @@ public class BitBhCommand : BitBhComponentBase, IDisposable
 
     private void ScheduleAnnouncement()
     {
-        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
         _announce.Schedule(600, async () =>
         {
             var count = Context.VisibleCount;

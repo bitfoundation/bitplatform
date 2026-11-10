@@ -51,6 +51,7 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     private string _query = string.Empty;
     private bool _userTyped;
     private BitBhMenuFocus? _pendingHighlight;
+    private Task? _highlighting;
     private BitBhDelayedAction? _announce;
 
     [CascadingParameter]
@@ -291,20 +292,32 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!_open) return;
+        await ApplyPendingHighlightAsync();
+    }
 
-        if (_pendingHighlight is { } highlight)
+    // The highlight the panel opens with, once its options are there. Placing it waits on the options' order (a round trip):
+    // the keys that arrive meanwhile wait for it, in the order they came, rather than be overwritten by it.
+    private Task ApplyPendingHighlightAsync()
+    {
+        if (_highlighting is { IsCompleted: false } pending) return pending;
+        var task = PlacePendingHighlightAsync();
+        _highlighting = task.IsCompleted ? null : task;
+        return task;
+    }
+
+    private async Task PlacePendingHighlightAsync()
+    {
+        if (_pendingHighlight is not { } highlight) return;
+        _pendingHighlight = null;
+        await State.EnsureOrderAsync();
+        var selected = State.FirstSelected();
+        var index = highlight switch
         {
-            _pendingHighlight = null;
-            await State.EnsureOrderAsync();
-            var selected = State.FirstSelected();
-            var index = highlight switch
-            {
-                BitBhMenuFocus.First => selected >= 0 ? selected : State.FirstEnabled(),
-                BitBhMenuFocus.Last => selected >= 0 ? selected : State.LastEnabled(),
-                _ => -1,
-            };
-            if (index >= 0) State.SetActiveIndex(index);
-        }
+            BitBhMenuFocus.First => selected >= 0 ? selected : State.FirstEnabled(),
+            BitBhMenuFocus.Last => selected >= 0 ? selected : State.LastEnabled(),
+            _ => -1,
+        };
+        if (index >= 0) State.SetActiveIndex(index);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -434,7 +447,7 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     private void ScheduleResultsAnnouncement()
     {
         if (!AnnounceResults) return;
-        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _announce ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
         _announce.Schedule(500, async () =>
         {
             if (!_open) return;
@@ -541,6 +554,11 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     internal async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
         if (IsDisabled) return;
+
+        // A key pressed before the panel's first render was done - right after the key that opened it, over a Blazor
+        // Server connection - moves from the highlight the panel opens with: applied after it, that highlight would
+        // undo the key.
+        if (_open && (_highlighting is { IsCompleted: false } || (_pendingHighlight is not null && State.Count > 0))) await ApplyPendingHighlightAsync();
 
         switch (e.Key)
         {

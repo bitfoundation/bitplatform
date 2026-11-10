@@ -11,7 +11,10 @@ namespace Bit.Bheadless;
 ///
 /// <para><b>Styling hooks:</b> <c>data-state="open|closed"</c> (kept <c>closed</c> during exit animations),
 /// <c>data-side</c>, and while the panel is swiped <c>data-swiping</c> and <c>--bit-bh-drawer-swipe-progress</c> (0-1) -
-/// fade it with the swipe: <c>opacity: calc(1 - var(--bit-bh-drawer-swipe-progress, 0))</c>.</para>
+/// fade it with the swipe: <c>opacity: calc(1 - var(--bit-bh-drawer-swipe-progress, 0))</c>. A drawer with snap points
+/// also gives it <c>data-snap-point</c> and <c>--bit-bh-drawer-fade</c> (0-1), at rest too - fade it with <c>opacity:
+/// var(--bit-bh-drawer-fade, 1)</c> (see <see cref="BitBhDrawer.FadeFromIndex"/>); its swipe progress then counts from the
+/// smallest snap point to closed.</para>
 /// </summary>
 public class BitBhDrawerBackdrop : BitBhComponentBase, IDisposable
 {
@@ -59,6 +62,7 @@ public class BitBhDrawerBackdrop : BitBhComponentBase, IDisposable
         if (GetAdditionalAttribute("style") is null && GetAdditionalAttribute("class") is null)
             attrs["style"] = "position:fixed;inset:0;z-index:50;";
         BitBhDrawer.AddNestingAttributes(attrs, DrawerContext);
+        BitBhDrawer.AddSnapPointAttribute(attrs, DrawerContext);
         return attrs;
     }
 

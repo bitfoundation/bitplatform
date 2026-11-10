@@ -49,7 +49,8 @@ public class BitBhSortableHandle<TItem> : BitBhComponentBase
         attrs["aria-roledescription"] = "sortable";
         SetAriaBool(attrs, "aria-pressed", grabbed);
         if (Sortable is not null) attrs["aria-describedby"] = Sortable.InstructionsId;
-        attrs[BitBhKeyboard.KeysAttribute] = grabbed
+        // Every handle of the group drives a grab in progress (a key can come from the one the focus has not left yet).
+        attrs[BitBhKeyboard.KeysAttribute] = grabbed || Sortable?.IsGrabActive == true
             ? "ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape Tab"
             : "Space Enter";
         if (ItemContext?.Disabled == true) attrs["aria-disabled"] = "true";

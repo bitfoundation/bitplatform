@@ -99,7 +99,7 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
     /// <summary>Whether the popover is open because of a hover (not pinned by a click).</summary>
     internal bool OpenedByHover => IsOpen && _openedByHover;
 
-    private BitBhDelayedAction HoverTimer => _hoverTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction HoverTimer => _hoverTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
     internal void HoverEnter()
     {

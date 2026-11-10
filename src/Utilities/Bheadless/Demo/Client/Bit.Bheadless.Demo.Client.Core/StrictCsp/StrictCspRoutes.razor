@@ -1,0 +1,25 @@
+﻿@* The root of /strict-csp, which App.razor renders in place of Routes and the server serves with a
+   Content-Security-Policy whose style-src has no 'unsafe-inline' (Program.cs). Every Bheadless
+   component under it runs in strict CSP mode (BitBhOptions.StrictCsp, cascaded here so the rest of the
+   site keeps the default mode): no style attribute in the markup, the styles applied through the
+   CSSOM by bit-bheadless-csp.js. The E2E suite (StrictCspTests) fails on any violation the policy
+   reports, so a component that renders a style attribute again is caught there.
+
+   No site chrome: the header, the docs shell and the samples of the other pages are not rendered in
+   strict mode, and their own style attributes would be refused. The .page / .bb-docs-content
+   wrappers are the ones the E2E suite waits on and searches in. *@
+
+<CascadingValue Value="_options" IsFixed="true">
+    <div class="page strict-csp" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+        <main id="csp-main" tabindex="-1">
+            <div class="bb-docs-content">
+                <StrictCspPage />
+            </div>
+        </main>
+    </div>
+    <BitBhPortalOutlet />
+</CascadingValue>
+
+@code {
+    private readonly BitBhOptions _options = new() { StrictCsp = true };
+}

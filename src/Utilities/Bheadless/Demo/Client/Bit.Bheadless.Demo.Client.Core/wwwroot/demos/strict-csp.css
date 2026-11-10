@@ -1,0 +1,132 @@
+/* /strict-csp (StrictCsp/StrictCspPage.razor): the page is served with style-src 'self', so its look comes from
+   this file alone. The components' own styles (positions, layout, clipping) are not here: they apply through the
+   CSSOM, from data-bit-bh-style. Selectors stay off class names wherever a class would turn a part's default
+   styles off (dialog backdrop and panel). */
+
+.strict-csp {
+    min-height: 100vh;
+    padding: 1.5rem;
+    background: var(--bb-bg, #fff);
+    color: var(--bb-fg, #1b1b1b);
+}
+
+.strict-csp main:focus {
+    outline: none;
+}
+
+.csp-samples {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 40rem;
+}
+
+.csp-samples h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+}
+
+.csp-skip {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    background: #0f5ab4;
+    color: #fff;
+}
+
+.csp-button {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #767676;
+    border-radius: 4px;
+    background: #fff;
+    color: #1b1b1b;
+}
+
+/* Slider: the root, the track and the thumb's position are the slider's. */
+[data-testid="slider"] {
+    height: 1.25rem;
+}
+
+[data-testid="slider-track"] {
+    height: 4px;
+    background: #c8c8c8;
+}
+
+[data-testid="slider-range"] {
+    height: 100%;
+    background: #0f5ab4;
+}
+
+[data-testid="slider-thumb"] {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #0f5ab4;
+}
+
+[data-testid="progress"] {
+    height: 0.5rem;
+    background: #c8c8c8;
+    overflow: hidden;
+}
+
+[data-testid="progress-indicator"] {
+    height: 100%;
+    width: calc(var(--bit-bh-progress, 0) * 1%);
+    background: #0f5ab4;
+}
+
+[data-testid="splitter"] {
+    height: 6rem;
+    border: 1px solid #c8c8c8;
+}
+
+[data-testid="splitter"] > [role="separator"] {
+    width: 6px;
+    background: #c8c8c8;
+}
+
+[data-testid="scroll-area"] {
+    height: 8rem;
+    border: 1px solid #c8c8c8;
+}
+
+[data-testid="scroll-viewport"] {
+    height: 100%;
+}
+
+[data-testid="scroll-area"] [data-bit-bh-scroll-area-scrollbar] {
+    width: 8px;
+}
+
+[data-testid="scroll-area"] [data-bit-bh-scroll-area-thumb] {
+    background: #767676;
+    border-radius: 4px;
+}
+
+.csp-ratio-frame {
+    width: 16rem;
+}
+
+.csp-ratio-content {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    background: #e6eef8;
+}
+
+[data-testid="dialog-backdrop"] {
+    background: rgb(0 0 0 / 0.4);
+}
+
+[data-testid="dialog-panel"] {
+    width: 20rem;
+    margin: 20vh auto 0;
+    padding: 1rem;
+    background: #fff;
+    color: #1b1b1b;
+}
+
+.csp-tooltip {
+    padding: 0.25rem 0.5rem;
+    background: #1b1b1b;
+    color: #fff;
+}

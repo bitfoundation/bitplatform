@@ -310,6 +310,43 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Options of different heights (virtualized)" Code="@_variableCode">
+    <Description>
+        Virtualized options don't have to share a height. With <code>VariableItemSize="true"</code> the panel
+        measures every option as it renders - and again whenever one resizes - so text can wrap and an option can
+        carry details. <code>ItemSize</code> is then only the estimate for the options not rendered yet (56px
+        here); the scroll position stays put as measurements replace estimates, and Home, End, Page Up and Page
+        Down scroll the highlighted option fully into view. The runtime sizes the spacers through the CSSOM, so
+        nothing renders an inline <code>style</code> attribute.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="Issue" @bind-Value="issue" class="relative inline-block min-w-64">
+            <BitBhListboxButton aria-label="Issue" TValue="Issue" Placeholder="Pick one of 5,000 issues…"
+                             class="flex w-full items-center rounded-lg border border-zinc-300 bg-white py-2 pl-3.5 pr-9 text-left text-sm text-zinc-900 cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-placeholder:text-zinc-500" />
+            <span aria-hidden="true" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500">▾</span>
+            <BitBhListboxOptions TValue="Issue"
+                              Items="@Issues"
+                              ItemText="@(i => $"{i.Title} (#{i.Number})")"
+                              Virtualize="true"
+                              VariableItemSize="true"
+                              ItemSize="56"
+                              Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                              class="z-9999 m-0 h-72 w-80 max-w-[calc(100vw-2rem)] list-none overflow-y-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                <ItemTemplate Context="o">
+                    <span class="@($"flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-2 text-sm {(o.IsActive ? "bg-blue-50" : "")}")">
+                        <span class="@($"font-semibold {(o.IsSelected ? "text-blue-700" : "text-zinc-900")}")">#@(o.Value.Number) · @o.Value.Title</span>
+                        @if (o.Value.Details.Length > 0)
+                        {
+                            <span class="text-xs leading-snug text-zinc-600">@o.Value.Details</span>
+                        }
+                    </span>
+                </ItemTemplate>
+            </BitBhListboxOptions>
+        </BitBhListbox>
+        <span class="text-sm text-zinc-500">Selected: <strong class="text-zinc-900">@(issue is null ? "(none)" : $"#{issue.Number}")</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
 @code {
     // 10 adjectives × 10 animals × 100 = 10,000 options.
     private static readonly string[] VirtualItems = BuildVirtualItems();
@@ -321,6 +358,27 @@
         string[] animals = ["Badger", "Crane", "Dingo", "Falcon", "Gecko", "Heron", "Ibis", "Jaguar", "Koala", "Lynx"];
         return Enumerable.Range(0, 10_000)
             .Select(i => $"{adjectives[i / 1000]} {animals[i / 100 % 10]} {i % 100 + 1}")
+            .ToArray();
+    }
+
+    // 5,000 issues whose details run from nothing to a few lines: options of different heights.
+    private sealed record Issue(int Number, string Title, string Details);
+    private static readonly Issue[] Issues = BuildIssues();
+    private Issue? issue;
+
+    private static Issue[] BuildIssues()
+    {
+        string[] areas = ["Build", "Docs", "Forms", "Grid", "Menus", "Overlays", "Routing", "Theming"];
+        string[] problems = ["fails on CI", "flickers", "is slow", "loses focus", "misaligns", "needs a test", "throws", "wraps badly"];
+        string[] details =
+        [
+            "",
+            "Seen on narrow screens only.",
+            "Happens after the second render, not the first. A reload hides it until the next navigation.",
+            "Reported by three teams. Open the page, resize the window, then press Tab twice: the focus ring lands on the wrong element and stays there until the page is scrolled.",
+        ];
+        return Enumerable.Range(1, 5_000)
+            .Select(n => new Issue(n, $"{areas[n % 8]} {problems[n / 8 % 8]}", details[n * 7 % 4]))
             .ToArray();
     }
 
@@ -385,6 +443,40 @@
             .Select(i => $"{adjectives[i / 1000]} {animals[i / 100 % 10]} {i % 100 + 1}")
             .ToArray();
     }
+}
+""";
+
+    private const string _variableCode = """
+<BitBhListbox TValue="Issue" @bind-Value="issue" class="relative inline-block min-w-64">
+    <BitBhListboxButton aria-label="Issue" TValue="Issue" Placeholder="Pick one of 5,000 issues…"
+                     class="flex w-full items-center rounded-lg border border-zinc-300 bg-white py-2 pl-3.5 pr-9 text-left text-sm text-zinc-900 cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-placeholder:text-zinc-500" />
+    <span aria-hidden="true" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500">▾</span>
+
+    @* Measured as they render: ItemSize is the estimate for the rest *@
+    <BitBhListboxOptions TValue="Issue"
+                      Items="@Issues"
+                      ItemText="@(i => $"{i.Title} (#{i.Number})")"
+                      Virtualize="true"
+                      VariableItemSize="true"
+                      ItemSize="56"
+                      Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                      class="z-9999 m-0 h-72 w-80 max-w-[calc(100vw-2rem)] list-none overflow-y-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+        <ItemTemplate Context="o">
+            <span class="@($"flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-2 text-sm {(o.IsActive ? "bg-blue-50" : "")}")">
+                <span class="@($"font-semibold {(o.IsSelected ? "text-blue-700" : "text-zinc-900")}")">#@(o.Value.Number) · @o.Value.Title</span>
+                @if (o.Value.Details.Length > 0)
+                {
+                    <span class="text-xs leading-snug text-zinc-600">@o.Value.Details</span>
+                }
+            </span>
+        </ItemTemplate>
+    </BitBhListboxOptions>
+</BitBhListbox>
+
+@code {
+    private sealed record Issue(int Number, string Title, string Details);
+    private static readonly Issue[] Issues = …; // 5,000 issues, details from none to a few lines
+    private Issue? issue;
 }
 """;
 

@@ -120,9 +120,9 @@ public class BitBhNavigationMenu : BitBhComponentBase, IDisposable
 
     private BitBhDirection EffectiveDir => Dir ?? CascadedDir;
 
-    private BitBhDelayedAction OpenTimer => _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction OpenTimer => _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
-    private BitBhDelayedAction CloseTimer => _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+    private BitBhDelayedAction CloseTimer => _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
 
     // While nothing is open and nothing closed a moment ago, hovering waits for DelayDuration.
     private bool IsOpenDelayed => SkipDelayDuration <= 0

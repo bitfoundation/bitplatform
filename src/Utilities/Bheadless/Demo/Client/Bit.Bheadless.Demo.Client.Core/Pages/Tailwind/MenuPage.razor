@@ -227,6 +227,35 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Open on hover" Code="@_hoverCode">
+    <Description>
+        <code>OpenOnHover</code> opens the menu when the pointer rests on the button for <code>HoverOpenDelay</code>
+        (here 200 ms) and closes it <code>HoverCloseDelay</code> (here 400 ms) after the pointer has left the button
+        and the menu. The hover leaves the focus where it is - type in the field, hover the button, keep typing. On the
+        button, <kbd>Enter</kbd>, <kbd>Space</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd> moves the focus into the menu; with
+        nothing focused, so does one of the menu's own keys (the arrows, <kbd>Home</kbd> / <kbd>End</kbd>,
+        <kbd>Enter</kbd>, <kbd>Space</kbd>). A click on the button keeps the menu open; Escape closes it from anywhere.
+        See the menubar page for site navigation.
+    </Description>
+    <LiveContent>
+        <input class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" aria-label="Notes" placeholder="Type here, then hover Account" />
+        <BitBhMenu class="relative inline-block" OpenOnHover="true" HoverOpenDelay="200" HoverCloseDelay="400">
+            <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                <Template Context="b">
+                    Account
+                    <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                </Template>
+            </BitBhMenuButton>
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="z-[9999] m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
+                <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Profile">Profile</BitBhMenuItem>
+                <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Settings">Settings</BitBhMenuItem>
+                <BitBhMenuItem OnClick='@(() => Log("Sign out"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Sign out">Sign out</BitBhMenuItem>
+            </BitBhMenuItems>
+        </BitBhMenu>
+        <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
 @code {
     private string? lastAction;
 
@@ -358,5 +387,29 @@
         <BitBhMenuItem As="a" href="tw/accordion"  Label="Accordion"  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Accordion</BitBhMenuItem>
     </BitBhMenuItems>
 </BitBhMenu>
+""";
+
+    private const string _hoverCode = """
+<input class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" aria-label="Notes" placeholder="Type here, then hover Account" />
+<BitBhMenu class="relative inline-block" OpenOnHover="true" HoverOpenDelay="200" HoverCloseDelay="400">
+    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+        <Template Context="b">
+            Account
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhMenuButton>
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })" class="z-[9999] m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg outline-none">
+        <BitBhMenuItem OnClick='@(() => Log("Profile"))'  Label="Profile"  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Profile</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Settings"))' Label="Settings" class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Settings</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Sign out"))' Label="Sign out" class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Sign out</BitBhMenuItem>
+    </BitBhMenuItems>
+</BitBhMenu>
+<span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
 """;
 }

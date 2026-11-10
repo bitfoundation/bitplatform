@@ -289,6 +289,13 @@ public sealed class BitBhFloatingController : IAsyncDisposable
         return _interop.FloatingUpdateAsync(Handle, options);
     }
 
+    /// <summary>
+    /// Changes whether the open surface's layer is hover-driven (<see cref="BitBhLayerOptions.Hover"/>): a menu the pointer
+    /// opened is no longer one once the keyboard or a click took it over.
+    /// </summary>
+    internal ValueTask SetHoverAsync(bool hover)
+        => _interop.FloatingUpdateAsync(Handle, new Dictionary<string, object?> { ["hover"] = hover });
+
     /// <summary>Moves the virtual anchor point (context menus re-opened at a new position).</summary>
     public ValueTask SetPointAsync(double x, double y) => _interop.FloatingSetPointAsync(Handle, x, y);
 

@@ -51,6 +51,117 @@ public sealed class PointerAndScrollTests : DemoTest
             """), overflow => overflow <= 0.5, "the last option inside the panel");
     }
 
+    /// <summary>
+    /// How far the option the control's <c>aria-activedescendant</c> names sticks out of its panel's view (≤ 0: fully in
+    /// view), and its <c>aria-posinset</c>; null while it is not rendered.
+    /// </summary>
+    private const string ActiveOptionFit =
+        """
+        c => {
+          const option = document.getElementById(c.getAttribute('aria-activedescendant'));
+          if (!option) return null;
+          const list = option.closest('[role=listbox]'), r = option.getBoundingClientRect(), l = list.getBoundingClientRect();
+          const top = l.top + list.clientTop, bottom = top + list.clientHeight;
+          return option.getAttribute('aria-posinset') + ' ' + Math.max(top - r.top, r.bottom - bottom);
+        }
+        """;
+
+    private static bool FullyInView(string? fit, string posinset) =>
+        fit?.Split(' ') is [var pos, var overflow] && pos == posinset && double.Parse(overflow, System.Globalization.CultureInfo.InvariantCulture) <= 0.5;
+
+    [TestMethod]
+    public async Task End_scrolls_the_last_of_the_options_of_different_heights_fully_into_view()
+    {
+        var page = await OpenDemoAsync("/listbox");
+        var button = Sample(page, "Options of different heights (virtualized)").Locator("[role=combobox]").First;
+        await button.ClickAsync();
+        await page.Keyboard.PressAsync("End");
+
+        // Scrolled to where the estimates put it, then - once rendered and measured - to where it really is.
+        await PollAsync(() => button.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "5000"), "option 5,000 fully in view");
+        await page.Keyboard.PressAsync("Home");
+        await PollAsync(() => button.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "1"), "option 1 fully in view");
+        await page.Keyboard.PressAsync("PageDown");
+        await PollAsync(() => button.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "11"), "option 11 fully in view");
+    }
+
+    [TestMethod]
+    public async Task Page_Down_keeps_the_highlighted_option_of_different_heights_fully_in_view()
+    {
+        var page = await OpenDemoAsync("/combobox");
+        var input = Sample(page, "Options of different heights (virtualized)").Locator("input[role=combobox]");
+        await input.ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        foreach (var expected in new[] { "11", "21", "31" })
+        {
+            await page.Keyboard.PressAsync("PageDown");
+            await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, expected), $"option {expected} fully in view");
+        }
+
+        // A new query starts over: the first match is highlighted, at the top.
+        await page.Keyboard.TypeAsync("pitf");
+        await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "1"), "the first match fully in view");
+    }
+
+    [TestMethod]
+    public async Task Options_of_different_heights_hold_still_as_they_are_measured()
+    {
+        var page = await OpenDemoAsync("/listbox");
+        var button = Sample(page, "Options of different heights (virtualized)").Locator("[role=combobox]").First;
+        await button.ClickAsync();
+        await Expect(button).ToHaveAttributeAsync("aria-expanded", "true");
+        var panel = page.Locator("#" + await button.GetAttributeAsync("aria-controls"));
+        await Expect(panel).ToBeVisibleAsync();
+
+        // The option at the top of the panel: its aria-posinset and how far its top is from the panel's.
+        const string top =
+            """
+            l => {
+              const t = l.getBoundingClientRect().top + l.clientTop;
+              const o = [...l.querySelectorAll('[role=option]')].find(o => o.getBoundingClientRect().bottom > t + 0.5);
+              return o ? o.getAttribute('aria-posinset') + ' ' + (o.getBoundingClientRect().top - t) : null;
+            }
+            """;
+        // The offset once the list is at rest: the window it renders (the range on its first spacer, which the runtime
+        // asked for) and the option's place - which moves as the runtime measures what rendered - unchanged for a few
+        // frames in a row, rather than after a fixed wait.
+        const string offsetOf =
+            """
+            async (l, pos) => {
+              const read = () => {
+                const o = l.querySelector(`[role=option][aria-posinset="${pos}"]`);
+                const range = l.querySelector('[data-bit-bh-spacer=before]')?.getAttribute('data-bit-bh-range');
+                return { offset: o ? o.getBoundingClientRect().top - (l.getBoundingClientRect().top + l.clientTop) : null, range };
+              };
+              const frame = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+              let last = read(), still = 0;
+              for (const deadline = performance.now() + 5000; still < 10 && performance.now() < deadline;) {
+                await frame();
+                const now = read();
+                if (now.offset === last.offset && now.range === last.range) still++;
+                else { still = 0; last = now; }
+              }
+              return last.offset;
+            }
+            """;
+
+        // Halfway down, where no option has been measured: the panel renders them on estimates, then measures them.
+        await panel.EvaluateAsync("l => l.scrollTop = l.scrollHeight / 2");
+        var landed = await PollAsync(() => panel.EvaluateAsync<string?>(top), t => t is not null, "options rendered halfway down");
+
+        // Up, 40px at a time, into options measured only as they render: the option at the top moves down with the
+        // scroll - by 40px exactly - and stays there as the heights of the options above it replace their estimate.
+        for (var step = 0; step < 20; step++)
+        {
+            var parts = (await panel.EvaluateAsync<string?>(top))!.Split(' ');
+            var (pos, offset) = (parts[0], double.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture));
+            await panel.EvaluateAsync("l => l.scrollTop -= 40");
+            var moved = await panel.EvaluateAsync<double?>(offsetOf, pos);
+            Assert.IsNotNull(moved, $"Option {pos} is no longer rendered.");
+            Assert.AreEqual(offset + 40, moved.Value, 1.0, $"Option {pos} jumped (step {step}, landed on {landed}).");
+        }
+    }
+
     [TestMethod]
     public async Task A_query_typed_into_a_scrolled_combobox_shows_the_option_it_highlights()
     {

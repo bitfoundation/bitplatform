@@ -1,9 +1,15 @@
 ﻿@inherits TestBase
 @attribute [TestClass]
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.DependencyInjection
 
 @code {
     private static readonly PointerEventArgs Mouse = new() { PointerType = "mouse" };
+
+    // The hover delays run on this clock: nothing opens or closes until a test moves it past a delay.
+    private readonly ManualClock _clock = new();
+
+    public NavigationMenuTests() => Services.AddSingleton<TimeProvider>(_clock);
 
     private RenderFragment Menu(string? defaultValue = null, int delay = 200, BitBhDirection dir = BitBhDirection.Ltr,
                                 BitBhOrientation orientation = BitBhOrientation.Horizontal, bool viewport = false) =>
@@ -285,8 +291,10 @@
     {
         var cut = Render(Uncontrolled(delay: 150, closeDelay: 150));
         Trigger(cut, "Products").PointerEnter(Mouse);
+        _clock.Advance(149);
         Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
-        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded")), TimeSpan.FromSeconds(3));
+        _clock.Advance(1);
+        Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded"));
 
         // While one is open, the next opens at once.
         Trigger(cut, "Products").PointerLeave(Mouse);
@@ -298,8 +306,13 @@
         Trigger(cut, "Learn").PointerLeave(Mouse);
         ContentOf(cut, "Learn").PointerEnter(Mouse);
         Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        _clock.Advance(1000);
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
         ContentOf(cut, "Learn").PointerLeave(Mouse);
-        cut.WaitForAssertion(() => Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded")), TimeSpan.FromSeconds(3));
+        _clock.Advance(149);
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        _clock.Advance(1);
+        Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
     }
 
     [TestMethod]

@@ -193,7 +193,7 @@ public class BitBhPinInput : BitBhComponentBase, IDisposable
     {
         _value = DefaultValue ?? string.Empty;
         // The label focuses the first empty position.
-        FieldContext?.SetControlFocus(FocusAsync);
+        FieldContext?.SetControlFocus(this, FocusAsync);
     }
 
     protected override void OnParametersSet()
@@ -404,7 +404,7 @@ public class BitBhPinInput : BitBhComponentBase, IDisposable
     public virtual void Dispose()
     {
         _binding?.Dispose();
-        FieldContext?.SetControlFocus(null);
+        FieldContext?.ReleaseControlFocus(this);
     }
 }
 

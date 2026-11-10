@@ -22,8 +22,9 @@ internal interface IBitBhDateFieldOwner
 }
 
 /// <summary>
-/// The state a <see cref="BitBhDateField"/>, <see cref="BitBhTimeField"/> or <see cref="BitBhDatePicker"/> shares with
-/// its <see cref="BitBhDateFieldSegments"/> and <see cref="BitBhDateFieldSegment"/>s.
+/// The state a <see cref="BitBhDateField"/>, <see cref="BitBhTimeField"/>, <see cref="BitBhDateTimeField"/>, a picker
+/// (<see cref="BitBhDatePicker"/>, <see cref="BitBhDateTimePicker"/>) or a <see cref="BitBhDateRangePickerInput"/> shares
+/// with its <see cref="BitBhDateFieldSegments"/> and <see cref="BitBhDateFieldSegment"/>s.
 /// </summary>
 public sealed class BitBhDateFieldContext
 {

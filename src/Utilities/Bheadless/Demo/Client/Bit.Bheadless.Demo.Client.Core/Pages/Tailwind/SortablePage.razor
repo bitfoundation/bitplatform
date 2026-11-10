@@ -96,6 +96,50 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Drag between lists (kanban)" Code="@_boardCode">
+    <Description>
+        Lists with the same <code>Group</code> exchange items. Drag a card into another column - an empty
+        one too - or pick it up with the keyboard and press <kbd>←</kbd> / <kbd>→</kbd> to move it to the
+        previous or next column, <kbd>↑</kbd> / <kbd>↓</kbd> to place it, <kbd>Space</kbd> /
+        <kbd>Enter</kbd> to drop it and <kbd>Escape</kbd> to put it back where it was; each step names the
+        column and the position. Every column binds its own list with <code>@@bind-Items</code>;
+        <code>OnTransfer</code>, raised by the column that receives a card, reports the item, both
+        columns' <code>ListKey</code> and both indexes - enough to move it in a model the lists aren't
+        bound to. "Done" refuses blocked cards (<code>CanAccept</code>; <code>AllowDragOut</code> and
+        <code>AllowDropIn</code> make a list accept-only or give-only). While a pointer drags a card the
+        columns that take it carry <code>data-drop-target</code> and the one under the pointer
+        <code>data-drag-over</code>; an empty column has <code>data-empty</code> - the
+        <code>data-drop-target:</code>, <code>data-drag-over:</code> and <code>data-empty:</code> variants.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-4">
+            <div class="grid w-full grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] items-start gap-4">
+                @foreach (var column in board)
+                {
+                    <div class="grid gap-2.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                        <h3 class="m-0 flex items-center justify-between text-sm font-semibold text-zinc-900">
+                            @column.Name <span class="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium tabular-nums text-zinc-700">@column.Cards.Count</span>
+                        </h3>
+                        <BitBhSortable TItem="Card" Group="board" @bind-Items="column.Cards"
+                                    ListKey="column.Key" CanAccept="column.Accepts" OnTransfer="LogTransfer"
+                                    ItemKey="c => c.Id" ItemLabel="c => c.Title" aria-label="@column.Name"
+                                    class="m-0 flex min-h-20 w-full list-none flex-col gap-2 rounded-lg p-0 outline-2 outline-offset-4 outline-dashed outline-transparent transition data-dragging:select-none data-drop-target:outline-zinc-300 data-drag-over:bg-blue-50 data-drag-over:outline-blue-600 data-empty:items-center data-empty:justify-center data-empty:border data-empty:border-dashed data-empty:border-zinc-300 data-empty:before:text-[0.8rem] data-empty:before:text-zinc-500 data-empty:before:content-['No_cards'] *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
+                                    Context="s">
+                            <BitBhSortableHandle TItem="Card" aria-label="@($"Move {s.Item.Title}")"
+                                              class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
+                            <span class="flex-1 text-zinc-900">@s.Item.Title</span>
+                            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">@s.Item.Tag</span>
+                        </BitBhSortable>
+                    </div>
+                }
+            </div>
+            <p class="m-0 text-sm text-zinc-500">
+                Last move: <strong class="font-semibold text-zinc-900">@(lastTransfer ?? "none yet")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
 <TwDemoBlock Title="Custom announcements" Code="@_announcementsCode">
     <Description>
         Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
@@ -155,6 +199,28 @@
     private readonly List<string> reorderLog = [];
 
     private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+
+    public sealed record Card(int Id, string Title, string Tag);
+
+    public sealed class Column(string key, string name, IList<Card> cards, Func<Card, object, bool>? accepts = null)
+    {
+        public string Key { get; } = key;
+        public string Name { get; } = name;
+        public IList<Card> Cards { get; set; } = cards;
+        public Func<Card, object, bool>? Accepts { get; } = accepts;
+    }
+
+    private readonly List<Column> board =
+    [
+        new("todo", "To do", [new(1, "Write release notes", "Docs"), new(2, "Fix flaky login test", "Blocked"), new(3, "Review pull requests", "Team")]),
+        new("doing", "In progress", [new(4, "Update dependencies", "Chore")]),
+        new("done", "Done", [], accepts: (card, _) => card.Tag != "Blocked"),
+    ];
+
+    private string? lastTransfer;
+
+    private void LogTransfer(BitBhTransferEventArgs<Card> e)
+        => lastTransfer = $"“{e.Item.Title}” from {e.SourceList}[{e.OldIndex}] to {e.TargetList}[{e.NewIndex}]";
 
     private IList<string> queue = ["Blue in Green", "So What", "Naima", "Take Five"];
 
@@ -260,6 +326,61 @@
 
 @code {
     private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+}
+""";
+
+    private const string _boardCode = """
+<div class="grid w-full grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] items-start gap-4">
+    @foreach (var column in board)
+    {
+        @* No overflow clipping on a column: the dragged card leaves it. *@
+        <div class="grid gap-2.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+            <h3 class="m-0 flex items-center justify-between text-sm font-semibold text-zinc-900">
+                @column.Name <span class="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium tabular-nums text-zinc-700">@column.Cards.Count</span>
+            </h3>
+            @* One Group: the columns exchange cards. min-h-20 leaves room to drop into an empty one. *@
+            <BitBhSortable TItem="Card" Group="board" @bind-Items="column.Cards"
+                        ListKey="column.Key" CanAccept="column.Accepts" OnTransfer="LogTransfer"
+                        ItemKey="c => c.Id" ItemLabel="c => c.Title" aria-label="@column.Name"
+                        class="m-0 flex min-h-20 w-full list-none flex-col gap-2 rounded-lg p-0 outline-2 outline-offset-4 outline-dashed outline-transparent transition data-dragging:select-none data-drop-target:outline-zinc-300 data-drag-over:bg-blue-50 data-drag-over:outline-blue-600 data-empty:items-center data-empty:justify-center data-empty:border data-empty:border-dashed data-empty:border-zinc-300 data-empty:before:text-[0.8rem] data-empty:before:text-zinc-500 data-empty:before:content-['No_cards'] *:flex *:items-center *:gap-3 *:rounded-lg *:border *:border-zinc-200 *:bg-white *:py-2 *:pr-3 *:pl-2 *:text-sm *:transition *:data-dragging:border-blue-600 *:data-dragging:shadow-lg"
+                        Context="s">
+                <BitBhSortableHandle TItem="Card" aria-label="@($"Move {s.Item.Title}")"
+                                  class="inline-grid size-7 shrink-0 cursor-grab touch-none select-none place-items-center rounded-md text-base leading-none text-zinc-400 outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 aria-pressed:cursor-grabbing aria-pressed:bg-blue-600 aria-pressed:text-white">⠿</BitBhSortableHandle>
+                <span class="flex-1 text-zinc-900">@s.Item.Title</span>
+                <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">@s.Item.Tag</span>
+            </BitBhSortable>
+        </div>
+    }
+</div>
+
+<p class="m-0 text-sm text-zinc-500">
+    Last move: <strong class="font-semibold text-zinc-900">@(lastTransfer ?? "none yet")</strong>
+</p>
+
+@code {
+    public sealed record Card(int Id, string Title, string Tag);
+
+    public sealed class Column(string key, string name, IList<Card> cards, Func<Card, object, bool>? accepts = null)
+    {
+        public string Key { get; } = key;
+        public string Name { get; } = name;
+        public IList<Card> Cards { get; set; } = cards;
+        public Func<Card, object, bool>? Accepts { get; } = accepts;
+    }
+
+    private readonly List<Column> board =
+    [
+        new("todo", "To do", [new(1, "Write release notes", "Docs"), new(2, "Fix flaky login test", "Blocked"), new(3, "Review pull requests", "Team")]),
+        new("doing", "In progress", [new(4, "Update dependencies", "Chore")]),
+        // (card, source list's ListKey) → whether the column takes it.
+        new("done", "Done", [], accepts: (card, _) => card.Tag != "Blocked"),
+    ];
+
+    private string? lastTransfer;
+
+    // Raised by the column that receives the card, after @bind-Items moved it.
+    private void LogTransfer(BitBhTransferEventArgs<Card> e)
+        => lastTransfer = $"“{e.Item.Title}” from {e.SourceList}[{e.OldIndex}] to {e.TargetList}[{e.NewIndex}]";
 }
 """;
 

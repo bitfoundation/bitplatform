@@ -21,7 +21,11 @@
 
     <ItemGroup>
         <!-- The upper bounds sit below every prerelease of the next major (-alpha; nuget.org refuses -0): NuGet orders 11.0.0-rc.x below 11.0.0,
-             so a plain 11.0.0 bound would still let a net11-only prerelease into the net10.0 range. -->
+             so a plain 11.0.0 bound would still let a net11-only prerelease into the net10.0 range.
+             While the net11.0 lower bound is a dotted prerelease (11.0.0-rc.3.26522.148), nuget.org classifies the package as SemVer 2.0.0
+             and leaves it out of every search that does not send semVerLevel=2.0.0 (older clients, scripts and tools calling the search API),
+             which still find Bit.Bheadless.Testing. Move it to 11.0.0 once .NET 11 ships; a SemVer 1.0.0 prerelease bound such as 11.0.0-rc
+             exists in no feed, so every restore that has nothing else asking for Components.Web would warn NU1603 and resolve rc.1. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0-alpha)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.3.26522.148,12.0.0-alpha)" />
     </ItemGroup>
@@ -46,14 +50,14 @@
 
     <!-- The scripts under wwwroot are generated and git-ignored. On a clean build they do not exist when the default
          wwwroot/** Content glob is evaluated, so static web asset discovery would miss them and an app would get a 404
-         for _content/Bit.Bheadless/bit-bheadless.js. Generating them before ResolveProjectStaticWebAssets
+         for _content/Bit.Bheadless/bit-bheadless.js (or bit-bheadless-csp.js). Generating them before ResolveProjectStaticWebAssets
          and adding them to Content explicitly makes discovery pick them up (Remove first keeps a single entry). -->
     <Target Name="IncludeBheadlessJavaScriptAsStaticWebAsset"
             BeforeTargets="ResolveProjectStaticWebAssets"
             DependsOnTargets="BuildBheadlessJavaScript">
         <ItemGroup>
-            <Content Remove="wwwroot\bit-bheadless.js;wwwroot\Bit.Bheadless.lib.module.js" />
-            <Content Include="wwwroot\bit-bheadless.js;wwwroot\Bit.Bheadless.lib.module.js" />
+            <Content Remove="wwwroot\bit-bheadless.js;wwwroot\bit-bheadless-csp.js;wwwroot\Bit.Bheadless.lib.module.js" />
+            <Content Include="wwwroot\bit-bheadless.js;wwwroot\bit-bheadless-csp.js;wwwroot\Bit.Bheadless.lib.module.js" />
         </ItemGroup>
     </Target>
 
@@ -71,13 +75,16 @@
 
     <Target Name="BuildJavaScript"
             Inputs="@(TypeScriptFiles);tsconfig.json"
-            Outputs="wwwroot/bit-bheadless.js;wwwroot/Bit.Bheadless.lib.module.js;$(BaseIntermediateOutputPath)bit-bheadless.$(Configuration).stamp">
+            Outputs="wwwroot/bit-bheadless.js;wwwroot/bit-bheadless-csp.js;wwwroot/Bit.Bheadless.lib.module.js;$(BaseIntermediateOutputPath)bit-bheadless.$(Configuration).stamp">
         <Exec Command="node node_modules/typescript/bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify into a temp file and move it into place: an interrupted in-place minify would leave a half-written
              script that the Outputs check above takes for up to date. format=esm keeps the named exports the interop's
              import() resolves. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bheadless.js --minify --format=esm --outfile=wwwroot/bit-bheadless.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bheadless.min.js" DestinationFiles="wwwroot/bit-bheadless.js" OverwriteReadOnlyFiles="true" />
+        <!-- The strict CSP style bridge is a classic script (a page can load it from its <head>): no format conversion. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bheadless-csp.js --minify --outfile=wwwroot/bit-bheadless-csp.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bheadless-csp.min.js" DestinationFiles="wwwroot/bit-bheadless-csp.js" OverwriteReadOnlyFiles="true" />
 
         <!-- Only Release minifies, so a per-configuration stamp keeps a Debug (unminified) script from being taken for
              up to date by a Release build and the other way round. -->

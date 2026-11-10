@@ -63,6 +63,8 @@ internal sealed class BitBhBrowserEmulation
         var module = context.JSInterop.SetupModule(BitBhInterop.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         module.AddInvocationHandler(new CollectionOrderHandler(this));
+        // The emulated browser has the strict CSP style bridge in place (a runtime that could not load it answers false).
+        module.Setup<bool>("styles.enable").SetResult(true);
     }
 
     public IRenderedComponent<TComponent> Track<TComponent>(Func<IRenderedComponent<TComponent>> render)

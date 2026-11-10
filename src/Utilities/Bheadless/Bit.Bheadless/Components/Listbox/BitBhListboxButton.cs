@@ -145,9 +145,12 @@ public class BitBhListboxButton<TValue> : BitBhComponentBase, IDisposable
     {
         if (IsDisabled || ListboxContext is null) return;
         // Safari doesn't focus a <button> it clicks, and the button owns the keyboard while the panel is open
-        // (aria-activedescendant points into the panel from it).
-        await Interop.FocusAsync(ListboxContext.ButtonId);
+        // (aria-activedescendant points into the panel from it). The click toggles from the state it saw, before the
+        // focus round trip: over a Blazor Server connection a key pressed right after the click (End) arrives while the
+        // focus is on its way, opens the panel, and a toggle made after the focus landed would close it again.
+        var focus = Interop.FocusAsync(ListboxContext.ButtonId);
         await ListboxContext.Listbox.ToggleAsync();
+        await focus;
     }
 
     private Task HandleKeyDown(KeyboardEventArgs args)

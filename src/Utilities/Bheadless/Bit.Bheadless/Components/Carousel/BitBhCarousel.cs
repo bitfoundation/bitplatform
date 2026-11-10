@@ -209,7 +209,7 @@ public class BitBhCarousel : BitBhComponentBase, IAsyncDisposable
     private void Schedule()
     {
         if (_disposed || !_playing || _hovered || Count < 2) return;
-        _timer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _timer ??= new BitBhDelayedAction(a => InvokeAsync(a), GetService<TimeProvider>());
         _timer.Schedule(Math.Max(500, AutoplayInterval), async () =>
         {
             if (!CanGoNext && !Loop) await GoToAsync(0);
