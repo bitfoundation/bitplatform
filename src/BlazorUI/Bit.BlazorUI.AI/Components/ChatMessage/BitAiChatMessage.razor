@@ -106,6 +106,10 @@
                                Class="bit-btn-dft-ter"
                                Styles="@Styles?.EditButton"
                                Classes="_EditButtonClasses" />
+                    @if (MessageActionsTemplate is not null)
+                    {
+                        @MessageActionsTemplate(Message)
+                    }
                 </div>
             }
         }
@@ -165,8 +169,33 @@
                                  Disabled="Disabled"
                                  CanRegenerate="@IsLatest"
                                  OnFeedback="OnFeedbackRecorded"
+                                 ExtraActionsTemplate="@(MessageActionsTemplate?.Invoke(Message))"
                                  Styles="@Styles?.MessageActions"
                                  Classes="@Classes?.MessageActions" />
+        }
+
+        @* The prompts the reply offers to go on with, under the newest reply only and once it has finished: under an
+           older one they would answer a question the conversation has moved on from. A group named for what it holds,
+           so the buttons are announced as the choices they are. *@
+        @if (_FollowUps is { } followUps)
+        {
+            <div role="group"
+                 aria-label="@Strings.FollowUps"
+                 style="@Styles?.FollowUps"
+                 class="bit-aicms-fup @Classes?.FollowUps">
+                @foreach (var followUp in followUps)
+                {
+                    <BitButton ButtonType="BitButtonType.Button"
+                               OnClick="() => SendFollowUpAsync(followUp)"
+                               Disabled="Disabled"
+                               Rounded="true"
+                               Class="bit-btn-dft-sbg"
+                               Styles="@Styles?.FollowUpButton"
+                               Classes="@Classes?.FollowUpButton">
+                        @followUp
+                    </BitButton>
+                }
+            </div>
         }
     }
 </article>

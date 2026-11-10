@@ -57,6 +57,23 @@
     background: none;
 }
 
+// A call shown as a status line (BitAiUiOptions.ToolCallDisplay) is a line of text among the parts of its message, with
+// no frame of a card around it.
+.bit-aitcv.bit-aitcv-lin {
+    border: none;
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+}
+
+.bit-aitcv-lnr {
+    display: flex;
+    min-width: 0;
+    gap: spacing(1);
+    align-items: center;
+    color: var(--bit-AiToolCallView-header-color, #{$clr-fg-sec});
+}
+
 // The header is the button that expands the card. The pointer moves the variables it is painted from rather than the
 // colors themselves, so a header an app paints through Classes.Header keeps that paint under the pointer as well.
 .bit-aitcv-hdr {

@@ -8,6 +8,20 @@ public partial class BitAiToolApprovalDemo
     [
         new()
         {
+            Name = "ApproveAlwaysText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the button that allows every later call of the tool as well. When null, the ApproveAlways of the strings is used.",
+        },
+        new()
+        {
+            Name = "ApproveText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the button that allows the call once. When null, the Approve of the strings is used.",
+        },
+        new()
+        {
             Name = "Call",
             Type = "BitAiToolCallPart",
             DefaultValue = "",
@@ -26,6 +40,13 @@ public partial class BitAiToolApprovalDemo
         },
         new()
         {
+            Name = "DetailTemplate",
+            Type = "RenderFragment<BitAiToolCallPart>?",
+            DefaultValue = "null",
+            Description = "What is shown under the question and above the buttons, given the call: what the call will do, read from its arguments, so the reader decides on more than the name of the tool. Cascaded through a BitAiToolApprovalParams of a BitParams, it reaches the prompts a BitAiChat draws inside its tool-call cards.",
+        },
+        new()
+        {
             Name = "OnDecision",
             Type = "EventCallback<BitAiApprovalDecision>",
             DefaultValue = "",
@@ -35,12 +56,26 @@ public partial class BitAiToolApprovalDemo
         },
         new()
         {
+            Name = "RejectText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the button that declines the call. When null, the Reject of the strings is used.",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
             Description = "The session that is waiting for the decision, which it is handed to (BitAiChatSession.Approve): that is what resumes the paused turn, and what lets the approval policy remember an always-allow. Required for the decision to take effect in a session; without one, it is only recorded on the Call, which is what a layout driving its own tool loop reads.",
             LinkType = LinkType.Link,
             Href = "/components/ai/chat#chat-session",
+        },
+        new()
+        {
+            Name = "ShowApproveAlways",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Offers to allow every later call of the tool as well. A call that does not allow it (BitAiToolCallPart.AllowApproveAlways, which a transport sets per call through BitAiToolApprovalRequestedEvent.AllowApproveAlways) is never offered it, whatever this says.",
         },
         new()
         {
@@ -74,6 +109,13 @@ public partial class BitAiToolApprovalDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the question (or the reason the approval was asked for) of the BitAiToolApproval.",
+                },
+                new()
+                {
+                    Name = "Detail",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the detail (DetailTemplate) under the question of the BitAiToolApproval.",
                 },
                 new()
                 {

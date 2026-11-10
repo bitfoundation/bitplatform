@@ -146,6 +146,9 @@ public class BitAiStrings
     /// <summary>Label for negative feedback.</summary>
     public virtual string BadResponse => "Bad response";
 
+    /// <summary>The accessible name of the group of follow-up prompts offered under the newest reply.</summary>
+    public virtual string FollowUps => "Suggested follow-ups";
+
     /// <summary>Label on the button that scrolls to the newest message.</summary>
     public virtual string ScrollToLatest => "Scroll to latest";
 
@@ -507,6 +510,12 @@ public class BitAiStrings
 
     /// <summary>The result of a tool call the user declined when it asked for approval.</summary>
     public virtual string ToolCallDeclined => "The user declined this tool call.";
+
+    /// <summary>
+    /// The result of a tool call whose approval decision could not be sent to the transport holding it
+    /// (<see cref="IBitAiApprovalTransport"/>).
+    /// </summary>
+    public virtual string ApprovalNotDelivered => "Your decision on this tool call could not be sent.";
 
     /// <summary>Shown under an error that can be retried after a delay.</summary>
     /// <param name="wait">How long to wait.</param>

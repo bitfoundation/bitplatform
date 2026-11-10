@@ -14,6 +14,7 @@
 //   --bit-AiChatMessage-system-background     background of the pill of a system message    (default: $clr-bg-sec)
 //   --bit-AiChatMessage-system-color          text of the pill of a system message          (default: $clr-fg-sec)
 //   --bit-AiChatMessage-system-border-color   border of the pill of a system message        (default: $clr-brd-ter)
+//   --bit-AiChatMessage-follow-ups-gap        room between the follow-up prompts of a reply (default: spacing(1))
 
 .bit-aicms {
     display: flex;
@@ -128,6 +129,14 @@
     }
 }
 
+// The prompts a reply offers to go on with sit under it, at the start of the line, and wrap as the empty state's do.
+.bit-aicms-fup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-AiChatMessage-follow-ups-gap, #{spacing(1)});
+}
+
 .bit-aicms-edt {
     width: 100%;
     display: flex;
@@ -143,7 +152,8 @@
 
 // The actions are the interactive part of a message, which a printout has no use for.
 @media print {
-    .bit-aicms-act {
+    .bit-aicms-act,
+    .bit-aicms-fup {
         display: none;
     }
 }

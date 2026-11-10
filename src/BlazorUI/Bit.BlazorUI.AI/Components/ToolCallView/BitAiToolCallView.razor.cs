@@ -23,6 +23,10 @@
 /// <br />
 /// <see cref="BitComponentBase.Disabled"/> turns the expander and the approval buttons off, and leaves the card as it is:
 /// the arguments and the result of an open card stay readable, and a collapsed card stays collapsed.
+/// <br />
+/// <see cref="BitAiUiOptions.ToolCallDisplay"/> may show a call as one status line instead, or not at all - except a call
+/// waiting for a decision or one that failed, which is always a card, and one the reader has decided on, which is a
+/// status line at least.
 /// </remarks>
 public partial class BitAiToolCallView : BitAiComponentBase
 {
@@ -41,9 +45,11 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private BitAiToolDefinition? _registeredDefinition;
 
     private bool _open;
+    private BitAiToolCallDisplay _display;
     private bool _initialized;
     private bool _focusHeader;
     private ElementReference _header;
+    private ElementReference _statusLine;
     private string? _stateClasses;
     private RenderFragment? _custom;
     // The message a registered renderer is handed while the card is given none, made once so the renderer sees the same
@@ -147,15 +153,24 @@ public partial class BitAiToolCallView : BitAiComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        // The header takes the focus once the decision has taken the prompt away (see HandleOnDecision). A call still
-        // waiting keeps its prompt, and the focus where it is.
+        // The header takes the focus once the decision has taken the prompt away (see HandleOnDecision) - or the status
+        // line, for a call the options show as one from then on; a call decided on is never hidden
+        // (BitAiToolCallDisplays.Resolve), so one of the two is there. A call still waiting keeps its prompt, and the
+        // focus where it is.
         if (_focusHeader)
         {
             _focusHeader = false;
 
             if (_custom is null && Call.Status is not BitAiToolCallStatus.AwaitingApproval)
             {
-                await FocusHeaderAsync();
+                if (_display is BitAiToolCallDisplay.Card)
+                {
+                    await FocusAsync(_header);
+                }
+                else if (_display is BitAiToolCallDisplay.Status)
+                {
+                    await FocusAsync(_statusLine);
+                }
             }
         }
     }
@@ -242,20 +257,21 @@ public partial class BitAiToolCallView : BitAiComponentBase
     }
 
     // A decision moves the call on from AwaitingApproval, so the render it leads to takes the prompt away together with
-    // the button that had the focus, which would fall to the page. The header, which stays, takes it instead.
+    // the button that had the focus, which would fall to the page. The header, or the status line, which stays, takes it
+    // instead.
     private void HandleOnDecision() => _focusHeader = true;
 
-    private async Task FocusHeaderAsync()
+    private async Task FocusAsync(ElementReference element)
     {
         if (IsDisposing) return;
 
         try
         {
-            await _header.FocusAsync();
+            await element.FocusAsync();
         }
         catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
         catch (OperationCanceledException) { }
-        catch (JSException) { } // a header taken off the page in the meantime has nothing to focus
+        catch (JSException) { } // an element taken off the page in the meantime has nothing to focus
     }
 
     /// <summary>
@@ -276,10 +292,15 @@ public partial class BitAiToolCallView : BitAiComponentBase
             }
         }
 
+        // How the options in force show the call, read on every render since it may follow the call's status.
+        _display = BitAiToolCallDisplays.Resolve(Options, Call);
+
         // A declined call is outlined as a failed one (the call did not happen, and the reader may want to know why);
-        // a cancelled one, stopped by the user, goes back to the outline at rest.
+        // a cancelled one, stopped by the user, goes back to the outline at rest. A status line has no outline at all.
         var stateClasses = _custom is not null
             ? "bit-aitcv-cst"
+            : _display is BitAiToolCallDisplay.Status
+            ? "bit-aitcv-lin"
             : string.Join(' ', Call.Status switch
             {
                 BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming => "bit-aitcv-run",

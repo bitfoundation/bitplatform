@@ -70,9 +70,11 @@
                               Disabled="Disabled"
                               Animate="@_entering.Contains(message)"
                               IsLatest="@IsLatestMessage(message)"
+                              MessageActionsTemplate="MessageActionsTemplate"
                               OnCitationClick="OnCitationClick"
                               OnSourceClick="OnSourceClick"
                               OnFeedback="OnFeedback"
+                              OnFollowUp="OnFollowUp"
                               @key="message.MessageId" />
         }
     };

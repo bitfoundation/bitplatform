@@ -22,6 +22,15 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "AttachmentUploader",
+            Type = "Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>?",
+            DefaultValue = "null",
+            Description = "Uploads each file as the composer stages it, showing the progress on its chip, and returns the attachment to send in its place. A file still uploading, or whose upload failed, holds the send back.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/promptinput",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitAiChatClassStyles?",
             DefaultValue = "null",
@@ -149,6 +158,13 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "MessageActionsTemplate",
+            Type = "RenderFragment<BitAiMessage>?",
+            DefaultValue = "null",
+            Description = "The buttons of the app appended to the actions of each message, given the message: after copy, regenerate and feedback under a reply, after copy and edit beside a user message.",
+        },
+        new()
+        {
             Name = "MessageTemplate",
             Type = "RenderFragment<BitAiMessage>?",
             DefaultValue = "null",
@@ -197,7 +213,7 @@ public partial class BitAiChatDemo
             Name = "OnSubmit",
             Type = "EventCallback<BitAiPromptSubmission>",
             DefaultValue = "",
-            Description = "The callback for when the user submits (the composer or a suggestion). Handle it to submit yourself - after uploading the attachments, or adding context to the text - through the session; leave it unset and the chat submits to the session.",
+            Description = "The callback for when the user submits (the composer, a suggestion, or a follow-up offered under the newest reply). Handle it to submit yourself - after uploading the attachments, or adding context to the text - through the session; leave it unset and the chat submits to the session. A handler that could not send the prompt calls Reject on the submission, and the composer puts the text and the attachments back.",
             LinkType = LinkType.Link,
             Href = "/components/ai/promptinput#prompt-submission",
         },
@@ -409,7 +425,7 @@ public partial class BitAiChatDemo
                     Name = "SubmitAsync(text, attachments?, cancellationToken?)",
                     Type = "Task<BitAiMessage?>",
                     DefaultValue = "",
-                    Description = "Appends a user message (the text may be empty when attachments carry the request) and generates a reply. Returns the assistant message, or null when a turn was already running."
+                    Description = "Appends a user message (the text may be empty when attachments carry the request) and generates a reply. Returns the assistant message, or null when a turn was already running - unless the options say InterruptOnSubmit, which stops that turn and answers this prompt in its place."
                 },
                 new()
                 {
@@ -444,7 +460,7 @@ public partial class BitAiChatDemo
                     Name = "Approve(toolCallId, decision)",
                     Type = "bool",
                     DefaultValue = "",
-                    Description = "Records a human decision (a BitAiApprovalDecision) on a tool call that is waiting for one. Returns false, changing nothing, when no call of that id is waiting - it has run, been decided or been cancelled, or is not known.",
+                    Description = "Records a human decision (a BitAiApprovalDecision) on a tool call that is waiting for one. Returns false, changing nothing, when no call of that id is waiting - it has run, been decided or been cancelled, or is not known. A decision on a call the session does not run itself (ExecuteTools off, or no tool of that name registered) is sent on to a transport that implements IBitAiApprovalTransport, for its server to go on; one that cannot be sent ends the call as failed. A call whose AllowApproveAlways is false records ApprovedAlways as Approved.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/toolapproval#approval-decision-enum"
                 },
@@ -477,6 +493,13 @@ public partial class BitAiChatDemo
                     Type = "event Action<BitAiToolCallPart>?",
                     DefaultValue = "",
                     Description = "Raised when a tool call needs a human decision."
+                },
+                new()
+                {
+                    Name = "ApprovalDecided",
+                    Type = "event Action<BitAiToolCallPart, BitAiApprovalDecision>?",
+                    DefaultValue = "",
+                    Description = "Raised after Approve has recorded a decision, with the call and the decision as recorded - whoever runs the call. For an app that delivers the decisions to its server some other way than an IBitAiApprovalTransport, or records them."
                 },
                 new()
                 {
@@ -513,7 +536,14 @@ public partial class BitAiChatDemo
                     Name = "ExecuteTools",
                     Type = "bool",
                     DefaultValue = "true",
-                    Description = "Executes the tool calls of the model in the session. Turn it off when the transport runs the tools on the server and only reports them as events."
+                    Description = "Executes the tool calls of the model in the session. Turn it off when the transport runs the tools on the server and only reports them as events - with their presentation on BitAiToolCallStartedEvent.Definition, and the decisions on the calls its server holds for approval sent back through IBitAiApprovalTransport."
+                },
+                new()
+                {
+                    Name = "InterruptOnSubmit",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether a prompt submitted while a turn is in flight stops that turn and is answered in its place, rather than being turned away. The stopped reply keeps what it had said, marked cancelled. A BitAiPromptInput driven by the session follows it: while a turn is in flight its button sends the text typed (and stops the turn when there is none), and Enter sends."
                 },
                 new()
                 {

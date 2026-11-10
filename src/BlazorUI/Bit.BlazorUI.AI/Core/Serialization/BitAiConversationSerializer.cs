@@ -276,6 +276,8 @@ public static class BitAiConversationSerializer
                 foreach (var (key, value) in extensions) message.Extensions[key] = value;
             }
 
+            if (messageSnapshot.FollowUps is { Count: > 0 } followUps) message.SetFollowUps(followUps);
+
             // A message interrupted mid-stream is restored as cancelled: nothing will ever finish it.
             var status = messageSnapshot.Status is BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming
                 ? BitAiMessageStatus.Cancelled
@@ -364,6 +366,7 @@ public static class BitAiConversationSerializer
         Error = message.Error,
         Feedback = message.Feedback,
         FeedbackComment = message.FeedbackComment,
+        FollowUps = message.FollowUps,
         RunId = message.Run?.RunId,
         Parts = message.Parts.Select(p => ToSnapshot(p, options)).ToArray(),
         Attachments = message.Attachments,

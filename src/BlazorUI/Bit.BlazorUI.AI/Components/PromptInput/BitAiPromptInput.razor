@@ -6,7 +6,8 @@
     var placeholder = Placeholder ?? Strings.PromptPlaceholder;
     var menuOpen = MenuOpen;
     var hasMenu = HasMenu;
-    var sendDisabled = IsGenerating is false && CanSubmit is false;
+    var showStop = ShowStop;
+    var sendDisabled = showStop is false && CanSubmit is false;
 }
 
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
@@ -173,17 +174,18 @@
 
             @* One element for send and stop, so the focus stays on it when a turn starts or ends. Stopping is the action a
                user wants while a turn is in flight, so the button becomes a stop button then rather than sitting disabled
-               beside one. *@
+               beside one - unless the session takes a new prompt in place of the turn and one has been typed, which the
+               button then sends (ShowStop). *@
             <BitButton @key="SendButtonKey"
-                       IconName="@(IsGenerating ? "StopSolid" : "Send")"
-                       Variant="@(IsGenerating ? BitVariant.Outline : null)"
-                       Title="@(IsGenerating ? Strings.Stop : Strings.Send)"
-                       AriaLabel="@(IsGenerating ? Strings.Stop : Strings.Send)"
+                       IconName="@(showStop ? "StopSolid" : "Send")"
+                       Variant="@(showStop ? BitVariant.Outline : null)"
+                       Title="@(showStop ? Strings.Stop : Strings.Send)"
+                       AriaLabel="@(showStop ? Strings.Stop : Strings.Send)"
                        Disabled="sendDisabled"
                        OnClick="SendOrStopAsync"
                        Class="bit-aipri-snd"
                        Styles="@Styles?.SendButton"
-                       Classes="@(IsGenerating ? _StopButtonClasses : _SendButtonClasses)" />
+                       Classes="@(showStop ? _StopButtonClasses : _SendButtonClasses)" />
         </div>
     </div>
 

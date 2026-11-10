@@ -103,6 +103,12 @@ public partial class BitAiMessageList : BitAiComponentBase
     [Parameter] public RenderFragment<BitAiMessage>? MessageTemplate { get; set; }
 
     /// <summary>
+    /// The buttons of the app appended to the actions of each message, given the message (see
+    /// <see cref="BitAiChatMessage.MessageActionsTemplate"/>). Not used by a <see cref="MessageTemplate"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAiMessage>? MessageActionsTemplate { get; set; }
+
+    /// <summary>
     /// The callback for when the user activates a citation.
     /// </summary>
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
@@ -111,6 +117,12 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// The callback for when the user records feedback on a reply, so a host can persist it.
     /// </summary>
     [Parameter] public EventCallback<BitAiMessageFeedback> OnFeedback { get; set; }
+
+    /// <summary>
+    /// The callback for when the user picks one of the follow-up prompts the newest reply offers. Handle it to send the
+    /// prompt yourself; leave it unset and the prompt is submitted to the <see cref="Session"/>.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnFollowUp { get; set; }
 
     /// <summary>
     /// The callback for when the view stops or starts following the newest message: false when the user scrolls away

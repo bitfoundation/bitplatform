@@ -22,6 +22,13 @@
         }
     </div>
 
+    @if (DetailTemplate is not null)
+    {
+        <div style="@Styles?.Detail" class="bit-aitap-dtl @Classes?.Detail">
+            @DetailTemplate(Call)
+        </div>
+    }
+
     @* The answers read from the most cautious to the most permissive, which is also the order the focus moves in. The
        buttons are never submit buttons, so a conversation rendered inside a form cannot be submitted by an answer. *@
     <div style="@Styles?.Actions" class="bit-aitap-act @Classes?.Actions">
@@ -32,17 +39,22 @@
                    OnClick="HandleOnReject"
                    Styles="@Styles?.RejectButton"
                    Classes="@Classes?.RejectButton">
-            @Strings.Reject
+            @(RejectText ?? Strings.Reject)
         </BitButton>
-        <BitButton ButtonType="BitButtonType.Button"
-                   Variant="BitVariant.Outline"
-                   Class="bit-btn-dft-ter"
-                   Disabled="Disabled"
-                   OnClick="HandleOnApproveAlways"
-                   Styles="@Styles?.ApproveAlwaysButton"
-                   Classes="@Classes?.ApproveAlwaysButton">
-            @Strings.ApproveAlways
-        </BitButton>
+        @* Left out where the call is to be confirmed every time - for every call (ShowApproveAlways), or for this one
+           (the call's AllowApproveAlways, which its transport sets). *@
+        @if (_ShowApproveAlways)
+        {
+            <BitButton ButtonType="BitButtonType.Button"
+                       Variant="BitVariant.Outline"
+                       Class="bit-btn-dft-ter"
+                       Disabled="Disabled"
+                       OnClick="HandleOnApproveAlways"
+                       Styles="@Styles?.ApproveAlwaysButton"
+                       Classes="@Classes?.ApproveAlwaysButton">
+                @(ApproveAlwaysText ?? Strings.ApproveAlways)
+            </BitButton>
+        }
         @* Allowing a destructive tool is drawn in the error role rather than the primary one: the default answer
            should not look like the safe one when it is not. It is the default this component gives the button, so
            it goes through the host-default class, which an app's --bit-Button-* variables still win over. *@
@@ -52,7 +64,7 @@
                    OnClick="HandleOnApprove"
                    Styles="@Styles?.ApproveButton"
                    Classes="@Classes?.ApproveButton">
-            @Strings.Approve
+            @(ApproveText ?? Strings.Approve)
         </BitButton>
     </div>
 </div>

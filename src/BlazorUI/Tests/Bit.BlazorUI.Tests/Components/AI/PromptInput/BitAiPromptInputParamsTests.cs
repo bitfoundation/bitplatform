@@ -22,6 +22,7 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
     [
         nameof(BitAiPromptInput.CascadingParameters),
         nameof(BitAiPromptInput.CascadedOptions),
+        nameof(BitAiPromptInput.AttachmentUploader),
         nameof(BitAiPromptInput.Capabilities),
         nameof(BitAiPromptInput.DraftKey),
         nameof(BitAiPromptInput.Generating),

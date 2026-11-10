@@ -16,8 +16,8 @@
 /// <br />
 /// A <see cref="BitAiCitationPart"/> is drawn as the <see cref="BitAiSourceCard"/> of its source, with the quote and
 /// the locator of the citation under it. A part there is nothing to draw for - a part of an unknown kind that carries
-/// no text - renders nothing at all, not even the root element, so it leaves no empty box among the parts of the
-/// message.
+/// no text, or a tool call the options hide (<see cref="BitAiUiOptions.ToolCallDisplay"/>) - renders nothing at all, not
+/// even the root element, so it leaves no empty box among the parts of the message.
 /// </remarks>
 public partial class BitAiMessagePartView : BitAiComponentBase
 {

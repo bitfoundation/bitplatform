@@ -42,6 +42,13 @@
     overflow-wrap: anywhere;
 }
 
+// What the app adds to the question (DetailTemplate) takes a line of its own under it, above the buttons.
+.bit-aitap-dtl {
+    min-width: 0;
+    flex: 1 0 100%;
+    overflow-wrap: anywhere;
+}
+
 .bit-aitap-act {
     display: flex;
     flex-wrap: wrap;

@@ -7,6 +7,10 @@
     SyncState();
 }
 
+@* A call the options hide (BitAiUiOptions.ToolCallDisplay) leaves no element behind, so it takes no room among the
+   parts of its message. *@
+@if (_display is not BitAiToolCallDisplay.Hidden)
+{
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -17,6 +21,27 @@
         <BitAiRendererBoundary Label="@Strings.RendererFailed(Call.ToolName)">
             @_custom
         </BitAiRendererBoundary>
+    }
+    else if (_display is BitAiToolCallDisplay.Status)
+    {
+        @* One line saying what the call is doing or how it ended, in the words of the card's header, with nothing to
+           expand. Focusable from code only, for the focus of the approval button a decision takes away
+           (HandleOnDecision). *@
+        <div @ref="_statusLine"
+             tabindex="-1"
+             style="@Styles?.StatusLine"
+             class="bit-aitcv-lnr @Classes?.StatusLine">
+            <i aria-hidden="true" style="@Styles?.Icon" class="bit-aitcv-ico @_ToolIcon @Classes?.Icon"></i>
+            <span style="@Styles?.Title" class="bit-aitcv-ttl @Classes?.Title">@_Heading</span>
+            @if (Call.Status is BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming)
+            {
+                <BitBouncingDotsLoading Inline="true"
+                                        aria-hidden="true"
+                                        Class="bit-aitcv-spn"
+                                        Styles="@Styles?.Spinner"
+                                        Classes="@Classes?.Spinner" />
+            }
+        </div>
     }
     else
     {
@@ -116,3 +141,4 @@
         }
     }
 </div>
+}

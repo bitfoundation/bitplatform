@@ -6,8 +6,10 @@ namespace Bit.BlazorUI;
 /// The parameters for <see cref="BitAiToolApproval"/> component.
 /// </summary>
 /// <remarks>
-/// What belongs here is the look every approval prompt of a region shares. The call, the session and the decision
-/// callback are left out on purpose: they are what makes one prompt the one it is.
+/// What belongs here is the look every approval prompt of a region shares - its texts, whether it offers to allow a
+/// tool for good, and the detail it shows of a call. The call, the session and the decision callback are left out on
+/// purpose: they are what makes one prompt the one it is. This is how an app reaches the prompts a
+/// <see cref="BitAiChat"/> draws inside its tool-call cards.
 /// </remarks>
 public class BitAiToolApprovalParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -35,9 +37,34 @@ public class BitAiToolApprovalParams : BitComponentBaseParams, IBitComponentPara
 
 
     /// <summary>
+    /// The text of the button that allows every later call of the tool as well.
+    /// </summary>
+    public string? ApproveAlwaysText { get; set; }
+
+    /// <summary>
+    /// The text of the button that allows the call once.
+    /// </summary>
+    public string? ApproveText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the tool approval.
     /// </summary>
     public BitAiToolApprovalClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// What is shown under the question and above the buttons, given the call.
+    /// </summary>
+    public RenderFragment<BitAiToolCallPart>? DetailTemplate { get; set; }
+
+    /// <summary>
+    /// The text of the button that declines the call.
+    /// </summary>
+    public string? RejectText { get; set; }
+
+    /// <summary>
+    /// Offers to allow every later call of the tool as well.
+    /// </summary>
+    public bool? ShowApproveAlways { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the tool approval.
@@ -63,9 +90,34 @@ public class BitAiToolApprovalParams : BitComponentBaseParams, IBitComponentPara
 
         UpdateBaseParameters(bitAiToolApproval);
 
+        if (ApproveAlwaysText is not null)
+        {
+            bitAiToolApproval.TakeFromCascade(nameof(ApproveAlwaysText), ApproveAlwaysText, static a => a.ApproveAlwaysText, static (a, v) => a.ApproveAlwaysText = v);
+        }
+
+        if (ApproveText is not null)
+        {
+            bitAiToolApproval.TakeFromCascade(nameof(ApproveText), ApproveText, static a => a.ApproveText, static (a, v) => a.ApproveText = v);
+        }
+
         if (Classes is not null)
         {
             bitAiToolApproval.TakeFromCascade(nameof(Classes), Classes, static a => a.Classes, static (a, v) => a.Classes = v);
+        }
+
+        if (DetailTemplate is not null)
+        {
+            bitAiToolApproval.TakeFromCascade(nameof(DetailTemplate), DetailTemplate, static a => a.DetailTemplate, static (a, v) => a.DetailTemplate = v);
+        }
+
+        if (RejectText is not null)
+        {
+            bitAiToolApproval.TakeFromCascade(nameof(RejectText), RejectText, static a => a.RejectText, static (a, v) => a.RejectText = v);
+        }
+
+        if (ShowApproveAlways.HasValue)
+        {
+            bitAiToolApproval.TakeFromCascade(nameof(ShowApproveAlways), ShowApproveAlways.Value, static a => a.ShowApproveAlways, static (a, v) => a.ShowApproveAlways = v);
         }
 
         if (Styles is not null)

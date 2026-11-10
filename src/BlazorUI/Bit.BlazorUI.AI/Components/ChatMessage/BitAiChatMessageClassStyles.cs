@@ -61,4 +61,14 @@ public class BitAiChatMessageClassStyles
     /// Custom CSS classes/styles for the BitAiMessageActions under an assistant message of the BitAiChatMessage.
     /// </summary>
     public BitAiMessageActionsClassStyles? MessageActions { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the row of the follow-up prompts under the newest reply of the BitAiChatMessage.
+    /// </summary>
+    public string? FollowUps { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each follow-up prompt button of the BitAiChatMessage.
+    /// </summary>
+    public BitButtonClassStyles? FollowUpButton { get; set; }
 }

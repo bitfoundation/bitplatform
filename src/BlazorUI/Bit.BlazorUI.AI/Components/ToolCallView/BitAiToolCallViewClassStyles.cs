@@ -13,6 +13,12 @@ public class BitAiToolCallViewClassStyles
     public string? Header { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the line a call is shown as in place of the card (BitAiToolCallDisplay.Status) of the
+    /// BitAiToolCallView.
+    /// </summary>
+    public string? StatusLine { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the expander chevron of the BitAiToolCallView.
     /// </summary>
     public string? ExpanderIcon { get; set; }

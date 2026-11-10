@@ -59,6 +59,7 @@ internal static class BitAiSnapshotJson
         new(nameof(BitAiMessageSnapshot.Error), static (o, v) => SetError((BitAiMessageSnapshot)o, (BitAiError?)v)),
         new(nameof(BitAiMessageSnapshot.Feedback), static (o, v) => SetFeedback((BitAiMessageSnapshot)o, (BitAiFeedbackKind)v!)),
         new(nameof(BitAiMessageSnapshot.FeedbackComment), static (o, v) => SetFeedbackComment((BitAiMessageSnapshot)o, (string?)v)),
+        new(nameof(BitAiMessageSnapshot.FollowUps), static (o, v) => SetFollowUps((BitAiMessageSnapshot)o, (IReadOnlyList<string>?)v)),
         new(nameof(BitAiMessageSnapshot.RunId), static (o, v) => SetRunId((BitAiMessageSnapshot)o, (string?)v)),
         new(nameof(BitAiMessageSnapshot.Parts), static (o, v) => SetParts((BitAiMessageSnapshot)o, (IReadOnlyList<BitAiPartSnapshot>)v!)),
         new(nameof(BitAiMessageSnapshot.Attachments), static (o, v) => SetAttachments((BitAiMessageSnapshot)o, (IReadOnlyList<BitAiAttachment>)v!)),
@@ -235,6 +236,9 @@ internal static class BitAiSnapshotJson
 
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = InitAccessor + nameof(BitAiMessageSnapshot.FeedbackComment))]
     private static extern void SetFeedbackComment(BitAiMessageSnapshot target, string? value);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = InitAccessor + nameof(BitAiMessageSnapshot.FollowUps))]
+    private static extern void SetFollowUps(BitAiMessageSnapshot target, IReadOnlyList<string>? value);
 
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = InitAccessor + nameof(BitAiMessageSnapshot.RunId))]
     private static extern void SetRunId(BitAiMessageSnapshot target, string? value);

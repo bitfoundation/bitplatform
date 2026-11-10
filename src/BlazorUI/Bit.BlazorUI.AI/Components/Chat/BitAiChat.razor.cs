@@ -59,6 +59,12 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public bool AllowDictation { get; set; }
 
     /// <summary>
+    /// Uploads each file as the composer stages it, and returns the attachment to send in its place (see
+    /// <see cref="BitAiPromptInput.AttachmentUploader"/>).
+    /// </summary>
+    [Parameter] public Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>? AttachmentUploader { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the chat.
     /// </summary>
     [Parameter, ResetClassBuilder] public BitAiChatClassStyles? Classes { get; set; }
@@ -148,6 +154,12 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public IReadOnlyList<BitAiMentionItem>? Mentions { get; set; }
 
     /// <summary>
+    /// The buttons of the app appended to the actions of each message, given the message: after copy, regenerate and
+    /// feedback under a reply, after copy and edit beside a user message.
+    /// </summary>
+    [Parameter] public RenderFragment<BitAiMessage>? MessageActionsTemplate { get; set; }
+
+    /// <summary>
     /// The template that replaces how a message is rendered.
     /// </summary>
     [Parameter] public RenderFragment<BitAiMessage>? MessageTemplate { get; set; }
@@ -176,6 +188,11 @@ public partial class BitAiChat : BitAiComponentBase
     /// The callback for when the user submits. Handle it to submit yourself, for example after uploading the
     /// attachments; leave it unset and the chat submits to the session.
     /// </summary>
+    /// <remarks>
+    /// A handler that could not send the prompt calls <see cref="BitAiPromptSubmission.Reject"/>, and the composer puts
+    /// the text and the attachments back. Unhandled, a submission the session does not take - a turn is in flight - is
+    /// put back the same way.
+    /// </remarks>
     [Parameter] public EventCallback<BitAiPromptSubmission> OnSubmit { get; set; }
 
     /// <summary>
@@ -201,6 +218,10 @@ public partial class BitAiChat : BitAiComponentBase
     /// <summary>
     /// The example prompts offered in the empty state.
     /// </summary>
+    /// <remarks>
+    /// The prompts offered under a reply, to go on with, are the reply's own (<see cref="BitAiMessage.FollowUps"/>, which a
+    /// transport sends with a <see cref="BitAiFollowUpsEvent"/>), and are sent the way these are.
+    /// </remarks>
     [Parameter] public IReadOnlyList<string>? Suggestions { get; set; }
 
     /// <summary>
@@ -363,16 +384,31 @@ public partial class BitAiChat : BitAiComponentBase
             return;
         }
 
-        await ActiveSession.SubmitAsync(submission.Text, submission.Attachments);
+        // A session that took nothing - a turn it could not interrupt was in flight - leaves the prompt the user's.
+        if (await ActiveSession.SubmitAsync(submission.Text, submission.Attachments) is null)
+        {
+            submission.Reject();
+        }
     }
 
     // A suggestion goes with the empty state as soon as its message is in, and the focus would go with it to the page:
-    // the composer takes it first, since the submission is over only once the whole turn is.
+    // the composer takes it first, since the submission is over only once the whole turn is. A follow-up under a reply
+    // goes the same way, with the reply it was offered under no longer the newest. Either goes only while no turn is in
+    // flight, whatever the session's InterruptOnSubmit says: a second click on the button before the render takes it away
+    // would stop the turn the first click started and send the same prompt again.
     private async Task SubmitTextAsync(string text)
     {
         await FocusComposerSafelyAsync();
 
-        await OnComposerSubmitAsync(new BitAiPromptSubmission(text, []));
+        if (ActiveSession.IsGenerating) return;
+
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(new BitAiPromptSubmission(text, []));
+            return;
+        }
+
+        await ActiveSession.SubmitIfIdleAsync(text);
     }
 
     // Moving the focus on the chat's own behalf, after a control the user pressed has gone, never fails what it follows.

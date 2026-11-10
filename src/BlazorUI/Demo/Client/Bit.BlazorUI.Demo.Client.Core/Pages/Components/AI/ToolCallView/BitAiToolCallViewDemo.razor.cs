@@ -76,6 +76,13 @@ public partial class BitAiToolCallViewDemo
                 },
                 new()
                 {
+                    Name = "StatusLine",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the line a call is shown as in place of the card (BitAiUiOptions.ToolCallDisplay returning BitAiToolCallDisplay.Status) of the BitAiToolCallView.",
+                },
+                new()
+                {
                     Name = "ExpanderIcon",
                     Type = "string?",
                     DefaultValue = "null",
@@ -199,7 +206,7 @@ public partial class BitAiToolCallViewDemo
                     Name = "Definition",
                     Type = "BitAiToolDefinition?",
                     DefaultValue = "null",
-                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call. The card is headed by its DisplayName and draws its Icon, and its Risk decides how the approval prompt looks. Until it is set, the card reads the definition registered for the tool with AddBitBlazorUIAIServices (IBitAiToolRegistry, see its table); a tool the host does not know is shown by its raw name, under the wrench.",
+                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call - or sent by the transport with the call (BitAiToolCallStartedEvent.Definition), for a tool its server runs. The card is headed by its DisplayName and draws its Icon, and its Risk decides how the approval prompt looks. Until it is set, the card reads the definition registered for the tool with AddBitBlazorUIAIServices (IBitAiToolRegistry, see its table); a tool the host does not know is shown by its raw name, under the wrench.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/toolapproval#tool-definition",
                 },
@@ -255,6 +262,13 @@ public partial class BitAiToolCallViewDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Why the approval was asked for. The approval prompt shows it in place of its own question.",
+                },
+                new()
+                {
+                    Name = "AllowApproveAlways",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Whether the call may be allowed for every later call of its tool as well. When false, the approval prompt does not offer it and a session records an ApprovedAlways as Approved. A transport sets it per call through BitAiToolApprovalRequestedEvent.AllowApproveAlways.",
                 },
                 new()
                 {
@@ -639,6 +653,18 @@ public partial class BitAiToolCallViewDemo
                 new() { Name = "Completed", Description = "The tool produced a result. The header shows how long it took.", Value = "5" },
                 new() { Name = "Failed", Description = "The tool threw or returned a failure. The card is outlined in the error color and opens by itself.", Value = "6" },
                 new() { Name = "Cancelled", Description = "The turn was stopped before the tool produced a result.", Value = "7" },
+            ],
+        },
+        new()
+        {
+            Id = "tool-call-display-enum",
+            Name = "BitAiToolCallDisplay",
+            Description = "How a call is shown, as BitAiUiOptions.ToolCallDisplay decides per call. A call waiting for a decision, or one that failed, is always a card.",
+            Items =
+            [
+                new() { Name = "Card", Description = "The card: a header that expands to the arguments and the result.", Value = "0" },
+                new() { Name = "Status", Description = "One line saying what the call is doing or how it ended, with no arguments or result to expand.", Value = "1" },
+                new() { Name = "Hidden", Description = "Nothing at all, for a call that is plumbing the reader has no use for.", Value = "2" },
             ],
         },
     ];

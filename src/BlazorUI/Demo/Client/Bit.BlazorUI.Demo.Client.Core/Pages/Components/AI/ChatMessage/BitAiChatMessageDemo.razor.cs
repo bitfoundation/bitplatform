@@ -56,6 +56,13 @@ public partial class BitAiChatMessageDemo
         },
         new()
         {
+            Name = "MessageActionsTemplate",
+            Type = "RenderFragment<BitAiMessage>?",
+            DefaultValue = "null",
+            Description = "The buttons of the app appended to the actions of the message, given the message: after copy, regenerate and feedback under a reply, after copy and edit beside a user message.",
+        },
+        new()
+        {
             Name = "OnCitationClick",
             Type = "EventCallback<BitAiCitation>",
             DefaultValue = "",
@@ -71,6 +78,13 @@ public partial class BitAiChatMessageDemo
             Description = "The callback for when the user records feedback on this message (or withdraws it), so a host can persist it. The message's Feedback is already updated when it is raised.",
             LinkType = LinkType.Link,
             Href = "#message-feedback",
+        },
+        new()
+        {
+            Name = "OnFollowUp",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "The callback for when the user picks one of the follow-up prompts the reply offers (its FollowUps, shown under the newest reply once it has finished). Handle it to send the prompt yourself; leave it unset and the prompt is submitted to the Session.",
         },
         new()
         {
@@ -114,6 +128,7 @@ public partial class BitAiChatMessageDemo
         new() { Name = "--bit-AiChatMessage-system-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the pill of a system message." },
         new() { Name = "--bit-AiChatMessage-system-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text of the pill of a system message." },
         new() { Name = "--bit-AiChatMessage-system-border-color", DefaultValue = "var(--bit-clr-brd-ter)", Description = "Border of the pill of a system message." },
+        new() { Name = "--bit-AiChatMessage-follow-ups-gap", DefaultValue = "spacing(1)", Description = "Room between the follow-up prompts offered under the newest reply." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -215,6 +230,22 @@ public partial class BitAiChatMessageDemo
                     Description = "Custom CSS classes/styles for the BitAiMessageActions under an assistant message of the BitAiChatMessage.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/messageactions#class-styles"
+                },
+                new()
+                {
+                    Name = "FollowUps",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the row of the follow-up prompts under the newest reply of the BitAiChatMessage."
+                },
+                new()
+                {
+                    Name = "FollowUpButton",
+                    Type = "BitButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each follow-up prompt button of the BitAiChatMessage.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/button#button-class-styles"
                 }
             ]
         },
@@ -327,6 +358,13 @@ public partial class BitAiChatMessageDemo
                 },
                 new()
                 {
+                    Name = "FollowUps",
+                    Type = "IReadOnlyList<string>?",
+                    DefaultValue = "null",
+                    Description = "The prompts a reader might send next, offered under the newest reply once it has finished. A transport sends them with a BitAiFollowUpsEvent; they are persisted with the conversation."
+                },
+                new()
+                {
                     Name = "Run",
                     Type = "BitAiAgentRun?",
                     DefaultValue = "null",
@@ -339,7 +377,7 @@ public partial class BitAiChatMessageDemo
                     Name = "Extensions",
                     Type = "Dictionary<string, object?>",
                     DefaultValue = "[]",
-                    Description = "Application-defined values attached to the message."
+                    Description = "Application-defined values attached to the message. A message restored from JSON holds them as JsonElement values: read one with TryGetExtension<T> either way."
                 },
                 new()
                 {
@@ -395,7 +433,21 @@ public partial class BitAiChatMessageDemo
                     Name = "MergeMetadata(metadata)",
                     Type = "void",
                     DefaultValue = "",
-                    Description = "Merges generation metadata, keeping the existing values wherever the incoming record leaves a field null - providers report it piecemeal."
+                    Description = "Merges generation metadata, keeping the existing values wherever the incoming record leaves a field null - providers report it piecemeal. Extra is merged key by key."
+                },
+                new()
+                {
+                    Name = "SetFollowUps(followUps)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Sets the follow-up prompts offered under the reply; null or an empty list offers none, and blank prompts are left out."
+                },
+                new()
+                {
+                    Name = "TryGetExtension<T>(key, typeInfo, out value) / TryGetExtension<T>(key, out value, options?)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Reads a value of Extensions as a type of the app, whether it is the live value or the JsonElement a reload left in its place - with the JsonTypeInfo<T> of the app's own JsonSerializerContext (safe to trim), or the reflection-based serializer."
                 },
                 new()
                 {

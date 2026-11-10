@@ -22,7 +22,9 @@ namespace Bit.BlazorUI;
 /// </para>
 /// <para>
 /// One session drives one conversation at a time. Submitting while a turn is in flight is a no-op
-/// rather than an error, because double-submit is a UI race, not a programming mistake.
+/// rather than an error, because double-submit is a UI race, not a programming mistake - unless
+/// <see cref="BitAiChatSessionOptions.InterruptOnSubmit"/> asks for the turn to be stopped and the new prompt
+/// answered instead.
 /// </para>
 /// </remarks>
 public sealed class BitAiChatSession : IAsyncDisposable
@@ -33,10 +35,16 @@ public sealed class BitAiChatSession : IAsyncDisposable
     private readonly IServiceProvider? _services;
     private readonly ILogger _logger;
     private readonly Dictionary<string, TaskCompletionSource<BitAiApprovalDecision>> _approvals = new(StringComparer.Ordinal);
+    // Cancelled as the session is disposed: what the session started that outlives a turn (a decision on its way to the
+    // transport) stops with it.
+    private readonly CancellationTokenSource _lifetime = new();
 
     // Set for exactly as long as a turn is in flight: publishing it is how a turn claims the session,
     // so there is never a moment when a turn is running and Stop has nothing to cancel.
-    private CancellationTokenSource? _cts;
+    private Turn? _turn;
+    // The turn that claimed the session last, which may still be unwinding (raising TurnCompleted) after giving its claim
+    // up: a submission taking the session over waits for it (InterruptAsync).
+    private Turn? _lastTurn;
     private volatile bool _disposed;
 
     /// <summary>Creates a session.</summary>
@@ -87,7 +95,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
     public BitAiStrings Strings => Options.Strings ?? BitAiStrings.Default;
 
     /// <summary><see langword="true"/> while a turn is in flight.</summary>
-    public bool IsGenerating => Volatile.Read(ref _cts) is not null;
+    public bool IsGenerating => Volatile.Read(ref _turn) is not null;
 
     /// <summary>The failure from the last turn, cleared when a new turn starts.</summary>
     public BitAiError? LastError { get; private set; }
@@ -107,21 +115,87 @@ public sealed class BitAiChatSession : IAsyncDisposable
     public event Action<BitAiToolCallPart>? ApprovalRequested;
 
     /// <summary>
+    /// Raised after <see cref="Approve"/> has recorded a decision, with the call and the decision as recorded.
+    /// </summary>
+    /// <remarks>
+    /// For every decision, whoever runs the call - the session itself or the transport's side. A transport implementing
+    /// <see cref="IBitAiApprovalTransport"/> is sent the decisions on the calls the session does not run itself without
+    /// handling this; it is here for an app that delivers them some other way, or records them.
+    /// </remarks>
+    public event Action<BitAiToolCallPart, BitAiApprovalDecision>? ApprovalDecided;
+
+    /// <summary>
     /// Appends a user message and generates a reply.
     /// </summary>
+    /// <remarks>
+    /// With <see cref="BitAiChatSessionOptions.InterruptOnSubmit"/> on, a turn in flight is stopped and waited for
+    /// first, and the prompt is answered in its place.
+    /// </remarks>
     /// <param name="text">The user text. May be empty when attachments carry the request.</param>
     /// <param name="attachments">Files to attach.</param>
-    /// <param name="cancellationToken">Cancels the turn.</param>
-    /// <returns>The assistant message, or <see langword="null"/> when a turn was already running.</returns>
-    public Task<BitAiMessage?> SubmitAsync(
+    /// <param name="cancellationToken">
+    /// Cancels the turn - and, with <see cref="BitAiChatSessionOptions.InterruptOnSubmit"/> on, the wait for the turn in
+    /// flight to stop. A token already cancelled leaves the turn in flight alone.
+    /// </param>
+    /// <returns>
+    /// The assistant message, or <see langword="null"/> when a turn was already running (and was not interrupted) and
+    /// the prompt was not taken.
+    /// </returns>
+    public async Task<BitAiMessage?> SubmitAsync(
         string text,
         IReadOnlyList<BitAiAttachment>? attachments = null,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default)
+    {
+        if (Options.InterruptOnSubmit) await InterruptAsync(cancellationToken).ConfigureAwait(false);
+
+        return await SubmitTurnAsync(text, attachments, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Appends a user message and generates a reply, only while no turn is in flight - whatever
+    /// <see cref="BitAiChatSessionOptions.InterruptOnSubmit"/> says.
+    /// </summary>
+    /// <remarks>
+    /// For a prompt sent by a one-shot button - a follow-up, a suggestion - rather than typed: a second click on it before
+    /// the render takes it away would otherwise stop the turn the first click started and send the same prompt again.
+    /// </remarks>
+    internal Task<BitAiMessage?> SubmitIfIdleAsync(string text) => SubmitTurnAsync(text, null, default);
+
+    private Task<BitAiMessage?> SubmitTurnAsync(
+        string text,
+        IReadOnlyList<BitAiAttachment>? attachments,
+        CancellationToken cancellationToken) =>
         StartTurnAsync(() =>
         {
             AppendUserMessage(text, attachments);
             return true;
         }, cancellationToken);
+
+    // Stops the turn in flight and waits for it to have unwound - its claim on the session released and its end reported
+    // (TurnCompleted) - so the next turn can claim it, and appends to the conversation only once the handlers of that end
+    // are done reading it. A turn that a third caller starts meanwhile is stopped in a further round; one that still wins
+    // the race keeps the session, and the prompt is then not taken. So is it when the submission is cancelled first.
+    private async Task InterruptAsync(CancellationToken cancellationToken)
+    {
+        for (var round = 0; round < 3 && cancellationToken.IsCancellationRequested is false; round++)
+        {
+            // The turn holding the session, else the last one, which may still be unwinding after giving its claim up.
+            var turn = Volatile.Read(ref _turn) ?? Volatile.Read(ref _lastTurn);
+            if (turn is null || turn.Ended.Task.IsCompleted) return;
+
+            turn.Cancel();
+            RaiseStateChanged();
+
+            try
+            {
+                await turn.Ended.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+        }
+    }
 
     /// <summary>
     /// Regenerates an assistant message, discarding it and everything after it.
@@ -194,14 +268,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
     /// </remarks>
     public void Stop()
     {
-        try
-        {
-            Volatile.Read(ref _cts)?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // The turn finished and released its token source between the read and the cancel.
-        }
+        Volatile.Read(ref _turn)?.Cancel();
 
         RaiseStateChanged();
     }
@@ -209,6 +276,14 @@ public sealed class BitAiChatSession : IAsyncDisposable
     /// <summary>
     /// Records a human decision on a tool call that was waiting for one.
     /// </summary>
+    /// <remarks>
+    /// A call that does not allow it to be approved for good (<see cref="BitAiToolCallPart.AllowApproveAlways"/>) records
+    /// <see cref="BitAiApprovalDecision.ApprovedAlways"/> as <see cref="BitAiApprovalDecision.Approved"/>. A decision on a
+    /// call the transport's side holds - one the session does not run itself, since it executes no tools
+    /// (<see cref="BitAiChatSessionOptions.ExecuteTools"/>) or has no tool of that name - is sent on to a transport that
+    /// implements <see cref="IBitAiApprovalTransport"/>. <see cref="ApprovalDecided"/> is raised for every decision
+    /// recorded.
+    /// </remarks>
     /// <param name="toolCallId">The call being decided.</param>
     /// <param name="decision">The decision.</param>
     /// <returns>
@@ -231,6 +306,14 @@ public sealed class BitAiChatSession : IAsyncDisposable
         // has already run, been rejected, or been cancelled, and must not move back to pending.
         if (waiter is null && call is not { Status: BitAiToolCallStatus.AwaitingApproval }) return false;
 
+        // Recorded on the call first, which records a decision the call does not allow (AllowApproveAlways) as the one it
+        // does: what the session acts on, sends on and reports is the decision as recorded.
+        if (call is not null)
+        {
+            call.SetApproval(decision);
+            decision = call.Approval;
+        }
+
         if (decision is BitAiApprovalDecision.ApprovedAlways
             && _approvalPolicy is BitAiDefaultToolApprovalPolicy policy
             && call is not null)
@@ -238,9 +321,20 @@ public sealed class BitAiChatSession : IAsyncDisposable
             policy.RememberAlwaysApproved(call.ToolName);
         }
 
-        call?.SetApproval(decision);
         waiter?.TrySetResult(decision);
         RaiseStateChanged();
+
+        if (call is not null)
+        {
+            // A call nobody here waits for, and that the session will not run itself, is the transport's side's to run:
+            // the decision is what it is waiting for. One the session runs itself is never sent on, or both would run it.
+            if (waiter is null && RunsItself(call) is false && _transport is IBitAiApprovalTransport approvals)
+            {
+                _ = SendApprovalAsync(approvals, call, decision);
+            }
+
+            if (!_disposed) ApprovalDecided?.Invoke(call, decision);
+        }
 
         return true;
     }
@@ -293,13 +387,18 @@ public sealed class BitAiChatSession : IAsyncDisposable
             ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
             : CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
-        // Disposal sets its flag before cancelling the published source, and this reads the flag after
+        var turn = new Turn(cts, timeout);
+
+        // Disposal sets its flag before cancelling the published turn, and this reads the flag after
         // publishing, so one of the two always sees the other.
-        if (Interlocked.CompareExchange(ref _cts, cts, null) is not null || _disposed)
+        if (Interlocked.CompareExchange(ref _turn, turn, null) is not null || _disposed)
         {
-            Release(cts, timeout);
+            Release(turn);
+            End(turn);
             return null;
         }
+
+        Volatile.Write(ref _lastTurn, turn);
 
         bool proceed;
         try
@@ -308,26 +407,40 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
         catch
         {
-            Release(cts, timeout);
+            Release(turn);
+            End(turn);
             throw;
         }
 
         if (!proceed)
         {
-            Release(cts, timeout);
+            Release(turn);
+            End(turn);
             return null;
         }
 
-        return await RunTurnAsync(cts, timeout, cancellationToken).ConfigureAwait(false);
+        return await RunTurnAsync(turn, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Ends a turn's claim on the session and disposes its token sources.</summary>
     /// <remarks>The turn owns its token sources. Stop and DisposeAsync only ever cancel them.</remarks>
-    private void Release(CancellationTokenSource cts, CancellationTokenSource? timeout)
+    private void Release(Turn turn)
     {
-        Interlocked.CompareExchange(ref _cts, null, cts);
-        cts.Dispose();
-        timeout?.Dispose();
+        // Only the turn holding the claim gives it up: one that never got it has nothing to release.
+        Interlocked.CompareExchange(ref _turn, null, turn);
+
+        turn.Cts.Dispose();
+        turn.Timeout?.Dispose();
+    }
+
+    // Reports the turn over to a submission waiting to take the session over (InterruptAsync) - once it has released its
+    // claim and reported its end, so the submission's prompt is never appended while the handlers of that end still read
+    // the conversation.
+    private void End(Turn turn)
+    {
+        Interlocked.CompareExchange(ref _lastTurn, null, turn);
+
+        turn.Ended.TrySetResult();
     }
 
     private void AppendUserMessage(string text, IReadOnlyList<BitAiAttachment>? attachments)
@@ -347,13 +460,11 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
     }
 
-    private async Task<BitAiMessage?> RunTurnAsync(
-        CancellationTokenSource cts,
-        CancellationTokenSource? timeout,
-        CancellationToken cancellationToken)
+    private async Task<BitAiMessage?> RunTurnAsync(Turn turn, CancellationToken cancellationToken)
     {
         LastError = null;
-        var token = cts.Token;
+        var token = turn.Cts.Token;
+        var timeout = turn.Timeout;
 
         BitAiMessage? assistant = null;
         try
@@ -414,6 +525,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
                 : new BitAiError(Strings.GenerationStopped) { Kind = BitAiErrorKind.Cancelled, Code = "cancelled" };
 
             assistant?.CompleteOpenParts();
+            CancelHeldApprovals(assistant);
             if (timedOut) assistant?.SetError(LastError);
             else assistant?.SetStatus(BitAiMessageStatus.Cancelled);
             Processor.EndGeneration(timedOut ? BitAiMessageStatus.Failed : BitAiMessageStatus.Cancelled);
@@ -425,6 +537,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
             _logger.LogError(exception, "The transport failed while generating a reply.");
             LastError = BitAiError.FromException(exception);
             assistant?.CompleteOpenParts();
+            CancelHeldApprovals(assistant);
             assistant?.SetError(LastError);
             Processor.EndGeneration(BitAiMessageStatus.Failed);
 
@@ -432,17 +545,42 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
         finally
         {
-            Release(cts, timeout);
+            Release(turn);
 
             // Disposal discards the results held for their call, but an event the turn was applying as it was disposed
             // may have held one after that: the turn, which is what applied it, discards it as it unwinds.
             if (_disposed) Processor.DiscardHeldToolResults();
 
-            RaiseStateChanged();
-            if (assistant is not null && !_disposed) TurnCompleted?.Invoke(assistant);
+            try
+            {
+                RaiseStateChanged();
+                if (assistant is not null && !_disposed) TurnCompleted?.Invoke(assistant);
+            }
+            finally
+            {
+                End(turn);
+            }
         }
 
         return assistant;
+    }
+
+    // A call the transport's side holds for a decision - one nobody here waits for - has no stream left to go on in once
+    // the turn is stopped or has failed: it is cancelled, as a restored conversation shows such a call
+    // (BitAiConversationSerializer), so its prompt goes rather than sending a decision nothing will act on - or one that a
+    // server keeping its calls across requests acts on after the user has moved on. A call the session runs itself has
+    // been cancelled already, with the wait for its decision.
+    private static void CancelHeldApprovals(BitAiMessage? assistant)
+    {
+        if (assistant is null) return;
+
+        foreach (var part in assistant.Parts)
+        {
+            if (part is BitAiToolCallPart { Status: BitAiToolCallStatus.AwaitingApproval } call)
+            {
+                call.SetStatus(BitAiToolCallStatus.Cancelled);
+            }
+        }
     }
 
     private async Task ConsumeAsync(BitAiRequest request, CancellationToken cancellationToken)
@@ -464,12 +602,16 @@ public sealed class BitAiChatSession : IAsyncDisposable
     }
 
     // A call is described by its tool's definition - the display name and the risk its card shows - from its first
-    // render rather than from when it runs, and by the session's own registry, which is the one that knows the tool.
+    // render rather than from when it runs, and by the session's own registry, which is the one that knows the tool. The
+    // definition a transport sends with a call (BitAiToolCallStartedEvent.Definition) is for a call its side runs: a call
+    // the session runs itself is described by the tool it runs whatever the transport sent, so the prompt to allow it
+    // shows the risk of what will run.
     private void DescribeToolCall(string toolCallId)
     {
-        if (_tools is null || FindToolCall(toolCallId) is not { Definition: null } call) return;
+        if (_tools is null || FindToolCall(toolCallId) is not { } call) return;
+        if (call.Definition is not null && RunsItself(call) is false) return;
 
-        call.Definition = _tools.Find(call.ToolName)?.Definition;
+        call.Definition = _tools.Find(call.ToolName)?.Definition ?? call.Definition;
     }
 
     private BitAiRequest BuildRequest(BitAiMessage assistant)
@@ -510,7 +652,8 @@ public sealed class BitAiChatSession : IAsyncDisposable
             return;
         }
 
-        call.Definition ??= tool.Definition;
+        // The tool that runs describes the call, rather than a definition the transport sent (see DescribeToolCall).
+        call.Definition = tool.Definition;
 
         var invocation = new BitAiToolInvocation(call.ToolCallId, call.ToolName, call.Arguments ?? default)
         {
@@ -629,6 +772,49 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
     }
 
+    // Whether the session's own tool loop runs the call once it is decided: it executes tools, and has one of that name.
+    private bool RunsItself(BitAiToolCallPart call) => Options.ExecuteTools && _tools?.Find(call.ToolName) is not null;
+
+    private async Task SendApprovalAsync(IBitAiApprovalTransport transport, BitAiToolCallPart call, BitAiApprovalDecision decision)
+    {
+        var response = new BitAiApprovalResponse(call.ToolCallId, call.ToolName, decision)
+        {
+            ConversationId = Conversation.ConversationId,
+            MessageId = call.Message?.MessageId,
+        };
+
+        try
+        {
+            await transport.SendApprovalAsync(response, _lifetime.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
+        {
+            // The session is gone, and the conversation with it.
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "The decision on the tool call {ToolCallId} could not be sent to the transport.", call.ToolCallId);
+
+            if (_disposed) return;
+
+            // Only a call still where the decision left it is failed. One answered meanwhile - the decision got through
+            // and only the response to the send was lost, or the turn was stopped - keeps what it has.
+            var decided = decision is BitAiApprovalDecision.Rejected ? BitAiToolCallStatus.Rejected : BitAiToolCallStatus.Pending;
+            if (call.Result is not null || call.Status != decided) return;
+
+            // The side holding the call never heard the decision, so the call will not go on: it ends as failed rather
+            // than showing a decision that never arrived.
+            call.SetResult(BitAiToolOutcome.Failure(new BitAiError(Strings.ApprovalNotDelivered)
+            {
+                Code = "approval_not_delivered",
+                Kind = BitAiErrorKind.Tool,
+                Exception = exception,
+                IsRetryable = false,
+            }));
+            RaiseStateChanged();
+        }
+    }
+
     private BitAiToolCallPart? FindToolCall(string toolCallId)
     {
         for (var i = Conversation.Messages.Count - 1; i >= 0; i--)
@@ -656,21 +842,18 @@ public sealed class BitAiChatSession : IAsyncDisposable
         StateChanged = null;
         TurnCompleted = null;
         ApprovalRequested = null;
+        ApprovalDecided = null;
+
+        // Never disposed itself, so a decision still on its way can read it whenever it gets there.
+        _lifetime.Cancel();
 
         // Pairs with the publish-then-check in StartTurnAsync: the flag must be visible before the
-        // token source is read, or a turn starting now could be missed by both sides.
+        // turn is read, or a turn starting now could be missed by both sides.
         Interlocked.MemoryBarrier();
 
         // The running turn owns and disposes its token source, and keeps its claim until it has
         // unwound; disposing the source here as well would make a concurrent Stop throw.
-        try
-        {
-            Volatile.Read(ref _cts)?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // The turn ended while this was cancelling it.
-        }
+        Volatile.Read(ref _turn)?.Cancel();
 
         lock (_approvals)
         {
@@ -696,6 +879,30 @@ public sealed class BitAiChatSession : IAsyncDisposable
     private void RaiseStateChanged()
     {
         if (!_disposed) StateChanged?.Invoke();
+    }
+
+    // A turn's claim on the session: the token sources it owns, and the completion of its end. Published as one, so whoever
+    // reads the turn in flight holds the completion of that very turn rather than of one that claimed the session since.
+    private sealed class Turn(CancellationTokenSource cts, CancellationTokenSource? timeout)
+    {
+        public CancellationTokenSource Cts { get; } = cts;
+
+        public CancellationTokenSource? Timeout { get; } = timeout;
+
+        // Completed once the turn has released its claim and reported its end (End).
+        public TaskCompletionSource Ended { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Cancel()
+        {
+            try
+            {
+                Cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The turn finished and released its token source between the read and the cancel.
+            }
+        }
     }
 
     private sealed class ToolProgressReporter(BitAiToolCallPart call, Action notify) : IProgress<BitAiToolProgress>

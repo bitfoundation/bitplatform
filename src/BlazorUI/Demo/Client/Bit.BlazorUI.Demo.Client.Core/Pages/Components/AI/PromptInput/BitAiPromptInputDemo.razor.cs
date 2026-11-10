@@ -29,6 +29,13 @@ public partial class BitAiPromptInputDemo
         },
         new()
         {
+            Name = "AttachmentUploader",
+            Type = "Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>?",
+            DefaultValue = "null",
+            Description = "Uploads each file as it is staged, given the attachment, a progress to report the fraction sent (0 to 1) to, and a token cancelled when the file is taken off; it returns the attachment to send in its place - typically attachment with { Url = ..., Data = null }. The chip shows how far the upload has got, and a failure - the uploader throws, or returns the attachment with a Failed status and an Error to show - in the error color; either holds the send back until the file is uploaded or taken off. The text of an exception is never shown.",
+        },
+        new()
+        {
             Name = "Capabilities",
             Type = "BitAiModelCapabilities?",
             DefaultValue = "null",
@@ -149,7 +156,7 @@ public partial class BitAiPromptInputDemo
             Name = "OnSubmit",
             Type = "EventCallback<BitAiPromptSubmission>",
             DefaultValue = "",
-            Description = "Raised when the user submits, with the trimmed text and the staged attachments; the composer then empties itself. When it is not set, the submission goes to the Session.",
+            Description = "Raised when the user submits, with the trimmed text and the staged attachments; the composer then empties itself. A handler that could not send it calls Reject on the submission, and the text and the attachments are put back once it returns. When it is not set, the submission goes to the Session - and is put back the same way when the session does not take it.",
             LinkType = LinkType.Link,
             Href = "#prompt-submission",
         },
@@ -549,7 +556,7 @@ public partial class BitAiPromptInputDemo
         {
             Id = "prompt-submission",
             Title = "BitAiPromptSubmission",
-            Description = "What the composer hands OnSubmit when the user submits. The submission owns the attachments from then on: the composer no longer releases their browser streams or previews when it is discarded.",
+            Description = "What the composer hands OnSubmit when the user submits. The submission owns the attachments from then on: the composer no longer releases their browser streams or previews when it is discarded - unless the submission is rejected, which hands them back to it.",
             Parameters =
             [
                 new()
@@ -567,6 +574,20 @@ public partial class BitAiPromptInputDemo
                     Description = "The files staged alongside it.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/attachmentchip#attachment"
+                },
+                new()
+                {
+                    Name = "IsRejected",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the handler of the submission turned it down (Reject)."
+                },
+                new()
+                {
+                    Name = "Reject()",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Turns the submission down, for a handler that could not send it - an upload or a request that failed: the composer puts the text and the attachments back once the handler returns, ahead of anything typed meanwhile, so the user can send them again."
                 },
             ]
         },

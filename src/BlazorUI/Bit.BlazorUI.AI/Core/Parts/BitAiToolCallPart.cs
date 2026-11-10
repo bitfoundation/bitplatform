@@ -84,6 +84,17 @@ public sealed class BitAiToolCallPart : BitAiMessagePart, IBitAiStreamablePart
     /// <summary>Why approval was requested, shown in the prompt.</summary>
     public string? ApprovalReason { get; set; }
 
+    /// <summary>
+    /// Whether the call may be allowed for every later call of its tool as well
+    /// (<see cref="BitAiApprovalDecision.ApprovedAlways"/>). When <see langword="false"/>, the approval prompt does not
+    /// offer it and <see cref="SetApproval"/> records such a decision as <see cref="BitAiApprovalDecision.Approved"/>,
+    /// whoever makes it. The default is <see langword="true"/>.
+    /// </summary>
+    /// <remarks>
+    /// A transport sets it per call through <see cref="BitAiToolApprovalRequestedEvent.AllowApproveAlways"/>.
+    /// </remarks>
+    public bool AllowApproveAlways { get; set; } = true;
+
     /// <summary>The most recent progress report from the running tool.</summary>
     public BitAiToolProgress? Progress { get; private set; }
 
@@ -166,9 +177,21 @@ public sealed class BitAiToolCallPart : BitAiMessagePart, IBitAiStreamablePart
     }
 
     /// <summary>Records a human decision and moves the call forward or rejects it.</summary>
+    /// <remarks>
+    /// A call that does not allow it (<see cref="AllowApproveAlways"/>) records
+    /// <see cref="BitAiApprovalDecision.ApprovedAlways"/> as <see cref="BitAiApprovalDecision.Approved"/>: read
+    /// <see cref="Approval"/> for the decision as recorded.
+    /// </remarks>
     /// <param name="decision">The decision.</param>
     public void SetApproval(BitAiApprovalDecision decision)
     {
+        // Every path to a decision comes through here, so a call that must be confirmed every time is never allowed for
+        // good, whoever decides it.
+        if (decision is BitAiApprovalDecision.ApprovedAlways && AllowApproveAlways is false)
+        {
+            decision = BitAiApprovalDecision.Approved;
+        }
+
         Approval = decision;
         Status = decision switch
         {

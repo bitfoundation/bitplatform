@@ -608,6 +608,171 @@ public class BitAiChatMessageTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void TheAppsActionsAreAppendedToTheActionsOfEveryMessage()
+    {
+        RenderFragment<BitAiMessage> actions = m => builder =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "app-action");
+            builder.AddContent(2, m.Role.Value);
+            builder.CloseElement();
+        };
+
+        var assistant = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, Assistant(new BitAiTextPart("answer")))
+            .Add(c => c.MessageActionsTemplate, actions));
+
+        Assert.AreEqual("assistant", assistant.Find(".bit-aimac-act .app-action").TextContent);
+
+        var user = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, User("hello"))
+            .Add(c => c.Session, new BitAiChatSession(new BitAiFakeTransport()))
+            .Add(c => c.MessageActionsTemplate, actions));
+
+        Assert.AreEqual("user", user.Find(".bit-aicms-act .app-action").TextContent);
+    }
+
+    [TestMethod]
+    public void TheFollowUpsOfTheNewestReplyAreOfferedOnceItHasFinished()
+    {
+        var message = Assistant(new BitAiTextPart("answer"));
+        message.SetStatus(BitAiMessageStatus.Streaming);
+        message.SetFollowUps(["Show more", "Undo it"]);
+        string? picked = null;
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.OnFollowUp, text => picked = text));
+
+        Assert.IsEmpty(component.FindAll(".bit-aicms-fup"));
+
+        message.SetStatus(BitAiMessageStatus.Complete);
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-aicms-fup")));
+        var group = component.Find(".bit-aicms-fup");
+        Assert.AreEqual("group", group.GetAttribute("role"));
+        Assert.AreEqual(BitAiStrings.Default.FollowUps, group.GetAttribute("aria-label"));
+
+        var buttons = group.QuerySelectorAll("button");
+        Assert.AreEqual(2, buttons.Length);
+        Assert.AreEqual("Undo it", buttons[1].TextContent.Trim());
+
+        component.FindAll(".bit-aicms-fup button")[1].Click();
+        Assert.AreEqual("Undo it", picked);
+    }
+
+    [TestMethod]
+    public void AnOlderReplyOffersNoFollowUps()
+    {
+        var message = Assistant(new BitAiTextPart("answer"));
+        message.SetFollowUps(["Show more"]);
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.IsLatest, false)
+            .Add(c => c.OnFollowUp, _ => { }));
+
+        Assert.IsEmpty(component.FindAll(".bit-aicms-fup"));
+    }
+
+    [TestMethod]
+    public async Task AFollowUpGoesToTheSessionWhenTheHostDoesNotHandleIt()
+    {
+        var transport = new BitAiFakeTransport(new BitAiTextDeltaEvent("more"), new BitAiMessageCompletedEvent());
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null });
+        session.Conversation.AddMessage(BitAiRole.User, "go");
+        var reply = session.Conversation.AddMessage(BitAiRole.Assistant, "answer");
+        reply.SetFollowUps(["Show more"]);
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, reply)
+            .Add(c => c.Session, session));
+
+        component.Find(".bit-aicms-fup button").Click();
+
+        await WaitForAsync(() => session.Conversation.Messages.Count == 4 && session.IsGenerating is false);
+        Assert.AreEqual("Show more", session.Conversation.Messages[2].GetText());
+    }
+
+    [TestMethod]
+    public void AReplyWhoseOnlyToolCallsAreHiddenStillShowsItIsThinking()
+    {
+        var call = new BitAiToolCallPart("c1", "lookup");
+        var message = Assistant(call);
+        message.SetStatus(BitAiMessageStatus.Streaming);
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .AddCascadingValue(new BitAiUiOptions { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
+
+        Assert.HasCount(1, component.FindComponents<BitAiThinkingIndicator>());
+        Assert.IsEmpty(component.FindAll(".bit-aitcv"));
+
+        // A failure is the reader's to see whatever the options say, so the reply has something to show.
+        call.SetResult(BitAiToolOutcome.Failure(new BitAiError("down")));
+
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>()));
+        Assert.HasCount(1, component.FindAll(".bit-aitcv"));
+    }
+
+    [TestMethod]
+    public async Task FollowUpsWaitForTheTurnInFlightToEnd()
+    {
+        var linger = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var session = new BitAiChatSession(new LingeringTransport(linger.Task), null, new() { Pacing = null });
+
+        var turn = session.SubmitAsync("go");
+        await WaitForAsync(() => session.Conversation.Messages.Count == 2
+                                 && session.Conversation.Messages[1] is { IsBusy: false, FollowUps: not null });
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, session.Conversation.Messages[1])
+            .Add(c => c.Session, session));
+
+        // The reply has finished, but the stream is still open: picking a follow-up now would go nowhere.
+        Assert.IsTrue(session.IsGenerating);
+        Assert.IsEmpty(component.FindAll(".bit-aicms-fup"));
+
+        linger.SetResult();
+        await turn;
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-aicms-fup")), TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void AToolCallTheOptionsHideLeavesNoPartViewBehind()
+    {
+        var message = Assistant(new BitAiTextPart("answer"), new BitAiToolCallPart("c1", "lookup"));
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .AddCascadingValue(new BitAiUiOptions { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
+
+        Assert.HasCount(1, component.FindAll(".bit-aimpv"));
+        Assert.IsEmpty(component.FindAll(".bit-aitcv"));
+    }
+
+    /// <summary>Answers at once, then keeps the stream open until it is let go.</summary>
+    private sealed class LingeringTransport(Task linger) : IBitAiTransport
+    {
+        public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new BitAiTextDeltaEvent("answer");
+            yield return new BitAiFollowUpsEvent(["Show more"]);
+            yield return new BitAiMessageCompletedEvent();
+
+            await linger.WaitAsync(cancellationToken);
+        }
+    }
+
+    private static async Task WaitForAsync(Func<bool> condition, int timeoutMs = 10_000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (!condition() && DateTime.UtcNow < deadline) await Task.Delay(5);
+        Assert.IsTrue(condition(), "The expected condition was not reached in time.");
+    }
+
+    [TestMethod]
     public async Task BitAiChatMessageShouldStopListeningToTheMessageWhenDisposed()
     {
         var part = new BitAiTextPart("x");

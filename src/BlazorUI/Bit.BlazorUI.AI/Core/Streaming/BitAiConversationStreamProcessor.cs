@@ -229,6 +229,7 @@ public sealed class BitAiConversationStreamProcessor
             case BitAiImageEvent image: OnImage(image); break;
             case BitAiFileEvent file: OnFile(file); break;
             case BitAiCitationEvent citation: Target(evt)?.AddCitation(citation.Citation); break;
+            case BitAiFollowUpsEvent followUps: Target(evt)?.SetFollowUps(followUps.FollowUps); break;
             case BitAiToolCallStartedEvent tool: OnToolCallStarted(tool); break;
             case BitAiToolCallDeltaEvent tool: FindToolCall(tool.ToolCallId)?.AppendArguments(tool.ArgumentsDelta); break;
             case BitAiToolCallCompletedEvent tool: OnToolCallCompleted(tool); break;
@@ -460,7 +461,9 @@ public sealed class BitAiConversationStreamProcessor
         if (EnsureAnswering(evt) is not { } message) return;
         if (FindToolCall(evt.ToolCallId) is not null) return;
 
-        var part = message.AddPart(new BitAiToolCallPart(evt.ToolCallId, evt.ToolName));
+        // A definition the transport sends is on the call from its first render, ahead of any the session would look up -
+        // which the session puts in its place for a call it runs itself (BitAiChatSession.DescribeToolCall).
+        var part = message.AddPart(new BitAiToolCallPart(evt.ToolCallId, evt.ToolName) { Definition = evt.Definition });
 
         // Attributed to the step that is running, so a timeline can show what each step called.
         if (CurrentRun?.CurrentStep is { Status: BitAiAgentStepStatus.Running } step) step.AddToolCall(evt.ToolCallId);
@@ -660,6 +663,7 @@ public sealed class BitAiConversationStreamProcessor
     {
         if (FindToolCall(evt.ToolCallId) is not { } part) return;
         part.ApprovalReason = evt.Reason;
+        part.AllowApproveAlways = evt.AllowApproveAlways;
         part.SetStatus(BitAiToolCallStatus.AwaitingApproval);
     }
 

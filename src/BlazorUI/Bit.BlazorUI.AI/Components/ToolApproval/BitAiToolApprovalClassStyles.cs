@@ -13,6 +13,11 @@ public class BitAiToolApprovalClassStyles
     public string? Text { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the detail (DetailTemplate) under the question of the BitAiToolApproval.
+    /// </summary>
+    public string? Detail { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the row of the answer buttons of the BitAiToolApproval.
     /// </summary>
     public string? Actions { get; set; }

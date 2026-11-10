@@ -73,6 +73,48 @@ public sealed class BitAiConversation : IBitAiConversation
     /// <summary><see langword="true"/> when a message is pending or streaming.</summary>
     public bool IsGenerating => LastMessage is { IsBusy: true };
 
+    /// <summary>
+    /// Reads a value of <see cref="Extensions"/> as a type of the app, with the JSON metadata of the app's own
+    /// <see cref="System.Text.Json.Serialization.JsonSerializerContext"/>. Safe to trim.
+    /// </summary>
+    /// <remarks>
+    /// The value the app put there is handed back as it is. A conversation restored from JSON
+    /// (<see cref="BitAiConversationSerializer.FromJson"/>) holds every value as the <see cref="JsonElement"/> it was
+    /// written as, which this reads as <typeparamref name="T"/> - so the same call works before and after a reload.
+    /// </remarks>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The key of the value.</param>
+    /// <param name="typeInfo">The metadata of <typeparamref name="T"/>, whose options the reading follows.</param>
+    /// <param name="value">The value, when there is one of that type.</param>
+    /// <returns>
+    /// <see langword="true"/> when the key holds a <typeparamref name="T"/>, or JSON that reads as one; otherwise
+    /// <see langword="false"/>.
+    /// </returns>
+    public bool TryGetExtension<T>(string key, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value) =>
+        BitAiExtensionValues.TryGet(Extensions, key, typeInfo, out value);
+
+    /// <summary>
+    /// Reads a value of <see cref="Extensions"/> as a type of the app, with the reflection-based System.Text.Json
+    /// serializer.
+    /// </summary>
+    /// <remarks>
+    /// The value the app put there is handed back as it is. A conversation restored from JSON
+    /// (<see cref="BitAiConversationSerializer.FromJson"/>) holds every value as the <see cref="JsonElement"/> it was
+    /// written as, which this reads as <typeparamref name="T"/> - so the same call works before and after a reload.
+    /// </remarks>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The key of the value.</param>
+    /// <param name="value">The value, when there is one of that type.</param>
+    /// <param name="options">Serializer options. Defaults to web defaults.</param>
+    /// <returns>
+    /// <see langword="true"/> when the key holds a <typeparamref name="T"/>, or JSON that reads as one; otherwise
+    /// <see langword="false"/>.
+    /// </returns>
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
+    public bool TryGetExtension<T>(string key, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value, JsonSerializerOptions? options = null) =>
+        BitAiExtensionValues.TryGet(Extensions, key, options, out value);
+
     /// <summary>Token usage summed across every assistant message.</summary>
     public BitAiTokenUsage TotalUsage
     {
