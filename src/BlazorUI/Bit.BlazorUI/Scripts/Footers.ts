@@ -81,6 +81,9 @@
             let overlapping = false;
             let lastY = Footers.scrollTop(target.current);
 
+            // Where the scroll was last found at its end, while it has not left the end since (see evaluate).
+            let endY: number | null = null;
+
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
 
@@ -187,6 +190,22 @@
                     lastY = y;
                 }
 
+                // A scroll down from the end that goes no further than the height of the footer is the room the
+                // footer's own slide adds to the scroller, not content passing underneath it. WebKit updates the
+                // scroll length of the box a frame or more behind the translation of the footer, so the end is
+                // found short of where the scroll stops, and the rest of the scroll - read against a length that
+                // still counts the slide - would hide the footer again on the way to an end it is already shown at.
+                // Moving up from the end, or further down than the footer is tall (content that grew), leaves it.
+                if (end) {
+                    endY = y;
+                } else if (endY !== null) {
+                    if (y < endY || y - endY > element.offsetHeight) {
+                        endY = null;
+                    } else {
+                        next = false;
+                    }
+                }
+
                 // Revealing the footer when the focus enters it is not enough on its own: the browser scrolls the
                 // focused control into the view right after the focus handler re-read the baseline, which reads as a
                 // scroll down and slides the footer straight back out, and a keyboard user who scrolls on (the arrow
@@ -260,6 +279,7 @@
                     target.current = next;
 
                     lastY = Footers.scrollTop(next);
+                    endY = null;
 
                     next.addEventListener('scroll', scrollHandler, { passive: true });
 

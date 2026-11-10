@@ -1105,10 +1105,14 @@ public class BitPdfViewerE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
+        // Waited for rather than read once: the viewer is laid out again as its document loads.
+        await Expect(Viewer("pdv-dims")).ToHaveAttributeAsync("style", new Regex("400px"));
+        await Expect(Viewer("pdv-dims")).ToHaveCSSAsync("height", "400px");
+        await Expect(Viewer("pdv-dims")).ToHaveCSSAsync("width", "500px");
+
         var box = (await Viewer("pdv-dims").BoundingBoxAsync())!;
         Assert.AreEqual(400, box.Height, 2);
         Assert.AreEqual(500, box.Width, 2);
-        StringAssert.Contains(await Viewer("pdv-dims").GetAttributeAsync("style"), "400px");
     }
 
     [TestMethod]

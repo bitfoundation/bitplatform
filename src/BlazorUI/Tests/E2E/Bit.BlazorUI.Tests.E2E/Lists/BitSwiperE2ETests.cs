@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Tests.E2E.Lists;
+﻿using System.Text.RegularExpressions;
+
+namespace Bit.BlazorUI.Tests.E2E.Lists;
 
 /// <summary>
 /// BitSwiper in a real browser, read off the real scroll position of its natively scrolling row: the buttons and their
@@ -259,8 +261,12 @@ public class BitSwiperE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/swiper");
 
-        await Expect(Page.Locator("#autoplay .bit-swpi-cur")).ToHaveTextAsync(new[] { "I2" });
-        await Expect(Page.Locator("#autoplay .bit-swpi-cur")).ToHaveTextAsync(new[] { "I3" });
+        // A slide is on screen for 400ms, less than an assertion may wait between two looks at the page, so the slides it
+        // goes through are not looked for one by one: it moves on from the first, and then on from wherever it was.
+        var current = Page.Locator("#autoplay .bit-swpi-cur");
+        await Expect(current).ToHaveTextAsync(new Regex(@"^I(?!1$)\d+$"));
+        var shown = await current.TextContentAsync();
+        await Expect(current).ToHaveTextAsync(new Regex($@"^I(?!{Regex.Escape(shown!.Trim()[1..])}$)\d+$"));
         var button = Page.Locator("#autoplay .bit-swp-ppb");
         await Expect(button).ToHaveAttributeAsync("aria-label", "Stop automatic slide show");
         await Expect(Page.Locator("#autoplay .bit-swp-sro")).ToHaveAttributeAsync("aria-live", "off");

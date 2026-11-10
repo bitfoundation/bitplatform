@@ -55,7 +55,7 @@
     <BitTagsInput Id="tgi-restrict" Label="Only suggestions" Suggestions="_frameworks" RestrictToSuggestions ShowInvalidMessage Comparison="StringComparison.OrdinalIgnoreCase" @bind-Value="_restrict" />
     <span id="restrict-value">@J(_restrict)</span>
     <BitTagsInput Id="tgi-max-suggest" Label="Five at a time" Suggestions="_countries" MaxSuggestions="5" />
-    <BitTagsInput Id="tgi-async" Label="Fetched while you type" Suggestions="_asyncSuggestions" IsLoading="_asyncLoading" LoadingAriaLabel="Fetching countries" DebounceTime="300" OnInput="HandleAsyncInput" />
+    <BitTagsInput Id="tgi-async" Label="Fetched while you type" Suggestions="_asyncSuggestions" IsLoading="_asyncLoading" LoadingAriaLabel="Fetching countries" DebounceTime="600" OnInput="HandleAsyncInput" />
     <span id="async-calls">@_asyncCalls</span>
 </E2ESection>
 
@@ -486,7 +486,9 @@
         _asyncCalls++;
         _asyncLoading = true;
         StateHasChanged();
-        await Task.Delay(400);
+        // Long enough for the loading indicator to be seen on a loaded machine, and the debounce above long enough that
+        // keys typed 40ms apart never reach it between two of them.
+        await Task.Delay(1500);
         _asyncSuggestions = _countries.Where(c => c.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList();
         _asyncLoading = false;
     }
