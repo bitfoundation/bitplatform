@@ -347,6 +347,12 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     public bool? ShowCount { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the text field, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the text field.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -712,6 +718,11 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         if (ShowCount.HasValue)
         {
             bitTextField.TakeFromCascade(nameof(ShowCount), ShowCount.Value, static t => t.ShowCount, static (t, v) => t.ShowCount = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitTextField.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static t => t.ShowValidationMessage, static (t, v) => t.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

@@ -251,12 +251,13 @@
         </div>
     </div>
 
-    @if (HasErrorMessage)
+    @if (HasErrorLine)
     {
         @* The message sits on its own line above the footer rather than inside it: what is wrong with the
            value is the first thing to read under the field, and the footer is a single row shared by the
            description and the counter. It carries no live role of its own - the region at the end of the
-           component is what announces it, so it is never read out twice. *@
+           component is what announces the app's message, so it is never read out twice. The messages of the
+           EditContext (ShowValidationMessage) take the same line while the app has none of its own. *@
         <div id="@_errorId"
              style="@Styles?.ErrorMessageContainer"
              class="bit-tfl-erm @Classes?.ErrorMessageContainer">
@@ -268,7 +269,7 @@
             {
                 <span style="@Styles?.ErrorMessage"
                       class="@Classes?.ErrorMessage">
-                    @ErrorMessage
+                    @(HasErrorMessage ? ErrorMessage : ShownValidationMessage)
                 </span>
             }
         </div>

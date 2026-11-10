@@ -105,6 +105,7 @@ public class BitTextFieldParamsTests : BunitTestContext
             Required = true,
             ShowClearButton = true,
             ShowCount = true,
+            ShowValidationMessage = true,
             Size = BitSize.Large,
             SpellCheck = true,
             Suffix = ".com",
@@ -126,6 +127,7 @@ public class BitTextFieldParamsTests : BunitTestContext
         Assert.IsTrue(instance.Trim);
         Assert.AreEqual("Cascaded clear", instance.ClearButtonAriaLabel);
         Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
+        Assert.IsTrue(instance.ShowValidationMessage);
 
         Assert.IsTrue(root.ClassList.Contains("bit-tfl-wrn"));
         Assert.IsTrue(root.ClassList.Contains("bit-tfl-bse"));

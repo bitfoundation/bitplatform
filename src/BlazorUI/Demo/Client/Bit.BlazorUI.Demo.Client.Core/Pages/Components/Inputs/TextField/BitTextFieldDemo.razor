@@ -791,9 +791,15 @@
             description, and announced by the live region of the field the moment it shows up, so a rejection that arrives
             while the field still has focus is not something only sighted users learn about.
             <b>ErrorMessageTemplate</b> replaces the text with content of its own, shown in the
-            <a href="#example10">Templates</a> section. Both are meant for the rejections the app knows about; inside an
-            <b>EditForm</b> the messages of the data annotations belong to the <code>ValidationMessage</code> component
-            instead, so the same text is not printed twice.
+            <a href="#example10">Templates</a> section. Both are meant for the rejections the app knows about.
+            <br /><br />
+            Inside an <b>EditForm</b>, <b>ShowValidationMessage</b> puts the messages of the data annotations in that same
+            place, so the form below needs no <code>ValidationMessage</code> component beside each field. The input is
+            described by them through <code>aria-describedby</code>, so they are read out when the field takes the focus,
+            and an <b>ErrorMessage</b> of the app's own wins the place while it is set. Unlike an ErrorMessage they are not
+            announced as they appear: a submit validates every field at once, and a message from each of them read out in
+            a row would bury the form under its own errors. A <b>BitParams</b> holding a <b>BitTextFieldParams</b> with
+            <b>ShowValidationMessage</b> turns it on for every field inside it.
         </div>
         <br />
         <div class="example-box">
@@ -829,20 +835,15 @@
             {
                 <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                     <DataAnnotationsValidator />
-                    <BitTextField Label="Required" Required @bind-Value="validationTextFieldModel.Text" />
-                    <ValidationMessage For="() => validationTextFieldModel.Text" />
+                    <BitTextField Label="Required" Required ShowValidationMessage @bind-Value="validationTextFieldModel.Text" />
                     <br />
-                    <BitTextField Label="Numeric" @bind-Value="validationTextFieldModel.NumericText" />
-                    <ValidationMessage For="() => validationTextFieldModel.NumericText" />
+                    <BitTextField Label="Numeric" ShowValidationMessage @bind-Value="validationTextFieldModel.NumericText" />
                     <br />
-                    <BitTextField Label="Only chars" @bind-Value="validationTextFieldModel.CharacterText" />
-                    <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
+                    <BitTextField Label="Only chars" ShowValidationMessage @bind-Value="validationTextFieldModel.CharacterText" />
                     <br />
-                    <BitTextField Label="Email" @bind-Value="validationTextFieldModel.EmailText" />
-                    <ValidationMessage For="() => validationTextFieldModel.EmailText" />
+                    <BitTextField Label="Email" ShowValidationMessage @bind-Value="validationTextFieldModel.EmailText" />
                     <br />
-                    <BitTextField Label="3 < Length < 5" @bind-Value="validationTextFieldModel.RangeText" />
-                    <ValidationMessage For="() => validationTextFieldModel.RangeText" />
+                    <BitTextField Label="3 < Length < 5" ShowValidationMessage @bind-Value="validationTextFieldModel.RangeText" />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">
                         Submit
