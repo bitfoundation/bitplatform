@@ -348,7 +348,7 @@ builder.Services.AddBitBheadlessServices(configureOptions: options => options.St
 <script src="@Assets["_content/Bit.Bheadless/bit-bheadless-csp.js"]"></script>
 ```
 
-The components then render no `style` attribute of their own. Their styles go in `data-bit-bh-style`, and the runtime applies them through the CSSOM (`element.style.setProperty`), which such a policy allows. Without the `<head>` script the runtime still applies them, once it has loaded (a prerendered page shows them unstyled until then). A `style` you put on a component is still rendered as a `style` attribute - it is yours, and your policy decides about it; use classes instead.
+The components then render no `style` attribute of their own. Their styles go in `data-bit-bh-style`, and the runtime applies them through the CSSOM (`element.style.setProperty`), which such a policy allows. Without the `<head>` script the runtime still applies them, once it has loaded (a prerendered page shows them unstyled until then). A `style` you put on a component is still rendered as a `style` attribute - it is yours, and your policy decides about it; use classes instead. Where your policy lets it through and it sets a property the component sets too, the component's value wins in strict mode (in the default mode, yours does).
 
 - To turn strict mode on for a part of the page only, cascade the options: `<CascadingValue Value="@(new BitBhOptions { StrictCsp = true })" IsFixed="true">…</CascadingValue>`.
 - In a browser without constructed stylesheets (Safari before 16.4) the scroll area adds one `<style>` element; it carries the nonce of `<meta property="csp-nonce" nonce="…">` (or of the page's first `script[nonce]`).
