@@ -52,7 +52,7 @@ public class AgentIdeasTests
         var result = await console.RunWithStatusAsync("Installing the .NET SDK", async progress =>
         {
             progress("downloading");
-            await Task.Delay(1800);
+            await Task.Delay(300);
             return 42;
         });
 

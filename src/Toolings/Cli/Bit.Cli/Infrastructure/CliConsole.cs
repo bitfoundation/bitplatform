@@ -17,8 +17,6 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 {
     private const int TitleWidth = 34;
 
-    private static readonly TimeSpan IdeasDelay = TimeSpan.FromSeconds(1.5);
-
     public IAnsiConsole Out { get; } = output;
 
     public IAnsiConsole Error { get; } = error;
@@ -157,24 +155,22 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
         var last = TimeSpan.Zero;
         T result = default!;
 
-        await Out.Live(new Text("")).AutoClear(true).Overflow(VerticalOverflow.Ellipsis).StartAsync(async context =>
+        IRenderable View()
+        {
+            var now = clock.Elapsed;
+            var frame = spinner.Frames[(int)(now / spinner.Interval) % spinner.Frames.Count];
+            ideas.Advance(now - last);
+            last = now;
+            return new Rows(new Markup($"[blue]{frame}[/] {status}"), new Text(""), ideas.Render(Width, frame));
+        }
+
+        await Out.Live(View()).AutoClear(true).Overflow(VerticalOverflow.Ellipsis).StartAsync(async context =>
         {
             var task = work(line => status = StatusMarkup(title, line));
 
             while (task.IsCompleted is false)
             {
-                var now = clock.Elapsed;
-                var frame = spinner.Frames[(int)(now / spinner.Interval) % spinner.Frames.Count];
-                IRenderable view = new Markup($"[blue]{frame}[/] {status}");
-
-                if (now >= IdeasDelay)
-                {
-                    ideas.Advance(now - (last > IdeasDelay ? last : IdeasDelay));
-                    view = new Rows(view, new Text(""), ideas.Render(Width, frame));
-                }
-
-                last = now;
-                context.UpdateTarget(view);
+                context.UpdateTarget(View());
                 await Task.WhenAny(task, Task.Delay(40));
             }
 
