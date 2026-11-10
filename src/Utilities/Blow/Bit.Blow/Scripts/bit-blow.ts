@@ -214,9 +214,11 @@ export function observeResize(paneEl: HTMLElement | null, viewportEl: HTMLElemen
             const measure = pendingMeasure;
             pendingMeasure = false;
             if (disposed) return;
+            // The pane's rectangle travels with the call, read in this frame: .NET would otherwise
+            // have to ask for it, a second round trip on every frame of a resize.
             // The component can be torn down (or its circuit dropped) between a frame being
             // scheduled and it running; that is an expected end, not an error worth reporting.
-            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure)).catch(() => { });
+            Promise.resolve(dotNetRef.invokeMethodAsync('OnResizeObserved', measure, getRect(paneEl))).catch(() => { });
         });
     };
 

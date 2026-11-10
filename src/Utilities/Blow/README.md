@@ -1492,11 +1492,16 @@ with a 10% margin, `FitView(padding)` with another, and `FitView(options)` with 
 (`IncludeHiddenNodes`), `/examples/viewport-transitions` (`FitBoundsAsync`).
 
 The browser reports a resize of the pane a frame after it happens, so code reacting to the resize - a
-`ResizeObserver` of your own, say - can call in before the canvas has heard of it. `FitView`, `FitBounds` and
-`SetCenter` work from the pane's size even then: the async twins measure the pane before they move, and the
-synchronous ones measure it straight after and fit again if it was not the size they used. To keep the graph fitted
-to a container that resizes, no observer of your own is needed: `OnPaneResize` is raised with the pane's new size
-once `PaneSize` has it.
+`ResizeObserver` of your own, say - can call in before the canvas has heard of it. `FitView`, `FitBounds`,
+`SetCenter`, `ZoomTo`, `ZoomIn` and `ZoomOut` (and `SetViewport` with a `TranslateExtent`) work from the pane's size
+even then. Each moves at once, as it always has, then measures the pane behind the move and, if the size has
+changed, moves again: a transition still running is steered to the new target, and the task an async twin returns
+completes once it gets there. A viewport that something else has moved in the meantime - the user, a gesture begun,
+a later call - is left alone. A burst of calls shares one measurement.
+
+To keep the graph fitted to a container that resizes, no observer of your own is needed: `OnPaneResize` is raised
+once for each new size of the pane, after `PaneSize` has it and the nodes have been re-measured. A fit made in its
+handler, before any `await`, costs no extra measurement.
 
 ```razor
 <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnPaneResize="() => _flow!.FitView()" />

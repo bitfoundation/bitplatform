@@ -134,9 +134,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Raised when a pan or zoom settles, with the resulting viewport.</summary>
     [Parameter] public EventCallback<BlowViewport> OnViewportChanged { get; set; }
     /// <summary>
-    /// Raised when the pane changes size, with its new size, once <see cref="PaneSize"/> has it. Calling
-    /// <see cref="FitView()"/> here keeps the graph fitted to a container that resizes. Not raised for the first
-    /// measurement, which <see cref="OnInit"/> follows.
+    /// Raised once for each new size of the pane, with that size, once <see cref="PaneSize"/> has it and the nodes
+    /// have been re-measured. Calling <see cref="FitView()"/> here keeps the graph fitted to a container that resizes.
+    /// Not raised for the first measurement, which <see cref="OnInit"/> follows.
     /// </summary>
     [Parameter] public EventCallback<BlowDimensions> OnPaneResize { get; set; }
 
@@ -1164,7 +1164,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private const int WheelIdleDelayMs = 160;
 
     // viewport animation (SetViewport/FitView with a duration)
-    private CancellationTokenSource? _viewportAnimationCts;
+    private ViewportTransition? _viewportTransition;
+
+    /// <summary>
+    /// A viewport transition in flight. Its target can be moved while it runs, for a pane found to have resized under
+    /// it; see <see cref="MovePaneViewportAsync"/>.
+    /// </summary>
+    private sealed class ViewportTransition(BlowViewport target)
+    {
+        public BlowViewport Target { get; set; } = target;
+        public CancellationTokenSource Cts { get; } = new();
+    }
 
     // auto-pan
     private CancellationTokenSource? _autoPanCts;
@@ -1271,7 +1281,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // do change geometry (drag stop, resize, expand-parent) set the flag themselves.
         // A wheel zoom or an animated transition moves the viewport just as continuously as a
         // drag does, and a controlled parent re-renders on every step of it too.
-        if (!IsGesturing && !_wheelActive && _viewportAnimationCts is null) _needsMeasure = true;
+        if (!IsGesturing && !_wheelActive && _viewportTransition is null) _needsMeasure = true;
 
         // The host re-rendered: its templates may draw anything differently now, and which of the node and edge
         // callbacks are wired up depends on the event parameters it just handed over.
@@ -1304,6 +1314,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         {
             _initialFitPending = FitViewOnInit;
             await RefreshPaneRectAsync();
+            // The first measurement is not a resize: OnInit follows it, not OnPaneResize.
+            _reportedPaneRect = _paneRect;
             await StartResizeObserverAsync();
             await ReadMotionPreferenceAsync();
         }
@@ -1516,20 +1528,23 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// False when only the pane's on-screen position moved (a scroll), where re-measuring every
     /// node would be wasted work.
     /// </param>
+    /// <param name="pane">
+    /// The pane's rectangle, read by the browser in the frame it reports; null to have it read here, at the cost of
+    /// another round trip.
+    /// </param>
     [JSInvokable]
-    public async Task OnResizeObserved(bool measureNodes = true)
+    public async Task OnResizeObserved(bool measureNodes = true, BlowDomRect? pane = null)
     {
-        var before = _paneRect;
-        await RefreshPaneRectAsync();
+        // A pure scroll only refreshes the cached rectangle; nothing rendered depends on it, so there is no need to
+        // re-render. A change of size re-renders what is drawn from it.
+        if (pane is not null) AdoptPaneRect(pane);
+        else await RefreshPaneRectAsync();
 
-        var paneResized = before is null || _paneRect is null || PaneSizeDiffers(before, _paneRect);
+        // The nodes before the event: a pane that changes size tends to take nodes with it (text that wraps
+        // differently, sizes in vw), and a handler fitting the graph needs their new sizes as much as the pane's.
+        if (measureNodes && await MeasureAsync()) RenderGeometry();
 
-        var nodesChanged = measureNodes && await MeasureAsync();
-
-        // A pure scroll only refreshes the cached rectangle; nothing rendered depends on it,
-        // so there is no need to re-render.
-        if (nodesChanged) RenderGeometry();
-        else if (paneResized) RenderOverlay();
+        await ReportPaneResizeAsync();
     }
 
     /// <summary>
@@ -1540,58 +1555,128 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ex is JSDisconnectedException or ObjectDisposedException or OperationCanceledException
             or InvalidOperationException;
 
-    /// <summary>
-    /// Reads the pane's rectangle afresh. A change of size between two readings re-renders what is drawn from it and
-    /// raises <see cref="OnPaneResize"/>, whichever reading noticed it - the resize observer's, or a fit measuring
-    /// the pane before the observer has reported.
-    /// </summary>
+    /// <summary>Reads the pane's rectangle afresh; see <see cref="AdoptPaneRect"/>.</summary>
     private async Task RefreshPaneRectAsync()
     {
-        var before = _paneRect;
-        try { _paneRect = await _interop.GetRectAsync(new BlowElementReferenceLike(_paneRef)); }
+        BlowDomRect? rect;
+        try { rect = await _interop.GetRectAsync(new BlowElementReferenceLike(_paneRef)); }
         catch (Exception ex) when (IsInteropTeardown(ex)) { return; }
 
-        if (_disposed || before is null || _paneRect is null || !PaneSizeDiffers(before, _paneRect)) return;
+        if (!_disposed) AdoptPaneRect(rect);
+    }
 
-        RenderOverlay();
-        _ = OnPaneResize.InvokeAsync(PaneSize);
+    /// <summary>
+    /// Takes a reading of the pane's rectangle, re-rendering what is drawn from its size if that changed. Raising
+    /// <see cref="OnPaneResize"/> is left to the resize observer, whichever reading noticed the change first: only the
+    /// observer's comes with the nodes re-measured, and only it is sure to come for every resize.
+    /// </summary>
+    private void AdoptPaneRect(BlowDomRect? rect)
+    {
+        var before = _paneRect;
+        _paneRect = rect;
+
+        if (before is null != rect is null || (before is not null && rect is not null && PaneSizeDiffers(before, rect)))
+            RenderOverlay();
     }
 
     private static bool PaneSizeDiffers(BlowDomRect a, BlowDomRect b)
         => Math.Abs(a.Width - b.Width) > 0.5 || Math.Abs(a.Height - b.Height) > 0.5;
 
     /// <summary>
-    /// Moves the viewport to one worked out from the pane's size, then makes sure that size was current. The browser
-    /// reports a resize a frame and a round trip after it happens, so a call made in answer to the resize - from a
-    /// <c>ResizeObserver</c> of the app's own, say - can get in first and work from the old size. The pane is measured
-    /// again behind the call and, if its size has changed, the viewport is worked out again; unless something else
-    /// moved it meanwhile - the user, or a later call - in which case that move stands.
+    /// The pane's rectangle when <see cref="OnPaneResize"/> last reported its size, or at the first measurement,
+    /// which is not reported. Kept apart from <see cref="_paneRect"/> so that a size is reported once, however many
+    /// readings - overlapping ones included - come back with it.
     /// </summary>
-    /// <param name="compute">The viewport for the pane's current size, or null for none. Called again after the measurement.</param>
-    private void ApplyPaneViewport(Func<BlowViewport?> compute)
-    {
-        if (compute() is { } target)
-        {
-            StopViewportAnimation();
-            ApplyViewport(target);
-        }
+    private BlowDomRect? _reportedPaneRect;
 
-        _ = ReapplyPaneViewportAsync(compute);
+    /// <summary>
+    /// True while an <see cref="OnPaneResize"/> handler runs up to its first await. The pane was read in the frame
+    /// that reported the resize, so a fit made there need not have the pane measured again.
+    /// </summary>
+    private bool _paneSizeJustRead;
+
+    /// <summary>Raises <see cref="OnPaneResize"/> if the pane's size is not the one last reported.</summary>
+    private async Task ReportPaneResizeAsync()
+    {
+        if (_disposed || _paneRect is not { } pane) return;
+        if (_reportedPaneRect is { } reported && !PaneSizeDiffers(reported, pane)) return;
+
+        var first = _reportedPaneRect is null;
+        _reportedPaneRect = pane;
+        if (first || !OnPaneResize.HasDelegate) return;
+
+        await SurfaceFailureAsync(RaisePaneResizeAsync(PaneSize));
     }
 
-    private async Task ReapplyPaneViewportAsync(Func<BlowViewport?> compute)
+    private async Task RaisePaneResizeAsync(BlowDimensions size)
+    {
+        Task handled;
+        _paneSizeJustRead = true;
+        try { handled = OnPaneResize.InvokeAsync(size); }
+        finally { _paneSizeJustRead = false; }
+
+        await handled;
+    }
+
+    /// <summary>A reading of the pane's rectangle taken to check a viewport move; see <see cref="ReadPaneForCheckAsync"/>.</summary>
+    private Task? _paneCheck;
+
+    /// <summary>
+    /// Reads the pane's rectangle for <see cref="MovePaneViewportAsync"/>, sharing a reading already on its way: a
+    /// burst of calls - a <c>SetCenter</c> on every move of a drag, say - then costs one round trip at a time rather
+    /// than one each. A resize later than that reading is still the resize observer's to report.
+    /// </summary>
+    private Task ReadPaneForCheckAsync()
+        => _paneCheck is { IsCompleted: false } pending ? pending : _paneCheck = RefreshPaneRectAsync();
+
+    /// <summary>
+    /// Moves the viewport to one worked out from the pane's size - at once, or easing there over
+    /// <paramref name="durationMs"/> - then makes sure that size was current. The browser reports a resize a frame and
+    /// a round trip after it happens, so a call made in answer to the resize - from a <c>ResizeObserver</c> of the
+    /// app's own, say - can get in first and work from the old size.
+    /// <para>
+    /// The move starts as the call is made, exactly as it would without the check: it stops any transition running,
+    /// and one with no duration is applied before the call returns. The pane is then measured behind it and, if its
+    /// size has changed, the target is worked out again: a transition still running is steered to it, and a viewport
+    /// that got where it was sent is moved on. A viewport that something else has moved since - the user, a gesture
+    /// begun, a later call - is left where that put it.
+    /// </para>
+    /// </summary>
+    /// <param name="compute">The viewport for the pane's current size, or null for none. Called again should the pane prove to have resized.</param>
+    /// <param name="durationMs">How long to ease there for; zero or less jumps.</param>
+    /// <returns>A task that completes once the move, and any correction of it, has.</returns>
+    private Task MovePaneViewportAsync(Func<BlowViewport?> compute, int durationMs = 0)
     {
         var pane = _paneRect;
-        var viewport = _viewport;
+        var target = compute();
+        var move = target is { } t ? AnimateViewportAsync(t, durationMs) : Task.CompletedTask;
 
-        await RefreshPaneRectAsync();
+        // In an OnPaneResize handler the pane was read in the very frame that reported it.
+        if (_paneSizeJustRead) return move;
 
-        if (_disposed || _paneRect is null || (pane is not null && !PaneSizeDiffers(pane, _paneRect))) return;
-        if (_viewport != viewport || _viewportAnimationCts is not null) return;
-        if (compute() is not { } target || target == _viewport) return;
-
-        ApplyViewport(target);
+        // Up to its first await the transition has run, so a transition of this call's is the one now in flight.
+        var transition = target is null ? null : _viewportTransition;
+        var settled = target ?? _viewport;
+        return CorrectForPaneResizeAsync(move, pane, compute, transition, settled);
     }
+
+    private async Task CorrectForPaneResizeAsync(Task move, BlowDomRect? pane, Func<BlowViewport?> compute,
+        ViewportTransition? transition, BlowViewport settled)
+    {
+        await ReadPaneForCheckAsync();
+
+        var resized = _paneRect is not null && (pane is null || PaneSizeDiffers(pane, _paneRect));
+        if (!_disposed && resized && !IsGesturing && !_wheelActive && _autoPanCts is null && compute() is { } corrected)
+        {
+            if (transition is not null && ReferenceEquals(_viewportTransition, transition)) transition.Target = corrected;
+            else if (_viewportTransition is null && _viewport == settled && corrected != _viewport) ApplyViewport(corrected);
+        }
+
+        await move;
+    }
+
+    /// <summary>Starts a <see cref="MovePaneViewportAsync"/> for a method that does not hand back a task.</summary>
+    private void MovePaneViewport(Func<BlowViewport?> compute) => _ = SurfaceFailureAsync(MovePaneViewportAsync(compute));
 
     /// <summary>
     /// The node object the browser's last report of each id went to. It remembers its reports by id and reports only
@@ -2706,7 +2791,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _pinching = true;
         _pinchStartDistance = PointerDistance();
         _pinchStartViewport = _viewport;
-        _ = RefreshPaneRectAsync();
+        _ = SurfaceFailureAsync(RefreshPaneRectAsync());
         if (!wasPanning) _ = OnMoveStart.InvokeAsync(_viewport);
         StateHasChanged();
         return true;
@@ -4478,7 +4563,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         CapturePane(pointerId);
         _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(nodeId, handleId, handleType));
         NotifyConnectionChange();
-        _ = RefreshPaneRectAsync();
+        _ = SurfaceFailureAsync(RefreshPaneRectAsync());
         StateHasChanged();
     }
 
@@ -4527,7 +4612,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _ = OnReconnectStart.InvokeAsync(new BlowEdgeReconnectStart(edge, movingEnd));
         _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(node.Id, fixedHandle, fixedType));
         NotifyConnectionChange();
-        _ = RefreshPaneRectAsync();
+        _ = SurfaceFailureAsync(RefreshPaneRectAsync());
         StateHasChanged();
         return true;
     }
@@ -5109,6 +5194,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Applies a viewport, clamping zoom to Min/Max and honouring <see cref="TranslateExtent"/>.</summary>
     public void SetViewport(BlowViewport viewport)
     {
+        // Only the translate extent's clamp depends on the pane's size; without one there is nothing to check.
+        if (TranslateExtent is not null)
+        {
+            MovePaneViewport(() => ResolveViewport(viewport));
+            return;
+        }
+
         StopViewportAnimation();
         ApplyViewport(ResolveViewport(viewport));
     }
@@ -5120,7 +5212,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// keeps them oriented. A duration of zero applies the viewport immediately.
     /// </summary>
     public Task SetViewportAsync(BlowViewport viewport, int durationMs)
-        => AnimateViewportAsync(ResolveViewport(viewport), durationMs);
+        => TranslateExtent is not null
+            ? MovePaneViewportAsync(() => ResolveViewport(viewport), durationMs)
+            : AnimateViewportAsync(ResolveViewport(viewport), durationMs);
 
     /// <summary>Clamps a requested viewport into the zoom range and the translate extent.</summary>
     private BlowViewport ResolveViewport(BlowViewport viewport)
@@ -5141,8 +5235,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             return;
         }
 
-        var cts = new CancellationTokenSource();
-        _viewportAnimationCts = cts;
+        var transition = new ViewportTransition(target);
+        _viewportTransition = transition;
 
         await OnMoveStart.InvokeAsync(from);
 
@@ -5150,15 +5244,23 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         try
         {
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(16));
-            while (await timer.WaitForNextTickAsync(cts.Token))
+            while (await timer.WaitForNextTickAsync(transition.Cts.Token))
             {
                 var t = Math.Clamp(clock.Elapsed.TotalMilliseconds / durationMs, 0, 1);
                 var e = EaseInOut(t);
 
-                await InvokeAsync(() => ApplyViewport(new BlowViewport(
-                    from.X + (target.X - from.X) * e,
-                    from.Y + (target.Y - from.Y) * e,
-                    from.Zoom + (target.Zoom - from.Zoom) * e)));
+                // The target is read on the dispatcher, where it may have been steered, and a frame that was on its way
+                // when the transition was stopped is dropped rather than undoing what stopped it. The last frame lands
+                // on the target exactly, so a transition that ran its course is seen to have got there.
+                await InvokeAsync(() =>
+                {
+                    if (!ReferenceEquals(_viewportTransition, transition)) return;
+                    var to = transition.Target;
+                    ApplyViewport(t >= 1 ? to : new BlowViewport(
+                        from.X + (to.X - from.X) * e,
+                        from.Y + (to.Y - from.Y) * e,
+                        from.Zoom + (to.Zoom - from.Zoom) * e));
+                });
 
                 if (t >= 1) break;
             }
@@ -5168,12 +5270,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         catch (ObjectDisposedException) { return; }
         finally
         {
-            if (ReferenceEquals(_viewportAnimationCts, cts))
+            if (ReferenceEquals(_viewportTransition, transition))
             {
-                _viewportAnimationCts = null;
-                cts.Dispose();
+                _viewportTransition = null;
+                transition.Cts.Dispose();
             }
         }
+
+        // Stopped between its last frame and here.
+        if (transition.Cts.IsCancellationRequested) return;
 
         await OnMoveEnd.InvokeAsync(_viewport);
     }
@@ -5188,10 +5293,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Abandons any viewport transition in flight, leaving the viewport where it got to.</summary>
     private void StopViewportAnimation()
     {
-        if (_viewportAnimationCts is not { } cts) return;
-        _viewportAnimationCts = null;
-        cts.Cancel();
-        cts.Dispose();
+        if (_viewportTransition is not { } transition) return;
+        _viewportTransition = null;
+        transition.Cts.Cancel();
+        transition.Cts.Dispose();
     }
 
     private void ApplyViewport(BlowViewport viewport)
@@ -5225,25 +5330,30 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Sets the absolute zoom level, keeping the pane center stationary.</summary>
     public void ZoomTo(double zoom)
     {
-        if (ComputeZoomTo(zoom) is not { } target) return;
-        StopViewportAnimation();
-        ApplyViewport(target);
+        var from = _viewport;
+        MovePaneViewport(() => ComputeZoomTo(from, zoom));
     }
 
     /// <summary>Eases to the given zoom level over <paramref name="durationMs"/> milliseconds.</summary>
     public Task ZoomToAsync(double zoom, int durationMs)
-        => ComputeZoomTo(zoom) is { } target ? AnimateViewportAsync(target, durationMs) : Task.CompletedTask;
+    {
+        var from = _viewport;
+        return MovePaneViewportAsync(() => ComputeZoomTo(from, zoom), durationMs);
+    }
 
-    /// <summary>The viewport that zooming to <paramref name="zoom"/> produces, or null for a no-op.</summary>
-    private BlowViewport? ComputeZoomTo(double zoom)
+    /// <summary>
+    /// The viewport that zooming <paramref name="from"/> to <paramref name="zoom"/> about the pane's centre produces,
+    /// or null for a no-op.
+    /// </summary>
+    private BlowViewport? ComputeZoomTo(BlowViewport from, double zoom)
     {
         var newZoom = Math.Clamp(zoom, MinZoom, MaxZoom);
-        if (Math.Abs(newZoom - _viewport.Zoom) < 1e-9) return null;
+        if (Math.Abs(newZoom - from.Zoom) < 1e-9) return null;
 
         var cx = (_paneRect?.Width ?? 0) / 2;
         var cy = (_paneRect?.Height ?? 0) / 2;
-        var flowX = (cx - _viewport.X) / _viewport.Zoom;
-        var flowY = (cy - _viewport.Y) / _viewport.Zoom;
+        var flowX = (cx - from.X) / from.Zoom;
+        var flowY = (cy - from.Y) / from.Zoom;
         return ClampViewport(new BlowViewport(cx - flowX * newZoom, cy - flowY * newZoom, newZoom));
     }
 
@@ -5251,18 +5361,22 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public double GetZoom() => _viewport.Zoom;
 
     /// <summary>Centers the viewport on the given flow point, optionally setting the zoom.</summary>
-    public void SetCenter(double x, double y, double? zoom = null) => ApplyPaneViewport(() => ComputeCenter(x, y, zoom));
-
-    /// <summary>Eases the viewport to centre on the given flow point.</summary>
-    public async Task SetCenterAsync(double x, double y, double? zoom, int durationMs)
+    public void SetCenter(double x, double y, double? zoom = null)
     {
-        await RefreshPaneRectAsync();
-        await AnimateViewportAsync(ComputeCenter(x, y, zoom), durationMs);
+        var z = zoom ?? _viewport.Zoom;
+        MovePaneViewport(() => ComputeCenter(x, y, z));
     }
 
-    private BlowViewport ComputeCenter(double x, double y, double? zoom)
+    /// <summary>Eases the viewport to centre on the given flow point.</summary>
+    public Task SetCenterAsync(double x, double y, double? zoom, int durationMs)
     {
-        var z = Math.Clamp(zoom ?? _viewport.Zoom, MinZoom, MaxZoom);
+        var z = zoom ?? _viewport.Zoom;
+        return MovePaneViewportAsync(() => ComputeCenter(x, y, z), durationMs);
+    }
+
+    private BlowViewport ComputeCenter(double x, double y, double zoom)
+    {
+        var z = Math.Clamp(zoom, MinZoom, MaxZoom);
         var paneW = _paneRect?.Width ?? 0;
         var paneH = _paneRect?.Height ?? 0;
         return ClampViewport(new BlowViewport(paneW / 2 - x * z, paneH / 2 - y * z, z));
@@ -5270,14 +5384,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>Pans/zooms so the given flow-space rectangle fills the pane.</summary>
     public void FitBounds(BlowRect bounds, double padding = 0.1)
-        => ApplyPaneViewport(() => ComputeFitBounds(bounds, padding));
+        => MovePaneViewport(() => ComputeFitBounds(bounds, padding));
 
     /// <summary>Eases the viewport so the given flow-space rectangle fills the pane.</summary>
-    public async Task FitBoundsAsync(BlowRect bounds, double padding, int durationMs)
-    {
-        await RefreshPaneRectAsync();
-        if (ComputeFitBounds(bounds, padding) is { } target) await AnimateViewportAsync(target, durationMs);
-    }
+    public Task FitBoundsAsync(BlowRect bounds, double padding, int durationMs)
+        => MovePaneViewportAsync(() => ComputeFitBounds(bounds, padding), durationMs);
 
     private BlowViewport? ComputeFitBounds(BlowRect bounds, double padding)
     {
@@ -6626,18 +6737,14 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Pans/zooms so the requested nodes fill the pane. Mirrors React Flow's <c>fitView</c>,
     /// including its options for padding, hidden nodes, a zoom range and a node subset.
     /// </summary>
-    public void FitView(BlowFitViewOptions options) => ApplyPaneViewport(() => ComputeFitView(options));
+    public void FitView(BlowFitViewOptions options) => MovePaneViewport(() => ComputeFitView(options));
 
     /// <summary>
     /// Fits the view, easing there over <see cref="BlowFitViewOptions.Duration"/> milliseconds
     /// instead of jumping. Mirrors React Flow's <c>fitView({ duration })</c>.
     /// </summary>
-    public async Task FitViewAsync(BlowFitViewOptions options)
-    {
-        // Measured first: the pane may have resized since the browser last reported its size.
-        await RefreshPaneRectAsync();
-        if (ComputeFitView(options) is { } target) await AnimateViewportAsync(target, options.Duration);
-    }
+    public Task FitViewAsync(BlowFitViewOptions options)
+        => MovePaneViewportAsync(() => ComputeFitView(options), options.Duration);
 
     /// <summary>Fits the whole graph, easing there over <paramref name="durationMs"/> milliseconds.</summary>
     public Task FitViewAsync(int durationMs)
