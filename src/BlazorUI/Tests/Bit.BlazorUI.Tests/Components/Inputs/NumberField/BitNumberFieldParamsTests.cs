@@ -478,6 +478,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             Precision = 3,
             Prefix = "Cascaded prefix",
             ShowClearButton = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             SnapToStep = true,
             Step = "3",
@@ -544,6 +545,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
         Assert.AreEqual(3, instance.Precision);
         Assert.AreEqual("Cascaded prefix", instance.Prefix);
         Assert.IsTrue(instance.ShowClearButton);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.SnapToStep);
         Assert.AreEqual("3", instance.Step);

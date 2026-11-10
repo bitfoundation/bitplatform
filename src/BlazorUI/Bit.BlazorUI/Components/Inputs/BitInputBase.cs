@@ -36,6 +36,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     // The classes the cascading EditContext gives the field (UpdateFieldCssClass), as last read.
     private string? _fieldCssClass;
 
+    // The messages the cascading EditContext holds for the field (FieldValidationMessage), as last read.
+    private string? _fieldValidationMessage;
+
     // What an input that arrives at its value on its own (PublishValueAsync) last wrote into the Value or was last
     // handed from outside, which is how a value the app pushed in is told apart from the one the binding hands back.
     private TValue? _knownValue;
@@ -370,9 +373,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <remarks>
     /// Read again wherever the validation state is - on every parameters pass and every change of the validation
     /// state - so a message that changes while the field stays invalid is followed too. An input that validates nothing
-    /// (<see cref="NoValidate"/>) or has no field to report holds none.
+    /// (<see cref="NoValidate"/>) or has no field to report holds none. A change of it rebuilds the classes of the
+    /// input, so a class that follows whether the error slot has anything to show follows the message as well.
     /// </remarks>
-    protected string? FieldValidationMessage { get; private set; }
+    protected string? FieldValidationMessage
+    {
+        get => _fieldValidationMessage;
+        private set
+        {
+            if (string.Equals(_fieldValidationMessage, value, StringComparison.Ordinal)) return;
+
+            _fieldValidationMessage = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     protected EditContext EditContext { get; set; } = default!;
 

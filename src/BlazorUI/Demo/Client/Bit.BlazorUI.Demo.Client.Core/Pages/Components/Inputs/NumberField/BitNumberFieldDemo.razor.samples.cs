@@ -372,8 +372,7 @@ private BitNumberField<int?>? apiNumberField;";
     <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
         <DataAnnotationsValidator />
 
-        <BitNumberField Label=""@($""Age: [{validationModel.Age}]"")"" @bind-Value=""validationModel.Age"" />
-        <ValidationMessage For=""@(() => validationModel.Age)"" />
+        <BitNumberField Label=""@($""Age: [{validationModel.Age}]"")"" @bind-Value=""validationModel.Age"" ShowValidationMessage />
 
         <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     </EditForm>
@@ -389,15 +388,14 @@ else
     <BitNumberField Label=""Custom ParsingErrorMessage (try typing letters)""
                     DisplayName=""Weight""
                     ParsingErrorMessage=""{0} must be a number.""
-                    @bind-Value=""parsingErrorValue"" />
-    <ValidationMessage For=""@(() => parsingErrorValue)"" />
+                    @bind-Value=""parsingErrorValue""
+                    ShowValidationMessage />
 </EditForm>
 
 <EditForm Model=""@rangeModel"">
     <DataAnnotationsValidator />
 
-    <BitNumberField Label=""NoClamp & [Range(0, 100)]"" NoClamp Min=""0"" Max=""100"" @bind-Value=""rangeModel.Percentage"" />
-    <ValidationMessage For=""@(() => rangeModel.Percentage)"" />
+    <BitNumberField Label=""NoClamp & [Range(0, 100)]"" NoClamp Min=""0"" Max=""100"" @bind-Value=""rangeModel.Percentage"" ShowValidationMessage />
 </EditForm>";
     private readonly string example17CsharpCode = @"
 public class BitNumberFieldValidationModel
