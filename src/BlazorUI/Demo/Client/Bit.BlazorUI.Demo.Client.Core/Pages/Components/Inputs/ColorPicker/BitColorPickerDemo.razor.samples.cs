@@ -320,7 +320,26 @@ private string cascadedSmallColor = ""rgba(126,74,226,1)"";";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
-<div>@validationResult</div>";
+<div>@validationResult</div>
+
+
+<BitColorPicker ShowAlphaSlider ShowPreview
+                Label=""Logo color""
+                @bind-Value=""logoColor""
+                @bind-Alpha=""logoAlpha""
+                ErrorMessage=""@(logoAlpha < 1 ? ""A logo color has to be fully opaque."" : null)"" />
+
+<BitColorPicker ShowSaturationArea=""false"" ShowInputs Label=""Accent color"" Invalid />
+
+<BitColorPicker ShowInputs
+                Label=""Theme color""
+                @bind-Value=""themeColor""
+                ErrorMessageAriaLabel=""Your plan does not include custom theme colors. Upgrade to use them."">
+    <ErrorMessageTemplate>
+        Your plan does not include custom theme colors.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Upgrade</BitLink>
+    </ErrorMessageTemplate>
+</BitColorPicker>";
     private readonly string example13CsharpCode = @"
 public class BitColorPickerDemoFormModel
 {
@@ -330,6 +349,9 @@ public class BitColorPickerDemoFormModel
 
 private BitColorPickerDemoFormModel validationModel = new();
 private string? validationResult;
+private string logoColor = ""#2E6CB8"";
+private double logoAlpha = 1;
+private string themeColor = ""#7E4AE2"";
 
 private void HandleValidSubmit()
 {

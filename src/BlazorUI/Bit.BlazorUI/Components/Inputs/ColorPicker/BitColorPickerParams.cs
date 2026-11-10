@@ -63,6 +63,29 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
     public BitColorInputsMode? DefaultInputsMode { get; set; }
 
     /// <summary>
+    /// A line at the foot of the picker saying why its color was rejected, which marks the picker invalid in the same
+    /// way <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every picker the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// pickers announce it too. A reason that fits one picker alone belongs on that picker.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking the
+    /// picker invalid in the same way.
+    /// </summary>
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="EyeDropperIconName"/> when both are set.
     /// </summary>
@@ -89,6 +112,12 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
     /// Custom icon name for the inputs mode switch button. If unset, default will be the Sort icon.
     /// </summary>
     public string? InputsModeSwitchIconName { get; set; }
+
+    /// <summary>
+    /// Marks the color of the picker as invalid, giving it the same look and the same <c>aria-invalid</c> attribute,
+    /// on every control that holds the color, that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// The text that names the picker.
@@ -213,6 +242,21 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
             bitColorPicker.TakeFromCascade(nameof(DefaultInputsMode), DefaultInputsMode.Value, static c => c.DefaultInputsMode, static (c, v) => c.DefaultInputsMode = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitColorPicker.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static c => c.ErrorMessage, static (c, v) => c.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitColorPicker.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static c => c.ErrorMessageAriaLabel, static (c, v) => c.ErrorMessageAriaLabel = v);
+        }
+
+        if (ErrorMessageTemplate is not null)
+        {
+            bitColorPicker.TakeFromCascade(nameof(ErrorMessageTemplate), ErrorMessageTemplate, static c => c.ErrorMessageTemplate, static (c, v) => c.ErrorMessageTemplate = v);
+        }
+
 
         if (EyeDropperIcon is not null)
         {
@@ -238,6 +282,11 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
         if (InputsModeSwitchIconName.HasValue())
         {
             bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIconName), InputsModeSwitchIconName, static c => c.InputsModeSwitchIconName, static (c, v) => c.InputsModeSwitchIconName = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitColorPicker.TakeFromCascade(nameof(Invalid), Invalid.Value, static c => c.Invalid, static (c, v) => c.Invalid = v);
         }
 
         if (Label.HasValue())

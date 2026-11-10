@@ -16,13 +16,16 @@
     var aaLarge = BitThemeColorContrast.MeetsWcagAaLargeText(contrast);
     @* The contrast readout describes the first widget the panel renders, so the verdict is read out with the
        control the user is standing on rather than waiting at the bottom of the panel to be found. Every part
-       above the text fields is optional, so which one that is has to be worked out rather than assumed. *@
-    var describes = ShowContrast ? _ContrastId : null;
+       above the text fields is optional, so which one that is has to be worked out rather than assumed.
+       The error line describes every widget that holds the value, the text fields included: each of them says
+       it is invalid, so each of them has to be able to say why. *@
+    var describes = GetDescribedBy(withContrast: true);
+    var errorDescribes = GetDescribedBy(withContrast: false);
     var sliders = ShowHueSlider || ShowAlphaSlider;
     var (rootLabel, rootLabelledBy) = GetRootName();
-    @* A failed validation is declared on the widgets that hold the value, the same ones aria-readonly goes on:
-       a group carries neither state. *@
-    var ariaInvalid = ValueInvalid is true ? "true" : null;
+    @* A rejected value - by the cascading EditContext, or by the app (Invalid, an error message) - is declared on
+       the widgets that hold the value, the same ones aria-readonly goes on: a group carries neither state. *@
+    var ariaInvalid = IsInvalid ? "true" : null;
 }
 
 @* The group role is the picker's own and is written after the splatted attributes on purpose. The disabled state is
@@ -118,7 +121,7 @@
                                    style="@Styles?.SliderInput"
                                    class="bit-clp-inp @Classes?.SliderInput"
                                    aria-valuetext="@_HueValueText"
-                                   aria-describedby="@(ShowSaturationArea ? null : describes)"
+                                   aria-describedby="@(ShowSaturationArea ? errorDescribes : describes)"
                                    aria-readonly="@(readOnly ? "true" : null)"
                                    aria-invalid="@ariaInvalid" />
                         </div>
@@ -149,7 +152,7 @@
                                    style="@Styles?.SliderInput"
                                    class="bit-clp-inp @Classes?.SliderInput"
                                    aria-valuetext="@_AlphaValueText"
-                                   aria-describedby="@(ShowSaturationArea || ShowHueSlider ? null : describes)"
+                                   aria-describedby="@(ShowSaturationArea || ShowHueSlider ? errorDescribes : describes)"
                                    aria-readonly="@(readOnly ? "true" : null)"
                                    aria-invalid="@ariaInvalid" />
                         </div>
@@ -206,6 +209,7 @@
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
                            aria-invalid="@ariaInvalid"
+                           aria-describedby="@errorDescribes"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-hex")"
                            style="@Styles?.FieldInput"
@@ -233,6 +237,7 @@
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
                            aria-invalid="@ariaInvalid"
+                           aria-describedby="@errorDescribes"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-{name}")"
                            style="@Styles?.FieldInput"
@@ -256,6 +261,7 @@
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
                            aria-invalid="@ariaInvalid"
+                           aria-describedby="@errorDescribes"
                            value="@_AlphaPercentValue"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-alpha")"
@@ -358,6 +364,43 @@
                 </button>
             }
         </div>
+    }
+
+    @* The error line is the last row of the panel, under the palette too, the way the message of every other input
+       sits right under the control it is about - and here the whole panel is that control. It is one line for the
+       whole picker, since the picker holds one color. It carries no live role of its own - the region below is what
+       announces it, so it is never read out twice. *@
+    @if (_HasErrorMessage)
+    {
+        <div id="@_ErrorId" style="@Styles?.ErrorMessageContainer" class="bit-clp-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (_HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by, which the template itself may not have at all.
+           It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_ErrorLabelId" class="bit-clp-vhd">@ErrorMessageAriaLabel</span>
+    }
+
+    @* A status rather than an alert: a rejected color must not steal the focus or interrupt what is being read, only
+       be announced once the reader is done with the current sentence. Once a picker is wired for an error message it
+       is rendered whether or not it has anything to say, because a live region that arrives with its text already in
+       it is the one thing screen readers are known to miss.
+       Only a new message is announced, not the same one again after another move: a drag moves the color at every
+       frame, and a reason that holds for each of them would be read out at each of them. The widgets carry
+       aria-invalid, so every step still says the color is rejected. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status" aria-live="polite" aria-atomic="true" class="bit-clp-vhd">@_ErrorLiveText</span>
     }
 
     @* The value's carrier in a form: what a post reads under Name and where the InputHtmlAttributes land. It is

@@ -91,6 +91,7 @@ public class BitColorPickerParamsTests : BunitTestContext
         var eyeDropperIcon = BitIconInfo.Fa("solid eye-dropper");
         var switchIcon = BitIconInfo.Fa("solid sort");
         RenderFragment labelTemplate = builder => builder.AddContent(0, "Cascaded label template");
+        RenderFragment errorTemplate = builder => builder.AddContent(0, "Cascaded error template");
 
         var @params = new BitColorPickerParams
         {
@@ -98,11 +99,15 @@ public class BitColorPickerParamsTests : BunitTestContext
             Classes = classes,
             ContrastColor = "#000000",
             DefaultInputsMode = BitColorInputsMode.Hsl,
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
+            ErrorMessageTemplate = errorTemplate,
             EyeDropperIcon = eyeDropperIcon,
             EyeDropperIconName = "Color",
             Format = BitColorFormat.Hsla,
             InputsModeSwitchIcon = switchIcon,
             InputsModeSwitchIconName = "Switch",
+            Invalid = true,
             Label = "Cascaded label",
             LabelTemplate = labelTemplate,
             Presets = presets,
@@ -137,11 +142,15 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.AreSame(classes, instance.Classes);
         Assert.AreEqual("#000000", instance.ContrastColor);
         Assert.AreEqual(BitColorInputsMode.Hsl, instance.DefaultInputsMode);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
+        Assert.AreSame(errorTemplate, instance.ErrorMessageTemplate);
         Assert.AreSame(eyeDropperIcon, instance.EyeDropperIcon);
         Assert.AreEqual("Color", instance.EyeDropperIconName);
         Assert.AreEqual(BitColorFormat.Hsla, instance.Format);
         Assert.AreSame(switchIcon, instance.InputsModeSwitchIcon);
         Assert.AreEqual("Switch", instance.InputsModeSwitchIconName);
+        Assert.IsTrue(instance.Invalid);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreSame(labelTemplate, instance.LabelTemplate);
         Assert.AreSame(presets, instance.Presets);
@@ -195,6 +204,55 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.AreEqual("Farbton", component.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
         Assert.IsTrue(component.Find(".bit-clp-swi").ClassList.Contains("fa-sort"));
         Assert.AreEqual("5", component.FindAll(".bit-clp-fin")[0].GetAttribute("tabindex"));
+        Assert.AreEqual("Cascaded error template", component.Find(".bit-clp-erm").TextContent.Trim());
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var component = RenderWithParams(new BitColorPickerParams { ShowInputs = true, ErrorMessage = "Not in the brand palette." });
+
+        Assert.AreEqual("Not in the brand palette.", component.Find(".bit-clp-erm").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
+        Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-invalid") == "true"));
+        Assert.AreEqual("Not in the brand palette.", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldRenderACascadedErrorMessageTemplate()
+    {
+        RenderFragment template = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-error\">Refused</span>");
+
+        var component = RenderWithParams(new BitColorPickerParams { ErrorMessageTemplate = template });
+
+        Assert.AreEqual("Refused", component.Find(".bit-clp-erm .cascaded-error").TextContent);
+        Assert.IsTrue(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitColorPickerShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitColorPickerParams { ErrorMessageAriaLabel = "Refused by the server." } });
+            parameters.AddChildContent(RenderColorPicker(builder => builder.AddAttribute(1, nameof(BitColorPicker.Invalid), invalid)));
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        Assert.AreEqual("Refused by the server.", component.Find("[role=status]").TextContent.Trim());
     }
 
     [TestMethod]

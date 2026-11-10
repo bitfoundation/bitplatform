@@ -8,15 +8,16 @@
 //   --bit-ColorPicker-radius                    corner radius of the panel                     (default: 0)
 //   --bit-ColorPicker-gap                       vertical rhythm between the rows of the panel  (default: spacing(1))
 //   --bit-ColorPicker-font-size                 text size of the panel                         (default: $tg-fs-sm)
-//   --bit-ColorPicker-caption-font-size         text size of the field captions and of the
-//                                               contrast readout                               (default: $tg-fs-xs)
+//   --bit-ColorPicker-caption-font-size         text size of the field captions, of the
+//                                               contrast readout and of the error message      (default: $tg-fs-xs)
 //   --bit-ColorPicker-border-color              color of every border the panel draws          (default: $clr-brd-pri)
 //   --bit-ColorPicker-focus-color               color of the keyboard focus ring               (default: $clr-pri-focus)
 //   --bit-ColorPicker-label-color               color of the label text                        (default: $clr-fg-pri)
 //   --bit-ColorPicker-required-color            color of the asterisk after the label of a
 //                                               required picker                                (default: $clr-req)
 //   --bit-ColorPicker-invalid-color             color of every border the panel draws, and of
-//                                               the focus ring, while the value is invalid     (default: $clr-err / $clr-err-focus)
+//                                               the focus ring, while the value is invalid,
+//                                               and of the error message                       (default: $clr-err / $clr-err-focus)
 //   --bit-ColorPicker-saturation-height         height of the saturation-brightness area       (default: spacing(29.5))
 //   --bit-ColorPicker-saturation-radius         corner radius of that area                     (default: $shp-radius-control)
 //   --bit-ColorPicker-thumb-size                diameter of the saturation thumb and of the
@@ -668,6 +669,23 @@ $clp-private-properties:
     border-radius: inherit;
     border: $shp-border-width-thick $shp-border-style var(--bit-ColorPicker-swatch-ring-color, #{$clr-ntr-white});
     box-shadow: 0 0 0 $shp-border-width var(--bit-ColorPicker-swatch-ring-shadow, #{$clr-ntr-black});
+}
+
+// The error line is the last row of the panel, painted with the one variable that already redraws every border and
+// the focus ring of an invalid picker, so recoloring the error state recolors the message along with them. It is set
+// in the caption size, which an explicit Size wins over, and keeps its color on a disabled picker - the disabled look
+// only dims the controls - since it still says what is wrong with the color.
+.bit-clp-erm {
+    flex-shrink: 0;
+    overflow-wrap: break-word;
+    margin-top: var(--bit-ColorPicker-gap, #{spacing(1)});
+    color: var(--bit-ColorPicker-invalid-color, #{$clr-err});
+    font-size: var(--bit-clp-fs-sub-sz, var(--bit-ColorPicker-caption-font-size, #{$tg-fs-xs}));
+}
+
+// The live region of the error and the text an error template is described by: read, never seen.
+.bit-clp-vhd {
+    @include visually-hidden;
 }
 
 

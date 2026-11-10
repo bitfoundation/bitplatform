@@ -7,6 +7,7 @@
                     ShowInputs
                     ShowAlphaSlider
                     Presets="@_presets"
+                    ErrorMessage="@ErrorMessage"
                     @bind-Value="@TestModel.Value" />
 
 </EditForm>
@@ -15,6 +16,7 @@
     private static readonly string[] _presets = ["#FF0000", "#00FF00"];
 
     [Parameter] public BitColorPickerTestModel TestModel { get; set; } = new();
+    [Parameter] public string? ErrorMessage { get; set; }
 
     public int ValidCount { get; set; }
     public int InvalidCount { get; set; }

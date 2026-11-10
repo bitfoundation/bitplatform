@@ -364,6 +364,44 @@
             </EditForm>
             <div>@validationResult</div>
         </div>
+
+        <br /><br />
+
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error look, and the
+            <b>aria-invalid</b> of every control that holds the color, on a color something else refused - a server, a
+            rule spanning two fields - and <b>ErrorMessage</b> adds the line that says why, as the last row of the
+            panel. A message implies <b>Invalid</b>, so the flag on its own is for marking a picker whose explanation
+            lives somewhere else. Every control that holds the color is described by the line, and a live region says
+            it the moment it appears - once, not again at every frame of a drag. <b>ErrorMessageTemplate</b> puts
+            arbitrary markup there instead. A template has no text a screen reader can be handed, so it is announced as
+            a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b> says what it shows.
+        </div>
+
+        <br />
+
+        <div class="example-box">
+            <div>A message tied to the color - move the alpha slider:</div>
+            <BitColorPicker ShowAlphaSlider ShowPreview
+                            Label="Logo color"
+                            @bind-Value="logoColor"
+                            @bind-Alpha="logoAlpha"
+                            ErrorMessage="@(logoAlpha < 1 ? "A logo color has to be fully opaque." : null)" />
+            <br />
+            <div>Marked invalid, explained elsewhere:</div>
+            <BitColorPicker ShowSaturationArea="false" ShowInputs Label="Accent color" Invalid />
+            <br />
+            <div>A template, with the text a screen reader is given:</div>
+            <BitColorPicker ShowInputs
+                            Label="Theme color"
+                            @bind-Value="themeColor"
+                            ErrorMessageAriaLabel="Your plan does not include custom theme colors. Upgrade to use them.">
+                <ErrorMessageTemplate>
+                    Your plan does not include custom theme colors.
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">Upgrade</BitLink>
+                </ErrorMessageTemplate>
+            </BitColorPicker>
+        </div>
     </DemoExample>
 
     <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">

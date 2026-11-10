@@ -129,4 +129,14 @@ public class BitColorPickerClassStyles
     /// Custom CSS classes/styles for the preset swatch of the current color, applied on top of <see cref="Preset"/>.
     /// </summary>
     public string? SelectedPreset { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the error message, the last row of the color picker.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the text of the error message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }
