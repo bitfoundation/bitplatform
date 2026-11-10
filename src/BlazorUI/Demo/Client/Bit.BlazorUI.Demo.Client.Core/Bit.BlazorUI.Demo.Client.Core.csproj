@@ -6,6 +6,10 @@
              Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
              build and boot the app as Blazor WebAssembly even in Debug. See AppRenderMode.Current. -->
         <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+        <!-- The demo pages and the sample code they show are string literals, and together they had filled the
+             user-string heap of the assembly, which the compiler caps at 16 MB (error CS8103). This compiler feature
+             emits the long literals into data sections instead, which leaves the heap with room to grow. -->
+        <Features>$(Features);experimental-data-section-string-literals</Features>
     </PropertyGroup>
 
     <ItemGroup>
