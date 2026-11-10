@@ -15,10 +15,10 @@ public sealed class AgentIdeas
     [
         new("Run", "#A3E635",
         [
-            new YouSay("Run the app"),
-            new AgentWorks("starting the app, its database and its services", "the app is running", 2.4),
+            new YouSay("Run the web app"),
+            new AgentWorks("starting the web app", "the app is running", 2.4),
             new AgentSays("Open calm-river-42.trycloudflare.com on any device you like"),
-            new YouSay("Now run it on my Android phone"),
+            new YouSay("Now run the Android app on my mobile"),
             new AgentWorks("building it for Android and installing it on your phone", "it's open on your phone", 2.6),
             new YouSay("Bring up the Workbench, I want to give feedback on the UI"),
             new AgentWorks("starting the Workbench", "the Workbench is open in your browser", 1.8),
