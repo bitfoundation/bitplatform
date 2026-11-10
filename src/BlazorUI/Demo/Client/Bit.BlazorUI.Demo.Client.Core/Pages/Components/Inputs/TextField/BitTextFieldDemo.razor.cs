@@ -529,6 +529,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the text field, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The input references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -2096,13 +2103,6 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
               Description=""Named by the heading above it rather than by a label of its own."" />";
 
     private readonly string example17RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-
 <BitTextField Label=""Invalid"" Invalid DefaultValue=""Not accepted by the server"" />
 
 <BitTextField Label=""Invalid with a description""
@@ -2134,20 +2134,15 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
 
-    <BitTextField Label=""Required"" Required @bind-Value=""validationTextFieldModel.Text"" />
-    <ValidationMessage For=""() => validationTextFieldModel.Text"" />
+    <BitTextField Label=""Required"" Required ShowValidationMessage @bind-Value=""validationTextFieldModel.Text"" />
 
-    <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
+    <BitTextField Label=""Numeric"" ShowValidationMessage @bind-Value=""validationTextFieldModel.NumericText"" />
 
-    <BitTextField Label=""Only chars"" @bind-Value=""validationTextFieldModel.CharacterText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
+    <BitTextField Label=""Only chars"" ShowValidationMessage @bind-Value=""validationTextFieldModel.CharacterText"" />
 
-    <BitTextField Label=""Email"" @bind-Value=""validationTextFieldModel.EmailText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
+    <BitTextField Label=""Email"" ShowValidationMessage @bind-Value=""validationTextFieldModel.EmailText"" />
 
-    <BitTextField Label=""3 < Length < 5"" @bind-Value=""validationTextFieldModel.RangeText"" />
-    <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
+    <BitTextField Label=""3 < Length < 5"" ShowValidationMessage @bind-Value=""validationTextFieldModel.RangeText"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";

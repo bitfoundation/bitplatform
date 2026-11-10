@@ -294,8 +294,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         }
         else
         {
-            // Takes off the field classes an input read while it still validated.
+            // Takes off the field classes and the messages an input read while it still validated.
             UpdateFieldCssClass();
+            FieldValidationMessage = null;
         }
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
@@ -361,6 +362,17 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// cascading EditContext (<see cref="ValueInvalid"/>).
     /// </summary>
     protected bool IsInvalid => ValueInvalid is true || HasError;
+
+    /// <summary>
+    /// The messages the cascading EditContext holds for the field of the input, one after another, or null while it
+    /// holds none: the text an input that shows them in its error slot puts there.
+    /// </summary>
+    /// <remarks>
+    /// Read again wherever the validation state is - on every parameters pass and every change of the validation
+    /// state - so a message that changes while the field stays invalid is followed too. An input that validates nothing
+    /// (<see cref="NoValidate"/>) or has no field to report holds none.
+    /// </remarks>
+    protected string? FieldValidationMessage { get; private set; }
 
     protected EditContext EditContext { get; set; } = default!;
 
@@ -665,6 +677,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         {
             ValueInvalid = true;
 
+            // Every message, in the order the validators added them, as the framework's ValidationMessage lists them
+            // all: each one is a sentence of its own, so they read on from one another.
+            var message = string.Join(' ', EditContext.GetValidationMessages(FieldIdentifier).Where(m => m.HasValue()));
+            FieldValidationMessage = message.HasValue() ? message : null;
+
             if (_hasAddedAriaInvalid) return;
 
             // Do not overwrite the attribute value the app wrote itself, however it cased its name.
@@ -679,6 +696,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         else
         {
             ValueInvalid = false;
+            FieldValidationMessage = null;
 
             // No validation errors. Need to remove `aria-invalid` if it was rendered already, and only the one added here.
             if (_hasAddedAriaInvalid is false) return;
