@@ -439,4 +439,4 @@ New components should follow the APG pattern for their role, cover keyboard inte
 
 ## License
 
-[PolyForm Perimeter License 1.0.0](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
+[PolyForm Perimeter License 1.0.1](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)

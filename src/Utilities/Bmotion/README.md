@@ -1555,4 +1555,4 @@ subtree (`null` = follow the mode):
 
 ## License
 
-[PolyForm Perimeter License 1.0.0](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
+[PolyForm Perimeter License 1.0.1](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)

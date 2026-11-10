@@ -2,7 +2,7 @@
 
 <br/>
 
-[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.0-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![Release CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.release.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)

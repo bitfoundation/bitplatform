@@ -276,4 +276,4 @@ dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -
 
 ## License
 
-PolyForm Perimeter License 1.0.0. See [LICENSE](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
+PolyForm Perimeter License 1.0.1. See [LICENSE](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
