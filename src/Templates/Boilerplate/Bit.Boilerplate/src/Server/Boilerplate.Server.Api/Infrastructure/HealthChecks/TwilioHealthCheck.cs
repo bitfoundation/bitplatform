@@ -5,7 +5,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
 
 /// <summary>
-/// Checks Twilio SMS service connectivity by fetching account info.
+/// Checks Twilio SMS service connectivity by fetching account info. SmsBridge has no health check of its own yet: https://github.com/teesofttech/SMSBridge/issues/69
 /// </summary>
 public partial class TwilioHealthCheck : IHealthCheck
 {
