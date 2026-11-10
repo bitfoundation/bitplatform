@@ -1306,6 +1306,7 @@ public class ProjectStepTests
         project.GitReady = true;
         host.Runner.Executables["gh"] = "/usr/bin/gh";
         host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
@@ -1314,15 +1315,48 @@ public class ProjectStepTests
 
         var calls = host.Runner.Calls.Select(c => c.CommandLine).ToList();
         var create = calls.IndexOf("gh repo create Contoso --private --source . --remote origin");
+        var lockDown = calls.IndexOf("gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent");
+        var alerts = calls.IndexOf("gh api -X PUT repos/contoso-dev/Contoso/vulnerability-alerts --silent");
         var pushDevelop = calls.IndexOf("git push -u origin develop");
         var pushMain = calls.IndexOf("git push -u origin main");
         var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
         var remoteHead = calls.IndexOf("git remote set-head origin develop");
 
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "gh" && string.Join(' ', c.Arguments) is "api repos/{owner}/{repo} -X PATCH -f pull_request_creation_policy=collaborators_only -F delete_branch_on_merge=true --silent"), string.Join(Environment.NewLine, calls));
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "gh" && string.Join(' ', c.Arguments) is "api -X PUT repos/{owner}/{repo}/vulnerability-alerts --silent"), string.Join(Environment.NewLine, calls));
-        Assert.IsTrue(create >= 0 && create < pushDevelop && pushDevelop < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
+        Assert.IsTrue(create >= 0 && create < lockDown && create < alerts && lockDown < pushDevelop && alerts < pushDevelop && pushDevelop < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
         Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_BeLockedDownEvenWhenThePushFails()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("git", "push", 1, "rejected");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreNotEqual(StepStatus.Succeeded, result.Status);
+        CollectionAssert.Contains(host.Runner.Calls.Select(c => c.CommandLine).ToList(), "gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent");
+    }
+
+    [TestMethod]
+    public async Task ARepoThatCouldNotBeLockedDown_Should_WarnAndPointAtBitPipeline()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("gh", "api repos/contoso-dev/Contoso -X PATCH", 1, "HTTP 403");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Title);
+        StringAssert.Contains(result.FollowUp, "bit pipeline");
     }
 
     [TestMethod]
@@ -1363,6 +1397,7 @@ public class ProjectStepTests
         host.Runner.On("gh", "repo edit", 1, "HTTP 403: Resource not accessible by integration");
         host.Runner.On("gh", "repo view --json url", 0, "https://github.com/contoso-dev/Contoso\n");
         host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "develop\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var steps = new ProjectSteps(host.Services, project);
 

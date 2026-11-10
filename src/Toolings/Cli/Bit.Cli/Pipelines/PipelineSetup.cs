@@ -128,7 +128,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         if (wanted.Count == 0)
         {
             cli.Console.Out.MarkupLine("The workflows use no secrets.");
-            return options.Check && settingsOff.Count > 0 ? CliApp.ExitCheckFailed : failed ? CliApp.ExitFailed : CliApp.ExitOk;
+            return options.Check && (settingsOff.Count > 0 || settingsUnread) ? CliApp.ExitCheckFailed : failed ? CliApp.ExitFailed : CliApp.ExitOk;
         }
 
         if (await ListSecretsAsync(null, cancellationToken) is not { } listed)
@@ -161,7 +161,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         Show(wanted, IsSet);
 
         if (options.Check)
-            return missing.Any(s => IsOptional(s.Name) is false) || settingsOff.Count > 0 ? CliApp.ExitCheckFailed : CliApp.ExitOk;
+            return missing.Any(s => IsOptional(s.Name) is false) || settingsOff.Count > 0 || settingsUnread ? CliApp.ExitCheckFailed : CliApp.ExitOk;
 
         var rotating = options.RotateCertificate ? wanted.Where(s => s.Name is AppCertificate && IsSet(s)).ToList() : [];
 
@@ -175,7 +175,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             return cli.UsageError("confirmation-needed", $"bit pipeline changes the secrets of {repository}, and without a terminal it can't ask first. Pass --yes to go ahead.");
 
         if (options.Yes is false && cli.Prompter.Confirm($"Store the missing secrets in {repository}?", true) is false)
-            return CliApp.ExitOk;
+            return failed ? CliApp.ExitFailed : CliApp.ExitOk;
 
         foreach (var environment in newEnvironments)
         {

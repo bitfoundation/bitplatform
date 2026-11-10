@@ -12,23 +12,25 @@ public sealed partial class PipelineSetup
 {
     public const string ProductionBranch = "main";
 
-    public static readonly string[] RepositoryDefaults = ["-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "-F", "delete_branch_on_merge=true", "--silent"];
+    public static readonly string[] RepositoryDefaults = ["-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "--silent"];
 
     private bool isPublic;
+    private bool settingsUnread;
 
     private async Task<IReadOnlyList<RepositorySetting>> ReadSettingsAsync(IReadOnlyList<string> environments, CancellationToken cancellationToken)
     {
         var settings = new List<RepositorySetting>();
-        var details = await Gh(["api", $"repos/{repository}", "--jq", ".visibility, .pull_request_creation_policy, .delete_branch_on_merge"], cancellationToken);
+        var details = await Gh(["api", $"repos/{repository}", "--jq", ".visibility, .pull_request_creation_policy"], cancellationToken);
         var workflow = await Gh(["api", $"repos/{repository}/actions/permissions/workflow", "--jq", ".default_workflow_permissions, .can_approve_pull_request_reviews"], cancellationToken);
 
         if (details.Succeeded is false || workflow.Succeeded is false)
         {
             cli.Console.Warn($"Couldn't read the pull request and Actions settings of {repository}: {LastLine(details.Succeeded ? workflow : details)}. Changing them needs admin rights.");
+            settingsUnread = true;
             return settings;
         }
 
-        if (Lines(details) is [var visibility, var policy, var deleteBranch])
+        if (Lines(details) is [var visibility, var policy])
         {
             isPublic = visibility is "public";
 
@@ -37,9 +39,6 @@ public sealed partial class PipelineSetup
                 settings.Add(new("Pull requests from collaborators only", policy is "collaborators_only", "Only collaborators can open pull requests",
                     [new(["api", $"repos/{repository}", "-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "--silent"])]));
             }
-
-            settings.Add(new("Branches deleted once merged", deleteBranch is "true", "A pull request's branch is deleted once it is merged",
-                [new(["api", $"repos/{repository}", "-X", "PATCH", "-F", "delete_branch_on_merge=true", "--silent"])]));
         }
 
         if (Lines(workflow) is [var permissions, var canApprove])
@@ -92,18 +91,22 @@ public sealed partial class PipelineSetup
         else if (current.Output.Contains("HTTP 404", StringComparison.Ordinal) is false)
             return null;
 
-        var on = false;
+        var custom = existing?["deployment_branch_policy"] is JsonObject branchPolicy && branchPolicy["custom_branch_policies"]?.GetValue<bool>() is true;
+        var policies = new List<(string Id, string Type, string Name)>();
 
-        if (existing?["deployment_branch_policy"] is JsonObject branchPolicy)
+        if (custom)
         {
-            on = branchPolicy["protected_branches"]?.GetValue<bool>() is true;
+            var listed = await Gh(["api", $"{path}/deployment-branch-policies", "--paginate", "--jq", ".branch_policies[] | \"\\(.id) \\(.type) \\(.name)\""], cancellationToken);
 
-            if (on is false && branchPolicy["custom_branch_policies"]?.GetValue<bool>() is true)
-            {
-                var names = await Gh(["api", $"{path}/deployment-branch-policies", "--jq", ".branch_policies[] | select(.type == \"branch\") | .name"], cancellationToken);
-                on = names.Succeeded && Lines(names).Contains(ProductionBranch, StringComparer.Ordinal);
-            }
+            if (listed.Succeeded is false)
+                return null;
+
+            policies = [.. Lines(listed).Select(l => l.Split(' ', 3)).Where(p => p.Length == 3).Select(p => (p[0], p[1], p[2]))];
         }
+
+        var hasMain = policies.Any(p => p is { Type: "branch", Name: ProductionBranch });
+        var others = policies.Where(p => p is not { Type: "branch", Name: ProductionBranch }).ToList();
+        var on = custom && hasMain && others.Count == 0;
 
         var body = new JsonObject { ["deployment_branch_policy"] = new JsonObject { ["protected_branches"] = false, ["custom_branch_policies"] = true } };
 
@@ -120,11 +123,15 @@ public sealed partial class PipelineSetup
             }
         }
 
-        return new($"{environment} deploys from {ProductionBranch} only", on, $"{environment} deploys from {ProductionBranch} only",
-        [
-            new(["api", "-X", "PUT", path, "--input", "-", "--silent"], body.ToJsonString()),
-            new(["api", "-X", "POST", $"{path}/deployment-branch-policies", "-f", $"name={ProductionBranch}", "-f", "type=branch", "--silent"])
-        ]);
+        List<GhCall> changes = [new(["api", "-X", "PUT", path, "--input", "-", "--silent"], body.ToJsonString())];
+        changes.AddRange(others.Select(p => new GhCall(["api", "-X", "DELETE", $"{path}/deployment-branch-policies/{p.Id}", "--silent"])));
+
+        if (hasMain is false)
+        {
+            changes.Add(new(["api", "-X", "POST", $"{path}/deployment-branch-policies", "-f", $"name={ProductionBranch}", "-f", "type=branch", "--silent"]));
+        }
+
+        return new($"{environment} deploys from {ProductionBranch} only", on, $"{environment} deploys from {ProductionBranch} only", changes);
     }
 
     private void ShowSettings(IReadOnlyList<RepositorySetting> settings)
