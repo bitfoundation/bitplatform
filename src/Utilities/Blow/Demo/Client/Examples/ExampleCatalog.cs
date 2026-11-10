@@ -144,7 +144,7 @@ public static class ExampleCatalog
         new("selection-gestures", "Selection Gestures", InteractionGroup, "Box selection keys and modes, and dragging and right-clicking a whole selection.",
             "selection box drag OnSelectionStart OnSelectionEnd OnSelectionDragStart OnSelectionDrag OnSelectionDragStop OnSelectionContextMenu SelectionKey MultiSelectionKey SelectionOnDrag PanActivationKey SelectionMode Partial Full SelectEdgesOnSelectionBox", typeof(SelectionGesturesExample)),
         new("event-reference", "Event Reference", InteractionGroup, "Every event the canvas raises, logged live with its payload.",
-            "events event reference log callbacks OnNodeClick OnNodeMouseEnter OnNodeDragStart OnEdgeClick OnPaneClick OnPaneScroll OnMoveStart OnMove OnMoveEnd OnInit OnNodesInitialized OnSelectionChange OnSelectionDragStart OnConnect OnConnectStart OnConnectEnd OnReconnect OnNodeResize OnDelete NodesChanged EdgesChanged OnGraphChanged OnHistoryChanged OnPaste OnError", typeof(EventReferenceExample)),
+            "events event reference log callbacks OnNodeClick OnNodeMouseEnter OnNodeDragStart OnEdgeClick OnPaneClick OnPaneScroll OnMoveStart OnMove OnMoveEnd OnPaneResize OnInit OnNodesInitialized OnSelectionChange OnSelectionDragStart OnConnect OnConnectStart OnConnectEnd OnReconnect OnNodeResize OnDelete NodesChanged EdgesChanged OnGraphChanged OnHistoryChanged OnPaste OnError", typeof(EventReferenceExample)),
 
         // ---- Viewport & Layout ----
         new("backgrounds", "Backgrounds", ViewportGroup, "Dots, lines and cross patterns with every option live, and two backgrounds stacked into a grid.",
@@ -178,7 +178,7 @@ public static class ExampleCatalog
         new("overlay-layout", "Overlay Layout", ViewportGroup, "Anchor controls, minimap, panels and attribution; tailor the control bar and lock the canvas.",
             "overlay controls position minimap panel attribution lock ShowInteractive orientation ShowZoom ShowFitView FitViewOptions OnZoomIn OnZoomOut OnFitView InteractiveChanged LockLabel UnlockLabel BlowControlButton HideAttribution AttributionPosition BlowPanel Anchor", typeof(OverlayLayoutExample)),
         new("responsive-canvas", "Responsive Canvas", ViewportGroup, "Container and node resizes are tracked automatically; controlled viewport.",
-            "responsive resize container ResizeObserver node grows measure Measured UpdateNodeInternals Viewport controlled", typeof(ResponsiveCanvasExample)),
+            "responsive resize container ResizeObserver node grows measure Measured UpdateNodeInternals Viewport controlled OnPaneResize FitView keep fitted PaneSize", typeof(ResponsiveCanvasExample)),
 
         // ---- State & API ----
         new("use-reactflow", "Use Flow API", StateGroup, "Drive the canvas from your own buttons through its imperative API: zoom, fit, read the viewport, add, look up and delete elements, snapshot.",

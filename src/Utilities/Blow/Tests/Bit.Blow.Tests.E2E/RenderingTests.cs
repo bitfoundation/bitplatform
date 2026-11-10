@@ -139,6 +139,43 @@ public sealed class RenderingTests : BlowTest
     }
 
     [TestMethod]
+    public async Task A_graph_fitted_on_every_resize_fits_the_new_size()
+    {
+        // The page fits from OnPaneResize. A fit that worked from the size the pane had before the resize leaves the
+        // graph off-centre: clipped on the right when the pane shrank, short of the edges when it grew.
+        var page = await OpenAsync("/examples/responsive-canvas");
+        await page.GetByLabel("Keep fitted").CheckAsync();
+        await WaitForQuietAsync(page);
+
+        foreach (var width in new[] { 420, 680, 500 })
+        {
+            // Behind Blazor's back, as a layout change elsewhere on the page would do it.
+            await page.EvaluateAsync("(w) => { document.querySelector('.bit-blow').parentElement.style.width = w + 'px'; }", width);
+
+            await EventuallyAsync(async () =>
+            {
+                var pane = await PaneBoxAsync(page);
+                var graph = await GraphBoxAsync(page);
+                return Math.Abs(pane.Width - width) < 1
+                    && pane.Contains(graph)
+                    && Math.Abs((graph.X - pane.X) - (pane.Right - graph.Right)) < 1.5
+                    && Math.Abs((graph.Y - pane.Y) - (pane.Bottom - graph.Bottom)) < 1.5;
+            }, $"the graph was fitted, with even margins, to the pane at {width}px");
+        }
+    }
+
+    /// <summary>The on-screen box round every node of the first flow.</summary>
+    private static async Task<Box> GraphBoxAsync(IPage page)
+    {
+        var boxes = new List<Box>();
+        foreach (var id in await IdsAsync(page)) boxes.Add(await NodeBoxAsync(page, id));
+
+        var left = boxes.Min(b => b.X);
+        var top = boxes.Min(b => b.Y);
+        return new Box(left, top, boxes.Max(b => b.Right) - left, boxes.Max(b => b.Bottom) - top);
+    }
+
+    [TestMethod]
     public async Task A_node_that_grows_by_itself_is_remeasured_and_its_edges_follow()
     {
         var page = await OpenAsync("/examples/responsive-canvas");

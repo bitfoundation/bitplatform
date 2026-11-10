@@ -1427,6 +1427,7 @@ Demo: `/examples/overlay-layout`.
 | `OnReconnectStart`, `OnReconnect`, `OnReconnectEnd` | see [reconnecting](#reconnecting-an-edge) | |
 | `OnNodesDelete`, `OnEdgesDelete`, `OnDelete` | the removed elements | After a deletion. |
 | `OnMoveStart`, `OnMove`, `OnMoveEnd`, `OnViewportChanged` | `BlowViewport` | See [controlled and uncontrolled](#controlled-and-uncontrolled-viewports). |
+| `OnPaneResize` | `BlowDimensions` | The pane changed size; see [fitting the view](#fitting-the-view). |
 | `OnPaste` | `BlowFragment` | Elements were pasted. |
 | `OnHistoryChanged` | `BlowHistoryState` | The built-in history changed. |
 | `OnGraphChanged` | `BlowGraphChange` (`Kind`, `Origin`, `Nodes`, `Edges`, `RemovedNodes`, `RemovedEdges`, `Label`) | An edit of any kind completed; see [graph changes and transactions](#graph-changes-and-transactions). |
@@ -1489,6 +1490,19 @@ with a 10% margin, `FitView(padding)` with another, and `FitView(options)` with 
 
 `FitBounds(rect, padding)` fits an arbitrary flow-space rectangle instead. Demo: `/examples/hidden`
 (`IncludeHiddenNodes`), `/examples/viewport-transitions` (`FitBoundsAsync`).
+
+The browser reports a resize of the pane a frame after it happens, so code reacting to the resize - a
+`ResizeObserver` of your own, say - can call in before the canvas has heard of it. `FitView`, `FitBounds` and
+`SetCenter` work from the pane's size even then: the async twins measure the pane before they move, and the
+synchronous ones measure it straight after and fit again if it was not the size they used. To keep the graph fitted
+to a container that resizes, no observer of your own is needed: `OnPaneResize` is raised with the pane's new size
+once `PaneSize` has it.
+
+```razor
+<BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnPaneResize="() => _flow!.FitView()" />
+```
+
+Demo: `/examples/responsive-canvas`.
 
 ### Moving the viewport from code
 
