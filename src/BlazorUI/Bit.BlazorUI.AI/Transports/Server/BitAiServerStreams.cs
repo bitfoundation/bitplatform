@@ -10,16 +10,18 @@ namespace Bit.BlazorUI;
 internal static class BitAiServerStreams
 {
     /// <summary>
-    /// The events of <paramref name="source"/>, and a terminal error event in place of any exception it throws other than
-    /// its cancellation. The exception is logged; only a generic message reaches the browser, since an exception's text
-    /// can hold what a server must not show (a connection string, a provider's raw response).
+    /// The events of the stream <paramref name="source"/> produces, and a terminal error event in place of any exception
+    /// it throws other than its cancellation - producing the stream and starting it included, so a handler that is not an
+    /// iterator and throws as it is called (a missing service, a check of the request) ends the same way. The exception is
+    /// logged; only a generic message reaches the browser, since an exception's text can hold what a server must not show
+    /// (a connection string, a provider's raw response).
     /// </summary>
     internal static async IAsyncEnumerable<BitAiEvent> Guard(
-        IAsyncEnumerable<BitAiEvent> source,
+        Func<IAsyncEnumerable<BitAiEvent>> source,
         ILogger? logger,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var enumerator = source.GetAsyncEnumerator(cancellationToken);
+        IAsyncEnumerator<BitAiEvent>? enumerator = null;
         try
         {
             while (true)
@@ -29,6 +31,7 @@ internal static class BitAiServerStreams
 
                 try
                 {
+                    enumerator ??= source().GetAsyncEnumerator(cancellationToken);
                     if (!await enumerator.MoveNextAsync().ConfigureAwait(false)) break;
                     current = enumerator.Current;
                 }
@@ -58,7 +61,7 @@ internal static class BitAiServerStreams
         }
         finally
         {
-            await enumerator.DisposeAsync().ConfigureAwait(false);
+            if (enumerator is not null) await enumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

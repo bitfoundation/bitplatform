@@ -39,6 +39,7 @@ namespace Bit.BlazorUI;
 public static class BitAiChatClientExtensions
 {
     private static readonly JsonElement EmptyParametersSchema = JsonDocument.Parse("""{"type":"object","properties":{}}""").RootElement.Clone();
+    private static readonly JsonElement EmptyArguments = JsonDocument.Parse("{}").RootElement.Clone();
 
     /// <summary>
     /// Sends a request to a chat client and streams its reply as events.
@@ -117,9 +118,12 @@ public static class BitAiChatClientExtensions
                     case FunctionCallContent call when !string.IsNullOrEmpty(call.CallId) && !string.IsNullOrEmpty(call.Name):
                         // A call is reported once: a function invoking client streams the call it ran again in its
                         // history, and the session must not see (and maybe run) it twice.
+                        // The arguments are always sent: a call started without them waits for a completion that a
+                        // chat client never streams, so a call with none (a tool without parameters, or arguments the
+                        // client could not parse) goes out with an empty object and runs.
                         if (startedCalls.Add(call.CallId))
                         {
-                            yield return new BitAiToolCallStartedEvent(call.CallId, call.Name) { Arguments = ToJson(call.Arguments) };
+                            yield return new BitAiToolCallStartedEvent(call.CallId, call.Name) { Arguments = ToJson(call.Arguments) ?? EmptyArguments };
                         }
                         break;
 
@@ -141,12 +145,12 @@ public static class BitAiChatClientExtensions
 
                     case UriContent uri:
                         yield return IsImage(uri.MediaType)
-                            ? new BitAiImageEvent(uri.Uri.ToString())
+                            ? new BitAiImageEvent(Address(uri.Uri))
                             : new BitAiFileEvent(new BitAiAttachment(BitAiId.New("file"), FileName(uri.Uri))
                             {
                                 ContentType = uri.MediaType,
                                 Kind = BitAiAttachment.InferKind(uri.MediaType, uri.Uri.AbsolutePath),
-                                Url = uri.Uri.ToString(),
+                                Url = Address(uri.Uri),
                             });
                         break;
 
@@ -188,7 +192,9 @@ public static class BitAiChatClientExtensions
     /// </para>
     /// <para>
     /// A tool call becomes a <see cref="FunctionCallContent"/> of its message, and its result - on the call, or a tool
-    /// result part - a <see cref="FunctionResultContent"/> in a tool message right after it, as the providers expect.
+    /// result part - a <see cref="FunctionResultContent"/> in a tool message right after it, as the providers expect. A
+    /// call nothing answers (stopped, rejected, cancelled) gets a result saying so, since a provider refuses a transcript
+    /// with an unanswered call.
     /// </para>
     /// </remarks>
     public static async ValueTask<List<ChatMessage>> ToChatMessagesAsync(
@@ -197,13 +203,16 @@ public static class BitAiChatClientExtensions
     {
         ArgumentNullException.ThrowIfNull(messages);
 
+        var transcript = messages as IReadOnlyCollection<IBitAiMessage> ?? [.. messages];
+        var answered = AnsweredCalls(transcript);
+
         var result = new List<ChatMessage>();
-        foreach (var message in messages)
+        foreach (var message in transcript)
         {
             var contents = new List<AIContent>();
             var results = new List<AIContent>();
 
-            foreach (var part in message.Parts) AddPart(part, contents, results);
+            foreach (var part in message.Parts) AddPart(part, contents, results, answered);
 
             foreach (var attachment in message.Attachments)
             {
@@ -276,7 +285,23 @@ public static class BitAiChatClientExtensions
         return result;
     }
 
-    private static void AddPart(IBitAiMessagePart part, List<AIContent> contents, List<AIContent> results)
+    // The calls a result answers anywhere in the transcript: on the call itself, or a tool result part.
+    private static HashSet<string> AnsweredCalls(IEnumerable<IBitAiMessage> messages)
+    {
+        var answered = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var message in messages)
+        {
+            foreach (var part in message.Parts)
+            {
+                if (part is BitAiToolCallPart { Result: not null } call) answered.Add(call.ToolCallId);
+                else if (part is BitAiToolResultPart toolResult) answered.Add(toolResult.ToolCallId);
+            }
+        }
+
+        return answered;
+    }
+
+    private static void AddPart(IBitAiMessagePart part, List<AIContent> contents, List<AIContent> results, HashSet<string> answered)
     {
         switch (part)
         {
@@ -298,6 +323,13 @@ public static class BitAiChatClientExtensions
             case BitAiToolCallPart call:
                 contents.Add(new FunctionCallContent(call.ToolCallId, call.ToolName, ToArguments(call.Arguments)));
                 if (call.Result is { } outcome) results.Add(new FunctionResultContent(call.ToolCallId, ToResult(outcome)));
+                else if (!answered.Contains(call.ToolCallId))
+                {
+                    // A call left without a result (stopped, rejected, cancelled while it waited for an approval) still
+                    // needs one: the providers refuse a transcript with a tool call nothing answers, and every later
+                    // turn of the conversation would fail.
+                    results.Add(new FunctionResultContent(call.ToolCallId, Unanswered(call.Status)));
+                }
                 break;
 
             case BitAiToolResultPart toolResult:
@@ -318,10 +350,8 @@ public static class BitAiChatClientExtensions
         if (ToContent(attachment) is { } content) return content;
         if (attachment.ContentFactory is null) return null;
 
-        await using var stream = await attachment.OpenReadAsync(cancellationToken).ConfigureAwait(false);
-        using var buffer = new MemoryStream();
-        await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
-        return new DataContent(buffer.ToArray(), MediaType(attachment)) { Name = attachment.Name };
+        var bytes = await attachment.ReadAllBytesAsync(cancellationToken).ConfigureAwait(false);
+        return new DataContent(bytes, MediaType(attachment)) { Name = attachment.Name };
     }
 
     private static AIContent? ToContent(BitAiAttachment attachment)
@@ -353,6 +383,10 @@ public static class BitAiChatClientExtensions
 
     private static bool IsImage(string? mediaType) => mediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) is true;
 
+    // Uri.ToString() unescapes (%2F becomes /), which changes the address a signed URL was signed for; the escaped form
+    // is the one the browser has to request.
+    private static string Address(Uri uri) => uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString;
+
     private static string FileName(Uri uri) =>
         uri.IsAbsoluteUri && Path.GetFileName(uri.AbsolutePath) is { Length: > 0 } name ? name : "file";
 
@@ -364,7 +398,7 @@ public static class BitAiChatClientExtensions
         {
             if (annotation is not CitationAnnotation citation) continue;
 
-            var url = citation.Url?.ToString();
+            var url = citation.Url is { } address ? Address(address) : null;
             var sourceId = url ?? citation.FileId ?? citation.Title ?? BitAiId.New("src");
             var source = new BitAiCitationSource(sourceId, citation.Title ?? url ?? citation.FileId ?? string.Empty)
             {
@@ -392,6 +426,12 @@ public static class BitAiChatClientExtensions
         foreach (var property in json.EnumerateObject()) result[property.Name] = property.Value.Clone();
         return result;
     }
+
+    private static string Unanswered(BitAiToolCallStatus status) => status switch
+    {
+        BitAiToolCallStatus.Rejected => "The user rejected this tool call; it was not run.",
+        _ => "This tool call was cancelled before it produced a result.",
+    };
 
     private static object? ToResult(BitAiToolOutcome outcome)
     {

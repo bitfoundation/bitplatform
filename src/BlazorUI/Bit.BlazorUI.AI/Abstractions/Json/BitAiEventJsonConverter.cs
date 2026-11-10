@@ -67,8 +67,10 @@ public sealed class BitAiEventJsonConverter : JsonConverter<BitAiEvent>
     private static BitAiEvent? ReadEvent(JsonElement json, JsonSerializerOptions options)
     {
         var type = String(json, "type") ?? throw new JsonException("A BitAiEvent has no 'type'.");
-        var timestamp = json.TryGetProperty("timestamp", out var at) && at.ValueKind is JsonValueKind.String
-            ? at.GetDateTimeOffset()
+        // An optional value that does not read as its type (a timestamp in another format) is left out, as an unknown
+        // property is, rather than failing the whole event.
+        var timestamp = json.TryGetProperty("timestamp", out var at) && at.ValueKind is JsonValueKind.String && at.TryGetDateTimeOffset(out var parsed)
+            ? parsed
             : DateTimeOffset.UtcNow;
         var messageId = String(json, "messageId");
         var partId = String(json, "partId");
@@ -134,9 +136,10 @@ public sealed class BitAiEventJsonConverter : JsonConverter<BitAiEvent>
 
             return evt is null ? null : evt with { Timestamp = timestamp, MessageId = messageId };
         }
-        catch (ArgumentException exception)
+        catch (Exception exception) when (exception is ArgumentException or FormatException or InvalidOperationException)
         {
-            // What the event's constructor refuses (an empty id, a missing text) is malformed JSON to a reader.
+            // What the event's constructor refuses (an empty id, a missing text), or a value a JsonElement cannot read as
+            // the type asked for, is malformed JSON to a reader.
             throw new JsonException($"The '{type}' event is not valid: {exception.Message}", exception);
         }
     }
@@ -330,7 +333,7 @@ public sealed class BitAiEventJsonConverter : JsonConverter<BitAiEvent>
     {
         if (!json.TryGetProperty("progress", out var progress) || progress.ValueKind is not JsonValueKind.Object) return default;
 
-        double? fraction = progress.TryGetProperty("fraction", out var value) && value.ValueKind is JsonValueKind.Number ? value.GetDouble() : null;
+        double? fraction = progress.TryGetProperty("fraction", out var value) && value.ValueKind is JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number) ? number : null;
         return new BitAiToolProgress(fraction, String(progress, "message"));
     }
 
@@ -384,8 +387,9 @@ public sealed class BitAiEventJsonConverter : JsonConverter<BitAiEvent>
     private static bool? Boolean(JsonElement json, string name) =>
         json.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : null;
 
+    // Optional, so a number that is no Int32 (1.5, 3e10) is left out like a missing one.
     private static int? Int32(JsonElement json, string name) =>
-        json.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.Number ? value.GetInt32() : null;
+        json.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.Number && value.TryGetInt32(out var number) ? number : null;
 
     private static JsonElement? Element(JsonElement json, string name) =>
         json.TryGetProperty(name, out var value) && value.ValueKind is not JsonValueKind.Null ? value : null;

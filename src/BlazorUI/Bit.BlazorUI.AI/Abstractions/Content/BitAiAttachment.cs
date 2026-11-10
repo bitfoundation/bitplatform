@@ -141,6 +141,27 @@ public sealed record BitAiAttachment
             $"Attachment '{Name}' has no inline data and no content factory. Set {nameof(Data)} or {nameof(ContentFactory)}.");
     }
 
+    // The content read for a request, kept per attachment instance (by reference, as the table compares): the whole
+    // transcript goes out again with every turn and every round of a tool loop, and a file picked in the browser is
+    // neither cheap to read again nor sure to open again. The bytes live as long as the attachment does.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BitAiAttachment, byte[]> ReadContent = new();
+
+    /// <summary>
+    /// The whole content of the attachment (<see cref="OpenReadAsync"/>), read once and then kept with this instance.
+    /// </summary>
+    internal async ValueTask<byte[]> ReadAllBytesAsync(CancellationToken cancellationToken)
+    {
+        if (ReadContent.TryGetValue(this, out var cached)) return cached;
+
+        await using var stream = await OpenReadAsync(cancellationToken).ConfigureAwait(false);
+        using var buffer = new MemoryStream();
+        await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+
+        var bytes = buffer.ToArray();
+        ReadContent.AddOrUpdate(this, bytes);
+        return bytes;
+    }
+
     /// <summary>
     /// Infers an <see cref="BitAiAttachmentKind"/> from a MIME type and file name.
     /// </summary>

@@ -128,6 +128,63 @@ public class BitAiChatClientAdapterTests
     }
 
     [TestMethod]
+    public async Task ACallWithoutArgumentsStartsWithAnEmptyObject()
+    {
+        var client = new BitAiFakeChatClient(
+            BitAiFakeChatClient.Of(new FunctionCallContent("call1", "now", arguments: null)),
+            BitAiFakeChatClient.Of(new FunctionCallContent("call2", "search", arguments: null) { Exception = new JsonException("bad arguments") }));
+
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+
+        foreach (var call in events.OfType<BitAiToolCallStartedEvent>())
+        {
+            Assert.AreEqual(JsonValueKind.Object, call.Arguments?.ValueKind, call.ToolCallId);
+        }
+        Assert.AreEqual(2, events.OfType<BitAiToolCallStartedEvent>().Count());
+    }
+
+    [TestMethod]
+    public async Task AnAddressKeepsItsEscapes()
+    {
+        const string signed = "https://bucket.example.com/a%20b.png?X-Amz-Credential=AKIA%2F2026%2Fs3%2Faws4_request&sig=a%2Bb";
+        const string file = "https://bucket.example.com/r%2Fport.pdf?sig=a%2Bb";
+        var client = new BitAiFakeChatClient(
+            BitAiFakeChatClient.Of(new UriContent(new Uri(signed), "image/png")),
+            BitAiFakeChatClient.Of(new UriContent(new Uri(file), "application/pdf")),
+            BitAiFakeChatClient.Of(new TextContent("x") { Annotations = [new CitationAnnotation { Url = new Uri(signed) }] }));
+
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+
+        Assert.AreEqual(signed, events.OfType<BitAiImageEvent>().Single().Url);
+        Assert.AreEqual(file, events.OfType<BitAiFileEvent>().Single().Attachment.Url);
+        Assert.AreEqual(signed, events.OfType<BitAiCitationEvent>().Single().Citation.Source.Url);
+    }
+
+    [TestMethod]
+    public async Task ACallNothingAnsweredIsAnsweredForTheModel()
+    {
+        var assistant = new BitAiMessage(BitAiRole.Assistant);
+        var stopped = assistant.AddPart(new BitAiToolCallPart("stopped", "search"));
+        stopped.CompleteArguments(SearchArguments);
+        stopped.SetStatus(BitAiToolCallStatus.Cancelled);
+        var rejected = assistant.AddPart(new BitAiToolCallPart("rejected", "delete"));
+        rejected.CompleteArguments(SearchArguments);
+        rejected.SetStatus(BitAiToolCallStatus.Rejected);
+        var answeredLater = assistant.AddPart(new BitAiToolCallPart("later", "search"));
+        answeredLater.CompleteArguments(SearchArguments);
+
+        var tool = new BitAiMessage(BitAiRole.User);
+        tool.AddPart(new BitAiToolResultPart("later", BitAiToolOutcome.FromText("found")));
+
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant, tool, User("again")]);
+
+        var results = messages.SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
+        CollectionAssert.AreEquivalent(new[] { "stopped", "rejected", "later" }, results.Select(r => r.CallId).ToArray(), "Every call has one result, none twice.");
+        StringAssert.Contains((string)results.Single(r => r.CallId == "stopped").Result!, "cancelled");
+        StringAssert.Contains((string)results.Single(r => r.CallId == "rejected").Result!, "rejected");
+    }
+
+    [TestMethod]
     public async Task AFailedFunctionIsAFailedOutcome()
     {
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new FunctionResultContent("call1", null) { Exception = new InvalidOperationException("nope") }));

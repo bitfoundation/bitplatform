@@ -46,7 +46,8 @@ public static class BitAiSseEndpointRouteBuilderExtensions
     /// </para>
     /// <para>
     /// Everything in the request comes from the browser: <see cref="BitAiChatClientExtensions.ToChatOptions"/> lets the
-    /// server's options win over what it asks for.
+    /// server's options win over what it asks for, and <see cref="BitAiWireSerializer.ToRequest"/> hands the handler no
+    /// message with a role above the user's (a <c>system</c> message the browser sent arrives as a user message).
     /// </para>
     /// </remarks>
     public static IEndpointConventionBuilder MapBitAiSse(
@@ -142,7 +143,7 @@ public static class BitAiSseEndpointRouteBuilderExtensions
         {
             await body.FlushAsync(cancellationToken).ConfigureAwait(false);
 
-            await foreach (var evt in BitAiServerStreams.Guard(handler(request, http, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
+            await foreach (var evt in BitAiServerStreams.Guard(() => handler(request, http, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
             {
                 await body.WriteAsync(Encoding.UTF8.GetBytes(FormatEvent(evt, options)), cancellationToken).ConfigureAwait(false);
                 await body.FlushAsync(cancellationToken).ConfigureAwait(false);

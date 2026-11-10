@@ -108,6 +108,49 @@ public class BitAiTransportEndToEndTests
     }
 
     [TestMethod]
+    public async Task ARequestTheServerCannotRebuildIsABadRequest()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), MapSse);
+
+        using var response = await app.GetTestClient().PostAsync("/api/ai/chat",
+            new StringContent("""{"messages":[{"messageId":"m","parts":[{"partId":"p","kind":"tool-call","toolCallId":"","toolName":"x"}]}]}""", Encoding.UTF8, "application/json"));
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task AHandlerThrowingAsItIsCalledIsATerminalError()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), a =>
+            a.MapBitAiSse("/api/ai/chat", (_, _, _) => throw new InvalidOperationException("No IChatClient: secret")));
+
+        await using var session = new BitAiChatSession(Sse(app), null, Options);
+        await session.SubmitAsync("hi");
+
+        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task ASuccessThatIsNotAnEventStreamFailsTheTurn()
+    {
+        // An expired sign-in redirected to a login page the client followed.
+        await using var app = await Host(new BitAiFakeChatClient(), a => a.MapPost("/api/ai/chat", async http =>
+        {
+            http.Response.ContentType = "text/html";
+            await http.Response.WriteAsync("<html><body>Sign in</body></html>");
+        }));
+
+        var transport = Sse(app);
+        var failure = await Assert.ThrowsExactlyAsync<HttpRequestException>(async () =>
+        {
+            await foreach (var _ in transport.StreamAsync(new BitAiRequest([]))) { }
+        });
+
+        StringAssert.Contains(failure.Message, "text/html");
+    }
+
+    [TestMethod]
     public async Task AnEventOfANewerServerIsSkipped()
     {
         await using var app = await Host(new BitAiFakeChatClient(), a => a.MapPost("/api/ai/chat", async http =>
@@ -158,6 +201,19 @@ public class BitAiTransportEndToEndTests
     {
         var chatClient = new BitAiFakeChatClient(BitAiFakeChatClient.Text("Partial")) { Throw = new InvalidOperationException("secret") };
         await using var app = await Host(chatClient, a => a.MapHub<ChatClientHub>("/hubs/ai"));
+        await using var connection = await Connect(app);
+
+        await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
+        await session.SubmitAsync("hi");
+
+        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task AHubThrowingAsItIsCalledIsATerminalError()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), a => a.MapHub<ThrowingHub>("/hubs/ai"));
         await using var connection = await Connect(app);
 
         await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
@@ -229,6 +285,12 @@ public class BitAiTransportEndToEndTests
     {
         protected override IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken) =>
             chatClient.StreamBitAiEventsAsync(request, cancellationToken: cancellationToken);
+    }
+
+    private sealed class ThrowingHub : BitAiHub
+    {
+        protected override IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken) =>
+            throw new InvalidOperationException("No IChatClient: secret");
     }
 
     private sealed class HeldCallHub(BitAiApprovalBroker approvals) : BitAiHub

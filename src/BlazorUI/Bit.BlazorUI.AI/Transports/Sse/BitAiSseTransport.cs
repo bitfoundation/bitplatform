@@ -49,7 +49,8 @@ public sealed record BitAiSseTransportOptions
 /// The content of an attachment picked in the browser is read into the request
 /// (<see cref="BitAiWireSerializer.ToSnapshotAsync"/>). A decision on a tool call the server holds is posted to the
 /// approval endpoint. An event of a type this version of the package does not know is skipped. A response that is not a
-/// success fails the turn with an <see cref="HttpRequestException"/>, which the chat session shows as its error.
+/// success, or not a <c>text/event-stream</c> (a login page an expired sign-in was redirected to), fails the turn with an
+/// <see cref="HttpRequestException"/>, which the chat session shows as its error.
 /// </para>
 /// <para>
 /// In Blazor WebAssembly the response is read as it streams in (the request asks the browser's <c>fetch</c> for a
@@ -93,6 +94,16 @@ public sealed class BitAiSseTransport : IBitAiTransport, IBitAiApprovalTransport
         {
             throw new HttpRequestException(
                 $"The AI endpoint answered {(int)response.StatusCode} ({response.ReasonPhrase}).",
+                inner: null,
+                response.StatusCode);
+        }
+
+        // A success that is not an event stream is not the endpoint answering: typically an expired sign-in redirected to
+        // a login page the client followed, which would otherwise read as an empty reply.
+        if (!string.Equals(response.Content.Headers.ContentType?.MediaType, BitAiSseEndpointRouteBuilderExtensions.EventStreamContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new HttpRequestException(
+                $"The AI endpoint answered {(int)response.StatusCode} with '{response.Content.Headers.ContentType?.MediaType ?? "no content type"}' rather than '{BitAiSseEndpointRouteBuilderExtensions.EventStreamContentType}'.",
                 inner: null,
                 response.StatusCode);
         }

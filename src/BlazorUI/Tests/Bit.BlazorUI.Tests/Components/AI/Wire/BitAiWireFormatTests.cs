@@ -110,6 +110,20 @@ public class BitAiWireFormatTests
     }
 
     [TestMethod]
+    public void AnOptionalValueThatDoesNotReadIsLeftOut()
+    {
+        var before = DateTimeOffset.UtcNow;
+
+        var image = (BitAiImageEvent)BitAiWireSerializer.Deserialize("""{"type":"image","timestamp":"yesterday","url":"https://x/y.png","width":1.5,"height":3e10}""")!;
+        var progress = (BitAiToolProgressEvent)BitAiWireSerializer.Deserialize("""{"type":"tool_call.progress","toolCallId":"t1","progress":{"fraction":1e400}}""")!;
+
+        Assert.IsTrue(image.Timestamp >= before);
+        Assert.IsNull(image.Width);
+        Assert.IsNull(image.Height);
+        Assert.IsNull(progress.Progress.Fraction);
+    }
+
+    [TestMethod]
     public void AnEventWithoutATypeFails()
     {
         Assert.ThrowsExactly<JsonException>(() => BitAiWireSerializer.Deserialize("""{"delta":"x"}"""));

@@ -80,7 +80,9 @@ public static class BitAiWireSerializer
     /// <returns>The snapshot.</returns>
     /// <remarks>
     /// An attachment with a <see cref="BitAiAttachment.Url"/> or inline <see cref="BitAiAttachment.Data"/> is sent as it
-    /// is. Large files are better uploaded first and sent by address (see <see cref="BitAiPromptInput"/>'s upload hook).
+    /// is. The content of one read through its factory is read once and kept with the attachment, so a later turn does not
+    /// open the file again - but the whole transcript, its content included, is still sent with every request, so large
+    /// files are better uploaded first and sent by address (see <see cref="BitAiPromptInput"/>'s upload hook).
     /// </remarks>
     public static async ValueTask<BitAiRequestSnapshot> ToSnapshotAsync(
         BitAiRequest request,
@@ -100,12 +102,10 @@ public static class BitAiWireSerializer
                 var attachment = message.Attachments[j];
                 if (attachment is not { Data: null, Url: null, ContentFactory: not null }) continue;
 
-                await using var stream = await attachment.OpenReadAsync(cancellationToken).ConfigureAwait(false);
-                using var buffer = new MemoryStream();
-                await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+                var content = await attachment.ReadAllBytesAsync(cancellationToken).ConfigureAwait(false);
 
                 attachments ??= [.. message.Attachments];
-                attachments[j] = attachment with { Data = buffer.ToArray(), Size = attachment.Size ?? buffer.Length };
+                attachments[j] = attachment with { Data = content, Size = attachment.Size ?? content.Length };
             }
 
             if (attachments is null) continue;
@@ -143,9 +143,17 @@ public static class BitAiWireSerializer
     /// <param name="options">Serializer hooks, for custom parts.</param>
     /// <param name="services">The services of the scope the request is handled in, put on <see cref="BitAiRequest.Services"/>.</param>
     /// <returns>The request.</returns>
+    /// <exception cref="JsonException">The snapshot is not a valid request (a message with no id, a part a constructor refuses).</exception>
     /// <remarks>
+    /// <para>
     /// A message that was still streaming when the snapshot was taken comes back cancelled, and a tool call that had not
     /// finished comes back cancelled too, as they do from a persisted conversation.
+    /// </para>
+    /// <para>
+    /// The snapshot comes from the browser, so no message of it speaks with more authority than the user: an assistant
+    /// message stays one, and every other role (<c>system</c>, <c>developer</c>, <c>tool</c>, a custom one) comes back as
+    /// a <see cref="BitAiRole.User"/> message. The server's instructions belong in its own chat options.
+    /// </para>
     /// </remarks>
     public static BitAiRequest ToRequest(
         BitAiRequestSnapshot snapshot,
@@ -155,14 +163,40 @@ public static class BitAiWireSerializer
         ArgumentNullException.ThrowIfNull(snapshot);
         options ??= BitAiConversationSerializerOptions.Default;
 
-        var messages = (snapshot.Messages ?? []).Select(m => BitAiConversationSerializer.ToMessage(m, options, conversation: null)).ToArray();
-        return new BitAiRequest(messages)
+        try
         {
-            ConversationId = snapshot.ConversationId,
-            Options = snapshot.Options,
-            Tools = snapshot.Tools ?? [],
-            Services = services,
-            Context = BitAiConversationSerializer.FromJsonDictionary(snapshot.Context),
+            var messages = (snapshot.Messages ?? [])
+                .Select(m => BitAiConversationSerializer.ToMessage(FromBrowser(m), options, conversation: null))
+                .ToArray();
+
+            return new BitAiRequest(messages)
+            {
+                ConversationId = snapshot.ConversationId,
+                Options = snapshot.Options,
+                Tools = snapshot.Tools?.Where(t => t is not null).ToArray() ?? [],
+                Services = services,
+                Context = BitAiConversationSerializer.FromJsonDictionary(snapshot.Context),
+            };
+        }
+        catch (Exception exception) when (exception is ArgumentException or FormatException or InvalidOperationException or KeyNotFoundException or NullReferenceException)
+        {
+            // Valid JSON can still hold what the live objects refuse - an empty id, a null where a value is required - and
+            // from the browser that is a bad request, never a server error.
+            throw new JsonException($"The JSON is not a valid BitAi request: {exception.Message}", exception);
+        }
+    }
+
+    // What the browser sent, with the collections a JSON null can leave unset filled in and the role capped at the user's.
+    private static BitAiMessageSnapshot FromBrowser(BitAiMessageSnapshot? message)
+    {
+        if (message is null) throw NotA("request message");
+
+        return message with
+        {
+            Role = message.Role.IsAssistant ? BitAiRole.Assistant : BitAiRole.User,
+            Parts = message.Parts?.Where(p => p is not null).ToArray() ?? [],
+            Attachments = message.Attachments?.Where(a => a is not null).ToArray() ?? [],
+            Citations = message.Citations?.Where(c => c is not null).ToArray() ?? [],
         };
     }
 

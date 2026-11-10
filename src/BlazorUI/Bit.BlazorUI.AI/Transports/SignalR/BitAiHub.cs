@@ -54,10 +54,22 @@ public abstract class BitAiHub : Hub
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var options = SerializerOptions;
-        var bitRequest = BitAiWireSerializer.ToRequest(BitAiWireSerializer.DeserializeRequest(request, options), options, services);
+
+        BitAiRequest bitRequest;
+        try
+        {
+            bitRequest = BitAiWireSerializer.ToRequest(BitAiWireSerializer.DeserializeRequest(request, options), options, services);
+        }
+        catch (JsonException exception)
+        {
+            // A request the client got wrong is the client's error, told to it as such (a HubException's message reaches
+            // the caller) rather than logged as a failure of the server.
+            throw new HubException($"The request is not a BitAi request: {exception.Message}");
+        }
+
         var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType().FullName ?? nameof(BitAiHub));
 
-        await foreach (var evt in BitAiServerStreams.Guard(StreamAsync(bitRequest, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
+        await foreach (var evt in BitAiServerStreams.Guard(() => StreamAsync(bitRequest, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
         {
             yield return BitAiWireSerializer.SerializeToElement(evt, options);
         }

@@ -18,8 +18,9 @@ public sealed record BitAiSignalRTransportOptions
     public BitAiConversationSerializerOptions? Serializer { get; init; }
 
     /// <summary>
-    /// Whether a request starts the connection when it is not connected. On by default; turn it off for a connection the
-    /// app starts and reconnects itself.
+    /// Whether a request starts the connection when it is disconnected. On by default; turn it off for a connection the
+    /// app starts and reconnects itself. Either way, a request waits for a connection that is starting or reconnecting
+    /// (until its cancellation) rather than failing on it.
     /// </summary>
     public bool StartConnection { get; init; } = true;
 }
@@ -43,9 +44,11 @@ public sealed record BitAiSignalRTransportOptions
 /// </remarks>
 public sealed class BitAiSignalRTransport : IBitAiTransport, IBitAiApprovalTransport
 {
+    private static readonly TimeSpan SettlePollInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly ConditionalWeakTable<HubConnection, SemaphoreSlim> StartGates = new();
+
     private readonly HubConnection _connection;
     private readonly BitAiSignalRTransportOptions _options;
-    private readonly SemaphoreSlim _starting = new(1, 1);
 
     /// <summary>Creates the transport.</summary>
     /// <param name="connection">The connection to the hub.</param>
@@ -85,18 +88,49 @@ public sealed class BitAiSignalRTransport : IBitAiTransport, IBitAiApprovalTrans
             cancellationToken).ConfigureAwait(false);
     }
 
+    // Waits out a connection that is starting or reconnecting (a hub call fails on one that is not connected), and starts
+    // one that is disconnected when the options say so. A disconnected one left to the app is left as it is, and the call
+    // then fails with the connection's own error.
     private async ValueTask EnsureConnectedAsync(CancellationToken cancellationToken)
     {
-        if (!_options.StartConnection || _connection.State is not HubConnectionState.Disconnected) return;
+        while (true)
+        {
+            switch (_connection.State)
+            {
+                case HubConnectionState.Connected:
+                    return;
 
-        await _starting.WaitAsync(cancellationToken).ConfigureAwait(false);
+                case HubConnectionState.Connecting or HubConnectionState.Reconnecting:
+                    // HubConnection raises no event when a start it did not run here completes, so the state is polled.
+                    await Task.Delay(SettlePollInterval, cancellationToken).ConfigureAwait(false);
+                    break;
+
+                default:
+                    if (!_options.StartConnection) return;
+                    await StartAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+            }
+        }
+    }
+
+    private async ValueTask StartAsync(CancellationToken cancellationToken)
+    {
+        // One gate per connection rather than per transport: the transport is scoped, and the scopes of several
+        // sessions (or circuits) can share one connection.
+        var starting = StartGates.GetValue(_connection, static _ => new SemaphoreSlim(1, 1));
+
+        await starting.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             if (_connection.State is HubConnectionState.Disconnected) await _connection.StartAsync(cancellationToken).ConfigureAwait(false);
         }
+        catch (InvalidOperationException) when (_connection.State is not HubConnectionState.Disconnected)
+        {
+            // The app's own code started it in the meantime; the loop waits for it to connect.
+        }
         finally
         {
-            _starting.Release();
+            starting.Release();
         }
     }
 }
