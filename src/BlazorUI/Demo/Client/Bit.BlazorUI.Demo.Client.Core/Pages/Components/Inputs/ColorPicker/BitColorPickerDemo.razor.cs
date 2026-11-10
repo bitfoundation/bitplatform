@@ -45,6 +45,27 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line at the foot of the picker saying why its color was rejected, for a rejection the app decided on its own (a server that refused the color, a cross-field rule). It marks the picker invalid, is referenced by the aria-describedby of every control that holds the color and is announced as it appears.",
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and every control that holds the color references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every picker under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, which replaces ErrorMessage and marks the picker invalid the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
+        },
+        new()
+        {
             Name = "EyeDropperIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -88,6 +109,13 @@ public partial class BitColorPickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom icon name for the inputs mode switch button. If unset, default will be the Sort icon.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the color invalid without an EditContext having said so: the same look, and the same aria-invalid on every control that holds the color, a failing validation gives it. ErrorMessage implies it. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {
@@ -341,6 +369,8 @@ public partial class BitColorPickerDemo
                 new() { Name = "Presets", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the container of the preset swatches." },
                 new() { Name = "Preset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for a single preset swatch." },
                 new() { Name = "SelectedPreset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the preset swatch of the current color, applied on top of Preset." },
+                new() { Name = "ErrorMessageContainer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the container of the error message, the last row of the color picker." },
+                new() { Name = "ErrorMessage", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the text of the error message." },
             ]
         },
         new()
@@ -545,7 +575,7 @@ public partial class BitColorPickerDemo
         {
             Name = "--bit-ColorPicker-caption-font-size",
             DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Text size of the captions under the fields and of the contrast readout. The Size parameter wins over it.",
+            Description = "Text size of the captions under the fields, of the contrast readout and of the error message. The Size parameter wins over it.",
         },
         new()
         {
@@ -575,7 +605,7 @@ public partial class BitColorPickerDemo
         {
             Name = "--bit-ColorPicker-invalid-color",
             DefaultValue = "--bit-clr-err / --bit-clr-err-focus",
-            Description = "Color of every border the panel draws, and of the keyboard focus ring, while the value fails the validation of the EditForm it is in. It replaces --bit-ColorPicker-border-color and --bit-ColorPicker-focus-color for that time only.",
+            Description = "Color of every border the panel draws, and of the keyboard focus ring, while the value is invalid - failing the validation of the EditForm it is in, or rejected by the app through Invalid or ErrorMessage - and the color of the error message. It replaces --bit-ColorPicker-border-color and --bit-ColorPicker-focus-color for that time only.",
         },
         new()
         {
@@ -887,6 +917,9 @@ public partial class BitColorPickerDemo
 
     private BitColorPickerDemoFormModel validationModel = new();
     private string? validationResult;
+    private string logoColor = "#2E6CB8";
+    private double logoAlpha = 1;
+    private string themeColor = "#7E4AE2";
 
     private string rtlColor = "#B34D4D";
 

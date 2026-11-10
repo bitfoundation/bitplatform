@@ -59,6 +59,8 @@ public partial class BitColorPicker : BitInputBase<string?>
     private BitColorFormat? _formatEmitted;
     private BitColorFormat? _formatParam;
     private bool _formatParamRead;
+    // Whether the live region that announces an error message is rendered (see OnParametersSet).
+    private bool _hasLiveRegion;
     private string? _contrastParam;
     private BitInternalColor? _contrastColor;
     private readonly BitInternalColor _color = new();
@@ -132,6 +134,46 @@ public partial class BitColorPicker : BitInputBase<string?>
     [Parameter] public BitColorInputsMode? DefaultInputsMode { get; set; }
 
     /// <summary>
+    /// A line at the foot of the picker saying why its color was rejected, which marks the picker invalid in the
+    /// same way <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused the color, a rule spanning two
+    /// fields. A picker inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
+    /// <c>ValidationMessage</c> component. The picker holds one color, so it has one message, which every control
+    /// that holds the color - the gradient, the sliders and the text fields - is described by.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the picker the moment the rejection
+    /// shows up - in place of the default "Invalid input" for a template, and only when it is set for the forced
+    /// state, whose reason is usually explained (and announced) elsewhere - and every control that holds the color
+    /// references it through its aria-describedby attribute, so the same reason is read out on every later focus too.
+    /// A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a template
+    /// switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking the
+    /// picker invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// It replaces the message for a screen reader as well: a template is free to render anything at all, so the
+    /// live region announces <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when that is not
+    /// set - never the plain <see cref="ErrorMessage"/> it hides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="EyeDropperIconName"/> when both are set.
     /// </summary>
@@ -181,6 +223,20 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// <see cref="InputsModeSwitchIcon"/> instead.
     /// </summary>
     [Parameter] public string? InputsModeSwitchIconName { get; set; }
+
+    /// <summary>
+    /// Marks the color of the picker as invalid, giving a color rejected by something other than the cascading
+    /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute, on every control that holds the color, that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A picker failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state. On its own
+    /// it says nothing more to a screen reader unless <see cref="ErrorMessageAriaLabel"/> gives it a reason to
+    /// announce.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// The text that names the picker. It is not a <c>label</c> element: with no single input to point a
@@ -492,6 +548,18 @@ public partial class BitColorPicker : BitInputBase<string?>
         // Applied before anything is read off the parameters, so a Format, an InputsMode or a palette that
         // arrives through the cascade is in place by the time the color is parsed against it.
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region is only rendered for a picker that is wired to say something through it - one whose
+        // ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now - so a
+        // form full of plain pickers does not carry an empty live region per picker. A label a BitParams hands down is
+        // not written by the markup, yet it is said out of the region the moment Invalid turns on, so holding one
+        // wires the picker too. Once there it stays, since it has to be on the page before the text that is meant to
+        // be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || _ErrorLiveText is not null;
 
         var first = _initialized is false;
 
@@ -986,6 +1054,74 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// verdict is read out with the control it is about rather than waiting to be found further down.
     /// </summary>
     private string _ContrastId => $"{_Id}-contrast";
+
+    /// <summary>
+    /// The id of the error line, which is what the controls that hold the color point at while it is shown.
+    /// </summary>
+    private string _ErrorId => $"{_Id}-error";
+
+    /// <summary>
+    /// The id of the visually hidden <see cref="ErrorMessageAriaLabel"/>, which stands in for the error line.
+    /// </summary>
+    private string _ErrorLabelId => $"{_Id}-error-label";
+
+    /// <summary>
+    /// Whether the picker carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool _HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the color of the picker, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the color is a rejection of it, so it marks the picker the same way the
+    /// flag does instead of leaving a red line under a panel that still looks accepted.
+    /// </remarks>
+    protected override bool HasError => Invalid || _HasErrorMessage;
+
+    /// <summary>
+    /// Whether <see cref="ErrorMessageAriaLabel"/> speaks for the rejection on screen: a template, which wins over a
+    /// plain message and is free to render anything at all, or the forced state without a message.
+    /// </summary>
+    /// <remarks>
+    /// A whitespace label is no label - announcing it would leave the picker sounding accepted.
+    /// </remarks>
+    private bool _HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                       && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    /// <summary>
+    /// What the live region carries, which is the rejection on screen and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// It always matches what is shown: a plain message is its own text, while a template - never read out itself,
+    /// since a live region reading out a block of markup is worse than one saying nothing - is announced through its
+    /// label, or as "Invalid input" rather than left in silence. The forced state is the one rejection only announced
+    /// with a label of its own, its reason being explained elsewhere.
+    /// </remarks>
+    private string? _ErrorLiveText => _HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                      : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                      : ErrorMessage.HasValue() ? ErrorMessage
+                                      : null;
+
+    /// <summary>
+    /// What a control that holds the color is described by: the error line (or the label standing in for it) on every
+    /// one of them, and the contrast readout on the first one only (see the markup).
+    /// </summary>
+    /// <remarks>
+    /// What is wrong with the color comes first, since it is the more urgent thing to hear, then the verdict of the
+    /// readout. The error is on every control rather than the first alone because every one of them carries
+    /// aria-invalid, and a control that says it is invalid has to be able to say why.
+    /// </remarks>
+    private string? GetDescribedBy(bool withContrast)
+    {
+        var describedBy = string.Join(' ', new[]
+        {
+            _HasErrorAriaLabel ? _ErrorLabelId : _HasErrorMessage ? _ErrorId : null,
+            withContrast && ShowContrast ? _ContrastId : null,
+        }.Where(id => id.HasValue()));
+
+        return describedBy.HasValue() ? describedBy : null;
+    }
 
     /// <summary>
     /// The aria-label and the aria-labelledby of the group, of which at most one is written. An explicit AriaLabel
