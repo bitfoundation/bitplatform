@@ -13,6 +13,19 @@ public sealed class AgentIdeas
 
     internal static IReadOnlyList<AgentIdea> All { get; } =
     [
+        new("Run", "#A3E635",
+        [
+            new YouSay("Run the app"),
+            new AgentWorks("starting the app, its database and its services", "the app is running", 2.4),
+            new AgentSays("Open calm-river-42.trycloudflare.com on any device you like"),
+            new YouSay("Now run it on my Android phone"),
+            new AgentWorks("building it for Android and installing it on your phone", "it's open on your phone", 2.6),
+            new YouSay("Bring up the Workbench, I want to give feedback on the UI"),
+            new AgentWorks("starting the Workbench", "the Workbench is open in your browser", 1.8),
+            new AgentSays("Pin a comment on anything you want changed, I'm listening"),
+            new YouSay("Now run the landing page"),
+            new AgentWorks("starting the landing page", "the landing page is open in your browser", 1.8),
+        ]),
         new("Rebrand", "#E879F9",
         [
             new YouSay("Give my app a look inspired by grok.com, with my own logo"),

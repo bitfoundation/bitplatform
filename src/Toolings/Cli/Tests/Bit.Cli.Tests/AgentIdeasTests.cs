@@ -9,7 +9,7 @@ public class AgentIdeasTests
     [TestMethod]
     public void TheIdeas_Should_ComeInTheirOrder()
     {
-        CollectionAssert.AreEqual(new[] { "Rebrand", "Port", "Deploy", "Feature", "Fix" }, AgentIdeas.All.Select(i => i.Kind).ToArray());
+        CollectionAssert.AreEqual(new[] { "Run", "Rebrand", "Port", "Deploy", "Feature", "Fix" }, AgentIdeas.All.Select(i => i.Kind).ToArray());
     }
 
     [TestMethod]
