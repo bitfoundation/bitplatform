@@ -217,7 +217,7 @@ public partial class DevMcpDiagnosticTools
     {
         return new
         {
-            TwilioSms = settings.Sms?.Configured is true,
+            Sms = settings.Sms?.Configured is true,
             //#if (notification == true)
             Firebase = string.IsNullOrWhiteSpace(settings.AdsPushFirebase?.PrivateKey) is false,
             Apns = string.IsNullOrWhiteSpace(settings.AdsPushAPNS?.P8PrivateKey) is false,

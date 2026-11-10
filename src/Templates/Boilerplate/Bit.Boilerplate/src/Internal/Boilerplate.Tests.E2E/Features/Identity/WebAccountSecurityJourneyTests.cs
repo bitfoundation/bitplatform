@@ -23,9 +23,9 @@ namespace Boilerplate.Tests.E2E.Features.Identity;
 /// </para>
 /// <para>
 /// The phone numbers are in the +1 555-01xx range that North America reserves for fiction, so the text messages the
-/// deployment really does send (its Twilio account is live) can never reach anybody. Twilio rejects them as
-/// unroutable, which costs nothing and leaves no job behind - <c>PhoneServiceJobsRunner</c> deletes its own after
-/// three attempts - and the code is read from the job's arguments, which are written when it is enqueued.
+/// deployment really does send (its Twilio account is live) can never reach anybody. Twilio accepts them and reports
+/// them undelivered later, so <c>PhoneServiceJobsRunner</c> succeeds, and the code is read from the job's arguments,
+/// which are written when it is enqueued.
 /// </para>
 /// <para>
 /// AdminPanel rather than Sales: identity here runs on the standalone AdminPanelApi, whose Hangfire the Dev MCP can

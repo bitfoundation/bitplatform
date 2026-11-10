@@ -56,9 +56,7 @@ public partial class PhoneService
 
         if (appSettings.Sms?.Configured is not true) return;
 
-        var from = appSettings.Sms!.FromPhoneNumber!;
-
-        backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText));
+        backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, messageText));
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]

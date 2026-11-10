@@ -276,7 +276,7 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **Email**: a real SMTP provider. Mailpit is for development only. `Email__DefaultFromEmail` in the api's settings
   secret has to be an address that provider has verified. Left at its default, the provider rejects the mail or it lands
   in spam.
-- **SMS**: a Twilio account, only if the app sends text messages.
+- **SMS**: a Twilio account, or another provider SmsBridge supports, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
   compatible provider; `appsettings.json` lists samples. Each model has a key setting of its own under `AI:OpenAI`, and

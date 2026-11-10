@@ -1,43 +1,37 @@
 //+:cnd:noEmit
 using Hangfire.Server;
-using Twilio.Exceptions;
-using Twilio.Rest.Api.V2010.Account;
+using SmsBridge.Abstractions;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
 public partial class PhoneServiceJobsRunner
 {
+    [AutoInject] private ISmsClient smsClient = default!;
     [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via sms, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/,
                     OnAttemptsExceeded = AttemptsExceededAction.Delete)]
-    public async Task SendSms(string phoneNumber, string from, string messageText,
+    public async Task SendSms(string phoneNumber, string messageText,
         PerformContext context = null!,
         CancellationToken cancellationToken = default)
 
     {
+        SmsSendResult? result = null;
         try
         {
-            var messageOptions = new CreateMessageOptions(new(phoneNumber))
-            {
-                From = new(from),
-                Body = messageText
-            };
+            result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
 
-            var smsMessage = MessageResource.Create(messageOptions);
-
-            if (smsMessage.ErrorCode is not null)
-                throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode } });
+            if (result.Success is false)
+                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode }, { "IsTransient", result.IsTransientFailure } });
         }
         catch (Exception exp)
         {
             serverExceptionHandler.Handle(exp, new()
             {
                 { "PhoneNumber", phoneNumber },
-                { "JobId", context.BackgroundJob.Id },
-                { "TwilioErrorCode", (exp as ApiException)?.Code }
+                { "JobId", context.BackgroundJob.Id }
             });
-            if (cancellationToken.IsCancellationRequested || exp is not KnownException)
+            if (cancellationToken.IsCancellationRequested || (exp is not KnownException && result?.IsTransientFailure is not false))
                 throw; // To retry the job
         }
     }
