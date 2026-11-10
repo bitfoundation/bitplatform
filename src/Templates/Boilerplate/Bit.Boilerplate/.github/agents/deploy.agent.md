@@ -107,6 +107,9 @@ domain and the services of section 5. Then go through the steps with them.
 - A self-hosted runner runs whatever a workflow hands it. Register it only with a private repository, and give it only
   the deploy jobs. CI and every workflow a pull request starts stay on GitHub-hosted runners, so a pull request never
   runs code on the VM.
+- `bit pipeline` (section 6) also lets only collaborators open pull requests and makes the workflows' token read-only,
+  so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
+  the deploy jobs in a separate private repository.
 - Every change this makes to the repository (the settings, the MCP files, a workflow) is a change like any other. It
   gets a branch of its own, goes through ai-dlc, and reaches `develop` in its phase 7.
 
@@ -316,9 +319,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 
 - Run `bit pipeline` in the repository, with `--yes` when nobody is there to answer its questions. It reads the secrets
   the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
-  certificate, the VAPID keys, the database and Redis passwords and the Android signing key. `bit pipeline --check`
-  lists what is still missing.
-- Let each environment deploy only from its own branch (`gh api`).
+  certificate, the VAPID keys, the database and Redis passwords and the Android signing key. It lets `Production`
+  deploy only from `main`, and turns on Dependabot alerts. `bit pipeline --check` lists what is still missing.
 - Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
   --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final

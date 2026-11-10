@@ -144,7 +144,7 @@ The project's `template-diff` skill, for the AI coding tools, runs it and applie
 
 ## bit pipeline
 
-Fills in the secrets a project's GitHub Actions workflows use:
+Fills in the secrets a project's GitHub Actions workflows use, and locks down who can start them:
 
 ```bash
 bit pipeline
@@ -157,7 +157,8 @@ bit pipeline --rotate-certificate
 - It creates the environments that don't exist yet, and stores each secret in the environment of the jobs that use it, or in the repository for a job without one. A secret the repository already has counts as set everywhere.
 - It creates what it can: a VAPID key pair (`PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY`), an app certificate (`APP_CERTIFICATE`), the passwords of the database and Redis containers the server's Docker Compose project runs (`DATABASE_PASSWORD`, `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD`, in letters and digits) and an Android signing key (`ANDROID_RELEASE_KEYSTORE_FILE_BASE64` and its two passwords), whose fingerprint it adds to the project's `assetlinks.json`. With an App Store Connect API key you give it, it also creates the iOS app's signing, as `bit keys apple` does, once for every environment that needs it, and adds the app to `apple-app-site-association.json`. It asks for the rest; `@file` reads the value from a file, and an empty answer skips it. `--yes` skips what only you can give.
 - Values go to the GitHub CLI through its input, never on a command line, and bit keeps a copy of the keys it creates in `~/.bitplatform/keys`, since GitHub doesn't give a secret back. Google Play only takes updates signed with the same key, so save the keystore and its password somewhere safe too.
-- `--check` changes nothing: it lists the secrets and exits with code 3 when one is missing. `APP_CERTIFICATE_RETIRED`, `SERVERWEB_SETTINGS` and `SERVERAPI_SETTINGS` are optional, and never asked for.
+- It lets only collaborators open pull requests, makes the workflows' `GITHUB_TOKEN` read-only and unable to approve pull requests, lets the `Production` environment deploy only from `main`, and turns on Dependabot alerts. On a public repository it also makes every outside contributor's workflows wait for approval, and warns when a workflow runs on a self-hosted runner. `--yes` turns them on without asking; `bit new --github-repo` sets the pull request and Dependabot ones when it creates the repository.
+- `--check` changes nothing: it lists the secrets and these settings, and exits with code 3 when a secret is missing or a setting is off. `APP_CERTIFICATE_RETIRED`, `SERVERWEB_SETTINGS` and `SERVERAPI_SETTINGS` are optional, and never asked for.
 - `--rotate-certificate` gives each environment a new app certificate and keeps the old one as `APP_CERTIFICATE_RETIRED`, so tokens it signed keep working.
 
 It needs the GitHub CLI, signed in with admin rights on the repository. For another pipeline, `bit keys` creates the same keys for you to store yourself.
@@ -396,7 +397,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
-- **Secrets and environments** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
+- **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry

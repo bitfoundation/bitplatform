@@ -1124,6 +1124,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (create.Succeeded is false)
             return StepResult.FromProcess(create, "", title, followUp);
 
+        var lockedDown = await LockDownRepositoryAsync(cancellationToken);
+        var lockDown = lockedDown ? "" : " && bit pipeline";
         await Gh(["auth", "setup-git"], cancellationToken);
         var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
 
@@ -1133,7 +1135,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
 
         if (pushed.Succeeded is false)
-            return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
+            return StepResult.FromProcess(pushed, "", lockedDown ? "Couldn't push to the GitHub repo" : "Couldn't push to the GitHub repo or lock down its pull requests and Dependabot alerts", $"cd {ProcessSpec.Quote(project.Directory)} && {push}{lockDown}");
 
         var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
         await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
@@ -1141,9 +1143,26 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
 
         if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
-            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop", resultCode: "github.default-branch");
+            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop{lockDown}", resultCode: "github.default-branch");
+
+        if (lockedDown is false)
+            return StepResult.Warning("Created a private GitHub repo, but couldn't lock down its pull requests and Dependabot alerts", detail, $"cd {ProcessSpec.Quote(project.Directory)}{lockDown}", resultCode: "github.settings");
 
         return StepResult.Succeeded("Created a private GitHub repo", detail);
+    }
+
+    private async Task<bool> LockDownRepositoryAsync(CancellationToken cancellationToken)
+    {
+        var login = await Gh(["api", "user", "--jq", ".login"], cancellationToken);
+        var owner = login.Output.Trim();
+
+        if (login.Succeeded is false || owner.Length == 0 || owner.Contains(' ', StringComparison.Ordinal))
+            return false;
+
+        var repository = $"repos/{owner}/{project.Name}";
+        var settings = await Gh(["api", repository, .. Pipelines.PipelineSetup.RepositoryDefaults], cancellationToken);
+        var alerts = await Gh(["api", "-X", "PUT", $"{repository}/vulnerability-alerts", "--silent"], cancellationToken);
+        return settings.Succeeded && alerts.Succeeded;
     }
 
     private async Task<string?> CommitPathAsync(string path, string message, CancellationToken cancellationToken)
