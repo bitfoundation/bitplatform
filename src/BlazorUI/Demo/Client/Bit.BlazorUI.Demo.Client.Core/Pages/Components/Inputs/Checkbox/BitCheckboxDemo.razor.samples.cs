@@ -291,13 +291,6 @@ private void HandleOnChanging(BitCheckboxChangeArgs args)
 private bool readOnlyValue;";
 
     private readonly string example11RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-        font-size: 0.75rem;
-    }
-</style>
-
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""validationModel""
@@ -305,11 +298,8 @@ private bool readOnlyValue;";
               OnInvalidSubmit=""HandleInvalidSubmit"">
         <DataAnnotationsValidator />
         <BitCheckbox Label=""I agree with the terms and conditions.""
-                     AriaDescribedby=""terms-error""
+                     ShowValidationMessage
                      @bind-Value=""validationModel.TermsAgreement"" />
-        <div id=""terms-error"">
-            <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
-        </div>
 
         <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     </EditForm>

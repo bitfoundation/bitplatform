@@ -188,6 +188,12 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
     public bool? Reversed { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the checkbox, where its
+    /// ErrorMessage goes, so the checkboxes of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the checkbox.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -384,6 +390,11 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
         if (Reversed.HasValue)
         {
             bitCheckbox.TakeFromCascade(nameof(Reversed), Reversed.Value, static c => c.Reversed, static (c, v) => c.Reversed = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitCheckbox.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static c => c.ShowValidationMessage, static (c, v) => c.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

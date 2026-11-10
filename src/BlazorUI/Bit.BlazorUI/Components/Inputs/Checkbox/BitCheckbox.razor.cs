@@ -199,7 +199,9 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about - a server that refused to save the new state,
     /// a rule spanning two controls. A checkbox inside an <c>EditForm</c> already gets its messages from the
-    /// cascading EditContext through the <c>ValidationMessage</c> component.
+    /// cascading EditContext, which <see cref="ShowValidationMessage"/> shows in this same place - giving way
+    /// to this message while it is set - or the <c>ValidationMessage</c> component shows wherever the page
+    /// puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -368,6 +370,22 @@ public partial class BitCheckbox : BitInputBase<bool>
     public bool Reversed { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations, or
+    /// of any other validator of the form - under the checkbox, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. The checkbox references them through
+    /// its aria-describedby attribute, so they are read out whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through a live region: a submit validates every
+    /// field of the form at once, and a message from each of them read out in a row would bury the form under its own
+    /// errors - the checkbox that takes the focus says what is wrong with it. A checkbox that validates nothing
+    /// (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the checkbox.
     /// </summary>
     /// <remarks>
@@ -529,8 +547,8 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         // An error message takes a line of its own under the checkbox too, and frees the label row from the full
         // width in the same way - through a class of its own rather than by widening what the description class
-        // means.
-        ClassBuilder.Register(() => HasErrorMessage ? "bit-chb-her" : string.Empty);
+        // means. The messages of the EditContext take the error line as well (ShowValidationMessage).
+        ClassBuilder.Register(() => HasErrorLine ? "bit-chb-her" : string.Empty);
 
         // The focus ring is drawn around the box, which a custom face replaces - so the checkbox says that
         // it has no box and the stylesheet puts the ring around the whole face instead of nowhere.
@@ -569,6 +587,20 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// Whether the checkbox carries a visible error message, which is what the error line is rendered for.
     /// </summary>
     private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// The messages of the EditContext the error line shows (<see cref="ShowValidationMessage"/>), which only take it
+    /// while the app has no message of its own there.
+    /// </summary>
+    /// <remarks>
+    /// They mark nothing themselves: the EditContext already has.
+    /// </remarks>
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    /// <summary>
+    /// Whether the error line under the checkbox is rendered, for the app's own message or for the EditContext's.
+    /// </summary>
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
 
     /// <summary>
     /// Whether the app itself has rejected the state of the checkbox, by the flag or by a message saying why.

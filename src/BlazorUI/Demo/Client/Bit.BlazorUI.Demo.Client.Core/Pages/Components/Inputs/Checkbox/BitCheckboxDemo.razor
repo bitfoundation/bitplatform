@@ -333,11 +333,8 @@
                           OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
                     <BitCheckbox Label="I agree with the terms and conditions."
-                                 AriaDescribedby="terms-error"
+                                 ShowValidationMessage
                                  @bind-Value="validationModel.TermsAgreement" />
-                    <div id="terms-error">
-                        <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
-                    </div>
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
@@ -349,8 +346,15 @@
         </div>
         <br />
         <div>
-            <b>AriaDescribedby</b> points the checkbox at the element that holds the message, so the reason a submit
-            was refused is read out with the control rather than only shown next to it.
+            <b>ShowValidationMessage</b> puts the message of the form on the checkbox's own error line - the place
+            <b>ErrorMessage</b> takes below - and points the checkbox at it through <b>aria-describedby</b>, so the
+            reason a submit was refused is read out with the control rather than only shown next to it, and the form
+            needs no <b>ValidationMessage</b> component. Unlike an ErrorMessage it is not announced as it appears: a
+            submit validates every field at once, and a message from each of them read out in a row would bury the
+            form under its own errors. An ErrorMessage of the app's own wins the line while it is set, and a
+            <b>BitParams</b> holding a <b>BitCheckboxParams</b> with <b>ShowValidationMessage</b> turns it on for every
+            checkbox inside it. A message the page places itself can still be tied to the checkbox with
+            <b>AriaDescribedby</b>.
         </div>
         <br /><br /><br />
         <div>

@@ -17,11 +17,15 @@
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than
     // replaced by them. The error line comes before the description, and the visible description before the
     // screen-reader-only one, in the order they are read on the page. A label stands in for an error template
-    // on focus as well, which may well be a bare icon with no text to describe the checkbox with at all.
+    // on focus as well, which may well be a bare icon with no text to describe the checkbox with at all. The
+    // forced state's label gives way to a message of the EditContext on screen, which is the text the reader
+    // can see.
     var describedBy = string.Join(' ', new[]
     {
         GetSplattedInputAttribute("aria-describedby"),
-        HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+        HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+            : HasErrorLine ? _errorId
+            : null,
         HasDescription ? _descriptionId : null,
         AriaDescription.HasValue() ? _ariaDescriptionId : null,
         AriaDescribedby
@@ -170,8 +174,9 @@
        thing to read under the box, while the description only says what checking it means. Like the
        description it is rendered outside the label, so it neither leaks into the accessible name nor toggles
        the box when its text is selected. It carries no live role of its own - the region at the end of the
-       component is what announces it, so it is never read out twice. *@
-    @if (HasErrorMessage)
+       component is what announces the app's message, so it is never read out twice. The messages of the
+       EditContext (ShowValidationMessage) take the same line while the app has none of its own. *@
+    @if (HasErrorLine)
     {
         <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-chb-erm @Classes?.ErrorMessageContainer">
             @if (ErrorMessageTemplate is not null)
@@ -180,7 +185,7 @@
             }
             else
             {
-                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(HasErrorMessage ? ErrorMessage : ShownValidationMessage)</span>
             }
         </div>
     }
