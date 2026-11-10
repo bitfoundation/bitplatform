@@ -321,6 +321,39 @@ public class AzureMonitorLiveMetricsTests
     }
 
     [TestMethod]
+    public async Task ASampledRecord_CountsAsTheWholeItemsApplicationInsightsCounts_AndATinyRatioCannotPoisonTheCounts()
+    {
+        await using var live = Create();
+        Apply(live, """
+            { "ETag": "e1", "DocumentStreams": [],
+              "Metrics": [
+                { "Id": "requests", "TelemetryType": "Request", "Projection": "Count()", "Aggregation": "Sum", "BackEndAggregation": "Sum", "FilterGroups": [] },
+                { "Id": "duration", "TelemetryType": "Request", "Projection": "Duration", "Aggregation": "Avg", "BackEndAggregation": "Avg", "FilterGroups": [] }
+              ] }
+            """);
+
+        var third = Request(200, seconds: 1);
+        third.SamplingRatio = 0.3;
+        live.OnRecord(third);
+
+        var point = Post(live);
+        Assert.AreEqual(3, Metrics(point)[@"\ApplicationInsights\Requests/Sec"], 1e-9, "1 / 0.3 rounded, as the envelope's sampleRate makes Application Insights count it.");
+        Assert.AreEqual(3, Metrics(point)["requests"], 1e-9);
+        Assert.AreEqual(3, Weights(point)["requests"]);
+
+        var tiny = Request(200, seconds: 2);
+        tiny.SamplingRatio = 1e-320;
+        live.OnRecord(tiny);
+        live.OnRecord(Request(200, seconds: 2));
+
+        point = Post(live);
+        var metrics = Metrics(point);
+        Assert.AreEqual(2000, metrics[@"\ApplicationInsights\Request Duration"], 1e-3, "Finite: not Inf / Inf.");
+        Assert.AreEqual(2000, metrics["duration"], 1e-3);
+        Assert.AreEqual(int.MaxValue, Weights(point)["duration"]);
+    }
+
+    [TestMethod]
     public async Task ACustomChart_ThatFailsOnAnItem_IsReportedOncePerDataPoint()
     {
         await using var live = Create();

@@ -559,6 +559,31 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void SampleRate_Is100OverAWholeItemCount_AsApplicationInsightsCountsItems()
+    {
+        // Application Insights counts an item in whole numbers (sample rates of 100 / N): Live Metrics counts the same N.
+        foreach (var (ratio, items) in new[] { (0.5, 2.0), (0.25, 4), (0.3, 3), (0.07, 14), (0.4, 3), (0.6, 2), (0.9, 1), (0.01, 100) })
+        {
+            Assert.AreEqual(items, AzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
+            Assert.AreEqual(100 / items, AzureMonitorEnvelopeSerializer.SampleRate(ratio), 1e-12, $"{ratio}");
+        }
+        Assert.AreEqual(25, AzureMonitorEnvelopeSerializer.SampleRate(0.25), "Exact for 1 / N: no float artifacts.");
+        Assert.AreEqual(1, AzureMonitorEnvelopeSerializer.ItemCount(1));
+    }
+
+    [TestMethod]
+    public void ItemCount_StaysFinite_ForATinyRatio()
+    {
+        // A processor that compounds ratios could go subnormal: 1 / ratio would be infinite and poison every count.
+        foreach (var ratio in new[] { 1e-320, double.Epsilon, 1e-12 })
+        {
+            Assert.AreEqual(int.MaxValue, AzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
+            var rate = AzureMonitorEnvelopeSerializer.SampleRate(ratio);
+            Assert.IsTrue(double.IsNormal(rate) && rate > 0, $"{ratio}: {rate}");
+        }
+    }
+
+    [TestMethod]
     public void MetricPoints_UseDeltas()
     {
         var envelopes = Serialize(new BelemetryBatch(Records.Resource(), metrics: Otlp.OtlpProtobufConformanceTests.MetricsSample()), true, out var count);

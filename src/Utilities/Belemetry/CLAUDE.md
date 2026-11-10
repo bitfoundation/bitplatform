@@ -297,7 +297,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
                "kind": 3, "startTime": 1.0, "endTime": 2.0, "attributes": {}, "status": { "code": 2, "message": "..." },
                "events": [ { "name": "...", "time": 1.5, "attributes": {}, "limited": true } ], "scope": "bit.belemetry.http", "feature": 16 } ],
   "logs":  [ { "time": 1.0, "severityNumber": 17, "severityText": "ERROR", "body": "message", "eventName": "browser.page_view|null",
-               "attributes": {}, "traceId": null, "spanId": null, "scope": "bit.belemetry.errors", "feature": 1 } ]
+               "attributes": {}, "traceId": null, "spanId": null, "scope": "bit.belemetry.errors", "feature": 1 } ],
+  "sessionRatio": 0.25   // relay payload only: the ratio the page sampled its sessions at (relayBatch)
 }
 ```
 
@@ -338,8 +339,9 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 
 - `"Belemetry.Relay"` (async). Receives a `BelemetryRelayBatch`. Ignored unless the transport is Relay. On a server
   the payload is untrusted: a per-bridge (per-circuit) token bucket caps it (`BelemetryRelaySource`), features off in
-  the configuration are dropped, and the resource keeps the server's service identity without the server's host and
-  process attributes.
+  the configuration are dropped, its `sessionRatio` is never taken below `Browser.SessionSampleRatio` (records of a
+  session that ratio drops are dropped), and the resource keeps the server's service identity without the server's
+  host and process attributes.
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
 - `"Belemetry.DiagnosticTrigger"`. Receives `{type, message}` of a JS error the page recorded, when
   `diagnostics.triggerBrowserErrors` (at most every 10 s per page), on the next task and only once the app's processors
@@ -374,16 +376,25 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   JSON array of envelopes, `Content-Type: application/json`.
 - **Envelope:** `{ "ver":1, "name":"Microsoft.ApplicationInsights.<Type>", "time":"<ISO 8601>", "sampleRate":<rate>,
   "iKey":"<ikey>", "tags":{...}, "data":{ "baseType":"<Type>Data", "baseData":{ "ver":2, ... } } }`
-- **`sampleRate`** is 100 times the record's sampling ratio when that is above 0 and below 1, else 100 (`SampleRate`,
-  `sampleRate`), so Application Insights counts each item `100 / sampleRate` times (`itemCount`). A browser record's
-  ratio is `sampling.sessionRatio`. In C# a relayed record takes `Browser.SessionSampleRatio`, never a value from
-  the page: a page is untrusted on a server. A .NET span's ratio is `BelemetrySpan.SamplingRatio`. The activity
-  collector sets it to `Traces.SamplingRatio` when the ratio decided the trace: its local root has no parent, it is on
-  an exported source, and `BelemetrySampler.ShouldSample` keeps its trace id. Otherwise the ratio is 1, as for a
-  remote parent's decision (the script sends every `traceparent` as sampled). A span's event items take the span's
-  rate. .NET logs (`BelemetryLogRecord.SamplingRatio`, 1 unless a processor sets it) and metrics are not sampled.
-  Live Metrics (.NET only) counts a record as `ItemCount` (`100 / sampleRate`) in its rates, its average durations
-  and its custom charts' sums and averages; min, max and the samples it streams are not weighted.
+- **`sampleRate`** is `100 / N` for a record's sampling ratio above 0 and below 1, N being `1 / ratio` rounded half
+  away from zero and capped at `int.MaxValue` (C# `ItemCount`, `SampleRate`; TS `sampleRate`), else 100. Application
+  Insights counts an item only in whole numbers (`itemCount`). The TS exporter computes it once per exporter
+  (`AzureContext.sampleRate`) from `sampling.sessionRatio`, which `resolveConfig` turns into a number (so a string
+  ratio samples and reports the same). A relayed record takes the `sessionRatio` the page sends with the batch (an
+  Auto app's page keeps the first side's configuration). On a server (untrusted page) the ratio is never below
+  `Browser.SessionSampleRatio`, and a record whose `session.id` fails `BelemetrySampler.IsSessionSampled` (the C# port
+  of `isSessionSampled`) at it is dropped as `sampled_out`; one without `session.id` is taken. A .NET span's ratio is
+  `BelemetrySpan.SamplingRatio`: the collector's `Sample` writes `belemetry=sr:<ratio>` first in the root's
+  `tracestate` when `Traces.SamplingRatio` (below 1) keeps a new trace (`BelemetryTraceState`; `options = options with
+  { TraceState = ... }`, the property is init-only). The entry then flows to children, explicit contexts, Hangfire
+  job parameters and downstream services. At stop the span takes `max(entry, Traces.SamplingRatio)`. It is 1 when the
+  process's ratio is not in (0, 1) or the span's state has no entry: a tracestate is untrusted, and no caller may
+  make a span count for more than the process's own ratio. Not `ot=th:` (G-31: that is the consistent probability
+  sampler's threshold, on other trace id bits). A span's event items take the span's rate. .NET logs
+  (`BelemetryLogRecord.SamplingRatio`, 1 unless a processor sets it) and metrics are not sampled. A tail sampler using
+  `BelemetrySampler` sets `Math.Min(SamplingRatio, its ratio)`: the decisions nest. Live Metrics (.NET only) counts a
+  record as `ItemCount` in its rates, its average durations and its custom charts' sums and averages; min, max and
+  the samples it streams are not weighted.
 - **Tags:**
 
   | Tag | Value |

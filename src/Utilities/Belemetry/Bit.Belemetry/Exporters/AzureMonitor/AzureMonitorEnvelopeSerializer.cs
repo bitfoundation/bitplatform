@@ -391,19 +391,21 @@ internal static class AzureMonitorEnvelopeSerializer
     }
 
     /// <summary>
-    /// The envelope's <c>sampleRate</c>: the percentage of such items kept (<see cref="BelemetrySpan.SamplingRatio"/>,
-    /// <see cref="BelemetryLogRecord.SamplingRatio"/> times 100), so Application Insights counts each one
-    /// <c>100 / sampleRate</c> times (<c>itemCount</c>). 100 for a ratio of 1 or more, 0 or less, or not a number: as the
-    /// script reads a session ratio, it samples nothing out (or keeps nothing, and then no record carries it). The same in
-    /// <c>Scripts/exporters/azure.ts</c>.
+    /// The envelope's <c>sampleRate</c>: the percentage of such items kept, <c>100 / </c><see cref="ItemCount"/>, so
+    /// Application Insights counts each one <c>itemCount</c> times. The same in <c>Scripts/exporters/azure.ts</c>.
     /// </summary>
-    internal static double SampleRate(double ratio) => ratio > 0 && ratio < 1 ? ratio * 100 : 100;
+    internal static double SampleRate(double ratio) => 100 / ItemCount(ratio);
 
     /// <summary>
-    /// How many items one kept at <paramref name="ratio"/> stands for, as Application Insights counts it from
-    /// <see cref="SampleRate"/> (<c>itemCount</c>): Live Metrics counts the same.
+    /// How many items one kept at <paramref name="ratio"/> (<see cref="BelemetrySpan.SamplingRatio"/>,
+    /// <see cref="BelemetryLogRecord.SamplingRatio"/>) stands for: <c>1 / ratio</c>, rounded to a whole number, as
+    /// Application Insights counts an item only in whole numbers (it supports sample rates of <c>100 / N</c>), so Live
+    /// Metrics counts the same. 1 for a ratio of 1 or more, 0 or less, or not a number: as the script reads a session
+    /// ratio, it samples nothing out (or keeps nothing, and then no record carries it). At most
+    /// <see cref="int.MaxValue"/>, so a tiny ratio cannot make the counts infinite.
     /// </summary>
-    internal static double ItemCount(double ratio) => 100 / SampleRate(ratio);
+    internal static double ItemCount(double ratio) =>
+        ratio > 0 && ratio < 1 ? Math.Min(Math.Round(1 / ratio, MidpointRounding.AwayFromZero), int.MaxValue) : 1;
 
     private static void WriteTags(Utf8JsonWriter w, ResourceTags resource, string? traceId, string? parentId, string? operationName, BelemetryAttributes attributes)
     {

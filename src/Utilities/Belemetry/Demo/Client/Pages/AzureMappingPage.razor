@@ -36,10 +36,13 @@
     <p>
         <code>sampleRate</code> is the percentage of such items sampling kept, so Application Insights counts each one
         <code>100 / sampleRate</code> times (<code>itemCount</code>) and request, page view and dependency counts stay
-        true. A browser record carries <code>Browser.SessionSampleRatio</code>. A span carries
-        <code>Traces.SamplingRatio</code> when it belongs to a trace this process started. It carries 100 when it
-        follows a remote parent, because that caller's ratio is not known. Its exceptions and events carry the span's
-        rate. .NET logs and metrics are not sampled (100).
+        true. It is <code>100 / N</code>, as Application Insights counts items only in whole numbers, so a
+        <code>1 / N</code> ratio (0.5, 0.25, 0.1) keeps the counts exact. A browser record carries the ratio its page
+        sampled sessions at (<code>Browser.SessionSampleRatio</code>; on a server never a smaller one than the
+        server's). A span carries the ratio its trace was kept at, which the trace takes along in its
+        <code>tracestate</code> to downstream services and jobs, but never below its own process's
+        <code>Traces.SamplingRatio</code>. A span whose caller's ratio is not known carries 100. Its exceptions and
+        events carry the span's rate. .NET logs and metrics are not sampled (100).
     </p>
     <CodeSnippet Code="@EnvelopeCode" Language="JSON" Expanded="true" />
 </div>

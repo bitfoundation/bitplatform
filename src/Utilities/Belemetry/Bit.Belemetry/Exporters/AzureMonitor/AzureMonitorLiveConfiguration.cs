@@ -253,8 +253,8 @@ internal sealed class AzureMonitorLiveConfiguration
             w.WriteNumber("Value", double.IsFinite(value) ? value : 0);
             // Weighed by the items it aggregated, as the Application Insights SDK weighs a derived metric's point: 0 for a
             // data point without any, which the service's own aggregation across instances then leaves out. A sampled
-            // item counts as the items it stands for (at least 1, so a point with any weighs 1 or more).
-            w.WriteNumber("Weight", (int)Math.Min(Math.Round(items), int.MaxValue));
+            // item counts as the whole number of items it stands for.
+            w.WriteNumber("Weight", (int)Math.Min(items, int.MaxValue));
             w.WriteEndObject();
         }
     }
@@ -512,8 +512,8 @@ internal sealed class AzureMonitorLiveConfiguration
                                        Aggregation aggregation)
     {
         private readonly object _lock = new();
+        // The items aggregated: each adds 1 or more (AzureMonitorLiveItem.ItemCount), so 0 means none yet.
         private double _sum, _min, _max, _items;
-        private long _count;
 
         public string Id => id;
 
@@ -571,11 +571,10 @@ internal sealed class AzureMonitorLiveConfiguration
         {
             lock (_lock)
             {
-                _min = _count == 0 ? value : Math.Min(_min, value);
-                _max = _count == 0 ? value : Math.Max(_max, value);
+                _min = _items == 0 ? value : Math.Min(_min, value);
+                _max = _items == 0 ? value : Math.Max(_max, value);
                 _sum += value * items;
                 _items += items;
-                _count++;
             }
         }
 
@@ -585,7 +584,7 @@ internal sealed class AzureMonitorLiveConfiguration
             lock (_lock)
             {
                 var items = _items;
-                var value = _count == 0 ? 0 : aggregation switch
+                var value = items == 0 ? 0 : aggregation switch
                 {
                     Aggregation.Sum => _sum,
                     Aggregation.Min => _min,
@@ -594,7 +593,6 @@ internal sealed class AzureMonitorLiveConfiguration
                 };
 
                 _sum = _min = _max = _items = 0;
-                _count = 0;
                 return (value, items);
             }
         }

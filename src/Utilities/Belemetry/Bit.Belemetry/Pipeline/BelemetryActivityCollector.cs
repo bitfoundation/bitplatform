@@ -56,9 +56,13 @@ internal sealed class BelemetryActivityCollector : IDisposable
                 : ActivitySamplingResult.PropagationData;
         }
 
-        return BelemetrySampler.ShouldSample(options.TraceId, _ratio)
-            ? ActivitySamplingResult.AllDataAndRecorded
-            : ActivitySamplingResult.PropagationData;
+        if (BelemetrySampler.ShouldSample(options.TraceId, _ratio) is false) return ActivitySamplingResult.PropagationData;
+
+        // Kept at the ratio: the trace carries it in its tracestate, to every span of it here and downstream
+        // (SamplingRatioOf). Decided once per trace, so a span's stop reads it instead of deciding again. The options are
+        // the caller's (by ref), and the activity takes the trace state they end with, as an OpenTelemetry sampler's.
+        if (_ratio < 1) options = options with { TraceState = BelemetryTraceState.WithSamplingRatio(options.TraceState, _ratio) };
+        return ActivitySamplingResult.AllDataAndRecorded;
     }
 
     private ActivitySamplingResult SampleUsingParentId(ref ActivityCreationOptions<string> options)
@@ -79,7 +83,7 @@ internal sealed class BelemetryActivityCollector : IDisposable
         try
         {
             var span = Convert(activity, _settings.Options.Traces);
-            span.SamplingRatio = SamplingRatioOf(activity);
+            span.SamplingRatio = SamplingRatioOf(span.TraceState);
             _pipeline.Enqueue(span);
         }
         catch
@@ -89,22 +93,16 @@ internal sealed class BelemetryActivityCollector : IDisposable
     }
 
     /// <summary>
-    /// The fraction of traces like the one of a recorded <paramref name="activity"/> that are recorded
-    /// (<see cref="BelemetrySpan.SamplingRatio"/>): the ratio when it decided the trace - this process started it (its
-    /// local root has no parent), on a source this listener samples, and the ratio keeps its trace id - else 1. A trace
-    /// that came with a sampled remote parent is recorded whatever the ratio says (parent-based), and the caller's ratio
-    /// is not known here (the browser script marks every request it traces as sampled, so its requests are all
-    /// recorded). A trace the ratio does not keep was recorded by another listener's decision.
+    /// The fraction of traces like the one of a recorded span that are recorded (<see cref="BelemetrySpan.SamplingRatio"/>).
+    /// It is the ratio its <paramref name="traceState"/> records (<see cref="BelemetryTraceState"/>), written where a
+    /// ratio kept the trace: in this process, or in the service, WebAssembly client or job that started it. It is never
+    /// below this process's own ratio, and 1 when this process does not sample: anyone can send a tracestate, and a
+    /// caller must not make a span count for more than a trace this process samples itself. Without the entry it is 1.
+    /// That is a trace that came with a sampled parent whose ratio is not known (the browser script sends every
+    /// <c>traceparent</c> as sampled, so a server records all its requests), or one another listener recorded.
     /// </summary>
-    private double SamplingRatioOf(Activity activity)
-    {
-        if (_ratio >= 1) return 1;
-
-        var root = activity;
-        while (root.Parent is { } parent) root = parent;
-
-        return root.ParentId is null && _settings.ExportsTraceSource(root.Source.Name) && BelemetrySampler.ShouldSample(activity.TraceId, _ratio) ? _ratio : 1;
-    }
+    private double SamplingRatioOf(string? traceState) =>
+        _ratio is > 0 and < 1 && traceState is not null ? Math.Max(BelemetryTraceState.SamplingRatio(traceState), _ratio) : 1;
 
     /// <summary>
     /// Whether a request span is on one of <see cref="BelemetryServerOptions.IgnoredRequestPaths"/>. Only the path is

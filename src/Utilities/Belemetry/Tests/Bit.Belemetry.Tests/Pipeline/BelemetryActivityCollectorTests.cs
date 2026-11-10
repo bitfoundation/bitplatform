@@ -218,43 +218,107 @@ public class BelemetryActivityCollectorTests
     }
 
     [TestMethod]
-    public async Task SamplingRatio_IsTheRatio_ForTheTracesItDecided()
+    public async Task SamplingRatio_IsTheRatio_ForTheTracesItDecided_CarriedInTheTraceState()
     {
         var (host, collector, source) = Create(ratio: 0.5);
         await using var _ = host;
         using var __ = collector;
         using var ___ = source;
 
-        var found = false;
-        for (var i = 0; i < 200 && found is false; i++)
+        ActivityContext kept = default;
+        for (var i = 0; i < 200 && kept == default; i++)
         {
             Activity.Current = null;
             using var root = source.StartActivity("root");
             Assert.IsNotNull(root);
-            if (root.Recorded is false) continue;
+            if (root.Recorded is false)
+            {
+                Assert.IsNull(root.TraceStateString, "A trace the ratio drops carries nothing.");
+                continue;
+            }
 
-            found = true;
+            Assert.AreEqual("belemetry=sr:0.5", root.TraceStateString);
+            kept = root.Context;
             using var child = source.StartActivity("child");
             Assert.IsNotNull(child);
             Assert.IsTrue(child.Recorded);
         }
-        Assert.IsTrue(found);
+        Assert.AreNotEqual(default, kept);
 
+        // An in-process consumer started from the producer's context: not a child, and no remote parent either.
         Activity.Current = null;
-        var remote = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded, isRemote: true);
-        using (var server = source.StartActivity("server", ActivityKind.Server, remote))
+        using (var consumer = source.StartActivity("consumer", ActivityKind.Consumer, kept))
         {
-            Assert.IsNotNull(server);
-            using var local = source.StartActivity("local");
-            Assert.IsNotNull(local);
+            Assert.IsNotNull(consumer);
         }
 
         await host.FlushAsync();
         var spans = host.Memory.Spans.ToDictionary(s => s.Name);
         Assert.AreEqual(0.5, spans["root"].SamplingRatio, "The ratio decided the trace.");
         Assert.AreEqual(0.5, spans["child"].SamplingRatio, "A local child is kept with its trace.");
-        Assert.AreEqual(1, spans["server"].SamplingRatio, "A remote parent decided: its ratio is not known here.");
-        Assert.AreEqual(1, spans["local"].SamplingRatio, "So did it for the server span's children.");
+        Assert.AreEqual(0.5, spans["consumer"].SamplingRatio, "So is a span started from its context.");
+    }
+
+    [TestMethod]
+    public async Task SamplingRatio_OfARemoteParent_IsTheOneItsTraceStateCarries_NeverBelowTheProcesssOwn()
+    {
+        var (host, collector, source) = Create(ratio: 0.5);
+        await using var _ = host;
+        using var __ = collector;
+        using var ___ = source;
+
+        void Serve(string name, string? traceState)
+        {
+            Activity.Current = null;
+            // As Hangfire and ASP.NET Core read a stored or received context back.
+            Assert.IsTrue(ActivityContext.TryParse($"00-{ActivityTraceId.CreateRandom()}-{ActivitySpanId.CreateRandom()}-01", traceState, isRemote: true, out var parent));
+            using var server = source.StartActivity(name, ActivityKind.Server, parent);
+            Assert.IsNotNull(server);
+            Assert.IsTrue(server.Recorded, "Parent-based.");
+            Assert.AreEqual(traceState, server.TraceStateString, "The caller's state flows on as it came.");
+            using var local = source.StartActivity(name + ".local");
+            Assert.IsNotNull(local);
+        }
+
+        Serve("unknown", null);
+        Serve("vendor", "vendor=1");
+        Serve("caller", "vendor=1,belemetry=sr:0.75");
+        Serve("smaller", "belemetry=sr:0.01");
+        Serve("invalid", "belemetry=sr:2");
+
+        await host.FlushAsync();
+        var spans = host.Memory.Spans.ToDictionary(s => s.Name);
+        Assert.AreEqual(1, spans["unknown"].SamplingRatio, "A sampled caller whose ratio is not known.");
+        Assert.AreEqual(1, spans["unknown.local"].SamplingRatio);
+        Assert.AreEqual(1, spans["vendor"].SamplingRatio);
+        Assert.AreEqual(0.75, spans["caller"].SamplingRatio, "A Belemetry caller's ratio.");
+        Assert.AreEqual(0.75, spans["caller.local"].SamplingRatio, "Inherited by the local children.");
+        Assert.AreEqual(0.5, spans["smaller"].SamplingRatio, "Anyone can send a tracestate: never more than a trace sampled here counts.");
+        Assert.AreEqual(0.5, spans["smaller.local"].SamplingRatio);
+        Assert.AreEqual(1, spans["invalid"].SamplingRatio);
+    }
+
+    [TestMethod]
+    public async Task SamplingRatio_Is1_AndNothingIsWritten_WhereTheProcessDoesNotSample()
+    {
+        var (host, collector, source) = Create(ratio: 1);
+        await using var _ = host;
+        using var __ = collector;
+        using var ___ = source;
+
+        Activity.Current = null;
+        using (var root = source.StartActivity("root"))
+        {
+            Assert.IsNotNull(root);
+            Assert.IsNull(root.TraceStateString);
+        }
+
+        Activity.Current = null;
+        Assert.IsTrue(ActivityContext.TryParse($"00-{ActivityTraceId.CreateRandom()}-{ActivitySpanId.CreateRandom()}-01", "belemetry=sr:0.01", isRemote: true, out var parent));
+        using (source.StartActivity("server", ActivityKind.Server, parent)) { }
+
+        await host.FlushAsync();
+        Assert.IsTrue(host.Memory.Spans.All(s => s.SamplingRatio == 1));
     }
 
     [TestMethod]

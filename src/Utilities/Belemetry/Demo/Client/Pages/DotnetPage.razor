@@ -118,16 +118,21 @@
         (128 each) cap what one span can carry.
     </p>
     <p>
-        <code>BelemetrySpan.SamplingRatio</code> says how a span was sampled. It is the ratio when the ratio decided its
-        trace, and 1 when the span followed a remote parent, whose ratio is not known here. Azure Monitor sends it as
-        the item's <code>sampleRate</code>, so Application Insights counts each kept request and dependency for the ones
-        dropped.
+        <code>BelemetrySpan.SamplingRatio</code> says how a span was sampled. A trace the ratio keeps carries it in its
+        <code>tracestate</code> (<code>belemetry=sr:0.25</code>), so local children, Hangfire jobs and downstream
+        services know it too. A remote caller's ratio is never taken below this process's own, as anyone can send a
+        <code>tracestate</code>, and a span whose caller's ratio is not known has 1. Azure Monitor sends it as the
+        item's <code>sampleRate</code>, so Application Insights counts each kept request and dependency for the ones
+        dropped: in whole numbers, so <code>1 / N</code> ratios keep the counts exact. With
+        <code>HttpActivityPropagationSupport</code> on and a ratio below 1, <code>HttpClient</code> sends
+        <code>tracestate</code> too.
     </p>
     <p>
         Sampling at the end of a span - keep every failure and every slow span, a fraction of the rest - is a
         <a href="/processors">processor</a>. <code>BelemetrySampler</code> is public so the processor makes the same
         deterministic, trace-wide decision the ratio sampler makes, and the kept fraction is whole traces rather than
-        scattered spans. It multiplies <code>SamplingRatio</code> by the fraction it keeps.
+        scattered spans. The decisions nest - a trace kept at 0.05 is kept at any larger ratio - so it sets
+        <code>SamplingRatio</code> to the smaller of the two ratios, not their product.
     </p>
     <CodeSnippet Code="@TailSamplingCode" Language="C#" />
     <div class="bb-demo">
@@ -495,7 +500,8 @@
                 if (span.Status == BelemetryStatusCode.Error || span.Duration > TimeSpan.FromSeconds(1)) return true;
                 if (BelemetrySampler.ShouldSample(span.TraceId, 0.05) is false) return false;
 
-                span.SamplingRatio *= 0.05;    // Application Insights counts each one kept 20 times
+                // Kept at 0.05, so at a head ratio of 0.25 too: Application Insights counts each one 20 times.
+                span.SamplingRatio = Math.Min(span.SamplingRatio, 0.05);
                 return true;
             }
         }

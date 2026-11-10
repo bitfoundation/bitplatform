@@ -30,14 +30,17 @@ internal sealed class AzureMonitorLiveItem
 
     /// <param name="type">Its telemetry type.</param>
     /// <param name="properties">Its custom dimensions.</param>
+    /// <param name="samplingRatio">The sampling ratio of its record (of the span, for an event on one): see <see cref="ItemCount"/>.</param>
     /// <param name="span">The request or dependency it is, whose fields it works out.</param>
     /// <param name="name">An event's name.</param>
-    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, AzureMonitorProperties properties, BelemetrySpan? span = null, string? name = null)
+    private AzureMonitorLiveItem(AzureMonitorLiveTelemetryType type, AzureMonitorProperties properties, double samplingRatio, BelemetrySpan? span = null,
+                                 string? name = null)
     {
         Type = type;
         _properties = properties;
         _span = span;
         _name = name;
+        ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(samplingRatio);
     }
 
     /// <summary>Its telemetry type.</summary>
@@ -105,7 +108,7 @@ internal sealed class AzureMonitorLiveItem
     /// How many items it stands for, as Application Insights counts its envelope (<c>itemCount</c>): 1 / the sampling
     /// ratio of its record (<see cref="AzureMonitorEnvelopeSerializer.ItemCount"/>). The custom charts weigh it by that.
     /// </summary>
-    public double ItemCount { get; private init; } = 1;
+    public double ItemCount { get; }
 
     /// <summary>The span's HTTP status code; null without one.</summary>
     private long? StatusCode
@@ -156,8 +159,7 @@ internal sealed class AzureMonitorLiveItem
     }
 
     /// <summary>The request or dependency a span is.</summary>
-    public static AzureMonitorLiveItem FromSpan(BelemetrySpan span) =>
-        new(TypeOf(span), AzureMonitorProperties.OfSpan(span), span) { ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(span.SamplingRatio) };
+    public static AzureMonitorLiveItem FromSpan(BelemetrySpan span) => new(TypeOf(span), AzureMonitorProperties.OfSpan(span), span.SamplingRatio, span);
 
     /// <summary>The exception a log record carries, or one recorded on a span (from the event's attributes).</summary>
     /// <param name="attributes">The record's or the event's attributes.</param>
@@ -165,12 +167,11 @@ internal sealed class AzureMonitorLiveItem
     /// <param name="samplingRatio">The sampling ratio of the log record, or of the span the event is on.</param>
     public static AzureMonitorLiveItem FromException(BelemetryAttributes attributes, string? body, double samplingRatio)
     {
-        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Exception, AzureMonitorProperties.OfException(attributes))
+        return new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Exception, AzureMonitorProperties.OfException(attributes), samplingRatio)
         {
             ExceptionType = attributes.GetString(BelemetrySemanticConventions.ExceptionType) ?? "Error",
             ExceptionMessage = attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? body ?? string.Empty,
             StackTrace = attributes.GetString(BelemetrySemanticConventions.ExceptionStacktrace) ?? string.Empty,
-            ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(samplingRatio),
         };
     }
 
@@ -180,15 +181,11 @@ internal sealed class AzureMonitorLiveItem
         return TypeOf(log) switch
         {
             AzureMonitorLiveTelemetryType.Exception => FromException(log.Attributes, log.Body, log.SamplingRatio),
-            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, AzureMonitorProperties.OfLog(log),
-                                                                            name: log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent ? "PageVisitTime" : log.EventName)
-            {
-                ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(log.SamplingRatio),
-            },
-            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.OfLog(log))
+            AzureMonitorLiveTelemetryType.Event => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Event, AzureMonitorProperties.OfLog(log), log.SamplingRatio,
+                                                                            name: log.EventName == BelemetrySemanticConventions.PageVisitTimeEvent ? "PageVisitTime" : log.EventName),
+            AzureMonitorLiveTelemetryType.Trace => new AzureMonitorLiveItem(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.OfLog(log), log.SamplingRatio)
             {
                 Message = log.Body ?? string.Empty,
-                ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(log.SamplingRatio),
             },
             _ => null,
         };
@@ -201,11 +198,7 @@ internal sealed class AzureMonitorLiveItem
     /// <param name="spanEvent">The event.</param>
     /// <param name="samplingRatio">The sampling ratio of the span it is on.</param>
     public static AzureMonitorLiveItem FromSpanEvent(BelemetrySpanEvent spanEvent, double samplingRatio) =>
-        new(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.Of(spanEvent.Attributes))
-        {
-            Message = spanEvent.Name,
-            ItemCount = AzureMonitorEnvelopeSerializer.ItemCount(samplingRatio),
-        };
+        new(AzureMonitorLiveTelemetryType.Trace, AzureMonitorProperties.Of(spanEvent.Attributes), samplingRatio) { Message = spanEvent.Name };
 
     /// <summary>A custom dimension: a property of the item the envelope writes (<see cref="AzureMonitorProperties"/>).</summary>
     public bool TryGetDimension(string key, [NotNullWhen(true)] out string? value) => _properties.TryGetValue(key, out value);
