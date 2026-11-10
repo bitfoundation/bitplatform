@@ -177,6 +177,12 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     public string? Role { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the toggle, where its
+    /// ErrorMessage goes, so the toggles of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the toggle.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -350,6 +356,11 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
         if (Role.HasValue())
         {
             bitToggle.TakeFromCascade(nameof(Role), Role, static t => t.Role, static (t, v) => t.Role = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitToggle.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static t => t.ShowValidationMessage, static (t, v) => t.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

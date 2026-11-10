@@ -367,6 +367,14 @@
             For a plain HTML post rather than an <b>EditForm</b>, <b>Name</b> names the hidden checkbox that carries
             the state into the form data - it submits <b>true</b> while the toggle is on and is left out of the post
             entirely while it is off, exactly as a native checkbox would.
+            <br /><br />
+            <b>ShowValidationMessage</b> puts the message of the form on the toggle's own error line - the place
+            <b>ErrorMessage</b> takes below - and points the switch at it through <b>aria-describedby</b>, so the form
+            needs no <b>ValidationMessage</b> component and the reason a submit was refused is read out with the switch.
+            Unlike an ErrorMessage it is not announced as it appears: a submit validates every field at once, and a
+            message from each of them read out in a row would bury the form under its own errors. An ErrorMessage of
+            the app's own wins the line while it is set, and a <b>BitParams</b> holding a <b>BitToggleParams</b> with
+            <b>ShowValidationMessage</b> turns it on for every toggle inside it.
         </div>
         <br />
         <div>
@@ -375,8 +383,7 @@
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
 
-                    <BitToggle Label="Terms and conditions" Text="I agree." @bind-Value="validationModel.TermsAgreement" />
-                    <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+                    <BitToggle Label="Terms and conditions" Text="I agree." @bind-Value="validationModel.TermsAgreement" ShowValidationMessage />
 
                     <br />
 
