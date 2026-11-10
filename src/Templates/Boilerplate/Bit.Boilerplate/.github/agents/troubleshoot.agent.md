@@ -24,8 +24,10 @@ there too.
   <id> --json jobs`). A newer run that failed in `Replace the apps` itself leaves a doubt, since the step's last commands,
   after its new containers took over, can fail too. The running containers' image tags, `<environment>-<commit>`
   (`docker compose ps` in the deploy folder on the VM), settle that and any other doubt, and dev-mcp's
-  `GetDeploymentInfo` gives the version. Check it out in a worktree of its own (`git worktree add`), so nothing
-  uncommitted on the current branch is touched, and a change that isn't deployed yet can't pass for the cause.
+  `GetDeploymentInfo` gives the version. Two commits among the apps' tags mean that run failed to stop the old
+  containers, and both versions serve: say so to the user, and look into both until a deployment replaces them. Check
+  out each commit in a worktree of its own (`git worktree add`), so nothing uncommitted on the current branch is
+  touched, and a change that isn't deployed yet can't pass for the cause.
 - Use that environment's dev-mcp server, `dev-mcp-test` or `dev-mcp-production` in the MCP files, where the deploy
   skill put their addresses. Its title and instructions name the environment it reads: check that they say the one the
   problem was seen in before you rely on an answer.
