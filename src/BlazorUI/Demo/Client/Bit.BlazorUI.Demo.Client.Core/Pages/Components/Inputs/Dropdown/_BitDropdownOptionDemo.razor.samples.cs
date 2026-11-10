@@ -746,38 +746,31 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example12RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
-<style>
-    .validation-message {
-        color: #A4262C;
-        font-size: 0.75rem;
-    }
-</style>
-
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Value=""validationModel.Category""
                  Label=""Select 1 item""
                  Placeholder=""Select an item""
-                 TItem=""BitDropdownOption<string>"" TValue=""string"">
+                 TItem=""BitDropdownOption<string>"" TValue=""string""
+                 ShowValidationMessage>
         @foreach (var item in basicItems)
         {
             <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsDisabled=""item.IsDisabled"" />
         }
     </BitDropdown>
-    <ValidationMessage For=""@(() => validationModel.Category)"" />
 
     <BitDropdown @bind-Values=""validationModel.Products""
                  MultiSelect
                  Placeholder=""Select items""
                  Label=""Select min 1 and max 2 items""
-                 TItem=""BitDropdownOption<string>"" TValue=""string"">
+                 TItem=""BitDropdownOption<string>"" TValue=""string""
+                 ShowValidationMessage>
         @foreach (var item in basicItems)
         {
             <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsDisabled=""item.IsDisabled"" />
         }
     </BitDropdown>
-    <ValidationMessage For=""@(() => validationModel.Products)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>

@@ -525,9 +525,18 @@
 <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>
         BitDropdown is a regular form input: inside an <b>EditForm</b> it takes part in data annotations validation,
-        turns red and reports itself as invalid to assistive technologies when its field has an error, and renders a
+        turns red and reports itself as invalid to assistive technologies when its field has an error, and works with
         <b>ValidationMessage</b> like any other input. This example requires a value in the single select dropdown and
         keeps the number of selected items of the multi select one within a range.
+        <br /><br />
+        <b>ShowValidationMessage</b> shows the messages of the form under the dropdown instead, where <b>ErrorMessage</b>
+        goes - those of <b>Value</b> in a single select dropdown and of <b>Values</b> in a multi select one - so the form
+        below needs no <b>ValidationMessage</b> component. The dropdown is described by them through
+        <code>aria-describedby</code>, so they are read out when it takes the focus, and an <b>ErrorMessage</b> of the
+        app's own wins the place while it is set. They are not announced as they appear: a submit validates every field
+        at once, and a message from each of them read out in a row would bury the form under its own errors. A
+        <b>BitParams</b> holding a <b>BitDropdownParams</b> with <b>ShowValidationMessage</b> turns it on for every
+        dropdown inside it.
         <br /><br />
         For a rejection the app decided on its own - a server response, a rule spanning two fields -
         <b>ErrorMessage</b> shows the reason under the field, marks the dropdown invalid, ties the message to it with
@@ -545,9 +554,8 @@
                              Label="Select 1 item"
                              Items="GetBasicCustoms()"
                              NameSelectors="nameSelectors"
-                             Placeholder="Select an item" />
-
-                <ValidationMessage For="@(() => validationModel.Category)" />
+                             Placeholder="Select an item"
+                             ShowValidationMessage />
 
                 <br />
 
@@ -556,9 +564,8 @@
                              Items="GetBasicCustoms()"
                              Placeholder="Select items"
                              NameSelectors="nameSelectors"
-                             Label="Select min 1 and max 2 items" />
-
-                <ValidationMessage For="@(() => validationModel.Products)" />
+                             Label="Select min 1 and max 2 items"
+                             ShowValidationMessage />
 
                 <br />
 
