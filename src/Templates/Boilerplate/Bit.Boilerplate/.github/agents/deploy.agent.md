@@ -345,6 +345,12 @@ there, and the setting or secret that carries it. Every environment gets its own
   the web and the api. Before raising it, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's
   `AggregateEntity`, and report to the user roughly what share of the Android, iOS and macOS sessions a new major would
   force to update. It needs no date filter: a job already deletes the sessions that have gone 14 days unused.
+- Give each environment an `APP_ID` and an `APP_TITLE` of its own, such as `com.example.app` and `Example` for
+  Production and `com.example.app.test` and `Example Test` for Test, so the Test and Production apps install side by side
+  on the same phone or computer: Android, iOS and macOS treat another id as another app, with data of its own, and
+  Windows installs each Velopack package id in a folder of its own. Each id is a store record of its own too (Google
+  Play, App Store Connect and its provisioning profile). Settle Production's id before the first release of a native
+  app: changing it later leaves the copies already installed without updates.
 - With GitHub Pro or Team, protect `main`, so it takes changes only through a pull request whose CI
   passed.
 
