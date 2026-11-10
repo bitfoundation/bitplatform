@@ -177,13 +177,13 @@
         @* The prompts the reply offers to go on with, under the newest reply only and once it has finished: under an
            older one they would answer a question the conversation has moved on from. A group named for what it holds,
            so the buttons are announced as the choices they are. *@
-        @if (_ShowFollowUps)
+        @if (_FollowUps is { } followUps)
         {
             <div role="group"
                  aria-label="@Strings.FollowUps"
                  style="@Styles?.FollowUps"
                  class="bit-aicms-fup @Classes?.FollowUps">
-                @foreach (var followUp in Message.FollowUps!)
+                @foreach (var followUp in followUps)
                 {
                     <BitButton ButtonType="BitButtonType.Button"
                                OnClick="() => SendFollowUpAsync(followUp)"

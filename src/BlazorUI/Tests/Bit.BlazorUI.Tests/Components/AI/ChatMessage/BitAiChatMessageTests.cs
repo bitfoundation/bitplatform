@@ -715,6 +715,56 @@ public class BitAiChatMessageTests : BitAiTestBase
         Assert.HasCount(1, component.FindAll(".bit-aitcv"));
     }
 
+    [TestMethod]
+    public async Task FollowUpsWaitForTheTurnInFlightToEnd()
+    {
+        var linger = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var session = new BitAiChatSession(new LingeringTransport(linger.Task), null, new() { Pacing = null });
+
+        var turn = session.SubmitAsync("go");
+        await WaitForAsync(() => session.Conversation.Messages.Count == 2
+                                 && session.Conversation.Messages[1] is { IsBusy: false, FollowUps: not null });
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, session.Conversation.Messages[1])
+            .Add(c => c.Session, session));
+
+        // The reply has finished, but the stream is still open: picking a follow-up now would go nowhere.
+        Assert.IsTrue(session.IsGenerating);
+        Assert.IsEmpty(component.FindAll(".bit-aicms-fup"));
+
+        linger.SetResult();
+        await turn;
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-aicms-fup")), TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void AToolCallTheOptionsHideLeavesNoPartViewBehind()
+    {
+        var message = Assistant(new BitAiTextPart("answer"), new BitAiToolCallPart("c1", "lookup"));
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .AddCascadingValue(new BitAiUiOptions { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
+
+        Assert.HasCount(1, component.FindAll(".bit-aimpv"));
+        Assert.IsEmpty(component.FindAll(".bit-aitcv"));
+    }
+
+    /// <summary>Answers at once, then keeps the stream open until it is let go.</summary>
+    private sealed class LingeringTransport(Task linger) : IBitAiTransport
+    {
+        public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new BitAiTextDeltaEvent("answer");
+            yield return new BitAiFollowUpsEvent(["Show more"]);
+            yield return new BitAiMessageCompletedEvent();
+
+            await linger.WaitAsync(cancellationToken);
+        }
+    }
+
     private static async Task WaitForAsync(Func<bool> condition, int timeoutMs = 10_000)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);

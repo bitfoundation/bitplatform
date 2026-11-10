@@ -79,7 +79,8 @@ public sealed record BitAiUiOptions
     /// Read on every render of the call, so it may depend on how far the call has got (a line while it runs, nothing once
     /// it is done), on its tool (<see cref="BitAiToolCallPart.ToolName"/>) or on its definition
     /// (<see cref="BitAiToolCallPart.Definition"/>). A call waiting for the reader's decision, or one that failed, is
-    /// shown as a card whatever this returns, so its question or its failure is never hidden. A tool renderer registered
+    /// shown as a card whatever this returns, so its question or its failure is never hidden; one the reader has decided
+    /// on is shown as a status line rather than hidden, since it is no plumbing to them. A tool renderer registered
     /// for the call's tool (<see cref="BitAiRendererRegistry.RegisterTool(string, BitAiToolCallRenderer)"/>) is drawn
     /// unless the call is hidden.
     /// </remarks>

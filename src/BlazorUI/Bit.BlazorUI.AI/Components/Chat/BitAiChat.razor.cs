@@ -393,12 +393,22 @@ public partial class BitAiChat : BitAiComponentBase
 
     // A suggestion goes with the empty state as soon as its message is in, and the focus would go with it to the page:
     // the composer takes it first, since the submission is over only once the whole turn is. A follow-up under a reply
-    // goes the same way, with the reply it was offered under no longer the newest.
+    // goes the same way, with the reply it was offered under no longer the newest. Either goes only while no turn is in
+    // flight, whatever the session's InterruptOnSubmit says: a second click on the button before the render takes it away
+    // would stop the turn the first click started and send the same prompt again.
     private async Task SubmitTextAsync(string text)
     {
         await FocusComposerSafelyAsync();
 
-        await OnComposerSubmitAsync(new BitAiPromptSubmission(text, []));
+        if (ActiveSession.IsGenerating) return;
+
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(new BitAiPromptSubmission(text, []));
+            return;
+        }
+
+        await ActiveSession.SubmitIfIdleAsync(text);
     }
 
     // Moving the focus on the chat's own behalf, after a control the user pressed has gone, never fails what it follows.

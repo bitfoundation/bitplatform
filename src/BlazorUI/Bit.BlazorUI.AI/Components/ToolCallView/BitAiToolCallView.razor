@@ -25,8 +25,12 @@
     else if (_display is BitAiToolCallDisplay.Status)
     {
         @* One line saying what the call is doing or how it ended, in the words of the card's header, with nothing to
-           expand. *@
-        <div style="@Styles?.StatusLine" class="bit-aitcv-lnr @Classes?.StatusLine">
+           expand. Focusable from code only, for the focus of the approval button a decision takes away
+           (HandleOnDecision). *@
+        <div @ref="_statusLine"
+             tabindex="-1"
+             style="@Styles?.StatusLine"
+             class="bit-aitcv-lnr @Classes?.StatusLine">
             <i aria-hidden="true" style="@Styles?.Icon" class="bit-aitcv-ico @_ToolIcon @Classes?.Icon"></i>
             <span style="@Styles?.Title" class="bit-aitcv-ttl @Classes?.Title">@_Heading</span>
             @if (Call.Status is BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming)

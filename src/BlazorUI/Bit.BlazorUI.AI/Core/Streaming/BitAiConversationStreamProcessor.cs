@@ -461,7 +461,8 @@ public sealed class BitAiConversationStreamProcessor
         if (EnsureAnswering(evt) is not { } message) return;
         if (FindToolCall(evt.ToolCallId) is not null) return;
 
-        // A definition the transport sends is on the call from its first render, ahead of any the session would look up.
+        // A definition the transport sends is on the call from its first render, ahead of any the session would look up -
+        // which the session puts in its place for a call it runs itself (BitAiChatSession.DescribeToolCall).
         var part = message.AddPart(new BitAiToolCallPart(evt.ToolCallId, evt.ToolName) { Definition = evt.Definition });
 
         // Attributed to the step that is running, so a timeline can show what each step called.

@@ -20,6 +20,9 @@ public partial class BitAiChatMessage : BitAiComponentBase
     private BitAiMessage? _subscribed;
     private BitAiChatSession? _subscribedSession;
     private BitAiIconClassesCache<BitButtonClassStyles> _editButtonClasses;
+    // The status each tool call of the message was last seen in (OnPartChanged). Concurrent, since the calls the session
+    // runs at once change on threads of their own.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<BitAiToolCallPart, BitAiToolCallStatus> _toolCallStatuses = new(ReferenceEqualityComparer.Instance);
 
 
 
@@ -136,8 +139,9 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
         base.OnParametersSet();
 
-        // A user message offers its edit only while the session is free, so it hears the session start and end its turns.
-        var session = Message.Role.IsUser ? Session : null;
+        // A user message offers its edit, and the newest reply its follow-ups, only while the session is free, so they hear
+        // the session start and end its turns.
+        var session = Message.Role.IsUser || (Message.Role.IsAssistant && IsLatest) ? Session : null;
 
         if (ReferenceEquals(_subscribedSession, session) is false)
         {
@@ -152,6 +156,7 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
         Unsubscribe();
 
+        _toolCallStatuses.Clear();
         _subscribed = Message;
         _subscribed.Changed += OnMessageChanged;
         _subscribed.PartChanged += OnPartChanged;
@@ -171,12 +176,17 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
 
 
-    // The follow-ups of the newest reply, once it has finished, and only where picking one goes somewhere.
-    private bool _ShowFollowUps => IsLatest
-                                   && Message.Role.IsAssistant
-                                   && Message.IsBusy is false
-                                   && Message.FollowUps is { Count: > 0 }
-                                   && (OnFollowUp.HasDelegate || Session is not null);
+    // The follow-ups of the newest reply, once it has finished and while no turn is in flight - a transport may keep the
+    // stream open after the reply - and only where picking one goes somewhere; null when there are none to show. Read
+    // once per render, since the transport's thread may take them away in the meantime.
+    private IReadOnlyList<string>? _FollowUps => IsLatest
+                                                 && Message.Role.IsAssistant
+                                                 && Message.IsBusy is false
+                                                 && Session is not { IsGenerating: true }
+                                                 && (OnFollowUp.HasDelegate || Session is not null)
+                                                 && Message.FollowUps is { Count: > 0 } followUps
+                                                 ? followUps
+                                                 : null;
 
     // The sources a reply cites are listed under it, unless one of its parts lists them already.
     private bool _ShowSourceList => Options.ShowSourceList
@@ -196,18 +206,27 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
     // The parts render their own growth, so the only changes of one that matter here are the first text reaching a reply
     // drawn as thinking - a part a transport opens before its first delta is added empty, and filling it in changes no
-    // structure of the message - and a tool call coming to wait for the user's decision, or leaving it. Every other
-    // delta costs a field read.
+    // structure of the message - and a tool call moving to another status. Every other delta costs a field read, or a
+    // lookup for a call streaming its arguments.
     private void OnPartChanged(BitAiMessage message, BitAiMessagePart part)
     {
-        // A hidden tool call coming to be shown (a policy following its status) is content reaching the reply too, and
-        // one going hidden may leave the reply with nothing to show again - which only a tool call's change can do, so a
-        // text delta never asks.
-        if (_awaitingContent ? IsAwaitingContent() is false : part is BitAiToolCallPart && IsAwaitingContent())
+        if (part is BitAiToolCallPart call)
         {
-            RequestRender();
+            // A call coming to wait for the user's decision or leaving it, and one the options (ToolCallDisplay) come to show
+            // or to hide - which may leave the reply with nothing to show again - change the reply around it, and both
+            // follow the call's status. The render works out the rest on the renderer's thread, where the app's
+            // ToolCallDisplay is asked, rather than here on the transport's on every delta.
+            var status = call.Status;
+            if (_toolCallStatuses.TryGetValue(call, out var seen) && seen == status) return;
+
+            _toolCallStatuses[call] = status;
+
+            if (Options.ToolCallDisplay is not null || IsAwaitingDecision() != _awaitingDecision)
+            {
+                RequestRender();
+            }
         }
-        else if (part is BitAiToolCallPart && IsAwaitingDecision() != _awaitingDecision)
+        else if (_awaitingContent && DrawsContent(part))
         {
             RequestRender();
         }
@@ -237,11 +256,15 @@ public partial class BitAiChatMessage : BitAiComponentBase
                 return false;
             }
 
-            if (part is not BitAiTextPart { IsEmpty: true } || part is BitAiReasoningPart or BitAiCodePart) return false;
+            if (DrawsContent(part)) return false;
         }
 
         return true;
     }
+
+    // Whether a part other than a tool call draws something of its own: anything but prose no text has reached.
+    private static bool DrawsContent(BitAiMessagePart part) =>
+        part is not BitAiTextPart { IsEmpty: true } || part is BitAiReasoningPart or BitAiCodePart;
 
     // Whether a tool call of the reply waits for the user's decision. The reply is still being generated then, but it
     // waits on its reader rather than on the model, so it is not drawn busy: a screen reader holding back the content of
@@ -329,11 +352,12 @@ public partial class BitAiChatMessage : BitAiComponentBase
         catch (JSException) { } // a message taken off the page in the meantime has nothing to focus
     }
 
-    // A follow-up is a prompt like any other: the host's to send when it listens, else the session's. The session takes it
-    // only while it is free, as it takes any prompt.
+    // A follow-up is a prompt like any other: the host's to send when it listens, else the session's. It goes only while
+    // no turn is in flight, whatever the session's InterruptOnSubmit says: a second click before the render takes the
+    // buttons away would stop the turn the first click started and send the same prompt again.
     private async Task SendFollowUpAsync(string followUp)
     {
-        if (Disabled) return;
+        if (Disabled || Session is { IsGenerating: true }) return;
 
         if (OnFollowUp.HasDelegate)
         {
@@ -341,7 +365,7 @@ public partial class BitAiChatMessage : BitAiComponentBase
         }
         else if (Session is not null)
         {
-            await Session.SubmitAsync(followUp);
+            await Session.SubmitIfIdleAsync(followUp);
         }
     }
 

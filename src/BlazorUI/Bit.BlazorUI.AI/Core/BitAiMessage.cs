@@ -345,7 +345,9 @@ public sealed class BitAiMessage : IBitAiMessage
     /// </summary>
     /// <remarks>
     /// <see cref="BitAiGenerationMetadata.Extra"/> is merged key by key the same way: an incoming value replaces the one
-    /// of its key, and the keys the incoming record does not name keep theirs.
+    /// of its key, and the keys the incoming record does not name keep theirs. A key named with a
+    /// <see langword="null"/> value is taken away, as a JSON merge patch takes it away, and an empty map takes every key
+    /// away. The merged map compares its keys the way the map it merges into does (a case-insensitive one stays so).
     /// </remarks>
     /// <param name="metadata">The metadata to merge.</param>
     public void MergeMetadata(BitAiGenerationMetadata metadata)
@@ -411,17 +413,38 @@ public sealed class BitAiMessage : IBitAiMessage
     public bool TryGetExtension<T>(string key, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value, JsonSerializerOptions? options = null) =>
         BitAiExtensionValues.TryGet(Extensions, key, options, out value);
 
-    // Extra is reported piecemeal like the rest of the metadata, so a record naming some keys keeps the others.
+    // Extra is reported piecemeal like the rest of the metadata, so a record naming some keys keeps the others (see
+    // MergeMetadata). An empty map still clears it, as it did when a record's Extra replaced the whole map.
     private static IReadOnlyDictionary<string, object?>? MergeExtra(IReadOnlyDictionary<string, object?>? existing, IReadOnlyDictionary<string, object?>? incoming)
     {
-        if (incoming is null || incoming.Count == 0) return existing ?? incoming;
-        if (existing is null || existing.Count == 0) return incoming;
+        if (incoming is null) return existing;
+        if (incoming.Count == 0 || existing is null || existing.Count == 0) return incoming;
 
-        var merged = new Dictionary<string, object?>(existing, (existing as Dictionary<string, object?>)?.Comparer);
-        foreach (var (key, value) in incoming) merged[key] = value;
+        var merged = new Dictionary<string, object?>(existing, ComparerOf(existing));
+        foreach (var (key, value) in incoming)
+        {
+            if (value is null)
+            {
+                merged.Remove(key);
+            }
+            else
+            {
+                merged[key] = value;
+            }
+        }
 
         return merged;
     }
+
+    // The comparer a map looks its keys up with, for the kinds of map that say; null (ordinal) for any other.
+    private static IEqualityComparer<string>? ComparerOf(IReadOnlyDictionary<string, object?> map) => map switch
+    {
+        Dictionary<string, object?> dictionary => dictionary.Comparer,
+        System.Collections.Frozen.FrozenDictionary<string, object?> frozen => frozen.Comparer,
+        System.Collections.Immutable.ImmutableDictionary<string, object?> immutable => immutable.KeyComparer,
+        System.Collections.Concurrent.ConcurrentDictionary<string, object?> concurrent => concurrent.Comparer,
+        _ => null,
+    };
 
     /// <summary>
     /// Restores persisted state in one step without raising intermediate notifications. Used when

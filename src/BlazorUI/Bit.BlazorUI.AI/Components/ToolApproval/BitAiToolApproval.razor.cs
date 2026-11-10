@@ -148,11 +148,6 @@ public partial class BitAiToolApproval : BitAiComponentBase
     {
         if (Disabled) return;
 
-        if (decision is BitAiApprovalDecision.ApprovedAlways && _ShowApproveAlways is false)
-        {
-            decision = BitAiApprovalDecision.Approved;
-        }
-
         if (Session is null)
         {
             // A call that has been decided (or has run, or was cancelled) is not decided again - the session refuses
@@ -167,6 +162,8 @@ public partial class BitAiToolApproval : BitAiComponentBase
             return;
         }
 
-        await OnDecision.InvokeAsync(decision);
+        // Reported as the call recorded it, which allows a call that must be confirmed every time only once
+        // (BitAiToolCallPart.SetApproval).
+        await OnDecision.InvokeAsync(Call.Approval is BitAiApprovalDecision.Undecided ? decision : Call.Approval);
     }
 }

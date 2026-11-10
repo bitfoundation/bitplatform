@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -278,6 +281,203 @@ public class BitAiServerDrivenChatTests
         Assert.IsFalse(session.IsGenerating);
     }
 
+    [TestMethod]
+    public async Task AStoppedTurnCancelsACallTheServerHoldsForADecision()
+    {
+        var transport = new HoldingTransport();
+        await using var session = new BitAiChatSession(transport, null, ServerTools);
+
+        var turn = session.SubmitAsync("clear");
+        await WaitFor(() => session.Conversation.Messages.Count == 2
+                            && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
+
+        session.Stop();
+        await turn;
+
+        // No stream is left for the decision to go on in, so the prompt goes and a late decision is refused.
+        var call = session.Conversation.Messages[1].FindToolCall("c1")!;
+        Assert.AreEqual(BitAiToolCallStatus.Cancelled, call.Status);
+        Assert.IsFalse(session.Approve("c1", BitAiApprovalDecision.Approved));
+        Assert.AreEqual(0, transport.Responses.Count);
+    }
+
+    [TestMethod]
+    public async Task ADecisionWhoseSendFailsAfterTheServerAnsweredKeepsTheAnswer()
+    {
+        var transport = new HoldingTransport { FailAfterDelivering = true };
+        await using var session = new BitAiChatSession(transport, null, ServerTools);
+
+        var turn = session.SubmitAsync("clear");
+        await WaitFor(() => session.Conversation.Messages.Count == 2
+                            && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
+
+        session.Approve("c1", BitAiApprovalDecision.Approved);
+        await turn;
+        await WaitFor(() => transport.SendFailed);
+
+        // The failure of the send is handled on a continuation of its own: give it the time to have run.
+        await Task.Delay(100);
+
+        var call = session.Conversation.Messages[1].FindToolCall("c1")!;
+        Assert.AreEqual(BitAiToolCallStatus.Completed, call.Status);
+        Assert.IsTrue(call.Result!.IsSuccess);
+    }
+
+    [TestMethod]
+    public async Task ACallTheSessionRunsItselfIsDescribedByTheToolItRuns()
+    {
+        var registered = new BitAiToolDefinition("delete_file") { Title = "Delete file", Risk = BitAiToolRisk.Destructive };
+        var registry = new BitAiToolRegistry();
+        registry.Register(BitAiTool.Create(registered, (_, _) => ValueTask.FromResult(BitAiToolOutcome.FromText("deleted"))));
+
+        // What the transport says of the call is for one its side runs: this one the session runs.
+        var sent = new BitAiToolDefinition("delete_file") { Title = "Harmless", Risk = BitAiToolRisk.ReadOnly };
+        var round = 0;
+        var transport = new RecordingFakeTransport(_ => round++ == 0
+            ? [new BitAiToolCallStartedEvent("c1", "delete_file") { Arguments = NoArguments, Definition = sent }, new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls)]
+            : [new BitAiTextDeltaEvent("done"), new BitAiMessageCompletedEvent()]);
+
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null }, registry);
+        BitAiToolDefinition? asked = null;
+        session.ApprovalRequested += call => asked = call.Definition;
+
+        var turn = session.SubmitAsync("delete");
+        await WaitFor(() => asked is not null);
+
+        session.Approve("c1", BitAiApprovalDecision.Approved);
+        await turn;
+
+        Assert.AreSame(registered, asked);
+        Assert.AreSame(registered, session.Conversation.Messages[1].FindToolCall("c1")!.Definition);
+    }
+
+    [TestMethod]
+    public void ACallThatMustBeConfirmedEveryTimeIsApprovedOnceWhoeverDecidesIt()
+    {
+        var call = new BitAiToolCallPart("c1", "drop_table") { AllowApproveAlways = false };
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+        call.SetApproval(BitAiApprovalDecision.ApprovedAlways);
+
+        Assert.AreEqual(BitAiApprovalDecision.Approved, call.Approval);
+        Assert.AreEqual(BitAiToolCallStatus.Pending, call.Status);
+    }
+
+    [TestMethod]
+    public void ANullExtraValueTakesItsKeyAwayAndAnEmptyExtraTakesThemAll()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+
+        message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["a"] = 1, ["b"] = 2 } });
+        message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["a"] = null } });
+
+        CollectionAssert.AreEqual(new[] { "b" }, message.Metadata!.Extra!.Keys.ToArray());
+
+        message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?>() });
+
+        Assert.AreEqual(0, message.Metadata!.Extra!.Count);
+    }
+
+    [TestMethod]
+    public void MergedExtraComparesItsKeysAsTheMapItMergesInto()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+
+        var caseInsensitive = new Dictionary<string, object?> { ["Model"] = "a" }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        message.MergeMetadata(new BitAiGenerationMetadata { Extra = caseInsensitive });
+        message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["model"] = "b" } });
+
+        var extra = message.Metadata!.Extra!;
+        Assert.AreEqual(1, extra.Count);
+        Assert.AreEqual("b", extra["MODEL"]);
+    }
+
+    [TestMethod]
+    public async Task AnInterruptingPromptIsAppendedOnlyOnceTheTurnItStopsHasReportedItsEnd()
+    {
+        var transport = new InterruptibleTransport();
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
+
+        // What a handler persisting the conversation as a turn ends would read.
+        var seen = new List<int>();
+        session.TurnCompleted += _ =>
+        {
+            if (seen.Count > 0) return;
+
+            Thread.Sleep(100);
+            seen.Add(session.Conversation.Messages.Count);
+        };
+
+        var first = session.SubmitAsync("first");
+        await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
+
+        await session.SubmitAsync("second");
+        await first;
+
+        Assert.AreEqual(2, seen[0]);
+        Assert.AreEqual(4, session.Conversation.Messages.Count);
+    }
+
+    [TestMethod]
+    public async Task AnInterruptingPromptWhoseTokenIsCancelledLeavesTheTurnAlone()
+    {
+        var transport = new InterruptibleTransport();
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
+
+        var first = session.SubmitAsync("first");
+        await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
+
+        Assert.IsNull(await session.SubmitAsync("second", cancellationToken: new CancellationToken(true)));
+        Assert.IsTrue(session.IsGenerating);
+        Assert.AreEqual(2, session.Conversation.Messages.Count);
+
+        session.Stop();
+        Assert.AreEqual(BitAiMessageStatus.Cancelled, (await first)!.Status);
+    }
+
+    [TestMethod]
+    public async Task AnInterruptingPromptStopsWaitingWhenItsTokenIsCancelled()
+    {
+        var transport = new StubbornTransport();
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
+
+        var first = session.SubmitAsync("first");
+        await WaitFor(() => session.Conversation.Messages.Count == 2 && session.Conversation.Messages[1].GetText() == "working");
+
+        // The turn is stopped, but its stream does not listen: the submission waits on it until it is cancelled itself.
+        using var cts = new CancellationTokenSource();
+        var second = session.SubmitAsync("second", cancellationToken: cts.Token);
+        await Task.Delay(50);
+        Assert.IsFalse(second.IsCompleted);
+
+        cts.Cancel();
+
+        Assert.IsNull(await second.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.AreEqual(2, session.Conversation.Messages.Count);
+
+        transport.Release.TrySetResult();
+        await first;
+    }
+
+    [TestMethod]
+    public async Task APromptFromAOneShotButtonNeverInterruptsATurn()
+    {
+        var transport = new InterruptibleTransport();
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
+
+        var first = session.SubmitAsync("first");
+        await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
+
+        // What a follow-up or a suggestion sends: a second click on it must not stop the turn the first one started.
+        var submitIfIdle = typeof(BitAiChatSession).GetMethod("SubmitIfIdleAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        Assert.IsNull(await (Task<BitAiMessage?>)submitIfIdle.Invoke(session, ["first"])!);
+        Assert.IsTrue(session.IsGenerating);
+        Assert.AreEqual(2, session.Conversation.Messages.Count);
+
+        session.Stop();
+        await first;
+    }
+
     private static JsonTypeInfo<ProductRef> ProductTypeInfo
     {
         get
@@ -303,10 +503,18 @@ public class BitAiServerDrivenChatTests
     private sealed class HoldingTransport : IBitAiTransport, IBitAiApprovalTransport
     {
         private readonly TaskCompletionSource<BitAiApprovalDecision> _decision = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _resultApplied = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private volatile bool _sendFailed;
 
         public List<BitAiApprovalResponse> Responses { get; } = [];
 
         public bool FailToReceive { get; init; }
+
+        // Delivers the decision, and fails the send only once the answer to it has been applied: as a connection reset
+        // after the server got the decision would.
+        public bool FailAfterDelivering { get; init; }
+
+        public bool SendFailed => _sendFailed;
 
         public bool AllowApproveAlways { get; init; } = true;
 
@@ -320,17 +528,44 @@ public class BitAiServerDrivenChatTests
             yield return decision is BitAiApprovalDecision.Rejected
                 ? new BitAiToolResultEvent("c1", BitAiToolOutcome.Failure(new BitAiError("declined")))
                 : new BitAiToolResultEvent("c1", BitAiToolOutcome.FromText("cleared"));
+
+            // Asked for the next event, so the session has applied the result.
+            _resultApplied.TrySetResult();
+
             yield return new BitAiTextDeltaEvent("Cleared.");
             yield return new BitAiMessageCompletedEvent();
         }
 
-        public ValueTask SendApprovalAsync(BitAiApprovalResponse response, CancellationToken cancellationToken = default)
+        public async ValueTask SendApprovalAsync(BitAiApprovalResponse response, CancellationToken cancellationToken = default)
         {
             if (FailToReceive) throw new InvalidOperationException("the hub is gone");
 
             Responses.Add(response);
             _decision.TrySetResult(response.Decision);
-            return ValueTask.CompletedTask;
+
+            if (FailAfterDelivering)
+            {
+                await _resultApplied.Task.WaitAsync(cancellationToken);
+                _sendFailed = true;
+                throw new IOException("the connection was reset");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Streams until it is let go, whether or not it is cancelled meanwhile: a stream that does not listen to its token.
+    /// </summary>
+    private sealed class StubbornTransport : IBitAiTransport
+    {
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new BitAiTextDeltaEvent("working");
+
+            await Release.Task;
+
+            yield return new BitAiMessageCompletedEvent();
         }
     }
 

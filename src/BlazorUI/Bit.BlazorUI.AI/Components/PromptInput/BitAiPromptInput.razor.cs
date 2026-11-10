@@ -577,8 +577,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private bool InterruptsOnSubmit => Session?.Options.InterruptOnSubmit is true;
 
     // The one button is a stop button while a turn is in flight - unless the session takes a new prompt in place of the
-    // turn and there is one to send, which it then sends.
-    private bool ShowStop => IsGenerating && (InterruptsOnSubmit is false || HasContent is false);
+    // turn and there is one that can go, which it then sends. Content that cannot go yet (a file still uploading, text
+    // over MaxLength) leaves it the stop button, so the turn can still be stopped with it.
+    private bool ShowStop => IsGenerating && (InterruptsOnSubmit is false || CanSubmit is false);
 
     // A file still uploading, or whose upload failed, holds the send back: the prompt would go without it.
     private bool AttachmentsReady => _attachments.TrueForAll(a => a.Status is not (BitAiAttachmentStatus.Uploading or BitAiAttachmentStatus.Failed));

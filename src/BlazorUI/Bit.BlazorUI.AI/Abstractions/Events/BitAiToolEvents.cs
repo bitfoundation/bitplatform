@@ -36,7 +36,9 @@ public sealed record BitAiToolCallStartedEvent : BitAiEvent
     /// </summary>
     /// <remarks>
     /// Only presentation is read from it: a session never runs a call because of it, and never sends it to the model.
-    /// The <see cref="BitAiToolDefinition.Name"/> should be <see cref="ToolName"/>.
+    /// The <see cref="BitAiToolDefinition.Name"/> should be <see cref="ToolName"/>. A call the session runs itself
+    /// (<see cref="BitAiChatSessionOptions.ExecuteTools"/> on, and a tool of that name registered) is described by that
+    /// tool instead, so the prompt to allow it shows the risk of what will run.
     /// </remarks>
     public BitAiToolDefinition? Definition { get; init; }
 

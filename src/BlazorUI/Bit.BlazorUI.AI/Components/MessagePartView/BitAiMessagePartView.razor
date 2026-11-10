@@ -46,6 +46,11 @@
             case BitAiTextPart prose:
                 return @<BitAiTextPartView Part="prose" Message="Message" OnCitationClick="OnCitationClick" />;
 
+            // A call the options hide (BitAiUiOptions.ToolCallDisplay) draws nothing, so the view leaves no element behind
+            // for it either - from the render its status brings it back in, since the view re-renders on every change of it.
+            case BitAiToolCallPart call when BitAiToolCallDisplays.Resolve(Options, call) is BitAiToolCallDisplay.Hidden:
+                return null;
+
             case BitAiToolCallPart call:
                 return @<BitAiToolCallView Call="call" Message="Message" Session="Session" />;
 

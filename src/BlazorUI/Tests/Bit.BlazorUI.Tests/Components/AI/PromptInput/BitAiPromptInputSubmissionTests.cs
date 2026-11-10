@@ -224,6 +224,33 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
         Assert.AreEqual(2, session.Conversation.Messages.Count);
     }
 
+    [TestMethod]
+    public async Task WhileATurnIsInFlightTheButtonStaysAStopButtonWhileWhatIsTypedCannotGo()
+    {
+        var transport = new HangingThenAnswering();
+        await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
+        var first = session.SubmitAsync("first");
+        await WaitForAsync(() => session.IsGenerating);
+
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Session, session)
+            .Add(c => c.MaxLength, 3));
+
+        // Over MaxLength, the text cannot be sent - so the one button still stops the turn rather than sitting disabled.
+        composer.Find("textarea").Input("too long");
+
+        var button = composer.Find(".bit-aipri-snd");
+        Assert.IsTrue(composer.Find(".bit-aipri-snd .bit-btn-icn").ClassList.Contains("bit-icon-ai--StopSolid"));
+        Assert.AreNotEqual("true", button.GetAttribute("aria-disabled"));
+
+        button.Click();
+        await first;
+
+        Assert.AreEqual(BitAiMessageStatus.Cancelled, session.Conversation.Messages[1].Status);
+        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.AreEqual("too long", composer.Find("textarea").GetAttribute("value"));
+    }
+
     private static async Task WaitForAsync(Func<bool> condition, int timeoutMs = 10_000)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
