@@ -1,4 +1,7 @@
-﻿using Bit.Belemetry.Tests.E2E.Infrastructure;
+﻿using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
+using Bit.Belemetry.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
@@ -68,6 +71,63 @@ public class HybridModeTests : HarnessTest
         await Page.Locator("#nav-second").ClickAsync();
         await Expect(Page.Locator("#page-second")).ToBeVisibleAsync();
         await Collector.WaitForAsync(t => t.Envelopes.FirstOrDefault(e => e.Name == "Microsoft.ApplicationInsights.PageView"), "a relayed PageView envelope", session);
+    }
+
+    [TestMethod]
+    public async Task Errors_reach_Sentry_from_the_app_process_with_their_frames()
+    {
+        var marker = NewMarker();
+        await OpenAsync($"/?marker={marker}");
+        await Page.Locator("#consent-all").ClickAsync();
+        await Expect(Page.Locator("#consent-state")).ToHaveAttributeAsync("data-granted", "4095");
+        var session = await SessionIdAsync();
+
+        // A C# exception, from the exception object: each app frame carries the method's row and IL offset, and the event
+        // the debug image of the assembly file it ran from, for Sentry's symbolicator.
+        await Page.Locator("#track-exception").ClickAsync();
+        await Expect(Page.Locator("#consent-state")).ToHaveAttributeAsync("data-actions", "1");
+        var dotnet = await Collector.WaitForAsync(t => t.SentryEvents.FirstOrDefault(), "the Sentry event of the C# TrackException", marker: marker);
+        Assert.AreEqual("csharp", dotnet.Platform);
+        Assert.AreEqual("bit.belemetry.dotnet", dotnet.SdkName);
+        Assert.IsTrue(dotnet.Handled);
+        Assert.IsTrue(dotnet.Frames.Any(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal)), string.Join(" | ", dotnet.Frames));
+
+        using var json = System.Text.Json.JsonDocument.Parse(dotnet.Json!);
+        var images = json.RootElement.GetProperty("debug_meta").GetProperty("images").EnumerateArray().ToList();
+        var harness = images.Single(i => i.GetProperty("code_file").GetString()!.EndsWith("Bit.Belemetry.Tests.Harness.dll", StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual("pe_dotnet", harness.GetProperty("type").GetString());
+        StringAssert.Matches(harness.GetProperty("debug_id").GetString(), new System.Text.RegularExpressions.Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[0-9a-f]+$"));
+        var frame = json.RootElement.GetProperty("exception").GetProperty("values")[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray()
+            .Single(f => f.GetProperty("function").GetString() == "TrackException");
+        StringAssert.StartsWith(frame.GetProperty("function_id").GetString(), "0x");
+        StringAssert.StartsWith(frame.GetProperty("instruction_addr").GetString(), "0x");
+        Assert.AreEqual($"rel:{images.IndexOf(harness)}", frame.GetProperty("addr_mode").GetString());
+
+        // What the symbolicator will look up, read back from the assembly file without Belemetry: the image is that build's
+        // PDB id, the frame's row is the method itself, and its IL offset is inside the method's body.
+        using (var pe = new PEReader(File.OpenRead(harness.GetProperty("code_file").GetString()!)))
+        {
+            var codeView = pe.ReadDebugDirectory().First(e => e.Type == DebugDirectoryEntryType.CodeView);
+            var pdb = pe.ReadCodeViewDebugDirectoryData(codeView);
+            Assert.AreEqual(codeView.IsPortableCodeView ? $"{pdb.Guid}-{codeView.Stamp:x8}" : $"{pdb.Guid}-{pdb.Age:x}", harness.GetProperty("debug_id").GetString());
+
+            var metadata = pe.GetMetadataReader();
+            var row = Convert.ToInt32(frame.GetProperty("function_id").GetString(), 16);
+            Assert.IsGreaterThan(0, row);
+            var method = metadata.GetMethodDefinition(MetadataTokens.MethodDefinitionHandle(row));
+            Assert.AreEqual("TrackException", metadata.GetString(method.Name));
+            var offset = Convert.ToInt32(frame.GetProperty("instruction_addr").GetString(), 16);
+            Assert.IsLessThan(pe.GetMethodBody(method.RelativeVirtualAddress).Size, offset);
+        }
+
+        // A JS error, relayed to .NET: the C# exporter parses its stack as the script would.
+        AllowConsoleError("Harness JS error");
+        await Page.Locator("#js-error").ClickAsync();
+        var js = await Collector.WaitForAsync(t => t.SentryEvents.FirstOrDefault(e => e.Exceptions.Any(x => x.Contains("Harness JS error"))), "the relayed JS error's Sentry event", session);
+        Assert.AreEqual("javascript", js.Platform);
+        Assert.AreEqual("bit.belemetry.javascript", js.SdkName, "The record is the page's, whoever exports it.");
+        Assert.IsFalse(js.Handled);
+        Assert.IsTrue(js.Frames.Any(f => f.Contains("harness.js", StringComparison.Ordinal)), string.Join(" | ", js.Frames));
     }
 
     [TestMethod]

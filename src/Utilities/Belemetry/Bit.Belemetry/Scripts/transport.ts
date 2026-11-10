@@ -58,7 +58,10 @@ export function isAzure(exporter: string): boolean {
     return /^azuremonitor\d*$/i.test(exporter);
 }
 
-/** Whether a status is transient for the backend a request went to. */
+/**
+ * Whether a status is transient for the backend a request went to. Sentry's (`sentry`, .NET's `sentry`, `sentry1`, ...)
+ * are OTLP's: a rate limit (429, with Retry-After) and an overloaded or unreachable Relay.
+ */
 export function isRetryableFor(exporter: string, status: number): boolean {
     return isAzure(exporter) ? isRetryable(status) : OTLP_RETRYABLE_STATUS.indexOf(status) >= 0;
 }

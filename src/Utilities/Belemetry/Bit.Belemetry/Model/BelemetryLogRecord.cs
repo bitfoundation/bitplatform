@@ -40,6 +40,24 @@ public sealed class BelemetryLogRecord
     /// </summary>
     internal Exception? Exception { get; set; }
 
+    /// <summary>
+    /// The <c>exception.stacktrace</c> the record was made with (<see cref="Exception"/>'s <c>ToString()</c>): an exporter
+    /// reads the exception object's frames only while the attribute still holds it, as privacy and the processors work on
+    /// the attribute. Never exported.
+    /// </summary>
+    internal string? ExceptionStacktrace { get; set; }
+
+    /// <summary>Sets <see cref="Exception"/> and the <c>exception.*</c> attributes that describe it.</summary>
+    internal void SetException(Exception exception)
+    {
+        var stacktrace = exception.ToString();
+        Exception = exception;
+        ExceptionStacktrace = stacktrace;
+        Attributes.Set(BelemetrySemanticConventions.ExceptionType, exception.GetType().FullName);
+        Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, exception.Message);
+        Attributes.Set(BelemetrySemanticConventions.ExceptionStacktrace, stacktrace);
+    }
+
     /// <summary>The event name, for records that represent a named event (e.g. <c>browser.page_view</c>).</summary>
     public string? EventName { get; set; }
 

@@ -15,7 +15,7 @@ namespace Bit.Belemetry.Demo.Server.Services;
 public static class BelemetryConfigGenerator
 {
     /// <summary>The exporter ids <c>exporters</c> accepts.</summary>
-    public static readonly string[] ExporterIds = ["otlp", "azure", "console"];
+    public static readonly string[] ExporterIds = ["otlp", "azure", "sentry", "console"];
 
     /// <summary>The consent models <c>consent</c> accepts.</summary>
     public static readonly string[] ConsentModels = ["opt-in", "opt-out", "none"];
@@ -41,7 +41,7 @@ public static class BelemetryConfigGenerator
         }
 
         var exporterSet = (exporters ?? "otlp").Split([',', ' ', ';', '+'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                               .Select(e => e.ToLowerInvariant() switch { "azure-monitor" or "azuremonitor" or "appinsights" or "application-insights" => "azure", var x => x })
+                                               .Select(e => e.ToLowerInvariant() switch { "azure-monitor" or "azuremonitor" or "appinsights" or "application-insights" => "azure", "sentry.io" => "sentry", var x => x })
                                                .Distinct()
                                                .ToList();
 
@@ -179,6 +179,11 @@ public static class BelemetryConfigGenerator
             notes.Add("Azure Monitor: the connection string is not a secret in the browser sense (the ingestion endpoint accepts anonymous telemetry), but with an AccessTokenProvider (Entra ID) the exporter is .NET-only and the browser's records need the Relay transport.");
         }
 
+        if (exporterSet.Contains("sentry"))
+        {
+            notes.Add("Sentry: only errors go there (records carrying an exception, and plain logs at MinimumEventLevel, Error by default). For file and line on .NET frames, upload the app's PDBs (sentry-cli debug-files upload): each frame carries the method token and the IL offset, which Sentry's symbolicator resolves. For traces and logs in Sentry as well, add an OTLP exporter to its OTLP endpoint.");
+        }
+
         if (exporterSet.Contains("otlp"))
         {
             notes.Add(transportValue == "Relay" || found.Id == "hybrid"
@@ -274,6 +279,21 @@ public static class BelemetryConfigGenerator
                     builder.AppendLine("        {");
                     builder.AppendLine("            azure.MaskIp = true;");
                     builder.AppendLine("            azure.EnableLiveMetrics = true;");
+                    builder.AppendLine("        });");
+                    break;
+
+                case "sentry":
+                    builder.AppendLine("        // Sentry: errors become Sentry Issues, one event each, linked to their traces. The DSN's key is public");
+                    builder.AppendLine("        // by design, so the browser sends its JS errors there too.");
+                    builder.AppendLine("        options.AddSentryExporter(\"https://<public key>@<org>.ingest.sentry.io/<project id>\", sentry =>");
+                    builder.AppendLine("        {");
+                    builder.AppendLine("            sentry.MaskIp = true;");
+                    if (host == "hybrid")
+                    {
+                        builder.AppendLine("            // Where a Sentry SDK runs as the crash reporter (Android, iOS, Mac Catalyst), it reports the");
+                        builder.AppendLine("            // .NET crashes too:");
+                        builder.AppendLine("            // sentry.IncludeUnhandledExceptions = false;");
+                    }
                     builder.AppendLine("        });");
                     break;
 

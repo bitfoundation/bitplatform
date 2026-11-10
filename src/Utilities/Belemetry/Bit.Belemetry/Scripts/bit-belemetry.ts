@@ -8,11 +8,12 @@ import { createConsoleExporter } from './exporters/console';
 import type { Exporter } from './exporters/exporter';
 import { createOtlpExporter } from './exporters/otlp';
 import { DotNetCallbacks, relayBatch, type DotNetRef } from './exporters/relay';
+import { createSentryExporter } from './exporters/sentry';
 import { Features } from './features';
 import { installConsole } from './instrumentations/console';
 import { absoluteUrl, type InstrumentationContext, type Uninstall } from './instrumentations/context';
 import { installDocumentLoad, resetDocumentLoadState } from './instrumentations/document-load';
-import { ERRORS_SCOPE, installErrors } from './instrumentations/errors';
+import { EXCEPTIONS_SCOPE, installErrors } from './instrumentations/errors';
 import { installFetch } from './instrumentations/fetch';
 import { installInteractions } from './instrumentations/interactions';
 import { installLongTasks } from './instrumentations/long-tasks';
@@ -123,6 +124,7 @@ function createExporters(config: ResolvedConfig, transport: Transport): Exporter
         try {
             if (exporter.type === 'otlp') list.push(createOtlpExporter(exporter, transport, config.sdkVersion));
             else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion));
+            else if (exporter.type === 'sentry') list.push(createSentryExporter(exporter, transport, config.sdkVersion));
             else if (exporter.type === 'console') list.push(createConsoleExporter());
         } catch (e) {
             debug('invalid exporter', exporter, e);
@@ -452,7 +454,9 @@ export function trackPageView(name?: string | null, url?: string | null, attribu
 /** A manual exception, feature Errors. */
 export function trackException(type: string, message: string, stack?: string | null, attributes?: Attributes | null): void {
     try {
-        if (state) state.pipeline.emit(createException(ERRORS_SCOPE, String(type || 'Error'), String(message || ''), stack, recordAttributes(attributes)));
+        // A scope of its own: the app caught it, unlike what the errors instrumentation records (an exporter tells
+        // handled from unhandled by it), and a Blazor Server component's C# TrackException arrives here too.
+        if (state) state.pipeline.emit(createException(EXCEPTIONS_SCOPE, String(type || 'Error'), String(message || ''), stack, recordAttributes(attributes)));
     } catch (e) {
         debug('trackException failed', e);
     }

@@ -10,6 +10,7 @@ public static class HarnessCollectorEndpoints
     /// <list type="bullet">
     /// <item><c>POST v1/{traces|logs|metrics}</c> - OTLP/HTTP, as an OpenTelemetry Collector answers it;</item>
     /// <item><c>POST v2.1/track</c> - the Azure Monitor ingestion endpoint;</item>
+    /// <item><c>POST api/{project}/envelope/</c> - Sentry's envelope endpoint;</item>
     /// <item><c>GET received[?session=&amp;marker=]</c> - everything decoded so far, as JSON;</item>
     /// <item><c>POST reset</c> - forgets everything.</item>
     /// </list>
@@ -39,6 +40,15 @@ public static class HarnessCollectorEndpoints
         {
             var items = store.Add("azure", request.Path, request.ContentType, request.Headers.ContentEncoding, request.Headers.UserAgent, await ReadBodyAsync(request));
             return Results.Text($"{{\"itemsReceived\":{items},\"itemsAccepted\":{items},\"errors\":[]}}", "application/json");
+        });
+
+        // Sentry's envelope endpoint, as the DSN {origin}/test-collector/{project} names it; the key is in the query.
+        // Relay answers with the accepted event's id.
+        collector.MapPost("api/{project}/envelope", async (string project, HttpRequest request, HarnessCollector store) =>
+        {
+            var decoded = store.AddSentry(request.Path, request.Query["sentry_key"], request.ContentType, request.Headers.ContentEncoding, request.Headers.UserAgent,
+                                          await ReadBodyAsync(request));
+            return decoded is not null ? Results.Json(new { id = decoded.EventId }) : Results.BadRequest();
         });
 
         collector.MapGet("received", ([FromQuery] string? session, [FromQuery] string? marker, HarnessCollector store) =>

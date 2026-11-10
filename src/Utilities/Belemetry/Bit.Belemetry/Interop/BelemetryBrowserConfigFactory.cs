@@ -181,6 +181,22 @@ internal static class BelemetryBrowserConfigFactory
                 });
             }
 
+            // An invalid DSN was left out as the settings resolved the options, with a startup warning.
+            foreach (var (sentry, dsn) in settings.SentryExporters.Where(s => s.Options.IncludeInBrowser))
+            {
+                config.Exporters.Add(new()
+                {
+                    Type = "sentry",
+                    // The public key is public by design; a legacy secret key in the DSN is not handed over.
+                    Dsn = dsn.PublicDsn,
+                    Release = string.IsNullOrWhiteSpace(sentry.Release) ? null : sentry.Release.Trim(),
+                    // Always a number: absent means the default level (Error) to the script, and 0 lets everything through.
+                    MinimumSeverity = (int)(BelemetryLogger.ToMinimumSeverity(sentry.MinimumEventLevel) ?? BelemetrySeverity.Unspecified),
+                    MaskIp = sentry.MaskIp,
+                    Compression = sentry.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
+                });
+            }
+
             if (options.ConsoleExporter is { IncludeInBrowser: true })
             {
                 config.Exporters.Add(new() { Type = "console" });
@@ -246,6 +262,8 @@ internal static class BelemetryBrowserConfigFactory
                 // An invalid connection string has no exporter (and so no traffic) to ignore.
             }
         }
+
+        foreach (var sentry in settings.SentryExporters) Add(sentry.Dsn.EnvelopeEndpoint);
     }
 
     public static string ToJson(BelemetryBrowserConfig config) => JsonSerializer.Serialize(config, BelemetryJsonContext.Default.BelemetryBrowserConfig);

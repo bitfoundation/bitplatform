@@ -108,6 +108,47 @@ public sealed class CollectedEnvelope
     public string? BaseData { get; set; }
 }
 
+/// <summary>A Sentry event, from an envelope posted to <c>api/{project}/envelope/</c>.</summary>
+public sealed class CollectedSentryEvent
+{
+    /// <summary>The envelope header's <c>event_id</c>, which the event's own must match.</summary>
+    public string? EnvelopeEventId { get; set; }
+
+    public string? EventId { get; set; }
+
+    /// <summary>The <c>sentry_key</c> of the request's query.</summary>
+    public string? Key { get; set; }
+
+    public string? Platform { get; set; }
+
+    public string? Level { get; set; }
+
+    public string? Logger { get; set; }
+
+    public string? Message { get; set; }
+
+    /// <summary><c>exception.values</c>, outermost first: <c>type: value</c>.</summary>
+    public List<string> Exceptions { get; set; } = [];
+
+    /// <summary>The outermost exception's frames, newest first: <c>module.function</c> or <c>function@filename</c>.</summary>
+    public List<string> Frames { get; set; } = [];
+
+    /// <summary>The outermost exception's <c>mechanism.handled</c>.</summary>
+    public bool? Handled { get; set; }
+
+    public string? TraceId { get; set; }
+
+    /// <summary><c>tags</c>, and <c>extra</c> stringified.</summary>
+    public Dictionary<string, string?> Tags { get; set; } = [];
+
+    public Dictionary<string, string?> Extra { get; set; } = [];
+
+    public string? SdkName { get; set; }
+
+    /// <summary>The whole event as JSON.</summary>
+    public string? Json { get; set; }
+}
+
 /// <summary>A request to <c>/test-api/echo</c>, with its headers (names lower-cased).</summary>
 public sealed class CollectedEcho
 {
@@ -130,6 +171,8 @@ public sealed class CollectedTelemetry
     public List<CollectedMetric> Metrics { get; set; } = [];
 
     public List<CollectedEnvelope> Envelopes { get; set; } = [];
+
+    public List<CollectedSentryEvent> SentryEvents { get; set; } = [];
 
     public List<CollectedEcho> Echoes { get; set; } = [];
 }

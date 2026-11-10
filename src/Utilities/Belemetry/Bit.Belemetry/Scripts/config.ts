@@ -32,11 +32,24 @@ export interface AzureMonitorExporterConfig {
     signals?: number | null;
 }
 
+export interface SentryExporterConfig {
+    type: 'sentry';
+    /** The project's DSN (`https://{public key}@{host}/{project id}`); a legacy secret key is ignored. */
+    dsn: string;
+    /** The release of every event; absent takes `{service.name}@{service.version}` of the resource. */
+    release?: string | null;
+    /** The least severe record that becomes an event (an OTLP severity number); absent means ERROR (17), 0 all. */
+    minimumSeverity?: number | null;
+    /** Whether Sentry is told not to infer the user's IP address (`sdk.settings.infer_ip = never`). Default true. */
+    maskIp?: boolean | null;
+    compression?: 'none' | 'gzip' | null;
+}
+
 export interface ConsoleExporterConfig {
     type: 'console';
 }
 
-export type ExporterConfig = OtlpExporterConfig | AzureMonitorExporterConfig | ConsoleExporterConfig;
+export type ExporterConfig = OtlpExporterConfig | AzureMonitorExporterConfig | SentryExporterConfig | ConsoleExporterConfig;
 
 export interface ConsentConfig {
     default: number;

@@ -66,6 +66,9 @@ public class BelemetryOptionsBindingTests
             "AzureMonitorExporters": [
               { "ConnectionString": "InstrumentationKey=11111111-2222-3333-4444-555555555555", "MaskIp": false, "Compression": "Gzip", "Timeout": "00:00:20", "EnableLiveMetrics": true, "IncludeInBrowser": false, "Signals": "Logs", "MinimumLogLevel": "Error" }
             ],
+            "SentryExporters": [
+              { "Dsn": "https://abc@o1.ingest.sentry.io/42", "Release": "shop@3.1.0", "MinimumEventLevel": "Warning", "IncludeUnhandledExceptions": false, "MaskIp": false, "Compression": "Gzip", "Timeout": "00:00:15", "IncludeInBrowser": false }
+            ],
             "ConsoleExporter": { "IncludeInBrowser": false }
           }
         }
@@ -204,6 +207,16 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetrySignals.Logs, azure.Signals);
         Assert.AreEqual(LogLevel.Error, azure.MinimumLogLevel);
 
+        var sentry = o.SentryExporters.Single();
+        Assert.AreEqual("https://abc@o1.ingest.sentry.io/42", sentry.Dsn);
+        Assert.AreEqual("shop@3.1.0", sentry.Release);
+        Assert.AreEqual(LogLevel.Warning, sentry.MinimumEventLevel);
+        Assert.IsFalse(sentry.IncludeUnhandledExceptions);
+        Assert.IsFalse(sentry.MaskIp);
+        Assert.AreEqual(BelemetryCompression.Gzip, sentry.Compression);
+        Assert.AreEqual(TimeSpan.FromSeconds(15), sentry.Timeout);
+        Assert.IsFalse(sentry.IncludeInBrowser);
+
         Assert.IsNotNull(o.ConsoleExporter);
         Assert.IsFalse(o.ConsoleExporter.IncludeInBrowser);
 
@@ -257,6 +270,7 @@ public class BelemetryOptionsBindingTests
         Assert.IsTrue(settings.CollectDotnet);
         Assert.AreEqual(new Uri("https://otlp.shop.test:4317"), settings.OtlpExporters.Single().Endpoint);
         Assert.HasCount(1, settings.AzureMonitorExporters);
+        Assert.HasCount(1, settings.SentryExporters);
         Assert.IsTrue(settings.HasExporters);
         Assert.AreEqual("checkout", settings.Resource.Attributes["team"]);
     }

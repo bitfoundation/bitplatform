@@ -129,8 +129,10 @@ public class McpControllerTests
     {
         foreach (var host in BelemetrySetupGuide.HostIds)
         {
-            var result = _mcp.GenerateBelemetryConfiguration(host, "otlp,azure,console", "opt-in", "Diagnostics,PageViews", "Relay");
+            var result = _mcp.GenerateBelemetryConfiguration(host, "otlp,azure,sentry,console", "opt-in", "Diagnostics,PageViews", "Relay");
             var code = string.Join("\n", result.Files.Select(f => f.Content));
+
+            StringAssert.Contains(code, "options.AddSentryExporter(", $"{host}: the Sentry exporter asked for was not generated.");
 
             var review = _mcp.ReviewBelemetryConfiguration(code);
 
