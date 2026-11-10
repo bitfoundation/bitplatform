@@ -107,7 +107,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             cli.Console.Warn($"No workflow deploys to the environment {unknown}. The workflows deploy to {(scan.Environments.Count == 0 ? "no environment" : string.Join(", ", scan.Environments))}.");
         }
 
-        var settings = await ReadSettingsAsync(cancellationToken);
+        var settings = await ReadSettingsAsync([.. scan.Environments.Where(e => options.Environments.Count == 0 || options.Environments.Contains(e, StringComparer.Ordinal))], cancellationToken);
         var settingsOff = settings.Where(s => s.On is false).ToList();
         ShowSettings(settings);
         WarnIfPublicWithSelfHostedRunner();
@@ -117,7 +117,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             if (options.Yes is false && cli.IsInteractive is false)
                 return cli.UsageError("confirmation-needed", $"bit pipeline changes the settings of {repository}, and without a terminal it can't ask first. Pass --yes to go ahead.");
 
-            if (options.Yes || cli.Prompter.Confirm($"Let only collaborators open pull requests in {repository}, and make its workflows' token read-only?", true))
+            if (options.Yes || cli.Prompter.Confirm($"Turn on the settings that are off in {repository}?", true))
             {
                 await ApplySettingsAsync(settingsOff, cancellationToken);
             }

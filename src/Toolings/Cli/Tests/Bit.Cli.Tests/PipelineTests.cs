@@ -318,13 +318,14 @@ public class PipelineTests
     {
         using var host = Repository();
         Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
-        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\nfalse\n");
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "write\ntrue\n");
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
         CollectionAssert.Contains(commands, "api repos/contoso/shop -X PATCH -f pull_request_creation_policy=collaborators_only --silent", host.Output);
+        CollectionAssert.Contains(commands, "api repos/contoso/shop -X PATCH -F delete_branch_on_merge=true --silent", host.Output);
         CollectionAssert.Contains(commands, "api -X PUT repos/contoso/shop/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false --silent", host.Output);
         Assert.IsFalse(commands.Any(c => c.Contains("fork-pr-contributor-approval", StringComparison.Ordinal)), host.Output);
         StringAssert.Contains(host.FlatOutput, "Only collaborators can open pull requests");
@@ -335,7 +336,7 @@ public class PipelineTests
     {
         using var host = Repository();
         Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: [self-hosted, Production]\n    steps:\n      - run: echo hi\n");
-        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "public\ncollaborators_only\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "public\ncollaborators_only\ntrue\n");
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/fork-pr-contributor-approval --jq", 0, "first_time_contributors\n");
 
@@ -351,7 +352,7 @@ public class PipelineTests
     {
         using var host = Repository();
         Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
-        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\ntrue\n");
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"));
@@ -360,8 +361,56 @@ public class PipelineTests
         StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Pull requests from collaborators only off"));
         StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Read-only GITHUB_TOKEN that can't approve pull requests on"));
 
-        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\ntrue\n");
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"));
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_TurnOnDependabotAlertsAndLetProductionDeployFromMainOnly()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }}\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\ntrue\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
+        host.Runner.On("gh", "api repos/contoso/shop/vulnerability-alerts --silent", 1, "gh: Vulnerability alerts are disabled. (HTTP 404)");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production", 0, """
+            {"name":"Production","deployment_branch_policy":null,"protection_rules":[{"type":"wait_timer","wait_timer":5},{"type":"required_reviewers","prevent_self_review":true,"reviewers":[{"type":"User","reviewer":{"id":42,"login":"contoso"}}]}]}
+            """);
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
+
+        var changes = host.Runner.Calls.Where(c => c.Arguments.Contains("PUT") || c.Arguments.Contains("POST") || c.Arguments.Contains("PATCH")).ToList();
+        CollectionAssert.AreEqual(new[]
+        {
+            "api -X PUT repos/contoso/shop/vulnerability-alerts --silent",
+            "api -X PUT repos/contoso/shop/environments/Production --input - --silent",
+            "api -X POST repos/contoso/shop/environments/Production/deployment-branch-policies -f name=main -f type=branch --silent"
+        }, changes.Select(c => string.Join(' ', c.Arguments)).ToArray(), host.Output);
+
+        var body = System.Text.Json.Nodes.JsonNode.Parse(changes[1].StandardInput!)!;
+        Assert.IsTrue(body["deployment_branch_policy"]!["custom_branch_policies"]!.GetValue<bool>());
+        Assert.AreEqual(5, body["wait_timer"]!.GetValue<int>());
+        Assert.IsTrue(body["prevent_self_review"]!.GetValue<bool>());
+        Assert.AreEqual(42, body["reviewers"]![0]!["id"]!.GetValue<int>());
+        StringAssert.Contains(host.FlatOutput, "Production deploys from main only");
+    }
+
+    [TestMethod]
+    public async Task Check_Should_SeeProductionsBranchRule()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }}\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\ntrue\n");
+        host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production", 0, """{"name":"Production","deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true},"protection_rules":[]}""");
+        host.Runner.On("gh", "secret list --repo contoso/shop --env Production", 0, "DATABASE_PASSWORD\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production/deployment-branch-policies", 0, "main\n");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"), host.Output);
+        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Production deploys from main only on"));
+
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production/deployment-branch-policies", 0, "release\n");
+        Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"), host.Output);
     }
 
     [TestMethod]
@@ -369,7 +418,7 @@ public class PipelineTests
     {
         using var host = Repository();
         Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n");
-        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\n");
+        host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\nall\ntrue\n");
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 0, "read\nfalse\n");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));

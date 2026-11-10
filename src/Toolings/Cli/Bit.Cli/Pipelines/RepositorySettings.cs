@@ -1,20 +1,25 @@
-﻿using Bit.Cli.Infrastructure;
+﻿using System.Text.Json.Nodes;
+using Bit.Cli.Infrastructure;
 using Spectre.Console;
 
 namespace Bit.Cli.Pipelines;
 
-public sealed record RepositorySetting(string Name, bool On, string Done, string[] Change);
+public sealed record GhCall(string[] Arguments, string? Input = null);
+
+public sealed record RepositorySetting(string Name, bool On, string Done, IReadOnlyList<GhCall> Changes);
 
 public sealed partial class PipelineSetup
 {
-    public static readonly string[] CollaboratorsOnly = ["-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "--silent"];
+    public const string ProductionBranch = "main";
+
+    public static readonly string[] RepositoryDefaults = ["-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "-F", "delete_branch_on_merge=true", "--silent"];
 
     private bool isPublic;
 
-    private async Task<IReadOnlyList<RepositorySetting>> ReadSettingsAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<RepositorySetting>> ReadSettingsAsync(IReadOnlyList<string> environments, CancellationToken cancellationToken)
     {
         var settings = new List<RepositorySetting>();
-        var details = await Gh(["api", $"repos/{repository}", "--jq", ".visibility, .pull_request_creation_policy"], cancellationToken);
+        var details = await Gh(["api", $"repos/{repository}", "--jq", ".visibility, .pull_request_creation_policy, .delete_branch_on_merge"], cancellationToken);
         var workflow = await Gh(["api", $"repos/{repository}/actions/permissions/workflow", "--jq", ".default_workflow_permissions, .can_approve_pull_request_reviews"], cancellationToken);
 
         if (details.Succeeded is false || workflow.Succeeded is false)
@@ -23,27 +28,103 @@ public sealed partial class PipelineSetup
             return settings;
         }
 
-        if (Lines(details) is [var visibility, var policy] && policy is not "null")
+        if (Lines(details) is [var visibility, var policy, var deleteBranch])
         {
             isPublic = visibility is "public";
-            settings.Add(new("Pull requests from collaborators only", policy is "collaborators_only", "Only collaborators can open pull requests",
-                ["api", $"repos/{repository}", .. CollaboratorsOnly]));
+
+            if (policy is not "null")
+            {
+                settings.Add(new("Pull requests from collaborators only", policy is "collaborators_only", "Only collaborators can open pull requests",
+                    [new(["api", $"repos/{repository}", "-X", "PATCH", "-f", "pull_request_creation_policy=collaborators_only", "--silent"])]));
+            }
+
+            settings.Add(new("Branches deleted once merged", deleteBranch is "true", "A pull request's branch is deleted once it is merged",
+                [new(["api", $"repos/{repository}", "-X", "PATCH", "-F", "delete_branch_on_merge=true", "--silent"])]));
         }
 
         if (Lines(workflow) is [var permissions, var canApprove])
         {
             settings.Add(new("Read-only GITHUB_TOKEN that can't approve pull requests", permissions is "read" && canApprove is "false", "The workflows' GITHUB_TOKEN is read-only and can't approve pull requests",
-                ["api", "-X", "PUT", $"repos/{repository}/actions/permissions/workflow", "-f", "default_workflow_permissions=read", "-F", "can_approve_pull_request_reviews=false", "--silent"]));
+                [new(["api", "-X", "PUT", $"repos/{repository}/actions/permissions/workflow", "-f", "default_workflow_permissions=read", "-F", "can_approve_pull_request_reviews=false", "--silent"])]));
         }
 
-        // GitHub refuses this one on a private repository, where the workflows of a fork's pull request don't run anyway.
-        if (isPublic && (await Gh(["api", $"repos/{repository}/actions/permissions/fork-pr-contributor-approval", "--jq", ".approval_policy"], cancellationToken)) is { Succeeded: true } approval && approval.Output.Trim() is { Length: > 0 } policyName)
+        if (isPublic && (await Gh(["api", $"repos/{repository}/actions/permissions/fork-pr-contributor-approval", "--jq", ".approval_policy"], cancellationToken)) is { Succeeded: true } approval && approval.Output.Trim() is { Length: > 0 } approvalPolicy)
         {
-            settings.Add(new("Approval for every outside contributor's workflows", policyName is "all_external_contributors", "Every outside contributor's workflows wait for approval",
-                ["api", "-X", "PUT", $"repos/{repository}/actions/permissions/fork-pr-contributor-approval", "-f", "approval_policy=all_external_contributors", "--silent"]));
+            settings.Add(new("Approval for every outside contributor's workflows", approvalPolicy is "all_external_contributors", "Every outside contributor's workflows wait for approval",
+                [new(["api", "-X", "PUT", $"repos/{repository}/actions/permissions/fork-pr-contributor-approval", "-f", "approval_policy=all_external_contributors", "--silent"])]));
+        }
+
+        var alerts = await Gh(["api", $"repos/{repository}/vulnerability-alerts", "--silent"], cancellationToken);
+
+        if (alerts.Succeeded || alerts.Output.Contains("HTTP 404", StringComparison.Ordinal))
+        {
+            settings.Add(new("Dependabot alerts", alerts.Succeeded, "Dependabot alerts about vulnerable dependencies are on",
+                [new(["api", "-X", "PUT", $"repos/{repository}/vulnerability-alerts", "--silent"])]));
+        }
+
+        if (environments.FirstOrDefault(e => string.Equals(e, "Production", StringComparison.OrdinalIgnoreCase)) is { } production && await ProductionBranchRuleAsync(production, cancellationToken) is { } rule)
+        {
+            settings.Add(rule);
         }
 
         return settings;
+    }
+
+    private async Task<RepositorySetting?> ProductionBranchRuleAsync(string environment, CancellationToken cancellationToken)
+    {
+        var path = $"repos/{repository}/environments/{Uri.EscapeDataString(environment)}";
+        var current = await Gh(["api", path], cancellationToken);
+        JsonObject? existing = null;
+
+        if (current.Succeeded)
+        {
+            try
+            {
+                existing = JsonNode.Parse(current.Output) as JsonObject;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+            }
+
+            if (existing is null)
+                return null;
+        }
+        else if (current.Output.Contains("HTTP 404", StringComparison.Ordinal) is false)
+            return null;
+
+        var on = false;
+
+        if (existing?["deployment_branch_policy"] is JsonObject branchPolicy)
+        {
+            on = branchPolicy["protected_branches"]?.GetValue<bool>() is true;
+
+            if (on is false && branchPolicy["custom_branch_policies"]?.GetValue<bool>() is true)
+            {
+                var names = await Gh(["api", $"{path}/deployment-branch-policies", "--jq", ".branch_policies[] | select(.type == \"branch\") | .name"], cancellationToken);
+                on = names.Succeeded && Lines(names).Contains(ProductionBranch, StringComparer.Ordinal);
+            }
+        }
+
+        var body = new JsonObject { ["deployment_branch_policy"] = new JsonObject { ["protected_branches"] = false, ["custom_branch_policies"] = true } };
+
+        foreach (var rule in existing?["protection_rules"] as JsonArray ?? [])
+        {
+            if (rule?["type"]?.GetValue<string>() is "wait_timer" && rule["wait_timer"] is { } waitTimer)
+            {
+                body["wait_timer"] = waitTimer.DeepClone();
+            }
+            else if (rule?["type"]?.GetValue<string>() is "required_reviewers" && rule["reviewers"] is JsonArray reviewers)
+            {
+                body["prevent_self_review"] = rule["prevent_self_review"]?.DeepClone();
+                body["reviewers"] = new JsonArray([.. reviewers.Select(r => new JsonObject { ["type"] = r?["type"]?.DeepClone(), ["id"] = r?["reviewer"]?["id"]?.DeepClone() })]);
+            }
+        }
+
+        return new($"{environment} deploys from {ProductionBranch} only", on, $"{environment} deploys from {ProductionBranch} only",
+        [
+            new(["api", "-X", "PUT", path, "--input", "-", "--silent"], body.ToJsonString()),
+            new(["api", "-X", "POST", $"{path}/deployment-branch-policies", "-f", $"name={ProductionBranch}", "-f", "type=branch", "--silent"])
+        ]);
     }
 
     private void ShowSettings(IReadOnlyList<RepositorySetting> settings)
@@ -64,12 +145,24 @@ public sealed partial class PipelineSetup
     {
         foreach (var setting in settings)
         {
-            var result = await Gh(setting.Change, cancellationToken);
-            cli.Console.Step(result.Succeeded ? StepStatus.Succeeded : StepStatus.Failed, result.Succeeded ? setting.Done : $"Couldn't turn on: {setting.Name}", result.Succeeded ? null : LastLine(result));
+            ProcessResult? failure = null;
 
-            if (result.Succeeded is false)
+            foreach (var change in setting.Changes)
             {
-                cli.Console.StepAttempt(result.Spec!.Attempt);
+                var result = await Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = change.Arguments, WorkingDirectory = root, StandardInput = change.Input, Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
+
+                if (result.Succeeded is false)
+                {
+                    failure = result;
+                    break;
+                }
+            }
+
+            cli.Console.Step(failure is null ? StepStatus.Succeeded : StepStatus.Failed, failure is null ? setting.Done : $"Couldn't turn on: {setting.Name}", failure is null ? null : LastLine(failure));
+
+            if (failure is not null)
+            {
+                cli.Console.StepAttempt(failure.Spec!.Attempt);
                 failed = true;
             }
         }
