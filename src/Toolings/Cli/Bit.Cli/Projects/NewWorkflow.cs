@@ -106,6 +106,7 @@ public sealed partial class NewWorkflow(CliServices cli)
             return CliApp.ExitOk;
 
         cli.Console.Out.WriteLine();
+        ShowAgentIdeas(cli);
 
         var stopwatch = Stopwatch.StartNew();
         var steps = new StepRunner(cli);
@@ -208,6 +209,14 @@ public sealed partial class NewWorkflow(CliServices cli)
         await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage, cancellationToken);
 
         return exitCode;
+    }
+
+    public static void ShowAgentIdeas(CliServices cli)
+    {
+        if (cli.HasTerminal && cli.Environment.CodingAgent is null)
+        {
+            cli.Console.Ideas = new AgentIdeas();
+        }
     }
 
     public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, ProjectRunMode runMode, CancellationToken cancellationToken)
